@@ -23,22 +23,21 @@ import edu.stanford.smi.protege.util.*;
  */
 public class WelcomeDialog extends JDialog {
 
-    // Top level panel.
     JPanel panel = new JPanel(new BorderLayout(5, 5));
+    JPanel centerPanel = new JPanel(new BorderLayout());
+    JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-    // Create New Project panel.
+    // Panels for create new project button and protege logo.
     JPanel newButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    //JPanel iconPanel = new JPanel(new GridLayout(1, 1));
     JPanel iconPanel = new JPanel(new FlowLayout());
-    JPanel createNewPanel = new JPanel(new BorderLayout());
+    JPanel topPanel = new JPanel(new BorderLayout());
 
-    // Open Project panel and sub-panels.
-    JPanel openPanel = new JPanel(new BorderLayout());
+    // Panels for opening recently used/other projects.
     JPanel mruPanel = new JPanel(new BorderLayout());
     JPanel openButtons = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    JPanel openButtonPanel = new JPanel(new GridLayout(1, 2, 3, 0));
+    JPanel openPanel = new JPanel(new BorderLayout());
 
-    // Help Resources panel and sub-panels.
+    // Panels for help buttons.
     JPanel helpPanel = new JPanel(new BorderLayout());
     JPanel hspHolder = new JPanel(new FlowLayout());
     JPanel helpSubPanel = new JPanel(new GridLayout(4, 1, 0, 2));
@@ -46,27 +45,21 @@ public class WelcomeDialog extends JDialog {
     TitledBorder titledBorder1;
     TitledBorder titledBorder2;
 
+    JButton closeButton = createButton(ResourceKey.CLOSE_BUTTON_LABEL, Icons.getCloseIcon());
+    JButton faqButton = createButton(ResourceKey.WELCOME_DIALOG_FAQ);
     JButton newButton = createButton(ResourceKey.WELCOME_DIALOG_NEW);
-    JButton openOtherButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN_OTHER);
     JButton openButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN);
+    JButton openOtherButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN_OTHER);
     JButton topicsButton = createButton(ResourceKey.WELCOME_DIALOG_ALL_TOPICS);
     JButton tutorialButton = createButton(ResourceKey.WELCOME_DIALOG_GETTING_STARTED);
     JButton usersGuideButton = createButton(ResourceKey.WELCOME_DIALOG_USERS_GUIDE);
-    JButton faqButton = createButton(ResourceKey.WELCOME_DIALOG_FAQ);
 
     ButtonGroup group = new ButtonGroup();
     ProjectList mruList;
     JScrollPane mruScrollPane;
-    //JLabel iconLabel = ComponentFactory.createLabel();
     JLabel iconLabel;
     JRadioButton[] rbArray;
-
-    // List factoryList;
     List projectURIList = new ArrayList(ApplicationProperties.getMRUProjectList());
-
-    private JButton createButton(ResourceKey key) {
-        return new JButton(LocalizedText.getText(key));
-    }
 
     // Extended the JList class in order to have tool tips for each
     // individual list item.
@@ -98,39 +91,33 @@ public class WelcomeDialog extends JDialog {
         }
     }
 
-    private TitledBorder createBorder(ResourceKey key) {
-        String text = LocalizedText.getText(key);
-        return new TitledBorder(BorderFactory.createEtchedBorder(), text);
-    }
-
-    private void setToolTipText(AbstractButton button, ResourceKey key) {
-        String text = LocalizedText.getText(key);
-        button.setToolTipText(text);
-    }
-
     void jbInit() throws Exception {
         titledBorder1 = createBorder(ResourceKey.WELCOME_DIALOG_OPEN_RECENT_PROJECT_TITLE);
         titledBorder2 = createBorder(ResourceKey.WELCOME_DIALOG_HELP_TITLE);
-        mruPanel.setBorder(titledBorder1);
+        openPanel.setBorder(titledBorder1);
         hspHolder.setBorder(titledBorder2);
 
-        /* Build New Project panel ********************************************/
-        newButtonPanel.add(newButton);
+        /**
+         * Build top panel
+         */
+
         setToolTipText(newButton, ResourceKey.WELCOME_DIALOG_NEW_TOOLTIP);
         newButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 newButton_actionPerformed(ae);
             }
         });
+        newButtonPanel.add(newButton);
 
-        // Initialize JLabel that holds the Protege icon.
         iconLabel = new JLabel("   ", Icons.getLogo(), SwingConstants.LEFT);
         iconPanel.add(iconLabel);
 
-        createNewPanel.add(newButtonPanel, BorderLayout.CENTER);
-        createNewPanel.add(iconPanel, BorderLayout.EAST);
+        topPanel.add(newButtonPanel, BorderLayout.CENTER);
+        topPanel.add(iconPanel, BorderLayout.EAST);
 
-        /* Build Open Project panel *******************************************/
+        /**
+         * Build Open Recent/Other Project panel
+         */
 
         // Set up the list of most recently used projects.
         initList();
@@ -139,7 +126,7 @@ public class WelcomeDialog extends JDialog {
 
         // Set up the "Open Selected Project" and "Open Other Project..."
         // buttons.
-        openButtonPanel.add(openButton);
+        //openButtons.add(openButton);
         setToolTipText(openButton, ResourceKey.WELCOME_DIALOG_OPEN_TOOLTIP);
         openButton.setEnabled(false);
         openButton.addActionListener(new ActionListener() {
@@ -147,21 +134,23 @@ public class WelcomeDialog extends JDialog {
                 openButton_actionPerformed(ae);
             }
         });
+        openButtons.add(openButton);
 
-        openButtonPanel.add(openOtherButton);
         setToolTipText(openOtherButton, ResourceKey.WELCOME_DIALOG_OPEN_OTHER_TOOLTIP);
         openOtherButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 openOtherButton_actionPerformed(ae);
             }
         });
-
-        openButtons.add(openButtonPanel);
+        openButtons.add(openOtherButton);
 
         openPanel.add(mruPanel, BorderLayout.CENTER);
         openPanel.add(openButtons, BorderLayout.SOUTH);
 
-        /* Build Help Resources panel *****************************************/
+        /**
+         * Build help panel
+         */
+
         helpSubPanel.add(tutorialButton);
         tutorialButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -192,12 +181,46 @@ public class WelcomeDialog extends JDialog {
 
         hspHolder.add(helpSubPanel);
         helpPanel.add(hspHolder, BorderLayout.CENTER);
-        openPanel.add(helpPanel, BorderLayout.EAST);
 
-        /* Build main dialog **************************************************/
-        panel.add(createNewPanel, BorderLayout.NORTH);
-        panel.add(openPanel, BorderLayout.CENTER);
-        this.getContentPane().add(panel);
+        /**
+         * Build main dialog
+         */
+
+        centerPanel.add(openPanel, BorderLayout.CENTER);
+        centerPanel.add(helpPanel, BorderLayout.EAST);
+
+        panel.add(topPanel, BorderLayout.NORTH);
+        panel.add(centerPanel, BorderLayout.CENTER);
+
+        closeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                closeButton_actionPerformed(e);
+            }
+        });
+        //getRootPane().setDefaultButton(closeButton);
+	bottomPanel.add(closeButton);
+
+        this.getContentPane().setLayout(new BorderLayout(0, 10));
+        this.getContentPane().add(panel, BorderLayout.CENTER);
+        this.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    private JButton createButton(ResourceKey key) {
+        return new JButton(LocalizedText.getText(key));
+    }
+
+    private JButton createButton(ResourceKey key, Icon icon) {
+        return new JButton(LocalizedText.getText(key), icon);
+    }
+
+    private TitledBorder createBorder(ResourceKey key) {
+        String text = LocalizedText.getText(key);
+        return new TitledBorder(BorderFactory.createEtchedBorder(), text);
+    }
+
+    private void setToolTipText(AbstractButton button, ResourceKey key) {
+        String text = LocalizedText.getText(key);
+        button.setToolTipText(text);
     }
 
     private void initList() {
@@ -238,7 +261,7 @@ public class WelcomeDialog extends JDialog {
         if (index >= 0) {
             URI uri = (URI) projectURIList.get(index);
             WaitCursor cursor = new WaitCursor(this.getRootPane());
-            this.setVisible(false);
+            setVisible(false);
             ProjectManager.getProjectManager().loadProject(uri);
             ApplicationProperties.addProjectToMRUList(uri);
             cursor.hide();
@@ -278,5 +301,9 @@ public class WelcomeDialog extends JDialog {
 
     public void usersGuideButton_actionPerformed(ActionEvent ae) {
         SystemUtilities.showHTML(ApplicationProperties.getUsersGuideURLString());
+    }
+
+    public void closeButton_actionPerformed(ActionEvent e) {
+	setVisible(false);
     }
 }

@@ -81,8 +81,8 @@ public class Application {
             boolean b = ApplicationProperties.getWelcomeDialogShow();
             if (b == true) {
                 // Load the main frame and show the welcome dialog.
-                _welcome = new WelcomeDialog(_mainFrame, Text.getProgramName(), true);
-                _welcome.setSize(new Dimension(600, 300));
+                _welcome = new WelcomeDialog(_mainFrame, "Welcome to " + Text.getProgramName(), true);
+                _welcome.setSize(new Dimension(600, 350));
                 _welcome.setLocationRelativeTo(_mainFrame);
                 _welcome.setVisible(true);
             }
