@@ -20,34 +20,51 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class Finder extends JComponent {
     private static List searchedForStrings = new ArrayList();
-    private JComboBox _textField;
+    private JComboBox _comboBox;
     private Action _findAction;
+    private long actionTime;
+    private static final long DELAY = 1000; // one second
 
     public Finder(String description) {
         this(description, Icons.getFindIcon());
     }
 
+    /* 
+     * Remove events that come too close together in time.
+     */
+    private boolean isFindAction(ActionEvent event) {
+        long lastTime = actionTime;
+        actionTime = event.getWhen();
+        return (actionTime - lastTime) > DELAY && !_comboBox.isPopupVisible();
+    }
+
     public Finder(String description, Icon icon) {
         _findAction = new StandardAction(description, icon) {
             public void actionPerformed(ActionEvent e) {
-                if (isFindAction(e)) {
-                    doFind();
-                }
+                handleActionEvent(e);
             }
         };
         initialize();
     }
-    
-    private boolean isFindAction(ActionEvent event) {
-        return !event.getSource().equals(_textField) || "comboBoxChanged".equals(event.getActionCommand());
+
+    private void handleActionEvent(ActionEvent event) {
+        if (isFindAction(event)) {
+            /*
+             * This is a real hack to make the duplicated events that show up sometimes
+             * happen close enough together in time that they can be removed.
+             */
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    doFind();
+                }
+            });
+        }
     }
 
     public Finder(ResourceKey key) {
         _findAction = new StandardAction(key) {
             public void actionPerformed(ActionEvent e) {
-                if (isFindAction(e)) {
-	                doFind();
-                }
+                handleActionEvent(e);
             }
         };
         initialize();
@@ -67,13 +84,13 @@ public abstract class Finder extends JComponent {
     }
 
     private JComponent createTextField() {
-        _textField = ComponentFactory.createComboBox();
-        _textField.setEditable(true);
-        _textField.addActionListener(_findAction);
-        _textField.addPopupMenuListener(createPopupMenuListener());
-        return _textField;
+        _comboBox = ComponentFactory.createComboBox();
+        _comboBox.setEditable(true);
+        _comboBox.addActionListener(_findAction);
+        _comboBox.addPopupMenuListener(createPopupMenuListener());
+        return _comboBox;
     }
-    
+
     private PopupMenuListener createPopupMenuListener() {
         return new PopupMenuListener() {
 
@@ -86,9 +103,9 @@ public abstract class Finder extends JComponent {
             }
 
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                _textField.setModel(new DefaultComboBoxModel(searchedForStrings.toArray()));
+                _comboBox.setModel(new DefaultComboBoxModel(searchedForStrings.toArray()));
             }
-            
+
         };
     }
 
@@ -98,7 +115,7 @@ public abstract class Finder extends JComponent {
     }
 
     private void doFind() {
-        String text = (String) _textField.getSelectedItem();
+        String text = (String) _comboBox.getSelectedItem();
         if (text != null && text.length() != 0) {
             List matches = getMatches(text, 1000);
             if (matches.isEmpty()) {
@@ -112,8 +129,7 @@ public abstract class Finder extends JComponent {
                 recordItem(text);
                 String title = "Select from search results (" + matches.size() + " matches)";
                 int initialSelection = getBestMatch(matches, text);
-                Object o = DisplayUtilities.pickInstanceFromCollection(this, matches,
-                        initialSelection, title);
+                Object o = DisplayUtilities.pickInstanceFromCollection(this, matches, initialSelection, title);
                 if (o != null) {
                     WaitCursor cursor = new WaitCursor(this);
                     select(o);
@@ -122,7 +138,7 @@ public abstract class Finder extends JComponent {
             }
         }
     }
-    
+
     protected abstract int getBestMatch(List matches, String text);
 
     protected abstract List getMatches(String text, int maxMatches);
