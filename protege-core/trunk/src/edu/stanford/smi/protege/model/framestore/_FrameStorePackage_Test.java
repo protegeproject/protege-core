@@ -12,7 +12,7 @@ public class _FrameStorePackage_Test {
         suite.addTestSuite(EventGeneratorFrameStore_Test.class);
         suite.addTestSuite(JournalingFrameStoreHandler_Test.class);
         suite.addTestSuite(ReadOnlyFrameStoreHandler_Test.class);
-        suite.addTestSuite(ArgumentCheckingFrameStoreHandler_Test.class);
+        suite.addTestSuite(ArgumentCheckingFrameStore_Test.class);
         suite.addTestSuite(CallCachingFrameStore_Test.class);
         suite.addTestSuite(FrameStoreAdapter_Test.class);
         suite.addTestSuite(EventDispatchFrameStore_Test.class);

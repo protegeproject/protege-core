@@ -261,13 +261,23 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     private List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, boolean skipActive) {
-        List values = new ArrayList();
+        List values = null;
         Iterator i = availableFrameStores.iterator();
         while (i.hasNext()) {
             NarrowFrameStore fs = (NarrowFrameStore) i.next();
             if (fs != activeFrameStore || !skipActive) {
-                values.addAll(fs.getValues(frame, slot, facet, isTemplate));
+                List fsValues = fs.getValues(frame, slot, facet, isTemplate);
+                if (!fsValues.isEmpty()) {
+                    if (values == null) {
+                        values = fsValues;
+                    } else {
+                        values.addAll(fsValues);
+                    }
+                }
             }
+        }
+        if (values == null) {
+            values = Collections.EMPTY_LIST;
         }
         return values;
     }
