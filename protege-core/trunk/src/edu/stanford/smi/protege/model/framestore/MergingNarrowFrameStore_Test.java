@@ -34,21 +34,20 @@ public class MergingNarrowFrameStore_Test extends FrameStore_Test {
     }
 
     public void testGetCounts() {
+        int count = getFrameCount();
         createCls();
-        int count = getTestFrameStore().getFrameCount();
+        assertEquals(count + 1, getFrameCount());
+
         MergingNarrowFrameStore fs = getMergingFrameStore();
         String parentName = fs.getActiveFrameStore().getName();
         fs.addActiveFrameStore(new InMemoryFrameDb("child"));
         fs.addRelation(parentName, "child");
+        createCls();
         fs.setActiveFrameStore(parentName);
-        assertEquals(count, getTestFrameStore().getFrameCount());
-        NarrowFrameStore parent = fs.setActiveFrameStore("child");
-        assertEquals(count - 1, getTestFrameStore().getFrameCount());
-        Cls cls = createCls();
-        createSlotOnCls(cls);
-        assertEquals(count + 1, getTestFrameStore().getFrameCount());
-        fs.setActiveFrameStore(parent);
-        assertEquals(count + 2, getTestFrameStore().getFrameCount());
+
+        assertEquals(count + 2, getFrameCount());
+        createCls();
+        assertEquals(count + 3, getFrameCount());
     }
 
     public void testInterleavedValues() {

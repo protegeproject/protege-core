@@ -397,7 +397,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public void replaceFrame(Frame frame) {
-        Iterator i = availableFrameStores.iterator();
+        Iterator i = getAllFrameStores().iterator();
         while (i.hasNext()) {
             NarrowFrameStore narrowFrameStore = (NarrowFrameStore) i.next();
             narrowFrameStore.replaceFrame(frame);
