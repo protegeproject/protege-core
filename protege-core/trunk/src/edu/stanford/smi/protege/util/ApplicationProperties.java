@@ -282,8 +282,12 @@ public class ApplicationProperties {
     }
 
     private static void setProperty(String property, String value) {
-        _properties.setProperty(property, value);
-        flush();
+        try {
+            _properties.setProperty(property, value);
+            flush();
+        } catch (Exception e) {
+            Log.getLogger().warning(Log.toString(e));
+        }
     }
 
     private static void saveRectangle(String name, Rectangle r) {
