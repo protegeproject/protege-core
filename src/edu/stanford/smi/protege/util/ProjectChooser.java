@@ -59,6 +59,7 @@ public class ProjectChooser extends JFileChooser {
         pane.add(SERVER_CARD, (serverPanel = new ServerPanel()));
         urlPanel.setBorder(getBorder());
         serverPanel.setBorder(getBorder());
+        serverPanel.setName(SERVER_CARD);
 
         layout.show(pane, ApplicationProperties.getString(CARD_NAME_PROPERTY, FILE_CARD));
         contentPane.add(createSelectionButtonPane(), BorderLayout.WEST);
