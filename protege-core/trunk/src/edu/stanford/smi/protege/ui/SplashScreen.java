@@ -9,8 +9,7 @@ import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * A window for the application startup splash screen. This just displays the
- * nerd icon and the version number.
+ * A window for the application startup splash screen. This just displays the nerd icon and the version number.
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */

@@ -10,8 +10,7 @@ import java.util.List;
 import edu.stanford.smi.protege.plugin.*;
 
 /**
- * Utility class for accessing system properties and properties from the
- * application properties file.
+ * Utility class for accessing system properties and properties from the application properties file.
  * 
  * @author Ray Fergerson
  * @author Jennifer Vendetti
@@ -87,8 +86,8 @@ public class ApplicationProperties {
             // If there are none, use some example projects provided
             // with the protege installation.
             char sep = java.io.File.separatorChar;
-            String exampleProjectName = getApplicationDirectory().getPath() + sep + "examples"
-                    + sep + "newspaper" + sep + "newspaper.pprj";
+            String exampleProjectName = getApplicationDirectory().getPath() + sep + "examples" + sep + "newspaper"
+                    + sep + "newspaper.pprj";
             URI uri = URIUtilities.createURI(exampleProjectName);
             addProjectToMRUList(uri);
         }
@@ -185,7 +184,6 @@ public class ApplicationProperties {
     }
 
     /**
-     * 
      * @return List of URI's for MRU projects
      */
     public static List getMRUProjectList() {
@@ -361,17 +359,16 @@ public class ApplicationProperties {
         String country = getApplicationOrSystemProperty("user.country");
         return new Locale(language, country);
     }
-    
+
     public static void setLocale(Locale locale) {
         setProperty("user.language", locale.getLanguage());
         setProperty("user.country", locale.getCountry());
     }
 
-    
     public static boolean getPrettyPrintSlotWidgetLabels() {
         return getBooleanProperty(PRETTY_PRINT_SLOT_WIDGET_LABELS, true);
     }
-    
+
     public static void setPrettyPrintSlotWidgetLabels(boolean b) {
         setBoolean(PRETTY_PRINT_SLOT_WIDGET_LABELS, b);
     }
@@ -383,7 +380,7 @@ public class ApplicationProperties {
         }
         return new File(directory);
     }
-    
+
     public static void setLastFileDirectory(File directory) {
         setString(LAST_FILE_DIRECTORY, directory.getPath());
     }

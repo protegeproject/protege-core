@@ -143,8 +143,7 @@ public class ProjectManager {
 
     public void changeProjectStorageFormatRequest() {
         if (hasLoadedProject()) {
-            KnowledgeBaseFactory oldFactory = _currentProject.getKnowledgeBase()
-                    .getKnowledgeBaseFactory();
+            KnowledgeBaseFactory oldFactory = _currentProject.getKnowledgeBase().getKnowledgeBaseFactory();
             KnowledgeBaseFactory factory = promptForFactory();
             boolean succeeded = (factory != null) && factory != oldFactory;
             if (succeeded) {
@@ -202,8 +201,7 @@ public class ProjectManager {
         if (p != null) {
             ConfigureProjectPanel panel = new ConfigureProjectPanel(p);
             String title = "Configure " + p.getProjectURI();
-            int result = ModalDialog
-                    .showDialog(_rootPane, panel, title, ModalDialog.MODE_OK_CANCEL);
+            int result = ModalDialog.showDialog(_rootPane, panel, title, ModalDialog.MODE_OK_CANCEL);
             if (result == ModalDialog.OPTION_OK) {
                 boolean needToRegenerate = displayHidden != p.getDisplayHiddenClasses();
                 reloadUI(needToRegenerate);
@@ -213,24 +211,23 @@ public class ProjectManager {
 
     private boolean confirmSave() {
         boolean succeeded;
-        JComponent c = ComponentFactory
-                .createLabel("Do you want to save changes to the current project?");
+        JComponent c = ComponentFactory.createLabel("Do you want to save changes to the current project?");
         int result = ModalDialog.showDialog(_rootPane, c, "Save?", ModalDialog.MODE_YES_NO_CANCEL);
         switch (result) {
-        case ModalDialog.OPTION_YES:
-            succeeded = saveProjectRequest();
-            break;
-        case ModalDialog.OPTION_NO:
-            succeeded = true;
-            break;
-        case ModalDialog.OPTION_CANCEL:
-        case ModalDialog.OPTION_CLOSE:
-            succeeded = false;
-            break;
-        default:
-            Assert.fail("bad result: " + result);
-            succeeded = false;
-            break;
+            case ModalDialog.OPTION_YES:
+                succeeded = saveProjectRequest();
+                break;
+            case ModalDialog.OPTION_NO:
+                succeeded = true;
+                break;
+            case ModalDialog.OPTION_CANCEL:
+            case ModalDialog.OPTION_CLOSE:
+                succeeded = false;
+                break;
+            default:
+                Assert.fail("bad result: " + result);
+                succeeded = false;
+                break;
         }
         return succeeded;
     }
@@ -387,8 +384,7 @@ public class ProjectManager {
     }
 
     // return true if sources are complete and 'ok' was pressed
-    private boolean loadNewSources(Project project, KnowledgeBaseFactory factory,
-            boolean showProject) {
+    private boolean loadNewSources(Project project, KnowledgeBaseFactory factory, boolean showProject) {
         if (factory == null) {
             factory = project.getKnowledgeBaseFactory();
         }
@@ -400,9 +396,7 @@ public class ProjectManager {
         String title = factory.getDescription();
         int result = ModalDialog.showDialog(_rootPane, editor, title, ModalDialog.MODE_OK_CANCEL);
         if (result == ModalDialog.OPTION_OK) {
-            sources
-                    .setString(KnowledgeBaseFactory.FACTORY_CLASS_NAME, factory.getClass()
-                            .getName());
+            sources.setString(KnowledgeBaseFactory.FACTORY_CLASS_NAME, factory.getClass().getName());
             project.setProjectURI(URIUtilities.createURI(editor.getProjectPath()));
             Iterator i = editor.getIncludedProjects().iterator();
             while (i.hasNext()) {
@@ -569,8 +563,7 @@ public class ProjectManager {
 
     private KnowledgeBaseFactory promptForFactory() {
         FactoryPanel panel = new FactoryPanel();
-        int rval = ModalDialog.showDialog(_rootPane, panel, "Select Format",
-                ModalDialog.MODE_OK_CANCEL);
+        int rval = ModalDialog.showDialog(_rootPane, panel, "Select Format", ModalDialog.MODE_OK_CANCEL);
         return (rval == ModalDialog.OPTION_OK) ? panel.getSelectedFactory() : null;
     }
 
@@ -584,10 +577,9 @@ public class ProjectManager {
     }
 
     private void commitChanges() {
-        Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                .getPermanentFocusOwner();
-        TextComponentWidget widget = (TextComponentWidget) SwingUtilities.getAncestorOfClass(
-                TextComponentWidget.class, c);
+        Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+        TextComponentWidget widget = (TextComponentWidget) SwingUtilities.getAncestorOfClass(TextComponentWidget.class,
+                c);
         if (widget != null) {
             widget.commitChanges();
         }
@@ -638,8 +630,7 @@ public class ProjectManager {
     private boolean prepareToSave(KnowledgeBaseFactory oldFactory, KnowledgeBaseFactory newFactory) {
         // Log.enter(this, "prepareToSave", oldFactory, newFactory);
         boolean succeeded = true;
-        if (newFactory != null && newFactory != oldFactory
-                && oldFactory instanceof KnowledgeBaseFactory2) {
+        if (newFactory != null && newFactory != oldFactory && oldFactory instanceof KnowledgeBaseFactory2) {
             KnowledgeBaseFactory2 oldFactory2 = (KnowledgeBaseFactory2) oldFactory;
             Collection errors = new ArrayList();
             KnowledgeBase kb = _currentProject.getKnowledgeBase();
@@ -824,8 +815,7 @@ public class ProjectManager {
         if (_currentProject != null) {
             if (ArchivePanel.displayPanel()) {
                 ArchivePanel panel = new ArchivePanel();
-                int rval = ModalDialog.showDialog(_rootPane, panel, "Archive Project",
-                        ModalDialog.MODE_OK_CANCEL);
+                int rval = ModalDialog.showDialog(_rootPane, panel, "Archive Project", ModalDialog.MODE_OK_CANCEL);
                 if (rval == ModalDialog.OPTION_OK) {
                     String comment = panel.getComment();
                     archive(comment);
