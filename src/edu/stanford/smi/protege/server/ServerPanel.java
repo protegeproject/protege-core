@@ -98,7 +98,7 @@ public class ServerPanel extends JPanel implements Validatable {
     private RemoteSession createSession(String username, String password) {
         RemoteSession session = null;
         try {
-            session = _server.openSession(username, SystemUtilities.getMachineName(), password);
+            session = _server.openSession(username, SystemUtilities.getMachineIpAddress(), password);
         } catch (RemoteException e) {
             e.printStackTrace();
             // do nothing

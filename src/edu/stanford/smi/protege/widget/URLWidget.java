@@ -29,10 +29,10 @@ public class URLWidget extends TextComponentWidget {
         return ComponentFactory.createTextField();
     }
 
-    //    protected void onCommit() {
-    //        super.onCommit();
-    //        updateURLDisplay();
-    //    }
+    protected void onCommit() {
+        super.onCommit();
+        updateURLDisplay();
+    }
 
     protected JComponent createCenterComponent(JTextComponent textComponent) {
         urlDisplay = ComponentFactory.createEditorPane();

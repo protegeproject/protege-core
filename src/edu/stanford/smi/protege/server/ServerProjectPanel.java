@@ -55,7 +55,7 @@ public class ServerProjectPanel extends JPanel {
             if (s.length() > 0) {
                 s.append(", ");
             }
-            s.append(session.getUserName() + " (" + session.getUserMachine() + ")");
+            s.append(session.getUserName() + " (" + session.getUserIpAddress() + ")");
         }
         return s.toString();
     }

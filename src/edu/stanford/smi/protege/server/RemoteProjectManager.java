@@ -64,7 +64,7 @@ public class RemoteProjectManager {
         try {
             RemoteServer server = (RemoteServer) Naming.lookup("//" + serverName + "/" + Server.getBoundName());
             if (server != null) {
-                RemoteSession session = server.openSession(username, SystemUtilities.getMachineName(), password);
+                RemoteSession session = server.openSession(username, SystemUtilities.getMachineIpAddress(), password);
                 if (session != null) {
                     RemoteServerProject serverProject = server.openProject(projectName, session);
                     if (serverProject != null) {

@@ -22,8 +22,8 @@ public class RemoteClientFrameStore implements FrameStore {
             boolean preloadAll) {
         try {
             RemoteServer server = (RemoteServer) Naming.lookup("//" + host + "/" + Server.getBoundName());
-            String machine = SystemUtilities.getMachineName();
-            session = server.openSession(user, machine, password);
+            String ipAddress = SystemUtilities.getMachineIpAddress();
+            session = server.openSession(user, ipAddress, password);
             RemoteServerProject project = server.openProject(projectName, session);
             delegate = project.getDomainKbFrameStore(session);
             this.kb = kb;

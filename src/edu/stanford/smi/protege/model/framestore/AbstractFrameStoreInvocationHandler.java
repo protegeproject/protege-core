@@ -154,4 +154,5 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
     public String toString() {
         return StringUtilities.getClassName(this);
     }
+
 }
