@@ -121,7 +121,7 @@ public class SystemUtilities {
             PluginUtilities.initialize();
             loadUseAntialiasing();
             Toolkit.getDefaultToolkit().setDynamicLayout(true);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // We explicitly do nothing fancy with writing this output. This
             // method is called on startup
             // and there may be problems with almost anything (i.e. System.out).
