@@ -399,7 +399,13 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     public int getFrameCount() {
-        return countFrames(Frame.class);
+        int count = 0;
+        Slot slot = getNameSlot();
+        if (slot != null) {
+            Collection records = (Collection) slotToRecordsMap.get(slot);
+            count = records.size();
+        }
+        return count;
     }
 
     public Set getFrames() {
@@ -410,23 +416,24 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return countFrames(SimpleInstance.class);
     }
 
-    private Slot nameSlot;
+    private Slot cachedNameSlot;
 
-    private void loadNameSlot() {
-        if (nameSlot == null) {
+    private Slot getNameSlot() {
+        if (cachedNameSlot == null) {
             Iterator i = referenceToRecordMap.keySet().iterator();
             if (i.hasNext()) {
                 Record record = (Record) i.next();
                 Frame frame = record.getFrame();
                 KnowledgeBase kb = frame.getKnowledgeBase();
-                nameSlot = kb.getSlot(Model.Slot.NAME);
+                cachedNameSlot = kb.getSlot(Model.Slot.NAME);
             }
         }
+        return cachedNameSlot;
     }
 
     private int countFrames(Class clas) {
         int frameCount = 0;
-        loadNameSlot();
+        Slot nameSlot = getNameSlot();
         if (nameSlot != null) {
             Collection records = (Collection) slotToRecordsMap.get(nameSlot);
             Iterator i = records.iterator();
@@ -440,18 +447,6 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         }
         return frameCount;
     }
-
-    //    private Set frames(Class clas) {
-    //        Set uniqueValues = new HashSet();
-    //        Iterator i = frameToRecordsMap.keySet().iterator();
-    //        while (i.hasNext()) {
-    //            Object o = i.next();
-    //            if (clas.isInstance(o)) {
-    //                uniqueValues.add(o);
-    //            }
-    //        }
-    //        return uniqueValues;
-    //    }
 
     public Frame getFrame(FrameID id) {
         throw new UnsupportedOperationException();
