@@ -1,10 +1,10 @@
 <?xml version = "1.0" encoding = "utf-8"?>
 <project name = "Protege" default = "usage" basedir = ".">    
 	<description>Autonomous Ant file for building Protege</description>  
-	<!-- Load necessary property files -->
+	<!-- Load necessary property files. -->
 	<property file = "./src/edu/stanford/smi/protege/resource/files/build.properties"/>  
 	<property file = "local.properties"/>  
-	<!-- Set global properties for this build -->
+	<!-- Set global properties for this build. -->
 	<property name = "extended.name" value = "${name} ${build.version} ${build.status}"/>
 	<property name = "src" value = "./src"/>  
 	<property name = "classes" value = "./classes"/>  
@@ -12,7 +12,8 @@
 	<property name = "javadocs" value = "${docs}/apidocs"/>
 	<property name = "dist" value = "./dist"/>
 	<property name = "lib" value = "./lib"/>
-	<!-- Compiler options -->
+	<property name = "scripts" value = "./bin"/>
+	<!-- Compiler options. -->
 	<property name = "deprecation" value = "on"/>    
 	<property name = "debug" value = "off"/>  
 	<property name = "optimize" value = "on"/>  
@@ -76,8 +77,17 @@
 	<!-- JAVACC -->
 	
 	<!-- =================================================================== -->
-	<target name = "javacc" depends = "prepare">    
-		<javacc javacchome = "${javacc.home}/bin/lib" target = "./Parser.jj" outputdirectory = "${src}/edu/stanford/smi/protege/storage/clips"/>  
+	<target name = "javacc" depends = "prepare">
+		<!-- Delete these files because Ant's javacc task won't regenerate files when the date on the files is the same as the date on the grammer file (Parser.jj) -->
+		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
+		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Parser.java"/>
+		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParserConstants.java"/>
+		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParserTokenManager.java"/>
+		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/SimpleCharStream.java"/>
+		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Token.java"/>
+		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
+		<!-- Run JavaCC on Parser.jj to regenerate files that were deleted in above step. -->
+		<javacc javacchome = "${javacc.home}/bin/lib" target = "${scripts}/Parser.jj" outputdirectory = "${src}/edu/stanford/smi/protege/storage/clips"/>  
 	</target>  
 	<!-- =================================================================== -->
 	
@@ -130,17 +140,17 @@
 	
 	<!-- DIST -->
 	
-	<!-- Zips up all source code, resources, and api documentation. -->
+	<!-- Zips up all source code, resources, and API documentation. -->
 	
 	<!-- =================================================================== -->
 	<target name = "dist" depends = "init">
-		<zip zipfile = "${dist}/protege.src.${build.version}.zip" update = "no">
+		<zip zipfile = "${dist}/protege-src-${build.version}.zip" update = "no">
 			<zipfileset dir = "${src}" prefix = "${extended.name}/src"/>
 			<zipfileset dir = "${javadocs}" prefix = "${extended.name}/docs/apidocs"/>
-			<zipfileset dir = "." includes = "Parser.jj" prefix = "${extended.name}"/>
+			<zipfileset dir = "${scripts}" includes = "Parser.jj" prefix = "${extended.name}/bin"/>
 			<zipfileset dir = "${lib}" includes = "*.jar" prefix = "${extended.name}/lib"/>
 		</zip>
-		<zip zipfile = "${dist}/protege.bin.${build.version}.zip" update = "no">
+		<zip zipfile = "${dist}/protege-bin-${build.version}.zip" update = "no">
 			<zipfileset dir = "${lib}" includes = "*.jar"/>
 			<zipfileset dir = "${dist}" includes = "protege.jar"/>
 		</zip>

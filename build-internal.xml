@@ -170,7 +170,7 @@
 			<zipfileset dir = "${build.src}" prefix = "${Name}/src"/>
 			<zipfileset dir = "${build.javadoc}" prefix = "${Name}/docs/apidocs"/>
 			<zipfileset dir = "." includes = "Parser.jj,build.xml,local.properties.template,readme.html" prefix = "${Name}"/>
-			<zipfileset dir = "${build.scripts}" includes = "Parser.jj" prefix = "${Name}"/>
+			<zipfileset dir = "${build.scripts}" includes = "Parser.jj" prefix = "${Name}/bin"/>
 			<zipfileset dir = "${lib.dir}" includes = "*.jar" prefix = "${Name}/lib"/>
 		</zip>
 		<zip zipfile = "${dist.dir}/protege-bin-${version}.zip" update = "no">
