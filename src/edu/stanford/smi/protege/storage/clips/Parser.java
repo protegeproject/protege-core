@@ -502,6 +502,27 @@ public final class Parser implements ParserConstants {
         return facet;
     }
 
+    private Map clsToSlotToValueType = new HashMap();
+    private ValueType getOwnSlotValueType(Instance instance, Collection directTypes, Slot slot) {
+        ValueType valueType;
+        if (directTypes.size() == 1) {
+            Cls type = (Cls) CollectionUtilities.getFirstItem(directTypes);
+            Map slotToValueType = (Map) clsToSlotToValueType.get(type);
+            if (slotToValueType == null) {
+                slotToValueType = new HashMap();
+                clsToSlotToValueType.put(type, slotToValueType);
+            }
+            valueType = (ValueType) slotToValueType.get(slot);
+            if (valueType == null) {
+                valueType = instance.getOwnSlotValueType(slot);
+                slotToValueType.put(slot, valueType);
+            }
+        } else {
+            valueType = instance.getOwnSlotValueType(slot);
+        }
+        return valueType;
+    }
+
 // --------------------------------------------------------------------------------------
   final public void accessFacet(Cls cls, Slot slot) throws ParseException {
     jj_consume_token(ACCESS);
@@ -1737,7 +1758,7 @@ public final class Parser implements ParserConstants {
           jj_la1[23] = jj_gen;
           break label_13;
         }
-        slotValue(instance);
+        slotValue(instance, types);
       }
       jj_consume_token(RPAREN);
     } catch (Exception e) {
@@ -2179,14 +2200,16 @@ public final class Parser implements ParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public void slotValue(Instance instance) throws ParseException {
+  final public void slotValue(Instance instance, Collection directTypes) throws ParseException {
     String name;
     Collection values;
     Slot slot;
+    ValueType valueType;
     jj_consume_token(LPAREN);
     name = slotName();
         slot=getExistingSlot(name);
-    values = slotValueFields(instance, slot);
+        valueType = getOwnSlotValueType(instance, directTypes, slot);
+    values = slotValueFields(instance, slot, valueType);
     jj_consume_token(RPAREN);
         if (slot == null) {
             recordError("value for unknown slot: " + name + " in instance " + instance);
@@ -2195,10 +2218,9 @@ public final class Parser implements ParserConstants {
         }
   }
 
-  final public Collection slotValueFields(Instance instance, Slot slot) throws ParseException {
+  final public Collection slotValueFields(Instance instance, Slot slot, ValueType type) throws ParseException {
     Collection values = new ArrayList();
     Object value;
-    ValueType type = instance.getOwnSlotValueType(slot);
     label_18:
     while (true) {
       switch (jj_nt.kind) {
