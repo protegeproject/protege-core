@@ -519,6 +519,7 @@ public class ProjectManager {
                 if (newProject != null) {
                     closeCurrentProject();
                     _currentProject = newProject;
+                    _projectPluginManager.afterCreate(newProject);
                     getProjectManager().displayCurrentProject();
                 }
             }
@@ -530,18 +531,6 @@ public class ProjectManager {
             loadProject(null);
         }
     }
-
-    /*
-     public void openProjectRequest() {
-     if (closeProjectRequest()) {
-     URI uri = getRequestedProject();
-     if (uri != null) {
-     loadProject(uri);
-     ApplicationProperties.addProjectToMRUList(uri);
-     }
-     }
-     }
-     */
 
     public void openProjectRequest() {
         openProjectRequest(_rootPane);

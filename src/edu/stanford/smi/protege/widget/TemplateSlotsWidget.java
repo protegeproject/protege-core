@@ -44,9 +44,11 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         public void templateFacetValueChanged(ClsEvent event) {
             repaint();
         }
+
         public void directSuperclassAdded(ClsEvent event) {
             reload();
         }
+
         public void directSuperclassRemoved(ClsEvent event) {
             reload();
         }
@@ -129,6 +131,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
             {
                 putValue(Action.SHORT_DESCRIPTION, "Move selected slot down");
             }
+
             public void actionPerformed(ActionEvent event) {
                 handleMoveDownAction();
             }
@@ -140,6 +143,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
             {
                 putValue(Action.SHORT_DESCRIPTION, "Move selected slot up");
             }
+
             public void actionPerformed(ActionEvent event) {
                 handleMoveUpAction();
             }
@@ -214,13 +218,9 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
                 if (cls.isEditable()) {
                     KnowledgeBase kb = getKnowledgeBase();
                     Cls slotMetaCls = kb.getDefaultSlotMetaCls();
-                    Cls baseSlotMetaCls = getBaseSlotMetaCls();
-                    if (!baseSlotMetaCls.equals(slotMetaCls)) {
+                    if (slotMetaCls == null || !getBaseSlotMetaCls().equals(slotMetaCls)) {
                         Collection allowedClses = cls.getDirectType().getTemplateSlotAllowedClses(getSlot());
-                        slotMetaCls =
-                            DisplayUtilities.pickConcreteCls(
-                                TemplateSlotsWidget.this,
-                                getKnowledgeBase(),
+                        slotMetaCls = DisplayUtilities.pickConcreteCls(TemplateSlotsWidget.this, getKnowledgeBase(),
                                 allowedClses);
                     }
                     if (slotMetaCls != null) {
@@ -240,11 +240,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
                 FrameSlotCombination c = (FrameSlotCombination) CollectionUtilities.getFirstItem(getSelection());
                 if (c != null) {
                     SlotViewPanel panel = new SlotViewPanel();
-                    int result =
-                        ModalDialog.showDialog(
-                            TemplateSlotsWidget.this,
-                            panel,
-                            "Select Slot View",
+                    int result = ModalDialog.showDialog(TemplateSlotsWidget.this, panel, "Select Slot View",
                             ModalDialog.MODE_OK_CANCEL);
                     if (result == ModalDialog.OPTION_OK) {
                         if (panel.viewTopLevelSlot()) {
@@ -323,6 +319,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         Slot slot = combination.getSlot();
         cls.removeDirectTemplateSlot(slot);
     }
+
     private Slot getSelectedDirectSlot() {
         Slot slot = getSelectedSlot();
         boolean isDirect = getBoundCls().hasDirectTemplateSlot(slot);
@@ -395,13 +392,14 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         addButton(createMoveDownAction(), false);
 
         addColumn(200, ResourceKey.TEMPLATE_SLOTS_SLOT_WIDGET_NAME, SlotPairRenderer.createInstance());
-        addColumn(80, ResourceKey.TEMPLATE_SLOTS_SLOT_WIDGET_CARDINALITY, new CardinalityFacetRenderer(getKnowledgeBase()));
+        addColumn(80, ResourceKey.TEMPLATE_SLOTS_SLOT_WIDGET_CARDINALITY, new CardinalityFacetRenderer(
+                getKnowledgeBase()));
         addColumn(200, ResourceKey.TEMPLATE_SLOTS_SLOT_WIDGET_TYPE, new TypeFacetRenderer());
         addColumn(400, ResourceKey.TEMPLATE_SLOTS_SLOT_WIDGET_OTHER_FACETS, new OtherFacetsRenderer());
         getTable().setAutoCreateColumnsFromModel(false);
         getKnowledgeBase().addKnowledgeBaseListener(_knowledgeBaseListener);
     }
-    
+
     public static boolean isSuitable(Cls cls, Slot slot, Facet facet) {
         boolean isMetacls = cls.isClsMetaCls();
         Slot templateSlotsSlot = slot.getKnowledgeBase().getSlot(Model.Slot.DIRECT_TEMPLATE_SLOTS);
@@ -415,7 +413,6 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
     //        super.reshape(x, y, w, h);
     //        setOtherFacetsWidth();
     //    }
-
     public void setEditable(boolean b) {
         _createAction.setAllowed(b);
         _addAction.setAllowed(b);
@@ -446,11 +443,10 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         }
     }
 
-    
     public String getLabel() {
         return localizeStandardLabel(super.getLabel(), "Template Slots", ResourceKey.TEMPLATE_SLOTS_SLOT_WIDGET_LABEL);
     }
-    
+
     public String toString() {
         return "TemplateSlotsWidget";
     }
