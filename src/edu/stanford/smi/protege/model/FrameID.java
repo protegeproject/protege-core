@@ -5,16 +5,16 @@ import java.io.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * A wrapper around a numeric value that uniquely identifies the frame.  The frame name also uniquely identifies it but
- * the frame id is unchanging, unlike the name.  This frame id is typically not used much by clients but it is used 
- * internally.  For file based projects the frame id is only unchanging while the project is loaded.  The next time
- * it is loaded the frames will all get other ids.  The frame ids are not stored in the files.  For the database 
- * backend the frame ids are unchanging because they are store in the database.
+ * A wrapper around a numeric value that uniquely identifies the frame. The frame name also uniquely identifies it but
+ * the frame id is unchanging, unlike the name. This frame id is typically not used much by clients but it is used
+ * internally. For file based projects the frame id is only unchanging while the project is loaded. The next time it is
+ * loaded the frames will all get other ids. The frame ids are not stored in the files. For the database backend the
+ * frame ids are unchanging because they are store in the database.
  * 
- * Frame ids below 10000 are reserved for system frames.  The particular ids assigned to system frame are available 
- * in {@link Model} 
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Frame ids below 10000 are reserved for system frames. The particular ids assigned to system frame are available in
+ * {@link Model}
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameID implements Externalizable {
     public static final int NULL_FRAME_ID_VALUE = 0;
@@ -24,16 +24,17 @@ public class FrameID implements Externalizable {
     private int localPart;
     private int projectPart;
     private int hashCode;
-    
+
     public FrameID() {
-        
+
     }
+
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeInt(localPart);
         out.writeInt(projectPart);
     }
-    
-    public void readExternal(ObjectInput in) throws IOException{
+
+    public void readExternal(ObjectInput in) throws IOException {
         localPart = in.readInt();
         projectPart = in.readInt();
         cacheHashCode();
@@ -61,7 +62,7 @@ public class FrameID implements Externalizable {
         this.localPart = localPart;
         cacheHashCode();
     }
-    
+
     private void cacheHashCode() {
         hashCode = HashUtils.getHash(String.valueOf(projectPart), String.valueOf(localPart));
     }

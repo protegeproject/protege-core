@@ -21,7 +21,8 @@ public class ArchiveProject_Test extends UITestCase {
                 pressButton(window, Icons.getOkIcon());
             }
         });
-        pressToolBarButton(Icons.getArchiveProjectIcon(true, false));
+        // pressToolBarButton(Icons.getArchiveProjectIcon(true, false));
+        pressToolBarButton(Icons.getArchiveProjectIcon(false, false));
     }
 
 }
