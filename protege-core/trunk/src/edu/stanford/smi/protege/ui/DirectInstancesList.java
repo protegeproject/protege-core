@@ -21,6 +21,8 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DirectInstancesList extends SelectableContainer implements Disposable {
+    private static final String SHOW_SUBCLASS_INSTANCES = DirectInstancesList.class.getName()
+            + ".show_subclass_instances";
     private Collection _clses = Collections.EMPTY_LIST;
     private SelectableList _list;
     private Project _project;
@@ -84,6 +86,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         add(panel, BorderLayout.NORTH);
 
         setSelectable(_list);
+        initializeShowSubclassInstances();
     }
 
     private void updateLabel() {
@@ -191,14 +194,25 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     protected JMenuItem createShowAllInstancesAction() {
         Action action = new AbstractAction("Show Subclass Instances") {
             public void actionPerformed(ActionEvent event) {
-                _showSubclassInstances = !_showSubclassInstances;
-                reload();
-                fixRenderer();
+                setShowAllInstances(!_showSubclassInstances);
             }
         };
         JMenuItem item = new JCheckBoxMenuItem(action);
         item.setSelected(_showSubclassInstances);
         return item;
+    }
+
+    private void initializeShowSubclassInstances() {
+        _showSubclassInstances = ApplicationProperties.getBooleanProperty(SHOW_SUBCLASS_INSTANCES, false);
+        reload();
+        fixRenderer();
+    }
+
+    private void setShowAllInstances(boolean b) {
+        _showSubclassInstances = b;
+        ApplicationProperties.setBoolean(SHOW_SUBCLASS_INSTANCES, b);
+        reload();
+        fixRenderer();
     }
 
     protected Cls getSoleAllowedCls() {
