@@ -42,7 +42,8 @@ public class IntegerListWidget extends AbstractListWidget {
     }
 
     protected void handleCreateAction() {
-        String s = DisplayUtilities.editString(IntegerListWidget.this, "Create Integer Value", null, null);
+        String s = DisplayUtilities.editString(IntegerListWidget.this, "Create Integer Value", null,
+                new IntegerValidator());
         if (s != null) {
             addItem(new Integer(s));
         }

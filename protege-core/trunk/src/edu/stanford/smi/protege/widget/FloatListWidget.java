@@ -20,7 +20,8 @@ public class FloatListWidget extends AbstractListWidget {
     private Action getCreateAction() {
         return new CreateAction(ResourceKey.VALUE_ADD) {
             public void onCreate() {
-                String s = DisplayUtilities.editString(FloatListWidget.this, "Create Float Value", null, null);
+                String s = DisplayUtilities.editString(FloatListWidget.this, "Create Float Value", null,
+                        new FloatValidator());
                 if (s != null) {
                     addItem(new Float(s));
                 }
