@@ -182,20 +182,12 @@ public class ProjectMenuBar extends JMenuBar {
     private void loadProjectMenu(JMenu menu) {
         createItem(menu, new ArchiveProject(false));
         createItem(menu, new RevertProject(false));
-        // createItem(menu, new ConfigureArchive());
         menu.addSeparator();
-        if (true || SystemUtilities.showAlphaFeatures()) {
-            createItem(menu, new ManageIncludedProjectsAction());
-        } else {
-            createItem(menu, new IncludeProject());
-            createItem(menu, new ChangeIncludedProjects());
-            createItem(menu, new ShowIncludedProjects());
-        }
+        createItem(menu, new ManageIncludedProjectsAction());
         createItem(menu, new MergeIncludedProjects());
         menu.addSeparator();
         createItem(menu, new ConfigureProject());
         createItem(menu, new ShowMetrics());
-
         menu.addSeparator();
         ComponentFactory.addMenuItemNoIcon(menu, new ShowEncodingAndLocales());
     }

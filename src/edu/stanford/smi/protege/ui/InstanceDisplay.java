@@ -289,8 +289,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
             Iterator i = kb.getCls(Model.Cls.INSTANCE_ANNOTATION).getInstances().iterator();
             while (i.hasNext()) {
                 Instance annotationInstance = (Instance) i.next();
-                Instance pointedAtInstance = (Instance) annotationInstance
-                        .getOwnSlotValue(annotationSlot);
+                Instance pointedAtInstance = (Instance) annotationInstance.getOwnSlotValue(annotationSlot);
                 if (equals(pointedAtInstance, _currentInstance)) {
                     stickyInstances.add(annotationInstance);
                 }
@@ -359,8 +358,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
             if (name.equals(browserText)) {
                 text = LocalizedText.getText(ResourceKey.FRAME_EDITOR_FRAME_TYPE, typeText);
             } else {
-                text = LocalizedText.getText(ResourceKey.FRAME_EDITOR_FRAME_TYPE_AND_NAME,
-                        typeText, name);
+                text = LocalizedText.getText(ResourceKey.FRAME_EDITOR_FRAME_TYPE_AND_NAME, typeText, name);
             }
             buffer.append(text);
             label.setText(buffer.toString());
@@ -387,8 +385,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         loadHeaderLabel(instance);
         _header.setColor(Colors.getInstanceColor());
         _header.setTitle(LocalizedText.getText(ResourceKey.INSTANCE_EDITOR_TITLE));
-        _header.setComponentLabel(LocalizedText
-                .getText(ResourceKey.INSTANCE_EDITOR_FOR_INSTANCE_LABEL));
+        _header.setComponentLabel(LocalizedText.getText(ResourceKey.INSTANCE_EDITOR_FOR_INSTANCE_LABEL));
         setResource(_hideNotesButton, ResourceKey.INSTANCE_NOTE_HIDE);
         setResource(_createNoteButton, ResourceKey.INSTANCE_NOTE_CREATE);
         setResource(_deleteNoteButton, ResourceKey.INSTANCE_NOTE_DELETE);
@@ -553,8 +550,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
 
     private String getTimeString(Instance instance) {
         String timeString = null;
-        String timestamp = (String) ModelUtilities.getDirectOwnSlotValue(instance,
-                Model.Slot.CREATION_TIMESTAMP);
+        String timestamp = (String) ModelUtilities.getDirectOwnSlotValue(instance, Model.Slot.CREATION_TIMESTAMP);
         if (timestamp != null) {
             SimpleDateFormat formatter = new StandardDateFormat();
             try {
