@@ -219,16 +219,6 @@ public class ComponentFactory {
         return comboBox;
     }
 
-    public static JFileChooser createFileOrRemoteChooser(String description, String extension) {
-        JFileChooser chooser;
-        if (SystemUtilities.showAlphaFeatures()) {
-            chooser = new ProjectChooser();
-        } else {
-            chooser = createFileChooser(description, extension);
-        }
-        return chooser;
-    }
-
     public static JFileChooser createFileChooser(String description, String extension) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
         JFileChooser chooser = new JFileChooser(lastDirectory) {

@@ -64,7 +64,7 @@ public class Log {
     /**
      * Make an entry into the log with the message that <code>methodName
      *  </code>
-     * has been called (see the {@link Log class example}).
+     * has been called (see the {@link Log} class example).
      * 
      * @deprecated Use #getLogger().enter()
      */
@@ -75,8 +75,8 @@ public class Log {
     /**
      * Make an entry into the log with the message that <code>methodName
      *  </code>
-     * has been called and passed the listed argument (see the {@link Log class
-     * example}).
+     * has been called and passed the listed argument (see the {@link Log} class
+     * example).
      * 
      * @deprecated Use #getLogger().enter()
      */
@@ -87,8 +87,8 @@ public class Log {
     /**
      * Make an entry into the log with the message that <code>methodName
      *  </code>
-     * has been called and passed the listed arguments (see the {@linkLog Log
-     * class example}).
+     * has been called and passed the listed arguments (see the {@link Log}
+     * class example).
      * 
      * @deprecated Use #getLogger().enter()
      */
@@ -99,47 +99,44 @@ public class Log {
     /**
      * Make an entry into the log with the message that <code>methodName
      *  </code>
-     * has been called and passed the listed arguments (see the {@linkLog Log
-     * class example}).
+     * has been called and passed the listed arguments (see the {@link Log}
+     * class example).
      * 
      * @deprecated Use #getLogger().enter()
      */
-    public static void enter(Object thisOrClass, String methodName, Object arg1, Object arg2,
-            Object arg3) {
+    public static void enter(Object thisOrClass, String methodName, Object arg1, Object arg2, Object arg3) {
         getLegacyLogger().enter(thisOrClass, methodName, new Object[] { arg1, arg2, arg3 });
     }
 
     /**
      * Make an entry into the log with the message that <code>methodName
      *  </code>
-     * has been called and passed the listed arguments (see the {@linkLog Log
-     * class example}).
+     * has been called and passed the listed arguments (see the {@link Log}
+     * class example).
      * 
      * @deprecated Use #getLogger().enter()
      */
-    public static void enter(Object thisOrClass, String methodName, Object arg1, Object arg2,
-            Object arg3, Object arg4) {
+    public static void enter(Object thisOrClass, String methodName, Object arg1, Object arg2, Object arg3, Object arg4) {
         getLegacyLogger().enter(thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4 });
     }
 
     /**
      * Make an entry into the log with the message that <code>methodName
      *  </code>
-     * has been called and passed the listed arguments (see the {@linkLog Log
-     * class example}).
+     * has been called and passed the listed arguments (see the {@link Log}
+     * class example).
      * 
      * @deprecated Use #getLogger().enter()
      */
-    public static void enter(Object thisOrClass, String methodName, Object arg1, Object arg2,
-            Object arg3, Object arg4, Object arg5) {
-        getLegacyLogger().enter(thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3, arg4, arg5 });
+    public static void enter(Object thisOrClass, String methodName, Object arg1, Object arg2, Object arg3, Object arg4,
+            Object arg5) {
+        getLegacyLogger().enter(thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4, arg5 });
     }
 
     /**
      * Put a message into the log that an error with the given description
      * occurred from inside of <code>methodName</code> which was called with
-     * the listed arguments (see the {@link Log Log class example}).
+     * the listed arguments (see the {@link Log} class example).
      * 
      * @deprecated Use getLogger().severe();
      */
@@ -150,7 +147,7 @@ public class Log {
     /**
      * Put a message into the log that an error with the given description
      * occurred from inside of <code>methodName</code> which was called with
-     * the listed arguments (see the {@link Log Log class example}).
+     * the listed arguments (see the {@link Log} class example).
      * 
      * @deprecated Use getLogger().severe();
      */
@@ -161,12 +158,11 @@ public class Log {
     /**
      * Put a message into the log that an error with the given description
      * occurred from inside of <code>methodName</code> which was called with
-     * the listed arguments (see the {@link Log Log class example}).
+     * the listed arguments (see the {@link Log} class example}).
      * 
      * @deprecated Use getLogger().severe();
      */
-    public static void error(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2) {
+    public static void error(String description, Object thisOrClass, String methodName, Object arg1, Object arg2) {
         getLegacyLogger().error(description, thisOrClass, methodName, new Object[] { arg1, arg2 });
     }
 
@@ -177,10 +173,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().severe();
      */
-    public static void error(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3) {
-        getLegacyLogger().error(description, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3 });
+    public static void error(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3) {
+        getLegacyLogger().error(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3 });
     }
 
     /**
@@ -190,10 +185,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().severe();
      */
-    public static void error(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3, Object arg4) {
-        getLegacyLogger().error(description, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3, arg4 });
+    public static void error(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3, Object arg4) {
+        getLegacyLogger().error(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4 });
     }
 
     /**
@@ -203,10 +197,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().severe();
      */
-    public static void error(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3, Object arg4, Object arg5) {
-        getLegacyLogger().error(description, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3, arg4, arg5 });
+    public static void error(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3, Object arg4, Object arg5) {
+        getLegacyLogger().error(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4, arg5 });
     }
 
     /**
@@ -227,8 +220,7 @@ public class Log {
      * 
      * @deprecated Use getLogger().severe();
      */
-    public static void exception(Throwable exception, Object thisOrClass, String methodName,
-            Object arg1) {
+    public static void exception(Throwable exception, Object thisOrClass, String methodName, Object arg1) {
         getLegacyLogger().exception(exception, thisOrClass, methodName, new Object[] { arg1 });
     }
 
@@ -239,10 +231,8 @@ public class Log {
      * 
      * @deprecated Use getLogger().severe();
      */
-    public static void exception(Throwable exception, Object thisOrClass, String methodName,
-            Object arg1, Object arg2) {
-        getLegacyLogger()
-                .exception(exception, thisOrClass, methodName, new Object[] { arg1, arg2 });
+    public static void exception(Throwable exception, Object thisOrClass, String methodName, Object arg1, Object arg2) {
+        getLegacyLogger().exception(exception, thisOrClass, methodName, new Object[] { arg1, arg2 });
     }
 
     /**
@@ -252,10 +242,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().severe();
      */
-    public static void exception(Throwable exception, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3) {
-        getLegacyLogger().exception(exception, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3 });
+    public static void exception(Throwable exception, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3) {
+        getLegacyLogger().exception(exception, thisOrClass, methodName, new Object[] { arg1, arg2, arg3 });
     }
 
     /**
@@ -265,10 +254,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().severe();
      */
-    public static void exception(Throwable exception, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3, Object arg4) {
-        getLegacyLogger().exception(exception, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3, arg4 });
+    public static void exception(Throwable exception, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3, Object arg4) {
+        getLegacyLogger().exception(exception, thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4 });
     }
 
     /**
@@ -278,10 +266,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().severe();
      */
-    public static void exception(Throwable exception, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3, Object arg4, Object arg5) {
-        getLegacyLogger().exception(exception, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3, arg4, arg5 });
+    public static void exception(Throwable exception, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3, Object arg4, Object arg5) {
+        getLegacyLogger().exception(exception, thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4, arg5 });
     }
 
     /**
@@ -326,8 +313,7 @@ public class Log {
      * 
      * @deprecated Use getLogger().info();
      */
-    public static void stack(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2) {
+    public static void stack(String description, Object thisOrClass, String methodName, Object arg1, Object arg2) {
         getLegacyLogger().stack(description, thisOrClass, methodName, new Object[] { arg1, arg2 });
     }
 
@@ -339,10 +325,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().info();
      */
-    public static void stack(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3) {
-        getLegacyLogger().stack(description, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3 });
+    public static void stack(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3) {
+        getLegacyLogger().stack(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3 });
     }
 
     /**
@@ -353,10 +338,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().info();
      */
-    public static void stack(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3, Object arg4) {
-        getLegacyLogger().stack(description, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3, arg4 });
+    public static void stack(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3, Object arg4) {
+        getLegacyLogger().stack(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4 });
     }
 
     /**
@@ -393,8 +377,7 @@ public class Log {
      * 
      * @deprecated Use getLogger().info();
      */
-    public static void trace(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2) {
+    public static void trace(String description, Object thisOrClass, String methodName, Object arg1, Object arg2) {
         getLegacyLogger().trace(description, thisOrClass, methodName, new Object[] { arg1, arg2 });
     }
 
@@ -407,10 +390,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().info();
      */
-    public static void trace(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3) {
-        getLegacyLogger().trace(description, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3 });
+    public static void trace(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3) {
+        getLegacyLogger().trace(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3 });
     }
 
     /**
@@ -422,10 +404,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().info();
      */
-    public static void trace(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3, Object arg4) {
-        getLegacyLogger().trace(description, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3, arg4 });
+    public static void trace(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3, Object arg4) {
+        getLegacyLogger().trace(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4 });
     }
 
     /**
@@ -437,10 +418,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().info();
      */
-    public static void trace(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3, Object arg4, Object arg5) {
-        getLegacyLogger().trace(description, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3, arg4, arg5 });
+    public static void trace(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3, Object arg4, Object arg5) {
+        getLegacyLogger().trace(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4, arg5 });
     }
 
     /**
@@ -461,8 +441,7 @@ public class Log {
      * 
      * @deprecated Use getLogger().warning();
      */
-    public static void warning(String description, Object thisOrClass, String methodName,
-            Object arg1) {
+    public static void warning(String description, Object thisOrClass, String methodName, Object arg1) {
         getLegacyLogger().warning(description, thisOrClass, methodName, new Object[] { arg1 });
     }
 
@@ -473,10 +452,8 @@ public class Log {
      * 
      * @deprecated Use getLogger().warning();
      */
-    public static void warning(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2) {
-        getLegacyLogger()
-                .warning(description, thisOrClass, methodName, new Object[] { arg1, arg2 });
+    public static void warning(String description, Object thisOrClass, String methodName, Object arg1, Object arg2) {
+        getLegacyLogger().warning(description, thisOrClass, methodName, new Object[] { arg1, arg2 });
     }
 
     /**
@@ -486,10 +463,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().warning();
      */
-    public static void warning(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3) {
-        getLegacyLogger().warning(description, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3 });
+    public static void warning(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3) {
+        getLegacyLogger().warning(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3 });
     }
 
     /**
@@ -499,10 +475,9 @@ public class Log {
      * 
      * @deprecated Use getLogger().warning();
      */
-    public static void warning(String description, Object thisOrClass, String methodName,
-            Object arg1, Object arg2, Object arg3, Object arg4) {
-        getLegacyLogger().warning(description, thisOrClass, methodName,
-                new Object[] { arg1, arg2, arg3, arg4 });
+    public static void warning(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
+            Object arg3, Object arg4) {
+        getLegacyLogger().warning(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4 });
     }
 
     private static LegacyLogger getLegacyLogger() {

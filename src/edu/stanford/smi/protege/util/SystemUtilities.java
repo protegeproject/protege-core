@@ -388,7 +388,6 @@ public class SystemUtilities {
         } else {
             useAntialiasing = Boolean.valueOf(property).booleanValue();
         }
-        Log.getLogger().info("ai:" + useAntialiasing + " " + property);
     }
 
     private static MetalTheme createDefaultMetalTheme() {

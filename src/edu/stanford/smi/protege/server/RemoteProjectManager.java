@@ -44,7 +44,7 @@ public class RemoteProjectManager {
         return project;
     }
 
-    private Project getServerProject(JComponent parent, RemoteServer server, RemoteSession session) {
+    public Project getServerProject(JComponent parent, RemoteServer server, RemoteSession session) {
         Project project = null;
         ServerProjectPanel panel = new ServerProjectPanel(server, session);
         String title = LocalizedText.getText(ResourceKey.REMOTE_PROJECT_SELECT_DIALOG_TITLE);
@@ -58,20 +58,17 @@ public class RemoteProjectManager {
         return project;
     }
 
-    public Project getProject(String serverName, String username, String password,
-            String projectName, boolean pollForEvents) {
+    public Project getProject(String serverName, String username, String password, String projectName,
+            boolean pollForEvents) {
         Project p = null;
         try {
-            RemoteServer server = (RemoteServer) Naming.lookup("//" + serverName + "/"
-                    + Server.getBoundName());
+            RemoteServer server = (RemoteServer) Naming.lookup("//" + serverName + "/" + Server.getBoundName());
             if (server != null) {
-                RemoteSession session = server.openSession(username, SystemUtilities
-                        .getMachineName(), password);
+                RemoteSession session = server.openSession(username, SystemUtilities.getMachineName(), password);
                 if (session != null) {
                     RemoteServerProject serverProject = server.openProject(projectName, session);
                     if (serverProject != null) {
-                        p = RemoteClientProject
-                                .createProject(serverProject, session, pollForEvents);
+                        p = RemoteClientProject.createProject(serverProject, session, pollForEvents);
                     }
                 }
             }
