@@ -410,10 +410,14 @@ public class ClsesPanel extends SelectableContainer {
 
     protected void updateDeleteActionState() {
         if (_deleteAction != null) {
-            boolean isEditable = false;
-            Frame frame = (Frame) CollectionUtilities.getFirstItem(getSelection());
-            if (frame != null) {
-                isEditable = frame.isEditable();
+            boolean isEditable = true;
+            Iterator i = getSelection().iterator();
+            while (i.hasNext()) {
+                Frame frame = (Frame) i.next();
+                if (!frame.isEditable()) {
+                    isEditable = false;
+                    break;
+                }
             }
             boolean isCorrectView = getView() == _subclassPane;
             _deleteAction.setAllowed(isEditable && isCorrectView);
