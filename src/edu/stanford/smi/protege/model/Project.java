@@ -1088,7 +1088,9 @@ public class Project {
             boolean enabled = _domainKB.setGenerateEventsEnabled(false);
 
             if (factory instanceof KnowledgeBaseFactory2) {
-                NarrowFrameStore nfs = ((KnowledgeBaseFactory2)factory).createNarrowFrameStore(getProjectURI().toString());
+                URI uri = getProjectURI();
+                String name = (uri == null) ? "<new>" : uri.toString();
+                NarrowFrameStore nfs = ((KnowledgeBaseFactory2)factory).createNarrowFrameStore(name);
                 MergingNarrowFrameStore mergingFrameStore = getMergingFrameStore();
                 mergingFrameStore.addActiveFrameStore(nfs, uris);
             }

@@ -31,10 +31,13 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     public static MergingNarrowFrameStore get(KnowledgeBase kb) {
         MergingNarrowFrameStore mergingFrameStore = null;
         if (kb instanceof DefaultKnowledgeBase) {
-            SimpleFrameStore store = (SimpleFrameStore) ((DefaultKnowledgeBase) kb).getTerminalFrameStore();
-            NarrowFrameStore nfs = store.getHelper().getDelegate();
-            if (nfs instanceof MergingNarrowFrameStore) {
-                mergingFrameStore = (MergingNarrowFrameStore) nfs;
+            FrameStore terminalFrameStore = ((DefaultKnowledgeBase) kb).getTerminalFrameStore();
+            if (terminalFrameStore instanceof SimpleFrameStore) {
+                SimpleFrameStore store = (SimpleFrameStore) terminalFrameStore;
+                NarrowFrameStore nfs = store.getHelper().getDelegate();
+                if (nfs instanceof MergingNarrowFrameStore) {
+                    mergingFrameStore = (MergingNarrowFrameStore) nfs;
+                }
             }
         }
         return mergingFrameStore;
