@@ -151,14 +151,13 @@ public final class Parser implements ParserConstants {
         if (frame == null) {
             cls = itsKB.createCls(name, parents, itsDefaultMetaCls, false);
             if ((++nClses % CLASS_TRACE_COUNT_DELTA) == 0 && nClses >= MIN_CLASS_TRACE_COUNT) {
-                Log.trace("Loaded " + nClses + " classes", this, "getCls", name);
+                Log.getLogger().info("Loaded " + nClses + " classes: " + name);
             }
             if (comment != null) {
                 cls.setDocumentation(comment);
             }
             if (!isDefinition) {
                 itsUndefinedClses.add(cls);
-                // Log.trace("add undefined class", this, "getCls", name);
             }
         } else if (frame instanceof Cls) {
             cls = (Cls) frame;
@@ -242,7 +241,7 @@ public final class Parser implements ParserConstants {
                 Collection directTypes = types == null ? Collections.EMPTY_LIST : types;
             instance = itsKB.createInstance(null, instanceName, directTypes, false);
             if ((++nInstances % INSTANCE_TRACE_COUNT_DELTA) == 0 && nInstances >= MIN_INSTANCE_TRACE_COUNT) {
-                Log.trace("Loaded " + nInstances + " instances", this, "getInstance", instanceName, types);
+                Log.getLogger().info("Loaded " + nInstances + " instances: " + instanceName);
             }
             if (types == null) {
                 itsUndefinedInstances.add(instance);
@@ -257,7 +256,7 @@ public final class Parser implements ParserConstants {
             Instance oldInstance = instance;
             instance = instance.setDirectTypes(types);
             if ((++nSetTypeInstances % INSTANCE_TRACE_COUNT_DELTA) == 0 && nSetTypeInstances >= MIN_INSTANCE_TRACE_COUNT) {
-                Log.trace("Set type on " + nSetTypeInstances + " instances", this, "getInstance", instanceName, types);
+                Log.getLogger().info("Set type on " + nSetTypeInstances + " instances: " + instanceName);
             }
             itsUndefinedInstances.remove(oldInstance);
         }
@@ -407,7 +406,6 @@ public final class Parser implements ParserConstants {
             cls.addDirectTemplateSlot(slot);
         }
         if (!isSingle) {
-            // Log.trace("multivalued slot", this, "createTemplateSlot", name, cls, new Boolean(isTopLevel));
             if (isTopLevel) {
                 slot.setAllowsMultipleValues(true);
             } else {
@@ -2744,6 +2742,11 @@ public final class Parser implements ParserConstants {
     finally { jj_save(1, xla); }
   }
 
+  final private boolean jj_3_2() {
+    if (jj_3R_21()) return true;
+    return false;
+  }
+
   final private boolean jj_3_1() {
     if (jj_3R_20()) return true;
     return false;
@@ -2765,11 +2768,6 @@ public final class Parser implements ParserConstants {
     if (jj_scan_token(EXTENSION)) return true;
     if (jj_3R_22()) return true;
     if (jj_scan_token(EXTENSION)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_2() {
-    if (jj_3R_21()) return true;
     return false;
   }
 
