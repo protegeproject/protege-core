@@ -32,6 +32,7 @@ public class JournalingFrameStoreHandler extends AbstractFrameStoreInvocationHan
             journaler.removeHandler(handler);
             handler.flush();
             handler.close();
+            handler = null;
         }
         journaler = null;
     }
