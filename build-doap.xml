@@ -2,14 +2,13 @@
 <project name = "doap-protege" default = "all" basedir = ".">
 	<description>Generate a Protege DOAP (Description of a Project) file.  For more info, see: http://usefulinc.com/doap</description>
 	<property file = "../global.properties"/>
-	<property file = "${protege_web_drive}/protege-info.properties"/>  
+	<property file = "${protege_web_drive}/doap/protege-info.properties"/>  
 	<property name = "doap.dir" value = "${protege_web_drive}/doap"/>
 	<property name = "stableBranchRevisionNumber" value = "${stableBranchVersionNumber}"/>  
 	<property name = "betaBranchRevisionNumber" value = "${betaBranchVersionNumber}-b${betaBranchBuildNumber}"/>
 	<target name = "init">
 		<tstamp>      
 			<format property = "touch.time" pattern = "EEE MMM dd HH:mm:ss zz yyyy" locale = "en"/>   
-			<!-- <format property = "doap.creation.date" pattern = "yyyy-MM-dd" locale = "en"/> -->
 		</tstamp>    
 	</target>  
 	<target name = "all" depends = "init, clean, doap">  
