@@ -1,10 +1,10 @@
 package edu.stanford.smi.protege.storage.database;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.sql.*;
 
 import javax.swing.*;
-import javax.swing.event.*;
 
 import edu.stanford.smi.protege.util.*;
 
@@ -31,21 +31,24 @@ public class DatabaseWizardPage extends WizardPage {
     }
 
     private void createComponents() {
-        driverField = createTextField();
-        urlField = createTextField();
-        tableField = createTextField();
-        usernameField = createTextField();
-        passwordField = createTextField();
+        driverField = createTextField("database_wizard.driver");
+        urlField = createTextField("database_wizard.url");
+        tableField = createTextField("database_wizard.table");
+        usernameField = createTextField("database_wizard.username");
+        passwordField = createTextField("database_wizard.password");
 
         errorArea = ComponentFactory.createTextArea();
         errorArea.setEditable(false);
     }
 
-    private JTextField createTextField() {
-        JTextField field = ComponentFactory.createTextField();
-        field.getDocument().addDocumentListener(new DocumentChangedListener() {
-            public void stateChanged(ChangeEvent event) {
+    private JTextField createTextField(final String name) {
+        String value = ApplicationProperties.getString(name);
+        final JTextField field = ComponentFactory.createTextField(value);
+        field.addFocusListener(new FocusAdapter() {
+            public void focusLost(FocusEvent event) {
                 updateSetPageComplete();
+                ApplicationProperties.setString(name, field.getText());
+
             }
         });
         return field;
@@ -53,7 +56,7 @@ public class DatabaseWizardPage extends WizardPage {
 
     private void updateSetPageComplete() {
         setErrorText(null);
-        boolean isComplete = hasValidDriver()  && hasValidUrl() && hasValidTable();
+        boolean isComplete = hasValidDriver() && hasValidUrl() && hasValidTable();
         setPageComplete(isComplete);
     }
 
@@ -82,13 +85,13 @@ public class DatabaseWizardPage extends WizardPage {
         } else if (username.length() == 0) {
             setErrorText("Username is required");
         } else {
-	        try {
-	            Connection c = DriverManager.getConnection(url, username, password);
-	            c.close();
-	            isValid = true;
-	        } catch (SQLException e) {
-	            setErrorText("Invalid URL, username, or password:\n" + e.getMessage());
-	        }
+            try {
+                Connection c = DriverManager.getConnection(url, username, password);
+                c.close();
+                isValid = true;
+            } catch (SQLException e) {
+                setErrorText("Invalid URL, username, or password:\n" + e.getMessage());
+            }
         }
         return isValid;
     }
@@ -130,12 +133,12 @@ public class DatabaseWizardPage extends WizardPage {
         addField(panel, tableField, "Table");
         addField(panel, usernameField, "Username");
         addField(panel, passwordField, "Password");
-        
+
         errorArea.setPreferredSize(new Dimension(10, 50));
         errorArea.setBackground(getBackground());
         panel.add(Box.createVerticalStrut(20));
         panel.add(ComponentFactory.createScrollPane(errorArea));
-        
+
         add(panel, BorderLayout.NORTH);
     }
 

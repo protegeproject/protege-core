@@ -30,10 +30,12 @@ public class ServerPanel extends JPanel implements Validatable {
         _hostNameField = ComponentFactory.createTextField();
         _hostNameField.setText(_lastHostName);
 
-        setLayout(new GridLayout(3, 0));
-        add(new LabeledComponent("User Name", _usernameField));
-        add(new LabeledComponent("Password", _passwordField));
-        add(new LabeledComponent("Host Machine Name", _hostNameField));
+        setLayout(new BorderLayout());
+        JPanel panel = new JPanel(new GridLayout(3, 0));
+        panel.add(new LabeledComponent("User Name", _usernameField));
+        panel.add(new LabeledComponent("Password", _passwordField));
+        panel.add(new LabeledComponent("Host Machine Name", _hostNameField));
+        add(panel, BorderLayout.NORTH);
     }
 
     public boolean validateContents() {

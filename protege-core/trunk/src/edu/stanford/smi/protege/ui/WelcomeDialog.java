@@ -10,8 +10,6 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.plugin.*;
 import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
 
@@ -32,7 +30,7 @@ public class WelcomeDialog extends JDialog {
     JPanel newPanel = new JPanel(new BorderLayout());
     JPanel ptpHolder = new JPanel(new FlowLayout());
     JPanel projectTypePanel;
-    JPanel formatButtons = new JPanel(new FlowLayout());
+    JPanel formatButtons = new JPanel(new BorderLayout());
     JPanel newButtonPanel = new JPanel(new GridLayout(1, 2));
 
     // Open Project panel and sub-panels.
@@ -52,7 +50,7 @@ public class WelcomeDialog extends JDialog {
     TitledBorder titledBorder2;
 
     JButton newButton = createButton(ResourceKey.WELCOME_DIALOG_NEW);
-    JButton importButton = createButton(ResourceKey.WELCOME_DIALOG_BUILD);
+    // JButton importButton = createButton(ResourceKey.WELCOME_DIALOG_BUILD);
     JButton openOtherButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN_OTHER);
     JButton openButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN);
     JButton topicsButton = createButton(ResourceKey.WELCOME_DIALOG_ALL_TOPICS);
@@ -65,7 +63,7 @@ public class WelcomeDialog extends JDialog {
     JScrollPane mruScrollPane;
     JLabel iconLabel = ComponentFactory.createLabel();
     JRadioButton[] rbArray;
-    List factoryList;
+    // List factoryList;
     List projectURIList = new ArrayList(ApplicationProperties.getMRUProjectList());
 
     private JButton createButton(ResourceKey key) {
@@ -126,8 +124,8 @@ public class WelcomeDialog extends JDialog {
         iconLabel.setVerticalAlignment(SwingConstants.CENTER);
 
         /* Build New Project panel ********************************************/
-        ptpHolder.add(getProjectTypePanel());
-        newPanel.add(ptpHolder, BorderLayout.CENTER);
+        // ptpHolder.add(getProjectTypePanel());
+        // newPanel.add(ptpHolder, BorderLayout.CENTER);
 
         newButtonPanel.add(newButton);
         setToolTipText(newButton, ResourceKey.WELCOME_DIALOG_NEW_TOOLTIP);
@@ -136,14 +134,14 @@ public class WelcomeDialog extends JDialog {
                 newButton_actionPerformed(ae);
             }
         });
-        newButtonPanel.add(importButton);
-        setToolTipText(importButton, ResourceKey.WELCOME_DIALOG_BUILD_TOOLTIP);
-        importButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                importButton_actionPerformed(ae);
-            }
-        });
-        formatButtons.add(newButtonPanel);
+//        newButtonPanel.add(importButton);
+//        setToolTipText(importButton, ResourceKey.WELCOME_DIALOG_BUILD_TOOLTIP);
+//        importButton.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent ae) {
+//                importButton_actionPerformed(ae);
+//            }
+//        });
+        formatButtons.add(newButtonPanel, BorderLayout.WEST);
         newPanel.add(formatButtons, BorderLayout.SOUTH);
 
         /* Build Open Project panel *******************************************/
@@ -209,36 +207,36 @@ public class WelcomeDialog extends JDialog {
         helpPanel.add(iconPanel, BorderLayout.SOUTH);
 
         /* Build main dialog **************************************************/
-        panel.add(newPanel, BorderLayout.WEST);
+        panel.add(newPanel, BorderLayout.NORTH);
         panel.add(openPanel, BorderLayout.CENTER);
         panel.add(helpPanel, BorderLayout.EAST);
         this.getContentPane().add(panel);
     }
 
-    private JPanel getProjectTypePanel() {
-        // Build the top section of the "New Project" panel:
-
-        // Get a collection of the available project types.
-        // a.k.a. back-ends
-        // a.k.a. knowledge-base factories
-        factoryList = new ArrayList(PluginUtilities.getAvailableFactories());
-
-        projectTypePanel = new JPanel(new GridLayout(factoryList.size(), 1, 0, 2));
-
-        // Create a radio button for each new project type and assign all the
-        // buttons to a radio group.
-        group = new ButtonGroup();
-        rbArray = new JRadioButton[factoryList.size()];
-        for (int i = 0; i < factoryList.size(); i++) {
-            KnowledgeBaseFactory factory = (KnowledgeBaseFactory) factoryList.get(i);
-            JRadioButton rb = new JRadioButton(factory.getDescription());
-            rbArray[i] = rb;
-            rbArray[0].setSelected(true);
-            group.add(rb);
-            projectTypePanel.add(rb);
-        }
-        return projectTypePanel;
-    }
+//    private JPanel getProjectTypePanel() {
+//        // Build the top section of the "New Project" panel:
+//
+//        // Get a collection of the available project types.
+//        // a.k.a. back-ends
+//        // a.k.a. knowledge-base factories
+//        factoryList = new ArrayList(PluginUtilities.getAvailableFactories());
+//
+//        projectTypePanel = new JPanel(new GridLayout(factoryList.size(), 1, 0, 2));
+//
+//        // Create a radio button for each new project type and assign all the
+//        // buttons to a radio group.
+//        group = new ButtonGroup();
+//        rbArray = new JRadioButton[factoryList.size()];
+//        for (int i = 0; i < factoryList.size(); i++) {
+//            KnowledgeBaseFactory factory = (KnowledgeBaseFactory) factoryList.get(i);
+//            JRadioButton rb = new JRadioButton(factory.getDescription());
+//            rbArray[i] = rb;
+//            rbArray[0].setSelected(true);
+//            group.add(rb);
+//            projectTypePanel.add(rb);
+//        }
+//        return projectTypePanel;
+//    }
 
     private void initList() {
         DefaultListModel model = new DefaultListModel();
@@ -286,32 +284,36 @@ public class WelcomeDialog extends JDialog {
     }
 
     public void newButton_actionPerformed(ActionEvent ae) {
-        WaitCursor cursor = new WaitCursor(this.getRootPane());
-        // Find out which radio button is selected in the "New Project"
-        // panel and open the appropriate project type.
-        for (int i = 0; i < rbArray.length; i++) {
-            if (rbArray[i].isSelected()) {
-                KnowledgeBaseFactory factory = (KnowledgeBaseFactory) factoryList.get(i);
-                ProjectManager.getProjectManager().loadProject(null, factory);
-            }
+//        WaitCursor cursor = new WaitCursor(this.getRootPane());
+//        // Find out which radio button is selected in the "New Project"
+//        // panel and open the appropriate project type.
+//        for (int i = 0; i < rbArray.length; i++) {
+//            if (rbArray[i].isSelected()) {
+//                KnowledgeBaseFactory factory = (KnowledgeBaseFactory) factoryList.get(i);
+//                ProjectManager.getProjectManager().loadProject(null, factory);
+//            }
+//        }
+//        cursor.hide();
+//        this.setVisible(false);
+        boolean succeeded = ProjectManager.getProjectManager().createNewProjectRequest();
+        if (succeeded) {
+            setVisible(false);
         }
-        cursor.hide();
-        this.setVisible(false);
     }
 
-    public void importButton_actionPerformed(ActionEvent ae) {
-        // Find out which radio button is selected in the "New Project"
-        // panel and import the appropriate project type.
-        for (int i = 0; i < rbArray.length; i++) {
-            if (rbArray[i].isSelected()) {
-                KnowledgeBaseFactory factory = (KnowledgeBaseFactory) factoryList.get(i);
-                boolean succeeded = ProjectManager.getProjectManager().buildProject(factory);
-                if (succeeded) {
-                    this.setVisible(false);
-                }
-            }
-        }
-    }
+//    public void importButton_actionPerformed(ActionEvent ae) {
+//        // Find out which radio button is selected in the "New Project"
+//        // panel and import the appropriate project type.
+//        for (int i = 0; i < rbArray.length; i++) {
+//            if (rbArray[i].isSelected()) {
+//                KnowledgeBaseFactory factory = (KnowledgeBaseFactory) factoryList.get(i);
+//                boolean succeeded = ProjectManager.getProjectManager().buildProject(factory);
+//                if (succeeded) {
+//                    this.setVisible(false);
+//                }
+//            }
+//        }
+//    }
 
     public void openButton_actionPerformed(ActionEvent ae) {
         int index = mruList.getSelectedIndex();

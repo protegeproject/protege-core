@@ -442,7 +442,6 @@ public class InMemoryFrameDb implements NarrowFrameStore {
                 if (clas.isInstance(record.getFrame())) {
                     ++frameCount;
                 }
-
             }
         }
         return frameCount;

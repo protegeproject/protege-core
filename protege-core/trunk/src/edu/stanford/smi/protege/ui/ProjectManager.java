@@ -496,15 +496,18 @@ public class ProjectManager {
         }
     }
 
-    public void createNewProjectRequest() {
+    public boolean createNewProjectRequest() {
+        boolean succeeded = false;
         if (closeProjectRequest()) {
             CreateProjectWizard wizard = new CreateProjectWizard(getMainPanel());
             int result = wizard.execute();
             if (result == Wizard.RESULT_FINISH) {
                 _currentProject = wizard.getProject();
                 getProjectManager().displayCurrentProject();
+                succeeded = true;
             }
         }
+        return succeeded;
     }
 
     public void saveToFormatRequest() {
