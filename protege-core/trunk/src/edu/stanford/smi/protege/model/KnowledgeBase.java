@@ -359,7 +359,11 @@ public interface KnowledgeBase extends Disposable {
 
     void removeKnowledgeBaseListener(KnowledgeBaseListener listener);
 
+    /**
+     * @deprecated Use setModificationRecordUpdatingEnabled
+     */
     void setAutoUpdateFacetValues(boolean b);
+    boolean setModificationRecordUpdatingEnabled(boolean b);
 
     void setBuildString(String s);
 

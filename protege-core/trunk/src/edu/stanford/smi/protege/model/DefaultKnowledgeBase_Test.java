@@ -528,12 +528,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         testJavaPackagesOnCls();
     }
 
-    public void _testDBModficationFacets() throws java.text.ParseException {
-        setDatabaseProject();
-        _testModificationFacets();
-        setFileProject();
-    }
-
     public void testDBModficationSlots() throws java.text.ParseException {
         setDatabaseProject();
         testModificationSlots();
@@ -896,42 +890,12 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertEventFired(KnowledgeBaseEvent.CLS_CREATED);
     }
 
-    public void _testModificationFacets() throws java.text.ParseException {
-        final String USERNAME = "tester";
-        Date start = new Date();
-        SystemUtilities.sleepMsec(100);
-        KnowledgeBase kb = getDomainKB();
-        kb.setAutoUpdateFacetValues(true);
-        kb.setUserName(USERNAME);
-        Cls metaSlot = createSubCls(getCls(Model.Cls.STANDARD_SLOT));
-        metaSlot.addDirectTemplateSlot(getSlot(Model.Slot.MODIFIER));
-        metaSlot.addDirectTemplateSlot(getSlot(Model.Slot.MODIFICATION_TIMESTAMP));
-        Slot slot = (Slot) createInstance(metaSlot);
-        Cls a = createCls();
-        a.addDirectTemplateSlot(slot);
-        Instance instance = createInstance(a);
-        instance.setOwnSlotValue(slot, "foo");
-
-        kb.setUserName(null);
-        String modifier = kb.getSlotValueLastModifier(instance, slot, false);
-        assertNotNull("modifier", modifier);
-        String modStamp = kb.getSlotValueLastModificationTimestamp(instance, slot, false);
-        assertNotNull("timestamp", modStamp);
-        Date modDate = new StandardDateFormat().parse(modStamp);
-        SystemUtilities.sleepMsec(100);
-        Date end = new Date();
-        assertEquals("name", USERNAME, modifier);
-        assertTrue("timestamp after begin: " + modDate + " - " + start, modDate.after(start));
-        assertTrue("timestamp before end: " + modDate + " - " + end, modDate.before(end));
-        kb.setAutoUpdateFacetValues(false);
-    }
-
     public void testModificationSlots() throws java.text.ParseException {
         final String USERNAME = "tester";
         Date start = new Date();
         SystemUtilities.sleepMsec(100);
         KnowledgeBase kb = getDomainKB();
-        kb.setAutoUpdateFacetValues(true);
+        kb.setModificationRecordUpdatingEnabled(true);
         kb.setUserName(USERNAME);
         Cls metaCls = createSubCls(getCls(Model.Cls.STANDARD_CLASS));
         metaCls.addDirectTemplateSlot(getSlot(Model.Slot.CREATOR));
@@ -965,7 +929,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         Date end = new Date();
         assertTrue("mod timestamp after begin: " + modDate + " - " + start, modDate.after(start));
         assertTrue("mod timestamp before end: " + modDate + " - " + end, modDate.before(end));
-        kb.setAutoUpdateFacetValues(false);
+        kb.setModificationRecordUpdatingEnabled(false);
     }
 
     public void testRecursiveDelete() {

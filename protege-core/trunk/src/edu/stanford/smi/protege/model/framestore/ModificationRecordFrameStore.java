@@ -10,7 +10,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ModificationRecordFrameStore extends ModificationFrameStore {
-    private Collection _authors;
+    private Collection _authors = Collections.singleton(ApplicationProperties.getUserName());
     private Slot _creationAuthorSlot;
     private Slot _creationTimestampSlot;
     private Slot _modificationAuthorSlot;
@@ -38,7 +38,8 @@ public class ModificationRecordFrameStore extends ModificationFrameStore {
             _creationAuthorSlot = (Slot) delegate.getFrame(Model.Slot.CREATOR);
             _creationTimestampSlot = (Slot) delegate.getFrame(Model.Slot.CREATION_TIMESTAMP);
             _modificationAuthorSlot = (Slot) delegate.getFrame(Model.Slot.MODIFIER);
-            _modificationTimestampSlot = (Slot) delegate.getFrame(Model.Slot.MODIFICATION_TIMESTAMP);
+            _modificationTimestampSlot = (Slot) delegate
+                    .getFrame(Model.Slot.MODIFICATION_TIMESTAMP);
         }
     }
 
@@ -50,15 +51,15 @@ public class ModificationRecordFrameStore extends ModificationFrameStore {
     private void updateCreationRecord(Frame frame) {
         updateFrameRecord(frame, _creationAuthorSlot, _creationTimestampSlot);
     }
-    
+
     private void updateModificationRecord(Frame frame) {
         updateFrameRecord(frame, _modificationAuthorSlot, _modificationTimestampSlot);
     }
-    
+
     private void updateDeletionRecord(Frame frame) {
-        
+
     }
-    
+
     private void updateFrameRecord(Frame frame, Slot authorSlot, Slot timestampSlot) {
         if (frame.hasOwnSlot(authorSlot)) {
             getDelegate().setDirectOwnSlotValues(frame, authorSlot, _authors);
@@ -70,26 +71,31 @@ public class ModificationRecordFrameStore extends ModificationFrameStore {
         }
     }
 
-    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses, boolean loadDefaults) {
+    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses,
+            boolean loadDefaults) {
         Cls cls = getDelegate().createCls(id, name, types, superclasses, loadDefaults);
         updateCreationRecord(cls);
         return cls;
     }
 
-    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots, boolean loadDefaults) {
+    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots,
+            boolean loadDefaults) {
         Slot slot = getDelegate().createSlot(id, name, types, superslots, loadDefaults);
         updateCreationRecord(slot);
         return slot;
     }
 
-    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
+    public Facet createFacet(FrameID id, String name, Collection directTypes,
+            boolean loadDefaultValues) {
         Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaultValues);
         updateCreationRecord(facet);
         return facet;
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types, boolean loadDefaultValues) {
-        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, types, loadDefaultValues);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types,
+            boolean loadDefaultValues) {
+        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, types,
+                loadDefaultValues);
         updateCreationRecord(simpleInstance);
         return simpleInstance;
     }

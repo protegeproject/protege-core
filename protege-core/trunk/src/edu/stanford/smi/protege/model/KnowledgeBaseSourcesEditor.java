@@ -11,13 +11,13 @@ import javax.swing.event.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * Base class that provides convenience and template methods for backend developers to extend.  This "editor" is a panel
- * in which the backend developer can prompt for file names and any other information that the backend needs.  See the
- * {@link edu.stanford.smi.protege.storage.clips.FileSourcesPanel Clips} and the  
- * {@link edu.stanford.smi.protege.storage.jdbc.JdbcKnowledgeBaseSourcesEditor JDBC} editors for examples of the use 
- * of this class.  
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Base class that provides convenience and template methods for backend developers to extend. This "editor" is a panel
+ * in which the backend developer can prompt for file names and any other information that the backend needs. See the
+ * {@link edu.stanford.smi.protege.storage.clips.FileSourcesPanel Clips}and the
+ * {@link edu.stanford.smi.protege.storage.database.DatabaseKnowledgeBaseSourcesEditor JDBC}editors for examples of the
+ * use of this class.
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class KnowledgeBaseSourcesEditor extends JComponent implements Validatable {
     private PropertyList _sources;
@@ -39,7 +39,7 @@ public abstract class KnowledgeBaseSourcesEditor extends JComponent implements V
         add(createProjectPathField(), BorderLayout.NORTH);
         createIncludedProjectsList();
     }
-    
+
     public void setShowIncludedProjects(boolean b) {
         if (_includedProjectsList != null) {
             _includedProjectsList.setVisible(b);
@@ -68,7 +68,8 @@ public abstract class KnowledgeBaseSourcesEditor extends JComponent implements V
      * @return Collection of URI's for included projects
      */
     public Collection getIncludedProjects() {
-        return (_includedProjectsList == null) ? Collections.EMPTY_LIST : _includedProjectsList.getURIs();
+        return (_includedProjectsList == null) ? Collections.EMPTY_LIST : _includedProjectsList
+                .getURIs();
     }
 
     public String getProjectPath() {
