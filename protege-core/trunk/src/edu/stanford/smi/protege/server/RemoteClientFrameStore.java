@@ -1280,6 +1280,8 @@ public class RemoteClientFrameStore implements FrameStore {
             lookupSft.set(slot, null, false);
             if (map.containsKey(lookupSft)) {
                 isCached = map.get(lookupSft) != null;
+            } else {
+                isCached = true;
             }
         }
         return isCached;
