@@ -14,12 +14,12 @@ import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.server.*;
 import edu.stanford.smi.protege.storage.clips.*;
 import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.widget.*;
 
 /**
- * Manager for the open project. The original model was that more than one
- * project could be open at a time. This is not however the case now so this
- * object just manages a single Project. It has a handle to the view that is
- * displaying this project.
+ * Manager for the open project. The original model was that more than one project could be open at a time. This is not
+ * however the case now so this object just manages a single Project. It has a handle to the view that is displaying
+ * this project.
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
@@ -177,6 +177,7 @@ public class ProjectManager {
     public boolean closeProjectRequest() {
         boolean succeeded = true;
         if (hasLoadedProject()) {
+            commitChanges();
             if (_currentProject.isDirty()) {
                 succeeded = confirmSave();
             }
@@ -582,8 +583,19 @@ public class ProjectManager {
         Application.repaint();
     }
 
+    private void commitChanges() {
+        Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                .getPermanentFocusOwner();
+        TextComponentWidget widget = (TextComponentWidget) SwingUtilities.getAncestorOfClass(
+                TextComponentWidget.class, c);
+        if (widget != null) {
+            widget.commitChanges();
+        }
+    }
+
     private boolean save() {
         Collection errors = new ArrayList();
+        commitChanges();
         boolean save = getCurrentProjectView().attemptSave();
         if (save) {
             _projectPluginManager.beforeSave(_currentProject);

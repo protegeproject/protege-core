@@ -5,9 +5,9 @@ import java.awt.event.*;
 import edu.stanford.smi.protege.resource.*;
 
 /**
- *  Save the current project into the existing project name.  Prompts for a new name if necessary.
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Save the current project into the existing project name. Prompts for a new name if necessary.
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SaveProject extends LocalProjectAction {
 

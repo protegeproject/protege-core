@@ -13,8 +13,8 @@ import edu.stanford.smi.protege.util.*;
 
 /**
  * Slot widget for acquiring a string of arbitrary length.
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class TextComponentWidget extends AbstractSlotWidget {
     private static final Color INVALID_COLOR = Color.red;
@@ -29,19 +29,19 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
     };
     private FocusListener _focusListener = new FocusAdapter() {
         public void focusLost(FocusEvent event) {
-            commit();
+            commitChanges();
         }
     };
 
     private KeyListener _keyListener = new KeyAdapter() {
         public void keyPressed(KeyEvent event) {
             if (event.getKeyCode() == KeyEvent.VK_ENTER) {
-                commit();
+                commitChanges();
             }
         }
     };
 
-    private void commit() {
+    public void commitChanges() {
         onCommit();
         if (_isDirty) {
             valueChanged();
@@ -65,7 +65,7 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
     protected abstract JComponent createCenterComponent(JTextComponent textComponent);
 
     public void dispose() {
-        commit();
+        commitChanges();
         super.dispose();
     }
 
@@ -103,7 +103,8 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
         _textComponent.addKeyListener(_keyListener);
         _defaultColor = _textComponent.getForeground();
         JComponent centerComponent = createCenterComponent(_textComponent);
-        LabeledComponent labeledComponent = new LabeledComponent(getLabel(), centerComponent, isStretchable);
+        LabeledComponent labeledComponent = new LabeledComponent(getLabel(), centerComponent,
+                isStretchable);
         Iterator i = createActions().iterator();
         while (i.hasNext()) {
             Action action = (Action) i.next();
@@ -134,8 +135,8 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
 
     public void selectAll() {
         /*
-         * This has to be done in invokeLater because TextComponent.selectAll() doesn't work
-         * unless the text is already on the screen. 
+         * This has to be done in invokeLater because TextComponent.selectAll() doesn't work unless the text is already
+         * on the screen.
          */
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
