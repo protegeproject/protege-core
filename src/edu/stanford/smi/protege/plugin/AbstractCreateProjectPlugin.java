@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.plugin;
 
+import java.net.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
@@ -63,8 +64,16 @@ public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin
         Project project = Project.createBuildProject(factory, errors);
         initializeSources(project.getSources());
         project.createDomainKnowledgeBase(factory, errors, true);
+        URI uri = getBuildProjectURI();
+        if (uri != null) {
+            project.setProjectURI(uri);
+        }
         handleErrors(errors);
         return project;
+    }
+
+    protected URI getBuildProjectURI() {
+        return null;
     }
 
     protected void initializeSources(PropertyList sources) {

@@ -124,7 +124,7 @@ public class WelcomeDialog extends JDialog {
         });
 
         // Initialize JLabel that holds the Protege icon.
-        iconLabel = new JLabel("   ", Icons.getLogo(), JLabel.LEFT);
+        iconLabel = new JLabel("   ", Icons.getLogo(), SwingConstants.LEFT);
         iconPanel.add(iconLabel);
 
         createNewPanel.add(newButtonPanel, BorderLayout.CENTER);
@@ -132,12 +132,12 @@ public class WelcomeDialog extends JDialog {
 
         /* Build Open Project panel *******************************************/
 
-	// Set up the list of most recently used projects.
+        // Set up the list of most recently used projects.
         initList();
         mruScrollPane = new JScrollPane(mruList);
         mruPanel.add(mruScrollPane, BorderLayout.CENTER);
 
-	// Set up the "Open Selected Project" and "Open Other Project..."
+        // Set up the "Open Selected Project" and "Open Other Project..."
         // buttons.
         openButtonPanel.add(openButton);
         setToolTipText(openButton, ResourceKey.WELCOME_DIALOG_OPEN_TOOLTIP);
