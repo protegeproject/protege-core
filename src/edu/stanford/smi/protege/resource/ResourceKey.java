@@ -2,7 +2,7 @@ package edu.stanford.smi.protege.resource;
 
 /**
  * TODO Class Comment
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ResourceKey {
@@ -283,7 +283,6 @@ public class ResourceKey {
     public static final ResourceKey WELCOME_DIALOG_ALL_TOPICS = key("welcome_dialog.all_topics");
     public static final ResourceKey WELCOME_DIALOG_USERS_GUIDE = key("welcome_dialog.users_guide");
     public static final ResourceKey WELCOME_DIALOG_FAQ = key("welcome_dialog.faq");
-    public static final ResourceKey WELCOME_DIALOG_PROJECT_FORMAT_TITLE = key("welcome_dialog.project_format_title");
     public static final ResourceKey WELCOME_DIALOG_OPEN_RECENT_PROJECT_TITLE = key("welcome_dialog.open_recent_project_title");
     public static final ResourceKey WELCOME_DIALOG_NEW = key("welcome_dialog.new");
     public static final ResourceKey WELCOME_DIALOG_NEW_TOOLTIP = key("welcome_dialog.new_tooltip");
