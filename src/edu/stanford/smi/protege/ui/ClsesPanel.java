@@ -33,11 +33,11 @@ public class ClsesPanel extends SelectableContainer {
     protected HeaderComponent _clsBrowserHeader;
     protected static final String ResourcesKey = null;
 
-//    protected SwitchableActionListener _relationshipListener = new SwitchableActionListener() {
-//        public void changed(ActionEvent e) {
-//            relationshipChanged();
-//        }
-//    };
+    //    protected SwitchableActionListener _relationshipListener = new SwitchableActionListener() {
+    //        public void changed(ActionEvent e) {
+    //            relationshipChanged();
+    //        }
+    //    };
 
     public ClsesPanel(Project project) {
         _project = project;
@@ -56,24 +56,22 @@ public class ClsesPanel extends SelectableContainer {
         _labeledComponent.addHeaderButton(_deleteAction);
         _labeledComponent.addHeaderButton(createConfigureAction());
 
-        // _labeledComponent.setHeaderComponent(createRelationshipView());
         add(_labeledComponent, BorderLayout.CENTER);
         add(createClsBrowserHeader(), BorderLayout.NORTH);
-        // relationshipViewLoad();
         setSelectable(_subclassPane);
         updateDeleteActionState();
-        
+
     }
-    
+
     public LabeledComponent getLabeledComponent() {
         return _labeledComponent;
     }
-    
+
     protected HeaderComponent createClsBrowserHeader() {
-	    JLabel label = ComponentFactory.createLabel(_project.getName(), Icons.getProjectIcon(), SwingConstants.LEFT);
-	    String forProject = LocalizedText.getText(ResourceKey.CLASS_BROWSER_FOR_PROJECT_LABEL);
-	    String classBrowser = LocalizedText.getText(ResourceKey.CLASS_BROWSER_TITLE);
-	    return new HeaderComponent(classBrowser, forProject, label);
+        JLabel label = ComponentFactory.createLabel(_project.getName(), Icons.getProjectIcon(), SwingConstants.LEFT);
+        String forProject = LocalizedText.getText(ResourceKey.CLASS_BROWSER_FOR_PROJECT_LABEL);
+        String classBrowser = LocalizedText.getText(ResourceKey.CLASS_BROWSER_TITLE);
+        return new HeaderComponent(classBrowser, forProject, label);
     }
 
     protected void createPanes() {
@@ -85,15 +83,15 @@ public class ClsesPanel extends SelectableContainer {
         return new RelationshipPane(viewAction);
     }
 
-//    protected JComponent createRelationshipView() {
-//        _relationshipView = ComponentFactory.createComboBox();
-//        Dimension d = _relationshipView.getPreferredSize();
-//        d.width = Math.max(d.width, 150);
-//        _relationshipView.setPreferredSize(d);
-//        _relationshipView.addActionListener(_relationshipListener);
-//        _relationshipView.setRenderer(FrameRenderer.createInstance());
-//        return _relationshipView;
-//    }
+    //    protected JComponent createRelationshipView() {
+    //        _relationshipView = ComponentFactory.createComboBox();
+    //        Dimension d = _relationshipView.getPreferredSize();
+    //        d.width = Math.max(d.width, 150);
+    //        _relationshipView.setPreferredSize(d);
+    //        _relationshipView.addActionListener(_relationshipListener);
+    //        _relationshipView.setRenderer(FrameRenderer.createInstance());
+    //        return _relationshipView;
+    //    }
 
     protected SubclassPane createSubclassPane(Action viewAction, Cls root, Action createAction, Action action) {
         return new SubclassPane(viewAction, root, createAction, action);
@@ -104,7 +102,7 @@ public class ClsesPanel extends SelectableContainer {
             action.setAllowed(enabled);
         }
     }
-    
+
     protected void enableButtons(boolean enable) {
         enableButton(_createAction, enable);
         // updateDeleteActionState();
@@ -131,6 +129,7 @@ public class ClsesPanel extends SelectableContainer {
             public void onAboutToDelete() {
                 _subclassPane.removeSelection();
             }
+
             public void onSelectionChange() {
                 updateDeleteActionState();
             }
@@ -138,7 +137,7 @@ public class ClsesPanel extends SelectableContainer {
         action.setEnabled(true);
         return action;
     }
-    
+
     protected Action createConfigureAction() {
         return new ConfigureAction() {
             public void loadPopupMenu(JPopupMenu menu) {
@@ -152,35 +151,35 @@ public class ClsesPanel extends SelectableContainer {
             }
         };
     }
-    
+
     public Collection getRelationSlots() {
-	    Collection slots = new HashSet();
-	    Collection c = getSelection();
-	    if (c.size() == 1) {
-	        Frame selectedFrame = (Frame) c.iterator().next();
-	        if (selectedFrame instanceof Cls) {
-	            Cls selectedCls = (Cls) selectedFrame;
-	            Iterator i = selectedCls.getTemplateSlots().iterator();
-	            while (i.hasNext()) {
-	                Slot slot = (Slot) i.next();
-	                ValueType type = selectedCls.getTemplateSlotValueType(slot);
-	                if (type == ValueType.INSTANCE || type == ValueType.CLS) {
-	                    slots.add(slot);
-	                }
-	            }
-	        }
-	        Iterator j = selectedFrame.getOwnSlots().iterator();
-	        while (j.hasNext()) {
-	            Slot slot = (Slot) j.next();
-	            ValueType type = selectedFrame.getOwnSlotValueType(slot);
-	            if (!slot.isSystem() && (type == ValueType.INSTANCE || type == ValueType.CLS)) {
-	                slots.add(slot);
-	            }
-	        }
-	    }
-	    return slots;
+        Collection slots = new HashSet();
+        Collection c = getSelection();
+        if (c.size() == 1) {
+            Frame selectedFrame = (Frame) c.iterator().next();
+            if (selectedFrame instanceof Cls) {
+                Cls selectedCls = (Cls) selectedFrame;
+                Iterator i = selectedCls.getTemplateSlots().iterator();
+                while (i.hasNext()) {
+                    Slot slot = (Slot) i.next();
+                    ValueType type = selectedCls.getTemplateSlotValueType(slot);
+                    if (type == ValueType.INSTANCE || type == ValueType.CLS) {
+                        slots.add(slot);
+                    }
+                }
+            }
+            Iterator j = selectedFrame.getOwnSlots().iterator();
+            while (j.hasNext()) {
+                Slot slot = (Slot) j.next();
+                ValueType type = selectedFrame.getOwnSlotValueType(slot);
+                if (!slot.isSystem() && (type == ValueType.INSTANCE || type == ValueType.CLS)) {
+                    slots.add(slot);
+                }
+            }
+        }
+        return slots;
     }
-    
+
     protected Action createShowSubclassesAction() {
         return new StandardAction(ResourceKey.CLASS_BROWSER_SHOW_CLASS_HIERARCHY_MENU_ITEM) {
             public void actionPerformed(ActionEvent event) {
@@ -190,7 +189,7 @@ public class ClsesPanel extends SelectableContainer {
             }
         };
     }
-    
+
     protected Action createShowAllRelationsAction() {
         return new StandardAction(ResourceKey.CLASS_BROWSER_SHOW_ALL_RELATIONS_MENU_ITEM) {
             public void actionPerformed(ActionEvent event) {
@@ -200,9 +199,10 @@ public class ClsesPanel extends SelectableContainer {
             }
         };
     }
-    
+
     protected Action createShowRelationAction(final Slot slot) {
-        String showLabel = LocalizedText.getText(ResourceKey.CLASS_BROWSER_SHOW_RELATION_MENU_ITEM, slot.getBrowserText());
+        String showLabel = LocalizedText.getText(ResourceKey.CLASS_BROWSER_SHOW_RELATION_MENU_ITEM, slot
+                .getBrowserText());
         return new StandardAction(showLabel) {
             public void actionPerformed(ActionEvent event) {
                 _relationshipPane.load((Frame) getSoleSelection(), slot);
@@ -240,10 +240,10 @@ public class ClsesPanel extends SelectableContainer {
         return _relationshipPane;
     }
 
-//    protected JComboBox getRelationshipView() {
-//        return _relationshipView;
-//    }
-//
+    //    protected JComboBox getRelationshipView() {
+    //        return _relationshipView;
+    //    }
+    //
     public Collection getSelection() {
         return ((Selectable) getDisplayedComponent()).getSelection();
     }
@@ -263,7 +263,7 @@ public class ClsesPanel extends SelectableContainer {
     protected boolean isDisplayingSubclasses() {
         return _labeledComponent.getCenterComponent() == _subclassPane;
     }
-    
+
     protected void loadComponent(Selectable component) {
         loadComponent(component, "");
     }
@@ -277,99 +277,98 @@ public class ClsesPanel extends SelectableContainer {
         _labeledComponent.setHeaderLabel(title);
         setSelectable(component);
     }
-    
+
     private Component getView() {
         return _labeledComponent.getCenterComponent();
     }
 
-//    public void notifySelectionListeners() {
-//        super.notifySelectionListeners();
-//        if (_relationshipView != null) {
-//            relationshipViewLoad();
-//        }
-//    }
+    //    public void notifySelectionListeners() {
+    //        super.notifySelectionListeners();
+    //        if (_relationshipView != null) {
+    //            relationshipViewLoad();
+    //        }
+    //    }
 
-//    protected void relationshipChanged() {
-//        _relationshipListener.disable();
-//        reload();
-//        // setSelection(selectedCls);
-//        _relationshipListener.enable();
-//    }
+    //    protected void relationshipChanged() {
+    //        _relationshipListener.disable();
+    //        reload();
+    //        // setSelection(selectedCls);
+    //        _relationshipListener.enable();
+    //    }
 
-//    protected void relationshipViewLoad() {
-//        _relationshipListener.disable();
-//        Object selection = _relationshipView.getSelectedItem();
-//        if (selection == null) {
-//            selection = SUBCLASS_RELATIONSHIP;
-//        }
-//        Collection slots = new HashSet();
-//        Collection c = getSelection();
-//        if (c.size() == 1) {
-//            Frame selectedFrame = (Frame) c.iterator().next();
-//            if (selectedFrame instanceof Cls) {
-//                Cls selectedCls = (Cls) selectedFrame;
-//                Iterator i = selectedCls.getTemplateSlots().iterator();
-//                while (i.hasNext()) {
-//                    Slot slot = (Slot) i.next();
-//                    // ValueType type = selectedCls.getTemplateSlotValueType(slot);
-//                    ValueType type = slot.getValueType();
-//                    if (type == ValueType.INSTANCE || type == ValueType.CLS) {
-//                        slots.add(slot);
-//                    }
-//                }
-//            }
-//            Iterator j = selectedFrame.getOwnSlots().iterator();
-//            while (j.hasNext()) {
-//                Slot slot = (Slot) j.next();
-//                ValueType type = selectedFrame.getOwnSlotValueType(slot);
-//                if (!slot.isSystem() && (type == ValueType.INSTANCE || type == ValueType.CLS)) {
-//                    slots.add(slot);
-//                }
-//            }
-//        }
-//        List choices = new ArrayList(slots);
-//        Collections.sort(choices, new FrameComparator());
-//        choices.add(0, SUBCLASS_RELATIONSHIP);
-//        choices.add(1, REFERENCED_RELATIONSHIP);
-//        if (!choices.contains(selection)) {
-//            choices.add(selection);
-//        }
-//        _relationshipView.setModel(new DefaultComboBoxModel(choices.toArray()));
-//        _relationshipView.setSelectedItem(selection);
-//        _relationshipListener.enable();
-//    }
+    //    protected void relationshipViewLoad() {
+    //        _relationshipListener.disable();
+    //        Object selection = _relationshipView.getSelectedItem();
+    //        if (selection == null) {
+    //            selection = SUBCLASS_RELATIONSHIP;
+    //        }
+    //        Collection slots = new HashSet();
+    //        Collection c = getSelection();
+    //        if (c.size() == 1) {
+    //            Frame selectedFrame = (Frame) c.iterator().next();
+    //            if (selectedFrame instanceof Cls) {
+    //                Cls selectedCls = (Cls) selectedFrame;
+    //                Iterator i = selectedCls.getTemplateSlots().iterator();
+    //                while (i.hasNext()) {
+    //                    Slot slot = (Slot) i.next();
+    //                    // ValueType type = selectedCls.getTemplateSlotValueType(slot);
+    //                    ValueType type = slot.getValueType();
+    //                    if (type == ValueType.INSTANCE || type == ValueType.CLS) {
+    //                        slots.add(slot);
+    //                    }
+    //                }
+    //            }
+    //            Iterator j = selectedFrame.getOwnSlots().iterator();
+    //            while (j.hasNext()) {
+    //                Slot slot = (Slot) j.next();
+    //                ValueType type = selectedFrame.getOwnSlotValueType(slot);
+    //                if (!slot.isSystem() && (type == ValueType.INSTANCE || type == ValueType.CLS)) {
+    //                    slots.add(slot);
+    //                }
+    //            }
+    //        }
+    //        List choices = new ArrayList(slots);
+    //        Collections.sort(choices, new FrameComparator());
+    //        choices.add(0, SUBCLASS_RELATIONSHIP);
+    //        choices.add(1, REFERENCED_RELATIONSHIP);
+    //        if (!choices.contains(selection)) {
+    //            choices.add(selection);
+    //        }
+    //        _relationshipView.setModel(new DefaultComboBoxModel(choices.toArray()));
+    //        _relationshipView.setSelectedItem(selection);
+    //        _relationshipListener.enable();
+    //    }
 
     /**
      * reload the tree as a result of a change in the displayed relationship
      */
-//    protected void reload() {
-//        Frame selectedFrame = (Frame) CollectionUtilities.getFirstItem(getSelection());
-//        Object selection = null;
-//        if (_relationshipView != null) {
-//            selection = _relationshipView.getSelectedItem();
-//        }
-//        if (selection == null) {
-//            selection = SUBCLASS_RELATIONSHIP;
-//        }
-//        if (selection.equals(SUBCLASS_RELATIONSHIP)) {
-//            if (selectedFrame instanceof Cls) {
-//                _subclassPane.setSelectedCls((Cls) selectedFrame);
-//            }
-//            loadComponent(_subclassPane);
-//            enableButtons(true);
-//        } else if (selection.equals(REFERENCED_RELATIONSHIP)) {
-//            _relationshipPane.load(selectedFrame, null);
-//            loadComponent(_relationshipPane);
-//            enableButtons(false);
-//        } else {
-//            Slot slot = (Slot) selection;
-//            _relationshipPane.load(selectedFrame, slot);
-//            loadComponent(_relationshipPane);
-//            enableButtons(false);
-//        }
-//        notifySelectionListeners();
-//    }
-
+    //    protected void reload() {
+    //        Frame selectedFrame = (Frame) CollectionUtilities.getFirstItem(getSelection());
+    //        Object selection = null;
+    //        if (_relationshipView != null) {
+    //            selection = _relationshipView.getSelectedItem();
+    //        }
+    //        if (selection == null) {
+    //            selection = SUBCLASS_RELATIONSHIP;
+    //        }
+    //        if (selection.equals(SUBCLASS_RELATIONSHIP)) {
+    //            if (selectedFrame instanceof Cls) {
+    //                _subclassPane.setSelectedCls((Cls) selectedFrame);
+    //            }
+    //            loadComponent(_subclassPane);
+    //            enableButtons(true);
+    //        } else if (selection.equals(REFERENCED_RELATIONSHIP)) {
+    //            _relationshipPane.load(selectedFrame, null);
+    //            loadComponent(_relationshipPane);
+    //            enableButtons(false);
+    //        } else {
+    //            Slot slot = (Slot) selection;
+    //            _relationshipPane.load(selectedFrame, slot);
+    //            loadComponent(_relationshipPane);
+    //            enableButtons(false);
+    //        }
+    //        notifySelectionListeners();
+    //    }
     /**
      * An obscure method to change the displayed parent of the selected class.
      * Imagine a selected class A with two parents "B" and "C". Currently "A" is

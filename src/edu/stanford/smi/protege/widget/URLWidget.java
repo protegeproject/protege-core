@@ -29,10 +29,10 @@ public class URLWidget extends TextComponentWidget {
         return ComponentFactory.createTextField();
     }
 
-//    protected void onCommit() {
-//        super.onCommit();
-//        updateURLDisplay();
-//    }
+    //    protected void onCommit() {
+    //        super.onCommit();
+    //        updateURLDisplay();
+    //    }
 
     protected JComponent createCenterComponent(JTextComponent textComponent) {
         urlDisplay = ComponentFactory.createEditorPane();
@@ -98,7 +98,7 @@ public class URLWidget extends TextComponentWidget {
             asyncLoadURL(url);
         }
     }
-    
+
     private void asyncLoadURL(final URL url) {
         Thread thread = new Thread() {
             public void run() {
@@ -108,7 +108,7 @@ public class URLWidget extends TextComponentWidget {
                         try {
                             urlDisplay.setPage(url);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            // do nothing
                         }
                     }
                 });
@@ -116,27 +116,26 @@ public class URLWidget extends TextComponentWidget {
         };
         thread.start();
     }
-    
+
     private String getText(URL url) {
         StringBuffer buffer = new StringBuffer();
         try {
-	        char[] cbuf = new char[100000];
-	        InputStream is = url.openStream();
-	        Reader reader = new InputStreamReader(is);
-	        int nchars;
-	        while ((nchars = reader.read(cbuf)) != -1) {
-	            buffer.append(cbuf, 0, nchars);
-	        }
+            char[] cbuf = new char[100000];
+            InputStream is = url.openStream();
+            Reader reader = new InputStreamReader(is);
+            int nchars;
+            while ((nchars = reader.read(cbuf)) != -1) {
+                buffer.append(cbuf, 0, nchars);
+            }
         } catch (IOException e) {
             buffer.append("*** Load failed ***");
         }
         return buffer.toString();
     }
-    
+
     private static boolean isImage(URL url) {
         String u = url.toString().toLowerCase();
-        return u.endsWith(".gif") || u.endsWith(".png") || u.endsWith(".jpeg")
-                || u.endsWith(".jpg");
+        return u.endsWith(".gif") || u.endsWith(".png") || u.endsWith(".jpeg") || u.endsWith(".jpg");
     }
 
     // Amazing that there isn't a method to clear the current URL... Setting it

@@ -39,7 +39,7 @@ public class DirectTypesList extends SelectableContainer {
         list.setCellRenderer(new FrameRenderer());
         setSelectable(list);
 
-        LabeledComponent c = new LabeledComponent("Direct Types", new JScrollPane(list));
+        LabeledComponent c = new LabeledComponent("Types", new JScrollPane(list));
         c.addHeaderButton(createAddTypeAction());
         c.addHeaderButton(createRemoteTypeAction());
         setLayout(new BorderLayout());
