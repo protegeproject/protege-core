@@ -7,11 +7,11 @@ package edu.stanford.smi.protege.resource;
  */
 public class ResourceKey {
     private String key;
-    
+
     public ResourceKey(String key) {
         this.key = key;
     }
-    
+
     public boolean equals(Object o) {
         boolean equals = false;
         if (o instanceof ResourceKey) {
@@ -20,16 +20,15 @@ public class ResourceKey {
         }
         return equals;
     }
-    
+
     public int hashCode() {
         return key.hashCode();
     }
-    
+
     public String toString() {
         return key;
     }
 
-    
     private static ResourceKey key(String s) {
         return new ResourceKey(s);
     }
@@ -39,7 +38,7 @@ public class ResourceKey {
     public static final ResourceKey MENUBAR_EDIT = key("menubar.edit");
     public static final ResourceKey MENUBAR_HELP = key("menubar.help");
     public static final ResourceKey MENUBAR_WINDOW = key("menubar.window");
-    
+
     public static final ResourceKey PROJECT_NEW = key("project.new");
     public static final ResourceKey PROJECT_OPEN = key("project.open");
     public static final ResourceKey PROJECT_OPEN_RECENT = key("project.open_recent");
@@ -66,7 +65,7 @@ public class ResourceKey {
     public static final ResourceKey PROJECT_FILE_ENCODINGS = key("project.file_encodings");
     public static final ResourceKey PROJECT_SHOW_INCLUDED = key("project.show_included");
     public static final ResourceKey PROJECT_METRICS = key("project.metrics");
-    
+
     public static final ResourceKey APPLICATION_PREFERENCES = key("application.preferences");
     public static final ResourceKey APPLICATION_EXIT = key("application.exit");
 
@@ -79,7 +78,7 @@ public class ResourceKey {
     public static final ResourceKey COMMAND_HISTORY_ACTION = key("command_history");
     public static final ResourceKey INSERT_UNICODE_ACTION = key("insert_unicode");
     public static final ResourceKey CONVERT_UNICODE_SEQUENCE_ACTION = key("convert_unicode_sequence");
-    
+
     public static final ResourceKey SYNCHRONIZE_CLASS_TREE = key("synchronize_class_trees");
     public static final ResourceKey AUTOSYNCHRONIZE_CLASS_TREES = key("autosynchronize_class_trees");
     public static final ResourceKey DETACH_VIEW = key("detach_view");
@@ -89,7 +88,7 @@ public class ResourceKey {
     public static final ResourceKey INCREASE_FONT_SIZE = key("increase_font_size");
     public static final ResourceKey DECREASE_FONT_SIZE = key("decrease_font_size");
     public static final ResourceKey LOOK_AND_FEEL = key("look_and_feel");
-       
+
     public static final ResourceKey HELP_MENU_ICONS = key("help_menu.icons");
     public static final ResourceKey HELP_MENU_GETTING_STARTED = key("help_menu.getting_started");
     public static final ResourceKey HELP_MENU_FAQ = key("help_menu.faq");
@@ -103,7 +102,7 @@ public class ResourceKey {
     public static final ResourceKey CLASS_NOTE_CREATE = key("class_note.create");
     public static final ResourceKey CLASS_NOTE_DELETE = key("class_note.delete");
     public static final ResourceKey CLASS_NOTE_HIDE_ALL = key("class_note.hide");
-    
+
     public static final ResourceKey CLASS_VIEW = key("class.view");
     public static final ResourceKey CLASS_VIEW_REFERENCES = key("class.view_references");
     public static final ResourceKey CLASS_SEARCH_FOR = key("class.search");
@@ -117,12 +116,12 @@ public class ResourceKey {
     public static final ResourceKey CLASS_COPY = key("class.copy");
     public static final ResourceKey CLASS_MOVE_UP = key("class.move_up");
     public static final ResourceKey CLASS_MOVE_DOWN = key("class.move_down");
-    
+
     public static final ResourceKey INSTANCE_NOTE = key("instance_note");
     public static final ResourceKey INSTANCE_NOTE_CREATE = key("instance_note.create");
     public static final ResourceKey INSTANCE_NOTE_DELETE = key("instance_note.delete");
     public static final ResourceKey INSTANCE_NOTE_HIDE = key("instance_note.hide");
-    
+
     public static final ResourceKey INSTANCE_VIEW = key("instance.view");
     public static final ResourceKey INSTANCE_VIEW_REFERENCES = key("instance.view_references");
     public static final ResourceKey INSTANCE_SEARCH_FOR = key("instance.search");
@@ -133,12 +132,12 @@ public class ResourceKey {
     public static final ResourceKey INSTANCE_COPY = key("instance.copy");
     public static final ResourceKey INSTANCE_MOVE_UP = key("instance.move_up");
     public static final ResourceKey INSTANCE_MOVE_DOWN = key("instance.move_down");
-    
+
     public static final ResourceKey SLOT_NOTE = key("slot_note");
     public static final ResourceKey SLOT_NOTE_CREATE = key("slot_note.create");
     public static final ResourceKey SLOT_NOTE_DELETE = key("slot_note.delete");
     public static final ResourceKey SLOT_NOTE_HIDE = key("slot_note.hide");
-    
+
     public static final ResourceKey SLOT_VIEW = key("slot.view");
     public static final ResourceKey SLOT_VIEW_TOP_LEVEL = key("slot.view_top_level");
     public static final ResourceKey SLOT_VIEW_FACET_OVERRIDES = key("slot.view_overrides");
@@ -155,12 +154,12 @@ public class ResourceKey {
     public static final ResourceKey SLOT_COPY = key("slot.copy");
     public static final ResourceKey SLOT_MOVE_UP = key("slot.move_up");
     public static final ResourceKey SLOT_MOVE_DOWN = key("slot.move_down");
-    
+
     public static final ResourceKey FACET_VIEW = key("facet.view");
     public static final ResourceKey FACET_VIEW_REFERENCES = key("facet.view_references");
     public static final ResourceKey FACET_CREATE = key("facet.create");
     public static final ResourceKey FACET_DELETE = key("facet.delete");
-    
+
     public static final ResourceKey VALUE_VIEW = key("object.view");
     public static final ResourceKey VALUE_VIEW_REFERENCES = key("object.view_references");
     public static final ResourceKey VALUE_CREATE = key("object.create");
@@ -170,7 +169,7 @@ public class ResourceKey {
     public static final ResourceKey VALUE_COPY = key("object.copy");
     public static final ResourceKey VALUE_MOVE_UP = key("object.move_up");
     public static final ResourceKey VALUE_MOVE_DOWN = key("object.move_down");
-    
+
     public static final ResourceKey FORM_SEARCH_FOR = key("form.search");
     public static final ResourceKey FORM_VIEW_CUSTOMIZATIONS = key("form.view_customizations");
     public static final ResourceKey FORM_REMOVE_CUSTOMIZATIONS = key("form.remove_customizations");
@@ -179,9 +178,9 @@ public class ResourceKey {
 
     public static final ResourceKey PROJECT_ADD = key("project.add");
     public static final ResourceKey PROJECT_REMOVE = key("project.remove");
-    
+
     public static final ResourceKey COMPONENT_MENU = key("component.configure");
-    
+
     public static final ResourceKey URL_VIEW_IN_BROWSER = key("object.view_in_browser");
 
     public static final ResourceKey CLASS_BROWSER_TITLE = key("class_browser.title");
@@ -203,40 +202,40 @@ public class ResourceKey {
     public static final ResourceKey CLASS_BROWSER_CREATE_SUBCLASS_USING_METACLASS_MENU_ITEM = key("class_browser.create_subclass_using_metaclass");
     public static final ResourceKey CLASS_BROWSER_HIDE_CLASS_MENU_ITEM = key("class_browser.hide_class");
     public static final ResourceKey CLASS_BROWSER_UNHIDE_CLASS_MENU_ITEM = key("class_browser.unhide_class");
-    
+
     public static final ResourceKey CLASS_EDITOR_TITLE = key("class_editor.title");
     public static final ResourceKey CLASS_EDITOR_FOR_CLASS_LABEL = key("class_editor.for_class");
-    
+
     public static final ResourceKey SLOT_BROWSER_TITLE = key("slot_browser.title");
     public static final ResourceKey SLOT_BROWSER_HIERARCHY_LABEL = key("slot_browser.slot_hierarchy");
     public static final ResourceKey SLOT_BROWSER_SUPERSLOTS_LABEL = key("slot_browser.superslots");
-    
+
     public static final ResourceKey SLOT_EDITOR_TITLE = key("slot_editor.title");
     public static final ResourceKey SLOT_EDITOR_FOR_SLOT_LABEL = key("slot_editor.for_slot");
-    
+
     public static final ResourceKey INSTANCE_BROWSER_TITLE = key("instance_browser.title");
-    
+
     public static final ResourceKey INSTANCE_EDITOR_TITLE = key("instance_editor.title");
     public static final ResourceKey INSTANCE_EDITOR_FOR_INSTANCE_LABEL = key("instance_editor.for_instance");
-    
+
     public static final ResourceKey FRAME_EDITOR_FRAME_NAME = key("frame_editor.frame_name");
     public static final ResourceKey FRAME_EDITOR_FRAME_TYPE = key("frame_editor.frame_type");
     public static final ResourceKey FRAME_EDITOR_FRAME_TYPE_AND_NAME = key("frame_editor.frame_type_and_name");
-    
+
     public static final ResourceKey FORM_BROWSER_TITLE = key("form_browser.title");
     public static final ResourceKey FORM_BROWSER_FORMS_LABEL = key("form_browser.forms");
-    
+
     public static final ResourceKey FORM_EDITOR_TITLE = key("form_editor.title");
     public static final ResourceKey FORM_EDITOR_SELECTED_WIDGET_TYPE_LABEL = key("form_editor.selected_widget_type");
     public static final ResourceKey FORM_EDITOR_SELECT_A_WIDGET_PROMPT = key("form_editor.select_a_widget");
     public static final ResourceKey FORM_EDITOR_DISPLAY_SLOT_LABEL = key("form_editor.display_slot");
     public static final ResourceKey FORM_EDITOR_SELECT_NO_WIDGET = key("form_editor.none");
-    
+
     public static final ResourceKey CLASSES_VIEW_TITLE = key("classes_view.title");
     public static final ResourceKey SLOTS_VIEW_TITLE = key("slots_view.title");
     public static final ResourceKey FORMS_VIEW_TITLE = key("forms_view.title");
     public static final ResourceKey INSTANCES_VIEW_TITLE = key("instances_view.title");
-    
+
     public static final ResourceKey OK_BUTTON_LABEL = key("ok");
     public static final ResourceKey CANCEL_BUTTON_LABEL = key("cancel");
     public static final ResourceKey YES_BUTTON_LABEL = key("yes");
@@ -245,7 +244,7 @@ public class ResourceKey {
     public static final ResourceKey DIALOG_SAVE_CHANGES_TEXT = key("save_changes_text");
     public static final ResourceKey DIALOG_CONFIRM_REMOVE_TEXT = key("confirm_remove_text");
     public static final ResourceKey DIALOG_CONFIRM_DELETE_TEXT = key("confirm_delete_text");
-    
+
     public static final ResourceKey DATABASE_CONFIGURATION_DIALOG_TITLE = key("database_project_configuration_dialog.title");
     public static final ResourceKey SAVE_PROJECT_FAILED_DIALOG_TITLE = key("save_project_failed_dialog.title");
     public static final ResourceKey RELOAD_PROJECT_FAILED_DIALOG_TITLE = key("reload_project_failed_dialog.title");
@@ -276,9 +275,9 @@ public class ResourceKey {
     public static final ResourceKey DATABASE_CONFIGURE_FAILED_DIALOG_DRIVER_NOT_FOUND_TEXT = key("database_configure_failed_dialog.driver_not_found_text");
     public static final ResourceKey DATABASE_CONFIGURE_FAILED_DIALOG_CANNOT_CREATE_CONNECTION_TEXT = key("database_configure_failed_dialog.cannot_create_connection_text");
     public static final ResourceKey ERROR_DIALOG_TITLE = key("error_dialog.title");
-    public static final ResourceKey PREFERENCES_DIALOG_TITLE = key ("preferences_dialog.title");
+    public static final ResourceKey PREFERENCES_DIALOG_TITLE = key("preferences_dialog.title");
     public static final ResourceKey OPEN_PROJECT_DIALOG_TITLE = key("open_project_dialog.title");
-    
+
     public static final ResourceKey WELCOME_DIALOG_HELP_TITLE = key("welcome_dialog.help_title");
     public static final ResourceKey WELCOME_DIALOG_GETTING_STARTED = key("welcome_dialog.getting_started");
     public static final ResourceKey WELCOME_DIALOG_ALL_TOPICS = key("welcome_dialog.all_topics");
@@ -294,8 +293,7 @@ public class ResourceKey {
     public static final ResourceKey WELCOME_DIALOG_OPEN_TOOLTIP = key("welcome_dialog.open_tooltip");
     public static final ResourceKey WELCOME_DIALOG_OPEN_OTHER = key("welcome_dialog.open_other");
     public static final ResourceKey WELCOME_DIALOG_OPEN_OTHER_TOOLTIP = key("welcome_dialog.open_existing_tooltip");
-    
-    
+
     // These really should be part of the knowledge-base localization scheme
     public static final ResourceKey NAME_SLOT_WIDGET_LABEL = key("slot_widget_label.name");
     public static final ResourceKey DOCUMENTATION_SLOT_WIDGET_LABEL = key("slot_widget_label.documentation");
@@ -304,7 +302,7 @@ public class ResourceKey {
     public static final ResourceKey TEMPLATE_SLOTS_SLOT_WIDGET_CARDINALITY = key("slot_widget_label.template_slots.cardinality");
     public static final ResourceKey TEMPLATE_SLOTS_SLOT_WIDGET_TYPE = key("slot_widget_label.template_slots.type");
     public static final ResourceKey TEMPLATE_SLOTS_SLOT_WIDGET_OTHER_FACETS = key("slot_widget_label.template_slots.other_facets");
-    
+
     public static final ResourceKey ROLE_SLOT_WIDGET_LABEL = key("slot_widget_label.role");
     public static final ResourceKey CONSTRAINTS_SLOT_WIDGET_LABEL = key("slot_widget_label.constraints");
     public static final ResourceKey INVERSE_SLOT_WIDGET_LABEL = key("slot_widget_label.inverse");
@@ -325,7 +323,7 @@ public class ResourceKey {
     public static final ResourceKey AT_LEAST_LABEL = key("slot_widget_label.minimum_cardinality.at_least");
     public static final ResourceKey REQUIRED_LABEL = key("slot_widget_label.minimum_cardinality.required");
     public static final ResourceKey MULTIPLE_LABEL = key("slot_widget_label.maximum_cardinality.multiple");
-    
+
     public static final ResourceKey ALLOWED_CLASSES = key("slot_widget_label.value_type.allowed_classes");
     public static final ResourceKey ALLOWED_SUPERCLASSES = key("slot_widget_label.value_type.allowed_superclasses");
     public static final ResourceKey ALLOWED_VALUES = key("slot_widget_label.value_type.allowed_values");

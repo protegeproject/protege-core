@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.ui;
 
 import java.awt.*;
-import java.io.*;
 import java.net.*;
 import java.util.*;
 
@@ -274,7 +273,7 @@ public class ProjectManager {
         return _mainToolBar;
     }
 
-    private void displayErrors(String label, Collection errors) {
+    public void displayErrors(String label, Collection errors) {
         if (!errors.isEmpty()) {
             JComponent panel = new ParseErrorPanel(errors);
             _errorFrame = ComponentFactory.showInFrame(panel, label);
@@ -320,17 +319,29 @@ public class ProjectManager {
         return _projectManager;
     }
 
-    private URI getRequestedProject() {
-        URI projectURI = null;
-        JFileChooser chooser = ComponentFactory.createFileOrRemoteChooser("Project", ".pprj");
-        int rval = chooser.showOpenDialog(_rootPane);
+    /*
+     private URI getRequestedProject() {
+     URI projectURI = null;
+     JFileChooser chooser = ComponentFactory.createFileChooser("Project", ".pprj");
+     int rval = chooser.showOpenDialog(_rootPane);
+     if (rval == JFileChooser.APPROVE_OPTION) {
+     File file = chooser.getSelectedFile();
+     if (file.exists()) {
+     projectURI = file.toURI();
+     }
+     }
+     return projectURI;
+     }
+     */
+
+    private Project _getRequestedProject(Component parent) {
+        Project project = null;
+        ProjectChooser chooser = new ProjectChooser();
+        int rval = chooser.showOpenDialog(parent);
         if (rval == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();
-            if (file.exists()) {
-                projectURI = file.toURI();
-            }
+            project = chooser.getProject();
         }
-        return projectURI;
+        return project;
     }
 
     private boolean hasLoadedProject() {
@@ -441,7 +452,7 @@ public class ProjectManager {
         return project;
     }
 
-    private Project loadProjectFromURI(URI uri, Collection errors) {
+    public Project loadProjectFromURI(URI uri, Collection errors) {
         Project project = null;
         try {
             project = Project.loadProjectFromURI(uri, errors);
@@ -517,14 +528,43 @@ public class ProjectManager {
         }
     }
 
+    /*
+     public void openProjectRequest() {
+     if (closeProjectRequest()) {
+     URI uri = getRequestedProject();
+     if (uri != null) {
+     loadProject(uri);
+     ApplicationProperties.addProjectToMRUList(uri);
+     }
+     }
+     }
+     */
+
     public void openProjectRequest() {
+        openProjectRequest(_rootPane);
+    }
+
+    public boolean openProjectRequest(Component parent) {
         if (closeProjectRequest()) {
-            URI uri = getRequestedProject();
-            if (uri != null) {
-                loadProject(uri);
-                ApplicationProperties.addProjectToMRUList(uri);
+            _currentProject = _getRequestedProject(parent);
+            if (_currentProject != null) {
+                long t1 = System.currentTimeMillis();
+                _projectPluginManager.afterLoad(_currentProject);
+                displayCurrentProject();
+                printDisplayTime(t1);
             }
+            bringErrorFrameToFront();
         }
+        return _currentProject != null;
+    }
+
+    private void printDisplayTime(final long t1) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                long t2 = System.currentTimeMillis();
+                Log.getLogger().info("UI display time = " + (t2 - t1) / 1000 + " sec");
+            }
+        });
     }
 
     private Project getRequestedRemoteProject() {

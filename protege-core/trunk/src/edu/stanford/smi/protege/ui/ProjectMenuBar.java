@@ -151,7 +151,9 @@ public class ProjectMenuBar extends JMenuBar {
             createItem(menu, new CreateProject(false));
         }
         createItem(menu, new OpenProject(false));
-        createItem(menu, new OpenRemoteProject());
+        if (!SystemUtilities.showAlphaFeatures()) {
+            createItem(menu, new OpenRemoteProject());
+        }
         loadOpenRecent(menu);
         createItem(menu, new CloseProject());
         menu.addSeparator();
@@ -226,13 +228,11 @@ public class ProjectMenuBar extends JMenuBar {
      * Collection classNames = PluginUtilities.getAvailableImportPlugin2ClassNames(); Iterator i =
      * getPlugins(classNames).iterator(); while (i.hasNext()) { ImportPlugin2 plugin = (ImportPlugin2) i.next();
      * createItem(menu, new ImportAction(plugin)); } if (menu.getItemCount() == 0) { menu.setEnabled(false); } return
-     * menu; }
-     * 
-     * private JMenu createExport2Submenu() { JMenu menu = ComponentFactory.createMenu(ResourceKey.PROJECT_EXPORT);
-     * Collection classNames = PluginUtilities.getAvailableExportPlugin2ClassNames(); Iterator i =
-     * getPlugins(classNames).iterator(); while (i.hasNext()) { ExportPlugin2 plugin = (ExportPlugin2) i.next();
-     * createItem(menu, new ExportAction(plugin)); } if (menu.getItemCount() == 0) { menu.setEnabled(false); } return
-     * menu; }
+     * menu; } private JMenu createExport2Submenu() { JMenu menu =
+     * ComponentFactory.createMenu(ResourceKey.PROJECT_EXPORT); Collection classNames =
+     * PluginUtilities.getAvailableExportPlugin2ClassNames(); Iterator i = getPlugins(classNames).iterator(); while
+     * (i.hasNext()) { ExportPlugin2 plugin = (ExportPlugin2) i.next(); createItem(menu, new ExportAction(plugin)); } if
+     * (menu.getItemCount() == 0) { menu.setEnabled(false); } return menu; }
      */
 
     private JMenu createExportSubmenu() {

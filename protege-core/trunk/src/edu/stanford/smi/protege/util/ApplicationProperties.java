@@ -20,6 +20,7 @@ public class ApplicationProperties {
     public final static String NEXT_FRAME_NUMBER = "next_frame_number";
     public final static String APPLICATION_INSTALL_DIRECTORY = "protege.dir";
     public final static String LAST_FILE_DIRECTORY = "filechooser.last_directory";
+    public final static String LAST_LOADED_URI = "projectchooser.last_uri";
     public final static String CURRENT_WORKING_DIRECTORY = "user.dir";
     public final static String USERS_HOME_DIRECTORY = "user.home";
     public final static String PROPERTIES_IN_USER_HOME = "protege.properties.in.user.home";
@@ -383,5 +384,22 @@ public class ApplicationProperties {
 
     public static void setLastFileDirectory(File directory) {
         setString(LAST_FILE_DIRECTORY, directory.getPath());
+    }
+
+    public static URI getLastLoadeURI() {
+        URI uri = null;
+        String uriString = getString(LAST_LOADED_URI);
+        if (uriString != null) {
+            try {
+                uri = new URI(uriString);
+            } catch (URISyntaxException e) {
+                // do nothing
+            }
+        }
+        return uri;
+    }
+
+    public static void setLastLoadedURI(URI uri) {
+        setString(LAST_LOADED_URI, uri.toString());
     }
 }

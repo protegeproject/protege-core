@@ -86,8 +86,8 @@ public interface Frame extends Comparable {
     boolean getOwnSlotAllowsMultipleValues(Slot slot);
 
     /**
-     * Returns the own slot values for this slot and all of its subslots. see {@link Frame}for a description of the
-     * return type
+     * Returns the own slot values for this slot and all of its subslots. See {@link Frame} for a description of the
+     * return type.
      */
     Collection getOwnSlotAndSubslotValues(Slot slot);
 
@@ -107,19 +107,19 @@ public interface Frame extends Comparable {
      */
     Collection getOwnSlots();
 
-    /** see {@link Frame}for a description of the return type */
+    /** see {@link Frame} for a description of the return type */
     Object getDirectOwnSlotValue(Slot slot);
 
-    /** see {@link Frame}for a description of the return type */
+    /** see {@link Frame} for a description of the return type */
     Object getOwnSlotValue(Slot slot);
 
     int getOwnSlotValueCount(Slot slot);
 
-    /** see {@link Frame}for a description of the return type */
+    /** see {@link Frame} for a description of the return type */
     Collection getOwnSlotValues(Slot slot);
 
     /**
-     * See {@link Frame}for a description of the return type.
+     * See {@link Frame} for a description of the return type.
      */
     List getDirectOwnSlotValues(Slot slot);
 

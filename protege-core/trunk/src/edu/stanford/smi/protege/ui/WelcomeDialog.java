@@ -67,7 +67,7 @@ public class WelcomeDialog extends JDialog {
     JRadioButton[] rbArray;
     List factoryList;
     List projectURIList = new ArrayList(ApplicationProperties.getMRUProjectList());
-    
+
     private JButton createButton(ResourceKey key) {
         return new JButton(LocalizedText.getText(key));
     }
@@ -101,12 +101,12 @@ public class WelcomeDialog extends JDialog {
             ex.printStackTrace();
         }
     }
-    
+
     private TitledBorder createBorder(ResourceKey key) {
         String text = LocalizedText.getText(key);
         return new TitledBorder(BorderFactory.createEtchedBorder(), text);
     }
-    
+
     private void setToolTipText(AbstractButton button, ResourceKey key) {
         String text = LocalizedText.getText(key);
         button.setToolTipText(text);
@@ -319,24 +319,24 @@ public class WelcomeDialog extends JDialog {
     }
 
     public void openOtherButton_actionPerformed(ActionEvent ae) {
-        // Don't want to use this line of code because it opens
-        // the JFileChooser dialog with the application's main frame as the
-        // parent.  If the main frame is the parent and the user clicks the
-        // Cancel button, focus goes to the main frame instead of back to
-        // the welcome dialog.
-        //ProjectManager.getProjectManager().openProjectRequest();
-
-        String title = LocalizedText.getText(ResourceKey.OPEN_PROJECT_DIALOG_TITLE);
-        JFileChooser chooser = ComponentFactory.createFileChooser(title, ".pprj");
-        int rval = chooser.showOpenDialog(this);
-        if (rval == JFileChooser.APPROVE_OPTION) {
-            URI uri = chooser.getSelectedFile().toURI();
-            WaitCursor cursor = new WaitCursor(this.getRootPane());
-            this.setVisible(false);
-            ProjectManager.getProjectManager().loadProject(uri);
-            ApplicationProperties.addProjectToMRUList(uri);
-            cursor.hide();
+        boolean opened = ProjectManager.getProjectManager().openProjectRequest(this);
+        if (opened) {
+            setVisible(false);
         }
+    	/*
+            String title = LocalizedText.getText(ResourceKey.OPEN_PROJECT_DIALOG_TITLE);
+            JFileChooser chooser = ComponentFactory.createFileChooser(title, ".pprj");
+            int rval = chooser.showOpenDialog(this);
+            if (rval == JFileChooser.APPROVE_OPTION) {
+                URI uri = chooser.getSelectedFile().toURI();
+                WaitCursor cursor = new WaitCursor(this.getRootPane());
+                this.setVisible(false);
+                ProjectManager.getProjectManager().loadProject(uri);
+                ApplicationProperties.addProjectToMRUList(uri);
+                cursor.hide();
+            }
+        }
+        */
 
     }
 
