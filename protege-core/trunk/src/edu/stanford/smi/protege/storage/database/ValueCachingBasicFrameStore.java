@@ -492,6 +492,8 @@ public class ValueCachingBasicFrameStore implements NarrowFrameStore {
     }
 
     private void loadFramesIntoCache() {
+        _frameToSftToValuesMap = null;
+        SystemUtilities.gc();
         _frameToSftToValuesMap = _delegate.getFrameValues();
     }
     
@@ -545,8 +547,9 @@ public class ValueCachingBasicFrameStore implements NarrowFrameStore {
             cachedFrames = getCachedFrames();
             if (cachedFrames.size() == count) {
                 frames = cachedFrames;
+            } else {
+                frames = getDelegate().getFrames();
             }
-            return getDelegate().getFrames();
         }
         return frames;
     }
