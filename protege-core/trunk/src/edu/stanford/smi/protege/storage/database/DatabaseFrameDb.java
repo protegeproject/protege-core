@@ -91,10 +91,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     /*
-     * Using the database metadata to decide if a table exists turns out to be
-     * unreliable. Instead we just do a select of something fast and make sure
-     * that the table isn't completely empty. If this succeeds the table is
-     * assumed to be ok.
+     * Using the database metadata to decide if a table exists turns out to be unreliable. Instead we just do a select
+     * of something fast and make sure that the table isn't completely empty. If this succeeds the table is assumed to
+     * be ok.
      */
 
     public boolean tableExists() {
@@ -194,12 +193,10 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         String indexString;
 
         /*
-         * VALUE_INDEX is included in this index solely for its value as a side
-         * effect. It keeps the values ordered by the VALUE_INDEX so that the
-         * ORDER_BY clause in the getValues SELECT statement does not cost
-         * anything. Otherwise this clause has a huge performance impact. We are
-         * essentially trading disk space and INSERT time for a SELECT
-         * optimization.
+         * VALUE_INDEX is included in this index solely for its value as a side effect. It keeps the values ordered by
+         * the VALUE_INDEX so that the ORDER_BY clause in the getValues SELECT statement does not cost anything.
+         * Otherwise this clause has a huge performance impact. We are essentially trading disk space and INSERT time
+         * for a SELECT optimization.
          */
         // used for slot and facet value lookup
         indexString = "CREATE INDEX " + _table + "_I1 ON " + _table;
@@ -228,13 +225,11 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     /*
-     * Some databases (e.g. Oracle) do case sensitive string compares on a LIKE
-     * but we want case insensitive matches. Thus for these databases we lower
-     * case the string before matching and match on a LOWER function on the
-     * column. To work efficiently this requires an index on the LOWER of the
-     * column. For some bizarre reason on Oracle doing an index on the function
-     * of a column requires that a user have an obscure addition privelege on
-     * the database. Unfortunately this privelege is disabled by default.
+     * Some databases (e.g. Oracle) do case sensitive string compares on a LIKE but we want case insensitive matches.
+     * Thus for these databases we lower case the string before matching and match on a LOWER function on the column. To
+     * work efficiently this requires an index on the LOWER of the column. For some bizarre reason on Oracle doing an
+     * index on the function of a column requires that a user have an obscure addition privelege on the database.
+     * Unfortunately this privelege is disabled by default.
      */
     private void createIndexOnLowerValue() throws SQLException {
         String indexString;
@@ -322,10 +317,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     /*
-     * This call is implemented as multiple SQL calls rather than a single one.
-     * This is because surprisingly, it turns out to be much faster to execute
-     * them separately. The MySQL optimizer (and perhaps others) has trouble
-     * using the indices in the presence of an OR.
+     * This call is implemented as multiple SQL calls rather than a single one. This is because surprisingly, it turns
+     * out to be much faster to execute them separately. The MySQL optimizer (and perhaps others) has trouble using the
+     * indices in the presence of an OR.
      */
     private void deleteFrameSQL(Frame frame) throws SQLException {
         String deleteFrameText = "DELETE FROM " + _table + " WHERE " + FRAME + " = ?";
@@ -362,9 +356,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     /*
-     * We need to return the short value and test for a real match because MySQL
-     * does a case insensitve lookup and this call is supposed to be case
-     * sensitive.
+     * We need to return the short value and test for a real match because MySQL does a case insensitve lookup and this
+     * call is supposed to be case sensitive.
      */
     private String _referencesText;
 
@@ -659,10 +652,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     /*
-     * We need to return the value and test for a "real match" because MySQL
-     * will match in a case insensitive way. This really messes up our frame
-     * lookup by name because different types of frames often only differ by the
-     * case of their names.
+     * We need to return the value and test for a "real match" because MySQL will match in a case insensitive way. This
+     * really messes up our frame lookup by name because different types of frames often only differ by the case of
+     * their names.
      */
     private String _framesText;
 
@@ -859,19 +851,18 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private Map getFrameValuesSQL(Frame frame) throws SQLException {
         if (_frameValuesText == null) {
-            _frameValuesText = "SELECT " + SLOT + ", " + FACET + ", " + IS_TEMPLATE + ", "
-                    + SHORT_VALUE + ", ";
-            _frameValuesText += VALUE_TYPE + ", " + VALUE_INDEX;
+            /*
+             * We only select the frame for performance reasons. The order by clause can use an index if the frame is
+             * selected.
+             */
+            _frameValuesText = "SELECT " + FRAME + ", " + SLOT + ", ";
+            _frameValuesText += FACET + ", " + IS_TEMPLATE + ", ";
+            _frameValuesText += SHORT_VALUE + ", " + VALUE_TYPE + ", " + VALUE_INDEX;
             _frameValuesText += " FROM " + _table;
             _frameValuesText += " WHERE " + FRAME + " = ?";
-            if (true) {
-                _frameValuesText += " AND " + SLOT + " <> "
-                        + getValue(Model.SlotID.DIRECT_INSTANCES);
-                // _frameValuesText += " AND " + SLOT + " <> " +
-                // getValue(Model.Slot.ID.DIRECT_SUBCLASSES);
-            }
-            _frameValuesText += " ORDER BY " + SLOT + ", " + FACET + ", " + IS_TEMPLATE + ", "
-                    + VALUE_INDEX;
+            _frameValuesText += " AND " + SLOT + " <> " + getValue(Model.SlotID.DIRECT_INSTANCES);
+            _frameValuesText += " ORDER BY " + FRAME + ", " + SLOT + ", " + FACET + ", "
+                    + IS_TEMPLATE + ", " + VALUE_INDEX;
         }
         PreparedStatement stmt = _connection.getPreparedStatement(_frameValuesText);
 
@@ -880,12 +871,13 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         Map sftToValueMap = new HashMap();
         ResultSet rs = executeQuery(stmt);
         while (rs.next()) {
-            Slot slot = getSlot(rs, 1);
-            Facet facet = getFacet(rs, 2);
-            boolean isTemplate = getIsTemplate(rs, 3);
-            Object value = getShortValue(rs, 4, 5);
+            // Ignore the returned frame
+            Slot slot = getSlot(rs, 2);
+            Facet facet = getFacet(rs, 3);
+            boolean isTemplate = getIsTemplate(rs, 4);
+            Object value = getShortValue(rs, 5, 6);
             if (value == null) {
-                int index = getIndex(rs, 6);
+                int index = getIndex(rs, 7);
                 value = getLongValue(frame, slot, facet, isTemplate, index);
             }
             if (value == null) {

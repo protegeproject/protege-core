@@ -169,8 +169,7 @@ public class RobustConnection {
     }
 
     public boolean isPostgres() throws SQLException {
-        // Is this correct?
-        return getDatabaseProductName().equalsIgnoreCase("postgres");
+        return getDatabaseProductName().equalsIgnoreCase("PostgreSQL");
     }
 
     public String getDatabaseProductName() throws SQLException {
@@ -259,6 +258,9 @@ public class RobustConnection {
             } else {
                 _driverLongvarcharTypeName = longvarbinaryTypeName;
             }
+            if (_driverLongvarcharTypeName == null && isPostgres()) {
+                _driverLongvarcharTypeName = "TEXT";
+            }
         }
         if (_driverIntegerTypeName == null) {
             _driverIntegerTypeName = "INTEGER";
@@ -307,8 +309,7 @@ public class RobustConnection {
     }
 
     /*
-     * public String getTinyIntTypeName() { return
-     * getName(PROPERTY_TINY_INTEGER_TYPE_NAME, _driverTinyIntTypeName); }
+     * public String getTinyIntTypeName() { return getName(PROPERTY_TINY_INTEGER_TYPE_NAME, _driverTinyIntTypeName); }
      */
     public String getBitTypeName() {
         return getName(PROPERTY_BIT_TYPE_NAME, _driverBitTypeName);
@@ -327,34 +328,27 @@ public class RobustConnection {
     }
 
     /*
-     * private void dumpTypes() throws SQLException { ResultSet rs =
-     * _connection.getMetaData().getTypeInfo(); while (rs.next()) {
-     * System.out.println("TYPE_NAME: " + rs.getString(1));
-     * System.out.println("\tDATA_TYPE: " + rs.getInt(2));
-     * System.out.println("\tPRECISION: " + rs.getLong(3));
-     * System.out.println("\tLITERAL_PREFIX: " + rs.getString(4));
-     * System.out.println("\tLITERAL_SUFFIX: " + rs.getString(5));
-     * System.out.println("\tCREATE_PARAMS: " + rs.getString(6));
-     * System.out.println("\tNULLABLE: " + rs.getShort(7));
-     * System.out.println("\tCASE_SENSITIVE: " + rs.getBoolean(8));
-     * System.out.println("\tSEARCHABLE: " + rs.getShort(9));
-     * System.out.println("\tUNSIGNED_ATTRIBUTE: " + rs.getBoolean(10));
-     * System.out.println("\tFIXED_PREC_SCALE: " + rs.getBoolean(11));
-     * System.out.println("\tAUTO_INCREMENT: " + rs.getBoolean(12));
-     * System.out.println("\tLOCAL_TYPE_NAME: " + rs.getString(13));
-     * System.out.println("\tMINIMUM_SCALE: " + rs.getShort(14));
-     * System.out.println("\tMAXIMUM_SCALE: " + rs.getShort(15));
-     * System.out.println("\tSQL_DATA_TYPE: " + rs.getShort(16));
-     * System.out.println("\tSQL_DATETIME_SUB: " + rs.getShort(17));
-     * System.out.println("\tNUM_PREC_RADIX: " + rs.getInt(18)); } rs.close(); }
+     * private void dumpTypes() throws SQLException { ResultSet rs = _connection.getMetaData().getTypeInfo(); while
+     * (rs.next()) { System.out.println("TYPE_NAME: " + rs.getString(1)); System.out.println("\tDATA_TYPE: " +
+     * rs.getInt(2)); System.out.println("\tPRECISION: " + rs.getLong(3)); System.out.println("\tLITERAL_PREFIX: " +
+     * rs.getString(4)); System.out.println("\tLITERAL_SUFFIX: " + rs.getString(5));
+     * System.out.println("\tCREATE_PARAMS: " + rs.getString(6)); System.out.println("\tNULLABLE: " + rs.getShort(7));
+     * System.out.println("\tCASE_SENSITIVE: " + rs.getBoolean(8)); System.out.println("\tSEARCHABLE: " +
+     * rs.getShort(9)); System.out.println("\tUNSIGNED_ATTRIBUTE: " + rs.getBoolean(10));
+     * System.out.println("\tFIXED_PREC_SCALE: " + rs.getBoolean(11)); System.out.println("\tAUTO_INCREMENT: " +
+     * rs.getBoolean(12)); System.out.println("\tLOCAL_TYPE_NAME: " + rs.getString(13));
+     * System.out.println("\tMINIMUM_SCALE: " + rs.getShort(14)); System.out.println("\tMAXIMUM_SCALE: " +
+     * rs.getShort(15)); System.out.println("\tSQL_DATA_TYPE: " + rs.getShort(16));
+     * System.out.println("\tSQL_DATETIME_SUB: " + rs.getShort(17)); System.out.println("\tNUM_PREC_RADIX: " +
+     * rs.getInt(18)); } rs.close(); }
      */
 
     public boolean supportsCaseInsensitiveMatches() throws SQLException {
-        return !isOracle();
+        return !(isOracle() || isPostgres());
     }
 
     public boolean supportsIndexOnFunction() throws SQLException {
-        return isOracle();
+        return isOracle() || isPostgres();
     }
 
     public boolean beginTransaction() {
