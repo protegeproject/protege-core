@@ -43,9 +43,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
 
     /*
-     * We ignore exceptions in the multiuser server client because they are an almost 
-     * unavoidable side-effect of event processing in some cases
-     */ 
+     * We ignore exceptions in the multiuser server client because they are an almost unavoidable side-effect of event
+     * processing in some cases
+     */
     private void dispatchEvents(Collection events, boolean ignoreExceptions) {
         // Log.trace("found events: " + events, this, "dispatchEvents");
         Iterator i = events.iterator();
@@ -342,7 +342,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                 break;
             case FrameEvent.DELETED:
                 listener.deleted(event);
-            	break;
+                break;
             default:
                 Log.getLogger().severe("bad event: " + event);
             }
@@ -561,6 +561,11 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     public void deleteSlot(Slot slot) {
         getDelegate().deleteSlot(slot);
         removeSlotListeners(slot);
+        dispatchEvents();
+    }
+
+    public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
+        getDelegate().moveDirectOwnSlotValue(frame, slot, from, to);
         dispatchEvents();
     }
 

@@ -11,13 +11,14 @@ import javax.swing.table.*;
 import javax.swing.tree.*;
 
 /**
- * Default implementation of the various renderer interfaces.  This renderer is used for all Protege widget rendering.
- * This ensures a uniform look when a frame is displayed in a tree, a list, and a table.  This renderer also handles
- * the drag over feedback needed to supplement Java's pitiful drag and drop support.
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Default implementation of the various renderer interfaces. This renderer is used for all Protege widget rendering.
+ * This ensures a uniform look when a frame is displayed in a tree, a list, and a table. This renderer also handles the
+ * drag over feedback needed to supplement Java's pitiful drag and drop support.
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public class DefaultRenderer extends JComponent implements TreeCellRenderer, ListCellRenderer, TableCellRenderer {
+public class DefaultRenderer extends JComponent implements TreeCellRenderer, ListCellRenderer,
+        TableCellRenderer {
     public final static Object DROP_TARGET = new Object();
     public final static Object DROP_TARGET_AREA = new Object();
     public final static Object DROP_TARGET_AREA_ON = new Object();
@@ -51,7 +52,7 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
     protected Color _treeBackgroundSelectionColor;
     protected Color _treeForegroundNormalColor;
     protected Color _treeBackgroundNormalColor;
-    
+
     protected JTree _tree;
     protected int _row;
     protected Object _value;
@@ -59,7 +60,7 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
     public DefaultRenderer() {
         loadTreeColors();
     }
-    
+
     public void setBackgroundSelectionColor(Color color) {
         _backgroundSelectionColorOverride = color;
     }
@@ -75,7 +76,7 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
             }
         }
     }
-    
+
     protected Object getValue() {
         return _value;
     }
@@ -87,24 +88,21 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
     protected Color getBackgroundColor() {
         return (_isSelected) ? getBackgroundSelectionColor() : _backgroundNormalColor;
     }
-    
+
     protected Color getBackgroundSelectionColor() {
-        return _backgroundSelectionColorOverride == null ? _backgroundSelectionColor : _backgroundSelectionColorOverride;
+        return _backgroundSelectionColorOverride == null ? _backgroundSelectionColor
+                : _backgroundSelectionColorOverride;
     }
 
-    public Component getListCellRendererComponent(
-        JList list,
-        Object value,
-        int row,
-        boolean selected,
-        boolean hasFocus) {
+    public Component getListCellRendererComponent(JList list, Object value, int row,
+            boolean selected, boolean hasFocus) {
         _foregroundSelectionColor = list.getSelectionForeground();
         _backgroundSelectionColor = list.getSelectionBackground();
         _foregroundNormalColor = list.getForeground();
         _backgroundNormalColor = list.getBackground();
         return setup(list, value, hasFocus, selected);
     }
-    
+
     public Dimension getPreferredSize() {
         Dimension d = new Dimension(0, _fontMetrics.getHeight());
         Object previousElement = null;
@@ -115,20 +113,20 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
             updateSize(d, element);
             previousElement = element;
         }
-        
+
         if (true) {
-	        if (_tree != null && !gettingRowBounds) {
-	            gettingRowBounds = true;
-	            Rectangle bounds = _tree.getRowBounds(_row);
-	            if (bounds != null) {
-	                d.width = Math.max(d.width, getNiceWidth(_tree, bounds.x));
-	            }
-	            gettingRowBounds = false;
-	        }
+            if (_tree != null && !gettingRowBounds) {
+                gettingRowBounds = true;
+                Rectangle bounds = _tree.getRowBounds(_row);
+                if (bounds != null) {
+                    d.width = Math.max(d.width, getNiceWidth(_tree, bounds.x));
+                }
+                gettingRowBounds = false;
+            }
         }
         return d;
     }
-    
+
     private int getNiceWidth(JComponent component, int x) {
         int width;
         JViewport port = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, component);
@@ -140,9 +138,9 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         }
         return width;
     }
-    
+
     // hack to avoid infinite recursion
-     private boolean gettingRowBounds;
+    private boolean gettingRowBounds;
 
     private int getGap(Object previousElement, Object currentElement) {
         int gap;
@@ -183,13 +181,8 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         d.width += _fontMetrics.stringWidth(text);
     }
 
-    public Component getTableCellRendererComponent(
-        JTable table,
-        Object value,
-        boolean selected,
-        boolean hasFocus,
-        int row,
-        int col) {
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean selected,
+            boolean hasFocus, int row, int col) {
         _foregroundSelectionColor = table.getSelectionForeground();
         _backgroundSelectionColor = table.getSelectionBackground();
         _foregroundNormalColor = table.getForeground();
@@ -200,21 +193,16 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
     protected Color getTextColor() {
         Color textColor;
         if (_isSelected) {
-            textColor = (_backgroundSelectionColorOverride == null) ? _foregroundSelectionColor : _foregroundNormalColor;
+            textColor = (_backgroundSelectionColorOverride == null) ? _foregroundSelectionColor
+                    : _foregroundNormalColor;
         } else {
             textColor = (_grayedText) ? Color.darkGray : _foregroundNormalColor;
         }
         return textColor;
     }
 
-    public Component getTreeCellRendererComponent(
-        JTree tree,
-        Object value,
-        boolean selected,
-        boolean expanded,
-        boolean leaf,
-        int row,
-        boolean hasFocus) {
+    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
+            boolean expanded, boolean leaf, int row, boolean hasFocus) {
         _foregroundSelectionColor = _treeForegroundSelectionColor;
         _backgroundSelectionColor = _treeBackgroundSelectionColor;
         _foregroundNormalColor = _treeForegroundNormalColor;
@@ -241,14 +229,14 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
 
     public void paint(Graphics graphics) {
         ComponentUtilities.enableTextAntialiasing(graphics);
-        
+
         graphics.setFont(getFont());
         _fontMetrics = graphics.getFontMetrics();
         Dimension currentSize = getSize();
 
         graphics.setColor(getBackgroundColor());
         graphics.fillRect(0, 0, currentSize.width, currentSize.height);
-        
+
         graphics.setColor(getTextColor());
 
         Point position = new Point();
@@ -283,7 +271,7 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
 
         if (_hasFocus) {
             graphics.setColor(_focusRectColor);
-            graphics.drawRect(0, 0, currentSize.width-1, currentSize.height-1);
+            graphics.drawRect(0, 0, currentSize.width - 1, currentSize.height - 1);
         }
         if (_dropTargetArea == DROP_TARGET_AREA_ON) {
             graphics.setColor(_dropTargetLineColor);
@@ -310,11 +298,13 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         paintString(graphics, text, position, null, size);
     }
 
-    protected void paintString(Graphics graphics, String text, Point position, Color color, Dimension size) {
+    protected void paintString(Graphics graphics, String text, Point position, Color color,
+            Dimension size) {
         if (color != null) {
             graphics.setColor(color);
         }
-        int y = (size.height + _fontMetrics.getAscent())/2 -2;	// -2 is a bizarre fudge factor that makes it look better!
+        int y = (size.height + _fontMetrics.getAscent()) / 2 - 2; // -2 is a bizarre fudge factor that makes it look
+        // better!
         graphics.drawString(text, position.x, y);
         position.x += _fontMetrics.stringWidth(text);
     }
@@ -371,7 +361,7 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         }
         return first;
     }
-    
+
     private static int indexOfClass(List elements, Class clas) {
         int index = -1;
         for (int i = 0; i < elements.size(); ++i) {
@@ -426,6 +416,10 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         _foregroundNormalColor = color;
     }
 
+    protected void loadDuplicate(Object o) {
+        load(o);
+    }
+
     protected Component setup(Component c, Object value, boolean hasFocus, boolean isSelected) {
         _grayedText = false;
         _value = value;
@@ -441,7 +435,13 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         if (value == null) {
             loadNull();
         } else if (value instanceof LazyTreeNode) {
-            load(((LazyTreeNode) value).getUserObject());
+            LazyTreeNode node = (LazyTreeNode) value;
+            Object object = node.getUserObject();
+            if (node.isDuplicate()) {
+                loadDuplicate(object);
+            } else {
+                load(object);
+            }
         } else {
             load(value);
         }
@@ -473,34 +473,49 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
     public boolean isOpaque() {
         return true;
     }
+
     public void validate() {
     }
+
     public void revalidate() {
     }
+
     public void invalidate() {
     }
+
     public void repaint() {
     }
+
     public void repaint(int x, int y, int w, int h) {
     }
+
     public void repaint(Rectangle r) {
     }
+
     public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
     }
+
     public void firePropertyChange(String propertyName, byte oldValue, byte newValue) {
     }
+
     public void firePropertyChange(String propertyName, char oldValue, char newValue) {
     }
+
     public void firePropertyChange(String propertyName, double oldValue, double newValue) {
     }
+
     public void firePropertyChange(String propertyName, float oldValue, float newValue) {
     }
+
     public void firePropertyChange(String propertyName, int oldValue, int newValue) {
     }
+
     public void firePropertyChange(String propertyName, long oldValue, long newValue) {
     }
+
     public void firePropertyChange(String propertyName, short oldValue, short newValue) {
     }
+
     public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
     }
 }

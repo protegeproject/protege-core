@@ -397,6 +397,11 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
                 .getDirectSuperclassesSlot());
     }
 
+    public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
+        getDelegate().moveDirectOwnSlotValue(frame, slot, from, to);
+        generateOwnSlotValuesChangedEvent(frame, slot);
+    }
+
     public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
         getDelegate().moveDirectSubclass(cls, subclass, index);
         generateClsEvent(ClsEvent.DIRECT_SUBCLASS_MOVED, cls, subclass);

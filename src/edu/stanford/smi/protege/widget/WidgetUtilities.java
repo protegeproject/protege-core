@@ -11,16 +11,13 @@ import edu.stanford.smi.protege.util.*;
 
 /**
  * A collection of utilities useful for creating and working with widgets.
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class WidgetUtilities {
 
-    public static ClsWidget createClsWidget(
-        WidgetDescriptor descriptor,
-        boolean isDesignTime,
-        Project project,
-        Cls cls) {
+    public static ClsWidget createClsWidget(WidgetDescriptor descriptor, boolean isDesignTime,
+            Project project, Cls cls) {
         ClsWidget widget;
         try {
             Assert.assertNotNull("descriptor", descriptor);
@@ -32,18 +29,14 @@ public class WidgetUtilities {
             widget.setup(descriptor, isDesignTime, project, cls);
             widget.initialize();
         } catch (Exception e) {
-            Log.getLogger().warning(e.toString());
+            Log.getLogger().warning(Log.toString(e));
             widget = new UglyClsWidget();
         }
         return widget;
     }
 
-    public static SlotWidget createSlotWidget(
-        WidgetDescriptor descriptor,
-        boolean isDesignTime,
-        Project project,
-        Cls cls,
-        Slot slot) {
+    public static SlotWidget createSlotWidget(WidgetDescriptor descriptor, boolean isDesignTime,
+            Project project, Cls cls, Slot slot) {
         SlotWidget widget;
         try {
             Assert.assertNotNull("descriptor", descriptor);
@@ -54,7 +47,7 @@ public class WidgetUtilities {
             }
             setupSlotWidget(widget, descriptor, isDesignTime, project, cls, slot);
         } catch (Exception e) {
-            Log.getLogger().warning(e.toString());
+            Log.getLogger().warning(Log.toString(e));
             widget = new UglySlotWidget(descriptor.getWidgetClassName());
             setupSlotWidget(widget, descriptor, isDesignTime, project, cls, slot);
         }
@@ -73,7 +66,7 @@ public class WidgetUtilities {
             result.setup(descriptor, project);
             result.initialize();
         } catch (Exception e) {
-            Log.getLogger().warning(e.toString());
+            Log.getLogger().warning(Log.toString(e));
             result = new UglyTabWidget();
             result.setup(descriptor, project);
             result.initialize();
@@ -98,13 +91,8 @@ public class WidgetUtilities {
         }
     }
 
-    private static void setupSlotWidget(
-        SlotWidget widget,
-        WidgetDescriptor descriptor,
-        boolean isDesignTime,
-        Project project,
-        Cls cls,
-        Slot slot) {
+    private static void setupSlotWidget(SlotWidget widget, WidgetDescriptor descriptor,
+            boolean isDesignTime, Project project, Cls cls, Slot slot) {
         setupComponent((JComponent) widget, descriptor);
         widget.setup(descriptor, isDesignTime, project, cls, slot);
         widget.initialize();
@@ -112,9 +100,11 @@ public class WidgetUtilities {
     }
 
     private static final String IS_TAB_SUITABLE_NAME = "isSuitable";
-    private static final Class[] IS_TAB_SUITABLE_ARG_CLASSES = new Class[] { Project.class, Collection.class };
+    private static final Class[] IS_TAB_SUITABLE_ARG_CLASSES = new Class[] { Project.class,
+            Collection.class };
 
-    public static boolean isSuitableTab(String tabWidgetClassName, Project project, Collection errors) {
+    public static boolean isSuitableTab(String tabWidgetClassName, Project project,
+            Collection errors) {
         boolean isSuitable = false;
         try {
             Class tabWidgetClass = SystemUtilities.forName(tabWidgetClassName);
