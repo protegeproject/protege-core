@@ -8,13 +8,11 @@ import edu.stanford.smi.protege.util.*;
 
 class DatabaseUtils {
     /*
-     * These constants are store in the database as a performance hack.  When a frame is 
-     * read out of the db we need to make a java object from it.  To do this we need to know
-     * if it is a class, a slot, or a simple instance.  We could figure this out by making a bunch
-     * of additional db calls, but instead we just store a number that effectively maps it 
-     * directly to a Java class.  For slot/facet "values" we always store everything as a string.
-     * Thus we need some way to reliably map back to the original Java class.  These integers 
-     * also server this purpose.
+     * These constants are store in the database as a performance hack. When a frame is read out of the db we need to
+     * make a java object from it. To do this we need to know if it is a class, a slot, or a simple instance. We could
+     * figure this out by making a bunch of additional db calls, but instead we just store a number that effectively
+     * maps it directly to a Java class. For slot/facet "values" we always store everything as a string. Thus we need
+     * some way to reliably map back to the original Java class. These integers also server this purpose.
      */
     private static final int VALUE_TYPE_INTEGER = 1;
     private static final int VALUE_TYPE_FLOAT = 2;
@@ -25,7 +23,7 @@ class DatabaseUtils {
     // private static final int VALUE_TYPE_SLOT = 7;
     // private static final int VALUE_TYPE_FACET = 8;
 
-    private static final char ESCAPE_CHAR = '\\';
+    private static final char ESCAPE_CHAR = '|';
     private static final char SINGLE_QUOTE = '\'';
 
     public static String getEscapeClause() {
@@ -61,13 +59,16 @@ class DatabaseUtils {
         return getFrameIDValueString(getId(frame));
     }
 
-    private static void setValueType(PreparedStatement stmt, int index, Object o, FrameFactory factory) throws SQLException {
+    private static void setValueType(PreparedStatement stmt, int index, Object o,
+            FrameFactory factory) throws SQLException {
         setValueType(stmt, index, valueType(o, factory));
     }
 
-    private static void setValueType(PreparedStatement stmt, int index, int type) throws SQLException {
-        /* The setByte below is correct but the JdbcOdbc bridge fails on this call even though the underlying data
-         * type is a byte.  Thus we use setInt.
+    private static void setValueType(PreparedStatement stmt, int index, int type)
+            throws SQLException {
+        /*
+         * The setByte below is correct but the JdbcOdbc bridge fails on this call even though the underlying data type
+         * is a byte. Thus we use setInt.
          */
         // stmt.setByte(index, (byte) type);
         stmt.setInt(index, (short) type);
@@ -93,8 +94,8 @@ class DatabaseUtils {
         setId(stmt, index, frame);
     }
 
-    public static void setFrame(PreparedStatement stmt, int frameIndex, int typeIndex, Frame frame, FrameFactory factory)
-        throws SQLException {
+    public static void setFrame(PreparedStatement stmt, int frameIndex, int typeIndex, Frame frame,
+            FrameFactory factory) throws SQLException {
         setId(stmt, frameIndex, frame);
         setValueType(stmt, typeIndex, frame, factory);
     }
@@ -107,7 +108,8 @@ class DatabaseUtils {
         setId(stmt, index, facet);
     }
 
-    public static void setIsTemplate(PreparedStatement stmt, int index, boolean isTemplate) throws SQLException {
+    public static void setIsTemplate(PreparedStatement stmt, int index, boolean isTemplate)
+            throws SQLException {
         stmt.setBoolean(index, isTemplate);
     }
 
@@ -115,12 +117,13 @@ class DatabaseUtils {
         return isTemplate ? 1 : 0;
     }
 
-    public static void setValueIndex(PreparedStatement stmt, int index, int valueIndex) throws SQLException {
+    public static void setValueIndex(PreparedStatement stmt, int index, int valueIndex)
+            throws SQLException {
         stmt.setInt(index, valueIndex);
     }
 
-    public static void setShortValue(PreparedStatement stmt, int valueIndex, int valueTypeIndex, Object object, FrameFactory factory)
-        throws SQLException {
+    public static void setShortValue(PreparedStatement stmt, int valueIndex, int valueTypeIndex,
+            Object object, FrameFactory factory) throws SQLException {
         stmt.setString(valueIndex, toString(object));
         setValueType(stmt, valueTypeIndex, object, factory);
     }
@@ -136,25 +139,20 @@ class DatabaseUtils {
         return s;
     }
 
-    public static void setShortMatchValue(
-        PreparedStatement stmt,
-        int valueIndex,
-        int valueTypeIndex,
-        String value,
-        boolean supportsEscape)
-        throws SQLException {
+    public static void setShortMatchValue(PreparedStatement stmt, int valueIndex,
+            int valueTypeIndex, String value, boolean supportsEscape) throws SQLException {
         stmt.setString(valueIndex, getMatchString(value, supportsEscape));
         setValueType(stmt, valueTypeIndex, VALUE_TYPE_STRING);
     }
 
     private static void setNullShortValue(PreparedStatement stmt, int valueIndex, int valueTypeIndex)
-        throws SQLException {
+            throws SQLException {
         if (isJdbcOdbcBridge(stmt)) {
             /*
-             * Under some conditions that I can't figure out, the standard setNull command fails when using the
-             * JdbcOdbc driver.  The problem can be seen when dumping the newspaper example to Ms Access.  Since
-             * I cannot figure out the problem or a workaround we instead set the value to the empty string rather 
-             * than null and then we convert it back to null on input.
+             * Under some conditions that I can't figure out, the standard setNull command fails when using the JdbcOdbc
+             * driver. The problem can be seen when dumping the newspaper example to Ms Access. Since I cannot figure
+             * out the problem or a workaround we instead set the value to the empty string rather than null and then we
+             * convert it back to null on input.
              */
             stmt.setString(valueIndex, "");
         } else {
@@ -162,31 +160,26 @@ class DatabaseUtils {
         }
         setValueType(stmt, valueTypeIndex, VALUE_TYPE_STRING);
     }
-    
+
     private static boolean isJdbcOdbcBridge(Statement stmt) {
         return stmt.getClass().getName().startsWith("sun.jdbc.odbc.JdbcOdbcPreparedStatement");
     }
 
-    public static void setLongValue(PreparedStatement stmt, int valueIndex, Object object) throws SQLException {
+    public static void setLongValue(PreparedStatement stmt, int valueIndex, Object object)
+            throws SQLException {
         stmt.setString(valueIndex, toString(object));
         // setValueType(stmt, valueTypeIndex, VALUE_TYPE_STRING);
 
     }
 
     static boolean first = true;
+
     public static void setNullLongValue(PreparedStatement stmt, int index) throws SQLException {
         stmt.setNull(index, Types.LONGVARCHAR);
     }
 
-    public static void setValue(
-        PreparedStatement stmt,
-        int shortValueIndex,
-        int longValueIndex,
-        int valueTypeIndex,
-        Object o,
-        int sizeLimit,
-        FrameFactory factory)
-        throws SQLException {
+    public static void setValue(PreparedStatement stmt, int shortValueIndex, int longValueIndex,
+            int valueTypeIndex, Object o, int sizeLimit, FrameFactory factory) throws SQLException {
         if (isShortValue(o, sizeLimit)) {
             setShortValue(stmt, shortValueIndex, valueTypeIndex, o, factory);
             setNullLongValue(stmt, longValueIndex);
@@ -229,7 +222,7 @@ class DatabaseUtils {
     }
 
     public static Frame getFrame(ResultSet rs, int frameIndex, int typeIndex, FrameFactory factory)
-        throws SQLException {
+            throws SQLException {
         FrameID id = getFrameId(rs, frameIndex);
         int type = rs.getInt(typeIndex);
         return getFrame(id, type, factory);
@@ -274,33 +267,33 @@ class DatabaseUtils {
         return facet;
     }
 
-    public static Object getShortValue(ResultSet rs, int valueIndex, int valueTypeIndex, FrameFactory factory)
-        throws SQLException {
+    public static Object getShortValue(ResultSet rs, int valueIndex, int valueTypeIndex,
+            FrameFactory factory) throws SQLException {
         Object value;
         int type = rs.getByte(valueTypeIndex);
         String valueString = rs.getString(valueIndex);
         switch (type) {
-            case VALUE_TYPE_INTEGER :
-                value = Integer.valueOf(valueString);
-                break;
-            case VALUE_TYPE_FLOAT :
-                value = Float.valueOf(valueString);
-                break;
-            case VALUE_TYPE_BOOLEAN :
-                value = Boolean.valueOf(valueString);
-                break;
-            case VALUE_TYPE_STRING :
-                value = valueString;
-                // Inverse of hack for JDK 1.4 JdbcOdbcBridge bug
-                if (valueString != null && valueString.length() == 0) {
-                    value = null;
-                }
-                break;
-            default :
-                int valueInt = Integer.valueOf(valueString).intValue();
-                FrameID id = createFrameID(valueInt);
-                value = getFrame(id, type, factory);
-                break;
+        case VALUE_TYPE_INTEGER:
+            value = Integer.valueOf(valueString);
+            break;
+        case VALUE_TYPE_FLOAT:
+            value = Float.valueOf(valueString);
+            break;
+        case VALUE_TYPE_BOOLEAN:
+            value = Boolean.valueOf(valueString);
+            break;
+        case VALUE_TYPE_STRING:
+            value = valueString;
+            // Inverse of hack for JDK 1.4 JdbcOdbcBridge bug
+            if (valueString != null && valueString.length() == 0) {
+                value = null;
+            }
+            break;
+        default:
+            int valueInt = Integer.valueOf(valueString).intValue();
+            FrameID id = createFrameID(valueInt);
+            value = getFrame(id, type, factory);
+            break;
         }
         return value;
     }
@@ -317,7 +310,8 @@ class DatabaseUtils {
         return rs.getBoolean(index);
     }
 
-    public static void setFrameType(PreparedStatement stmt, int index, int type) throws SQLException {
+    public static void setFrameType(PreparedStatement stmt, int index, int type)
+            throws SQLException {
         setValueType(stmt, index, type);
     }
 
