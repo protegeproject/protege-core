@@ -58,7 +58,7 @@
 			<entry key = "build.number.previous" default = "00" type = "int" operation = "+" pattern = "000"/>
 		</propertyfile>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit ../${project.name}/build/src/edu/stanford/smi/protege/resource/files/build.properties"/>
+			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/resource/files/build.properties"/>
 		</exec>
 	</target>
 	<!-- =================================================================== -->
@@ -79,25 +79,25 @@
 		<javacc javacchome = "c:/javacc-3.2/bin/lib" target = "${build.scripts}/Parser.jj" outputdirectory = "${build.src}/edu/stanford/smi/protege/storage/clips"/>
 		<!-- check in files that were regenerated -->
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
+			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/Parser.java"/>
+			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/Parser.java"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/ParserConstants.java"/>
+			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/ParserConstants.java"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/ParserTokenManager.java"/>
+			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/ParserTokenManager.java"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/SimpleCharStream.java"/>
+			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/SimpleCharStream.java"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/Token.java"/>
+			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/Token.java"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
+			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
 		</exec>
 	</target>
 	<!-- =================================================================== -->
