@@ -77,7 +77,7 @@ class Record {
     public void removeValue(Object o) {
         boolean succeeded = values.remove(o);
         if (!succeeded) {
-            System.err.println("Unable to remove " + o);
+            Log.getLogger().warning("Unable to remove " + o);
         }
     }
 
