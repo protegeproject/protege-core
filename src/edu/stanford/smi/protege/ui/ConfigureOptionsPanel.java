@@ -17,7 +17,6 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
 
     private Project _project;
     private JCheckBox _hiddenFramesComponent;
-    // private JCheckBox _multiParentClassIconComponent;
     private JCheckBox _confirmOnRemoveComponent;
     private JCheckBox _isEditableComponent;
     private JCheckBox _updateModificationSlotsComponent;
@@ -30,7 +29,6 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         setLayout(new BorderLayout());
         JComponent c = new Box(BoxLayout.Y_AXIS);
         c.add(createHiddenClassesComponent());
-        // c.add(createMultiparentClassIconComponent());
         c.add(createConfirmOnRemoveComponent());
         c.add(createIsEditableComponent());
         c.add(createUpdateModificationSlotsComponent());
@@ -73,12 +71,6 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         setValue(_isEditableComponent, !_project.isReadonly());
         return _isEditableComponent;
     }
-
-    //    private JComponent createMultiparentClassIconComponent() {
-    //        _multiParentClassIconComponent = ComponentFactory.createCheckBox("Display multi-parent class icon");
-    //        setValue(_multiParentClassIconComponent, _project.getDisplayMultiParentClassIcon());
-    //        return _multiParentClassIconComponent;
-    //    }
 
     private JComponent createUpdateModificationSlotsComponent() {
         _updateModificationSlotsComponent = ComponentFactory.createCheckBox("Update Modification Slots");
