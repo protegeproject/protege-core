@@ -343,6 +343,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         Cls cls = createCls();
         assertEquals(count + 1, kb.getClsCount());
         kb.deleteCls(cls);
+        assertEquals(count, kb.getClsCount());
     }
 
     public void testGetSlotCount() {
@@ -460,8 +461,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         String instanceName = instance.getName();
         instance.setOwnSlotValues(slot, originalValues);
         saveAndReload();
-        Collection loadedValues = new ArrayList(getInstance(instanceName).getOwnSlotValues(
-                getSlot(slotName)));
+        Collection loadedValues = new ArrayList(getInstance(instanceName).getOwnSlotValues(getSlot(slotName)));
         assertEquals("values", originalValues, loadedValues);
     }
 
@@ -502,8 +502,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         slot.setMinimumValue(new Integer(2));
         cls.addDirectTemplateSlot(slot);
         Instance instance = createInstance(cls);
-        assertFalse("1", instance
-                .areValidOwnSlotValues(slot, Collections.singleton(new Integer(1))));
+        assertFalse("1", instance.areValidOwnSlotValues(slot, Collections.singleton(new Integer(1))));
         assertTrue("2", instance.areValidOwnSlotValues(slot, Collections.singleton(new Integer(2))));
         assertTrue("3", instance.areValidOwnSlotValues(slot, Collections.singleton(new Integer(3))));
     }
@@ -603,11 +602,9 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertTrue("a directly overridden", a.hasDirectlyOverriddenTemplateSlot(s));
         assertFalse("b not directly overridden", b.hasDirectlyOverriddenTemplateSlot(s));
         assertTrue("a valueType overridden", a.hasOverriddenTemplateFacet(s, valueTypeFacet));
-        assertTrue("a valueType directly overridden", a.hasDirectlyOverriddenTemplateFacet(s,
-                valueTypeFacet));
+        assertTrue("a valueType directly overridden", a.hasDirectlyOverriddenTemplateFacet(s, valueTypeFacet));
         assertTrue("b valueType overridden", b.hasOverriddenTemplateFacet(s, valueTypeFacet));
-        assertFalse("b valueType direct overridden", b.hasDirectlyOverriddenTemplateFacet(s,
-                valueTypeFacet));
+        assertFalse("b valueType direct overridden", b.hasDirectlyOverriddenTemplateFacet(s, valueTypeFacet));
     }
 
     public void testIsDirectlyOverriddenFacet() {
@@ -637,14 +634,12 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         inst2.addOwnSlotValue(s, "abcz");
         inst3.addOwnSlotValue(s, "qqq");
         assertEquals("exact", 0, getDomainKB().getMatchingReferences("z", 0).size());
-        assertEquals("starts", 1, getDomainKB().getMatchingReferences("z*",
-                KnowledgeBase.UNLIMITED_MATCHES).size());
-        assertEquals("contains", 2, getDomainKB().getMatchingReferences("*z*",
-                KnowledgeBase.UNLIMITED_MATCHES).size());
+        assertEquals("starts", 1, getDomainKB().getMatchingReferences("z*", KnowledgeBase.UNLIMITED_MATCHES).size());
+        assertEquals("contains", 2, getDomainKB().getMatchingReferences("*z*", KnowledgeBase.UNLIMITED_MATCHES).size());
         assertEquals("contains insensitive", 2, getDomainKB().getMatchingReferences("*Z*",
                 KnowledgeBase.UNLIMITED_MATCHES).size());
-        assertEquals("contains 2", 2, getDomainKB().getMatchingReferences("*abc*",
-                KnowledgeBase.UNLIMITED_MATCHES).size());
+        assertEquals("contains 2", 2, getDomainKB().getMatchingReferences("*abc*", KnowledgeBase.UNLIMITED_MATCHES)
+                .size());
     }
 
     public void testGetFramesWithValue() {
@@ -663,10 +658,8 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
 
         inst2.addOwnSlotValue(s2, inst1);
 
-        assertEquals("string match", 3, getDomainKB().getFramesWithValue(s1, null, false, "abc")
-                .size());
-        assertEquals("frame match", 1, getDomainKB().getFramesWithValue(s2, null, false, inst1)
-                .size());
+        assertEquals("string match", 3, getDomainKB().getFramesWithValue(s1, null, false, "abc").size());
+        assertEquals("frame match", 1, getDomainKB().getFramesWithValue(s2, null, false, inst1).size());
     }
 
     public void testGetDBFramesWithValue() {
@@ -686,10 +679,8 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
 
         inst2.addOwnSlotValue(s2, inst1);
 
-        assertEquals("string match", 3, getDomainKB().getFramesWithValue(s1, null, false, "abc")
-                .size());
-        assertEquals("frame match", 1, getDomainKB().getFramesWithValue(s2, null, false, inst1)
-                .size());
+        assertEquals("string match", 3, getDomainKB().getFramesWithValue(s1, null, false, "abc").size());
+        assertEquals("frame match", 1, getDomainKB().getFramesWithValue(s2, null, false, inst1).size());
     }
 
     public void testGetMatchingDBReferences() {
@@ -910,10 +901,8 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         Date createDate = new StandardDateFormat().parse(creationString);
         SystemUtilities.sleepMsec(100);
         Date endDate = new Date();
-        assertTrue("create timestamp after begin: " + createDate + " - " + start, createDate
-                .after(start));
-        assertTrue("create timestamp before end: " + createDate + " - " + endDate, createDate
-                .before(endDate));
+        assertTrue("create timestamp after begin: " + createDate + " - " + start, createDate.after(start));
+        assertTrue("create timestamp before end: " + createDate + " - " + endDate, createDate.before(endDate));
 
         a.addDirectTemplateSlot(slot);
         SystemUtilities.sleepMsec(100);
@@ -1578,8 +1567,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         fired[0] = Boolean.FALSE;
         FrameStore originalHead = ((DefaultKnowledgeBase) getDomainKB()).getHeadFrameStore();
         FrameStore testFs = new FrameStoreAdapter() {
-            public Slot createSlot(FrameID id, String name, Collection superslots,
-                    Collection types, boolean init) {
+            public Slot createSlot(FrameID id, String name, Collection superslots, Collection types, boolean init) {
                 fired[0] = Boolean.TRUE;
                 return getDelegate().createSlot(id, name, superslots, types, init);
             }

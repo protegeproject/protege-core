@@ -6,7 +6,7 @@ import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.query.*;
 import edu.stanford.smi.protege.util.*;
 
-public class InMemoryFrameDb implements NarrowFrameStore {
+public class InMemoryFrameDb_old implements NarrowFrameStore {
     private static final int INITIAL_MAP_SIZE = 32771;
     private Map _valueToReferencesMap = new LinkedHashMap(INITIAL_MAP_SIZE);
     private Map _referenceToValuesMap = new LinkedHashMap(INITIAL_MAP_SIZE);
@@ -24,15 +24,17 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         frameDBName = name;
     }
 
-    public InMemoryFrameDb() {
+    public InMemoryFrameDb_old() {
         this("InMemoryFrameDb");
     }
 
-    public InMemoryFrameDb(String name) {
+    public InMemoryFrameDb_old(String name) {
         if (name != null) {
             frameDBName = name;
         }
     }
+    
+    
 
     public FrameID generateFrameID() {
         return FrameID.createLocal(counter++);

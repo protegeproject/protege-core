@@ -17,8 +17,7 @@ import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.server.*;
 
 /**
- * A set of utilities for accessing the underlying system and for manipulating
- * system level objects.
+ * A set of utilities for accessing the underlying system and for manipulating system level objects.
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  * @author Joe Edelman (jxe@dartmouth.edu)
@@ -89,7 +88,7 @@ public class SystemUtilities {
     public static String getUserDirectory() {
         return getSystemProperty("user.dir");
     }
-    
+
     public static String getLineSeparator() {
         return getSystemProperty("line.separator");
     }
@@ -119,6 +118,7 @@ public class SystemUtilities {
             loadLookAndFeel();
             setSecurityManager();
             PluginUtilities.initialize();
+            Toolkit.getDefaultToolkit().setDynamicLayout(true);
         } catch (Exception e) {
             // We explicitly do nothing fancy with writing this output. This
             // method is called on startup
@@ -128,7 +128,7 @@ public class SystemUtilities {
             e.printStackTrace();
         }
     }
-    
+
     private static void loadParameters() {
         String osName = getSystemProperty("os.name");
         isMac = osName.indexOf("Mac") != -1;
@@ -147,7 +147,7 @@ public class SystemUtilities {
         String lafName = ApplicationProperties.getLookAndFeelClassName();
         setLookAndFeel(lafName);
     }
-    
+
     public static void setLookAndFeel(String lafName) {
         try {
             LookAndFeel lookAndFeel = (LookAndFeel) Class.forName(lafName).newInstance();
@@ -179,8 +179,7 @@ public class SystemUtilities {
         return true;
     }
 
-    public static Object newInstance(Class clas, Class[] argumentClasses,
-            Object[] arguments) {
+    public static Object newInstance(Class clas, Class[] argumentClasses, Object[] arguments) {
         Object instance = null;
         try {
             Constructor constructor = clas.getConstructor(argumentClasses);
@@ -252,7 +251,7 @@ public class SystemUtilities {
         buffer.append(", JVM ");
         buffer.append(getSystemProperty("java.runtime.version"));
         buffer.append(", memory=");
-        buffer.append(Runtime.getRuntime().maxMemory()/1000000);
+        buffer.append(Runtime.getRuntime().maxMemory() / 1000000);
         buffer.append("M, ");
         buffer.append(getSystemProperty("os.name"));
         buffer.append(", encoding=");
@@ -263,13 +262,12 @@ public class SystemUtilities {
         buffer.append(Locale.getDefault().getCountry());
         Log.getLogger().config(buffer.toString());
     }
-    
+
     private static class PropertyComparator implements Comparator {
         public int compare(Object o1, Object o2) {
             Map.Entry entry1 = (Map.Entry) o1;
             Map.Entry entry2 = (Map.Entry) o2;
-            return entry1.getKey().toString().compareToIgnoreCase(
-                    entry2.getKey().toString());
+            return entry1.getKey().toString().compareToIgnoreCase(entry2.getKey().toString());
         }
     }
 
@@ -364,10 +362,10 @@ public class SystemUtilities {
         try {
             Thread.currentThread().setContextClassLoader(o.getClass().getClassLoader());
         } catch (Exception e) {
-            // Do nothing.  This happens in applets
+            // Do nothing. This happens in applets
         }
     }
-    
+
     public static boolean showAlphaFeatures() {
         boolean showAlpha = false;
         String showAlphaString = SystemUtilities.getSystemProperty("protege.alpha");
@@ -376,11 +374,11 @@ public class SystemUtilities {
         }
         return showAlpha;
     }
-    
+
     public static boolean useAntialiasing() {
         return UIManager.getLookAndFeel().getClass().getName().indexOf("Plastic") != -1 && !isMac();
     }
-    
+
     private static MetalTheme createDefaultMetalTheme() {
         MetalTheme theme;
         if (isJDK15()) {
@@ -390,7 +388,7 @@ public class SystemUtilities {
         }
         return theme;
     }
-    
+
     private static boolean isJDK15() {
         String property = getSystemProperty("java.runtime.version");
         return property.startsWith("1.5.");
@@ -401,23 +399,24 @@ public class SystemUtilities {
         String language = System.getProperty("user.language");
         return new Locale(language, country);
     }
-    
+
     public static Locale getProtegeSystemDefaultLocale() {
         return new Locale(Locale.ENGLISH.getLanguage(), Locale.US.getCountry());
     }
-    
+
     public static boolean isApplet() {
         return isApplet;
     }
-    
+
     public static void setApplet(boolean b) {
         isApplet = b;
     }
 }
 
 // This hack gets around a classloader problem if the looks jar is not on the classpath
+
 class PlasticHack {
-	public static PlasticTheme createTheme() {
-	    return new ProtegePlasticTheme();
-	}
+    public static PlasticTheme createTheme() {
+        return new ProtegePlasticTheme();
+    }
 }

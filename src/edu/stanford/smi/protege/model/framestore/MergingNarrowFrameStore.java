@@ -12,7 +12,6 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class MergingNarrowFrameStore implements NarrowFrameStore {
-    public static final String SYSTEM_NAME = "system frames";
     private static final Object ROOT_NODE = new Object();
 
     private NarrowFrameStore activeFrameStore;
@@ -21,7 +20,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     private Tree frameStoreTree = new Tree(ROOT_NODE);
 
     public MergingNarrowFrameStore() {
-        systemFrameStore = new InMemoryFrameDb(SYSTEM_NAME);
+        systemFrameStore = new InMemoryFrameDb("system");
         addActiveFrameStore(systemFrameStore);
     }
 
@@ -42,7 +41,21 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public static NarrowFrameStore getSystemFrameStore(KnowledgeBase kb) {
-        return get(kb).getFrameStore(SYSTEM_NAME);
+        return get(kb).getSystemFrameStore();
+    }
+
+    public NarrowFrameStore getSystemFrameStore() {
+        return systemFrameStore;
+    }
+
+    public Collection getAvailableFrameStores() {
+        return new ArrayList(availableFrameStores);
+    }
+
+    public Collection getAllFrameStores() {
+        Collection frameStores = frameStoreTree.getNodes();
+        frameStores.add(systemFrameStore);
+        return frameStores;
     }
 
     public String getName() {
@@ -384,7 +397,12 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public void replaceFrame(Frame frame) {
-        getDelegate().replaceFrame(frame);
+        // getDelegate().replaceFrame(frame);
+        Iterator i = availableFrameStores.iterator();
+        while (i.hasNext()) {
+            NarrowFrameStore narrowFrameStore = (NarrowFrameStore) i.next();
+            narrowFrameStore.replaceFrame(frame);
+        }
     }
 
     public boolean beginTransaction(String name) {

@@ -13,22 +13,19 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
 
-// import edu.stanford.smi.protege.action.*;
 import edu.stanford.smi.protege.action.*;
 import edu.stanford.smi.protege.resource.*;
 
 /**
- * Factory class for making swing components, and their varients. The use of
- * this class is not required for Protege widgets. It is encouraged though. This
- * allows for a single place to address swing bugs and look and feel issues.
+ * Factory class for making swing components, and their varients. The use of this class is not required for Protege
+ * widgets. It is encouraged though. This allows for a single place to address swing bugs and look and feel issues.
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  * @author Monica Crubezy <crubezy@smi.stanford.edu>
  */
 public class ComponentFactory {
     public final static int STANDARD_BUTTON_HEIGHT = 25;
-    public final static Dimension STANDARD_BUTTON_SIZE = new Dimension(STANDARD_BUTTON_HEIGHT,
-            STANDARD_BUTTON_HEIGHT);
+    public final static Dimension STANDARD_BUTTON_SIZE = new Dimension(STANDARD_BUTTON_HEIGHT, STANDARD_BUTTON_HEIGHT);
     public final static int LARGE_BUTTON_HEIGHT = 33;
     public final static int STANDARD_FIELD_HEIGHT = STANDARD_BUTTON_HEIGHT;
 
@@ -94,8 +91,7 @@ public class ComponentFactory {
         return button;
     }
 
-    public static void addToolBarButton(JToolBar toolBar, final Action action,
-            final AbstractButton button) {
+    public static void addToolBarButton(JToolBar toolBar, final Action action, final AbstractButton button) {
         button.setText(null);
         toolBar.add(button);
     }
@@ -223,6 +219,10 @@ public class ComponentFactory {
         return comboBox;
     }
 
+    public static class ProjectChooser {
+
+    }
+
     public static JFileChooser createFileOrRemoteChooser(String description, String extension) {
         JFileChooser chooser;
         if (SystemUtilities.showAlphaFeatures()) {
@@ -234,7 +234,7 @@ public class ComponentFactory {
                     JTabbedPane pane = ComponentFactory.createTabbedPane(false);
                     pane.addTab("File", this);
                     pane.addTab("Remote", new JLabel("Remote Tab"));
-                    
+
                     contentPane.add(pane);
                     return dialog;
                 }
@@ -324,21 +324,18 @@ public class ComponentFactory {
         return label;
     }
 
-    public static LabeledComponent createLabeledScrollComponent(String label,
-            JComponent basicComponent, Dimension preferredSize) {
-        LabeledComponent component = new LabeledComponent(label, ComponentFactory
-                .createScrollPane(basicComponent));
+    public static LabeledComponent createLabeledScrollComponent(String label, JComponent basicComponent,
+            Dimension preferredSize) {
+        LabeledComponent component = new LabeledComponent(label, ComponentFactory.createScrollPane(basicComponent));
         if (preferredSize != null) {
             component.setPreferredSize(preferredSize);
         }
         return component;
     }
 
-    public static LabeledComponent createLabeledScrollComponent(String label,
-            JComponent basicComponent, Dimension preferredSize, JComponent headerComponent,
-            Collection headerButtons, JComponent footerComponent) {
-        LabeledComponent component = createLabeledScrollComponent(label, basicComponent,
-                preferredSize);
+    public static LabeledComponent createLabeledScrollComponent(String label, JComponent basicComponent,
+            Dimension preferredSize, JComponent headerComponent, Collection headerButtons, JComponent footerComponent) {
+        LabeledComponent component = createLabeledScrollComponent(label, basicComponent, preferredSize);
         if (headerComponent != null) {
             component.setHeaderComponent(headerComponent);
         }
@@ -372,8 +369,7 @@ public class ComponentFactory {
         return createLeftRightSplitPane(left, right, true);
     }
 
-    public static JSplitPane createLeftRightSplitPane(Component left, Component right,
-            boolean autoResize) {
+    public static JSplitPane createLeftRightSplitPane(Component left, Component right, boolean autoResize) {
         JSplitPane pane = createLeftRightSplitPane(autoResize);
         pane.setLeftComponent(left);
         pane.setRightComponent(right);
@@ -526,8 +522,7 @@ public class ComponentFactory {
         }
     }
 
-    private static JSplitPane createSplitPane(int direction, final boolean autoResize,
-            double resizeWeight) {
+    private static JSplitPane createSplitPane(int direction, final boolean autoResize, double resizeWeight) {
         JSplitPane pane = new JSplitPane(direction, autoResize) {
             public void addImpl(Component component, Object constraint, int i) {
                 super.addImpl(component, constraint, i);
@@ -572,8 +567,7 @@ public class ComponentFactory {
             public void addImpl(Component component, Object constraints, int index) {
                 if (addBorder) {
                     JComponent c = (JComponent) component;
-                    c.setBorder(BorderFactory.createCompoundBorder(createThinStandardBorder(), c
-                            .getBorder()));
+                    c.setBorder(BorderFactory.createCompoundBorder(createThinStandardBorder(), c.getBorder()));
                 }
                 super.addImpl(component, constraints, index);
             }
@@ -599,7 +593,7 @@ public class ComponentFactory {
         configureTextComponent(area);
         return area;
     }
-    
+
     public static JTextField createTextField(String s) {
         JTextField field = createTextField();
         field.setText(s);
@@ -621,13 +615,11 @@ public class ComponentFactory {
     private static void configureTextComponent(JTextComponent component) {
         addAction(component, KeyEvent.VK_X, InputEvent.ALT_MASK, new ConvertUnicodeSequenceAction());
         if (SystemUtilities.forName(UNICODE_CHOOSER_CLASS) != null) {
-            addAction(component, KeyEvent.VK_I, InputEvent.ALT_MASK,
-                    new InsertUnicodeCharacterAction());
+            addAction(component, KeyEvent.VK_I, InputEvent.ALT_MASK, new InsertUnicodeCharacterAction());
         }
     }
 
-    private static void addAction(JTextComponent component, int keyCode, int modifiers,
-            Action action) {
+    private static void addAction(JTextComponent component, int keyCode, int modifiers, Action action) {
         Keymap keymap = component.getKeymap();
         KeyStroke stroke = KeyStroke.getKeyStroke(keyCode, modifiers);
         keymap.addActionForKeyStroke(stroke, action);
@@ -676,8 +668,7 @@ public class ComponentFactory {
         return createTopBottomSplitPane(top, bottom, true);
     }
 
-    public static JSplitPane createTopBottomSplitPane(Component top, Component bottom,
-            boolean autoResize) {
+    public static JSplitPane createTopBottomSplitPane(Component top, Component bottom, boolean autoResize) {
         JSplitPane pane = createTopBottomSplitPane(autoResize);
         pane.setTopComponent(top);
         pane.setBottomComponent(bottom);
@@ -728,8 +719,8 @@ public class ComponentFactory {
 
     private static void setupDragAndDrop(JList list) {
 
-        DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(list,
-                DnDConstants.ACTION_COPY_OR_MOVE, new DefaultListDragSourceListener());
+        DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(list, DnDConstants.ACTION_COPY_OR_MOVE,
+                new DefaultListDragSourceListener());
         new DropTarget(list, DnDConstants.ACTION_COPY_OR_MOVE, new ListTarget());
     }
 

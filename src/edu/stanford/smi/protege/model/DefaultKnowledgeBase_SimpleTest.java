@@ -4,7 +4,6 @@ import edu.stanford.smi.protege.event.*;
 import edu.stanford.smi.protege.model.framestore.*;
 
 /**
- * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DefaultKnowledgeBase_SimpleTest extends SimpleTestCase {
@@ -70,7 +69,7 @@ public class DefaultKnowledgeBase_SimpleTest extends SimpleTestCase {
 
         MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(kb);
         NarrowFrameStore oldActiveFrameStore = mnfs
-                .setActiveFrameStore(MergingNarrowFrameStore.SYSTEM_NAME);
+                .setActiveFrameStore(MergingNarrowFrameStore.getSystemFrameStore(kb));
         String FOO_NAME = "foo";
         root.setName(FOO_NAME);
         assertEquals(FOO_NAME, root.getName());
