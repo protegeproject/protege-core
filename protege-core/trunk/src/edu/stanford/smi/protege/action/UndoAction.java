@@ -9,9 +9,9 @@ import edu.stanford.smi.protege.model.framestore.undo.*;
 import edu.stanford.smi.protege.resource.*;
 
 /**
- *  Request that the previous operation be undone. 
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Request that the previous operation be undone.
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class UndoAction extends ProjectAction {
 
@@ -39,6 +39,9 @@ public class UndoAction extends ProjectAction {
                 Command command = commandManager.getUndoCommand();
                 if (command != null) {
                     String s = command.getDescription();
+                    if (s.length() > 75) {
+                        s = s.substring(0, 75) + "...";
+                    }
                     value = value.toString() + " (" + s + ")";
                 }
             }

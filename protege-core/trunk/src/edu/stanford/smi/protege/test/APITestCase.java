@@ -18,6 +18,8 @@ public abstract class APITestCase extends AbstractTestCase {
     public static final int ORACLE = 1;
     public static final int MYSQL = 2;
     public static final int MS_ACCESS = 3;
+    public static final int POSTGRES = 4;
+    public static final int SQLSERVER = 5;
 
     private static final int INITIAL_DB_TYPE = ORACLE;
 
@@ -94,8 +96,7 @@ public abstract class APITestCase extends AbstractTestCase {
         DatabaseKnowledgeBaseFactory.setTablename(sources, "scratch");
         DatabaseKnowledgeBaseFactory.setUsername(sources, "protege");
         DatabaseKnowledgeBaseFactory.setPassword(sources, "sm1prot3ge");
-        DatabaseKnowledgeBaseFactory.setURL(sources,
-                "jdbc:oracle:thin:@irt-dev-db.stanford.edu:1521:dev");
+        DatabaseKnowledgeBaseFactory.setURL(sources, "jdbc:oracle:thin:@irt-dev-db.stanford.edu:1521:dev");
     }
 
     private static void configureForMySQL(PropertyList sources) {
@@ -135,8 +136,7 @@ public abstract class APITestCase extends AbstractTestCase {
         project.setProjectURI(uri);
         PropertyList sources = project.getSources();
         sources.setString(KnowledgeBaseFactory.FACTORY_CLASS_NAME,
-                edu.stanford.smi.protege.storage.database.DatabaseKnowledgeBaseFactory.class
-                        .getName());
+                edu.stanford.smi.protege.storage.database.DatabaseKnowledgeBaseFactory.class.getName());
         configureDBSources(sources);
         project.save(errors);
         checkErrors(errors);

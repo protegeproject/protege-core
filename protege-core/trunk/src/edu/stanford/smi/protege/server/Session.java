@@ -2,12 +2,12 @@ package edu.stanford.smi.protege.server;
 
 import java.io.*;
 
-public class Session implements RemoteSession, Serializable {
+public class Session implements RemoteSession, Externalizable {
     private static int nextId = 100;
-    private final int id;
-    private final String userName;
-    private final String userMachine;
-    private final long startTime;
+    private int id;
+    private String userName;
+    private String userMachine;
+    private long startTime;
     private long lastAccessTime;
 
     public Session(String userName, String userMachine) {
@@ -18,6 +18,27 @@ public class Session implements RemoteSession, Serializable {
         this.lastAccessTime = startTime;
     }
 
+    public Session() {
+
+    }
+
+    public void writeExternal(ObjectOutput output) throws IOException {
+        output.writeInt(id);
+        output.writeUTF(userName);
+        output.writeUTF(userMachine);
+        output.writeLong(startTime);
+        output.writeLong(lastAccessTime);
+    }
+
+    public void readExternal(ObjectInput input) throws IOException {
+        id = input.readInt();
+        userName = input.readUTF();
+        userMachine = input.readUTF();
+        startTime = input.readLong();
+        lastAccessTime = input.readLong();
+
+    }
+
     public String getUserName() {
         return userName;
     }
@@ -25,15 +46,15 @@ public class Session implements RemoteSession, Serializable {
     public String getUserMachine() {
         return userMachine;
     }
-    
+
     public long getLastAccessTime() {
-        return lastAccessTime; 
+        return lastAccessTime;
     }
-    
+
     public void updateAccessTime() {
         lastAccessTime = currentTime();
     }
-    
+
     private long currentTime() {
         return System.currentTimeMillis();
     }
