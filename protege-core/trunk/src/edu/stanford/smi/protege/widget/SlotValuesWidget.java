@@ -60,7 +60,7 @@ public class SlotValuesWidget extends AbstractListWidget {
         Collection c = Arrays.asList(new Object[] { "true", "false" });
         String s = (o == null) ? (String) null : o.toString();
         s = editSymbol(s, c);
-        return new Boolean(s);
+        return (s == null) ? null : new Boolean(s);
     }
 
     private Object editItem(Object originalItem) {
@@ -261,6 +261,7 @@ public class SlotValuesWidget extends AbstractListWidget {
             newInstance.addFrameListener(_frameListener);
         }
     }
+
     public void setAssociatedCls(Cls cls) {
         Cls oldAssociatedCls = getAssociatedCls();
         if (oldAssociatedCls != null) {
@@ -281,14 +282,14 @@ public class SlotValuesWidget extends AbstractListWidget {
     private void updateButtons() {
         ValueType type = getCurrentType();
         // Log.trace("type=" + type + ", instance=" + getInstance(), this, "updateButtons");
-        boolean fixedValueType =
-            equals(type, ValueType.INSTANCE) || equals(type, ValueType.CLS) || equals(type, ValueType.SYMBOL);
+        boolean fixedValueType = equals(type, ValueType.INSTANCE) || equals(type, ValueType.CLS)
+                || equals(type, ValueType.SYMBOL);
         boolean addAllowed = fixedValueType;
         _addAction.setAllowed(addAllowed && isEditable());
         boolean createAllowed = !(equals(type, ValueType.ANY) || fixedValueType);
         _createAction.setAllowed(createAllowed && isEditable());
     }
-    
+
     public String getLabel() {
         return localizeStandardLabel(super.getLabel(), "Template Values", ResourceKey.TEMPLATE_VALUES_SLOT_WIDGET_LABEL);
     }
