@@ -21,7 +21,7 @@ import edu.stanford.smi.protege.widget.*;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public class InstanceDisplay extends JDesktopPane implements Disposable {
+public class InstanceDisplay_old extends JDesktopPane implements Disposable {
     private Project _project;
     private JScrollPane _scrollPane;
     private ClsWidget _currentWidget;
@@ -95,11 +95,11 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
     };
 
-    public InstanceDisplay(Project project) {
+    public InstanceDisplay_old(Project project) {
         this(project, true, true);
     }
 
-    public InstanceDisplay(Project project, boolean showHeader, boolean showHeaderLabel) {
+    public InstanceDisplay_old(Project project, boolean showHeader, boolean showHeaderLabel) {
         _child = new JPanel(new BorderLayout());
         if (showHeader) {
             _child.add(createHeaderComponent(), BorderLayout.NORTH);

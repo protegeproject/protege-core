@@ -375,15 +375,18 @@ public class Project {
     }
 
     public ClsWidget createRuntimeClsWidget(Instance instance, Cls associatedCls) {
+        return createRuntimeClsWidget(instance.getDirectType(), instance, associatedCls);
+    }
+    
+    public ClsWidget createRuntimeClsWidget(Cls type, Instance instance, Cls associatedCls) {
         ClsWidget widget;
-        Cls cls = instance.getDirectType();
-        if (cls == null) {
+        if (type == null) {
             Log.getLogger().severe("no direct type: " + instance.getName());
             widget = new UglyClsWidget();
         } else {
-            ClsWidget designTimeWidget = getDesignTimeClsWidget(cls);
+            ClsWidget designTimeWidget = getDesignTimeClsWidget(type);
             WidgetDescriptor d = designTimeWidget.getDescriptor();
-            widget = WidgetUtilities.createClsWidget(d, false, this, cls);
+            widget = WidgetUtilities.createClsWidget(d, false, this, type);
         }
         widget.setInstance(instance);
         if (associatedCls != null) {

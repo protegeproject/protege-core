@@ -26,8 +26,7 @@ public class ComponentUtilities {
         addColumn(table, renderer, null);
     }
 
-    public static void addColumn(JTable table, TableCellRenderer renderer,
-            TableCellEditor editor) {
+    public static void addColumn(JTable table, TableCellRenderer renderer, TableCellEditor editor) {
         int nColumns = table.getColumnCount();
         TableColumn column = new TableColumn(nColumns);
         column.setCellRenderer(renderer);
@@ -43,8 +42,7 @@ public class ComponentUtilities {
         getModel(list).addValue(newValue, index);
     }
 
-    public static int addListValue(JList list, Object newValue,
-            Comparator comparator) {
+    public static int addListValue(JList list, Object newValue, Comparator comparator) {
         int index = getPositionIndex(list, newValue, comparator);
         addListValue(list, newValue, index);
         return index;
@@ -128,9 +126,7 @@ public class ComponentUtilities {
     }
 
     public static void closeWindow(Window window) {
-        window
-                .dispatchEvent(new WindowEvent(window,
-                        WindowEvent.WINDOW_CLOSING));
+        window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
     }
 
     public static void deregisterWindow(Window window) {
@@ -173,8 +169,7 @@ public class ComponentUtilities {
     }
 
     public static void extendSelection(JTree tree, Object userObject) {
-        LazyTreeNode selectedNode = (LazyTreeNode) tree
-                .getLastSelectedPathComponent();
+        LazyTreeNode selectedNode = (LazyTreeNode) tree.getLastSelectedPathComponent();
         int index = selectedNode.getUserObjectIndex(userObject);
         if (index == -1) {
             Log.getLogger().warning("object not found: " + userObject);
@@ -184,8 +179,7 @@ public class ComponentUtilities {
         }
     }
 
-    private static int fullExpand(JTree tree, TreePath parentPath,
-            int nExpansions) {
+    private static int fullExpand(JTree tree, TreePath parentPath, int nExpansions) {
         TreeNode parent = (TreeNode) parentPath.getLastPathComponent();
         int count = parent.getChildCount();
         for (int i = 0; i < count && nExpansions > 0; ++i) {
@@ -226,16 +220,14 @@ public class ComponentUtilities {
         return SystemUtilities.equals(o1, o2);
     }
 
-    public static Component getDescendentOfClass(Class componentClass,
-            Component root) {
+    public static Component getDescendentOfClass(Class componentClass, Component root) {
         Collection c = getDescendentsOfClass(componentClass, root);
         // Assert.assertTrue("max 1 descendent", c.size() == 0 || c.size() ==
         // 1);
         return (Component) CollectionUtilities.getFirstItem(c);
     }
 
-    public static Collection getDescendentsOfClass(final Class componentClass,
-            Component root) {
+    public static Collection getDescendentsOfClass(final Class componentClass, Component root) {
         final Collection results = new ArrayList();
         UnaryFunction f = new UnaryFunction() {
             public Object result = null;
@@ -294,10 +286,8 @@ public class ComponentUtilities {
         return (SimpleListModel) model;
     }
 
-    private static int getPositionIndex(JList list, Object value,
-            Comparator comparator) {
-        int index = Collections.binarySearch(getModel(list).getValues(), value,
-                comparator);
+    private static int getPositionIndex(JList list, Object value, Comparator comparator) {
+        int index = Collections.binarySearch(getModel(list).getValues(), value, comparator);
         if (index < 0) {
             index = -(index + 1);
         }
@@ -464,14 +454,13 @@ public class ComponentUtilities {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension bounds = new Dimension();
         bounds.width = Math.min(window.getWidth(), (screenSize.width * 8) / 10);
-        bounds.height = Math.min(window.getHeight(),
-                (screenSize.height * 8) / 10);
+        bounds.height = Math.min(window.getHeight(), (screenSize.height * 8) / 10);
         window.setSize(bounds);
     }
-    
+
     public static Dimension getDefaultMainFrameSize() {
         Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-        size.width = (size.width * 8)/10;
+        size.width = (size.width * 8) / 10;
         size.height = (size.height * 8) / 10;
         return size;
     }
@@ -505,12 +494,10 @@ public class ComponentUtilities {
     }
 
     public static void removeSelection(JTree tree) {
-        LazyTreeNode selectedNode = (LazyTreeNode) tree
-                .getLastSelectedPathComponent();
+        LazyTreeNode selectedNode = (LazyTreeNode) tree.getLastSelectedPathComponent();
         if (selectedNode != null) {
             LazyTreeNode parentNode = selectedNode.getLazyTreeNodeParent();
-            int index = parentNode.getUserObjectIndex(selectedNode
-                    .getUserObject());
+            int index = parentNode.getUserObjectIndex(selectedNode.getUserObject());
             int nChildren = parentNode.getChildCount();
             TreeNode newSelection;
             if (index == nChildren - 1) {
@@ -526,8 +513,7 @@ public class ComponentUtilities {
         }
     }
 
-    public static void replaceListValue(JList list, Object oldValue,
-            Object newValue) {
+    public static void replaceListValue(JList list, Object oldValue, Object newValue) {
         SimpleListModel model = getModel(list);
         if (newValue == null) {
             model.removeValue(oldValue);
@@ -537,8 +523,7 @@ public class ComponentUtilities {
         }
     }
 
-    public static void reposition(JList list, Object value,
-            Comparator comparator) {
+    public static void reposition(JList list, Object value, Comparator comparator) {
         int oldSelectionIndex = list.getSelectedIndex();
 
         SimpleListModel model = getModel(list);
@@ -552,11 +537,9 @@ public class ComponentUtilities {
             int newSelectionIndex = oldSelectionIndex;
             if (fromIndex == oldSelectionIndex) {
                 newSelectionIndex = toIndex;
-            } else if (fromIndex < oldSelectionIndex
-                    && toIndex > oldSelectionIndex) {
+            } else if (fromIndex < oldSelectionIndex && toIndex > oldSelectionIndex) {
                 --newSelectionIndex;
-            } else if (fromIndex > oldSelectionIndex
-                    && toIndex < oldSelectionIndex) {
+            } else if (fromIndex > oldSelectionIndex && toIndex < oldSelectionIndex) {
                 ++newSelectionIndex;
             }
             list.setSelectedIndex(newSelectionIndex);
@@ -577,8 +560,7 @@ public class ComponentUtilities {
         });
     }
 
-    public static void setExpanded(JTree tree, Collection objectPath,
-            boolean expand) {
+    public static void setExpanded(JTree tree, Collection objectPath, boolean expand) {
         TreePath path = getTreePath(tree, objectPath);
         if (path != null) {
             if (expand) {
@@ -605,8 +587,7 @@ public class ComponentUtilities {
     }
 
     public static void setSelectedNode(JTree tree, TreeNode node) {
-        final TreePath path = new TreePath(((LazyTreeModel) tree.getModel())
-                .getPathToRoot(node));
+        final TreePath path = new TreePath(((LazyTreeModel) tree.getModel()).getPathToRoot(node));
         tree.scrollPathToVisible(path);
         tree.setSelectionPath(path);
     }
@@ -617,10 +598,10 @@ public class ComponentUtilities {
             final WaitCursor cursor = new WaitCursor(tree);
             tree.scrollPathToVisible(path);
             SwingUtilities.invokeLater(new Runnable() {
-            	public void run() {
-                	tree.setSelectionPath(path);
-                	cursor.hide();
-            	}
+                public void run() {
+                    tree.setSelectionPath(path);
+                    cursor.hide();
+                }
             });
         }
     }
@@ -647,15 +628,12 @@ public class ComponentUtilities {
         });
     }
 
-    public static void setDisplayParent(JTree tree, Object parent,
-            Traverser traverser) {
-        Object child = ((LazyTreeNode) tree.getSelectionPath()
-                .getLastPathComponent()).getUserObject();
+    public static void setDisplayParent(JTree tree, Object parent, Traverser traverser) {
+        Object child = ((LazyTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
         setDisplayParent(tree, parent, child, traverser);
     }
 
-    public static void setDisplayParent(JTree tree, Object parent,
-            Object child, Traverser traverser) {
+    public static void setDisplayParent(JTree tree, Object parent, Object child, Traverser traverser) {
         LinkedList objects = new LinkedList();
         objects.add(0, child);
         while (parent != null) {
@@ -707,14 +685,18 @@ public class ComponentUtilities {
             // g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
     }
-    
+
     public static void enableAllAntialiasing(Graphics graphics) {
         Graphics2D g2 = (Graphics2D) graphics;
         if (SystemUtilities.useAntialiasing()) {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
     }
-    
+
+    /*
+     * This border makes up for the 5 pixel border around slot widgets.  It causes the
+     * left hand displays to line up with the instance display.
+     */
     public static Border getAlignBorder() {
         return BorderFactory.createEmptyBorder(5, 0, 0, 0);
     }

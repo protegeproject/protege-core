@@ -34,8 +34,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     private LabeledComponent _labeledComponent;
 
     static {
-        SORT_LIMIT = ApplicationProperties.getIntegerProperty("ui.DirectInstancesList.sort_limit",
-                1000);
+        SORT_LIMIT = ApplicationProperties.getIntegerProperty("ui.DirectInstancesList.sort_limit", 1000);
     }
 
     private ClsListener _clsListener = new ClsAdapter() {
@@ -75,16 +74,13 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         _list = ComponentFactory.createSelectableList(viewAction);
         _list.setCellRenderer(FrameRenderer.createInstance());
 
-        // setLayout(new BorderLayout(10, 10));
         _labeledComponent = new LabeledComponent(null, ComponentFactory.createScrollPane(_list));
         addButtons(viewAction, _labeledComponent);
-        _labeledComponent
-                .setFooterComponent(new ListFinder(_list, ResourceKey.INSTANCE_SEARCH_FOR));
+        _labeledComponent.setFooterComponent(new ListFinder(_list, ResourceKey.INSTANCE_SEARCH_FOR));
         _labeledComponent.setBorder(ComponentUtilities.getAlignBorder());
         add(_labeledComponent, BorderLayout.CENTER);
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(createHeader(), BorderLayout.NORTH);
-        // panel.add(_setDisplaySlotPanel, BorderLayout.CENTER);
         add(panel, BorderLayout.NORTH);
 
         setSelectable(_list);
@@ -221,21 +217,18 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         Cls cls = getSoleAllowedCls();
         if (cls != null) {
             BrowserSlotPattern pattern = cls.getBrowserSlotPattern();
-            Slot browserSlot = (pattern != null && pattern.isSimple()) ? pattern.getFirstSlot()
-                    : null;
+            Slot browserSlot = (pattern != null && pattern.isSimple()) ? pattern.getFirstSlot() : null;
             Iterator i = cls.getVisibleTemplateSlots().iterator();
             while (i.hasNext()) {
                 Slot slot = (Slot) i.next();
-                JRadioButtonMenuItem item = new JRadioButtonMenuItem(
-                        createSetDisplaySlotAction(slot));
+                JRadioButtonMenuItem item = new JRadioButtonMenuItem(createSetDisplaySlotAction(slot));
                 if (slot.equals(browserSlot)) {
                     item.setSelected(true);
                 }
                 menu.add(item);
                 enabled = true;
             }
-            JRadioButtonMenuItem item = new JRadioButtonMenuItem(
-                    createSetDisplaySlotMultipleAction());
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(createSetDisplaySlotMultipleAction());
             if (browserSlot == null) {
                 item.setSelected(true);
             }
@@ -261,8 +254,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                 Cls cls = getSoleAllowedCls();
                 BrowserSlotPattern currentPattern = getSoleAllowedCls().getBrowserSlotPattern();
                 MultiSlotPanel panel = new MultiSlotPanel(currentPattern, cls);
-                int rval = ModalDialog.showDialog(DirectInstancesList.this, panel,
-                        "Multislot Display Pattern", ModalDialog.MODE_OK_CANCEL);
+                int rval = ModalDialog.showDialog(DirectInstancesList.this, panel, "Multislot Display Pattern",
+                        ModalDialog.MODE_OK_CANCEL);
                 if (rval == ModalDialog.OPTION_OK) {
                     BrowserSlotPattern pattern = panel.getBrowserTextPattern();
                     if (pattern != null) {
