@@ -336,8 +336,8 @@ public class Project {
         frame.addWindowListener(_closeListener);
         frame.getContentPane().add(display, BorderLayout.CENTER);
         ComponentUtilities.pack(frame);
-        ClsWidget widget = display.getCurrentClsWidget();
-        ((FormWidget) widget).setResizeVertically(true);
+        display.setResizeVertically(true);
+        ClsWidget widget = display.getFirstClsWidget();
         frame.setTitle(widget.getLabel());
         widget.addWidgetListener(new WidgetAdapter() {
             public void labelChanged(WidgetEvent event) {
@@ -1779,8 +1779,8 @@ public class Project {
         Assert.assertNotNull("instance", instance);
         InstanceDisplay display = createInstanceDisplay(this, false, false);
         display.setInstance(instance);
-        ClsWidget widget = display.getCurrentClsWidget();
-        ((FormWidget) widget).setResizeVertically(true);
+        display.setResizeVertically(true);
+        ClsWidget widget = display.getFirstClsWidget();
         String title = widget.getLabel();
         JInternalFrame frame = new JInternalFrame(title, true);
         frame.getContentPane().setLayout(new BorderLayout());
