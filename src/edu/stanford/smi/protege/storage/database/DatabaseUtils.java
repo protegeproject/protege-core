@@ -23,12 +23,7 @@ class DatabaseUtils {
     // private static final int VALUE_TYPE_SLOT = 7;
     // private static final int VALUE_TYPE_FACET = 8;
 
-    private static final char ESCAPE_CHAR = '\\';
     private static final char SINGLE_QUOTE = '\'';
-
-    public static String getEscapeClause() {
-        return "{escape '" + ESCAPE_CHAR + "'}";
-    }
 
     public static int getValue(FrameID id) {
         return id.getLocalPart();
@@ -137,8 +132,8 @@ class DatabaseUtils {
     }
 
     public static void setShortMatchValue(PreparedStatement stmt, int valueIndex, int valueTypeIndex, String value,
-            boolean supportsEscape) throws SQLException {
-        stmt.setString(valueIndex, getMatchString(value, supportsEscape));
+            char escapeChar) throws SQLException {
+        stmt.setString(valueIndex, getMatchString(value, escapeChar));
         setValueType(stmt, valueTypeIndex, VALUE_TYPE_STRING);
     }
 
@@ -185,14 +180,14 @@ class DatabaseUtils {
         }
     }
 
-    public static String getMatchString(String input, boolean supportsEscape) {
+    public static String getMatchString(String input, char escapeChar) {
         StringBuffer output = new StringBuffer();
         for (int i = 0; i < input.length(); ++i) {
             char c = input.charAt(i);
             c = Character.toUpperCase(c);
-            if (supportsEscape && (c == '%' || c == '_' || c == ESCAPE_CHAR)) {
+            if (escapeChar != 0 && (c == '%' || c == '_' || c == escapeChar)) {
                 // escape any special character
-                output.append(ESCAPE_CHAR);
+                output.append(escapeChar);
                 output.append(c);
             } else if (c == SINGLE_QUOTE) {
                 // double single quotes

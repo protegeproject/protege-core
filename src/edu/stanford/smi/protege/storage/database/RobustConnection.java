@@ -18,7 +18,8 @@ public class RobustConnection {
     private String _username;
     private String _password;
     private boolean _supportsBatch;
-    private boolean _supportsEscapeClause;
+    private char _escapeChar;
+    private String _escapeClause;
     private boolean _supportsTransactions;
     private int _maxVarcharSize;
     // private int _driverVarcharMaxSize;
@@ -39,8 +40,7 @@ public class RobustConnection {
     private final static String PROPERTY_BIT_TYPE_NAME = "Database.typename.bit";
     private final static String PROPERTY_CHAR_TYPE_NAME = "Database.typename.char";
 
-    public RobustConnection(String driver, String url, String username, String password)
-            throws SQLException {
+    public RobustConnection(String driver, String url, String username, String password) throws SQLException {
         _url = url;
         _username = username;
         _password = password;
@@ -120,7 +120,28 @@ public class RobustConnection {
     }
 
     private void initializeSupportsEscapeSyntax() throws SQLException {
-        _supportsEscapeClause = _connection.getMetaData().supportsLikeEscapeClause() && !isMySql();
+        _escapeChar = 0;
+        _escapeClause = "";
+        boolean escapeSupported = _connection.getMetaData().supportsLikeEscapeClause();
+        if (escapeSupported) {
+            if (isMySql()) {
+                _escapeChar = '\\';
+            } else {
+                _escapeChar = '|';
+                _escapeClause = "{ESCAPE '" + _escapeChar + "'}";
+
+            }
+        } else {
+            Log.getLogger().warning("This driver does not support SQL Escape processing.");
+        }
+    }
+
+    public char getEscapeCharacter() {
+        return _escapeChar;
+    }
+
+    public String getEscapeClause() {
+        return _escapeClause;
     }
 
     public boolean supportsBatch() {
@@ -194,56 +215,56 @@ public class RobustConnection {
                 continue;
             }
             switch (type) {
-            case Types.LONGVARCHAR:
-                if (_driverLongvarcharTypeName == null) {
-                    _driverLongvarcharTypeName = name;
-                }
-                break;
-            case Types.LONGVARBINARY:
-                if (longvarbinaryTypeName == null) {
-                    longvarbinaryTypeName = name;
-                }
-                break;
-            case Types.CLOB:
-                if (clobTypeName == null) {
-                    clobTypeName = name;
-                }
-                break;
-            case Types.BLOB:
-                if (blobTypeName == null) {
-                    blobTypeName = name;
-                }
-                break;
-            case Types.TINYINT:
-                if (_driverTinyIntTypeName == null) {
-                    _driverTinyIntTypeName = name;
-                }
-                break;
-            case Types.BIT:
-                if (_driverBitTypeName == null) {
-                    _driverBitTypeName = name;
-                }
-                break;
-            case Types.SMALLINT:
-                if (_driverSmallIntTypeName == null) {
-                    _driverSmallIntTypeName = name;
-                }
-                break;
-            case Types.INTEGER:
-                if (_driverIntegerTypeName == null) {
-                    _driverIntegerTypeName = name;
-                }
-                break;
-            case Types.VARCHAR:
-                if (_driverVarcharTypeName == null) {
-                    _driverVarcharTypeName = name;
-                }
-                break;
-            case Types.CHAR:
-                if (_driverCharTypeName == null) {
-                    _driverCharTypeName = name;
-                }
-            default:
+                case Types.LONGVARCHAR:
+                    if (_driverLongvarcharTypeName == null) {
+                        _driverLongvarcharTypeName = name;
+                    }
+                    break;
+                case Types.LONGVARBINARY:
+                    if (longvarbinaryTypeName == null) {
+                        longvarbinaryTypeName = name;
+                    }
+                    break;
+                case Types.CLOB:
+                    if (clobTypeName == null) {
+                        clobTypeName = name;
+                    }
+                    break;
+                case Types.BLOB:
+                    if (blobTypeName == null) {
+                        blobTypeName = name;
+                    }
+                    break;
+                case Types.TINYINT:
+                    if (_driverTinyIntTypeName == null) {
+                        _driverTinyIntTypeName = name;
+                    }
+                    break;
+                case Types.BIT:
+                    if (_driverBitTypeName == null) {
+                        _driverBitTypeName = name;
+                    }
+                    break;
+                case Types.SMALLINT:
+                    if (_driverSmallIntTypeName == null) {
+                        _driverSmallIntTypeName = name;
+                    }
+                    break;
+                case Types.INTEGER:
+                    if (_driverIntegerTypeName == null) {
+                        _driverIntegerTypeName = name;
+                    }
+                    break;
+                case Types.VARCHAR:
+                    if (_driverVarcharTypeName == null) {
+                        _driverVarcharTypeName = name;
+                    }
+                    break;
+                case Types.CHAR:
+                    if (_driverCharTypeName == null) {
+                        _driverCharTypeName = name;
+                    }
+                default:
             // do nothing
             }
         }
@@ -290,12 +311,10 @@ public class RobustConnection {
             name = getName(PROPERTY_LONGVARCHAR_TYPE_NAME, _driverLongvarcharTypeName);
         }
         if (name == null) {
-            // better to use something here than nothing. At least the create
-            // table
-            // call will work
+            // Better to use something here than nothing. At least the create
+            // table call will work
             name = getVarcharTypeName();
-            Log.getLogger().warning(
-                    "Using VARCHAR in place of LONGVARCHAR, long strings will be truncated.");
+            Log.getLogger().warning("Using VARCHAR in place of LONGVARCHAR, long strings will be truncated.");
         }
         return name;
     }
@@ -308,9 +327,6 @@ public class RobustConnection {
         return getName(PROPERTY_INTEGER_TYPE_NAME, _driverIntegerTypeName);
     }
 
-    /*
-     * public String getTinyIntTypeName() { return getName(PROPERTY_TINY_INTEGER_TYPE_NAME, _driverTinyIntTypeName); }
-     */
     public String getBitTypeName() {
         return getName(PROPERTY_BIT_TYPE_NAME, _driverBitTypeName);
     }
@@ -323,25 +339,30 @@ public class RobustConnection {
         return getName(PROPERTY_CHAR_TYPE_NAME, _driverCharTypeName);
     }
 
-    public boolean supportsEscapeClause() {
-        return _supportsEscapeClause;
-    }
-
-    /*
-     * private void dumpTypes() throws SQLException { ResultSet rs = _connection.getMetaData().getTypeInfo(); while
-     * (rs.next()) { System.out.println("TYPE_NAME: " + rs.getString(1)); System.out.println("\tDATA_TYPE: " +
-     * rs.getInt(2)); System.out.println("\tPRECISION: " + rs.getLong(3)); System.out.println("\tLITERAL_PREFIX: " +
-     * rs.getString(4)); System.out.println("\tLITERAL_SUFFIX: " + rs.getString(5));
-     * System.out.println("\tCREATE_PARAMS: " + rs.getString(6)); System.out.println("\tNULLABLE: " + rs.getShort(7));
-     * System.out.println("\tCASE_SENSITIVE: " + rs.getBoolean(8)); System.out.println("\tSEARCHABLE: " +
-     * rs.getShort(9)); System.out.println("\tUNSIGNED_ATTRIBUTE: " + rs.getBoolean(10));
-     * System.out.println("\tFIXED_PREC_SCALE: " + rs.getBoolean(11)); System.out.println("\tAUTO_INCREMENT: " +
-     * rs.getBoolean(12)); System.out.println("\tLOCAL_TYPE_NAME: " + rs.getString(13));
-     * System.out.println("\tMINIMUM_SCALE: " + rs.getShort(14)); System.out.println("\tMAXIMUM_SCALE: " +
-     * rs.getShort(15)); System.out.println("\tSQL_DATA_TYPE: " + rs.getShort(16));
-     * System.out.println("\tSQL_DATETIME_SUB: " + rs.getShort(17)); System.out.println("\tNUM_PREC_RADIX: " +
-     * rs.getInt(18)); } rs.close(); }
-     */
+    //    private void dumpTypes() throws SQLException {
+    //        ResultSet rs = _connection.getMetaData().getTypeInfo();
+    //        while (rs.next()) {
+    //            System.out.println("TYPE_NAME: " + rs.getString(1));
+    //            System.out.println("\tDATA_TYPE: " + rs.getInt(2));
+    //            System.out.println("\tPRECISION: " + rs.getLong(3));
+    //            System.out.println("\tLITERAL_PREFIX: " + rs.getString(4));
+    //            System.out.println("\tLITERAL_SUFFIX: " + rs.getString(5));
+    //            System.out.println("\tCREATE_PARAMS: " + rs.getString(6));
+    //            System.out.println("\tNULLABLE: " + rs.getShort(7));
+    //            System.out.println("\tCASE_SENSITIVE: " + rs.getBoolean(8));
+    //            System.out.println("\tSEARCHABLE: " + rs.getShort(9));
+    //            System.out.println("\tUNSIGNED_ATTRIBUTE: " + rs.getBoolean(10));
+    //            System.out.println("\tFIXED_PREC_SCALE: " + rs.getBoolean(11));
+    //            System.out.println("\tAUTO_INCREMENT: " + rs.getBoolean(12));
+    //            System.out.println("\tLOCAL_TYPE_NAME: " + rs.getString(13));
+    //            System.out.println("\tMINIMUM_SCALE: " + rs.getShort(14));
+    //            System.out.println("\tMAXIMUM_SCALE: " + rs.getShort(15));
+    //            System.out.println("\tSQL_DATA_TYPE: " + rs.getShort(16));
+    //            System.out.println("\tSQL_DATETIME_SUB: " + rs.getShort(17));
+    //            System.out.println("\tNUM_PREC_RADIX: " + rs.getInt(18));
+    //        }
+    //        rs.close();
+    //    }
 
     public boolean supportsCaseInsensitiveMatches() throws SQLException {
         return !(isOracle() || isPostgres());

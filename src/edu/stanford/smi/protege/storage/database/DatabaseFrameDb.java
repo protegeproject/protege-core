@@ -84,6 +84,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         } catch (SQLException ex) {
             // do nothing
         }
+        Log.getLogger().info(Log.toString(e));
         return new RuntimeException(e.getMessage());
     }
 
@@ -230,14 +231,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         String indexString;
         indexString = "CREATE INDEX " + _table + "_IV ON " + _table + "(LOWER(" + SHORT_VALUE + "))";
         executeUpdate(indexString);
-    }
-
-    private boolean supportsEscapeClause() {
-        return _connection.supportsEscapeClause();
-    }
-
-    private boolean supportsEscapeCharacter() throws SQLException {
-        return supportsEscapeClause() || _connection.isMySql();
     }
 
     private static void traceUpdate(PreparedStatement stmt) {
@@ -623,12 +616,12 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return frameIDValue == value;
     }
 
-    private String getMatchString(String value) throws SQLException {
-        return DatabaseUtils.getMatchString(value, supportsEscapeCharacter());
+    private String getMatchString(String value) {
+        return DatabaseUtils.getMatchString(value, _connection.getEscapeCharacter());
     }
 
     private String getEscapeClause() {
-        return supportsEscapeClause() ? DatabaseUtils.getEscapeClause() : "";
+        return _connection.getEscapeClause();
     }
 
     public Set getFrames(Slot slot, Facet facet, boolean isTemplate, Object value) {
