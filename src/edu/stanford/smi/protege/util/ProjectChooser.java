@@ -83,7 +83,7 @@ public class ProjectChooser extends JFileChooser {
     private void attemptClose(int result) {
         if (canClose(result)) {
             returnValue = result;
-            dialog.hide();
+            dialog.setVisible(false);
         }
     }
 
