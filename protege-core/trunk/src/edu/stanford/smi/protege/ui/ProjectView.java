@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.ui;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -17,10 +18,107 @@ import edu.stanford.smi.protege.widget.*;
  *
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
+
+interface TabbedPaneInterface {
+    void addChangeListener(ChangeListener listener);
+
+    Component[] getComponents();
+
+    int getComponentCount();
+
+    void setSelectedComponent(Component component);
+
+    Component getSelectedComponent();
+
+    void remove(Component component);
+
+    void removeTabAt(int index);
+
+    int indexOfComponent(Component component);
+
+    int getSelectedIndex();
+
+    void setSelectedIndex(int index);
+
+    Component getComponent(int i);
+
+    void addTab(String title, Icon icon, Component c, String helpText);
+
+    void insertTab(String title, Icon icon, Component c, String helpText, int index);
+}
+
+class MyCardPanel extends JPanel implements TabbedPaneInterface {
+    private CardLayout layout = new CardLayout();
+    private ChangeListener changeListener;
+
+    public MyCardPanel() {
+        setLayout(layout);
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        this.changeListener = listener;
+    }
+
+    public void setSelectedComponent(Component component) {
+        layout.show(this, component.getName());
+    }
+
+    public Component getSelectedComponent() {
+        Component component = null;
+        for (int i = 0; i < getComponentCount(); ++i) {
+            Component child = getComponent(i);
+            if (child.isVisible()) {
+                component = child;
+                break;
+            }
+        }
+        return component;
+    }
+
+    public void removeTabAt(int index) {
+        remove(index);
+    }
+
+    public int indexOfComponent(Component component) {
+        int index = -1;
+        for (int i = 0; i < getComponentCount(); ++i) {
+            Component child = getComponent(i);
+            if (child == component) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
+    public int getSelectedIndex() {
+        return indexOfComponent(getSelectedComponent());
+    }
+
+    public void setSelectedIndex(int index) {
+        setSelectedComponent(getComponent(index));
+        changeListener.stateChanged(new ChangeEvent(this));
+    }
+
+    public void addTab(String title, Icon icon, Component c, String helpText) {
+        c.setName(title);
+        add(c, title);
+    }
+
+    public void insertTab(String title, Icon icon, Component c, String helpText, int index) {
+        c.setName(title);
+        add(c, title, index);
+    }
+}
+
+class MyJTabbedPane extends JTabbedPane implements TabbedPaneInterface {
+}
+
 public class ProjectView extends JComponent {
     private Project _project;
-    private JTabbedPane _tabbedPane;
+    private TabbedPaneInterface _viewHolder;
     private Collection _currentClsPath;
+    private Collection _currentInstances;
     private Collection _detachedTabs = new HashSet();
 
     public ProjectView(Project project) {
@@ -39,23 +137,29 @@ public class ProjectView extends JComponent {
     private void addTab(TabWidget widget) {
         addTab(widget, -1);
     }
+
+    private void addTab(String title, Icon icon, JComponent component, String helpText, int index) {
+        if (index < 0) {
+            _viewHolder.addTab(title, icon, component, helpText);
+        } else {
+            _viewHolder.insertTab(title, icon, component, helpText, index);
+        }
+    }
+
     private void addTab(final TabWidget widget, int index) {
         JComponent component = (JComponent) widget;
         Icon icon = widget.getIcon();
         String title = widget.getLabel();
         String help = widget.getShortDescription();
-        if (index < 0) {
-            _tabbedPane.addTab(title, icon, component, help);
-        } else {
-            _tabbedPane.insertTab(title, icon, component, help, index);
-        }
+        addTab(title, icon, component, help, index);
         widget.addSelectionListener(new SelectionListener() {
             public void selectionChanged(SelectionEvent event) {
-                java.util.List list = new ArrayList(widget.getSelection());
+                List list = new ArrayList(widget.getSelection());
                 if (!list.isEmpty() && list.get(0) instanceof Collection) {
                     list.remove(0);
                 }
                 setCurrentClsPath(list);
+                setCurrentInstances(widget.getSelectedInstances());
             }
         });
     }
@@ -95,14 +199,17 @@ public class ProjectView extends JComponent {
     }
 
     private JComponent createTabbedPane() {
-        _tabbedPane = ComponentFactory.createTabbedPane(true);
-        _tabbedPane.addChangeListener(new ChangeListener() {
+        _viewHolder = new MyCardPanel();
+        // _viewHolder = new MyJTabbedPane();
+        // _viewHolder = ComponentFactory.createTabbedPane(true);
+        _viewHolder.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (isAutosynchronizingClsTrees()) {
                     synchronizeClsTree();
+                    synchronizeInstances();
                 }
             }
-            
+
         });
         Iterator i = _project.getTabWidgetDescriptors().iterator();
         while (i.hasNext()) {
@@ -111,11 +218,13 @@ public class ProjectView extends JComponent {
                 addTab(d);
             }
         }
-        if (_tabbedPane.getTabCount() > 0) {
-            _tabbedPane.setSelectedIndex(0);
-        }
+        _viewHolder.setSelectedIndex(0);
         setBorder(BorderFactory.createLoweredBevelBorder());
-        return _tabbedPane;
+        return (JComponent) _viewHolder;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        _viewHolder.addChangeListener(listener);
     }
 
     public void dispose() {
@@ -124,7 +233,7 @@ public class ProjectView extends JComponent {
     public Project getProject() {
         return _project;
     }
-    
+
     /**
      * @deprecated Use #getTabByClassName(String)
      */
@@ -134,7 +243,7 @@ public class ProjectView extends JComponent {
 
     public TabWidget getTabByClassName(String className) {
         TabWidget result = null;
-        Component[] components = _tabbedPane.getComponents();
+        Component[] components = _viewHolder.getComponents();
         for (int i = 0; i < components.length; ++i) {
             Component c = components[i];
             if (c.getClass().getName().equals(className)) {
@@ -144,21 +253,24 @@ public class ProjectView extends JComponent {
         }
         return result;
     }
-    
+
     public Collection getTabs() {
-        return Arrays.asList(_tabbedPane.getComponents());
+        return Arrays.asList(_viewHolder.getComponents());
     }
-    
+
     public void setSelectedTab(TabWidget tab) {
-        _tabbedPane.setSelectedComponent((Component) tab);
+        _viewHolder.setSelectedComponent((Component) tab);
     }
-    
+
     public TabWidget getSelectedTab() {
-        return (TabWidget) _tabbedPane.getSelectedComponent();
+        return (TabWidget) _viewHolder.getSelectedComponent();
     }
-    
+
+    /**
+     * @deprecated returns null.  Use the other methods on this class to manipulate views.
+     */
     public JTabbedPane getTabbedPane() {
-        return _tabbedPane;
+        return null; // return _viewHolder;
     }
 
     public void reload(boolean regenerate) {
@@ -185,7 +297,7 @@ public class ProjectView extends JComponent {
         while (i.hasNext()) {
             TabWidget tab = (TabWidget) i.next();
             if (!isEnabled(tab)) {
-                _tabbedPane.remove((Component) tab);
+                _viewHolder.remove((Component) tab);
                 tab.dispose();
             }
         }
@@ -212,7 +324,7 @@ public class ProjectView extends JComponent {
             if (d.isVisible()) {
                 int currentIndex = getTabIndex(d);
                 if (currentIndex != index) {
-                    TabWidget tab = (TabWidget) _tabbedPane.getComponent(currentIndex);
+                    TabWidget tab = (TabWidget) _viewHolder.getComponent(currentIndex);
                     addTab(tab, index);
                 }
                 ++index;
@@ -221,13 +333,13 @@ public class ProjectView extends JComponent {
     }
 
     private int getTabIndex(WidgetDescriptor d) {
-        return _tabbedPane.indexOfComponent((Component) getTab(d.getWidgetClassName()));
+        return _viewHolder.indexOfComponent((Component) getTab(d.getWidgetClassName()));
     }
 
     public void reloadAll() {
         closeDetachedTabs();
-        if (_tabbedPane != null) {
-            ComponentUtilities.dispose(_tabbedPane);
+        if (_viewHolder != null) {
+            ComponentUtilities.dispose((Component) _viewHolder);
         }
         removeAll();
         _project.clearCachedWidgets();
@@ -277,20 +389,20 @@ public class ProjectView extends JComponent {
     public String toString() {
         return "ProjectView";
     }
-    
+
     public void closeCurrentView() {
-        int index = _tabbedPane.getSelectedIndex();
-        Component c = _tabbedPane.getSelectedComponent();
-        _tabbedPane.removeTabAt(index);
+        int index = _viewHolder.getSelectedIndex();
+        Component c = _viewHolder.getSelectedComponent();
+        _viewHolder.removeTabAt(index);
         TabWidget widget = (TabWidget) c;
         widget.getDescriptor().setVisible(false);
         ComponentUtilities.dispose(c);
     }
 
     public void detachCurrentView() {
-        JComponent c = (JComponent) _tabbedPane.getSelectedComponent();
-        int index = _tabbedPane.getSelectedIndex();
-        _tabbedPane.removeTabAt(index);
+        JComponent c = (JComponent) _viewHolder.getSelectedComponent();
+        int index = _viewHolder.getSelectedIndex();
+        _viewHolder.removeTabAt(index);
         final JFrame frame = ComponentFactory.createFrame();
         c.setPreferredSize(c.getSize());
         frame.getContentPane().add(c);
@@ -312,7 +424,7 @@ public class ProjectView extends JComponent {
     private void reattachTab(Component c) {
         int index = getInsertionPoint(c);
         addTab((TabWidget) c, index);
-        _tabbedPane.setSelectedIndex(index);
+        _viewHolder.setSelectedIndex(index);
         _detachedTabs.remove(c);
     }
 
@@ -320,13 +432,13 @@ public class ProjectView extends JComponent {
         String classNameToMatch = c.getClass().getName();
         int insertionPoint = 0;
         Iterator i = _project.getTabWidgetDescriptors().iterator();
-        while (i.hasNext() && insertionPoint < _tabbedPane.getComponentCount()) {
+        while (i.hasNext() && insertionPoint < _viewHolder.getComponentCount()) {
             WidgetDescriptor desc = (WidgetDescriptor) i.next();
             String className = desc.getWidgetClassName();
             if (className.equals(classNameToMatch)) {
                 break;
             }
-            if (className.equals(_tabbedPane.getComponentAt(insertionPoint).getClass().getName())) {
+            if (className.equals(_viewHolder.getComponent(insertionPoint).getClass().getName())) {
                 ++insertionPoint;
             }
         }
@@ -337,7 +449,7 @@ public class ProjectView extends JComponent {
         ApplicationProperties.setAutosynchronizingClsTrees(b);
         synchronizeClsTree();
     }
-    
+
     public boolean isAutosynchronizingClsTrees() {
         return ApplicationProperties.isAutosynchronizingClsTrees();
     }
@@ -345,12 +457,25 @@ public class ProjectView extends JComponent {
     private void setCurrentClsPath(Collection c) {
         _currentClsPath = c;
     }
-    
+
+    private void setCurrentInstances(Collection instances) {
+        _currentInstances = instances;
+    }
+
     public void synchronizeClsTree() {
         if (_currentClsPath != null) {
-            TabWidget currentWidget = (TabWidget) _tabbedPane.getSelectedComponent();
+            TabWidget currentWidget = (TabWidget) _viewHolder.getSelectedComponent();
             if (currentWidget != null) {
                 currentWidget.synchronizeClsTree(_currentClsPath);
+            }
+        }
+    }
+
+    public void synchronizeInstances() {
+        if (_currentInstances != null) {
+            TabWidget currentWidget = (TabWidget) _viewHolder.getSelectedComponent();
+            if (currentWidget != null) {
+                currentWidget.synchronizeToInstances(_currentInstances);
             }
         }
     }

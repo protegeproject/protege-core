@@ -283,7 +283,11 @@ public class ApplicationProperties {
 
     private static void setProperty(String property, String value) {
         try {
-            _properties.setProperty(property, value);
+            if (value == null) {
+                _properties.remove(property);
+            } else {
+                _properties.setProperty(property, value);
+            }
             flush();
         } catch (Exception e) {
             Log.getLogger().warning(Log.toString(e));

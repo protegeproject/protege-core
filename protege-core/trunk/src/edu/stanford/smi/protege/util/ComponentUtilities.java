@@ -308,6 +308,30 @@ public class ComponentUtilities {
         list.setSelectedValue(value, true);
     }
 
+    public static void setSelectedValues(JList list, Collection values) {
+        int[] indexes = new int[values.size()];
+        int count = 0;
+        Iterator i = values.iterator();
+        while (i.hasNext()) {
+            Object o = i.next();
+            indexes[count++] = indexOf(list, o);
+        }
+        list.setSelectedIndices(indexes);
+    }
+
+    private static int indexOf(JList list, Object o) {
+        int index = -1;
+        ListModel model = list.getModel();
+        for (int i = 0; i < model.getSize(); ++i) {
+            Object element = model.getElementAt(i);
+            if (element.equals(o)) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
     public static Collection getSelection(JTable table) {
         TableModel model = table.getModel();
         int[] indices = table.getSelectedRows();

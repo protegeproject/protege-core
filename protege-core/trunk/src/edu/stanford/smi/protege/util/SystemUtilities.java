@@ -127,7 +127,8 @@ public class SystemUtilities {
             // and there may be problems with almost anything (i.e. System.out).
             // This is the best chance we
             // have to getting a reasonable error message.
-            e.printStackTrace();
+            System.out.println(e.getMessage());
+            // e.printStackTrace();
         }
     }
 
