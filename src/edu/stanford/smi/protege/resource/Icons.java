@@ -232,8 +232,7 @@ public final class Icons {
         return getClsIcon(false, false, false, false);
     }
 
-    public static Icon getClsIcon(boolean metaclass, boolean isAbstract, boolean readonly,
-            boolean isHidden) {
+    public static Icon getClsIcon(boolean metaclass, boolean isAbstract, boolean readonly, boolean isHidden) {
         String name = "class";
         if (metaclass) {
             name += ".metaclass";
@@ -541,8 +540,7 @@ public final class Icons {
         return getSlotIcon(false, false, false, false);
     }
 
-    public static Icon getSlotIcon(boolean inherited, boolean overridden, boolean readonly,
-            boolean isHidden) {
+    public static Icon getSlotIcon(boolean inherited, boolean overridden, boolean readonly, boolean isHidden) {
         String name = "slot";
         if (inherited) {
             name += ".inherited";

@@ -46,8 +46,8 @@ public class ProjectToolBar extends JToolBar {
          * Icons.getFindPreviousIcon())); addButton(new DefaultAction("Find Next", Icons.getFindNextIcon()));
          * addSeparator();
          */
-        addButton(new CascadeWindows(true));
-        addButton(new CloseAllWindows(true));
+        // addButton(new CascadeWindows(true));
+        // addButton(new CloseAllWindows(true));
     }
 
     public void addButton(Action action) {
