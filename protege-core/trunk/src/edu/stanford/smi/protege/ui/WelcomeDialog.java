@@ -14,7 +14,7 @@ import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * Startup dialog that's displayed when a user starts Protege-2000 (without
+ * Startup dialog that is displayed when a user starts Protege (without
  * double clicking on a project file).  The dialog is displayed on top of the
  * main window and gives the user the option to create a new project, open
  * a recently used project, or launch one of several help topics.
@@ -24,33 +24,29 @@ import edu.stanford.smi.protege.util.*;
 public class WelcomeDialog extends JDialog {
 
     // Top level panel.
-    JPanel panel = new JPanel(new BorderLayout(10, 0));
+    JPanel panel = new JPanel(new BorderLayout(5, 5));
 
-    // New Project panel and sub-panels.
-    JPanel newPanel = new JPanel(new BorderLayout());
-    JPanel ptpHolder = new JPanel(new FlowLayout());
-    JPanel projectTypePanel;
-    JPanel formatButtons = new JPanel(new BorderLayout());
-    JPanel newButtonPanel = new JPanel(new GridLayout(1, 2));
+    // Create New Project panel.
+    JPanel newButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    //JPanel iconPanel = new JPanel(new GridLayout(1, 1));
+    JPanel iconPanel = new JPanel(new FlowLayout());
+    JPanel createNewPanel = new JPanel(new BorderLayout());
 
     // Open Project panel and sub-panels.
     JPanel openPanel = new JPanel(new BorderLayout());
     JPanel mruPanel = new JPanel(new BorderLayout());
-    JPanel openButtons = new JPanel(new FlowLayout());
-    JPanel openButtonPanel = new JPanel(new GridLayout(1, 2));
+    JPanel openButtons = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    JPanel openButtonPanel = new JPanel(new GridLayout(1, 2, 3, 0));
 
     // Help Resources panel and sub-panels.
     JPanel helpPanel = new JPanel(new BorderLayout());
     JPanel hspHolder = new JPanel(new FlowLayout());
     JPanel helpSubPanel = new JPanel(new GridLayout(4, 1, 0, 2));
-    JPanel iconPanel = new JPanel(new GridLayout(1, 1));
 
-    TitledBorder titledBorder;
     TitledBorder titledBorder1;
     TitledBorder titledBorder2;
 
     JButton newButton = createButton(ResourceKey.WELCOME_DIALOG_NEW);
-    // JButton importButton = createButton(ResourceKey.WELCOME_DIALOG_BUILD);
     JButton openOtherButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN_OTHER);
     JButton openButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN);
     JButton topicsButton = createButton(ResourceKey.WELCOME_DIALOG_ALL_TOPICS);
@@ -61,8 +57,10 @@ public class WelcomeDialog extends JDialog {
     ButtonGroup group = new ButtonGroup();
     ProjectList mruList;
     JScrollPane mruScrollPane;
-    JLabel iconLabel = ComponentFactory.createLabel();
+    //JLabel iconLabel = ComponentFactory.createLabel();
+    JLabel iconLabel;
     JRadioButton[] rbArray;
+
     // List factoryList;
     List projectURIList = new ArrayList(ApplicationProperties.getMRUProjectList());
 
@@ -111,22 +109,12 @@ public class WelcomeDialog extends JDialog {
     }
 
     void jbInit() throws Exception {
-        titledBorder = createBorder(ResourceKey.WELCOME_DIALOG_PROJECT_FORMAT_TITLE);
         titledBorder1 = createBorder(ResourceKey.WELCOME_DIALOG_OPEN_RECENT_PROJECT_TITLE);
         titledBorder2 = createBorder(ResourceKey.WELCOME_DIALOG_HELP_TITLE);
-        ptpHolder.setBorder(titledBorder);
         mruPanel.setBorder(titledBorder1);
         hspHolder.setBorder(titledBorder2);
 
-        // Initialize JLabel that holds the Protege-2000 icon.
-        iconLabel.setIcon(Icons.getLogo());
-        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        iconLabel.setVerticalAlignment(SwingConstants.CENTER);
-
         /* Build New Project panel ********************************************/
-        // ptpHolder.add(getProjectTypePanel());
-        // newPanel.add(ptpHolder, BorderLayout.CENTER);
-
         newButtonPanel.add(newButton);
         setToolTipText(newButton, ResourceKey.WELCOME_DIALOG_NEW_TOOLTIP);
         newButton.addActionListener(new ActionListener() {
@@ -134,26 +122,26 @@ public class WelcomeDialog extends JDialog {
                 newButton_actionPerformed(ae);
             }
         });
-//        newButtonPanel.add(importButton);
-//        setToolTipText(importButton, ResourceKey.WELCOME_DIALOG_BUILD_TOOLTIP);
-//        importButton.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent ae) {
-//                importButton_actionPerformed(ae);
-//            }
-//        });
-        formatButtons.add(newButtonPanel, BorderLayout.WEST);
-        newPanel.add(formatButtons, BorderLayout.SOUTH);
+
+        // Initialize JLabel that holds the Protege icon.
+        iconLabel = new JLabel("   ", Icons.getLogo(), JLabel.LEFT);
+        iconPanel.add(iconLabel);
+
+        createNewPanel.add(newButtonPanel, BorderLayout.CENTER);
+        createNewPanel.add(iconPanel, BorderLayout.EAST);
 
         /* Build Open Project panel *******************************************/
+
+	// Set up the list of most recently used projects.
         initList();
         mruScrollPane = new JScrollPane(mruList);
         mruPanel.add(mruScrollPane, BorderLayout.CENTER);
 
-        openPanel.add(mruPanel, BorderLayout.CENTER);
-
+	// Set up the "Open Selected Project" and "Open Other Project..."
+        // buttons.
+        openButtonPanel.add(openButton);
         setToolTipText(openButton, ResourceKey.WELCOME_DIALOG_OPEN_TOOLTIP);
         openButton.setEnabled(false);
-        openButtonPanel.add(openButton);
         openButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 openButton_actionPerformed(ae);
@@ -169,6 +157,8 @@ public class WelcomeDialog extends JDialog {
         });
 
         openButtons.add(openButtonPanel);
+
+        openPanel.add(mruPanel, BorderLayout.CENTER);
         openPanel.add(openButtons, BorderLayout.SOUTH);
 
         /* Build Help Resources panel *****************************************/
@@ -202,41 +192,13 @@ public class WelcomeDialog extends JDialog {
 
         hspHolder.add(helpSubPanel);
         helpPanel.add(hspHolder, BorderLayout.CENTER);
-
-        iconPanel.add(iconLabel);
-        helpPanel.add(iconPanel, BorderLayout.SOUTH);
+        openPanel.add(helpPanel, BorderLayout.EAST);
 
         /* Build main dialog **************************************************/
-        panel.add(newPanel, BorderLayout.NORTH);
+        panel.add(createNewPanel, BorderLayout.NORTH);
         panel.add(openPanel, BorderLayout.CENTER);
-        panel.add(helpPanel, BorderLayout.EAST);
         this.getContentPane().add(panel);
     }
-
-//    private JPanel getProjectTypePanel() {
-//        // Build the top section of the "New Project" panel:
-//
-//        // Get a collection of the available project types.
-//        // a.k.a. back-ends
-//        // a.k.a. knowledge-base factories
-//        factoryList = new ArrayList(PluginUtilities.getAvailableFactories());
-//
-//        projectTypePanel = new JPanel(new GridLayout(factoryList.size(), 1, 0, 2));
-//
-//        // Create a radio button for each new project type and assign all the
-//        // buttons to a radio group.
-//        group = new ButtonGroup();
-//        rbArray = new JRadioButton[factoryList.size()];
-//        for (int i = 0; i < factoryList.size(); i++) {
-//            KnowledgeBaseFactory factory = (KnowledgeBaseFactory) factoryList.get(i);
-//            JRadioButton rb = new JRadioButton(factory.getDescription());
-//            rbArray[i] = rb;
-//            rbArray[0].setSelected(true);
-//            group.add(rb);
-//            projectTypePanel.add(rb);
-//        }
-//        return projectTypePanel;
-//    }
 
     private void initList() {
         DefaultListModel model = new DefaultListModel();
@@ -284,36 +246,11 @@ public class WelcomeDialog extends JDialog {
     }
 
     public void newButton_actionPerformed(ActionEvent ae) {
-//        WaitCursor cursor = new WaitCursor(this.getRootPane());
-//        // Find out which radio button is selected in the "New Project"
-//        // panel and open the appropriate project type.
-//        for (int i = 0; i < rbArray.length; i++) {
-//            if (rbArray[i].isSelected()) {
-//                KnowledgeBaseFactory factory = (KnowledgeBaseFactory) factoryList.get(i);
-//                ProjectManager.getProjectManager().loadProject(null, factory);
-//            }
-//        }
-//        cursor.hide();
-//        this.setVisible(false);
         boolean succeeded = ProjectManager.getProjectManager().createNewProjectRequest();
         if (succeeded) {
             setVisible(false);
         }
     }
-
-//    public void importButton_actionPerformed(ActionEvent ae) {
-//        // Find out which radio button is selected in the "New Project"
-//        // panel and import the appropriate project type.
-//        for (int i = 0; i < rbArray.length; i++) {
-//            if (rbArray[i].isSelected()) {
-//                KnowledgeBaseFactory factory = (KnowledgeBaseFactory) factoryList.get(i);
-//                boolean succeeded = ProjectManager.getProjectManager().buildProject(factory);
-//                if (succeeded) {
-//                    this.setVisible(false);
-//                }
-//            }
-//        }
-//    }
 
     public void openButton_actionPerformed(ActionEvent ae) {
         int index = mruList.getSelectedIndex();
@@ -325,21 +262,6 @@ public class WelcomeDialog extends JDialog {
         if (opened) {
             setVisible(false);
         }
-    	/*
-            String title = LocalizedText.getText(ResourceKey.OPEN_PROJECT_DIALOG_TITLE);
-            JFileChooser chooser = ComponentFactory.createFileChooser(title, ".pprj");
-            int rval = chooser.showOpenDialog(this);
-            if (rval == JFileChooser.APPROVE_OPTION) {
-                URI uri = chooser.getSelectedFile().toURI();
-                WaitCursor cursor = new WaitCursor(this.getRootPane());
-                this.setVisible(false);
-                ProjectManager.getProjectManager().loadProject(uri);
-                ApplicationProperties.addProjectToMRUList(uri);
-                cursor.hide();
-            }
-        }
-        */
-
     }
 
     public void faqButton_actionPerformed(ActionEvent ae) {

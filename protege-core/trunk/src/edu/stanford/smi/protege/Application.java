@@ -27,7 +27,7 @@ public class Application {
             SystemUtilities.initialize();
         } catch (Exception e) {
             Log.getLogger().log(Level.SEVERE, "failed to initialize", e);
-        } 
+        }
     }
 
     public static Component getMainWindow() {
@@ -82,12 +82,13 @@ public class Application {
             if (b == true) {
                 // Load the main frame and show the welcome dialog.
                 _welcome = new WelcomeDialog(_mainFrame, Text.getProgramName(), true);
+                _welcome.setSize(new Dimension(600, 300));
                 _welcome.setLocationRelativeTo(_mainFrame);
                 _welcome.setVisible(true);
             }
         }
     }
-    
+
     public static WelcomeDialog getWelcomeDialog() {
         return _welcome;
     }
@@ -112,7 +113,7 @@ public class Application {
         location.y = Math.max(r.y, location.y);
         _mainFrame.setLocation(location);
     }
-    
+
     public static void main(final String[] args) {
         // This bit of sleight of hand causes uncaught exceptions to get logged.
         // There is a better way to do this in JDK 1.5.
