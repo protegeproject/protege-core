@@ -145,10 +145,10 @@ public class ProjectMenuBar extends JMenuBar {
     }
 
     private void loadFileMenu(JMenu menu) {
+        createItem(menu, new CreateProject2(false));
         if (SystemUtilities.showAlphaFeatures()) {
-            createItem(menu, new CreateProject2(false));
         } else {
-            createItem(menu, new CreateProject(false));
+            // createItem(menu, new CreateProject(false));
         }
         createItem(menu, new OpenProject(false));
         loadOpenRecent(menu);
