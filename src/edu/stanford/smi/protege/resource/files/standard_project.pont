@@ -100,6 +100,10 @@
     	(type SYMBOL)
     	(allowed-values TRUE FALSE)
     	(create-accessor read-write))
+    (single-slot tabbed_instance_form_layout
+    	(type SYMBOL)
+    	(allowed-values TRUE FALSE)
+    	(create-accessor read-write))
     (single-slot display_multi_parent_class_icon
         (type SYMBOL)
         (allowed-values TRUE FALSE)

@@ -23,6 +23,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     private JCheckBox _updateModificationSlotsComponent;
     private JCheckBox journalingEnabledCheckBox;
     private JCheckBox prettyPrintSlotWidgetLabelsCheckBox;
+    private JCheckBox tabbedInstanceFormCheckBox;
 
     public ConfigureOptionsPanel(Project project) {
         _project = project;
@@ -35,6 +36,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         c.add(createUpdateModificationSlotsComponent());
         c.add(createJournalingEnabledCheckBox());
         c.add(createPrettyPrintSlotWidgetLabelsCheckBox());
+        c.add(createTabbedInstanceFormComponent());
         add(c);
 
     }
@@ -54,7 +56,8 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     }
 
     private JComponent createConfirmOnRemoveComponent() {
-        _confirmOnRemoveComponent = ComponentFactory.createCheckBox("Display Confirmation Dialog on 'Remove' Operations");
+        _confirmOnRemoveComponent = ComponentFactory
+                .createCheckBox("Display Confirmation Dialog on 'Remove' Operations");
         setValue(_confirmOnRemoveComponent, _project.getDisplayConfirmationOnRemove());
         return _confirmOnRemoveComponent;
     }
@@ -71,16 +74,22 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         return _isEditableComponent;
     }
 
-//    private JComponent createMultiparentClassIconComponent() {
-//        _multiParentClassIconComponent = ComponentFactory.createCheckBox("Display multi-parent class icon");
-//        setValue(_multiParentClassIconComponent, _project.getDisplayMultiParentClassIcon());
-//        return _multiParentClassIconComponent;
-//    }
+    //    private JComponent createMultiparentClassIconComponent() {
+    //        _multiParentClassIconComponent = ComponentFactory.createCheckBox("Display multi-parent class icon");
+    //        setValue(_multiParentClassIconComponent, _project.getDisplayMultiParentClassIcon());
+    //        return _multiParentClassIconComponent;
+    //    }
 
     private JComponent createUpdateModificationSlotsComponent() {
         _updateModificationSlotsComponent = ComponentFactory.createCheckBox("Update Modification Slots");
         setValue(_updateModificationSlotsComponent, _project.getUpdateModificationSlots());
         return _updateModificationSlotsComponent;
+    }
+
+    private JComponent createTabbedInstanceFormComponent() {
+        tabbedInstanceFormCheckBox = ComponentFactory.createCheckBox("Used Tabbed Forms for Multi-Type Instances");
+        setValue(tabbedInstanceFormCheckBox, _project.getTabbedInstanceFormLayout());
+        return tabbedInstanceFormCheckBox;
     }
 
     private static boolean getValue(JCheckBox box) {
@@ -95,6 +104,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         _project.setUpdateModificationSlots(getValue(_updateModificationSlotsComponent));
         _project.setJournalingEnabled(getValue(journalingEnabledCheckBox));
         _project.setPrettyPrintSlotWidgetLabels(getValue(prettyPrintSlotWidgetLabelsCheckBox));
+        _project.setTabbedInstanceFormLayout(getValue(tabbedInstanceFormCheckBox));
     }
 
     private static void setValue(JCheckBox box, boolean value) {

@@ -185,32 +185,52 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
             FormWidget widget = (FormWidget) CollectionUtilities.getFirstItem(widgets);
             widget.setResizeVertically(resizeVertically);
             container = widget;
+        } else if (doTabbedFormLayout()) {
+            container = createTabbedWidgetLayout(widgets);
         } else {
-            Box boxPanel = Box.createVerticalBox();
-            Iterator i = widgets.iterator();
-            while (i.hasNext()) {
-                FormWidget widget = (FormWidget) i.next();
-                widget.setResizeVertically(resizeVertically);
-                JComponent componentToAdd = widget;
-
-                if (widgets.size() > 1) {
-                    JPanel body = new JPanel(new BorderLayout());
-                    body.add(widget);
-                    String text = "as " + widget.getCls().getBrowserText();
-                    JLabel header = ComponentFactory.createSmallFontLabel(text);
-                    header.setPreferredSize(ComponentFactory.STANDARD_BUTTON_SIZE);
-                    body.setBorder(BorderFactory.createEtchedBorder());
-                    componentToAdd = new JPanel(new BorderLayout());
-                    componentToAdd.add(header, BorderLayout.NORTH);
-                    componentToAdd.add(body, BorderLayout.CENTER);
-                    componentToAdd.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-                }
-                boxPanel.add(componentToAdd);
-            }
-            container = new JPanel(new BorderLayout());
-            String position = resizeVertically ? BorderLayout.CENTER : BorderLayout.NORTH;
-            container.add(boxPanel, position);
+            container = createSingleFormWidgetLayout(widgets);
         }
+        return container;
+    }
+
+    protected boolean doTabbedFormLayout() {
+        return _project.getTabbedInstanceFormLayout();
+    }
+
+    protected JComponent createTabbedWidgetLayout(Collection widgets) {
+        JTabbedPane tabbedPane = ComponentFactory.createTabbedPane(false);
+        Iterator i = widgets.iterator();
+        while (i.hasNext()) {
+            ClsWidget widget = (ClsWidget) i.next();
+            tabbedPane.addTab(widget.getCls().getBrowserText(), (JComponent) widget);
+        }
+        tabbedPane.setBorder(ComponentUtilities.getAlignBorder());
+        return tabbedPane;
+    }
+
+    protected JComponent createSingleFormWidgetLayout(Collection widgets) {
+        Box boxPanel = Box.createVerticalBox();
+        Iterator i = widgets.iterator();
+        while (i.hasNext()) {
+            FormWidget widget = (FormWidget) i.next();
+            widget.setResizeVertically(resizeVertically);
+            JComponent componentToAdd = widget;
+
+            JPanel body = new JPanel(new BorderLayout());
+            body.add(widget);
+            String text = "as " + widget.getCls().getBrowserText();
+            JLabel header = ComponentFactory.createSmallFontLabel(text);
+            header.setPreferredSize(ComponentFactory.STANDARD_BUTTON_SIZE);
+            body.setBorder(BorderFactory.createEtchedBorder());
+            componentToAdd = new JPanel(new BorderLayout());
+            componentToAdd.add(header, BorderLayout.NORTH);
+            componentToAdd.add(body, BorderLayout.CENTER);
+            componentToAdd.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            boxPanel.add(componentToAdd);
+        }
+        JPanel container = new JPanel(new BorderLayout());
+        String position = resizeVertically ? BorderLayout.CENTER : BorderLayout.NORTH;
+        container.add(boxPanel, position);
         return container;
     }
 
