@@ -43,6 +43,9 @@
 			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/bin ../${project.name}/bin"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
+			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/examples ../${project.name}/examples"/>
+		</exec>
+		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
 			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk ../${project.name} --non-recursive"/>
 		</exec>
 		<!-- add license text to top of source files -->
