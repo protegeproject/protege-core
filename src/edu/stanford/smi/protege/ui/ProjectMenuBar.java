@@ -146,10 +146,6 @@ public class ProjectMenuBar extends JMenuBar {
 
     private void loadFileMenu(JMenu menu) {
         createItem(menu, new CreateProject2(false));
-        if (SystemUtilities.showAlphaFeatures()) {
-        } else {
-            // createItem(menu, new CreateProject(false));
-        }
         createItem(menu, new OpenProject(false));
         loadOpenRecent(menu);
         createItem(menu, new CloseProject());
@@ -160,9 +156,7 @@ public class ProjectMenuBar extends JMenuBar {
             createItem(menu, new SaveProjectToFormat());
         } else {
             menu.addSeparator();
-            ComponentFactory.addSubmenu(menu, createImportSubmenu());
             ComponentFactory.addSubmenu(menu, createExportSubmenu());
-            createItem(menu, new BuildProject());
             createItem(menu, new ChangeProjectStorageFormat());
             createItem(menu, "edu.stanford.smi.protegex.htmldoc.GenerateHtml");
         }
@@ -206,19 +200,21 @@ public class ProjectMenuBar extends JMenuBar {
         ComponentFactory.addMenuItemNoIcon(menu, new ShowEncodingAndLocales());
     }
 
-    private JMenu createImportSubmenu() {
-        JMenu menu = ComponentFactory.createMenu(ResourceKey.PROJECT_IMPORT_TO_STANDARD);
-        Collection classNames = PluginUtilities.getAvailableImportPluginClassNames();
-        Iterator i = getSortedPlugins(classNames).iterator();
-        while (i.hasNext()) {
-            ImportPlugin plugin = (ImportPlugin) i.next();
-            createItem(menu, new ImportPluginAction(plugin));
-        }
-        if (menu.getItemCount() == 0) {
-            menu.setEnabled(false);
-        }
-        return menu;
-    }
+    /*
+     private JMenu createImportSubmenu() {
+     JMenu menu = ComponentFactory.createMenu(ResourceKey.PROJECT_IMPORT_TO_STANDARD);
+     Collection classNames = PluginUtilities.getAvailableImportPluginClassNames();
+     Iterator i = getSortedPlugins(classNames).iterator();
+     while (i.hasNext()) {
+     ImportPlugin plugin = (ImportPlugin) i.next();
+     createItem(menu, new ImportPluginAction(plugin));
+     }
+     if (menu.getItemCount() == 0) {
+     menu.setEnabled(false);
+     }
+     return menu;
+     }
+     */
 
     /*
      * private JMenu createImport2Submenu() { JMenu menu = ComponentFactory.createMenu(ResourceKey.PROJECT_IMPORT);
