@@ -47,9 +47,9 @@ public class WelcomeDialog extends JDialog {
 
     JButton closeButton = createButton(ResourceKey.CLOSE_BUTTON_LABEL, Icons.getCloseIcon());
     JButton faqButton = createButton(ResourceKey.WELCOME_DIALOG_FAQ);
-    JButton newButton = createButton(ResourceKey.WELCOME_DIALOG_NEW);
+    JButton newButton = createButton(ResourceKey.WELCOME_DIALOG_NEW, Icons.getNewProjectIcon());
     JButton openButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN);
-    JButton openOtherButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN_OTHER);
+    JButton openOtherButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN_OTHER, Icons.getOpenProjectIcon());
     JButton topicsButton = createButton(ResourceKey.WELCOME_DIALOG_ALL_TOPICS);
     JButton tutorialButton = createButton(ResourceKey.WELCOME_DIALOG_GETTING_STARTED);
     JButton usersGuideButton = createButton(ResourceKey.WELCOME_DIALOG_USERS_GUIDE);
@@ -86,6 +86,12 @@ public class WelcomeDialog extends JDialog {
             this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             jbInit();
             pack();
+
+            Runnable doFocus = new Runnable() {
+                public void run() { closeButton.requestFocus(); }
+            };
+            SwingUtilities.invokeLater(doFocus);
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -109,6 +115,14 @@ public class WelcomeDialog extends JDialog {
         });
         newButtonPanel.add(newButton);
 
+        setToolTipText(openOtherButton, ResourceKey.WELCOME_DIALOG_OPEN_OTHER_TOOLTIP);
+        openOtherButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                openOtherButton_actionPerformed(ae);
+            }
+        });
+        newButtonPanel.add(openOtherButton);
+
         iconLabel = new JLabel("   ", Icons.getLogo(), SwingConstants.LEFT);
         iconPanel.add(iconLabel);
 
@@ -119,14 +133,10 @@ public class WelcomeDialog extends JDialog {
          * Build Open Recent/Other Project panel
          */
 
-        // Set up the list of most recently used projects.
         initList();
         mruScrollPane = new JScrollPane(mruList);
         mruPanel.add(mruScrollPane, BorderLayout.CENTER);
 
-        // Set up the "Open Selected Project" and "Open Other Project..."
-        // buttons.
-        //openButtons.add(openButton);
         setToolTipText(openButton, ResourceKey.WELCOME_DIALOG_OPEN_TOOLTIP);
         openButton.setEnabled(false);
         openButton.addActionListener(new ActionListener() {
@@ -135,14 +145,6 @@ public class WelcomeDialog extends JDialog {
             }
         });
         openButtons.add(openButton);
-
-        setToolTipText(openOtherButton, ResourceKey.WELCOME_DIALOG_OPEN_OTHER_TOOLTIP);
-        openOtherButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                openOtherButton_actionPerformed(ae);
-            }
-        });
-        openButtons.add(openOtherButton);
 
         openPanel.add(mruPanel, BorderLayout.CENTER);
         openPanel.add(openButtons, BorderLayout.SOUTH);
@@ -197,7 +199,6 @@ public class WelcomeDialog extends JDialog {
                 closeButton_actionPerformed(e);
             }
         });
-        //getRootPane().setDefaultButton(closeButton);
 	bottomPanel.add(closeButton);
 
         this.getContentPane().setLayout(new BorderLayout(0, 10));
