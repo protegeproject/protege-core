@@ -52,8 +52,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
     }
 
-    public DatabaseFrameDb(FrameFactory factory, String driver, String url, String user,
-            String pass, String table) {
+    public DatabaseFrameDb(FrameFactory factory, String driver, String url, String user, String pass, String table) {
         _table = table;
         _frameFactory = factory;
         initializeTracing();
@@ -65,10 +64,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private void initializeTracing() {
-        _isTracingUpdate = ApplicationProperties.getBooleanProperty("database.tracing.update",
-                _isTracingUpdate);
-        _isTracingQuery = ApplicationProperties.getBooleanProperty("database.tracing.query",
-                _isTracingQuery);
+        _isTracingUpdate = ApplicationProperties.getBooleanProperty("database.tracing.update", _isTracingUpdate);
+        _isTracingQuery = ApplicationProperties.getBooleanProperty("database.tracing.query", _isTracingQuery);
     }
 
     public void setModifiable(boolean modifiable) {
@@ -200,8 +197,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
          */
         // used for slot and facet value lookup
         indexString = "CREATE INDEX " + _table + "_I1 ON " + _table;
-        indexString += " (" + FRAME + ", " + SLOT + ", " + FACET + ", " + IS_TEMPLATE + ", "
-                + VALUE_INDEX + ")";
+        indexString += " (" + FRAME + ", " + SLOT + ", " + FACET + ", " + IS_TEMPLATE + ", " + VALUE_INDEX + ")";
         executeUpdate(indexString);
 
         // used for searching for values
@@ -220,8 +216,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private boolean needsIndexOnLowerValue() throws SQLException {
-        return !_connection.supportsCaseInsensitiveMatches()
-                && _connection.supportsIndexOnFunction();
+        return !_connection.supportsCaseInsensitiveMatches() && _connection.supportsIndexOnFunction();
     }
 
     /*
@@ -233,8 +228,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
      */
     private void createIndexOnLowerValue() throws SQLException {
         String indexString;
-        indexString = "CREATE INDEX " + _table + "_IV ON " + _table + "(LOWER(" + SHORT_VALUE
-                + "))";
+        indexString = "CREATE INDEX " + _table + "_IV ON " + _table + "(LOWER(" + SHORT_VALUE + "))";
         executeUpdate(indexString);
     }
 
@@ -293,8 +287,14 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private ResultSet executeQuery(String text) throws SQLException {
+        return executeQuery(text, 0);
+    }
+
+    private ResultSet executeQuery(String text, int maxRows) throws SQLException {
         traceQuery(text);
-        return _connection.getStatement().executeQuery(text);
+        Statement statement = _connection.getStatement();
+        // statement.setMaxRows(maxRows);
+        return statement.executeQuery(text);
     }
 
     private void executeUpdate(PreparedStatement stmt) throws SQLException {
@@ -363,8 +363,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private Set getReferencesSQL(Object value) throws SQLException {
         if (_referencesText == null) {
-            _referencesText = "SELECT " + SHORT_VALUE + ", " + FRAME + ", " + FRAME_TYPE + ", "
-                    + SLOT + ", " + FACET + ", " + IS_TEMPLATE;
+            _referencesText = "SELECT " + SHORT_VALUE + ", " + FRAME + ", " + FRAME_TYPE + ", " + SLOT + ", " + FACET
+                    + ", " + IS_TEMPLATE;
             _referencesText += " FROM " + _table;
             _referencesText += " WHERE " + SHORT_VALUE + " = ?";
             _referencesText += " AND " + VALUE_TYPE + " = ?";
@@ -395,7 +395,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     public Set getMatchingReferences(String value, int maxMatches) {
         try {
-            return getMatchingReferencesSQL(value);
+            return getMatchingReferencesSQL(value, maxMatches);
         } catch (SQLException e) {
             throw createRuntimeException(e);
         }
@@ -403,21 +403,19 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String _matchingReferencesText;
 
-    private Set getMatchingReferencesSQL(String value) throws SQLException {
+    private Set getMatchingReferencesSQL(String value, int maxMatches) throws SQLException {
         if (_matchingReferencesText == null) {
-            _matchingReferencesText = "SELECT " + FRAME + ", " + FRAME_TYPE + ", " + SLOT + ", "
-                    + FACET;
+            _matchingReferencesText = "SELECT " + FRAME + ", " + FRAME_TYPE + ", " + SLOT + ", " + FACET;
             _matchingReferencesText += ", " + IS_TEMPLATE;
             _matchingReferencesText += " FROM " + _table;
-            _matchingReferencesText += " WHERE " + VALUE_TYPE + " = "
-                    + DatabaseUtils.getStringValueType();
+            _matchingReferencesText += " WHERE " + VALUE_TYPE + " = " + DatabaseUtils.getStringValueType();
             _matchingReferencesText += " AND " + getShortValueMatchColumn();
             _matchingReferencesText += " LIKE '";
         }
         String text = _matchingReferencesText + getMatchString(value) + "' " + getEscapeClause();
 
         Set references = new HashSet();
-        ResultSet rs = executeQuery(text);
+        ResultSet rs = executeQuery(text, maxMatches);
         while (rs.next()) {
             Frame frame = getFrame(rs, 1, 2);
             Slot slot = getSlot(rs, 3);
@@ -440,8 +438,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String _removeValueText;
 
-    private void removeValueSQL(Frame frame, Slot slot, Facet facet, boolean isTemplate,
-            Object value) throws SQLException {
+    private void removeValueSQL(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value)
+            throws SQLException {
         if (_removeValueText == null) {
             _removeValueText = "DELETE FROM " + _table;
             _removeValueText += " WHERE " + FRAME + " = ?";
@@ -473,8 +471,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String _removeValuesText;
 
-    private void removeValuesSQL(Frame frame, Slot slot, Facet facet, boolean isTemplate)
-            throws SQLException {
+    private void removeValuesSQL(Frame frame, Slot slot, Facet facet, boolean isTemplate) throws SQLException {
         if (_removeValuesText == null) {
             _removeValuesText = "DELETE FROM " + _table;
             _removeValuesText += " WHERE " + FRAME + " = ?";
@@ -506,17 +503,15 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private PreparedStatement getAddValuesStatement() throws SQLException {
         if (_addValuesText == null) {
             _addValuesText = "INSERT INTO " + _table;
-            _addValuesText += " (" + FRAME + ", " + FRAME_TYPE + ", " + SLOT + ", " + FACET + ", "
-                    + IS_TEMPLATE + ", ";
-            _addValuesText += VALUE_INDEX + ", " + SHORT_VALUE + ", " + LONG_VALUE + ", "
-                    + VALUE_TYPE + ")";
+            _addValuesText += " (" + FRAME + ", " + FRAME_TYPE + ", " + SLOT + ", " + FACET + ", " + IS_TEMPLATE + ", ";
+            _addValuesText += VALUE_INDEX + ", " + SHORT_VALUE + ", " + LONG_VALUE + ", " + VALUE_TYPE + ")";
             _addValuesText += " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
         return _connection.getPreparedStatement(_addValuesText);
     }
 
-    private void addValuesSQL(Frame frame, Slot slot, Facet facet, boolean isTemplate,
-            Collection values, int index) throws SQLException {
+    private void addValuesSQL(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values, int index)
+            throws SQLException {
         PreparedStatement stmt = getAddValuesStatement();
         boolean useBatch = values.size() > 1 && _connection.supportsBatch();
 
@@ -544,8 +539,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String _maxIndexText;
 
-    private int getMaxIndex(Frame frame, Slot slot, Facet facet, boolean isTemplate)
-            throws SQLException {
+    private int getMaxIndex(Frame frame, Slot slot, Facet facet, boolean isTemplate) throws SQLException {
         if (_maxIndexText == null) {
             _maxIndexText = "SELECT MAX(" + VALUE_INDEX + ")";
             _maxIndexText += " FROM " + _table;
@@ -571,8 +565,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return index;
     }
 
-    public void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from,
-            int index) {
+    public void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int index) {
         checkModifiability();
         // this implementation could probably be optimized but it probably isn't
         // worth it
@@ -586,8 +579,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return null;
     }
 
-    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value,
-            int maxMatches) {
+    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
         try {
             return getMatchingFramesSQL(slot, facet, isTemplate, value);
         } catch (SQLException e) {
@@ -605,14 +597,11 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return matchColumn;
     }
 
-    private Set getMatchingFramesSQL(Slot slot, Facet facet, boolean isTemplate, String value)
-            throws SQLException {
-        String text = "SELECT " + FRAME + ", " + FRAME_TYPE + ", " + SLOT + ", " + FACET + ", "
-                + IS_TEMPLATE;
+    private Set getMatchingFramesSQL(Slot slot, Facet facet, boolean isTemplate, String value) throws SQLException {
+        String text = "SELECT " + FRAME + ", " + FRAME_TYPE + ", " + SLOT + ", " + FACET + ", " + IS_TEMPLATE;
         text += " FROM " + _table;
         text += " WHERE " + VALUE_TYPE + " = " + DatabaseUtils.getStringValueType();
-        text += " AND " + getShortValueMatchColumn() + " LIKE '" + getMatchString(value) + "' "
-                + getEscapeClause();
+        text += " AND " + getShortValueMatchColumn() + " LIKE '" + getMatchString(value) + "' " + getEscapeClause();
 
         Set results = new HashSet();
         ResultSet rs = executeQuery(text);
@@ -621,8 +610,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             int returnedSlot = rs.getInt(3);
             int returnedFacet = rs.getInt(4);
             boolean returnedIsTemplate = rs.getBoolean(5);
-            if (equals(returnedSlot, slot) && equals(returnedFacet, facet)
-                    && returnedIsTemplate == isTemplate) {
+            if (equals(returnedSlot, slot) && equals(returnedFacet, facet) && returnedIsTemplate == isTemplate) {
                 results.add(frame);
             }
         }
@@ -658,11 +646,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
      */
     private String _framesText;
 
-    private Set getFramesSQL(Slot slot, Facet facet, boolean isTemplate, Object value)
-            throws SQLException {
+    private Set getFramesSQL(Slot slot, Facet facet, boolean isTemplate, Object value) throws SQLException {
         if (_framesText == null) {
-            _framesText = "SELECT " + SHORT_VALUE + ", " + FRAME + ", " + FRAME_TYPE + " FROM "
-                    + _table;
+            _framesText = "SELECT " + SHORT_VALUE + ", " + FRAME + ", " + FRAME_TYPE + " FROM " + _table;
             _framesText += " WHERE " + SLOT + " = ?";
             _framesText += " AND " + FACET + " = ?";
             _framesText += " AND " + IS_TEMPLATE + " = ?";
@@ -703,8 +689,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String _framesWithAnyValueText;
 
-    private Set getFramesWithAnyValueSQL(Slot slot, Facet facet, boolean isTemplate)
-            throws SQLException {
+    private Set getFramesWithAnyValueSQL(Slot slot, Facet facet, boolean isTemplate) throws SQLException {
         if (_framesWithAnyValueText == null) {
             _framesWithAnyValueText = "SELECT " + FRAME + ", " + FRAME_TYPE + " FROM " + _table;
             _framesWithAnyValueText += " WHERE " + SLOT + " = ?";
@@ -751,8 +736,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String _valuesText;
 
-    private List getValuesSQL(Frame frame, Slot slot, Facet facet, boolean isTemplate)
-            throws SQLException {
+    private List getValuesSQL(Frame frame, Slot slot, Facet facet, boolean isTemplate) throws SQLException {
         if (_valuesText == null) {
             _valuesText = "SELECT " + SHORT_VALUE + ", " + VALUE_TYPE + ", " + VALUE_INDEX;
             _valuesText += " FROM " + _table;
@@ -799,8 +783,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String _valuesCountText;
 
-    private int getValuesCountSQL(Frame frame, Slot slot, Facet facet, boolean isTemplate)
-            throws SQLException {
+    private int getValuesCountSQL(Frame frame, Slot slot, Facet facet, boolean isTemplate) throws SQLException {
         if (_valuesCountText == null) {
             _valuesCountText = "SELECT COUNT(*) ";
             _valuesCountText += " FROM " + _table;
@@ -861,8 +844,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             _frameValuesText += " FROM " + _table;
             _frameValuesText += " WHERE " + FRAME + " = ?";
             _frameValuesText += " AND " + SLOT + " <> " + getValue(Model.SlotID.DIRECT_INSTANCES);
-            _frameValuesText += " ORDER BY " + FRAME + ", " + SLOT + ", " + FACET + ", "
-                    + IS_TEMPLATE + ", " + VALUE_INDEX;
+            _frameValuesText += " ORDER BY " + FRAME + ", " + SLOT + ", " + FACET + ", " + IS_TEMPLATE + ", "
+                    + VALUE_INDEX;
         }
         PreparedStatement stmt = _connection.getPreparedStatement(_frameValuesText);
 
@@ -899,8 +882,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             _allFrameValuesText += ", " + SHORT_VALUE + ", " + VALUE_TYPE + ", " + VALUE_INDEX;
             _allFrameValuesText += ", " + LONG_VALUE;
             _allFrameValuesText += " FROM " + _table;
-            _allFrameValuesText += " ORDER BY " + SLOT + ", " + FACET + ", " + IS_TEMPLATE + ", "
-                    + VALUE_INDEX;
+            _allFrameValuesText += " ORDER BY " + SLOT + ", " + FACET + ", " + IS_TEMPLATE + ", " + VALUE_INDEX;
         }
         PreparedStatement stmt = _connection.getPreparedStatement(_allFrameValuesText);
 
@@ -928,8 +910,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private void nullValueError(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-        String text = "null value: " + id(frame) + " " + id(slot) + " " + id(facet) + " "
-                + isTemplate;
+        String text = "null value: " + id(frame) + " " + id(slot) + " " + id(facet) + " " + isTemplate;
         Log.getLogger().warning(text);
     }
 
@@ -947,8 +928,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         values.add(value);
     }
 
-    private void addToMap(CacheMap map, Frame frame, Slot slot, Facet facet, boolean isTemplate,
-            Object value) {
+    private void addToMap(CacheMap map, Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
         Map sftToValueMap = (Map) map.get(frame);
         if (sftToValueMap == null) {
             sftToValueMap = createInitialMap(frame);
@@ -960,8 +940,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private Map createInitialMap(Frame frame) {
         Map map = new HashMap();
         if (frame instanceof Cls) {
-            Slot directInstancesSlot = frame.getKnowledgeBase().getSystemFrames()
-                    .getDirectInstancesSlot();
+            Slot directInstancesSlot = frame.getKnowledgeBase().getSystemFrames().getDirectInstancesSlot();
             map.put(new Sft(directInstancesSlot, null, false), new ArrayList());
             // map.put(new Sft(directSubclassesSlot, null, false), new
             // ArrayList());
@@ -971,8 +950,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String _longValueText;
 
-    private Object getLongValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int index)
-            throws SQLException {
+    private Object getLongValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int index) throws SQLException {
         if (_longValueText == null) {
             _longValueText = "SELECT " + LONG_VALUE;
             _longValueText += " FROM " + _table;
@@ -1001,13 +979,12 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     // forwarding methods
-    private static void setFrame(PreparedStatement stmt, int index, Frame frame)
-            throws SQLException {
+    private static void setFrame(PreparedStatement stmt, int index, Frame frame) throws SQLException {
         DatabaseUtils.setFrame(stmt, index, frame);
     }
 
-    private static void setFrame(PreparedStatement stmt, int frameIndex, int valueTypeIndex,
-            Frame frame, FrameFactory factory) throws SQLException {
+    private static void setFrame(PreparedStatement stmt, int frameIndex, int valueTypeIndex, Frame frame,
+            FrameFactory factory) throws SQLException {
         DatabaseUtils.setFrame(stmt, frameIndex, valueTypeIndex, frame, factory);
     }
 
@@ -1015,29 +992,26 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         DatabaseUtils.setSlot(stmt, index, slot);
     }
 
-    private static void setFacet(PreparedStatement stmt, int index, Facet facet)
-            throws SQLException {
+    private static void setFacet(PreparedStatement stmt, int index, Facet facet) throws SQLException {
         DatabaseUtils.setFacet(stmt, index, facet);
     }
 
-    private static void setIsTemplate(PreparedStatement stmt, int index, boolean isTemplate)
-            throws SQLException {
+    private static void setIsTemplate(PreparedStatement stmt, int index, boolean isTemplate) throws SQLException {
         DatabaseUtils.setIsTemplate(stmt, index, isTemplate);
     }
 
-    private void setShortValue(PreparedStatement stmt, int valueIndex, int valueTypeIndex,
-            Object value) throws SQLException {
+    private void setShortValue(PreparedStatement stmt, int valueIndex, int valueTypeIndex, Object value)
+            throws SQLException {
         DatabaseUtils.setShortValue(stmt, valueIndex, valueTypeIndex, value, _frameFactory);
     }
 
-    private void setValue(PreparedStatement stmt, int shortIndex, int longIndex,
-            int valueTypeIndex, Object value) throws SQLException {
-        DatabaseUtils.setValue(stmt, shortIndex, longIndex, valueTypeIndex, value, _connection
-                .getMaxVarcharSize(), _frameFactory);
+    private void setValue(PreparedStatement stmt, int shortIndex, int longIndex, int valueTypeIndex, Object value)
+            throws SQLException {
+        DatabaseUtils.setValue(stmt, shortIndex, longIndex, valueTypeIndex, value, _connection.getMaxVarcharSize(),
+                _frameFactory);
     }
 
-    private static void setValueIndex(PreparedStatement stmt, int index, int valueIndex)
-            throws SQLException {
+    private static void setValueIndex(PreparedStatement stmt, int index, int valueIndex) throws SQLException {
         DatabaseUtils.setValueIndex(stmt, index, valueIndex);
     }
 
@@ -1106,8 +1080,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         previousTime = System.currentTimeMillis();
 
         if (nFrames > LOOP_SIZE) {
-            Log.getLogger()
-                    .info("Getting " + nFrames + " frames, please be patient, " + new Date());
+            Log.getLogger().info("Getting " + nFrames + " frames, please be patient, " + new Date());
         }
         Iterator i = kb.getFrames().iterator();
         while (i.hasNext()) {
@@ -1146,8 +1119,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
     }
 
-    private void saveValues(Frame frame, Slot slot, Facet facet, boolean isTemplate,
-            Collection values) throws SQLException {
+    private void saveValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values)
+            throws SQLException {
         setFrame(_addValuesBatchStmt, 1, 2, frame, _frameFactory);
         setSlot(_addValuesBatchStmt, 3, slot);
         setFacet(_addValuesBatchStmt, 4, facet);
@@ -1369,15 +1342,14 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
         // define prepared statement text if not already defined
         if (_getFrameFromIdText == null) {
-            _getFrameFromIdText = "SELECT DISTINCT " + FRAME + ", " + FRAME_TYPE + " FROM "
-                    + _table + " WHERE " + FRAME + " = ?";
+            _getFrameFromIdText = "SELECT DISTINCT " + FRAME + ", " + FRAME_TYPE + " FROM " + _table + " WHERE "
+                    + FRAME + " = ?";
         }
         try {
             // if the id is null, we cannot continue (method will return null)
             if (id != null) {
                 // get the prepared statement and set the id value
-                PreparedStatement getFrameStmt = _connection
-                        .getPreparedStatement(_getFrameFromIdText);
+                PreparedStatement getFrameStmt = _connection.getPreparedStatement(_getFrameFromIdText);
                 getFrameStmt.setInt(1, id.getLocalPart());
 
                 // execute the query and retrieve the result frame
