@@ -10,10 +10,24 @@ import edu.stanford.smi.protege.util.*;
 /**
  * Unit tests for the DefaultKnowledgeBase implementation.
  * 
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 
 public class DefaultKnowledgeBase_Test extends APITestCase {
+
+    public void testInferredInverseSlotValues() {
+        Cls cls1 = createCls();
+        Slot slot1 = createSlotOnCls(cls1);
+        Cls cls2 = createCls();
+        Slot slot2 = createSlotOnCls(cls2);
+        Instance instance2 = createInstance(cls2);
+        slot2.setInverseSlot(slot1);
+        slot1.setAllowedClses(makeList(cls2));
+        cls1.setTemplateSlotValues(slot1, makeList(instance2));
+        assertEqualsSet(makeList(), instance2.getOwnSlotValues(slot2));
+        Instance instance1 = createInstance(cls1);
+        assertEqualsSet(makeList(instance1), instance2.getOwnSlotValues(slot2));
+    }
 
     public void testAddDirectTypeSave() {
         Cls cls1 = createCls();
@@ -30,8 +44,8 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         instance = getInstance(instanceName);
         assertEqualsSet(makeList(cls1, cls2), instance.getDirectTypes());
     }
-    
-    public void testGetValueTypeByOwnSlotValue(){
+
+    public void testGetValueTypeByOwnSlotValue() {
         Slot slot = createSlot();
         ValueType type = slot.getValueType();
         assertEquals(type, ValueType.STRING);
@@ -41,7 +55,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertEqualsList(values, Collections.EMPTY_LIST);
     }
 
-    public void testDeleteFromCache(){
+    public void testDeleteFromCache() {
         KnowledgeBase kb = getDomainKB();
         Cls cls = null; // kb.createCls(null, kb.getRootClses());
         String name = "foo";
@@ -50,12 +64,12 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         instance = kb.getInstance(instanceName);
         instance.delete();
         Instance instance2 = createInstance(instanceName, cls);
-//      instance2.markDeleted(false);   /*have to have this uncommented, otherwise I get "<<deleted>>" as the name below*/
+        //      instance2.markDeleted(false); /*have to have this uncommented, otherwise I get "<<deleted>>" as the name
+        // below*/
         instance2 = getInstance(instanceName);
         assertEquals(name, instance2.getName());
-        // System.out.println(instance.getName());  /* returns "<<deleted>>"*/
+        // System.out.println(instance.getName()); /* returns "<<deleted>>"*/
     }
-
 
     public void testOwnSlotValueChangedEventOnInverseSlot() {
         final int[] eventCount = new int[1];
@@ -146,6 +160,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertEqualsList(makeList("bar"), cls.getTemplateSlotDefaultValues(slot));
         assertEqualsList(makeList("baz"), subcls.getTemplateSlotDefaultValues(slot));
     }
+
     public void testGetOwnSlotDefaultValues() {
         Cls cls = createCls();
         Slot slot = createSlot();
@@ -192,6 +207,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         redo();
         assertNotNull(getFrame(clsBName));
     }
+
     private void enableUndo() {
         getDomainKB().setUndoEnabled(true);
     }
@@ -368,6 +384,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
 
     public void testGetFrameName() {
     }
+
     public void testSetFrameName(Frame frame, String name) {
     }
 
@@ -393,84 +410,38 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     }
 
     /*
-    Set getOwnSlots(Frame frame);
-    Collection getOwnSlotValues(Frame frame, Slot slot);
-    List getDirectOwnSlotValues(Frame frame, Slot slot);
-    int getDirectOwnSlotValuesCount(Frame frame, Slot slot);
-    void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values);
-    
-    // own facets
-    Set getOwnFacets(Frame frame, Slot slot);
-    Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet);
-    
-    // template slots
-    Set getTemplateSlots(Cls cls);
-    List getDirectTemplateSlots(Cls cls);
-    List getDirectDomain(Slot slot);
-    Set getDomain(Slot slot);
-    // Set getInheritedTemplateSlots(Cls cls);
-    Set getOverriddenTemplateSlots(Cls cls);
-    Set getDirectlyOverriddenTemplateSlots(Cls cls);
-    void addDirectTemplateSlot(Cls cls, Slot slot);
-    void removeDirectTemplateSlot(Cls cls, Slot slot);
-    void moveDirectTemplateSlot(Cls cls, Slot slot, int index);
-    
-    // template slot values
-    Collection getTemplateSlotValues(Cls cls, Slot slot);
-    List getDirectTemplateSlotValues(Cls cls, Slot slot);
-    void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values);
-    
-    // template facets
-    Set getTemplateFacets(Cls cls, Slot slot);
-    Set getOverriddenTemplateFacets(Cls cls, Slot slot);
-    Set getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot);
-    void removeDirectTemplateFacetOverrides(Cls cls, Slot slot);
-    Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet);
-    List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet);
-    void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values);
-    
-    // class hierarchy
-    List getDirectSuperclasses(Cls cls);
-    Set getSuperclasses(Cls cls);
-    List getDirectSubclasses(Cls cls);
-    Set getSubclasses(Cls cls);
-    void addDirectSuperclass(Cls cls, Cls superclass);
-    void removeDirectSuperclass(Cls cls, Cls superclass);
-    void moveDirectSubclass(Cls cls, Cls subclass, int index);
-    
-    // slot hierarchy
-    List getDirectSuperslots(Slot slot);
-    Set getSuperslots(Slot slot);
-    List getDirectSubslots(Slot slot);
-    Set getSubslots(Slot slot);
-    void addDirectSuperslot(Slot slot, Slot superslot);
-    void removeDirectSuperslot(Slot slot, Slot superslot);
-    void moveDirectSubslot(Slot slot, Slot subslot, int index);
-    
-    // type hierarchy
-    List getDirectTypes(Instance instance);
-    Set getTypes(Instance instance);
-    List getDirectInstances(Cls cls);
-    Set getInstances(Cls cls);
-    void addDirectType(Instance instance, Cls type);
-    void removeDirectType(Instance instance, Cls type);
-    
-    // arbitrary queries
-    List executeQuery(Query query);
-    List getReferences(Object object);
-    List getMatchingReferences(String string, int maxMatches);
-    List getFramesWithDirectOwnSlotValue(Slot slot, Object value);
-    List getFramesWithAnyDirectOwnSlotValue(Slot slot);
-    List getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches);
-    List getClsesWithDirectTemplateSlotValue(Slot slot, Object value);
-    List getClsesWithAnyDirectTemplateSlotValue(Slot slot);
-    List getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches);
-    List getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value);
-    List getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value, int maxMatches);
-    
-    // closures
-    Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot);
-    */
+     * Set getOwnSlots(Frame frame); Collection getOwnSlotValues(Frame frame, Slot slot); List
+     * getDirectOwnSlotValues(Frame frame, Slot slot); int getDirectOwnSlotValuesCount(Frame frame, Slot slot); void
+     * setDirectOwnSlotValues(Frame frame, Slot slot, Collection values); // own facets Set getOwnFacets(Frame frame,
+     * Slot slot); Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet); // template slots Set
+     * getTemplateSlots(Cls cls); List getDirectTemplateSlots(Cls cls); List getDirectDomain(Slot slot); Set
+     * getDomain(Slot slot); // Set getInheritedTemplateSlots(Cls cls); Set getOverriddenTemplateSlots(Cls cls); Set
+     * getDirectlyOverriddenTemplateSlots(Cls cls); void addDirectTemplateSlot(Cls cls, Slot slot); void
+     * removeDirectTemplateSlot(Cls cls, Slot slot); void moveDirectTemplateSlot(Cls cls, Slot slot, int index); //
+     * template slot values Collection getTemplateSlotValues(Cls cls, Slot slot); List getDirectTemplateSlotValues(Cls
+     * cls, Slot slot); void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values); // template facets Set
+     * getTemplateFacets(Cls cls, Slot slot); Set getOverriddenTemplateFacets(Cls cls, Slot slot); Set
+     * getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot); void removeDirectTemplateFacetOverrides(Cls cls, Slot
+     * slot); Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet); List getDirectTemplateFacetValues(Cls
+     * cls, Slot slot, Facet facet); void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection
+     * values); // class hierarchy List getDirectSuperclasses(Cls cls); Set getSuperclasses(Cls cls); List
+     * getDirectSubclasses(Cls cls); Set getSubclasses(Cls cls); void addDirectSuperclass(Cls cls, Cls superclass); void
+     * removeDirectSuperclass(Cls cls, Cls superclass); void moveDirectSubclass(Cls cls, Cls subclass, int index); //
+     * slot hierarchy List getDirectSuperslots(Slot slot); Set getSuperslots(Slot slot); List getDirectSubslots(Slot
+     * slot); Set getSubslots(Slot slot); void addDirectSuperslot(Slot slot, Slot superslot); void
+     * removeDirectSuperslot(Slot slot, Slot superslot); void moveDirectSubslot(Slot slot, Slot subslot, int index); //
+     * type hierarchy List getDirectTypes(Instance instance); Set getTypes(Instance instance); List
+     * getDirectInstances(Cls cls); Set getInstances(Cls cls); void addDirectType(Instance instance, Cls type); void
+     * removeDirectType(Instance instance, Cls type); // arbitrary queries List executeQuery(Query query); List
+     * getReferences(Object object); List getMatchingReferences(String string, int maxMatches); List
+     * getFramesWithDirectOwnSlotValue(Slot slot, Object value); List getFramesWithAnyDirectOwnSlotValue(Slot slot);
+     * List getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches); List
+     * getClsesWithDirectTemplateSlotValue(Slot slot, Object value); List getClsesWithAnyDirectTemplateSlotValue(Slot
+     * slot); List getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches); List
+     * getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value); List
+     * getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value, int maxMatches); // closures
+     * Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot);
+     */
 
     public void _testSaveLoadTypeAnyValues() {
         Cls c = createCls();
@@ -489,7 +460,8 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         String instanceName = instance.getName();
         instance.setOwnSlotValues(slot, originalValues);
         saveAndReload();
-        Collection loadedValues = new ArrayList(getInstance(instanceName).getOwnSlotValues(getSlot(slotName)));
+        Collection loadedValues = new ArrayList(getInstance(instanceName).getOwnSlotValues(
+                getSlot(slotName)));
         assertEquals("values", originalValues, loadedValues);
     }
 
@@ -530,7 +502,8 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         slot.setMinimumValue(new Integer(2));
         cls.addDirectTemplateSlot(slot);
         Instance instance = createInstance(cls);
-        assertFalse("1", instance.areValidOwnSlotValues(slot, Collections.singleton(new Integer(1))));
+        assertFalse("1", instance
+                .areValidOwnSlotValues(slot, Collections.singleton(new Integer(1))));
         assertTrue("2", instance.areValidOwnSlotValues(slot, Collections.singleton(new Integer(2))));
         assertTrue("3", instance.areValidOwnSlotValues(slot, Collections.singleton(new Integer(3))));
     }
@@ -636,9 +609,11 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertTrue("a directly overridden", a.hasDirectlyOverriddenTemplateSlot(s));
         assertFalse("b not directly overridden", b.hasDirectlyOverriddenTemplateSlot(s));
         assertTrue("a valueType overridden", a.hasOverriddenTemplateFacet(s, valueTypeFacet));
-        assertTrue("a valueType directly overridden", a.hasDirectlyOverriddenTemplateFacet(s, valueTypeFacet));
+        assertTrue("a valueType directly overridden", a.hasDirectlyOverriddenTemplateFacet(s,
+                valueTypeFacet));
         assertTrue("b valueType overridden", b.hasOverriddenTemplateFacet(s, valueTypeFacet));
-        assertFalse("b valueType direct overridden", b.hasDirectlyOverriddenTemplateFacet(s, valueTypeFacet));
+        assertFalse("b valueType direct overridden", b.hasDirectlyOverriddenTemplateFacet(s,
+                valueTypeFacet));
     }
 
     public void testIsDirectlyOverriddenFacet() {
@@ -668,16 +643,14 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         inst2.addOwnSlotValue(s, "abcz");
         inst3.addOwnSlotValue(s, "qqq");
         assertEquals("exact", 0, getDomainKB().getMatchingReferences("z", 0).size());
-        assertEquals("starts", 1, getDomainKB().getMatchingReferences("z*", KnowledgeBase.UNLIMITED_MATCHES).size());
-        assertEquals("contains", 2, getDomainKB().getMatchingReferences("*z*", KnowledgeBase.UNLIMITED_MATCHES).size());
-        assertEquals(
-            "contains insensitive",
-            2,
-            getDomainKB().getMatchingReferences("*Z*", KnowledgeBase.UNLIMITED_MATCHES).size());
-        assertEquals(
-            "contains 2",
-            2,
-            getDomainKB().getMatchingReferences("*abc*", KnowledgeBase.UNLIMITED_MATCHES).size());
+        assertEquals("starts", 1, getDomainKB().getMatchingReferences("z*",
+                KnowledgeBase.UNLIMITED_MATCHES).size());
+        assertEquals("contains", 2, getDomainKB().getMatchingReferences("*z*",
+                KnowledgeBase.UNLIMITED_MATCHES).size());
+        assertEquals("contains insensitive", 2, getDomainKB().getMatchingReferences("*Z*",
+                KnowledgeBase.UNLIMITED_MATCHES).size());
+        assertEquals("contains 2", 2, getDomainKB().getMatchingReferences("*abc*",
+                KnowledgeBase.UNLIMITED_MATCHES).size());
     }
 
     public void testGetFramesWithValue() {
@@ -696,8 +669,10 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
 
         inst2.addOwnSlotValue(s2, inst1);
 
-        assertEquals("string match", 3, getDomainKB().getFramesWithValue(s1, null, false, "abc").size());
-        assertEquals("frame match", 1, getDomainKB().getFramesWithValue(s2, null, false, inst1).size());
+        assertEquals("string match", 3, getDomainKB().getFramesWithValue(s1, null, false, "abc")
+                .size());
+        assertEquals("frame match", 1, getDomainKB().getFramesWithValue(s2, null, false, inst1)
+                .size());
     }
 
     public void testGetDBFramesWithValue() {
@@ -717,8 +692,10 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
 
         inst2.addOwnSlotValue(s2, inst1);
 
-        assertEquals("string match", 3, getDomainKB().getFramesWithValue(s1, null, false, "abc").size());
-        assertEquals("frame match", 1, getDomainKB().getFramesWithValue(s2, null, false, inst1).size());
+        assertEquals("string match", 3, getDomainKB().getFramesWithValue(s1, null, false, "abc")
+                .size());
+        assertEquals("frame match", 1, getDomainKB().getFramesWithValue(s2, null, false, inst1)
+                .size());
     }
 
     public void testGetMatchingDBReferences() {
@@ -835,6 +812,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         }
         getProject().removeJavaPackageName(packageName);
     }
+
     public void testJavaPackagesOnCls() {
         Class testClass = TestCls.class;
         String fullClsName = testClass.getName();
@@ -968,8 +946,10 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         Date createDate = new StandardDateFormat().parse(creationString);
         SystemUtilities.sleepMsec(100);
         Date endDate = new Date();
-        assertTrue("create timestamp after begin: " + createDate + " - " + start, createDate.after(start));
-        assertTrue("create timestamp before end: " + createDate + " - " + endDate, createDate.before(endDate));
+        assertTrue("create timestamp after begin: " + createDate + " - " + start, createDate
+                .after(start));
+        assertTrue("create timestamp before end: " + createDate + " - " + endDate, createDate
+                .before(endDate));
 
         a.addDirectTemplateSlot(slot);
         SystemUtilities.sleepMsec(100);
@@ -1313,6 +1293,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertEqualsList(values, cls.getDirectTemplateSlotValues(slot));
         assertEqualsList(values, cls.getTemplateSlotValues(slot));
     }
+
     public void testTemplateSlotValue2() {
         final Collection values = new ArrayList();
         values.add("foo");
@@ -1357,6 +1338,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
                 super.directTypeAdded(event);
                 recordEventFired(event);
             }
+
             public void directTypeRemoved(InstanceEvent event) {
                 super.directTypeRemoved(event);
                 recordEventFired(event);
@@ -1398,6 +1380,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
             public void templateSlotClsAdded(SlotEvent event) {
                 recordEventFired(event);
             }
+
             public void templateSlotClsRemoved(SlotEvent event) {
                 recordEventFired(event);
             }
@@ -1423,6 +1406,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
             public void directSuperclassAdded(ClsEvent event) {
                 recordEventFired(event);
             }
+
             public void directSuperclassRemoved(ClsEvent event) {
                 recordEventFired(event);
             }
@@ -1472,6 +1456,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
             public void directSuperclassAdded(ClsEvent event) {
                 recordEventFired(event);
             }
+
             public void directSubclassAdded(ClsEvent event) {
                 recordEventFired(event);
             }
@@ -1491,6 +1476,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
                 super.directSuperslotAdded(event);
                 recordEventFired(event);
             }
+
             public void directSubslotAdded(SlotEvent event) {
                 super.directSubslotAdded(event);
                 recordEventFired(event);
@@ -1529,6 +1515,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
             public String getErrorMessage(String name, Frame frame) {
                 return isValid(name, frame) ? null : "Contains a *";
             }
+
             public boolean isValid(String name, Frame frame) {
                 return name.indexOf("*") == -1;
             }
@@ -1612,20 +1599,23 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         testUnmodifiable(c);
         assertEquals(startSize, c.size());
     }
+
     private void testUnmodifiable(Collection c) {
         try {
             c.add(new Object());
             fail();
         } catch (Exception e) {
-            // do nothing    
+            // do nothing
         }
     }
+
     public void testFrameStoreInsertion() {
         final Boolean[] fired = new Boolean[1];
         fired[0] = Boolean.FALSE;
         FrameStore originalHead = ((DefaultKnowledgeBase) getDomainKB()).getHeadFrameStore();
         FrameStore testFs = new FrameStoreAdapter() {
-            public Slot createSlot(FrameID id, String name, Collection superslots, Collection types, boolean init) {
+            public Slot createSlot(FrameID id, String name, Collection superslots,
+                    Collection types, boolean init) {
                 fired[0] = Boolean.TRUE;
                 return getDelegate().createSlot(id, name, superslots, types, init);
             }
@@ -1857,6 +1847,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         public void addJavaPackage(String packageName) {
             throw new UnsupportedOperationException();
         }
+
         public Cls createCls(FrameID id, Collection directTypes) {
             return new TestCls(kb, id);
         }
@@ -1887,7 +1878,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
 
         public Frame createFrameFromClassId(int javaClassId, FrameID id) {
             throw new UnsupportedOperationException();
-         }
+        }
 
         public Collection getClsJavaClassIds() {
             // TODO Auto-generated method stub
@@ -1912,21 +1903,25 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
 
     static interface TestInterface {
     }
+
     static public class TestCls extends DefaultCls implements TestInterface {
         public TestCls(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }
     }
+
     static public class TestSlot extends DefaultSlot implements TestInterface {
         public TestSlot(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }
     }
+
     static public class TestFacet extends DefaultFacet implements TestInterface {
         public TestFacet(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }
     }
+
     static public class TestSimpleInstance extends DefaultSimpleInstance implements TestInterface {
         public TestSimpleInstance(KnowledgeBase kb, FrameID id) {
             super(kb, id);
