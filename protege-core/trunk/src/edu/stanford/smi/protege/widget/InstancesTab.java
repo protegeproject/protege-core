@@ -1,6 +1,5 @@
 package edu.stanford.smi.protege.widget;
 
-import java.awt.*;
 import java.awt.dnd.*;
 import java.util.*;
 
@@ -22,6 +21,7 @@ public class InstancesTab extends AbstractTabWidget {
     private InstanceDisplay _instanceDisplay;
     private InstanceClsesPanel _clsesPanel;
     private DirectInstancesList _directInstancesList;
+    private DirectTypesList _directTypesList;
 
     private JComponent createClsesPanel() {
         _clsesPanel = new InstanceClsesPanel(getProject());
@@ -30,7 +30,7 @@ public class InstancesTab extends AbstractTabWidget {
                 transmitSelection();
             }
         });
-        
+
         return _clsesPanel;
     }
 
@@ -53,9 +53,15 @@ public class InstancesTab extends AbstractTabWidget {
                     selectedInstance = null;
                 }
                 _instanceDisplay.setInstance(selectedInstance);
+                _directTypesList.setInstance(selectedInstance);
             }
         });
         return _directInstancesList;
+    }
+
+    protected JComponent createDirectTypesList() {
+        _directTypesList = new DirectTypesList(getProject());
+        return _directTypesList;
     }
 
     protected JComponent createInstanceDisplay() {
@@ -63,10 +69,11 @@ public class InstancesTab extends AbstractTabWidget {
     }
 
     private JComponent createInstancesPanel() {
-        JPanel panel = ComponentFactory.createPanel();
-        panel.setLayout(new BorderLayout());
-        // panel.add(createClsDisplay(), BorderLayout.NORTH);
-        panel.add(createDirectInstancesList(), BorderLayout.CENTER);
+        // JPanel panel = ComponentFactory.createPanel();
+        // panel.setLayout(new BorderLayout());
+        JSplitPane panel = ComponentFactory.createTopBottomSplitPane();
+        panel.setTopComponent(createDirectInstancesList());
+        panel.setBottomComponent(createDirectTypesList());
         return panel;
     }
 
@@ -94,13 +101,12 @@ public class InstancesTab extends AbstractTabWidget {
     public void setSelectedInstance(Instance instance) {
         _clsesPanel.setSelectedCls(instance.getDirectType());
         _directInstancesList.setSelectedInstance(instance);
+        _directTypesList.setInstance(instance);
     }
 
     private void setupDragAndDrop() {
-        DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(
-            _directInstancesList.getDragComponent(),
-            DnDConstants.ACTION_COPY_OR_MOVE,
-            new InstancesTabDirectInstancesListDragSourceListener());
+        DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(_directInstancesList.getDragComponent(),
+                DnDConstants.ACTION_COPY_OR_MOVE, new InstancesTabDirectInstancesListDragSourceListener());
         new DropTarget(_clsesPanel.getDropComponent(), DnDConstants.ACTION_COPY_OR_MOVE, new InstanceClsesTreeTarget());
     }
 
