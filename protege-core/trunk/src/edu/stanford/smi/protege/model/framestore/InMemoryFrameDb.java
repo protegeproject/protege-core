@@ -358,21 +358,18 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         Collection records = (Collection) map.remove(frame);
         if (records != null) {
             map.put(frame, records);
-            replaceFrameReferences(frame, records);
-        }
-    }
-
-    private void replaceFrameReferences(Frame frame, Collection records) {
-        Iterator i = records.iterator();
-        while (i.hasNext()) {
-            Record record = (Record) i.next();
-            record.replaceFrameReference(frame);
+            Iterator i = records.iterator();
+            while (i.hasNext()) {
+                Record record = (Record) i.next();
+                record.replaceFrameReference(frame);
+            }
         }
     }
 
     private void replaceFrameValues(Frame frame) {
-        Collection records = (Collection) valueToRecordsMap.get(frame);
+        Collection records = (Collection) valueToRecordsMap.remove(frame);
         if (records != null) {
+            valueToRecordsMap.put(frame, records);
             Iterator i = records.iterator();
             while (i.hasNext()) {
                 Record record = (Record) i.next();
