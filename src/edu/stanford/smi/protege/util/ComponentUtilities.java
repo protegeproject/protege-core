@@ -145,19 +145,21 @@ public class ComponentUtilities {
     }
 
     public static void dispose(Component component) {
-        component.setVisible(false);
-        UnaryFunction dispose = new UnaryFunction() {
-            public Object apply(Object o) {
-                if (o instanceof Disposable) {
-                    ((Disposable) o).dispose();
+        if (component != null) {
+            component.setVisible(false);
+            UnaryFunction dispose = new UnaryFunction() {
+                public Object apply(Object o) {
+                    if (o instanceof Disposable) {
+                        ((Disposable) o).dispose();
+                    }
+                    return Boolean.TRUE;
                 }
-                return Boolean.TRUE;
-            }
-        };
-        apply(component, dispose);
-        disassemble(component);
-        component.setBackground(Color.pink);
-        component.setForeground(Color.green);
+            };
+            apply(component, dispose);
+            disassemble(component);
+            component.setBackground(Color.pink);
+            component.setForeground(Color.green);
+        }
     }
 
     public static void ensureSelectionIsVisible(final JList list) {
