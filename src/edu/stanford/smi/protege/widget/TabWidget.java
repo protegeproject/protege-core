@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.widget;
 
 import java.util.*;
+
 import javax.swing.*;
 
 import edu.stanford.smi.protege.model.*;
@@ -43,6 +44,10 @@ public interface TabWidget extends Widget {
     void save();
 
     void setup(WidgetDescriptor descriptor, Project project);
-    
+
     void synchronizeClsTree(Collection clsPath);
+
+    void synchronizeToInstances(Collection instances);
+
+    Collection getSelectedInstances();
 }

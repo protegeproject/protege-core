@@ -206,7 +206,12 @@ public class ComponentFactory {
     }
 
     public static JCheckBox createCheckBox(String s) {
-        JCheckBox checkBox = new JCheckBox(s);
+        JCheckBox checkBox = new JCheckBox(s) {
+            public void paint(Graphics g) {
+                ComponentUtilities.enableTextAntialiasing(g);
+                super.paint(g);
+            }
+        };
         return checkBox;
     }
 
@@ -214,6 +219,11 @@ public class ComponentFactory {
         JComboBox comboBox = new JComboBox() {
             public Dimension getPreferredSize() {
                 return fieldPreferredHeightSize(super.getPreferredSize());
+            }
+
+            public void paint(Graphics g) {
+                ComponentUtilities.enableTextAntialiasing(g);
+                super.paint(g);
             }
         };
         return comboBox;

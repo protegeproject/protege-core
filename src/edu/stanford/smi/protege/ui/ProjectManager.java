@@ -615,6 +615,9 @@ public class ProjectManager {
         if (view != null) {
             view.reload(regenerate);
         }
+        if (_viewSelector != null) {
+            _viewSelector.reload();
+        }
         _menuBar.updateUI();
         Application.repaint();
     }
@@ -743,7 +746,7 @@ public class ProjectManager {
     }
 
     private void addViewSelector(ProjectView view) {
-        if (SystemUtilities.showAlphaFeatures()) {
+        if (true || SystemUtilities.showAlphaFeatures()) {
             _viewSelector = new ViewSelector(view);
             _headerPanel.add(_viewSelector, BorderLayout.CENTER);
         }

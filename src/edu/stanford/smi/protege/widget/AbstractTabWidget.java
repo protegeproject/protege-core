@@ -23,6 +23,7 @@ public abstract class AbstractTabWidget extends AbstractWidget implements TabWid
     private Collection _splitPanes;
     private String _shortDescription;
     private JTree _clsTree;
+    private Selectable _instanceSelectable;
 
     public JButton addMainWindowToolBarButton(Action action) {
         JButton button;
@@ -183,6 +184,19 @@ public abstract class AbstractTabWidget extends AbstractWidget implements TabWid
         }
     }
 
+    protected void setInstanceSelectable(Selectable selectable) {
+        _instanceSelectable = selectable;
+        _instanceSelectable.addSelectionListener(new SelectionListener() {
+            public void selectionChanged(SelectionEvent event) {
+                notifySelectionListeners();
+            }
+        });
+    }
+
+    public Collection getSelectedInstances() {
+        return _instanceSelectable == null ? null : _instanceSelectable.getSelection();
+    }
+
     public JTree getClsTree() {
         return _clsTree;
     }
@@ -195,6 +209,13 @@ public abstract class AbstractTabWidget extends AbstractWidget implements TabWid
     public void synchronizeClsTree(Collection clses) {
         if (_clsTree != null) {
             ComponentUtilities.setSelectedObjectPath(_clsTree, clses);
+        }
+    }
+
+    public void synchronizeToInstances(Collection instances) {
+        if (_instanceSelectable instanceof JList) {
+            JList list = (JList) _instanceSelectable;
+            ComponentUtilities.setSelectedValues(list, instances);
         }
     }
 }

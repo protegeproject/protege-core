@@ -8,7 +8,6 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
 import edu.stanford.smi.protege.widget.*;
 
@@ -27,22 +26,25 @@ public class ViewSelector extends JComponent {
 
     public ViewSelector(ProjectView projectView) {
         this.projectView = projectView;
-        setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        setBorder(BorderFactory.createEmptyBorder(2, 20, 0, 0));
+        setLayout(new FlowLayout(FlowLayout.LEFT));
         combobox = ComponentFactory.createComboBox();
         ComboBoxModel model = createModel();
         combobox.setModel(model);
         combobox.addItemListener(itemListener);
         setOpaque(false);
         combobox.setRenderer(new TabRenderer(projectView));
-        combobox.setPreferredSize(new Dimension(200, 10));
-        add(new JLabel("View:  "));
-        add(combobox);
+        combobox.setPreferredSize(new Dimension(150, 10));
+        Box box = Box.createHorizontalBox();
+        box.add(ComponentFactory.createLabel("View:"));
+        box.add(Box.createHorizontalStrut(2));
+        box.add(combobox);
+        box.add(Box.createHorizontalStrut(3));
         toolBar = ComponentFactory.createToolBar();
-        toolBar.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-        add(toolBar);
+        addButtonsToToolbar();
+        box.add(toolBar);
+        add(box);
 
-        projectView.getTabbedPane().addChangeListener(new ChangeListener() {
+        projectView.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 TabWidget widget = ViewSelector.this.projectView.getSelectedTab();
                 if (widget != null) {
@@ -50,8 +52,22 @@ public class ViewSelector extends JComponent {
                 }
             }
         });
+    }
 
-        createInitialButtons();
+    private void addButtonsToToolbar() {
+        Iterator i = getCurrentDescriptors().iterator();
+        while (i.hasNext()) {
+            WidgetDescriptor d = (WidgetDescriptor) i.next();
+            addButtonForExistingTab(d);
+        }
+
+    }
+
+    public void reload() {
+        descriptorToButtonMap.clear();
+        buttonGroup = new ButtonGroup();
+        toolBar.removeAll();
+        addButtonsToToolbar();
     }
 
     private ComboBoxModel createModel() {
@@ -70,7 +86,7 @@ public class ViewSelector extends JComponent {
         Iterator i = projectView.getTabs().iterator();
         while (i.hasNext()) {
             TabWidget tab = (TabWidget) i.next();
-            WidgetDescriptor d= tab.getDescriptor();
+            WidgetDescriptor d = tab.getDescriptor();
             currentDescriptors.add(d);
         }
         return currentDescriptors;
@@ -109,38 +125,36 @@ public class ViewSelector extends JComponent {
         if (button == null) {
             button = addButton(descriptor.getWidgetClassName());
         }
-        button.setSelected(true);
+        button.doClick();
     }
 
-    /*
-    private void rebuildModel() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                Object selection = combobox.getSelectedItem();
-                combobox.removeItemListener(itemListener);
-                combobox.setModel(createModel());
-                combobox.setSelectedItem(selection);
-                combobox.addItemListener(itemListener);
-            }
-        });
+    public void addButtonForExistingTab(WidgetDescriptor d) {
+        TabWidget widget = projectView.getTabByClassName(d.getWidgetClassName());
+        AbstractButton button = addButton(widget);
+        if (projectView.getSelectedTab() == widget) {
+            button.setSelected(true);
+        }
     }
-    */
 
     public AbstractButton addButton(String className) {
-        final WidgetDescriptor d = projectView.getProject().getTabWidgetDescriptor(className);
+        WidgetDescriptor d = projectView.getProject().getTabWidgetDescriptor(className);
         d.setVisible(true);
-        final TabWidget widget = projectView.addTab(d);
+        TabWidget widget = projectView.addTab(d);
+        return addButton(widget);
+    }
+
+    private AbstractButton addButton(final TabWidget widget) {
         Icon icon = widget.getIcon();
-        if (icon == null) {
-            icon = Icons.getUglyIcon();
-        }
         Action action = new AbstractAction(widget.getLabel(), icon) {
             public void actionPerformed(ActionEvent event) {
                 projectView.setSelectedTab(widget);
             }
         };
         AbstractButton button = ComponentFactory.addToggleToolBarButton(toolBar, action);
-        descriptorToButtonMap.put(d, button);
+        if (icon == null) {
+            button.setText(widget.getLabel());
+        }
+        descriptorToButtonMap.put(widget.getDescriptor(), button);
         buttonGroup.add(button);
         button.setRolloverEnabled(false);
         button.setBorderPainted(true);
@@ -158,11 +172,6 @@ public class ViewSelector extends JComponent {
             button.setSelected(true);
         }
     }
-    
-    private void createInitialButtons() {
-        
-    }
-
 }
 
 class TabRenderer extends DefaultRenderer {

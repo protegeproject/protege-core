@@ -56,6 +56,7 @@ public class InstancesTab extends AbstractTabWidget {
                 _directTypesList.setInstance(selectedInstance);
             }
         });
+        setInstanceSelectable((Selectable) _directInstancesList.getDragComponent());
         return _directInstancesList;
     }
 
@@ -69,8 +70,6 @@ public class InstancesTab extends AbstractTabWidget {
     }
 
     private JComponent createInstancesPanel() {
-        // JPanel panel = ComponentFactory.createPanel();
-        // panel.setLayout(new BorderLayout());
         JSplitPane panel = ComponentFactory.createTopBottomSplitPane();
         panel.setTopComponent(createDirectInstancesList());
         panel.setBottomComponent(createDirectTypesList());

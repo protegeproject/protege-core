@@ -34,25 +34,25 @@ public class ClsesAndInstancesTab extends AbstractTabWidget {
     }
 
     /*
-    private JComponent createClsDisplay() {
-        _clsList = ComponentFactory.createSingleItemList(null);
-        _clsList.setCellRenderer(FrameRenderer.createInstance());
-        _clsList.addSelectionListener(new SelectionListener() {
-            public void selectionChanged(SelectionEvent event) {
-                if (!_isUpdating) {
-                    _isUpdating = true;
-                    Collection selection = event.getSelectable().getSelection();
-                    Instance firstSelection = (Instance) CollectionUtilities.getFirstItem(selection);
-                    _directInstancesList.clearSelection();
-                    _instanceDisplay.setInstance(firstSelection);
-                    _isUpdating = false;
-                }
-            }
-        });
-        LabeledComponent c = new LabeledComponent("Class", _clsList);
-        return c;
-    }
-    */
+     private JComponent createClsDisplay() {
+     _clsList = ComponentFactory.createSingleItemList(null);
+     _clsList.setCellRenderer(FrameRenderer.createInstance());
+     _clsList.addSelectionListener(new SelectionListener() {
+     public void selectionChanged(SelectionEvent event) {
+     if (!_isUpdating) {
+     _isUpdating = true;
+     Collection selection = event.getSelectable().getSelection();
+     Instance firstSelection = (Instance) CollectionUtilities.getFirstItem(selection);
+     _directInstancesList.clearSelection();
+     _instanceDisplay.setInstance(firstSelection);
+     _isUpdating = false;
+     }
+     }
+     });
+     LabeledComponent c = new LabeledComponent("Class", _clsList);
+     return c;
+     }
+     */
 
     private JComponent createClsesPanel() {
         _clsesPanel = new ClsesPanel(getProject());
@@ -98,6 +98,7 @@ public class ClsesAndInstancesTab extends AbstractTabWidget {
                 }
             }
         });
+        setInstanceSelectable((Selectable) _directInstancesList.getDragComponent());
         return _directInstancesList;
     }
 
@@ -108,12 +109,12 @@ public class ClsesAndInstancesTab extends AbstractTabWidget {
 
     private JComponent createInstancesPanel() {
         /*
-        JPanel panel = ComponentFactory.createPanel();
-        panel.setLayout(new BorderLayout(10, 10));
-        panel.add(createClsDisplay(), BorderLayout.NORTH);
-        panel.add(createDirectInstancesList(), BorderLayout.CENTER);
-        return panel;
-        */
+         JPanel panel = ComponentFactory.createPanel();
+         panel.setLayout(new BorderLayout(10, 10));
+         panel.add(createClsDisplay(), BorderLayout.NORTH);
+         panel.add(createDirectInstancesList(), BorderLayout.CENTER);
+         return panel;
+         */
         return createDirectInstancesList();
     }
 
@@ -148,10 +149,8 @@ public class ClsesAndInstancesTab extends AbstractTabWidget {
     }
 
     private void setupDragAndDrop() {
-        DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(
-            _directInstancesList,
-            DnDConstants.ACTION_COPY_OR_MOVE,
-            new ClsesAndInstancesTabDirectInstancesListDragSourceListener());
+        DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(_directInstancesList,
+                DnDConstants.ACTION_COPY_OR_MOVE, new ClsesAndInstancesTabDirectInstancesListDragSourceListener());
         new DropTarget(_clsesPanel.getDropComponent(), DnDConstants.ACTION_COPY_OR_MOVE, new InstanceClsesTreeTarget());
     }
 
@@ -170,13 +169,13 @@ public class ClsesAndInstancesTab extends AbstractTabWidget {
         }
         _inverseRelationshipPanel.setCls(selectedCls, selectedParent);
         _directInstancesList.setClses(selection);
-        
+
         /*
-        ComponentUtilities.setListValues(_clsList, selection);
-        if (!selection.isEmpty()) {
-            _clsList.setSelectedIndex(0);
-        }
-        */
+         ComponentUtilities.setListValues(_clsList, selection);
+         if (!selection.isEmpty()) {
+         _clsList.setSelectedIndex(0);
+         }
+         */
         _directInstancesList.clearSelection();
         _instanceDisplay.setInstance(selectedCls);
     }
