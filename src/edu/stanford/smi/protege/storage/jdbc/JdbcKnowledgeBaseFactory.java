@@ -7,10 +7,10 @@ import edu.stanford.smi.protege.storage.jdbc.framedb.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * Storage backend for relational databases.  This class doesn't actually contain the SQL code but delegates to the 
- * class that does (an implementation of {@link DatabaseManager}).  It simply translates between the two interfaces.
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Storage backend for relational databases. This class doesn't actually contain the SQL code but delegates to the class
+ * that does (an implementation of {@link DatabaseManager}). It simply translates between the two interfaces.
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class JdbcKnowledgeBaseFactory implements KnowledgeBaseFactory {
     final static String USERNAME = "username";
@@ -32,16 +32,11 @@ public class JdbcKnowledgeBaseFactory implements KnowledgeBaseFactory {
         copyKnowledgeBase(kb, driver, url, tablename, username, password, errors);
     }
 
-    private void copyKnowledgeBase(
-        KnowledgeBase kb,
-        String driver,
-        String url,
-        String tablename,
-        String username,
-        String password,
-        Collection errors) {
+    private void copyKnowledgeBase(KnowledgeBase kb, String driver, String url, String tablename,
+            String username, String password, Collection errors) {
         try {
-            DatabaseManager manager = new SimpleJdbcDatabaseManager(driver, url, tablename, username, password, errors);
+            DatabaseManager manager = new SimpleJdbcDatabaseManager(driver, url, tablename,
+                    username, password, errors);
             manager.saveKnowledgeBase(kb);
             manager.dispose();
         } catch (Exception e) {
@@ -54,7 +49,8 @@ public class JdbcKnowledgeBaseFactory implements KnowledgeBaseFactory {
         return kb;
     }
 
-    public KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectURIString, PropertyList sources) {
+    public KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectURIString,
+            PropertyList sources) {
         return new JdbcKnowledgeBaseSourcesEditor(projectURIString, sources);
     }
 
@@ -110,18 +106,12 @@ public class JdbcKnowledgeBaseFactory implements KnowledgeBaseFactory {
         kb.getProject().setIsReadonly(true);
     }
 
-    public void loadKnowledgeBase(
-        KnowledgeBase kb,
-        String driver,
-        String tableName,
-        String url,
-        String username,
-        String password,
-        Collection errors) {
+    public void loadKnowledgeBase(KnowledgeBase kb, String driver, String tableName, String url,
+            String username, String password, Collection errors) {
         try {
             OldJdbcDefaultKnowledgeBase dkb = (OldJdbcDefaultKnowledgeBase) kb;
-            SimpleJdbcDatabaseManager manager =
-                new SimpleJdbcDatabaseManager(driver, url, tableName, username, password, errors);
+            SimpleJdbcDatabaseManager manager = new SimpleJdbcDatabaseManager(driver, url,
+                    tableName, username, password, errors);
             FrameDBStorage memoryStorage = (FrameDBStorage) dkb.getStorage();
             memoryStorage.setCaching(true);
             dkb.setStorage(new DatabaseStorage(dkb, manager, memoryStorage));
@@ -162,13 +152,8 @@ public class JdbcKnowledgeBaseFactory implements KnowledgeBaseFactory {
         sources.setString(USERNAME, username);
     }
 
-    public static void setSources(
-        PropertyList sources,
-        String driver,
-        String url,
-        String table,
-        String user,
-        String password) {
+    public static void setSources(PropertyList sources, String driver, String url, String table,
+            String user, String password) {
         setDriver(sources, driver);
         setURL(sources, url);
         setTablename(sources, table);
@@ -179,4 +164,10 @@ public class JdbcKnowledgeBaseFactory implements KnowledgeBaseFactory {
     public String toString() {
         return "JdbcKnowledgeBaseFactory";
     }
+
+    public void createActiveFrameStore(KnowledgeBase kb, String name,
+            Collection includedFrameStoreNames) {
+        throw new UnsupportedOperationException();
+    }
+
 }

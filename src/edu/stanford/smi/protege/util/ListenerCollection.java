@@ -3,10 +3,10 @@ package edu.stanford.smi.protege.util;
 import java.util.*;
 
 /**
- * Base class for collections of listeners.  This class has helper methods for posting events.  The actual dispatching
- * of events is handled by the {@link EventDispatcher} implementation.
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Base class for collections of listeners. This class has helper methods for posting events. The actual dispatching of
+ * events is handled by the {@link EventDispatcher}implementation.
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class ListenerCollection {
     private boolean _isPostingEnabled = true;
@@ -25,7 +25,7 @@ public abstract class ListenerCollection {
             c = newCollection(c);
             saveListeners(source, c);
         }
-        if (c.contains(source)) {
+        if (c.contains(listener)) {
             Log.getLogger().warning("duplicate listener: " + listener);
         }
         c.add(listener);
@@ -111,7 +111,7 @@ public abstract class ListenerCollection {
     public String toString() {
         return getClass().getName();
     }
-    
+
     public static boolean equals(Object o1, Object o2) {
         return SystemUtilities.equals(o1, o2);
     }

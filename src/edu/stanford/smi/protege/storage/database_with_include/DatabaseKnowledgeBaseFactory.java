@@ -7,9 +7,9 @@ import edu.stanford.smi.protege.model.framestore.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- *  Description of the class
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Description of the class
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
     final static String USERNAME = "username";
@@ -31,18 +31,12 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         copyKnowledgeBase(kb, driver, url, tablename, username, password, errors);
     }
 
-    private void copyKnowledgeBase(
-        KnowledgeBase inputKb,
-        String driver,
-        String url,
-        String tablename,
-        String username,
-        String password,
-        Collection errors) {
+    private void copyKnowledgeBase(KnowledgeBase inputKb, String driver, String url,
+            String tablename, String username, String password, Collection errors) {
         try {
             DefaultKnowledgeBase outputKb = new DefaultKnowledgeBase();
-            DatabaseFrameStore store =
-                new DatabaseFrameStore(outputKb, getHelper(), driver, url, username, password, tablename, true);
+            DatabaseFrameStore store = new DatabaseFrameStore(outputKb, getHelper(), driver, url,
+                    username, password, tablename, true);
             // store.reinitializeTable();
             outputKb.setTerminalFrameStore(store);
             store.saveKnowledgeBase(inputKb);
@@ -60,7 +54,8 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         return kb;
     }
 
-    public KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectName, PropertyList sources) {
+    public KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectName,
+            PropertyList sources) {
         return new DatabaseKnowledgeBaseSourcesEditor(projectName, sources);
     }
 
@@ -121,14 +116,8 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         }
     }
 
-    public void includeKnowledgeBase(
-        KnowledgeBase kb,
-        String driver,
-        String table,
-        String url,
-        String user,
-        String password,
-        Collection errors) {
+    public void includeKnowledgeBase(KnowledgeBase kb, String driver, String table, String url,
+            String user, String password, Collection errors) {
         try {
             throw new UnsupportedOperationException();
         } catch (Exception e) {
@@ -136,18 +125,12 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         }
     }
 
-    public void loadKnowledgeBase(
-        KnowledgeBase kb,
-        String driver,
-        String table,
-        String url,
-        String user,
-        String password,
-        Collection errors) {
+    public void loadKnowledgeBase(KnowledgeBase kb, String driver, String table, String url,
+            String user, String password, Collection errors) {
         try {
             DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
-            DatabaseFrameStore store =
-                new DatabaseFrameStore(dkb, getHelper(), driver, url, user, password, table, true);
+            DatabaseFrameStore store = new DatabaseFrameStore(dkb, getHelper(), driver, url, user,
+                    password, table, true);
             dkb.setTerminalFrameStore(store);
             boolean enabled = dkb.setCleanDispatchEnabled(false);
             KnowledgeBaseUtils.update(dkb);
@@ -194,13 +177,8 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         sources.setString(USERNAME, username);
     }
 
-    public static void setSources(
-        PropertyList sources,
-        String driver,
-        String url,
-        String table,
-        String user,
-        String password) {
+    public static void setSources(PropertyList sources, String driver, String url, String table,
+            String user, String password) {
         setDriver(sources, driver);
         setURL(sources, url);
         setTablename(sources, table);

@@ -23,7 +23,10 @@ public class MergingNarrowFrameStore_Test extends FrameStore_Test {
         instance.setOwnSlotValues(slot, values);
         assertEqualsList(values, instance.getDirectOwnSlotValues(slot));
         MergingNarrowFrameStore fs = getMergingFrameStore();
-        fs.addActiveFrameStoreChild(new InMemoryFrameDb("child"));
+
+        String childName = fs.getActiveFrameStore().getName();
+        fs.addActiveFrameStore(new InMemoryFrameDb("parent"));
+        fs.addRelation("parent", childName);
         assertEqualsList(values, instance.getDirectOwnSlotValues(slot));
         Collection newValues = makeList("foo", "bar", "baz");
         instance.setOwnSlotValues(slot, newValues);
@@ -34,14 +37,17 @@ public class MergingNarrowFrameStore_Test extends FrameStore_Test {
         createCls();
         int count = getTestFrameStore().getFrameCount();
         MergingNarrowFrameStore fs = getMergingFrameStore();
-        fs.addActiveFrameStoreChild(new InMemoryFrameDb("child"));
+        String parentName = fs.getActiveFrameStore().getName();
+        fs.addActiveFrameStore(new InMemoryFrameDb("child"));
+        fs.addRelation(parentName, "child");
+        fs.setActiveFrameStore(parentName);
         assertEquals(count, getTestFrameStore().getFrameCount());
-        NarrowFrameStore parent = fs.activateFrameStore("child");
+        NarrowFrameStore parent = fs.setActiveFrameStore("child");
         assertEquals(count - 1, getTestFrameStore().getFrameCount());
         Cls cls = createCls();
         createSlotOnCls(cls);
         assertEquals(count + 1, getTestFrameStore().getFrameCount());
-        fs.activateFrameStore(parent);
+        fs.setActiveFrameStore(parent);
         assertEquals(count + 2, getTestFrameStore().getFrameCount());
     }
 }
