@@ -509,6 +509,28 @@ public final class Parser {
         }
         return facet;
     }
+    
+    private Map clsToSlotToValueType = new HashMap();
+    private ValueType getOwnSlotValueType(Instance instance, Collection directTypes, Slot slot) {
+        ValueType valueType;
+        if (directTypes.size() == 1) {
+            Cls type = (Cls) CollectionUtilities.getFirstItem(directTypes);
+            Map slotToValueType = (Map) clsToSlotToValueType.get(type);
+            if (slotToValueType == null) {
+                slotToValueType = new HashMap();
+                clsToSlotToValueType.put(type, slotToValueType);
+            }
+            valueType = (ValueType) slotToValueType.get(slot);
+            if (valueType == null) {
+                valueType = instance.getOwnSlotValueType(slot);
+                slotToValueType.put(slot, valueType);
+            }
+        } else {
+            valueType = instance.getOwnSlotValueType(slot);
+        }
+        return valueType;
+    }
+
 }
 PARSER_END(Parser)
 
@@ -923,7 +945,7 @@ void instance() : {
         <LPAREN> instanceName=instanceName() <OF> (type=clsReference() {types.add(type);})+ {
             instance=getInstance(instanceName, types);
         }
-        (slotValue(instance))* <RPAREN>
+        (slotValue(instance, types))* <RPAREN>
     } catch (Exception e) {
         handleException(e);
     } catch (TokenMgrError e) {
@@ -1109,15 +1131,17 @@ String slotName() : {
     }
 }
 
-void slotValue(Instance instance) : {
+void slotValue(Instance instance, Collection directTypes) : {
     String name;
     Collection values;
     Slot slot;
+    ValueType valueType;
 } {
     <LPAREN> name=slotName() {
         slot=getExistingSlot(name);
+        valueType = getOwnSlotValueType(instance, directTypes, slot);
     }
-    values=slotValueFields(instance, slot) <RPAREN> {
+    values=slotValueFields(instance, slot, valueType) <RPAREN> {
         if (slot == null) {
             recordError("value for unknown slot: " + name + " in instance " + instance);
         } else {
@@ -1126,10 +1150,9 @@ void slotValue(Instance instance) : {
     }
 }
 
-Collection slotValueFields(Instance instance, Slot slot) : {
+Collection slotValueFields(Instance instance, Slot slot, ValueType type) : {
     Collection values = new ArrayList();
     Object value;
-    ValueType type = instance.getOwnSlotValueType(slot);
 } {
     ( value=constant() {checkedValueAdd(values, type, value);} )* {
         return values;
