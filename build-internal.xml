@@ -1,7 +1,7 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <project name = "protege" default = "usage" basedir = ".">
 	<property file = "../global.properties"/>
-	<property name = "project.name" value = "protege"/>
+	<property name = "project.name" value = "protege-core"/>
 	<property name = "build.dir" value = "./build"/>
 	<property name = "build.dest" value = "${build.dir}/classes"/>
 	<property name = "build.src" value = "${build.dir}/src"/>
@@ -163,14 +163,14 @@
 	
 	<!-- =================================================================== -->
 	<target name = "dist" depends = "init">
-		<zip zipfile = "${dist.dir}/protege_src.${version}.zip" update = "no">
+		<zip zipfile = "${dist.dir}/protege-src-${version}.zip" update = "no">
 			<zipfileset dir = "${build.src}" prefix = "${Name}/src"/>
 			<zipfileset dir = "${build.javadoc}" prefix = "${Name}/docs/apidocs"/>
 			<zipfileset dir = "." includes = "Parser.jj,build.xml,local.properties.template,readme.html" prefix = "${Name}"/>
 			<zipfileset dir = "${build.scripts}" includes = "Parser.jj" prefix = "${Name}"/>
 			<zipfileset dir = "${lib.dir}" includes = "*.jar" prefix = "${Name}/lib"/>
 		</zip>
-		<zip zipfile = "${dist.dir}/protege_bin.${version}.zip" update = "no">
+		<zip zipfile = "${dist.dir}/protege-bin-${version}.zip" update = "no">
 			<zipfileset dir = "${dist.dir}" includes = "protege.jar"/>
 		</zip>
 	</target>
