@@ -19,6 +19,7 @@ public class InstanceStorer extends ClipsFileWriter {
     private Collection _errors;
     private Map _clsToSlotsMap = new HashMap();
     private Slot _constraintsSlot;
+    private Map clsToSlotToValueTypeMap = new HashMap();
     private Set _slotNamesToNotSaveForClsesAndSlots = new HashSet();
     private Set _slotNamesNeverToSave = new HashSet();
 
@@ -263,7 +264,7 @@ public class InstanceStorer extends ClipsFileWriter {
             Collection values = instance.getDirectOwnSlotValues(slot);
             if (!values.isEmpty()) {
                 boolean onePerLine = false;
-                ValueType type = instance.getOwnSlotValueType(slot);
+                ValueType type = getValueType(instance, slot);
                 if (equals(type, ValueType.BOOLEAN)) {
                     values = booleansToStrings(values);
                 } else if (equals(type, ValueType.INSTANCE)) {
@@ -289,7 +290,7 @@ public class InstanceStorer extends ClipsFileWriter {
             _errors.add(e);
         }
     }
-
+    
     private void storeSlotValues(Instance instance) {
         Iterator i = getSlots(instance).iterator();
         while (i.hasNext()) {
@@ -298,9 +299,54 @@ public class InstanceStorer extends ClipsFileWriter {
                 // The "allowsMultiple" flag is a hack for the Protege feature
                 // of allowing multiple
                 // values for a cardinality single slot.
-                boolean allowsMultiple = instance.getOwnSlotAllowsMultipleValues(slot);
+                boolean allowsMultiple = getAllowsMultipleValues(instance, slot);
                 storeSlotValue(instance, slot, allowsMultiple);
             }
         }
     }
+    
+    private Map clsToSlotToBooleanMap = new HashMap();
+    private boolean getAllowsMultipleValues(Instance instance, Slot slot) {
+        Boolean allowsMultipleValues;
+        Collection types = instance.getDirectTypes();
+        if (types.size() == 1) {
+            Cls type = (Cls) CollectionUtilities.getFirstItem(types);
+            Map slotToBooleanMap = (Map) clsToSlotToBooleanMap.get(type);
+            if (slotToBooleanMap == null) {
+                slotToBooleanMap = new HashMap();
+                clsToSlotToBooleanMap.put(type, slotToBooleanMap);
+            }
+            allowsMultipleValues = (Boolean) slotToBooleanMap.get(slot);
+            if (allowsMultipleValues == null) {
+                boolean allowsMultiple = instance.getOwnSlotAllowsMultipleValues(slot);
+                allowsMultipleValues = new Boolean(allowsMultiple);
+                slotToBooleanMap.put(slot, allowsMultipleValues);
+            }
+         } else {
+            allowsMultipleValues = new Boolean(instance.getOwnSlotAllowsMultipleValues(slot));
+        }
+        return allowsMultipleValues.booleanValue();
+    }
+
+    private ValueType getValueType(Instance instance, Slot slot) {
+        ValueType valueType;
+        Collection types = instance.getDirectTypes();
+        if (types.size() == 1) {
+            Cls type = (Cls) CollectionUtilities.getFirstItem(types);
+            Map slotToValueTypeMap = (Map) clsToSlotToValueTypeMap.get(type);
+            if (slotToValueTypeMap == null) {
+                slotToValueTypeMap = new HashMap();
+                clsToSlotToValueTypeMap.put(type, slotToValueTypeMap);
+            }
+            valueType = (ValueType) slotToValueTypeMap.get(slot);
+            if (valueType == null) {
+                valueType = instance.getOwnSlotValueType(slot);
+                slotToValueTypeMap.put(slot, valueType);
+            }
+        } else {
+            valueType = instance.getOwnSlotValueType(slot);
+        }
+        return valueType;
+    }
+    
 }

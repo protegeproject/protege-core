@@ -106,24 +106,12 @@ public class ClsStorer extends ClipsFileWriter {
         return (cls == null) ? _kb.getRootClses() : cls.getDirectSuperclasses();
     }
     
-    private Collection getTemplateSlots(Cls cls) {
-        return (cls == null) ? _kb.getSlots() : cls.getTemplateSlots();
-    }
-    
     private static Collection getTemplateSlotValues(Cls cls, Slot slot) {
         return (cls == null) ? slot.getValues() : cls.getTemplateSlotValues(slot);
     }
     
-    private static boolean hasDirectTemplateSlot(Cls cls, Slot slot) {
-        return (cls == null) ? !slot.isIncluded() : cls.hasDirectTemplateSlot(slot);
-    }
-    
     private static boolean isAbstract(Cls cls) {
         return (cls == null) ? true : cls.isAbstract();
-    }
-    
-    private static boolean hasDirectlyOverriddenTemplateSlot(Cls cls, Slot slot) {
-        return (cls == null) ? false : cls.hasDirectlyOverriddenTemplateSlot(slot);
     }
     
     private static boolean hasDirectlyOverriddenTemplateFacet(Cls cls, Slot slot, Facet facet) {
@@ -393,14 +381,35 @@ public class ClsStorer extends ClipsFileWriter {
     }
 
     private void storeSlots(Cls cls) {
-        Collection slots = getTemplateSlots(cls);
+        Collection slotsToStore = getSlotsToStore(cls);
+        Iterator i = slotsToStore.iterator();
+        while (i.hasNext()) {
+            Slot slot = (Slot) i.next();
+            storeSlot(cls, slot);
+        }
+    }
+    
+    private Collection getSlotsToStore(Cls cls) {
+        Collection slotsToStore;
+        if (cls == null) {
+            slotsToStore = getDirectSlots();
+        } else {
+            slotsToStore = new HashSet(cls.getDirectTemplateSlots());
+            slotsToStore.addAll(_kb.getDirectlyOverriddenTemplateSlots(cls));
+        }
+        return slotsToStore;
+    }
+    
+    private Collection getDirectSlots() {
+        Collection slots = new HashSet(_kb.getSlots());
         Iterator i = slots.iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();
-            if (hasDirectTemplateSlot(cls, slot) || hasDirectlyOverriddenTemplateSlot(cls, slot)) {
-                storeSlot(cls, slot);
+            if (slot.isIncluded()) {
+                i.remove();
             }
         }
+        return slots;
     }
 
     private void storeSubclasses(Cls cls) {
