@@ -24,7 +24,7 @@ public class ProjectChooser extends JFileChooser {
         pane = ComponentFactory.createTabbedPane(false);
         pane.addTab("File", this);
         pane.addTab("URL", new JLabel("URL Tab"));
-        pane.addTab("Remote", new JLabel("Remote Tab"));
+        pane.addTab("Server", new JLabel("Remote Tab"));
 
         pane.setSelectedIndex(ApplicationProperties.getIntegerProperty(TAB_INDEX_PROPERTY, 0));
         contentPane.add(pane);

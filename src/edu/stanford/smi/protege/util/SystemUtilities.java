@@ -26,7 +26,7 @@ public class SystemUtilities {
     private static boolean isMac;
     private static boolean isWindows;
     private static boolean isApplet;
-
+    private static boolean useAntialiasing;
     static {
         init();
     }
@@ -113,11 +113,13 @@ public class SystemUtilities {
 
     private static void init() {
         try {
+
             logSystemInfo();
             loadParameters();
             loadLookAndFeel();
             setSecurityManager();
             PluginUtilities.initialize();
+            loadUseAntialiasing();
             Toolkit.getDefaultToolkit().setDynamicLayout(true);
         } catch (Exception e) {
             // We explicitly do nothing fancy with writing this output. This
@@ -376,7 +378,17 @@ public class SystemUtilities {
     }
 
     public static boolean useAntialiasing() {
-        return UIManager.getLookAndFeel().getClass().getName().indexOf("Plastic") != -1 && !isMac();
+        return useAntialiasing;
+    }
+
+    private static void loadUseAntialiasing() {
+        String property = ApplicationProperties.getApplicationOrSystemProperty("antialiasing.enable");
+        if (property == null) {
+            useAntialiasing = UIManager.getLookAndFeel().getClass().getName().indexOf("Plastic") != -1 && !isMac();
+        } else {
+            useAntialiasing = Boolean.valueOf(property).booleanValue();
+        }
+        Log.getLogger().info("ai:" + useAntialiasing + " " + property);
     }
 
     private static MetalTheme createDefaultMetalTheme() {

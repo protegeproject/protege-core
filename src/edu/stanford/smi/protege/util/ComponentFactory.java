@@ -219,26 +219,10 @@ public class ComponentFactory {
         return comboBox;
     }
 
-    public static class ProjectChooser {
-
-    }
-
     public static JFileChooser createFileOrRemoteChooser(String description, String extension) {
         JFileChooser chooser;
         if (SystemUtilities.showAlphaFeatures()) {
-            chooser = new JFileChooser() {
-                protected JDialog createDialog(Component parent) {
-                    JDialog dialog = super.createDialog(parent);
-                    Container contentPane = dialog.getContentPane();
-                    contentPane.remove(this);
-                    JTabbedPane pane = ComponentFactory.createTabbedPane(false);
-                    pane.addTab("File", this);
-                    pane.addTab("Remote", new JLabel("Remote Tab"));
-
-                    contentPane.add(pane);
-                    return dialog;
-                }
-            };
+            chooser = new ProjectChooser();
         } else {
             chooser = createFileChooser(description, extension);
         }
@@ -564,6 +548,11 @@ public class ComponentFactory {
 
     public static JTabbedPane createTabbedPane(final boolean addBorder) {
         JTabbedPane pane = new JTabbedPane() {
+            public void paint(Graphics g) {
+                ComponentUtilities.enableTextAntialiasing(g);
+                super.paint(g);
+            }
+
             public void addImpl(Component component, Object constraints, int index) {
                 if (addBorder) {
                     JComponent c = (JComponent) component;
@@ -582,6 +571,11 @@ public class ComponentFactory {
 
     public static JTextArea createTextArea() {
         JTextArea area = new JTextArea() {
+            public void paint(Graphics g) {
+                ComponentUtilities.enableTextAntialiasing(g);
+                super.paint(g);
+            }
+
             public void setText(String text) {
                 super.setText(text);
                 setCaretPosition(0);
@@ -602,6 +596,11 @@ public class ComponentFactory {
 
     public static JTextField createTextField() {
         JTextField textField = new JTextField() {
+            public void paint(Graphics g) {
+                ComponentUtilities.enableTextAntialiasing(g);
+                super.paint(g);
+            }
+
             public Dimension getPreferredSize() {
                 return fieldPreferredHeightSize(super.getPreferredSize());
             }
