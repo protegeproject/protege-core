@@ -24,7 +24,8 @@ public final class Parser implements ParserConstants {
     }
 
     private void recordError(String msg) {
-        recordError(msg, null);
+        _itsErrors.add(msg);
+        Log.getLogger().log(Level.SEVERE, msg);
     }
 
     private void recordError(String msg, Throwable e) {
@@ -151,7 +152,7 @@ public final class Parser implements ParserConstants {
         if (frame == null) {
             cls = itsKB.createCls(name, parents, itsDefaultMetaCls, false);
             if ((++nClses % CLASS_TRACE_COUNT_DELTA) == 0 && nClses >= MIN_CLASS_TRACE_COUNT) {
-                Log.trace("Loaded " + nClses + " classes", this, "getCls", name);
+                Log.getLogger().info("Loaded " + nClses + " classes: " + name);
             }
             if (comment != null) {
                 cls.setDocumentation(comment);
@@ -242,7 +243,7 @@ public final class Parser implements ParserConstants {
                 Collection directTypes = types == null ? Collections.EMPTY_LIST : types;
             instance = itsKB.createInstance(null, instanceName, directTypes, false);
             if ((++nInstances % INSTANCE_TRACE_COUNT_DELTA) == 0 && nInstances >= MIN_INSTANCE_TRACE_COUNT) {
-                Log.trace("Loaded " + nInstances + " instances", this, "getInstance", instanceName, types);
+                Log.getLogger().info("Loaded " + nInstances + " instances: " + instanceName);
             }
             if (types == null) {
                 itsUndefinedInstances.add(instance);
@@ -257,7 +258,7 @@ public final class Parser implements ParserConstants {
             Instance oldInstance = instance;
             instance = instance.setDirectTypes(types);
             if ((++nSetTypeInstances % INSTANCE_TRACE_COUNT_DELTA) == 0 && nSetTypeInstances >= MIN_INSTANCE_TRACE_COUNT) {
-                Log.trace("Set type on " + nSetTypeInstances + " instances", this, "getInstance", instanceName, types);
+                Log.getLogger().info("Set type on " + nSetTypeInstances + " instances: " + instanceName);
             }
             itsUndefinedInstances.remove(oldInstance);
         }
@@ -647,7 +648,6 @@ public final class Parser implements ParserConstants {
       case VERSION:
       case WRITE:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[3] = jj_gen;
@@ -665,7 +665,6 @@ public final class Parser implements ParserConstants {
       break;
     default:
       jj_la1[4] = jj_gen;
-      ;
     }
   }
 
@@ -739,7 +738,6 @@ public final class Parser implements ParserConstants {
       case VERSION:
       case WRITE:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[5] = jj_gen;
@@ -769,7 +767,6 @@ public final class Parser implements ParserConstants {
                                    list.add(s);
       switch (jj_nt.kind) {
       case STRING_LITERAL:
-        ;
         break;
       default:
         jj_la1[6] = jj_gen;
@@ -853,7 +850,6 @@ public final class Parser implements ParserConstants {
       case VERSION:
       case WRITE:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[7] = jj_gen;
@@ -898,7 +894,7 @@ public final class Parser implements ParserConstants {
         }
   }
 
-  final public void cls() throws ParseException {
+  final public void cls() {
     Cls cls;
     String name;
     String comment = null;
@@ -913,7 +909,6 @@ public final class Parser implements ParserConstants {
         break;
       default:
         jj_la1[8] = jj_gen;
-        ;
       }
       jj_consume_token(LPAREN);
       jj_consume_token(IS_A);
@@ -925,7 +920,6 @@ public final class Parser implements ParserConstants {
       while (true) {
         switch (jj_nt.kind) {
         case LPAREN:
-          ;
           break;
         default:
           jj_la1[9] = jj_gen;
@@ -1015,7 +1009,6 @@ public final class Parser implements ParserConstants {
       case VERSION:
       case WRITE:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[10] = jj_gen;
@@ -1204,7 +1197,6 @@ public final class Parser implements ParserConstants {
       case INSTANCE_NAME_LITERAL:
       case STRING_LITERAL:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[13] = jj_gen;
@@ -1340,7 +1332,6 @@ public final class Parser implements ParserConstants {
       case INSTANCE_NAME_LITERAL:
       case STRING_LITERAL:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[16] = jj_gen;
@@ -1435,7 +1426,6 @@ public final class Parser implements ParserConstants {
       case INSTANCE_NAME_LITERAL:
       case STRING_LITERAL:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[17] = jj_gen;
@@ -1526,7 +1516,6 @@ public final class Parser implements ParserConstants {
       case INSTANCE_NAME_LITERAL:
       case STRING_LITERAL:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[18] = jj_gen;
@@ -1616,7 +1605,6 @@ public final class Parser implements ParserConstants {
       break;
     default:
       jj_la1[20] = jj_gen;
-      ;
     }
     jj_consume_token(LPAREN);
     facet(cls, slot);
@@ -1633,7 +1621,6 @@ public final class Parser implements ParserConstants {
     while (true) {
       switch (jj_nt.kind) {
       case STRING_LITERAL:
-        ;
         break;
       default:
         jj_la1[21] = jj_gen;
@@ -1646,7 +1633,7 @@ public final class Parser implements ParserConstants {
 
   }
 
-  final public void instance() throws ParseException {
+  final public void instance() {
     String instanceName;
     Cls type;
     Collection types = new ArrayList();
@@ -1721,7 +1708,6 @@ public final class Parser implements ParserConstants {
         case VERSION:
         case WRITE:
         case SYMBOL_LITERAL:
-          ;
           break;
         default:
           jj_la1[22] = jj_gen;
@@ -1733,7 +1719,6 @@ public final class Parser implements ParserConstants {
       while (true) {
         switch (jj_nt.kind) {
         case LPAREN:
-          ;
           break;
         default:
           jj_la1[23] = jj_gen;
@@ -1873,7 +1858,6 @@ public final class Parser implements ParserConstants {
     if (jj_2_1(3)) {
       oldStuff();
     } else {
-      ;
     }
     switch (jj_nt.kind) {
     case EXTENSION:
@@ -1881,13 +1865,11 @@ public final class Parser implements ParserConstants {
       break;
     default:
       jj_la1[25] = jj_gen;
-      ;
     }
     label_14:
     while (true) {
       switch (jj_nt.kind) {
       case LPAREN:
-        ;
         break;
       default:
         jj_la1[26] = jj_gen;
@@ -1902,7 +1884,6 @@ public final class Parser implements ParserConstants {
     if (jj_2_2(3)) {
       includeOntologies();
     } else {
-      ;
     }
     switch (jj_nt.kind) {
     case EXTENSION:
@@ -1910,13 +1891,11 @@ public final class Parser implements ParserConstants {
       break;
     default:
       jj_la1[27] = jj_gen;
-      ;
     }
     label_15:
     while (true) {
       switch (jj_nt.kind) {
       case LPAREN:
-        ;
         break;
       default:
         jj_la1[28] = jj_gen;
@@ -1997,7 +1976,7 @@ public final class Parser implements ParserConstants {
         }
   }
 
-  final public void slot(Cls cls) throws ParseException {
+  final public void slot(Cls cls) {
     boolean isTopLevel;
     boolean isSingle;
     String name;
@@ -2016,7 +1995,6 @@ public final class Parser implements ParserConstants {
         switch (jj_nt.kind) {
         case LPAREN:
         case EXTENSION:
-          ;
           break;
         default:
           jj_la1[32] = jj_gen;
@@ -2139,7 +2117,6 @@ public final class Parser implements ParserConstants {
       case VERSION:
       case WRITE:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[34] = jj_gen;
@@ -2267,7 +2244,6 @@ public final class Parser implements ParserConstants {
       case INSTANCE_NAME_LITERAL:
       case STRING_LITERAL:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[35] = jj_gen;
@@ -2349,7 +2325,6 @@ public final class Parser implements ParserConstants {
       case INSTANCE_NAME_LITERAL:
       case STRING_LITERAL:
       case SYMBOL_LITERAL:
-        ;
         break;
       default:
         jj_la1[36] = jj_gen;
@@ -2779,7 +2754,6 @@ public final class Parser implements ParserConstants {
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   public boolean lookingAhead = false;
-  private boolean jj_semLA;
   private int jj_gen;
   final private int[] jj_la1 = new int[43];
   static private int[] jj_la1_0;

@@ -5,9 +5,9 @@ import java.util.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * A factory for creating a KnowledgeBase implementation.  The KB implementation is typically
- * DefaultKnowledgeBase with, perhaps, some "standard" frames loaded.
- *
+ * A factory for creating a KnowledgeBase implementation. The KB implementation is typically DefaultKnowledgeBase with,
+ * perhaps, some "standard" frames loaded.
+ * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public interface KnowledgeBaseFactory {
@@ -16,12 +16,14 @@ public interface KnowledgeBaseFactory {
     KnowledgeBase createKnowledgeBase(Collection errors);
 
     /**
-     * Note that this method should really take a URI for a param rather than a string.  I maintain the string 
-     * for backwards compatibility
+     * Note that this method should really take a URI for a param rather than a string. I maintain the string for
+     * backwards compatibility
+     * 
      * @param projectURIString
      * @param sources
      */
-    KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectURIString, PropertyList sources);
+    KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectURIString,
+            PropertyList sources);
 
     String getDescription();
 

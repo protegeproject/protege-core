@@ -48,32 +48,15 @@ public abstract class AbstractKnowledgeBaseFactory implements KnowledgeBaseFacto
     }
 
     public void loadKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
-        URI uri = kb.getProject().getLoadingURI();
-        if (uri != null) {
-            getMergingFrameStore(kb).setActiveFrameStoreName(uri.toString());
-        }
         loadKnowledgeBase(kb, sources, false, errors);
     }
 
-    protected NarrowFrameStore createNarrowFrameStore(String name) {
+    public NarrowFrameStore createNarrowFrameStore(String name) {
         return new InMemoryFrameDb(name);
     }
 
     public void includeKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
-        MergingNarrowFrameStore frameStore = getMergingFrameStore(kb);
-        URI child = kb.getProject().getLoadingURI();
-        frameStore.addActiveFrameStoreChild(createNarrowFrameStore(child.toString()));
-        NarrowFrameStore parent = frameStore.activateFrameStore(child.toString());
         loadKnowledgeBase(kb, sources, true, errors);
-        frameStore.activateFrameStore(parent);
-    }
-
-    private MergingNarrowFrameStore getMergingFrameStore(KnowledgeBase kb) {
-        SimpleFrameStore simpleFrameStore = (SimpleFrameStore) ((DefaultKnowledgeBase) kb)
-                .getTerminalFrameStore();
-        MergingNarrowFrameStore fs = (MergingNarrowFrameStore) simpleFrameStore.getHelper()
-                .getDelegate();
-        return fs;
     }
 
     protected abstract void loadKnowledgeBase(KnowledgeBase kb, PropertyList sources,

@@ -380,13 +380,16 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     public void replaceFrame(Frame frame) {
-        // Log.enter(this, "replaceFrame", frame);
         replaceFrameInReferenceToValuesMap(frame);
-        // replaceFrameInFrameToContainingReferencesMap(frame);
         replaceFrameInValueToReferencesMap(frame);
     }
 
     private void replaceFrameInValueToReferencesMap(Frame frame) {
+        replaceFrameKeyInValueToReferenceMap(frame);
+        replaceFrameValueInValueToReferencesMap(frame);
+    }
+
+    private void replaceFrameValueInValueToReferencesMap(Frame frame) {
         Iterator i = _valueToReferencesMap.values().iterator();
         while (i.hasNext()) {
             Collection references = (Collection) i.next();
@@ -395,6 +398,13 @@ public class InMemoryFrameDb implements NarrowFrameStore {
                 ReferenceImpl ref = (ReferenceImpl) j.next();
                 replace(ref, frame);
             }
+        }
+    }
+
+    private void replaceFrameKeyInValueToReferenceMap(Frame frame) {
+        Collection frameReferences = (Collection) _valueToReferencesMap.remove(frame);
+        if (frameReferences != null) {
+            _valueToReferencesMap.put(frame, frameReferences);
         }
     }
 

@@ -273,8 +273,8 @@ public class Project {
             boolean load) {
         createDomainKB(factory, errors);
         if (load) {
-            loadIncludedProjects(getProjectURI(), _projectInstance, errors);
-            loadDomainKB(errors);
+            Collection uris = loadIncludedProjects(getProjectURI(), _projectInstance, errors);
+            loadDomainKB(uris, errors);
         }
         _domainKB.addKnowledgeBaseListener(_knowledgeBaseListener);
         loadCachedKnowledgeBaseObjects(_projectInstance);
@@ -909,14 +909,21 @@ public class Project {
         return !getIncludedProjects().isEmpty();
     }
 
-    private void includeDomainKB(Instance projectInstance, Collection errors) {
-        String name = getSources(projectInstance)
+    private void includeDomainKB(Instance projectInstance, String name, Collection uris, Collection errors) {
+        String factoryName = getSources(projectInstance)
                 .getString(KnowledgeBaseFactory.FACTORY_CLASS_NAME);
-        KnowledgeBaseFactory factory = (KnowledgeBaseFactory) SystemUtilities.newInstance(name);
+        KnowledgeBaseFactory factory = (KnowledgeBaseFactory) SystemUtilities.newInstance(factoryName);
         PropertyList sources = getSources(projectInstance);
-        factory.includeKnowledgeBase(_domainKB, sources, errors);
-    }
 
+        if (factory instanceof KnowledgeBaseFactory2) {
+            NarrowFrameStore nfs = ((KnowledgeBaseFactory2)factory).createNarrowFrameStore(name);
+            MergingNarrowFrameStore mergingFrameStore = getMergingFrameStore();
+            mergingFrameStore.addActiveFrameStore(nfs, uris);
+        }
+        factory.includeKnowledgeBase(_domainKB, sources, errors);
+
+    }
+    
     public void includeProject(String path, Collection errors) {
         includeProject(URIUtilities.createURI(path), errors);
     }
@@ -1058,11 +1065,18 @@ public class Project {
         }
     }
 
-    private void loadDomainKB(Collection errors) {
+    private void loadDomainKB(Collection uris, Collection errors) {
         KnowledgeBaseFactory factory = getKnowledgeBaseFactory();
         if (factory != null) {
             _frameCounts.updateIncludedFrameCounts(_domainKB);
             boolean enabled = _domainKB.setGenerateEventsEnabled(false);
+
+            if (factory instanceof KnowledgeBaseFactory2) {
+                NarrowFrameStore nfs = ((KnowledgeBaseFactory2)factory).createNarrowFrameStore(getProjectURI().toString());
+                MergingNarrowFrameStore mergingFrameStore = getMergingFrameStore();
+                mergingFrameStore.addActiveFrameStore(nfs, uris);
+            }
+            
             factory.loadKnowledgeBase(_domainKB, getSources(), errors);
             _domainKB.setGenerateEventsEnabled(enabled);
         }
@@ -1092,12 +1106,14 @@ public class Project {
     public URI getLoadingURI() {
         return _loadingProjectURI == null ? getProjectURI() : _loadingProjectURI;
     }
-
+    
     private void loadIncludedProject(URI includingURI, URI includedURI, Collection errors) {
         includedURI = includedURI.normalize();
         boolean alreadyIncluded = isAlreadyIncluded(includedURI);
         projectURITree.addChild(includingURI, includedURI);
-        if (!alreadyIncluded) {
+        if (alreadyIncluded) {
+            getMergingFrameStore().addRelation(includingURI.toString(), includedURI.toString());
+        } else {
             // Log.enter(this, "loadIncludedProject", includedURI);
             KnowledgeBase kb = loadProjectKB(includedURI, null, errors);
             if (kb != null) { // && errors.size() == 0) {
@@ -1105,11 +1121,11 @@ public class Project {
                 // to load from other subdirectories
                 URI oldLoadingProjectURI = _loadingProjectURI;
                 _loadingProjectURI = includedURI;
-
+                
                 kb.setName(URIUtilities.getName(includedURI));
                 Instance projectInstance = getProjectInstance(kb);
-                loadIncludedProjects(includedURI, projectInstance, errors);
-                includeDomainKB(projectInstance, errors);
+                Collection includedProjectURIs = loadIncludedProjects(includedURI, projectInstance, errors);
+                includeDomainKB(projectInstance, includedURI.toString(), includedProjectURIs, errors);
                 loadCachedKnowledgeBaseObjects(projectInstance);
 
                 _loadingProjectURI = oldLoadingProjectURI;
@@ -1117,11 +1133,12 @@ public class Project {
         }
     }
 
+
     /**
-     * @param errors
-     *            See class note for information about this argument.
+     * @param errors  See class note for information about this argument.
      */
-    public void loadIncludedProjects(URI projectURI, Instance projectInstance, Collection errors) {
+    public Collection loadIncludedProjects(URI projectURI, Instance projectInstance, Collection errors) {
+        Collection uris = new ArrayList();
         Iterator i = getProjectSlotValues(projectInstance, SLOT_INCLUDED_PROJECTS).iterator();
         while (i.hasNext()) {
             String name = (String) i.next();
@@ -1132,7 +1149,9 @@ public class Project {
                 uri = _uri.resolve(name);
             }
             loadIncludedProject(projectURI, uri, errors);
+            uris.add(uri);
         }
+        return uris;
     }
 
     private void loadNextFrameNumber(Instance projectInstance) {
@@ -1635,12 +1654,20 @@ public class Project {
         updateKBNames();
         updateJournaling();
         projectURITree.swapNode(projectURITree.getRoot(), uri);
-        MergingNarrowFrameStore nfs = getMergingFrameStore();
-        if (nfs != null && uri != null) {
-            nfs.setActiveFrameStoreName(uri.toString());
-        }
+        setActiveFrameStore(uri);
         activeRootURI = uri;
         // Log.trace("uri=" + _uri, this, "setProjectURI", uri);
+    }
+    
+    private MergingNarrowFrameStore getMergingFrameStore() {
+        return MergingNarrowFrameStore.get(_domainKB);
+    }
+    
+    private void setActiveFrameStore(URI uri) {
+        MergingNarrowFrameStore nfs = getMergingFrameStore();
+        if (nfs != null && uri != null) {
+            nfs.setActiveFrameStore(uri.toString());
+        }
     }
     
     public URI getActiveRootURI() {
@@ -1649,23 +1676,9 @@ public class Project {
     
     public void setActiveRootURI(URI uri) {
         activeRootURI = uri;
-        
-        // Hack this to make it work and then fix it somehow
-        MergingNarrowFrameStore mfs = getMergingFrameStore();
-        mfs.activateFrameStore(uri.toString());
-        
+        setActiveFrameStore(uri);
         ((DefaultKnowledgeBase)_domainKB).getFrameStoreManager().reinitialize();
     }
-    
-    private MergingNarrowFrameStore getMergingFrameStore() {
-        MergingNarrowFrameStore mergingFrameStore = null;
-        if (_domainKB != null) {
-        SimpleFrameStore store = (SimpleFrameStore) ((DefaultKnowledgeBase)_domainKB).getTerminalFrameStore();
-        mergingFrameStore = (MergingNarrowFrameStore) store.getHelper().getDelegate();
-        }
-        return mergingFrameStore;
-        }
-    	
 
     /*
      * Direct included projects are stored as paths relative to the project uri.

@@ -3,7 +3,7 @@ package edu.stanford.smi.protege.util;
 import java.util.*;
 
 /**
- * A utility class that maintains a tree.  Why isn't something like this in java.util?
+ * A utility class that maintains a tree. Why isn't something like this in java.util?
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
@@ -17,7 +17,7 @@ public class Tree implements Cloneable {
 
     public Tree() {
     }
-    
+
     public Object clone() {
         Tree tree = new Tree(root);
         Iterator i = nodeToChildrenMap.entrySet().iterator();
@@ -34,7 +34,7 @@ public class Tree implements Cloneable {
         // Log.getLogger().info("set root: " + root);
         this.root = root;
     }
-    
+
     public void swapNode(Object oldNode, Object newNode) {
         if (root == oldNode) {
             root = newNode;
@@ -56,7 +56,7 @@ public class Tree implements Cloneable {
     public Object getRoot() {
         return root;
     }
-    
+
     public boolean isReachable(Object node) {
         return root == node || getDescendents(root).contains(node);
     }
@@ -70,7 +70,7 @@ public class Tree implements Cloneable {
         }
         children.add(child);
     }
-    
+
     public void removeChild(Object parent, Object child) {
         Set children = (Set) nodeToChildrenMap.get(parent);
         if (children == null) {
@@ -82,7 +82,7 @@ public class Tree implements Cloneable {
             }
         }
     }
-    
+
     public void removeNode(Object node) {
         if (root == node) {
             root = null;
@@ -94,7 +94,7 @@ public class Tree implements Cloneable {
             children.remove(node);
         }
     }
-    
+
     private void logNoSuchChild(Object parent, Object child) {
         Log.getLogger().warning("No such child: " + parent + " " + child);
     }
@@ -104,7 +104,13 @@ public class Tree implements Cloneable {
         return (children == null) ? Collections.EMPTY_SET : Collections.unmodifiableSet(children);
     }
 
-    public Collection getDescendents(Object parent) {
+    public Set getNodeAndDescendents(Object parent) {
+        Set descendents = getDescendents(parent);
+        descendents.add(parent);
+        return descendents;
+    }
+
+    public Set getDescendents(Object parent) {
         Set descendents = new LinkedHashSet();
         getDescendents(parent, descendents);
         return descendents;
@@ -123,8 +129,8 @@ public class Tree implements Cloneable {
             }
         }
     }
-    
-    public Collection getNodes() {
+
+    public Set getNodes() {
         return getDescendents(root);
     }
 }

@@ -62,4 +62,18 @@ public class DefaultKnowledgeBase_SimpleTest extends SimpleTestCase {
         assertTrue(fired[0] == Boolean.TRUE);
     }
 
+    public void testSetSystemFrameName() {
+        KnowledgeBase kb = new DefaultKnowledgeBase();
+        Cls root = kb.getRootCls();
+        root.setName("my root class name"); // doesn't work
+        assertEquals(Model.Cls.THING, root.getName());
+
+        MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(kb);
+        NarrowFrameStore oldActiveFrameStore = mnfs
+                .setActiveFrameStore(MergingNarrowFrameStore.SYSTEM_NAME);
+        String FOO_NAME = "foo";
+        root.setName(FOO_NAME);
+        assertEquals(FOO_NAME, root.getName());
+        mnfs.setActiveFrameStore(oldActiveFrameStore);
+    }
 }

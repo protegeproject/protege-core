@@ -13,16 +13,30 @@ import edu.stanford.smi.protege.util.*;
  */
 public class MergingNarrowFrameStore implements NarrowFrameStore {
     public static final String SYSTEM_NAME = "system frames";
+    private static final Object ROOT_NODE = new Object();
 
     private NarrowFrameStore activeFrameStore;
     private NarrowFrameStore systemFrameStore;
-    private Tree frameStoreTree;
     private Collection availableFrameStores;
+    private Tree frameStoreTree = new Tree(ROOT_NODE);
 
-    public MergingNarrowFrameStore(NarrowFrameStore activeFrameStore) {
-        this.systemFrameStore = new InMemoryFrameDb(SYSTEM_NAME);
-        frameStoreTree = new Tree(activeFrameStore);
-        activateFrameStore(activeFrameStore);
+    public MergingNarrowFrameStore() {
+        systemFrameStore = new InMemoryFrameDb(SYSTEM_NAME);
+        addActiveFrameStore(systemFrameStore);
+    }
+
+    /**
+     * A utility hack to get the merging frame store from a kb until I can decide what sort of "real" API access to
+     * provide.
+     */
+    public static MergingNarrowFrameStore get(KnowledgeBase kb) {
+        MergingNarrowFrameStore mergingFrameStore = null;
+        if (kb instanceof DefaultKnowledgeBase) {
+            SimpleFrameStore store = (SimpleFrameStore) ((DefaultKnowledgeBase) kb)
+                    .getTerminalFrameStore();
+            mergingFrameStore = (MergingNarrowFrameStore) store.getHelper().getDelegate();
+        }
+        return mergingFrameStore;
     }
 
     public String getName() {
@@ -33,73 +47,68 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         throw new UnsupportedOperationException();
     }
 
-    public void addActiveFrameStoreChild(NarrowFrameStore child) {
-        addChildFrameStore(activeFrameStore, child);
-    }
-
-    private Collection getAllFrameStores() {
-        Set allFrameStores = new HashSet();
-        NarrowFrameStore root = (NarrowFrameStore) frameStoreTree.getRoot();
-        if (root != null) {
-            allFrameStores.add(root);
-            allFrameStores.addAll(frameStoreTree.getDescendents(root));
-        }
-        allFrameStores.add(systemFrameStore);
-        return allFrameStores;
+    public NarrowFrameStore getActiveFrameStore() {
+        return activeFrameStore;
     }
 
     private NarrowFrameStore getFrameStore(String name) {
-        NarrowFrameStore searchedForFrameStore = null;
-        Iterator i = getAllFrameStores().iterator();
+        NarrowFrameStore frameStore = null;
+        Iterator i = frameStoreTree.getDescendents(ROOT_NODE).iterator();
         while (i.hasNext()) {
-            NarrowFrameStore nfs = (NarrowFrameStore) i.next();
-            String nfsName = nfs.getName();
-            if (nfsName != null && nfsName.equals(name)) {
-                searchedForFrameStore = nfs;
+            NarrowFrameStore testFrameStore = (NarrowFrameStore) i.next();
+            if (name.equals(testFrameStore.getName())) {
+                frameStore = testFrameStore;
                 break;
             }
         }
-        if (searchedForFrameStore == null) {
-            Log.getLogger().warning("Unable to find frame store: " + name);
+        return frameStore;
+    }
+
+    public void addRelation(String parent, String child) {
+        NarrowFrameStore parentFs = getFrameStore(parent);
+        NarrowFrameStore childFs = getFrameStore(child);
+        frameStoreTree.addChild(parentFs, childFs);
+        updateAvailableFrameStores();
+    }
+
+    public void addActiveFrameStore(NarrowFrameStore frameStore) {
+        addActiveFrameStore(frameStore, CollectionUtilities.EMPTY_ARRAY_LIST);
+    }
+
+    public void addActiveFrameStore(NarrowFrameStore parent, Collection childNames) {
+        frameStoreTree.addChild(ROOT_NODE, parent);
+        Iterator i = childNames.iterator();
+        while (i.hasNext()) {
+            String name = i.next().toString();
+            NarrowFrameStore child = getFrameStore(name);
+            frameStoreTree.addChild(parent, child);
         }
-        return searchedForFrameStore;
+        setActiveFrameStore(parent);
     }
 
-    public void setActiveFrameStoreName(String name) {
-        activeFrameStore.setName(name);
-        dumpFrameStores();
-    }
-
-    public void addChildFrameStore(String parentName, NarrowFrameStore child) {
-        NarrowFrameStore parent = getFrameStore(parentName);
-        addChildFrameStore(parent, child);
-    }
-
-    public void addChildFrameStore(NarrowFrameStore parent, NarrowFrameStore child) {
-        Log.getLogger().info("add child: " + parent + " " + child);
-        frameStoreTree.addChild(parent, child);
-    }
-
-    public NarrowFrameStore activateFrameStore(NarrowFrameStore nfs) {
+    public NarrowFrameStore setActiveFrameStore(NarrowFrameStore nfs) {
         NarrowFrameStore oldActiveFrameStore = activeFrameStore;
         if (nfs != null) {
             activeFrameStore = nfs;
-            availableFrameStores = new LinkedHashSet();
-            availableFrameStores.add(systemFrameStore);
-            availableFrameStores.add(activeFrameStore);
-            availableFrameStores.addAll(frameStoreTree.getDescendents(nfs));
+            updateAvailableFrameStores();
         }
         dumpFrameStores();
         return oldActiveFrameStore;
     }
 
-    public NarrowFrameStore activateFrameStore(String name) {
+    private void updateAvailableFrameStores() {
+        availableFrameStores = new LinkedHashSet();
+        availableFrameStores.add(systemFrameStore);
+        availableFrameStores.addAll(frameStoreTree.getNodeAndDescendents(activeFrameStore));
+    }
+
+    public NarrowFrameStore setActiveFrameStore(String name) {
         NarrowFrameStore nfs = getFrameStore(name);
-        return activateFrameStore(nfs);
+        return setActiveFrameStore(nfs);
     }
 
     private void dumpFrameStores() {
-        if (true)
+        if (false)
             dumpFrameStoreList();
         if (false)
             dumpFrameStoreTree();
@@ -124,14 +133,14 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     private void output(StringBuffer buffer, String name, int indent) {
         buffer.append("\n");
         for (int i = 0; i < indent; ++i) {
-            buffer.append("    ");
+            buffer.append(" ");
         }
         buffer.append(name);
     }
 
     private void dumpFrameStoreList() {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("Active FrameStores");
+        buffer.append("FrameStores");
         Iterator i = availableFrameStores.iterator();
         while (i.hasNext()) {
             NarrowFrameStore nfs = (NarrowFrameStore) i.next();
@@ -148,7 +157,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     // -----------------------------------------------------------
 
     public FrameID generateFrameID() {
-        return activeFrameStore.generateFrameID();
+        return getDelegate().generateFrameID();
     }
 
     public int getFrameCount() {
