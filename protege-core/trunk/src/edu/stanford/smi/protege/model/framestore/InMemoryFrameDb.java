@@ -14,7 +14,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     private ReferenceImpl _lookupReference = new ReferenceImpl();
     private String frameDBName;
 
-    private int counter = FrameID.INITIAL_USER_FRAME_ID;
+    private static int counter = FrameID.INITIAL_USER_FRAME_ID;
 
     public String getName() {
         return frameDBName;
@@ -248,8 +248,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         boolean isInferred = facet == null && !isTemplate;
         if (isInferred) {
             FrameID id = slot.getFrameID();
-            isInferred = id.equals(Model.SlotID.DIRECT_SUBCLASSES)
-                    || id.equals(Model.SlotID.DIRECT_SUBSLOTS)
+            isInferred = id.equals(Model.SlotID.DIRECT_SUBCLASSES) || id.equals(Model.SlotID.DIRECT_SUBSLOTS)
                     || id.equals(Model.SlotID.DIRECT_INSTANCES);
         }
         return isInferred;
@@ -351,8 +350,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return frames;
     }
 
-    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value,
-            int maxMatches) {
+    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
         if (maxMatches < 1) {
             maxMatches = Integer.MAX_VALUE;
         }
