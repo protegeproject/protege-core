@@ -28,7 +28,7 @@ public abstract class LazyTreeNode implements TreeNode {
         boolean isDuplicate = false;
         LazyTreeNode ancestor = parent;
         while (ancestor != null) {
-            if (ancestor.getUserObject() == userObject) {
+            if (ancestor.getUserObject().equals(userObject)) {
                 isDuplicate = true;
                 break;
             }
@@ -138,7 +138,7 @@ public abstract class LazyTreeNode implements TreeNode {
         if (i >= _childNodes.size()) {
             i = _childNodes.size() - 1;
         }
-        return (TreeNode) _childNodes.get(i);
+        return (i == -1) ? null : (TreeNode) _childNodes.get(i);
     }
 
     public int getChildCount() {
