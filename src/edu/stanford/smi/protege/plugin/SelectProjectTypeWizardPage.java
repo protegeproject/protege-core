@@ -16,12 +16,11 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectProjectTypeWizardPage extends WizardPage {
-    private static final String SELECTED_FACTORY = "select_project_type.last_factory"; 
+    private static final String SELECTED_FACTORY = "select_project_type.last_factory";
     private JCheckBox doBuildBox;
     private SelectableList list;
     private CreateProjectPlugin plugin;
-    
-    
+
     SelectProjectTypeWizardPage(CreateProjectWizard wizard) {
         super("select project type", wizard);
         JLabel label = ComponentFactory.createSmallFontLabel("Select a Project Type:");
@@ -29,10 +28,10 @@ public class SelectProjectTypeWizardPage extends WizardPage {
         add(label, BorderLayout.NORTH);
         list = createList();
         add(new JScrollPane(list), BorderLayout.CENTER);
-       configureCheckBox();
+        configureCheckBox();
         add(doBuildBox, BorderLayout.SOUTH);
     }
-    
+
     private SelectableList createList() {
         KnowledgeBaseFactory selection = null;
         String selectedFactoryName = ApplicationProperties.getString(SELECTED_FACTORY);
@@ -60,7 +59,7 @@ public class SelectProjectTypeWizardPage extends WizardPage {
         });
         return list;
     }
-    
+
     private void configureCheckBox() {
         StandardAction action = new StandardAction("Create from Existing Sources") {
             public void actionPerformed(ActionEvent event) {
@@ -70,17 +69,19 @@ public class SelectProjectTypeWizardPage extends WizardPage {
         action.setMnemonic('C');
         doBuildBox = new JCheckBox(action);
     }
-    
+
     public KnowledgeBaseFactory getSelectedFactory() {
         KnowledgeBaseFactory factory = (KnowledgeBaseFactory) list.getSelectedValue();
-        ApplicationProperties.setString(SELECTED_FACTORY, factory.getClass().getName());
+        if (factory != null) {
+            ApplicationProperties.setString(SELECTED_FACTORY, factory.getClass().getName());
+        }
         return factory;
     }
-    
+
     private CreateProjectWizard getCreateProjectWizard() {
         return (CreateProjectWizard) getWizard();
     }
-    
+
     private void updateDoBuildBox() {
         Collection plugins = getAppropriateCreateProjectPlugins(getSelectedFactory(), getUseExistingSources());
         if (plugins.size() == 0) {
@@ -90,11 +91,11 @@ public class SelectProjectTypeWizardPage extends WizardPage {
             doBuildBox.setEnabled(true);
         }
     }
-    
+
     private boolean getUseExistingSources() {
         return doBuildBox.isSelected();
     }
-    
+
     public void onFinish() {
         plugin.setKnowledgeBaseFactory(getSelectedFactory());
         plugin.setUseExistingSources(getUseExistingSources());
@@ -102,7 +103,7 @@ public class SelectProjectTypeWizardPage extends WizardPage {
             getCreateProjectWizard().setPlugin(plugin);
         }
     }
-    
+
     public WizardPage getNextPage() {
         WizardPage page = null;
         Collection plugins = getAppropriateCreateProjectPlugins(getSelectedFactory(), getUseExistingSources());
@@ -117,7 +118,7 @@ public class SelectProjectTypeWizardPage extends WizardPage {
         }
         return page;
     }
-    
+
     private Collection getAppropriateCreateProjectPlugins(KnowledgeBaseFactory factory, boolean useExistingSources) {
         Collection appropriatePlugins = new ArrayList();
         Iterator i = PluginUtilities.getAvailableCreateProjectPluginClassNames().iterator();
@@ -133,11 +134,11 @@ public class SelectProjectTypeWizardPage extends WizardPage {
 }
 
 class DefaultCreateProjectPlugin extends AbstractCreateProjectPlugin {
-    
+
     public DefaultCreateProjectPlugin() {
         super("default import plugin");
     }
-    
+
     public boolean canCreateProject(KnowledgeBaseFactory factory, boolean useExistingSources) {
         return !useExistingSources;
     }
