@@ -125,15 +125,15 @@ public class DefaultFrameFactory implements FrameFactory {
 
     private Class getImplementationClass(Collection directTypes, Class defaultClass) {
         Class implementationClass;
-        if (_packages.isEmpty()) {
+        if (_packages.isEmpty() || directTypes.size() != 1) {
             implementationClass = defaultClass;
         } else {
-            directTypes = new ArrayList(directTypes);
-            implementationClass = (Class) _typesToImplementationClassMap.get(directTypes);
+            Cls directType = (Cls) CollectionUtilities.getFirstItem(directTypes);
+            implementationClass = (Class) _typesToImplementationClassMap.get(directType);
             if (implementationClass == null) {
-                implementationClass = getJavaImplementationClass(directTypes, defaultClass);
+                implementationClass = getJavaImplementationClass(directType, defaultClass);
             }
-            _typesToImplementationClassMap.put(directTypes, implementationClass);
+            _typesToImplementationClassMap.put(directType, implementationClass);
         }
         return implementationClass;
     }
@@ -153,18 +153,17 @@ public class DefaultFrameFactory implements FrameFactory {
         return instance;
     }
 
-    private Class getJavaImplementationClass(Collection types, Class baseClass) {
+    private Class getJavaImplementationClass(Cls type, Class baseClass) {
         Class implementationClass = null;
         Iterator i = _packages.iterator();
         while (i.hasNext() && implementationClass == null) {
             String packageName = (String) i.next();
-            implementationClass = getJavaImplementationClass(packageName, types);
+            implementationClass = getJavaImplementationClass(packageName, type);
         }
         if (implementationClass == null) {
             implementationClass = baseClass;
         } else if (!isValidImplementationClass(implementationClass, baseClass)) {
-            Log.getLogger().warning(
-                    "Java implementation class of wrong type: " + implementationClass);
+            Log.getLogger().warning("Java implementation class of wrong type: " + implementationClass);
             implementationClass = baseClass;
         }
         return implementationClass;
@@ -172,16 +171,6 @@ public class DefaultFrameFactory implements FrameFactory {
 
     private boolean isValidImplementationClass(Class implementationClass, Class defaultClass) {
         return defaultClass.isAssignableFrom(implementationClass);
-    }
-
-    private Class getJavaImplementationClass(String packageName, Collection types) {
-        Class implementationClass = null;
-        Iterator i = types.iterator();
-        while (i.hasNext() && implementationClass == null) {
-            Cls type = (Cls) i.next();
-            implementationClass = getJavaImplementationClass(packageName, type);
-        }
-        return implementationClass;
     }
 
     private Class getJavaImplementationClass(String packageName, Cls type) {
@@ -223,20 +212,20 @@ public class DefaultFrameFactory implements FrameFactory {
     public Frame createFrameFromClassId(int javaClassId, FrameID id) {
         Frame frame;
         switch (javaClassId) {
-        case DEFAULT_CLS_JAVA_CLASS_ID:
-            frame = createCls(id, DefaultCls.class);
-            break;
-        case DEFAULT_SLOT_JAVA_CLASS_ID:
-            frame = createSlot(id, DefaultSlot.class);
-            break;
-        case DEFAULT_FACET_JAVA_CLASS_ID:
-            frame = createFacet(id, DefaultFacet.class);
-            break;
-        case DEFAULT_SIMPLE_INSTANCE_JAVA_CLASS_ID:
-            frame = createSimpleInstance(id, DefaultSimpleInstance.class);
-            break;
-        default:
-            throw new RuntimeException("Invalid java class id: " + javaClassId);
+            case DEFAULT_CLS_JAVA_CLASS_ID:
+                frame = createCls(id, DefaultCls.class);
+                break;
+            case DEFAULT_SLOT_JAVA_CLASS_ID:
+                frame = createSlot(id, DefaultSlot.class);
+                break;
+            case DEFAULT_FACET_JAVA_CLASS_ID:
+                frame = createFacet(id, DefaultFacet.class);
+                break;
+            case DEFAULT_SIMPLE_INSTANCE_JAVA_CLASS_ID:
+                frame = createSimpleInstance(id, DefaultSimpleInstance.class);
+                break;
+            default:
+                throw new RuntimeException("Invalid java class id: " + javaClassId);
         }
         return frame;
     }

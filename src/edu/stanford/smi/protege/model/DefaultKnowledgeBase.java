@@ -266,11 +266,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return _frameStoreManager.getDispatchEventsEnabled();
     }
 
-    public boolean setDispatchEventsEnabled(boolean b) {
+    public synchronized boolean setDispatchEventsEnabled(boolean b) {
         return _frameStoreManager.setEventDispatchEnabled(b);
     }
 
-    public boolean setChangeMonitorEnabled(boolean b) {
+    public synchronized boolean setChangeMonitorEnabled(boolean b) {
         return _frameStoreManager.setChangeMonitorEnabled(b);
     }
 
@@ -700,7 +700,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return reachableInstances;
     }
 
-    private synchronized void addReachableSimpleInstances(Instance instance, Collection reachableInstances) {
+    private void addReachableSimpleInstances(Instance instance, Collection reachableInstances) {
         if (!reachableInstances.contains(instance)) {
             reachableInstances.add(instance);
             Iterator i = getOwnSlots(instance).iterator();
@@ -1586,7 +1586,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return instance;
     }
 
-    public void addDirectTypes(Instance instance, Collection types) {
+    public synchronized void addDirectTypes(Instance instance, Collection types) {
         Iterator i = types.iterator();
         while (i.hasNext()) {
             Cls type = (Cls) i.next();
@@ -1594,7 +1594,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    public void removeDirectTypes(Instance instance, Collection types) {
+    public synchronized void removeDirectTypes(Instance instance, Collection types) {
         Iterator i = types.iterator();
         while (i.hasNext()) {
             Cls type = (Cls) i.next();
@@ -1607,18 +1607,31 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Collection getAllowedClses(Slot slot) {
-        Collection values = getOwnSlotValues(slot, _systemFrames.getValueTypeSlot());
+        Collection values = getStandardSlotValues(slot, _systemFrames.getValueTypeSlot());
         return ValueTypeConstraint.getAllowedClses(values);
     }
 
     public synchronized Collection getAllowedParents(Slot slot) {
-        Collection values = getOwnSlotValues(slot, _systemFrames.getValueTypeSlot());
+        Collection values = getStandardSlotValues(slot, _systemFrames.getValueTypeSlot());
         return ValueTypeConstraint.getAllowedParents(values);
     }
 
     public synchronized Collection getAllowedValues(Slot slot) {
-        Collection values = getOwnSlotValues(slot, _systemFrames.getValueTypeSlot());
+        Collection values = getStandardSlotValues(slot, _systemFrames.getValueTypeSlot());
         return ValueTypeConstraint.getAllowedValues(values);
+    }
+
+    private Object getStandardSlotValue(Slot slot, Slot associatedSlot) {
+        Collection values = getStandardSlotValues(slot, associatedSlot);
+        return CollectionUtilities.getFirstItem(values);
+    }
+
+    private Collection getStandardSlotValues(Slot slot, Slot associatedSlot) {
+        Collection values = getDirectOwnSlotValues(slot, associatedSlot);
+        if (values.isEmpty()) {
+            values = getOwnSlotValues(slot, associatedSlot);
+        }
+        return values;
     }
 
     public synchronized boolean getAllowsMultipleValues(Slot slot) {
@@ -1655,7 +1668,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Integer getMaximumCardinality2(Slot slot) {
-        return (Integer) getOwnSlotValue(slot, _systemFrames.getMaximumCardinalitySlot());
+        return (Integer) getStandardSlotValue(slot, _systemFrames.getMaximumCardinalitySlot());
     }
 
     public synchronized int getMaximumCardinality(Slot slot) {
@@ -1664,7 +1677,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Number getMaximumValue(Slot slot) {
-        return (Number) getOwnSlotValue(slot, _systemFrames.getMaximumValueSlot());
+        return (Number) getStandardSlotValue(slot, _systemFrames.getMaximumValueSlot());
     }
 
     public synchronized int getMinimumCardinality(Slot slot) {
@@ -1697,12 +1710,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized ValueType getValueType(Slot slot) {
-        // first we try the much faster call
-        Collection values = getDirectOwnSlotValues(slot, _systemFrames.getValueTypeSlot());
-        if (values.isEmpty()) {
-            // now fall back to the "correct" call
-            values = getOwnSlotValues(slot, _systemFrames.getValueTypeSlot());
-        }
+        Collection values = getStandardSlotValues(slot, _systemFrames.getValueTypeSlot());
         return ValueTypeConstraint.getType(values);
     }
 
@@ -2140,7 +2148,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         getProject().setDirectBrowserSlotPattern(cls, pattern);
     }
 
-    public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot) {
+    public synchronized Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot) {
         return getHeadFrameStore().getDirectOwnSlotValuesClosure(frame, slot);
     }
 
@@ -2151,7 +2159,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getFacetCheckingEnabled();
     }
 
-    public boolean getFacetCheckingEnabled() {
+    public synchronized boolean getFacetCheckingEnabled() {
         return _frameStoreManager.getFacetCheckingEnabled();
     }
 
@@ -2163,11 +2171,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         _frameStoreManager.stopJournaling();
     }
 
-    public boolean setGenerateDeletingFrameEventsEnabled(boolean enabled) {
+    public synchronized boolean setGenerateDeletingFrameEventsEnabled(boolean enabled) {
         return _frameStoreManager.setGenerateDeletingFrameEventsEnabled(enabled);
     }
 
-    public void flushCache() {
+    public synchronized void flushCache() {
         getFrameStoreManager().reinitialize();
     }
 

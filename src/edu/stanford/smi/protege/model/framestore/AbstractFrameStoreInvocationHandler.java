@@ -1,12 +1,47 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.lang.reflect.*;
+import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.util.*;
 
 public abstract class AbstractFrameStoreInvocationHandler implements InvocationHandler {
     private FrameStore _delegate;
+    private static final Set specialMethods = new HashSet();
+
+    static {
+        try {
+            specialMethods.add(getMethod(Object.class, "toString"));
+            specialMethods.add(getMethod(Object.class, "equals", Object.class));
+            specialMethods.add(getMethod("getDelegate"));
+            specialMethods.add(getMethod("setDelegate", FrameStore.class));
+            specialMethods.add(getMethod("close"));
+            specialMethods.add(getMethod("reinitialize"));
+        } catch (Exception e) {
+            Log.getLogger().severe(Log.toString(e));
+        }
+    }
+
+    private static Method getMethod(String name) throws Exception {
+        return getMethod(FrameStore.class, name);
+    }
+
+    private static Method getMethod(Class clas, String name) throws Exception {
+        return clas.getMethod(name, null);
+    }
+
+    private static Method getMethod(String name, Class arg) throws Exception {
+        return getMethod(FrameStore.class, name, arg);
+    }
+
+    private static Method getMethod(Class clas, String name, Class arg) throws Exception {
+        return clas.getMethod(name, new Class[] { arg });
+    }
+
+    private static boolean isSpecial(Method method) {
+        return specialMethods.contains(method);
+    }
 
     protected FrameStore getDelegate() {
         return _delegate;
@@ -37,8 +72,8 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
         try {
             AbstractFrameStoreInvocationHandler handler = (AbstractFrameStoreInvocationHandler) getInstance(
                     handlerClass, kb);
-            fs = (FrameStore) Proxy.newProxyInstance(handlerClass.getClassLoader(),
-                    new Class[] { FrameStore.class }, handler);
+            fs = (FrameStore) Proxy.newProxyInstance(handlerClass.getClassLoader(), new Class[] { FrameStore.class },
+                    handler);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
         }
@@ -56,6 +91,16 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
 
     public Object invoke(Object proxy, Method method, Object[] args) {
         Object o = null;
+        if (isSpecial(method)) {
+            o = invokeSpecial(proxy, method, args);
+        } else if (_delegate != null) {
+            o = handleInvoke(method, args);
+        }
+        return o;
+    }
+
+    private Object invokeSpecial(Object proxy, Method method, Object[] args) {
+        Object o = null;
         String methodName = method.getName();
         if (methodName.equals("toString")) {
             o = toString();
@@ -70,8 +115,6 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
             _delegate = null;
         } else if (methodName.equals("reinitialize")) {
             handleReinitialize();
-        } else if (_delegate != null) {
-            o = handleInvoke(method, args);
         }
         return o;
     }
@@ -87,7 +130,7 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
     protected abstract Object handleInvoke(Method method, Object[] args);
 
     protected Object invoke(Method m, Object args[]) {
-        return invoke(m, args, getDelegate());
+        return invoke(m, args, _delegate);
     }
 
     protected static Object invoke(Method m, Object args[], FrameStore frameStore) {
