@@ -2166,4 +2166,9 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     public boolean setGenerateDeletingFrameEventsEnabled(boolean enabled) {
         return _frameStoreManager.setGenerateDeletingFrameEventsEnabled(enabled);
     }
+
+    public void flushCache() {
+        getFrameStoreManager().reinitialize();
+    }
+
 }

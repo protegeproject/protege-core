@@ -669,4 +669,6 @@ public interface KnowledgeBase extends Disposable {
     
     void startJournaling(URI uri);
     void stopJournaling();
+    
+    void flushCache();
 }

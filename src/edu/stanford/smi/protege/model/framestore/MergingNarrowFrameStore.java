@@ -38,6 +38,10 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return mergingFrameStore;
     }
 
+    public static NarrowFrameStore getSystemFrameStore(KnowledgeBase kb) {
+        return get(kb).getFrameStore(SYSTEM_NAME);
+    }
+
     public String getName() {
         return StringUtilities.getClassName(this);
     }

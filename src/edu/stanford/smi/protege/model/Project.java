@@ -1693,7 +1693,7 @@ public class Project {
     public void setActiveRootURI(URI uri) {
         activeRootURI = uri;
         setActiveFrameStore(uri);
-        ((DefaultKnowledgeBase)_domainKB).getFrameStoreManager().reinitialize();
+        _domainKB.flushCache();
     }
 
     /*
