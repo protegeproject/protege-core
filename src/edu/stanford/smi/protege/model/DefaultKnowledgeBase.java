@@ -191,15 +191,12 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
-        Collection oldValues = getDirectOwnSlotValues(frame, slot);
-        if (!CollectionUtilities.equalsList(oldValues, values)) {
-            if (frame instanceof Slot && slot.equals(_systemFrames.getValueTypeSlot())) {
-                ValueType type = ValueTypeConstraint.getType(values);
-                values = CollectionUtilities.removeFirst(values);
-                setValueTypeValues((Slot) frame, type, values);
-            } else {
-                getHeadFrameStore().setDirectOwnSlotValues(frame, slot, values);
-            }
+        if (frame instanceof Slot && slot.equals(_systemFrames.getValueTypeSlot())) {
+            ValueType type = ValueTypeConstraint.getType(values);
+            values = CollectionUtilities.removeFirst(values);
+            setValueTypeValues((Slot) frame, type, values);
+        } else {
+            getHeadFrameStore().setDirectOwnSlotValues(frame, slot, values);
         }
     }
 

@@ -25,7 +25,7 @@ public class FrameStoreManager {
     private ModificationRecordFrameStore modificationRecordFrameStore;
     private FrameStore readonlyFrameStore;
     private UndoFrameStore undoFrameStore;
-    private FrameStore changeMonitorFrameStore;
+    private ChangeMonitorFrameStore changeMonitorFrameStore;
     private FrameStore traceFrameStore;
 
     private FrameStore terminalFrameStore;
@@ -299,7 +299,7 @@ public class FrameStoreManager {
 
     private void createSystemFrameStores() {
         deleteSimplificationFrameStore = create(DeleteSimplificationFrameStore.class);
-        argumentCheckingFrameStore = create(ArgumentCheckingFrameStoreHandler.class);
+        argumentCheckingFrameStore = create(ArgumentCheckingFrameStore.class);
         cachingFrameStore = create(CallCachingFrameStore.class);
         cleanDispatchFrameStore = create(CleanDispatchFrameStore.class);
         eventDispatchFrameStore = (EventDispatchFrameStore) create(EventDispatchFrameStore.class);
@@ -309,7 +309,7 @@ public class FrameStoreManager {
         modificationRecordFrameStore = (ModificationRecordFrameStore) create(ModificationRecordFrameStore.class);
         readonlyFrameStore = create(ReadOnlyFrameStoreHandler.class);
         undoFrameStore = (UndoFrameStore) create(UndoFrameStore.class);
-        changeMonitorFrameStore = create(ChangeMonitorFrameStoreHandler.class);
+        changeMonitorFrameStore = (ChangeMonitorFrameStore) create(ChangeMonitorFrameStore.class);
         traceFrameStore = create(TraceFrameStoreHandler.class);
     }
 
@@ -343,11 +343,11 @@ public class FrameStoreManager {
     }
 
     public boolean hasChanged() {
-        return ((ChangeMonitorFrameStoreHandler) getHandler(changeMonitorFrameStore)).isChanged();
+        return changeMonitorFrameStore.isChanged();
     }
 
     public void setChanged(boolean changed) {
-        ((ChangeMonitorFrameStoreHandler) getHandler(changeMonitorFrameStore)).setChanged(changed);
+        changeMonitorFrameStore.setChanged(changed);
     }
 
     private static InvocationHandler getHandler(FrameStore fs) {

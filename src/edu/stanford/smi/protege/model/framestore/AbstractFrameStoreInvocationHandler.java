@@ -91,6 +91,8 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
 
     public Object invoke(Object proxy, Method method, Object[] args) {
         Object o = null;
+        // Log.getLogger().info("invoking " + StringUtilities.getClassName(this));
+
         if (isSpecial(method)) {
             o = invokeSpecial(proxy, method, args);
         } else if (_delegate != null) {
