@@ -151,9 +151,6 @@ public class ProjectMenuBar extends JMenuBar {
             createItem(menu, new CreateProject(false));
         }
         createItem(menu, new OpenProject(false));
-        if (!SystemUtilities.showAlphaFeatures()) {
-            createItem(menu, new OpenRemoteProject());
-        }
         loadOpenRecent(menu);
         createItem(menu, new CloseProject());
         menu.addSeparator();

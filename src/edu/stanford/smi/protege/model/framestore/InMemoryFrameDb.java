@@ -399,7 +399,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     public int getFrameCount() {
-        return frameToRecordsMap.size();
+        return countFrames(Frame.class);
     }
 
     public Set getFrames() {

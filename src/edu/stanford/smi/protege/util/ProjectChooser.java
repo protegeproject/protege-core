@@ -27,11 +27,13 @@ import edu.stanford.smi.protege.ui.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ProjectChooser extends JFileChooser {
-    private JTabbedPane pane;
-    private static final int FILE_INDEX = 0;
-    private static final int URL_INDEX = 1;
-    private static final int REMOTE_INDEX = 2;
-    private static final String TAB_INDEX_PROPERTY = "project_chooser.selected_tab";
+    private JPanel pane;
+    private CardLayout layout = new CardLayout();
+    public static final String FILE_CARD = "File";
+    public static final String URL_CARD = "URL";
+    public static final String SERVER_CARD = "Server";
+    private ButtonGroup buttonGroup = new ButtonGroup();
+    private static final String CARD_NAME_PROPERTY = "project_chooser.selected_card";
     private JDialog dialog;
     private URLPanel urlPanel;
     private ServerPanel serverPanel;
@@ -43,6 +45,7 @@ public class ProjectChooser extends JFileChooser {
         String text = Text.getProgramName() + " Project";
         setFileFilter(new ExtensionFilter(".pprj", text));
         setCurrentDirectory(ApplicationProperties.getLastFileDirectory());
+        setName(FILE_CARD);
     }
 
     protected JDialog createDialog(Component parent) {
@@ -50,15 +53,30 @@ public class ProjectChooser extends JFileChooser {
         Container contentPane = dialog.getContentPane();
         contentPane.remove(this);
         contentPane.setLayout(new BorderLayout());
-        pane = ComponentFactory.createTabbedPane(false);
-        pane.addTab("File", this);
-        pane.addTab("URL", (urlPanel = new URLPanel()));
-        pane.addTab("Server", (serverPanel = new ServerPanel()));
+        pane = new JPanel(layout);
+        pane.add(FILE_CARD, this);
+        pane.add(URL_CARD, (urlPanel = new URLPanel()));
+        pane.add(SERVER_CARD, (serverPanel = new ServerPanel()));
+        urlPanel.setBorder(getBorder());
+        serverPanel.setBorder(getBorder());
 
-        pane.setSelectedIndex(ApplicationProperties.getIntegerProperty(TAB_INDEX_PROPERTY, 0));
+        layout.show(pane, ApplicationProperties.getString(CARD_NAME_PROPERTY, FILE_CARD));
+        contentPane.add(createSelectionButtonPane(), BorderLayout.WEST);
         contentPane.add(pane, BorderLayout.CENTER);
-        contentPane.add(createButtonPane(), BorderLayout.SOUTH);
+        contentPane.add(createOKCancelButtonPane(), BorderLayout.SOUTH);
         return dialog;
+    }
+
+    private Component getActiveCard() {
+        Component activeCard = null;
+        for (int i = 0; i < pane.getComponentCount(); ++i) {
+            Component c = pane.getComponent(i);
+            if (c.isVisible()) {
+                activeCard = c;
+                break;
+            }
+        }
+        return activeCard;
     }
 
     private void attemptClose(int result) {
@@ -71,7 +89,7 @@ public class ProjectChooser extends JFileChooser {
     public boolean canClose(int result) {
         boolean canClose = true;
         if (result == APPROVE_OPTION) {
-            Component c = pane.getSelectedComponent();
+            Component c = getActiveCard();
             if (c instanceof Validatable) {
                 Validatable v = (Validatable) c;
                 canClose = v.validateContents();
@@ -85,12 +103,38 @@ public class ProjectChooser extends JFileChooser {
         if (dialogReturnValue == APPROVE_OPTION) {
             returnValue = APPROVE_OPTION;
         }
-        int index = pane.getSelectedIndex();
-        ApplicationProperties.setInt(TAB_INDEX_PROPERTY, index);
+        Component c = getActiveCard();
+        ApplicationProperties.setString(CARD_NAME_PROPERTY, c.getName());
         return returnValue;
     }
 
-    private JComponent createButtonPane() {
+    private JPanel createSelectionButtonPane() {
+        JPanel panel = new JPanel(new GridLayout(3, 1));
+        panel.add(createSelectionButton(FILE_CARD));
+        panel.add(createSelectionButton(URL_CARD));
+        panel.add(createSelectionButton(SERVER_CARD));
+        JPanel externalPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        externalPanel.add(panel);
+        return externalPanel;
+    }
+
+    private AbstractButton createSelectionButton(final String name) {
+        Action action = new AbstractAction(name) {
+            public void actionPerformed(ActionEvent event) {
+                layout.show(pane, name);
+            }
+        };
+        JToggleButton button = new JToggleButton(action);
+        int size = 75;
+        button.setPreferredSize(new Dimension(size, size));
+        buttonGroup.add(button);
+        if (getActiveCard().getName().equals(name)) {
+            button.setSelected(true);
+        }
+        return button;
+    }
+
+    private JComponent createOKCancelButtonPane() {
         JPanel panel = new JPanel(new GridLayout(1, 0, 10, 10));
         panel.add(createButton(APPROVE_OPTION, ResourceKey.OK_BUTTON_LABEL));
         panel.add(createButton(CANCEL_OPTION, ResourceKey.CANCEL_BUTTON_LABEL));
@@ -126,26 +170,22 @@ public class ProjectChooser extends JFileChooser {
 
     public Project getProject() {
         Project project = null;
-        switch (pane.getSelectedIndex()) {
-            case FILE_INDEX: {
-                URI uri = getSelectedFile().toURI();
-                project = loadProject(uri);
-                ApplicationProperties.setLastFileDirectory(getCurrentDirectory());
-                break;
-            }
-            case URL_INDEX: {
-                URI uri = urlPanel.getURI();
-                ApplicationProperties.setLastLoadedURI(uri);
-                project = loadProject(uri);
-                break;
-            }
-            case REMOTE_INDEX: {
-                project = getRemoteProject();
-                break;
-            }
-            default:
-                Log.getLogger().warning("bad index: " + pane.getSelectedIndex());
-                break;
+        Component c = getActiveCard();
+        if (c == this) {
+            URI uri = getSelectedFile().toURI();
+            project = loadProject(uri);
+            ApplicationProperties.setLastFileDirectory(getCurrentDirectory());
+
+        } else if (c == urlPanel) {
+            URI uri = urlPanel.getURI();
+            ApplicationProperties.setLastLoadedURI(uri);
+            project = loadProject(uri);
+
+        } else if (c == serverPanel) {
+            project = getRemoteProject();
+
+        } else {
+            Log.getLogger().warning("bad component: " + c);
         }
         return project;
     }
@@ -180,6 +220,7 @@ class URLPanel extends JPanel implements Validatable {
         field = ComponentFactory.createTextField();
         setLayout(new BorderLayout());
         add(new LabeledComponent("URL", field), BorderLayout.NORTH);
+        setName(ProjectChooser.URL_CARD);
     }
 
     public boolean validateContents() {

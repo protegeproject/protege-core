@@ -119,6 +119,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         Cls type = (Cls) _testFrameStore.getFrame(Model.Cls.STANDARD_SLOT);
         return createSlot(name, superslots, type);
     }
+
     protected Slot createSlot(String name, Collection superslots, Cls type) {
         Collection types = makeList(type);
         return _modifiableFrameStore.createSlot(getID(), name, types, superslots, true);
@@ -127,6 +128,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
     protected Facet createFacet() {
         return createFacet(ValueType.STRING);
     }
+
     protected Facet createFacet(ValueType valueType) {
         Cls type = (Cls) _testFrameStore.getFrame(Model.Cls.STANDARD_FACET);
         return createFacet(valueType, type);
@@ -146,6 +148,10 @@ public abstract class FrameStore_Test extends SimpleTestCase {
 
     protected Frame getFrame(String s) {
         return _testFrameStore.getFrame(s);
+    }
+
+    protected int getFrameCount() {
+        return _testFrameStore.getFrameCount();
     }
 
     protected String getName(Frame frame) {
@@ -197,6 +203,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEquals("slotc", slotc, getFrame(getName(slotc)));
         assertEqualsSet("superslots", superslots, _testFrameStore.getDirectSuperslots(slotc));
     }
+
     public void testCreateSimpleInstance() {
         Cls cls = createCls();
         Collection types = makeList(cls);
@@ -204,6 +211,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertNotNull(simpleInstance);
         assertEquals(simpleInstance, getFrame(getName(simpleInstance)));
     }
+
     public void testCreateFacet() {
         Cls cls = (Cls) getFrame(Model.Cls.STANDARD_FACET);
         Collection types = makeList(cls);
@@ -220,6 +228,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         _testFrameStore.deleteCls(cls);
         assertNull("no class after delete", getFrame(name));
     }
+
     public void testDeleteSlot() {
         String name = "deleteSlot";
         Collection types = makeList(getFrame(Model.Cls.STANDARD_SLOT));
@@ -228,6 +237,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         _testFrameStore.deleteSlot(slot);
         assertNull("no slot after delete", getFrame(name));
     }
+
     public void testDeleteFacet() {
         String name = "deleteFacet";
         Collection types = makeList(getFrame(Model.Cls.STANDARD_FACET));
@@ -236,6 +246,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         _testFrameStore.deleteFacet(facet);
         assertNull("no facet after delete", getFrame(name));
     }
+
     public void testDeleteSimpleInstance() {
         Collection types = makeList(createCls());
         String name = "deleteSimpleInstance";
@@ -244,6 +255,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         _testFrameStore.deleteSimpleInstance(simpleInstance);
         assertNull("no simpleInstance after delete", getFrame(name));
     }
+
     public void testGetClses() {
         Collection clsesStart = new ArrayList(_testFrameStore.getClses());
         Cls thing = (Cls) getFrame(Model.Cls.THING);
@@ -289,6 +301,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         testOwnSlots.add(getFrame(Model.Slot.DIRECT_TYPES));
         assertEquals("sets", testOwnSlots, ownSlots);
     }
+
     public void testGetTemplateSlots() {
         Cls cls = createCls();
         Slot slot = createSlotOnCls(cls);
@@ -300,6 +313,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertTrue("slot", slots.contains(slot));
         assertTrue("slotb", slots.contains(slotb));
     }
+
     public void testGetDirectOwnSlotValues() {
         Cls cls = createCls();
         Slot slot = createSlotOnCls(cls, ValueType.STRING, true);
@@ -333,6 +347,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertTrue("facet value", references.contains(new ReferenceImpl(cls, slota, facet, true)));
         assertEquals("size", 4, references.size());
     }
+
     public void testGetFrames() {
         Frame thing = _testFrameStore.getFrame(Model.Cls.THING);
         Collection oldFrames = _testFrameStore.getFrames();
@@ -392,6 +407,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         Collection emptyValues = _testFrameStore.getDirectOwnSlotValues(instance, slot);
         assertEquals("empty values", 0, emptyValues.size());
     }
+
     public void testGetDirectTemplateSlots() {
         Cls cls = createCls();
         Collection oldSlots = _testFrameStore.getDirectTemplateSlots(cls);
@@ -403,6 +419,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertTrue("a", slots.contains(slota));
         assertTrue("b", slots.contains(slotb));
     }
+
     public void testRemoveDirectTemplateSlot() {
         Cls cls = createCls();
         Slot slota = createSlotOnCls(cls);
@@ -418,6 +435,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         _testFrameStore.removeDirectTemplateSlot(cls, slotc);
         assertEquals("size3", 0, _testFrameStore.getDirectTemplateSlots(cls).size());
     }
+
     public void testMoveDirectTemplateSlot() {
         Cls cls = createCls();
         Slot slota = createSlotOnCls(cls);
@@ -430,6 +448,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         List movedSlots = _testFrameStore.getDirectTemplateSlots(cls);
         assertEqualsList("end", makeList(slotc, slotb, slota), movedSlots);
     }
+
     public void testGetTemplateSlotValues() {
         Cls cls = createCls();
         Cls subclass = createCls(cls);
@@ -480,6 +499,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         _testFrameStore.getDirectTemplateFacetValues(subclass, slot, facet);
         _testFrameStore.getDirectTemplateFacetValues(subsubclass, slot, facet);
     }
+
     public void testGetDirectTemplateFacetValues() {
         Cls cls = createCls();
         Cls slotMetaCls = createCls(_kb.getDefaultSlotMetaCls());
@@ -495,12 +515,13 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         Collection newValues = _testFrameStore.getDirectTemplateFacetValues(cls, slot, facet);
         assertEqualsList("values", oldValues, newValues);
     }
-    
+
     private void setDirectType(Instance instance, Cls type) {
         Cls currentType = instance.getDirectType();
         _modifiableFrameStore.addDirectType(instance, type);
         _modifiableFrameStore.removeDirectType(instance, currentType);
     }
+
     public void testSetDirectTemplateFacetValues() {
         Cls cls = createCls();
         Cls slotMetaCls = createCls(_kb.getDefaultSlotMetaCls());
@@ -514,6 +535,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         Collection newValues = _testFrameStore.getDirectTemplateFacetValues(cls, slot, facet);
         assertEqualsList("values", oldValues, newValues);
     }
+
     public void testGetDirectSuperclasses() {
         Cls cls = createCls();
         Cls cls2 = createCls();
@@ -522,6 +544,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         Collection clses = _testFrameStore.getDirectSuperclasses(subclass);
         assertEqualsList("clses", makeList(cls, cls2), clses);
     }
+
     public void testGetSuperclasses() {
         Cls thing = (Cls) getFrame(Model.Cls.THING);
         Cls cls = createCls(thing);
@@ -532,6 +555,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         Collection clses = _testFrameStore.getSuperclasses(subsubclass);
         assertEqualsSet("clses", makeList(thing, cls, cls2, subclass), clses);
     }
+
     public void testGetDirectSubclasses() {
         Cls cls = createCls();
         Cls subclass1 = createCls(cls);
@@ -539,6 +563,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         Collection clses = _testFrameStore.getDirectSubclasses(cls);
         assertEqualsList("clses", makeList(subclass1, subclass2), clses);
     }
+
     public void testGetSubclasses() {
         Cls cls = createCls();
         Cls subclass = createCls(cls);
@@ -547,6 +572,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         Collection clses = _testFrameStore.getSubclasses(cls);
         assertEqualsSet("clses", makeList(subclass, subsubclass1, subsubclass2), clses);
     }
+
     public void testAddDirectSuperclass() {
         Cls cls = createCls();
         Cls cls2 = createCls(cls);
@@ -571,6 +597,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         clses = _testFrameStore.getDirectSuperclasses(cls5);
         assertEqualsSet("clses end", makeList(cls3, cls4), clses);
     }
+
     public void testMoveDirectSubclass() {
         Cls cls = createCls();
         Cls clsa = createCls(cls);
@@ -588,6 +615,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         clses = _testFrameStore.getDirectSubclasses(cls);
         assertEqualsList("3", makeList(clsa, clsb, clsc), clses);
     }
+
     public void testGetDirectSuperslots() {
         Slot slot = createSlot();
         Slot slota = createSlot(slot);
@@ -598,6 +626,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEqualsList("1 superslot", makeList(slot), _testFrameStore.getDirectSuperslots(slota));
         assertEqualsList("2 superslots", makeList(slota, slotb), _testFrameStore.getDirectSuperslots(slotc));
     }
+
     public void testGetSuperslots() {
         Slot slot = createSlot();
         Slot slota = createSlot(slot);
@@ -608,6 +637,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEqualsSet("1 superslot", makeList(slot), _testFrameStore.getSuperslots(slota));
         assertEqualsSet("2 superslots", makeList(slot, slota, slotb), _testFrameStore.getSuperslots(slotc));
     }
+
     public void testGetDirectSubslots() {
         Slot slot = createSlot();
         Slot slota = createSlot(slot);
@@ -618,6 +648,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEqualsList("slota", makeList(slotc), _testFrameStore.getDirectSubslots(slota));
         assertEqualsList("slotc", makeList(), _testFrameStore.getDirectSubslots(slotc));
     }
+
     public void testGetSubslots() {
         Slot slot = createSlot();
         Slot slota = createSlot(slot);
@@ -628,6 +659,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEqualsSet("slota", makeList(slotc), _testFrameStore.getDirectSubslots(slota));
         assertEqualsSet("slotc", makeList(), _testFrameStore.getDirectSubslots(slotc));
     }
+
     public void testAddDirectSuperslot() {
         Slot slot = createSlot();
         Slot slotb = createSlot();
@@ -637,6 +669,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         _testFrameStore.addDirectSuperslot(slotc, slotb);
         assertEqualsList("c", makeList(slot, slotb), _testFrameStore.getDirectSuperslots(slotc));
     }
+
     public void testRemoveDirectSuperslot() {
         Slot slota = createSlot();
         Slot slotb = createSlot();
@@ -705,6 +738,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         results.addAll(standardSlots);
         assertEqualsSet("slots", results, _testFrameStore.getSlots());
     }
+
     public void testGetFacets() {
         Cls standardFacet = (Cls) getFrame(Model.Cls.STANDARD_FACET);
         Cls facetMetaCls = createCls(standardFacet);
@@ -716,6 +750,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         results.addAll(standardFacets);
         assertEqualsSet("slots", results, _testFrameStore.getFacets());
     }
+
     public void testGetMatchingReferences() {
         Cls cls = createCls();
         Slot slot = createSlotOnCls(cls, ValueType.STRING, true);
@@ -741,10 +776,8 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         _modifiableFrameStore.setDirectOwnSlotValues(instancea, slot, makeList("own", "value"));
         Instance instanceb = createSimpleInstance(cls);
         _modifiableFrameStore.setDirectOwnSlotValues(instanceb, slot, makeList("foo", "own"));
-        assertEqualsSet(
-            "values",
-            makeList(instancea, instanceb),
-            _testFrameStore.getFramesWithDirectOwnSlotValue(slot, "own"));
+        assertEqualsSet("values", makeList(instancea, instanceb), _testFrameStore.getFramesWithDirectOwnSlotValue(slot,
+                "own"));
     }
 
     public void testGetFramesWithMatchingOwnSlotValue() {
@@ -756,14 +789,10 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         _modifiableFrameStore.setDirectOwnSlotValues(instanceb, slot, makeList("foo", "own"));
         Instance instancec = createSimpleInstance(cls);
         _modifiableFrameStore.setDirectOwnSlotValues(instancec, slot, makeList("owx"));
-        assertEqualsSet(
-            "exact",
-            makeList(instancea, instanceb),
-            _testFrameStore.getFramesWithMatchingDirectOwnSlotValue(slot, "own", FrameStore.UNLIMITED_MATCHES));
-        assertEqualsSet(
-            "starts with",
-            makeList(instancea, instanceb, instancec),
-            _testFrameStore.getFramesWithMatchingDirectOwnSlotValue(slot, "OW*", FrameStore.UNLIMITED_MATCHES));
+        assertEqualsSet("exact", makeList(instancea, instanceb), _testFrameStore
+                .getFramesWithMatchingDirectOwnSlotValue(slot, "own", FrameStore.UNLIMITED_MATCHES));
+        assertEqualsSet("starts with", makeList(instancea, instanceb, instancec), _testFrameStore
+                .getFramesWithMatchingDirectOwnSlotValue(slot, "OW*", FrameStore.UNLIMITED_MATCHES));
     }
 
     public void testGetTemplateFacets() {
@@ -800,9 +829,9 @@ public abstract class FrameStore_Test extends SimpleTestCase {
     }
 
     /*
-    public void testGetEvents()  {
-    }
-    public void testExecuteQuery()  {
-    }
-    */
+     public void testGetEvents()  {
+     }
+     public void testExecuteQuery()  {
+     }
+     */
 }
