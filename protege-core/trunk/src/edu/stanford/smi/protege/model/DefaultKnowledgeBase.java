@@ -371,7 +371,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized Instance createInstance(FrameID id, String name, Cls directType, boolean initializeDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
-        return createInstance(null, name, types, initializeDefaults);
+        return createInstance(id, name, types, initializeDefaults);
     }
 
     public synchronized Instance createInstance(FrameID id, String name, Collection directTypes,
