@@ -49,22 +49,32 @@ public class ProjectMenuBar extends JMenuBar {
         add(menu);
     }
 
+    private JMenu helpMenu;
+
+    public JMenu add(JMenu menu) {
+        if (helpMenu == null) {
+            super.add(menu);
+        } else {
+            int last = getComponentCount() - 1;
+            add(menu, last);
+        }
+        return menu;
+    }
+
     private void createHelpMenu() {
         JMenu menu = ComponentFactory.createMenu(ResourceKey.MENUBAR_HELP);
         add(menu);
-
-        ComponentFactory.addMenuItemNoIcon(menu, new DisplayHtml(
-                ResourceKey.HELP_MENU_GETTING_STARTED, ApplicationProperties
-                        .getGettingStartedURLString()));
-        ComponentFactory.addMenuItemNoIcon(menu, new DisplayHtml(ResourceKey.HELP_MENU_FAQ,
-                ApplicationProperties.getFAQURLString()));
+        helpMenu = menu;
+        ComponentFactory.addMenuItemNoIcon(menu, new DisplayHtml(ResourceKey.HELP_MENU_GETTING_STARTED,
+                ApplicationProperties.getGettingStartedURLString()));
+        ComponentFactory.addMenuItemNoIcon(menu, new DisplayHtml(ResourceKey.HELP_MENU_FAQ, ApplicationProperties
+                .getFAQURLString()));
         ComponentFactory.addMenuItemNoIcon(menu, new DisplayHtml(ResourceKey.HELP_MENU_USERS_GUIDE,
                 ApplicationProperties.getUsersGuideURLString()));
-        ComponentFactory.addMenuItemNoIcon(menu, new DisplayHtml(
-                ResourceKey.HELP_MENU_ONTOLOGIES_101, ApplicationProperties
-                        .getOntology101URLString()));
+        ComponentFactory.addMenuItemNoIcon(menu, new DisplayHtml(ResourceKey.HELP_MENU_ONTOLOGIES_101,
+                ApplicationProperties.getOntology101URLString()));
 
-        addPluginDocSubmenu(menu);
+        addPluginDocSubmenu();
 
         menu.addSeparator();
         ComponentFactory.addMenuItemNoIcon(menu, new ShowIconDialog());
@@ -76,7 +86,7 @@ public class ProjectMenuBar extends JMenuBar {
 
     }
 
-    private void addPluginDocSubmenu(JMenu helpMenu) {
+    private void addPluginDocSubmenu() {
         JMenu menu = ComponentFactory.createMenu(ResourceKey.HELP_MENU_PLUGINS);
         ComponentFactory.addSubmenu(helpMenu, menu);
         Iterator i = PluginUtilities.getPluginComponentNames().iterator();
