@@ -22,7 +22,8 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
     }
 
     public void removeDirectTemplateSlot(Cls cls, Slot slot) {
-        beginTransaction("Remove template slot " + slot.getBrowserText() + " from " + cls.getBrowserText());
+        // beginTransaction("Remove template slot " + slot.getBrowserText() + " from " + cls.getBrowserText());
+        beginTransaction("Remove template slot");
         internalRemoveDirectTemplateSlot(cls, slot);
         commitTransaction();
     }
@@ -61,11 +62,12 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
     }
 
     public void removeDirectSuperclass(Cls cls, Cls superclass) {
-        beginTransaction("Remove superclass " + superclass.getBrowserText() + " from " + cls.getBrowserText());
+        // beginTransaction("Remove superclass " + superclass.getBrowserText() + " from " + cls.getBrowserText());
+        beginTransaction("Remove superclass ");
         internalRemoveDirectSuperclass(cls, superclass);
         commitTransaction();
     }
-    
+
     private Collection getSlotsToRemoveOnSuperclassRemove(Cls cls, Cls superclass) {
         Collection slotsToRemove = new HashSet(cls.getTemplateSlots());
         slotsToRemove.removeAll(cls.getDirectTemplateSlots());
@@ -90,33 +92,39 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
     }
 
     public void removeDirectSuperslot(Slot slot, Slot superslot) {
-        beginTransaction("Remove superslot " + superslot.getBrowserText() + " from " + slot.getBrowserText());
+        // beginTransaction("Remove superslot " + superslot.getBrowserText() + " from " + slot.getBrowserText());
+        beginTransaction("Remove superslot ");
         super.removeDirectSuperslot(slot, superslot);
         commitTransaction();
     }
 
     public void deleteCls(Cls cls) {
-        beginTransaction("Delete class " + cls.getBrowserText());
+        // beginTransaction("Delete class " + cls.getBrowserText());
+        beginTransaction("Delete class ");
         cls.markDeleting();
         internalDeleteCls(cls);
         commitTransaction();
     }
 
     public void deleteSlot(Slot slot) {
-        beginTransaction("Delete slot " + slot.getBrowserText());
+        // beginTransaction("Delete slot " + slot.getBrowserText());
+        beginTransaction("Delete slot ");
         slot.markDeleting();
         internalDeleteSlot(slot);
         commitTransaction();
     }
+
     public void deleteFacet(Facet facet) {
-        beginTransaction("Delete facet " + facet.getBrowserText());
+        // beginTransaction("Delete facet " + facet.getBrowserText());
+        beginTransaction("Delete facet ");
         facet.markDeleting();
         internalDeleteFacet(facet);
         commitTransaction();
     }
 
     public void deleteSimpleInstance(SimpleInstance simpleInstance) {
-        beginTransaction("Delete simple instance  " + simpleInstance.getBrowserText());
+        // beginTransaction("Delete simple instance  " + simpleInstance.getBrowserText());
+        beginTransaction("Delete simple instance  ");
         simpleInstance.markDeleting();
         internalDeleteSimpleInstance(simpleInstance);
         commitTransaction();
@@ -230,7 +238,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
         }
     }
 
-    private void     deleteValuesOfOwnSlots(Frame frame) {
+    private void deleteValuesOfOwnSlots(Frame frame) {
         Iterator i = getOwnSlots(frame).iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();

@@ -11,13 +11,21 @@ import edu.stanford.smi.protege.model.*;
 public class LocalizeUtils {
 
     public static void localize(Object o, KnowledgeBase kb) {
-        if (o instanceof Collection) {
+        if (o == null) {
+            // do nothing
+        } else if (o instanceof Collection) {
             localizeCollection((Collection) o, kb);
         } else if (o instanceof Map) {
             localizeMap((Map) o, kb);
         } else if (o instanceof Localizable) {
-            ((Localizable)o).localize(kb);
+            ((Localizable) o).localize(kb);
+        } else if (!isPrimative(o)) {
+            Log.getLogger().warning("Unhandled localization: " + o);
         }
+    }
+
+    private static boolean isPrimative(Object o) {
+        return o instanceof String || o instanceof Boolean || o instanceof Integer || o instanceof Float;
     }
 
     private static void localizeCollection(Collection values, KnowledgeBase kb) {
@@ -27,7 +35,7 @@ public class LocalizeUtils {
             localize(o, kb);
         }
     }
-    
+
     private static void localizeMap(Map values, KnowledgeBase kb) {
         Iterator i = values.entrySet().iterator();
         while (i.hasNext()) {

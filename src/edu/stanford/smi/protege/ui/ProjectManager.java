@@ -334,7 +334,7 @@ public class ProjectManager {
      }
      */
 
-    private Project _getRequestedProject(Component parent) {
+    private Project getRequestedProject(Component parent) {
         Project project = null;
         ProjectChooser chooser = new ProjectChooser();
         int rval = chooser.showOpenDialog(parent);
@@ -549,7 +549,7 @@ public class ProjectManager {
 
     public boolean openProjectRequest(Component parent) {
         if (closeProjectRequest()) {
-            _currentProject = _getRequestedProject(parent);
+            _currentProject = getRequestedProject(parent);
             if (_currentProject != null) {
                 long t1 = System.currentTimeMillis();
                 _projectPluginManager.afterLoad(_currentProject);
@@ -746,7 +746,7 @@ public class ProjectManager {
     }
 
     private void addViewSelector(ProjectView view) {
-        if (true || SystemUtilities.showAlphaFeatures()) {
+        if (SystemUtilities.showAlphaFeatures()) {
             _viewSelector = new ViewSelector(view);
             _headerPanel.add(_viewSelector, BorderLayout.CENTER);
         }

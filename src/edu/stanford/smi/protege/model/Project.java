@@ -526,15 +526,6 @@ public class Project {
         return widget;
     }
 
-    public Slot _getDirectBrowserSlot(Cls cls) {
-        Slot slot = null;
-        BrowserSlotPattern pattern = getDirectBrowserSlotPattern(cls);
-        if (pattern != null) {
-            slot = pattern.getFirstSlot();
-        }
-        return slot;
-    }
-
     /**
      * @deprecated
      */

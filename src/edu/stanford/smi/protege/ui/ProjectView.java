@@ -199,9 +199,11 @@ public class ProjectView extends JComponent {
     }
 
     private JComponent createTabbedPane() {
-        _viewHolder = new MyCardPanel();
-        // _viewHolder = new MyJTabbedPane();
-        // _viewHolder = ComponentFactory.createTabbedPane(true);
+        if (SystemUtilities.showAlphaFeatures()) {
+            _viewHolder = new MyCardPanel();
+        } else {
+            _viewHolder = new MyJTabbedPane();
+        }
         _viewHolder.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (isAutosynchronizingClsTrees()) {
@@ -270,7 +272,7 @@ public class ProjectView extends JComponent {
      * @deprecated returns null.  Use the other methods on this class to manipulate views.
      */
     public JTabbedPane getTabbedPane() {
-        return null; // return _viewHolder;
+        return _viewHolder instanceof JTabbedPane ? (JTabbedPane) _viewHolder : null;
     }
 
     public void reload(boolean regenerate) {
