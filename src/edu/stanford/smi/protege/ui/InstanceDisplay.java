@@ -158,16 +158,25 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         Iterator i = types.iterator();
         while (i.hasNext()) {
             Cls type = (Cls) i.next();
-            type.addClsListener(_clsListener);
-            type.addFrameListener(_frameListener);
-            ClsWidget widget = _project.createRuntimeClsWidget(type, instance, associatedCls);
-            widget.addWidgetListener(_widgetListener);
-            _currentWidgets.add(widget);
+            ClsWidget widget = getWidget(type, instance, associatedCls);
+            if (widget != null) {
+                type.addClsListener(_clsListener);
+                type.addFrameListener(_frameListener);
+                widget.addWidgetListener(_widgetListener);
+                _currentWidgets.add(widget);
+            }
 
         }
         JComponent component = createWidgetContainer(_currentWidgets);
         _scrollPane.setViewportView(component);
         update();
+    }
+
+    /**
+     * return null to prevent form from being displayed. 
+     */
+    protected ClsWidget getWidget(Cls type, Instance instance, Cls associatedCls) {
+        return _project.createRuntimeClsWidget(type, instance, associatedCls);
     }
 
     protected JComponent createWidgetContainer(Collection widgets) {
