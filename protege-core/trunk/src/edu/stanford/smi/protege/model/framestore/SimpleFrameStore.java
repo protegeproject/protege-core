@@ -17,7 +17,7 @@ public class SimpleFrameStore implements FrameStore {
     public String getName() {
         return getClass().getName();
     }
-    
+
     public SimpleFrameStore(KnowledgeBase kb, NarrowFrameStore helper) {
         setHelper(helper);
         if (kb != null) {
@@ -245,10 +245,8 @@ public class SimpleFrameStore implements FrameStore {
 
     public Collection getTemplateSlotValues(Cls cls, Slot slot) {
         /*
-         * Collection values = getValuesClosure(cls, slot, null, true,
-         * _systemFrames.getDirectSuperclassesSlot());
-         * values.addAll(getDirectOwnSlotValues(slot,
-         * _systemFrames.getValuesSlot())); return values;
+         * Collection values = getValuesClosure(cls, slot, null, true, _systemFrames.getDirectSuperclassesSlot());
+         * values.addAll(getDirectOwnSlotValues(slot, _systemFrames.getValuesSlot())); return values;
          */
         return getTemplateFacetValues(cls, slot, _systemFrames.getValuesFacet());
     }
@@ -296,8 +294,7 @@ public class SimpleFrameStore implements FrameStore {
         clses.add(cls);
         return collectOwnSlotValues(clses, _systemFrames.getDirectInstancesSlot());
         /*
-         * return getOwnSlotValuesClosure( cls,
-         * _systemFrames.getDirectSubclassesSlot(),
+         * return getOwnSlotValuesClosure( cls, _systemFrames.getDirectSubclassesSlot(),
          * _systemFrames.getDirectInstancesSlot());
          */
     }
@@ -347,9 +344,8 @@ public class SimpleFrameStore implements FrameStore {
 
     public Frame getFrame(FrameID id) {
         /*
-         * Frame frame = (Frame) frameIdToFrameMap.get(id); if (frame == null) {
-         * frame = _helper.getFrame(id); frameIdToFrameMap.put(id, frame); }
-         * return frame;
+         * Frame frame = (Frame) frameIdToFrameMap.get(id); if (frame == null) { frame = _helper.getFrame(id);
+         * frameIdToFrameMap.put(id, frame); } return frame;
          */
         return _helper.getFrame(id);
     }
@@ -377,7 +373,7 @@ public class SimpleFrameStore implements FrameStore {
             addSubslotsInDomain(slot, domain, slots);
         }
     }
-    
+
     private void addSubslotsInDomain(Slot slot, Cls domain, Collection slots) {
         Iterator i = getSubslots(slot).iterator();
         while (i.hasNext()) {
@@ -387,7 +383,7 @@ public class SimpleFrameStore implements FrameStore {
             }
         }
     }
-    
+
     private boolean isInDomain(Slot subslot, Cls cls) {
         Collection directDomain = getDirectDomain(subslot);
         boolean isInDomain = directDomain.isEmpty();
@@ -409,7 +405,7 @@ public class SimpleFrameStore implements FrameStore {
         }
         return domain;
     }
-    
+
     private void addSuperslotsDomain(Slot slot, Set domain) {
         Iterator i = getDirectSuperslots(slot).iterator();
         while (i.hasNext()) {
@@ -713,9 +709,29 @@ public class SimpleFrameStore implements FrameStore {
         values.addAll(getDirectOwnSlotValues(frame, slot));
         addInheritedTemplateSlotValues(frame, slot, values);
         addSubslotValues(frame, slot, values);
+        addInferredInverseSlotValues(frame, slot, values);
         if (frame instanceof Slot && values.isEmpty() && isInheritedSuperslotSlot(slot)) {
             addInheritedSuperslotValues((Slot) frame, slot, values);
         }
+    }
+
+    private void addInferredInverseSlotValues(Frame frame, Slot slot, Collection values) {
+        Slot inverseSlot = getInverseSlot(slot);
+        if (inverseSlot != null) {
+            Collection referencingClasses = getTemplateSlotValuesReferences(frame, inverseSlot);
+            Iterator i = referencingClasses.iterator();
+            while (i.hasNext()) {
+                Cls cls = (Cls) i.next();
+                values.addAll(getInstances(cls));
+            }
+        }
+    }
+
+    private Collection getTemplateSlotValuesReferences(Frame frame, Slot slot) {
+        Collection references = new HashSet();
+        references.addAll(_helper.getFrames(slot, _systemFrames.getValuesFacet(), true, frame));
+        // Probably should add "top level" values here
+        return references;
     }
 
     private boolean isInheritedSuperslotSlot(Slot slot) {
@@ -1012,18 +1028,14 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     /*
-     * private Set getOwnSlotValuesClosure(Frame frame, Slot traversalSlot, Slot
-     * valueSlot) { return getClosure(frame, traversalSlot, null, false,
-     * valueSlot, null, false); }
+     * private Set getOwnSlotValuesClosure(Frame frame, Slot traversalSlot, Slot valueSlot) { return getClosure(frame,
+     * traversalSlot, null, false, valueSlot, null, false); }
      * 
-     * private Set getClosure( Frame frame, Slot traversalSlot, Facet
-     * traversalFacet, boolean traversalIsTemplate, Slot valueSlot, Facet
-     * valueFacet, boolean valueIsTemplate) { Set closure = new LinkedHashSet();
-     * Iterator i = _helper.getClosure(frame, traversalSlot, traversalFacet,
-     * traversalIsTemplate).iterator(); while (i.hasNext()) { Frame valueFrame =
-     * (Frame) i.next(); Collection values = _helper.getValues(valueFrame,
-     * valueSlot, valueFacet, valueIsTemplate); closure.addAll(values); } return
-     * closure; }
+     * private Set getClosure( Frame frame, Slot traversalSlot, Facet traversalFacet, boolean traversalIsTemplate, Slot
+     * valueSlot, Facet valueFacet, boolean valueIsTemplate) { Set closure = new LinkedHashSet(); Iterator i =
+     * _helper.getClosure(frame, traversalSlot, traversalFacet, traversalIsTemplate).iterator(); while (i.hasNext()) {
+     * Frame valueFrame = (Frame) i.next(); Collection values = _helper.getValues(valueFrame, valueSlot, valueFacet,
+     * valueIsTemplate); closure.addAll(values); } return closure; }
      */
 
     public Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet) {
