@@ -61,6 +61,7 @@ public class Project {
     private final static String SLOT_DISPLAY_MULTI_PARENT_CLASS_ICON = "display_multi_parent_class_icon";
     private final static String SLOT_DISPLAY_REMOVE_CONFIRMATION_DIALOG = "confirm_on_remove";
     private final static String SLOT_UPDATE_MODIFICATION_SLOTS = "update_modification_slots";
+    private final static String SLOT_TABBED_INSTANCE_FORM_LAYOUT = "tabbed_instance_form_layout";
 
     private final static String CLASS_MAP = "Map";
     private final static String SLOT_PROPERTY_MAP = "property_map";
@@ -1942,5 +1943,13 @@ public class Project {
             prettyPrintSlotWidgetLabels = loadOption(SLOT_PRETTY_PRINT_SLOT_WIDGET_LABELS, b);
         }
         return prettyPrintSlotWidgetLabels.booleanValue();
+    }
+    
+    public boolean getTabbedInstanceFormLayout() {
+        return getOption(SLOT_TABBED_INSTANCE_FORM_LAYOUT, false);
+    }
+    
+    public void setTabbedInstanceFormLayout(boolean b) {
+        setOption(SLOT_TABBED_INSTANCE_FORM_LAYOUT, b);
     }
 }
