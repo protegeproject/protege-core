@@ -7,11 +7,11 @@ import edu.stanford.smi.protege.util.*;
 
 /**
  * The main toolbar for the application.
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ProjectToolBar extends JToolBar {
-    
+
     public void updateUI() {
         super.updateUI();
         setOpaque(false);
@@ -27,13 +27,13 @@ public class ProjectToolBar extends JToolBar {
         addButton(new OpenProject(true));
         addButton(new SaveProject(true));
         addSeparator();
-        
+
         addButton(new Cut(true));
         addButton(new Copy(true));
         addButton(new Paste(true));
         addButton(new Clear(true));
         addSeparator();
-        
+
         addButton(new ArchiveProject(true));
         addButton(new RevertProject(true));
         addSeparator();
@@ -42,9 +42,8 @@ public class ProjectToolBar extends JToolBar {
         addButton(new RedoAction(true));
         addSeparator();
         /*
-         * addButton(new DefaultAction("Find", Icons.getFindIcon()));
-         * addButton(new DefaultAction("Find Previous", Icons.getFindPreviousIcon()));
-         * addButton(new DefaultAction("Find Next", Icons.getFindNextIcon()));
+         * addButton(new DefaultAction("Find", Icons.getFindIcon())); addButton(new DefaultAction("Find Previous",
+         * Icons.getFindPreviousIcon())); addButton(new DefaultAction("Find Next", Icons.getFindNextIcon()));
          * addSeparator();
          */
         addButton(new CascadeWindows(true));
@@ -55,11 +54,11 @@ public class ProjectToolBar extends JToolBar {
         JButton button = ComponentFactory.addLargeToolBarButton(this, action);
         button.setFocusable(false);
     }
-    
+
     public void addToggleButton(Action action) {
         ComponentFactory.addLargeToggleToolBarButton(this, action);
     }
-    
+
     public String toString() {
         return StringUtilities.getClassName(this);
     }
