@@ -833,6 +833,7 @@ public class Project {
         return _widgetMapper.getSuitableWidgetClassNames(cls, slot, facet);
     }
 
+    /*
     public WidgetDescriptor getTabWidgetDescriptor(String widgetName) {
         WidgetDescriptor descriptor = null;
         Iterator i = getProjectSlotValues(SLOT_TABS).iterator();
@@ -841,6 +842,20 @@ public class Project {
             WidgetDescriptor d = WidgetDescriptor.create(instance);
             if (widgetName.equals(d.getWidgetClassName())) {
                 descriptor = d;
+                break;
+            }
+        }
+        return descriptor;
+    }
+    */
+    
+    public WidgetDescriptor getTabWidgetDescriptor(String widgetName) {
+        WidgetDescriptor descriptor = null;
+        Iterator i = getTabWidgetDescriptors().iterator();
+        while (i.hasNext()) {
+            WidgetDescriptor testDescriptor = (WidgetDescriptor) i.next();
+            if (testDescriptor.getWidgetClassName().equals(widgetName)) {
+                descriptor = testDescriptor;
                 break;
             }
         }
@@ -1031,6 +1046,7 @@ public class Project {
         loadHiddenFrameFlags(projectInstance);
         _defaultClsWidgetClassName = (String) getProjectSlotValue(projectInstance,
                 SLOT_DEFAULT_INSTANCE_WIDGET_CLASS_NAME);
+        _domainKB.setModificationRecordUpdatingEnabled(getUpdateModificationSlots());
     }
 
     public void setDefaultClsWidgetClassName(String s) {
@@ -1712,6 +1728,7 @@ public class Project {
     public void setUpdateModificationSlots(boolean b) {
         _updateModificationSlots = new Boolean(b);
         setOption(SLOT_UPDATE_MODIFICATION_SLOTS, b);
+        _domainKB.setModificationRecordUpdatingEnabled(b);
     }
 
     private void setupJournaling() {

@@ -43,15 +43,13 @@ public class FrameStoreManager {
     }
 
     /*
-     * private void dumpFrameStoreChain(String text) {
-     * Assert.assertNotNull("head frame store", headFrameStore);
+     * private void dumpFrameStoreChain(String text) { Assert.assertNotNull("head frame store", headFrameStore);
      * Assert.assertNotNull("terminal frame store", terminalFrameStore);
      * 
-     * System.out.println("Frame Store Chain at " + text); Set
-     * visitedFrameStores = new HashSet(); for (FrameStore fs = headFrameStore;
-     * !fs.equals(terminalFrameStore); fs = fs.getDelegate()) { boolean changed =
-     * visitedFrameStores.add(fs); Assert.true("loop in framestores", changed);
-     * System.out.println("\t" + fs); } System.out.println("\t* End of chain"); }
+     * System.out.println("Frame Store Chain at " + text); Set visitedFrameStores = new HashSet(); for (FrameStore fs =
+     * headFrameStore; !fs.equals(terminalFrameStore); fs = fs.getDelegate()) { boolean changed =
+     * visitedFrameStores.add(fs); Assert.true("loop in framestores", changed); System.out.println("\t" + fs); }
+     * System.out.println("\t* End of chain"); }
      */
 
     public FrameStore getHeadFrameStore() {

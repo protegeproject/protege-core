@@ -4,12 +4,11 @@ import java.net.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.storage.jdbc.*;
+import edu.stanford.smi.protege.storage.database.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * Base class for unit tests. This class provides some helper methods to project
- * and kb access.
+ * Base class for unit tests. This class provides some helper methods to project and kb access.
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
@@ -84,27 +83,27 @@ public abstract class APITestCase extends AbstractTestCase {
     private static int callNumber = 0;
 
     private static void configureForAccess(PropertyList sources) {
-        JdbcKnowledgeBaseFactory.setDriver(sources, "sun.jdbc.odbc.JdbcOdbcDriver");
-        JdbcKnowledgeBaseFactory.setTablename(sources, "scratch" + callNumber++);
-        JdbcKnowledgeBaseFactory.setUsername(sources, "rwf");
-        JdbcKnowledgeBaseFactory.setURL(sources, "jdbc:odbc:protege-access");
+        DatabaseKnowledgeBaseFactory.setDriver(sources, "sun.jdbc.odbc.JdbcOdbcDriver");
+        DatabaseKnowledgeBaseFactory.setTablename(sources, "scratch" + callNumber++);
+        DatabaseKnowledgeBaseFactory.setUsername(sources, "rwf");
+        DatabaseKnowledgeBaseFactory.setURL(sources, "jdbc:odbc:protege-access");
     }
 
     private static void configureForOracle(PropertyList sources) {
-        JdbcKnowledgeBaseFactory.setDriver(sources, "oracle.jdbc.driver.OracleDriver");
-        JdbcKnowledgeBaseFactory.setTablename(sources, "scratch");
-        JdbcKnowledgeBaseFactory.setUsername(sources, "protege");
-        JdbcKnowledgeBaseFactory.setPassword(sources, "sm1prot3ge");
-        JdbcKnowledgeBaseFactory.setURL(sources,
+        DatabaseKnowledgeBaseFactory.setDriver(sources, "oracle.jdbc.driver.OracleDriver");
+        DatabaseKnowledgeBaseFactory.setTablename(sources, "scratch");
+        DatabaseKnowledgeBaseFactory.setUsername(sources, "protege");
+        DatabaseKnowledgeBaseFactory.setPassword(sources, "sm1prot3ge");
+        DatabaseKnowledgeBaseFactory.setURL(sources,
                 "jdbc:oracle:thin:@irt-dev-db.stanford.edu:1521:dev");
     }
 
     private static void configureForMySQL(PropertyList sources) {
-        JdbcKnowledgeBaseFactory.setDriver(sources, "com.mysql.jdbc.Driver");
-        JdbcKnowledgeBaseFactory.setTablename(sources, "scratch");
-        JdbcKnowledgeBaseFactory.setUsername(sources, "myuser");
-        JdbcKnowledgeBaseFactory.setPassword(sources, "");
-        JdbcKnowledgeBaseFactory.setURL(sources, "jdbc:mysql://fergerson-li-smi/test");
+        DatabaseKnowledgeBaseFactory.setDriver(sources, "com.mysql.jdbc.Driver");
+        DatabaseKnowledgeBaseFactory.setTablename(sources, "scratch");
+        DatabaseKnowledgeBaseFactory.setUsername(sources, "myuser");
+        DatabaseKnowledgeBaseFactory.setPassword(sources, "");
+        DatabaseKnowledgeBaseFactory.setURL(sources, "jdbc:mysql://fergerson-li-smi/test");
     }
 
     public Project getProject() {

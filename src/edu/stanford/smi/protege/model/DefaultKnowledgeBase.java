@@ -9,9 +9,8 @@ import edu.stanford.smi.protege.model.framestore.undo.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * Default implementation of the KnowledgeBase interface. Delegates almost
- * everything to the FrameStore chain. Implements wrapper methods for some calls
- * to make the interface easier to use.
+ * Default implementation of the KnowledgeBase interface. Delegates almost everything to the FrameStore chain.
+ * Implements wrapper methods for some calls to make the interface easier to use.
  * 
  * @author Ray Fergerson (fergerson@smi.stanford.edu)
  */
@@ -183,8 +182,9 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
             boolean loadDefaults) {
         return createSimpleInstance(null, name, directType, loadDefaults);
     }
-    
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Collection types, boolean loadDefaults) {
+
+    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name,
+            Collection types, boolean loadDefaults) {
         return getHeadFrameStore().createSimpleInstance(id, name, types, loadDefaults);
     }
 
@@ -197,13 +197,13 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     public synchronized void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
         Collection oldValues = getDirectOwnSlotValues(frame, slot);
         if (!CollectionUtilities.equalsList(oldValues, values)) {
-	        if (frame instanceof Slot && slot.equals(_systemFrames.getValueTypeSlot())) {
-	            ValueType type = ValueTypeConstraint.getType(values);
-	            values = CollectionUtilities.removeFirst(values);
-	            setValueTypeValues((Slot) frame, type, values);
-	        } else {
-	            getHeadFrameStore().setDirectOwnSlotValues(frame, slot, values);
-	        }
+            if (frame instanceof Slot && slot.equals(_systemFrames.getValueTypeSlot())) {
+                ValueType type = ValueTypeConstraint.getType(values);
+                values = CollectionUtilities.removeFirst(values);
+                setValueTypeValues((Slot) frame, type, values);
+            } else {
+                getHeadFrameStore().setDirectOwnSlotValues(frame, slot, values);
+            }
         }
     }
 
@@ -390,7 +390,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         if (directType == null) {
             instance = createSimpleInstance(id, name, directType, initializeDefaults);
         } else {
-             if (isClsMetaCls(directType)) {
+            if (isClsMetaCls(directType)) {
                 instance = createCls(id, name, Collections.EMPTY_LIST, directTypes,
                         initializeDefaults);
             } else if (isSlotMetaCls(directType)) {
@@ -427,9 +427,8 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /*
      * delete a class
      * 
-     * If the class has instances then they become instances of its parent
-     * classes. If the class has subclasses then they become subclasses of its
-     * parent classes.
+     * If the class has instances then they become instances of its parent classes. If the class has subclasses then
+     * they become subclasses of its parent classes.
      */
     public synchronized void deleteCls(Cls cls) {
         if (true) {
@@ -457,8 +456,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /*
-     * TODO Should remove facet overrides in all descendents for slots that will
-     * disappear
+     * TODO Should remove facet overrides in all descendents for slots that will disappear
      */
     private void moveSubclassToParents(Cls subclass, Cls cls, Collection parents) {
         Iterator i = parents.iterator();
@@ -894,7 +892,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /**
-     * @deprecated Use setModificationUpdatingEnabled
+     * @deprecated Use setModificationRecordUpdatingEnabled
      */
     public synchronized void setAutoUpdateFacetValues(boolean autoUpdate) {
         setModificationRecordUpdatingEnabled(autoUpdate);
@@ -1168,7 +1166,8 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized int getDirectSubclassCount(Cls cls) {
         // return getDirectSubclasses(cls).size();
-        return getHeadFrameStore().getDirectOwnSlotValuesCount(cls, _systemFrames.getDirectSubclassesSlot());
+        return getHeadFrameStore().getDirectOwnSlotValuesCount(cls,
+                _systemFrames.getDirectSubclassesSlot());
     }
 
     public synchronized Collection getDirectSubclasses(Cls cls) {
@@ -1196,7 +1195,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Collection getSuperclasses(Cls cls) {
-       return getHeadFrameStore().getSuperclasses(cls);
+        return getHeadFrameStore().getSuperclasses(cls);
     }
 
     public synchronized Collection getTemplateFacets(Cls cls, Slot slot) {
@@ -1405,8 +1404,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /*
-     * One of the few methods in this class that actually does something. It
-     * seems misplaced.
+     * One of the few methods in this class that actually does something. It seems misplaced.
      */
     public synchronized void setDirectTypeOfSubclasses(Cls cls, Cls type) {
         Iterator i = getSubclasses(cls).iterator();
@@ -1611,7 +1609,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         Collection types = CollectionUtilities.createCollection(type);
         return setDirectTypes(instance, types);
     }
-    
+
     public synchronized Instance setDirectTypes(Instance instance, Collection newTypes) {
         Collection oldTypes = new ArrayList(getDirectTypes(instance));
         Collection typesToRemove = new ArrayList(oldTypes);
@@ -1622,7 +1620,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         removeDirectTypes(instance, typesToRemove);
         return instance;
     }
-    
+
     public void addDirectTypes(Instance instance, Collection types) {
         Iterator i = types.iterator();
         while (i.hasNext()) {
@@ -1767,8 +1765,8 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     private boolean areComparableTypes(ValueType type1, ValueType type2) {
         return equals(type1, type2) || (isFrameType(type1) && isFrameType(type2))
-                || (isStringType(type1) && isStringType(type2))
-                || type1.equals(ValueType.ANY) || type1.equals(ValueType.ANY);
+                || (isStringType(type1) && isStringType(type2)) || type1.equals(ValueType.ANY)
+                || type1.equals(ValueType.ANY);
     }
 
     private boolean isFrameType(ValueType type) {
@@ -1813,79 +1811,44 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /*
-    private void ensureValidDefaults(Slot slot) {
-        Collection defaults = getDefaultValues(slot);
-        Collection validDefaults = getValidValues(defaults, slot);
-        if (defaults.size() != validDefaults.size()) {
-            setDefaultValues(slot, validDefaults);
-        }
-    }
-    */
+     * private void ensureValidDefaults(Slot slot) { Collection defaults = getDefaultValues(slot); Collection
+     * validDefaults = getValidValues(defaults, slot); if (defaults.size() != validDefaults.size()) {
+     * setDefaultValues(slot, validDefaults); } }
+     */
 
     /*
-    private void ensureValidTemplateSlotDefaults(Cls cls, Slot slot) {
-        Collection defaults = getTemplateSlotDefaultValues(cls, slot);
-        Collection validDefaults = getValidValues(defaults, cls, slot);
-        if (defaults.size() != validDefaults.size()) {
-            setTemplateSlotDefaultValues(cls, slot, validDefaults);
-        }
-    }
-    */
+     * private void ensureValidTemplateSlotDefaults(Cls cls, Slot slot) { Collection defaults =
+     * getTemplateSlotDefaultValues(cls, slot); Collection validDefaults = getValidValues(defaults, cls, slot); if
+     * (defaults.size() != validDefaults.size()) { setTemplateSlotDefaultValues(cls, slot, validDefaults); } }
+     */
 
     /*
-    private void ensureValidValues(Slot slot) {
-        Collection values = getValues(slot);
-        Collection validValues = getValidValues(values, slot);
-        if (values.size() != validValues.size()) {
-            setValues(slot, validValues);
-        }
-    }
-    */
+     * private void ensureValidValues(Slot slot) { Collection values = getValues(slot); Collection validValues =
+     * getValidValues(values, slot); if (values.size() != validValues.size()) { setValues(slot, validValues); } }
+     */
 
     /*
-    private void ensureValidTemplateSlotValues(Cls cls, Slot slot) {
-        Collection values = getTemplateSlotValues(cls, slot);
-        Collection validValues = getValidValues(values, cls, slot);
-        if (values.size() != validValues.size()) {
-            setTemplateSlotValues(cls, slot, validValues);
-        }
-    }
-    */
+     * private void ensureValidTemplateSlotValues(Cls cls, Slot slot) { Collection values = getTemplateSlotValues(cls,
+     * slot); Collection validValues = getValidValues(values, cls, slot); if (values.size() != validValues.size()) {
+     * setTemplateSlotValues(cls, slot, validValues); } }
+     */
 
     /*
-    private Collection getValidValues(Collection possibleValues, Slot slot) {
-        Collection validValues;
-        ValueType type = getValueType(slot);
-        if (type.equals(ValueType.SYMBOL)) {
-            validValues = getValidAllowedValueValues(possibleValues, getAllowedValues(slot));
-        } else if (type.equals(ValueType.CLS)) {
-            validValues = getValidAllowedParentValues(possibleValues, getAllowedParents(slot));
-        } else if (type.equals(ValueType.INSTANCE)) {
-            validValues = getValidAllowedClsValues(possibleValues, getAllowedClses(slot));
-        } else {
-            validValues = possibleValues;
-        }
-        return validValues;
-    }
-
-    private Collection getValidValues(Collection possibleValues, Cls cls, Slot slot) {
-        Collection validValues;
-        ValueType type = getTemplateSlotValueType(cls, slot);
-        if (type.equals(ValueType.SYMBOL)) {
-            validValues = getValidAllowedValueValues(possibleValues, getTemplateSlotAllowedValues(
-                    cls, slot));
-        } else if (type.equals(ValueType.CLS)) {
-            validValues = getValidAllowedParentValues(possibleValues,
-                    getTemplateSlotAllowedParents(cls, slot));
-        } else if (type.equals(ValueType.INSTANCE)) {
-            validValues = getValidAllowedClsValues(possibleValues, getTemplateSlotAllowedClses(cls,
-                    slot));
-        } else {
-            validValues = possibleValues;
-        }
-        return validValues;
-    }
-    */
+     * private Collection getValidValues(Collection possibleValues, Slot slot) { Collection validValues; ValueType type =
+     * getValueType(slot); if (type.equals(ValueType.SYMBOL)) { validValues = getValidAllowedValueValues(possibleValues,
+     * getAllowedValues(slot)); } else if (type.equals(ValueType.CLS)) { validValues =
+     * getValidAllowedParentValues(possibleValues, getAllowedParents(slot)); } else if (type.equals(ValueType.INSTANCE)) {
+     * validValues = getValidAllowedClsValues(possibleValues, getAllowedClses(slot)); } else { validValues =
+     * possibleValues; } return validValues; }
+     * 
+     * private Collection getValidValues(Collection possibleValues, Cls cls, Slot slot) { Collection validValues;
+     * ValueType type = getTemplateSlotValueType(cls, slot); if (type.equals(ValueType.SYMBOL)) { validValues =
+     * getValidAllowedValueValues(possibleValues, getTemplateSlotAllowedValues( cls, slot)); } else if
+     * (type.equals(ValueType.CLS)) { validValues = getValidAllowedParentValues(possibleValues,
+     * getTemplateSlotAllowedParents(cls, slot)); } else if (type.equals(ValueType.INSTANCE)) { validValues =
+     * getValidAllowedClsValues(possibleValues, getTemplateSlotAllowedClses(cls, slot)); } else { validValues =
+     * possibleValues; } return validValues; }
+     */
 
     private void setTemplateSlotValueTypeValues(Cls cls, Slot slot, Collection values) {
         ValueType oldValueType = getTemplateSlotValueType(cls, slot);
@@ -1912,56 +1875,28 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /*
-    private Collection getValidAllowedValueValues(Collection possibleValues,
-            Collection allowedValues) {
-        Collection validValues = new ArrayList();
-        Iterator i = possibleValues.iterator();
-        while (i.hasNext()) {
-            Object value = i.next();
-            if (allowedValues.contains(value)) {
-                validValues.add(value);
-            }
-        }
-        return validValues;
-    }
-    */
+     * private Collection getValidAllowedValueValues(Collection possibleValues, Collection allowedValues) { Collection
+     * validValues = new ArrayList(); Iterator i = possibleValues.iterator(); while (i.hasNext()) { Object value =
+     * i.next(); if (allowedValues.contains(value)) { validValues.add(value); } } return validValues; }
+     */
 
     /*
-    private Collection getValidAllowedParentValues(Collection possibleClses,
-            Collection allowedParents) {
-        Collection validValues = new ArrayList();
-        Iterator i = possibleClses.iterator();
-        while (i.hasNext()) {
-            Cls value = (Cls) i.next();
-            if (hasAncestor(value, allowedParents)) {
-                validValues.add(value);
-            }
-        }
-        return validValues;
-    }
-    */
-    
+     * private Collection getValidAllowedParentValues(Collection possibleClses, Collection allowedParents) { Collection
+     * validValues = new ArrayList(); Iterator i = possibleClses.iterator(); while (i.hasNext()) { Cls value = (Cls)
+     * i.next(); if (hasAncestor(value, allowedParents)) { validValues.add(value); } } return validValues; }
+     */
+
     /*
-    private boolean hasAncestor(Cls cls, Collection parents) {
-        return parents.contains(cls) || new ArrayList(parents).removeAll(getSuperclasses(cls));
-    }
-
-    private boolean hasType(Instance instance, Collection directTypes) {
-        return new ArrayList(directTypes).removeAll(getTypes(instance));
-    }
-
-    private Collection getValidAllowedClsValues(Collection possibleValues, Collection allowedClses) {
-        Collection validValues = new ArrayList();
-        Iterator i = possibleValues.iterator();
-        while (i.hasNext()) {
-            Instance value = (Instance) i.next();
-            if (hasType(value, allowedClses)) {
-                validValues.add(value);
-            }
-        }
-        return validValues;
-    }
-    */
+     * private boolean hasAncestor(Cls cls, Collection parents) { return parents.contains(cls) || new
+     * ArrayList(parents).removeAll(getSuperclasses(cls)); }
+     * 
+     * private boolean hasType(Instance instance, Collection directTypes) { return new
+     * ArrayList(directTypes).removeAll(getTypes(instance)); }
+     * 
+     * private Collection getValidAllowedClsValues(Collection possibleValues, Collection allowedClses) { Collection
+     * validValues = new ArrayList(); Iterator i = possibleValues.iterator(); while (i.hasNext()) { Instance value =
+     * (Instance) i.next(); if (hasType(value, allowedClses)) { validValues.add(value); } } return validValues; }
+     */
 
     public synchronized void setAllowsMultipleValues(Slot slot, boolean allowsMultiple) {
         Number value = MaximumCardinalityConstraint.getValue(allowsMultiple);
@@ -2177,8 +2112,8 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /**
-     * @deprecated @param
-     *             cls
+     * @deprecated
+     * @param cls
      * @param slot
      */
     public synchronized void setDirectBrowserSlot(Cls cls, Slot slot) {
