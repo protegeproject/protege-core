@@ -33,8 +33,13 @@ public class PropertyMapUtil {
             value = v;
             valueClass = c.getName();
         }
+
         public String value;
         public String valueClass;
+
+        public String toString() {
+            return value;
+        }
     }
 
     private static Instance createEntryInstance(Instance mapInstance) {
