@@ -24,6 +24,13 @@ public abstract class Finder extends JComponent {
     private Action _findAction;
     private long actionTime;
     private static final long DELAY = 1000; // one second
+    private static final int MAX_MATCHES;
+    private static final int DEFAULT_MAX_MATCHES = 1000;
+
+    static {
+        MAX_MATCHES = ApplicationProperties.getIntegerProperty(Finder.class.getName() + ".max_matches",
+                DEFAULT_MAX_MATCHES);
+    }
 
     public Finder(String description) {
         this(description, Icons.getFindIcon());
@@ -117,7 +124,7 @@ public abstract class Finder extends JComponent {
     private void doFind() {
         String text = (String) _comboBox.getSelectedItem();
         if (text != null && text.length() != 0) {
-            List matches = getMatches(text, 1000);
+            List matches = getMatches(text, MAX_MATCHES);
             if (matches.isEmpty()) {
                 getToolkit().beep();
             } else if (matches.size() == 1) {
