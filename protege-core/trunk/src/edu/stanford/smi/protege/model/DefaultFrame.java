@@ -8,18 +8,17 @@ import edu.stanford.smi.protege.event.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * Default implementation of Frame interface.  Forwards all method calls
- * to its DefaultKnowledgeBase.
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Default implementation of Frame interface. Forwards all method calls to its DefaultKnowledgeBase.
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class DefaultFrame implements Frame, Localizable, Externalizable {
     private static final char SPECIAL_NAME_CHAR = ':';
-    
+
     private static final int NOT_DELETED = 0;
     private static final int BEING_DELETED = 1;
     private static final int DELETED = 2;
-    
+
     private transient KnowledgeBase knowledgeBase;
     private FrameID id;
     private int deleteState = NOT_DELETED;
@@ -33,16 +32,16 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
         isEditable = in.readBoolean();
         isIncluded = in.readBoolean();
     }
-    
+
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(id);
         out.writeInt(deleteState);
         out.writeBoolean(isEditable);
         out.writeBoolean(isIncluded);
     }
-    
+
     protected DefaultFrame() {
-        
+
     }
 
     DefaultFrame(KnowledgeBase kb, FrameID id) {
@@ -59,13 +58,15 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     public boolean isDeleted() {
         return deleteState == DELETED;
     }
+
     public void markDeleted(boolean deleted) {
         deleteState = (deleted) ? DELETED : NOT_DELETED;
     }
+
     public boolean isBeingDeleted() {
         return deleteState == BEING_DELETED;
     }
-    
+
     public void markDeleting() {
         deleteState = BEING_DELETED;
     }
@@ -116,25 +117,11 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     }
 
     /*
-    public int compareTo(Object o) {
-        int result;
-        if (o instanceof Frame) {
-            Frame f2 = (Frame) o;
-            String t1 = this.getBrowserText();
-            String t2 = f2.getBrowserText();
-            if (t1.charAt(0) == SPECIAL_NAME_CHAR) {
-                result = (t2.charAt(0) == SPECIAL_NAME_CHAR) ? compareStrings(t1, t2) : +1;
-            } else if (t2.charAt(0) == SPECIAL_NAME_CHAR) {
-                result = -1;
-            } else {
-                result = compareStrings(t1, t2);
-            }
-        } else {
-            result = 0;
-        }
-        return result;
-    }
-    */
+     * public int compareTo(Object o) { int result; if (o instanceof Frame) { Frame f2 = (Frame) o; String t1 =
+     * this.getBrowserText(); String t2 = f2.getBrowserText(); if (t1.charAt(0) == SPECIAL_NAME_CHAR) { result =
+     * (t2.charAt(0) == SPECIAL_NAME_CHAR) ? compareStrings(t1, t2) : +1; } else if (t2.charAt(0) == SPECIAL_NAME_CHAR) {
+     * result = -1; } else { result = compareStrings(t1, t2); } } else { result = 0; } return result; }
+     */
 
     public int compareTo(Object o) {
         int result;
@@ -350,8 +337,8 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
         return !isValid() || !getProject().isHidden(this);
     }
 
-    public void moveOwnSlotValue(Slot slot, int fromIndex, int toIndex) {
-        getDefaultKnowledgeBase().moveOwnSlotValue(this, slot, fromIndex, toIndex);
+    public void moveDirectOwnSlotValue(Slot slot, int fromIndex, int toIndex) {
+        getDefaultKnowledgeBase().moveDirectOwnSlotValue(this, slot, fromIndex, toIndex);
     }
 
     public void removeFrameListener(FrameListener listener) {

@@ -7,13 +7,13 @@ import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * Renderer for frames.  This class has logic to render all type of frames: classes, slots, facet, simple instances.  
- * There isn't a separate renderer for each frame type because Protege's metaclass architecture is such that any list
- * of "instances" could contain any of the above types.  Since all elements of a list use the same renderer is just
- * makes sense to stuff the code for a frame types into a single place.  This class is big an clumsy though.  It should
- * probably instead delegate the rendering of each of the frame types to another instance.
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Renderer for frames. This class has logic to render all type of frames: classes, slots, facet, simple instances.
+ * There isn't a separate renderer for each frame type because Protege's metaclass architecture is such that any list of
+ * "instances" could contain any of the above types. Since all elements of a list use the same renderer is just makes
+ * sense to stuff the code for a frame types into a single place. This class is big an clumsy though. It should probably
+ * instead delegate the rendering of each of the frame types to another instance.
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameRenderer extends DefaultRenderer implements Cloneable {
     protected final static int NONE = 0;
@@ -59,18 +59,18 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     protected String getInstanceCountString(Cls cls) {
         int count;
         switch (_instanceCountType) {
-            case NONE :
-                count = 0;
-                break;
-            case DIRECT :
-                count = cls.getDirectInstanceCount();
-                break;
-            case ALL :
-                count = cls.getInstanceCount();
-                break;
-            default :
-                Assert.fail("bad type: " + _instanceCountType);
-                count = 0;
+        case NONE:
+            count = 0;
+            break;
+        case DIRECT:
+            count = cls.getDirectInstanceCount();
+            break;
+        case ALL:
+            count = cls.getInstanceCount();
+            break;
+        default:
+            Assert.fail("bad type: " + _instanceCountType);
+            count = 0;
         }
         String s;
         if (count > 0) {
@@ -83,6 +83,11 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
 
     public void setDisplayType(boolean displayType) {
         _displayType = displayType;
+    }
+
+    public void loadDuplicate(Object value) {
+        load(value);
+        appendText("   (recursive)");
     }
 
     public void load(Object value) {
@@ -110,7 +115,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
             setMainText(value.toString());
         }
     }
-    
+
     protected Icon getIcon(Cls cls) {
         return cls.getIcon();
     }

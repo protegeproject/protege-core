@@ -32,8 +32,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     public static MergingNarrowFrameStore get(KnowledgeBase kb) {
         MergingNarrowFrameStore mergingFrameStore = null;
         if (kb instanceof DefaultKnowledgeBase) {
-            SimpleFrameStore store = (SimpleFrameStore) ((DefaultKnowledgeBase) kb)
-                    .getTerminalFrameStore();
+            SimpleFrameStore store = (SimpleFrameStore) ((DefaultKnowledgeBase) kb).getTerminalFrameStore();
             mergingFrameStore = (MergingNarrowFrameStore) store.getHelper().getDelegate();
         }
         return mergingFrameStore;
@@ -51,7 +50,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return activeFrameStore;
     }
 
-    private NarrowFrameStore getFrameStore(String name) {
+    public NarrowFrameStore getFrameStore(String name) {
         NarrowFrameStore frameStore = null;
         Iterator i = frameStoreTree.getDescendents(ROOT_NODE).iterator();
         while (i.hasNext()) {
@@ -238,8 +237,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return getValues(frame, slot, facet, isTemplate, true);
     }
 
-    private List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate,
-            boolean skipActive) {
+    private List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, boolean skipActive) {
         List values = new ArrayList();
         Iterator i = availableFrameStores.iterator();
         while (i.hasNext()) {
@@ -266,7 +264,19 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to) {
-        getDelegate().moveValue(frame, slot, facet, isTemplate, from, to);
+        List secondaryValues = getSecondaryValues(frame, slot, facet, isTemplate);
+        if (secondaryValues.isEmpty()) {
+            getDelegate().moveValue(frame, slot, facet, isTemplate, from, to);
+        } else {
+            List values = getValues(frame, slot, facet, isTemplate);
+            Object fromObject = values.get(from);
+            Object toObject = values.get(to);
+            if (!secondaryValues.contains(fromObject) && !secondaryValues.contains(toObject)) {
+                from -= secondaryValues.size();
+                to -= secondaryValues.size();
+                getDelegate().moveValue(frame, slot, facet, isTemplate, from, to);
+            }
+        }
     }
 
     public void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
@@ -299,14 +309,12 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return frames;
     }
 
-    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value,
-            int maxMatches) {
+    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
         Set frames = new HashSet();
         Iterator i = availableFrameStores.iterator();
         while (i.hasNext() && !hasEnoughMatches(frames.size(), maxMatches)) {
             NarrowFrameStore fs = (NarrowFrameStore) i.next();
-            frames.addAll(fs.getMatchingFrames(slot, facet, isTemplate, value, maxMatches
-                    - frames.size()));
+            frames.addAll(fs.getMatchingFrames(slot, facet, isTemplate, value, maxMatches - frames.size()));
         }
         return frames;
     }

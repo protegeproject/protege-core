@@ -5,10 +5,10 @@ import java.util.*;
 import javax.swing.tree.*;
 
 /**
- * A tree node that doesn't check its children until it is asked for them.  This lazy evaluation alls the system to 
- * do "load on demand" from a database.
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * A tree node that doesn't check its children until it is asked for them. This lazy evaluation alls the system to do
+ * "load on demand" from a database.
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class LazyTreeNode implements TreeNode {
     private LazyTreeNode _parent;
@@ -16,10 +16,29 @@ public abstract class LazyTreeNode implements TreeNode {
     private List _childNodes;
     private int _childCount = -1;
     private boolean _isLoaded;
+    private boolean isDuplicate;
 
     public LazyTreeNode(LazyTreeNode parent, Object userObject) {
         _parent = parent;
         _userObject = userObject;
+        isDuplicate = isDuplicate(userObject, parent);
+    }
+
+    private static boolean isDuplicate(Object userObject, LazyTreeNode parent) {
+        boolean isDuplicate = false;
+        LazyTreeNode ancestor = parent;
+        while (ancestor != null) {
+            if (ancestor.getUserObject() == userObject) {
+                isDuplicate = true;
+                break;
+            }
+            ancestor = ancestor.getLazyTreeNodeParent();
+        }
+        return isDuplicate;
+    }
+
+    public boolean isDuplicate() {
+        return isDuplicate;
     }
 
     public void childAdded(Object o) {
@@ -177,6 +196,8 @@ public abstract class LazyTreeNode implements TreeNode {
     }
 
     public boolean isLeaf() {
+        if (isDuplicate)
+            return true;
         ensureChildCountLoaded();
         return _childCount == 0;
     }

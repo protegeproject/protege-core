@@ -451,7 +451,7 @@ public interface KnowledgeBase extends Disposable {
     int getOwnSlotValueCount(Frame frame, Slot slot);
     ValueType getOwnSlotValueType(Frame frame, Slot slot);
     boolean hasOwnSlot(Frame frame, Slot slot);
-    void moveOwnSlotValue(Frame frame, Slot slot, int from, int to);
+    void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to);
     void removeOwnSlotValue(Frame frame, Slot slot, Object value);
     void setDocumentation(Frame frame, String text);
     void setDocumentation(Frame frame, Collection text);

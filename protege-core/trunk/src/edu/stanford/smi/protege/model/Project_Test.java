@@ -9,7 +9,7 @@ import edu.stanford.smi.protege.test.*;
 
 /**
  * Units tests for Project class.
- *
+ * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class Project_Test extends APITestCase {
@@ -27,9 +27,6 @@ public class Project_Test extends APITestCase {
 
     private static final String INCLUDED_PROJECT_NAME = "included";
     private static final String MAIN_PROJECT_NAME = "main";
-
-    private static final String OLD_JDBC_PROJECT_NAME = "newspaper_old_jdbc.pprj";
-    private static final String OLD_JDBC_PROJECT = HTTP_BASE + DIR + OLD_JDBC_PROJECT_NAME;
 
     public void testPropertyMapLoading() {
         Frame frame = createFrame();
@@ -210,17 +207,6 @@ public class Project_Test extends APITestCase {
         Project p1 = loadProjectFromURI(HTTP_JAR_PROJECT_STRING);
         Project p2 = createProjectOnDisk(getTempDirectory(), MAIN_PROJECT_NAME);
         checkInclusion(p2, p1);
-    }
-
-    public void testLoadOldJdbcProjectAsReadonly() {
-        Project p1 = loadProjectFromURI(OLD_JDBC_PROJECT);
-        KnowledgeBase kb = p1.getKnowledgeBase();
-        try {
-            kb.createCls(null, kb.getRootClses());
-            fail();
-        } catch (UnsupportedOperationException e) {
-            // success
-        }
     }
 
     public void testIsDirtyOnCreateInstance() {

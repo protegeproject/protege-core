@@ -14,7 +14,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     private ReferenceImpl _lookupReference = new ReferenceImpl();
     private String frameDBName;
 
-    private static int counter = FrameID.INITIAL_USER_FRAME_ID;
+    private int counter = FrameID.INITIAL_USER_FRAME_ID;
 
     public String getName() {
         return frameDBName;
@@ -191,11 +191,11 @@ public class InMemoryFrameDb implements NarrowFrameStore {
 
     public void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to) {
         List values = lookupValues(frame, slot, facet, isTemplate);
-        Object value = values.remove(from);
-        if (to <= values.size()) {
+        if (0 <= from && from < values.size() && 0 <= to && to < values.size()) {
+            Object value = values.remove(from);
             values.add(to, value);
         } else {
-            Log.getLogger().warning("Invalid target index: " + to);
+            Log.getLogger().warning("Invalid index from=" + from + ", to=" + to);
         }
     }
 

@@ -171,6 +171,10 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         execute(new SetDirectOwnSlotValuesCommand(getDelegate(), values, slot, frame));
     }
 
+    public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
+        execute(new MoveDirectOwnSlotValueCommand(getDelegate(), frame, slot, from, to));
+    }
+
     public void setFrameName(Frame frame, String name) {
         execute(new SetFrameNameCommand(getDelegate(), name, frame));
     }
@@ -182,24 +186,31 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     public void removeDirectSuperclass(Cls cls, Cls superclass) {
         execute(new RemoveDirectSuperclassCommand(getDelegate(), superclass, cls));
     }
+
     public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
         execute(new MoveDirectSubclassCommand(getDelegate(), cls, index, subclass));
     }
+
     public void addDirectSuperslot(Slot slot, Slot superslot) {
         execute(new AddDirectSuperslotCommand(getDelegate(), superslot, slot));
     }
+
     public void removeDirectSuperslot(Slot slot, Slot superslot) {
         execute(new RemoveDirectSuperslotCommand(getDelegate(), superslot, slot));
     }
+
     public void moveDirectSubslot(Slot slot, Slot subslot, int index) {
         execute(new MoveDirectSubslotCommand(getDelegate(), slot, index, subslot));
     }
+
     public void addDirectType(Instance instance, Cls type) {
         execute(new AddDirectTypeCommand(getDelegate(), type, instance));
     }
+
     public void removeDirectType(Instance instance, Cls type) {
         execute(new RemoveDirectTypeCommand(getDelegate(), type, instance));
     }
+
     public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
         execute(new RemoveDirectTemplateFacetOverridesCommand(getDelegate(), cls, slot));
     }
@@ -268,6 +279,7 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         }
         return commands;
     }
+
     public Collection getUndoneCommands() {
         Collection commands;
         if ((_lastExecutedCommand + 1) < _commands.size()) {

@@ -17,8 +17,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private boolean _isDirty;
     private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
     private static final int MAX_VALUES = 20;
-    private static final int MIN_PRELOAD_FRAMES = Integer.getInteger("preload.frame.limit", 5000)
-            .intValue();
+    private static final int MIN_PRELOAD_FRAMES = Integer.getInteger("preload.frame.limit", 5000).intValue();
 
     public ServerFrameStore(FrameStore delegate, KnowledgeBase kb) throws RemoteException {
         _delegate = delegate;
@@ -82,8 +81,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         markDirty();
     }
 
-    public synchronized void moveDirectTemplateSlot(Cls cls, Slot slot, int index,
-            RemoteSession session) {
+    public synchronized void moveDirectTemplateSlot(Cls cls, Slot slot, int index, RemoteSession session) {
         delay();
         getDelegate().moveDirectTemplateSlot(cls, slot, index);
         markDirty();
@@ -107,8 +105,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         markDirty();
     }
 
-    public synchronized void moveDirectSubclass(Cls cls, Cls subclass, int index,
-            RemoteSession session) {
+    public synchronized void moveDirectSubclass(Cls cls, Cls subclass, int index, RemoteSession session) {
         delay();
         getDelegate().moveDirectSubclass(cls, subclass, index);
         markDirty();
@@ -134,39 +131,36 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getInstances(cls);
     }
 
-    public synchronized Set getFramesWithDirectOwnSlotValue(Slot slot, Object value,
-            RemoteSession session) {
+    public synchronized Set getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) {
         delay();
         return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
     }
 
-    public synchronized Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value,
-            RemoteSession session) {
+    public synchronized Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value, RemoteSession session) {
         delay();
         return getDelegate().getClsesWithDirectTemplateSlotValue(slot, value);
     }
 
-    public synchronized Set getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet,
-            Object value, RemoteSession session) {
+    public synchronized Set getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value,
+            RemoteSession session) {
         delay();
         return getDelegate().getClsesWithDirectTemplateFacetValue(slot, facet, value);
     }
 
-    public synchronized Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value,
-            int maxMatches, RemoteSession session) {
+    public synchronized Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches,
+            RemoteSession session) {
         delay();
         return getDelegate().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches);
     }
 
-    public synchronized Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet,
-            String value, int maxMatches, RemoteSession session) {
+    public synchronized Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value,
+            int maxMatches, RemoteSession session) {
         delay();
-        return getDelegate().getClsesWithMatchingDirectTemplateFacetValue(slot, facet, value,
-                maxMatches);
+        return getDelegate().getClsesWithMatchingDirectTemplateFacetValue(slot, facet, value, maxMatches);
     }
 
-    public synchronized Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value,
-            int maxMatches, RemoteSession session) {
+    public synchronized Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches,
+            RemoteSession session) {
         delay();
         return getDelegate().getClsesWithMatchingDirectTemplateSlotValue(slot, value, maxMatches);
     }
@@ -181,8 +175,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getTemplateSlotValues(cls, slot);
     }
 
-    public synchronized List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet,
-            RemoteSession session) {
+    public synchronized List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) {
         delay();
         return getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
     }
@@ -212,8 +205,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getOwnSlotValues(frame, slot);
     }
 
-    public synchronized int getDirectOwnSlotValuesCount(Frame frame, Slot slot,
-            RemoteSession session) {
+    public synchronized int getDirectOwnSlotValuesCount(Frame frame, Slot slot, RemoteSession session) {
         delay();
         return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
     }
@@ -247,15 +239,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getSubslots(slot);
     }
 
-    public synchronized void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet,
-            Collection values, RemoteSession session) {
+    public synchronized void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values,
+            RemoteSession session) {
         delay();
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
         markDirty();
     }
 
-    public synchronized Facet createFacet(FrameID id, String name, Collection directTypes,
-            boolean loadDefaults, RemoteSession session) {
+    public synchronized Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaults,
+            RemoteSession session) {
         delay();
         markDirty();
         return getDelegate().createFacet(id, name, directTypes, loadDefaults);
@@ -271,8 +263,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getFrames();
     }
 
-    public synchronized void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values,
-            RemoteSession session) {
+    public synchronized void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values, RemoteSession session) {
         delay();
         markDirty();
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
@@ -288,8 +279,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getTemplateSlots(cls);
     }
 
-    public synchronized Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet,
-            RemoteSession session) {
+    public synchronized Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) {
         delay();
         return getDelegate().getTemplateFacetValues(cls, slot, facet);
     }
@@ -312,15 +302,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         markDirty();
     }
 
-    public synchronized void deleteSimpleInstance(SimpleInstance simpleInstance,
-            RemoteSession session) {
+    public synchronized void deleteSimpleInstance(SimpleInstance simpleInstance, RemoteSession session) {
         delay();
         getDelegate().deleteSimpleInstance(simpleInstance);
         markDirty();
     }
 
-    public synchronized Slot createSlot(FrameID id, String name, Collection directTypes,
-            Collection directSuperslots, boolean loadDefaults, RemoteSession session) {
+    public synchronized Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
+            boolean loadDefaults, RemoteSession session) {
         delay();
         markDirty();
         return getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
@@ -348,15 +337,20 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         markDirty();
     }
 
-    public synchronized void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values,
-            RemoteSession session) {
+    public synchronized void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to, RemoteSession session) {
+        delay();
+        getDelegate().moveDirectOwnSlotValue(frame, slot, from, to);
+        markDirty();
+    }
+
+    public synchronized void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values, RemoteSession session) {
         delay();
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
         markDirty();
     }
 
-    public synchronized Cls createCls(FrameID id, String name, Collection directTypes,
-            Collection directSuperclasses, boolean loadDefaults, RemoteSession session) {
+    public synchronized Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+            boolean loadDefaults, RemoteSession session) {
         delay();
         markDirty();
         return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
@@ -372,8 +366,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().executeQuery(query);
     }
 
-    public synchronized void removeDirectType(Instance instance, Cls directType,
-            RemoteSession session) {
+    public synchronized void removeDirectType(Instance instance, Cls directType, RemoteSession session) {
         delay();
         getDelegate().removeDirectType(instance, directType);
         markDirty();
@@ -384,14 +377,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getReferences(value);
     }
 
-    public synchronized Set getMatchingReferences(String value, int maxMatches,
-            RemoteSession session) {
+    public synchronized Set getMatchingReferences(String value, int maxMatches, RemoteSession session) {
         delay();
         return getDelegate().getMatchingReferences(value, maxMatches);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name,
-            Collection directTypes, boolean loadDefaults, RemoteSession session) {
+    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
+            boolean loadDefaults, RemoteSession session) {
         delay();
         markDirty();
         return getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
@@ -424,8 +416,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getOwnFacets(frame, slot);
     }
 
-    public synchronized Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet,
-            RemoteSession session) {
+    public synchronized Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet, RemoteSession session) {
         delay();
         return getDelegate().getOwnFacetValues(frame, slot, facet);
     }
@@ -445,14 +436,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getOverriddenTemplateFacets(cls, slot);
     }
 
-    public synchronized Set getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot,
-            RemoteSession session) {
+    public synchronized Set getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot, RemoteSession session) {
         delay();
         return getDelegate().getOverriddenTemplateFacets(cls, slot);
     }
 
-    public synchronized void removeDirectTemplateFacetOverrides(Cls cls, Slot slot,
-            RemoteSession session) {
+    public synchronized void removeDirectTemplateFacetOverrides(Cls cls, Slot slot, RemoteSession session) {
         delay();
         getDelegate().removeDirectTemplateFacetOverrides(cls, slot);
         markDirty();
@@ -526,8 +515,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         _isDirty = false;
     }
 
-    public synchronized List getDirectDomain(Slot slot, RemoteSession session)
-            throws RemoteException {
+    public synchronized List getDirectDomain(Slot slot, RemoteSession session) throws RemoteException {
         delay();
         return getDelegate().getDirectDomain(slot);
     }
@@ -537,14 +525,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getDomain(slot);
     }
 
-    public synchronized void moveDirectSubslot(Slot slot, Slot subslot, int index,
-            RemoteSession session) throws RemoteException {
+    public synchronized void moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session)
+            throws RemoteException {
         delay();
         getDelegate().moveDirectSubslot(slot, subslot, index);
     }
 
-    public synchronized Set getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session)
-            throws RemoteException {
+    public synchronized Set getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws RemoteException {
         delay();
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
     }
@@ -555,8 +542,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
     }
 
-    public synchronized Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot,
-            RemoteSession session) throws RemoteException {
+    public synchronized Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot, RemoteSession session)
+            throws RemoteException {
         delay();
         return getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
     }
@@ -572,13 +559,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                 Cls cls = (Cls) frame;
                 Cls superclass = (Cls) CollectionUtilities.getFirstItem(getDelegate().getDirectSuperclasses(cls));
                 if (superclass != null) {
-	                Slot directSubclassesSlot = (Slot) getDelegate().getFrame(
-	                        Model.Slot.DIRECT_SUBCLASSES);
-	                allFrames = new LinkedHashSet(frames);
-	                if (getDelegate().getDirectOwnSlotValuesCount(superclass, directSubclassesSlot) < LIMIT) {
-	                    Collection subclasses = getDelegate().getDirectSubclasses(superclass);
-	                    allFrames.addAll(subclasses);
-	                }
+                    Slot directSubclassesSlot = (Slot) getDelegate().getFrame(Model.Slot.DIRECT_SUBCLASSES);
+                    allFrames = new LinkedHashSet(frames);
+                    if (getDelegate().getDirectOwnSlotValuesCount(superclass, directSubclassesSlot) < LIMIT) {
+                        Collection subclasses = getDelegate().getDirectSubclasses(superclass);
+                        allFrames.addAll(subclasses);
+                    }
                 }
             }
             if (allFrames.size() != 1) {
@@ -667,8 +653,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     /*
-     * A performance hack Indentical copies of the same sft are reduced to the
-     * same object so that only a single copy needs to be sent over the wire.
+     * A performance hack Indentical copies of the same sft are reduced to the same object so that only a single copy
+     * needs to be sent over the wire.
      */
     private Map sftMap = new HashMap();
 

@@ -120,6 +120,11 @@ public class ModificationRecordFrameStore extends ModificationFrameStore {
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
+    public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
+        getDelegate().moveDirectOwnSlotValue(frame, slot, from, to);
+        updateModificationRecord(frame);
+    }
+
     public void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
         updateModificationRecord(frame);

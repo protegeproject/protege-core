@@ -1,12 +1,13 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.*;
+
 import junit.framework.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
  * @author Ray Fergerson
- *
+ * 
  * Description of this class
  */
 public class SimpleTestCase extends TestCase {
@@ -14,6 +15,7 @@ public class SimpleTestCase extends TestCase {
     protected static List makeList() {
         return new ArrayList();
     }
+
     protected static List makeList(Object o) {
         List list = makeList();
         list.add(o);
@@ -37,7 +39,19 @@ public class SimpleTestCase extends TestCase {
         list.add(o4);
         return list;
     }
-    
+
+    protected static List makeList(Object o1, Object o2, Object o3, Object o4, Object o5) {
+        List list = makeList(o1, o2, o3, o4);
+        list.add(o5);
+        return list;
+    }
+
+    protected static List makeList(Object o1, Object o2, Object o3, Object o4, Object o5, Object o6) {
+        List list = makeList(o1, o2, o3, o4, o5);
+        list.add(o6);
+        return list;
+    }
+
     protected void assertEqualsList(Collection c1, Collection c2) {
         assertEqualsList("", c1, c2);
     }
@@ -52,7 +66,7 @@ public class SimpleTestCase extends TestCase {
             assertEquals(name + " objects", o1, o2);
         }
     }
-    
+
     protected void assertEqualsSet(Collection c1, Collection c2) {
         assertEqualsSet("", c1, c2);
     }
@@ -63,7 +77,7 @@ public class SimpleTestCase extends TestCase {
         s.removeAll(c2);
         assertEquals(name + " contents", 0, s.size());
     }
-    
+
     public boolean equals(Object o1, Object o2) {
         return SystemUtilities.equals(o1, o2);
     }

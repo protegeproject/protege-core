@@ -50,4 +50,29 @@ public class MergingNarrowFrameStore_Test extends FrameStore_Test {
         fs.setActiveFrameStore(parent);
         assertEquals(count + 2, getTestFrameStore().getFrameCount());
     }
+
+    public void testInterleavedValues() {
+        Cls cls = createCls();
+        Slot slot = createSlotOnCls(cls);
+        SimpleInstance instance = createSimpleInstance(cls);
+        List values = makeList("a", "b", "c");
+        instance.setOwnSlotValues(slot, values);
+        MergingNarrowFrameStore mnfs = getMergingFrameStore();
+        NarrowFrameStore child = mnfs.getActiveFrameStore();
+        mnfs.addActiveFrameStore(new InMemoryFrameDb("parent"));
+        mnfs.addRelation("parent", child.getName());
+        assertEqualsList(values, instance.getOwnSlotValues(slot));
+        instance.setOwnSlotValues(slot, makeList("c", "d", "e", "f"));
+        List allValues = makeList("a", "b", "c", "d", "e", "f");
+        assertEqualsList(allValues, instance.getOwnSlotValues(slot));
+
+        instance.moveDirectOwnSlotValue(slot, 1, 3); // should do nothing
+        assertEqualsList(allValues, instance.getOwnSlotValues(slot));
+
+        instance.moveDirectOwnSlotValue(slot, 4, 1); // should do nothing
+        assertEqualsList(allValues, instance.getOwnSlotValues(slot));
+
+        instance.moveDirectOwnSlotValue(slot, 3, 4);
+        assertEqualsList(makeList("a", "b", "c", "e", "d", "f"), instance.getOwnSlotValues(slot));
+    }
 }

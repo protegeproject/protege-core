@@ -142,13 +142,13 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getDirectOwnSlotValues(frame, slot);
     }
 
-    public synchronized Cls createCls(String name, Collection directSuperclasses,
-            Collection directTypes, boolean loadDefaults) {
+    public synchronized Cls createCls(String name, Collection directSuperclasses, Collection directTypes,
+            boolean loadDefaults) {
         return createCls(null, name, directSuperclasses, directTypes, loadDefaults);
     }
 
-    public synchronized Cls createCls(FrameID id, String name, Collection directSuperclasses,
-            Collection directTypes, boolean loadDefaults) {
+    public synchronized Cls createCls(FrameID id, String name, Collection directSuperclasses, Collection directTypes,
+            boolean loadDefaults) {
         if (directTypes.isEmpty()) {
             Cls directType;
             Cls leadingSuperclass = (Cls) CollectionUtilities.getFirstItem(directSuperclasses);
@@ -159,18 +159,15 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
             }
             directTypes = CollectionUtilities.createCollection(directType);
         }
-        return getHeadFrameStore().createCls(id, name, directTypes, directSuperclasses,
-                loadDefaults);
+        return getHeadFrameStore().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
     }
 
-    public synchronized Slot createSlot(String name, Cls directType, Collection superslots,
+    public synchronized Slot createSlot(String name, Cls directType, Collection superslots, boolean loadDefaults) {
+        return createSlot(null, name, CollectionUtilities.createCollection(directType), superslots, loadDefaults);
+    }
+
+    public synchronized Slot createSlot(FrameID id, String name, Collection directTypes, Collection superslots,
             boolean loadDefaults) {
-        return createSlot(null, name, CollectionUtilities.createCollection(directType), superslots,
-                loadDefaults);
-    }
-
-    public synchronized Slot createSlot(FrameID id, String name, Collection directTypes,
-            Collection superslots, boolean loadDefaults) {
         if (directTypes.isEmpty()) {
             directTypes = new ArrayList();
             directTypes.add(_defaultSlotMetaCls);
@@ -178,18 +175,17 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().createSlot(id, name, directTypes, superslots, loadDefaults);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(String name, Cls directType,
-            boolean loadDefaults) {
+    public synchronized SimpleInstance createSimpleInstance(String name, Cls directType, boolean loadDefaults) {
         return createSimpleInstance(null, name, directType, loadDefaults);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name,
-            Collection types, boolean loadDefaults) {
+    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Collection types,
+            boolean loadDefaults) {
         return getHeadFrameStore().createSimpleInstance(id, name, types, loadDefaults);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name,
-            Cls directType, boolean loadDefaults) {
+    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Cls directType,
+            boolean loadDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
         return createSimpleInstance(id, name, types, loadDefaults);
     }
@@ -332,8 +328,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return createCls(name, superclasses, directType, true);
     }
 
-    public synchronized Cls createCls(String name, Collection superclasses, Cls directType,
-            boolean initializeDefaults) {
+    public synchronized Cls createCls(String name, Collection superclasses, Cls directType, boolean initializeDefaults) {
         Collection directTypes = CollectionUtilities.createCollection(directType);
         return createCls(name, superclasses, directTypes, initializeDefaults);
     }
@@ -354,8 +349,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return createFacet(null, name, types, initializeDefaults);
     }
 
-    public synchronized Facet createFacet(FrameID id, String name, Collection directTypes,
-            boolean initializeDefaults) {
+    public synchronized Facet createFacet(FrameID id, String name, Collection directTypes, boolean initializeDefaults) {
         if (directTypes.isEmpty()) {
             directTypes = new ArrayList();
             directTypes.add(_defaultFacetMetaCls);
@@ -371,13 +365,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return createInstance(null, name, directTypes, true);
     }
 
-    public synchronized Instance createInstance(String name, Cls directType,
-            boolean initializeDefaults) {
+    public synchronized Instance createInstance(String name, Cls directType, boolean initializeDefaults) {
         return createInstance(null, name, directType, initializeDefaults);
     }
 
-    public synchronized Instance createInstance(FrameID id, String name, Cls directType,
-            boolean initializeDefaults) {
+    public synchronized Instance createInstance(FrameID id, String name, Cls directType, boolean initializeDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
         return createInstance(null, name, types, initializeDefaults);
     }
@@ -391,11 +383,9 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
             instance = createSimpleInstance(id, name, directType, initializeDefaults);
         } else {
             if (isClsMetaCls(directType)) {
-                instance = createCls(id, name, Collections.EMPTY_LIST, directTypes,
-                        initializeDefaults);
+                instance = createCls(id, name, Collections.EMPTY_LIST, directTypes, initializeDefaults);
             } else if (isSlotMetaCls(directType)) {
-                instance = createSlot(id, name, directTypes, Collections.EMPTY_LIST,
-                        initializeDefaults);
+                instance = createSlot(id, name, directTypes, Collections.EMPTY_LIST, initializeDefaults);
             } else if (isFacetMetaCls(directType)) {
                 instance = createFacet(id, name, directTypes, initializeDefaults);
             } else {
@@ -602,12 +592,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Collection getFrameNameMatches(String name, int maxMatches) {
-        return getFramesWithMatchingDirectOwnSlotValue(_systemFrames.getNameSlot(), name,
-                maxMatches);
+        return getFramesWithMatchingDirectOwnSlotValue(_systemFrames.getNameSlot(), name, maxMatches);
     }
 
-    public synchronized Collection getFramesWithValue(Slot slot, Facet facet, boolean isTemplate,
-            Object value) {
+    public synchronized Collection getFramesWithValue(Slot slot, Facet facet, boolean isTemplate, Object value) {
         Collection frames;
         if (facet == null) {
             if (isTemplate) {
@@ -621,8 +609,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return frames;
     }
 
-    public synchronized Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value,
-            int maxMatches) {
+    public synchronized Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
         return getHeadFrameStore().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches);
     }
 
@@ -673,20 +660,17 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return _knowledgeBaseFactory;
     }
 
-    public synchronized Collection getMatchingFrames(Slot slot, Facet facet, boolean isTemplate,
-            String value, int maxMatches) {
+    public synchronized Collection getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value,
+            int maxMatches) {
         Collection frames;
         if (facet == null) {
             if (isTemplate) {
-                frames = getHeadFrameStore().getClsesWithMatchingDirectTemplateSlotValue(slot,
-                        value, maxMatches);
+                frames = getHeadFrameStore().getClsesWithMatchingDirectTemplateSlotValue(slot, value, maxMatches);
             } else {
-                frames = getHeadFrameStore().getFramesWithMatchingDirectOwnSlotValue(slot, value,
-                        maxMatches);
+                frames = getHeadFrameStore().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches);
             }
         } else {
-            frames = getHeadFrameStore().getClsesWithMatchingDirectTemplateFacetValue(slot, facet,
-                    value, maxMatches);
+            frames = getHeadFrameStore().getClsesWithMatchingDirectTemplateFacetValue(slot, facet, value, maxMatches);
         }
         return frames;
     }
@@ -716,8 +700,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return reachableInstances;
     }
 
-    private synchronized void addReachableSimpleInstances(Instance instance,
-            Collection reachableInstances) {
+    private synchronized void addReachableSimpleInstances(Instance instance, Collection reachableInstances) {
         if (!reachableInstances.contains(instance)) {
             reachableInstances.add(instance);
             Iterator i = getOwnSlots(instance).iterator();
@@ -728,8 +711,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    private synchronized void addInstances(Instance instance, Slot slot,
-            Collection reachableInstances) {
+    private synchronized void addInstances(Instance instance, Slot slot, Collection reachableInstances) {
         if (instance.getOwnSlotValueType(slot) == ValueType.INSTANCE) {
             Iterator i = instance.getOwnSlotValues(slot).iterator();
             while (i.hasNext()) {
@@ -796,8 +778,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated this functionality is no longer available
      */
-    public synchronized String getSlotValueLastModificationTimestamp(Frame frame, Slot slot,
-            boolean isTemplate) {
+    public synchronized String getSlotValueLastModificationTimestamp(Frame frame, Slot slot, boolean isTemplate) {
         return null;
     }
 
@@ -1061,12 +1042,8 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getOwnSlots(frame).contains(slot);
     }
 
-    /** @deprecated use #setDirectOwnSlotValues */
-    public synchronized void moveOwnSlotValue(Frame frame, Slot slot, int from, int to) {
-        List values = new ArrayList(getDirectOwnSlotValues(frame, slot));
-        Object o = values.remove(from);
-        values.add(to, o);
-        setDirectOwnSlotValues(frame, slot, values);
+    public synchronized void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
+        getHeadFrameStore().moveDirectOwnSlotValue(frame, slot, from, to);
     }
 
     /** @deprecated use #setDirectOwnSlotValues */
@@ -1146,8 +1123,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     /** @deprecated use #setDirectTemplateSlotValues */
     public synchronized void addTemplateSlotValue(Cls cls, Slot slot, Object value) {
-        Collection values = new ArrayList(getHeadFrameStore()
-                .getDirectTemplateSlotValues(cls, slot));
+        Collection values = new ArrayList(getHeadFrameStore().getDirectTemplateSlotValues(cls, slot));
         values.add(value);
         setDirectTemplateSlotValues(cls, slot, values);
     }
@@ -1166,8 +1142,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized int getDirectSubclassCount(Cls cls) {
         // return getDirectSubclasses(cls).size();
-        return getHeadFrameStore().getDirectOwnSlotValuesCount(cls,
-                _systemFrames.getDirectSubclassesSlot());
+        return getHeadFrameStore().getDirectOwnSlotValuesCount(cls, _systemFrames.getDirectSubclassesSlot());
     }
 
     public synchronized Collection getDirectSubclasses(Cls cls) {
@@ -1245,13 +1220,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Integer getTemplateSlotMaximumCardinality2(Cls cls, Slot slot) {
-        return (Integer) getTemplateFacetValue(cls, slot, _systemFrames
-                .getMaximumCardinalityFacet());
+        return (Integer) getTemplateFacetValue(cls, slot, _systemFrames.getMaximumCardinalityFacet());
     }
 
     public synchronized Integer getTemplateSlotMinimumCardinality2(Cls cls, Slot slot) {
-        return (Integer) getTemplateFacetValue(cls, slot, _systemFrames
-                .getMinimumCardinalityFacet());
+        return (Integer) getTemplateFacetValue(cls, slot, _systemFrames.getMinimumCardinalityFacet());
     }
 
     public synchronized Number getTemplateSlotMaximumValue(Cls cls, Slot slot) {
@@ -1419,20 +1392,17 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         setDirectTemplateFacetValue(cls, slot, facet, value);
     }
 
-    public synchronized void setDirectTemplateFacetValue(Cls cls, Slot slot, Facet facet,
-            Object value) {
+    public synchronized void setDirectTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
         Collection values = CollectionUtilities.createCollection(value);
         setDirectTemplateFacetValues(cls, slot, facet, values);
     }
 
     /** @deprecated renamed to #setDirectTemplateFacetValues */
-    public synchronized void setTemplateFacetValues(Cls cls, Slot slot, Facet facet,
-            Collection values) {
+    public synchronized void setTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
         setDirectTemplateFacetValues(cls, slot, facet, values);
     }
 
-    public synchronized void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet,
-            Collection values) {
+    public synchronized void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
         if (facet.equals(_systemFrames.getValueTypeFacet())) {
             setTemplateSlotValueTypeValues(cls, slot, values);
         } else {
@@ -1440,8 +1410,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    private void setTemplateSlotValueTypeValues(Cls cls, Slot slot, ValueType type,
-            Collection otherValues) {
+    private void setTemplateSlotValueTypeValues(Cls cls, Slot slot, ValueType type, Collection otherValues) {
         Collection values = ValueTypeConstraint.getValues(type, otherValues);
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
@@ -1467,8 +1436,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 
-    public synchronized void setTemplateSlotAllowsMultipleValues(Cls cls, Slot slot,
-            boolean allowsMultiple) {
+    public synchronized void setTemplateSlotAllowsMultipleValues(Cls cls, Slot slot, boolean allowsMultiple) {
         Integer value = MaximumCardinalityConstraint.getValue(allowsMultiple);
         setDirectTemplateFacetValue(cls, slot, _systemFrames.getMaximumCardinalityFacet(), value);
     }
@@ -1487,8 +1455,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized void setTemplateSlotMaximumCardinality(Cls cls, Slot slot, int value) {
         Integer facetValue = MaximumCardinalityConstraint.getValue(value);
-        setDirectTemplateFacetValue(cls, slot, _systemFrames.getMaximumCardinalityFacet(),
-                facetValue);
+        setDirectTemplateFacetValue(cls, slot, _systemFrames.getMaximumCardinalityFacet(), facetValue);
     }
 
     public synchronized void setTemplateSlotMaximumValue(Cls cls, Slot slot, Number value) {
@@ -1497,8 +1464,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized void setTemplateSlotMinimumCardinality(Cls cls, Slot slot, int value) {
         Integer facetValue = MinimumCardinalityConstraint.getValue(value);
-        setDirectTemplateFacetValue(cls, slot, _systemFrames.getMinimumCardinalityFacet(),
-                facetValue);
+        setDirectTemplateFacetValue(cls, slot, _systemFrames.getMinimumCardinalityFacet(), facetValue);
     }
 
     public synchronized void setTemplateSlotMinimumValue(Cls cls, Slot slot, Number value) {
@@ -1564,8 +1530,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return instance.getName();
     }
 
-    protected String getDisplaySlotPatternValueNotSetString(Instance instance,
-            BrowserSlotPattern slotPattern) {
+    protected String getDisplaySlotPatternValueNotSetString(Instance instance, BrowserSlotPattern slotPattern) {
         return instance.getName();
     }
 
@@ -1853,8 +1818,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     private void setTemplateSlotValueTypeValues(Cls cls, Slot slot, Collection values) {
         ValueType oldValueType = getTemplateSlotValueType(cls, slot);
         ValueType newValueType = (values.isEmpty()) ? null : ValueTypeConstraint.getType(values);
-        getHeadFrameStore().setDirectTemplateFacetValues(cls, slot,
-                _systemFrames.getValueTypeFacet(), values);
+        getHeadFrameStore().setDirectTemplateFacetValues(cls, slot, _systemFrames.getValueTypeFacet(), values);
         if (!areComparableTypes(oldValueType, newValueType)) {
             setTemplateSlotDefaultValues(cls, slot, Collections.EMPTY_LIST);
             setTemplateSlotValues(cls, slot, Collections.EMPTY_LIST);
