@@ -1,0 +1,58 @@
+; Fri Sep 03 11:17:42 PDT 2004
+; 
+;+ (version "3.0")
+;+ (build "Build -1")
+
+([projects_00014] of User
+	(groups [projects_00016])
+	(name "Ray Fergerson")
+	(password "claudia"))
+
+([projects_00015] of User
+	(groups [projects_00018])
+	(name "Jennifer Vendetti")
+	(password "jenny"))
+
+([projects_00016] of Group
+	(members
+		[projects_00019]
+		[projects_00014])
+	(name "Developers"))
+
+([projects_00018] of Group
+	(members
+		[projects_00019]
+		[projects_00015])
+	(name "Staff"))
+
+([projects_00019] of User
+	(groups
+		[projects_00018]
+		[projects_00016])
+	(name "Natasha Noy")
+	(password "natalia"))
+
+([projects_00020] of Project
+	(location "examples/newspaper/newspaper.pprj")
+	(name "Newspaper")
+	(owner [projects_00014])
+	(readers [projects_00022])
+	(writers [projects_00022]))
+
+([projects_00021] of Project
+	(location "examples/wines/wines.pprj")
+	(name "Wines")
+	(owner [projects_00019])
+	(readers [projects_00022])
+	(writers
+		[projects_00019]
+		[projects_00023]))
+
+([projects_00022] of Group
+	(description "A special group that implicitly contains all people")
+	(name "World"))
+
+([projects_00023] of User
+	(description "Special user that is only a member of world.")
+	(name "Guest")
+	(password "guest"))
