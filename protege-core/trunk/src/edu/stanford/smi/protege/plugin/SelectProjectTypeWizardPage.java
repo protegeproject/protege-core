@@ -25,11 +25,14 @@ public class SelectProjectTypeWizardPage extends WizardPage {
         super("select project type", wizard);
         JLabel label = ComponentFactory.createSmallFontLabel("Select a Project Type:");
         label.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-        add(label, BorderLayout.NORTH);
+        JPanel listPanel = new JPanel(new BorderLayout());
+        listPanel.add(label, BorderLayout.NORTH);
         list = createList();
-        add(new JScrollPane(list), BorderLayout.CENTER);
+        listPanel.add(new JScrollPane(list), BorderLayout.CENTER);
+        listPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         configureCheckBox();
-        add(doBuildBox, BorderLayout.SOUTH);
+        add(listPanel, BorderLayout.CENTER);
+        add(doBuildBox, BorderLayout.NORTH);
     }
 
     private SelectableList createList() {
