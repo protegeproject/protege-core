@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.lang.reflect.*;
+import java.lang.reflect.Proxy;
 import java.net.*;
 import java.util.*;
 
@@ -126,8 +127,8 @@ public class FrameStoreManager {
 
     private boolean enable(FrameStore frameStore) {
         FrameStore preceeding = getPreceedingEnabledFrameStore(frameStore);
-        boolean wasEnabled = (preceeding == null) ? headFrameStore.equals(frameStore) : preceeding
-                .getDelegate().equals(frameStore);
+        boolean wasEnabled = (preceeding == null) ? headFrameStore.equals(frameStore) : preceeding.getDelegate()
+                .equals(frameStore);
         if (!wasEnabled) {
             connect(preceeding, frameStore);
             frameStore.reinitialize();
