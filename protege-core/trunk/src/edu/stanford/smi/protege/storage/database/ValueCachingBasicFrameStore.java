@@ -548,6 +548,7 @@ public class ValueCachingBasicFrameStore implements NarrowFrameStore {
             if (cachedFrames.size() == count) {
                 frames = cachedFrames;
             } else {
+                Log.getLogger().info("Not enough memory to cache all frames");
                 frames = getDelegate().getFrames();
             }
         }
