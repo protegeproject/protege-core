@@ -1,0 +1,167 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<project name = "Protege" default = "usage" basedir = ".">    
+	<description>Autonomous Ant file for building Protege</description>  
+	<!-- Load necessary property files -->
+	<property file = "./src/edu/stanford/smi/protege/resource/files/build.properties"/>  
+	<property file = "local.properties"/>  
+	<!-- Set global properties for this build -->
+	<property name = "extended.name" value = "${name} ${build.version} ${build.status}"/>
+	<property name = "src" value = "./src"/>  
+	<property name = "classes" value = "./classes"/>  
+	<property name = "docs" value = "./docs"/> 
+	<property name = "javadocs" value = "${docs}/apidocs"/>
+	<property name = "dist" value = "./dist"/>
+	<property name = "lib" value = "./lib"/>
+	<!-- Compiler options -->
+	<property name = "deprecation" value = "on"/>    
+	<property name = "debug" value = "off"/>  
+	<property name = "optimize" value = "on"/>  
+	<property name = "packages" value = "edu.*"/>  
+	<property name = "includeAntRuntime" value = "no"/>
+	<property name = "source" value = "1.4"/>
+	<path id = "project.classpath">    
+		<pathelement location = "${lib}/junit.jar"/>
+		<pathelement location = "${lib}/looks.jar"/>
+		<pathelement location = "${lib}/unicode_panel.jar"/>
+	</path>  
+	<!-- =================================================================== -->
+	
+	<!-- USAGE -->
+	
+	<!-- Instructions for using the build file -->
+	
+	<!-- =================================================================== -->
+	<target name = "usage" depends = "init">    
+		<echo message = ""/>
+		<echo message = "protege build instructions"/>
+		<echo message = "-------------------------------------------------------------"/>
+		<echo message = ""/>
+		<echo message = " available targets are:"/>
+		<echo message = ""/>
+		<echo message = "   all      --> runs compile, documentation, jar, dist tasks"/>
+		<echo message = "   clean    --> cleans up generated files and directories"/>
+		<echo message = "   compile  --> compiles the source code"/>
+		<echo message = "   dist     --> generates source and binary distributions"/>
+		<echo message = "   jar      --> generates the protege JAR file"/>
+		<echo message = "   javadocs --> generates the API docs"/>
+		<echo message = "   usage    --> provides help on using the build tool (default)"/>
+		<echo message = ""/>
+		<echo message = "-------------------------------------------------------------"/>
+		<echo message = ""/>  
+	</target>
+	<!-- =================================================================== -->
+	
+	<!-- INIT -->
+	
+	<!-- Creates the timestamp -->
+	
+	<!-- =================================================================== -->
+	<target name = "init">    
+		<tstamp/>  
+	</target>  
+	<!-- =================================================================== -->
+	
+	<!-- PREPARE -->
+	
+	<!-- Create the build directory structure -->
+	
+	<!-- =================================================================== -->
+	<target name = "prepare" depends = "init">    
+		<mkdir dir = "${classes}"/>    
+		<mkdir dir = "${dist}"/>
+		<mkdir dir = "${javadocs}"/>    
+	</target>  
+	<!-- =================================================================== -->
+	
+	<!-- JAVACC -->
+	
+	<!-- =================================================================== -->
+	<target name = "javacc" depends = "prepare">    
+		<javacc javacchome = "${javacc.home}/bin/lib" target = "./Parser.jj" outputdirectory = "${src}/edu/stanford/smi/protege/storage/clips"/>  
+	</target>  
+	<!-- =================================================================== -->
+	
+	<!-- COMPILE -->
+	
+	<!-- =================================================================== -->
+	<target name = "compile" depends = "prepare, javacc">    
+		<javac srcdir = "${src}" destdir = "${classes}" deprecation = "{deprecation}" debug = "${debug}" optimize = "${optimize}" includeAntRuntime = "${includeAntRuntime}" source = "${source}">      
+			<classpath refid = "project.classpath"/>    
+		</javac>    
+		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.Server"/>    
+		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.ServerProject"/>    
+		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.ServerFrameStore"/>  
+	</target>
+	<!-- =================================================================== -->
+	
+	<!-- JAR -->
+	
+	<!-- =================================================================== -->
+	<target name = "jar" depends = "compile">    
+		<copy todir = "${classes}/edu/stanford/smi/protege/resource/files">      
+			<fileset dir = "${src}/edu/stanford/smi/protege/resource/files"/>    
+		</copy>    
+		<copy todir = "${classes}/edu/stanford/smi/protege/resource/image">      
+			<fileset dir = "${src}/edu/stanford/smi/protege/resource/image"/>    
+		</copy>    
+		<jar jarfile = "${dist}/protege.jar" basedir = "${classes}" manifest = "${src}/META-INF/MANIFEST.MF"/>  
+	</target>
+	<!-- =================================================================== -->
+	
+	<!-- JAVADOCS -->
+	
+	<!-- Create the API documentation -->
+	
+	<!-- =================================================================== -->
+	<target name = "javadocs" depends = "prepare">    
+		<javadoc packagenames = "${packages}" sourcepath = "${src}" destdir = "${javadocs}" doctitle = "${extended.name}" windowtitle = "${extended.name} API" author = "true" source = "${source}">      
+			<bottom><![CDATA[
+	<small>
+	<a href=mailto:protege-help@smi.stanford.edu>Submit a bug report or feature request</a><br>
+	${trademark}<br>
+	${copyright}
+      </small>]]></bottom>      
+			<link href = "http://java.sun.com/j2se/1.4/docs/api/"/>      
+			<link href = "http://www.junit.org/junit/javadoc/3.8/"/>      
+			<classpath refid = "project.classpath"/>
+		</javadoc>  
+	</target>  
+	<!-- =================================================================== -->
+	
+	<!-- DIST -->
+	
+	<!-- Zips up all source code, resources, and api documentation. -->
+	
+	<!-- =================================================================== -->
+	<target name = "dist" depends = "init">
+		<zip zipfile = "${dist}/protege.src.${build.version}.zip" update = "no">
+			<zipfileset dir = "${src}" prefix = "${extended.name}/src"/>
+			<zipfileset dir = "${javadocs}" prefix = "${extended.name}/docs/apidocs"/>
+			<zipfileset dir = "." includes = "Parser.jj" prefix = "${extended.name}"/>
+			<zipfileset dir = "${lib}" includes = "*.jar" prefix = "${extended.name}/lib"/>
+		</zip>
+		<zip zipfile = "${dist}/protege.bin.${build.version}.zip" update = "no">
+			<zipfileset dir = "${lib}" includes = "*.jar"/>
+			<zipfileset dir = "${dist}" includes = "protege.jar"/>
+		</zip>
+	</target>
+	<!-- =================================================================== -->
+	
+	<!-- ALL -->
+	
+	<!-- Generates jar, javadoc, and source distribution. -->
+	
+	<!-- =================================================================== -->
+	<target name = "all" depends = "compile, javadocs, jar, dist"/>
+	<!-- =================================================================== -->
+	
+	<!-- CLEAN -->
+	
+	<!-- =================================================================== -->
+	<target name = "clean" description = "clean up">    
+		<delete dir = "${classes}"/>  
+		<delete dir = "${dist}"/>
+		<delete dir = "${javadocs}"/>
+		<delete file = "${protege.jar}"/>
+	</target>
+</project>
