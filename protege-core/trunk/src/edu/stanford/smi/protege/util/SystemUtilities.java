@@ -103,6 +103,17 @@ public class SystemUtilities {
         return machineName;
     }
 
+    public static String getMachineIpAddress() {
+        String machineIpAddress;
+        try {
+            machineIpAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            Log.getLogger().warning("Unable to determine ip address");
+            machineIpAddress = "127.0.0.1";
+        }
+        return machineIpAddress;
+    }
+
     public static String getFileEncoding() {
         return getSystemProperty("protege.file.encoding", "UTF-8");
     }

@@ -6,14 +6,14 @@ public class Session implements RemoteSession, Externalizable {
     private static int nextId = 100;
     private int id;
     private String userName;
-    private String userMachine;
+    private String userIpAddress;
     private long startTime;
     private long lastAccessTime;
 
-    public Session(String userName, String userMachine) {
+    public Session(String userName, String userIpAddress) {
         this.id = nextId++;
         this.userName = userName;
-        this.userMachine = userMachine;
+        this.userIpAddress = userIpAddress;
         this.startTime = currentTime();
         this.lastAccessTime = startTime;
     }
@@ -25,7 +25,7 @@ public class Session implements RemoteSession, Externalizable {
     public void writeExternal(ObjectOutput output) throws IOException {
         output.writeInt(id);
         output.writeUTF(userName);
-        output.writeUTF(userMachine);
+        output.writeUTF(userIpAddress);
         output.writeLong(startTime);
         output.writeLong(lastAccessTime);
     }
@@ -33,7 +33,7 @@ public class Session implements RemoteSession, Externalizable {
     public void readExternal(ObjectInput input) throws IOException {
         id = input.readInt();
         userName = input.readUTF();
-        userMachine = input.readUTF();
+        userIpAddress = input.readUTF();
         startTime = input.readLong();
         lastAccessTime = input.readLong();
 
@@ -43,8 +43,8 @@ public class Session implements RemoteSession, Externalizable {
         return userName;
     }
 
-    public String getUserMachine() {
-        return userMachine;
+    public String getUserIpAddress() {
+        return userIpAddress;
     }
 
     public long getLastAccessTime() {

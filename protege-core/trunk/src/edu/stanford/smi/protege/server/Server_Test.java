@@ -33,25 +33,25 @@ public class Server_Test extends SimpleTestCase {
         }
     }
 
-    private static String getMachineName() {
-        return SystemUtilities.getMachineName();
+    private static String getMachineIpAddress() {
+        return SystemUtilities.getMachineIpAddress();
     }
 
     public void testSession() throws RemoteException {
-        RemoteSession session = _server.openSession(USER1, getMachineName(), PASSWORD1);
+        RemoteSession session = _server.openSession(USER1, getMachineIpAddress(), PASSWORD1);
         assertNotNull("session", session);
-        RemoteSession noSession = _server.openSession(USER1, getMachineName(), WRONG_PASSWORD);
+        RemoteSession noSession = _server.openSession(USER1, getMachineIpAddress(), WRONG_PASSWORD);
         assertNull("no session", noSession);
         _server.closeSession(session);
     }
 
     public void testConnection() throws RemoteException {
-        RemoteSession session1 = _server.openSession(USER1, getMachineName(), PASSWORD1);
+        RemoteSession session1 = _server.openSession(USER1, getMachineIpAddress(), PASSWORD1);
         assertNotNull(session1);
         RemoteServerProject project1 = _server.openProject(PROJECT_NAME, session1);
         assertNotNull(project1);
 
-        RemoteSession session2 = _server.openSession(USER2, getMachineName(), PASSWORD2);
+        RemoteSession session2 = _server.openSession(USER2, getMachineIpAddress(), PASSWORD2);
         RemoteServerProject project2 = _server.openProject(PROJECT_NAME, session2);
         assertEquals("projects", project1, project2);
 

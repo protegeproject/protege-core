@@ -79,8 +79,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private Registry getRegistry() throws RemoteException {
-        int port = Integer.getInteger("protege.rmi.registry.port", Registry.REGISTRY_PORT)
-                .intValue();
+        int port = Integer.getInteger("protege.rmi.registry.port", Registry.REGISTRY_PORT).intValue();
         return LocateRegistry.getRegistry(null, port, RMISocketFactory.getSocketFactory());
     }
 
@@ -121,12 +120,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     protected void printUsage() {
         StringBuffer buffer = new StringBuffer();
-        buffer
-                .append("usage: java -cp protege.jar edu.stanford.smi.protege.server.Server [options] <metaproject>");
+        buffer.append("usage: java -cp protege.jar edu.stanford.smi.protege.server.Server [options] <metaproject>");
         buffer.append("\n\tOptions:");
         buffer.append("\n\t\t" + SAVE_INTERVAL_OPTION + "<nseconds>");
-        buffer
-                .append("\n\t\t\tSave any dirty projects every n minutes (only needed for file based projects)");
+        buffer.append("\n\t\t\tSave any dirty projects every n minutes (only needed for file based projects)");
         buffer.append("\n\t\t" + NOPRELOAD_OPTION);
         buffer.append("\n\t\t\tDon't preload projects.");
         System.err.println(buffer.toString());
@@ -207,10 +204,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return name;
     }
 
-    public RemoteSession openSession(String username, String userMachine, String password) {
+    public RemoteSession openSession(String username, String userIpAddress, String password) {
         RemoteSession session = null;
         if (isValid(username, password)) {
-            session = new Session(username, userMachine);
+            session = new Session(username, userIpAddress);
             _sessions.add(session);
         }
         return session;
