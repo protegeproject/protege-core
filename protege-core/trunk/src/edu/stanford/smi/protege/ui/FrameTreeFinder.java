@@ -61,7 +61,7 @@ public abstract class FrameTreeFinder extends Finder {
 
     protected List getMatches(String text, int maxMatches) {
         Cls kbRoot = knowledgeBase.getRootCls();
-        List matches = getMatchingFrames(text, maxMatches);
+        Set matches = getMatchingFrames(text, maxMatches);
         LazyTreeRoot root = (LazyTreeRoot) tree.getModel().getRoot();
         Set rootNodes = new HashSet((Collection) root.getUserObject());
         if (rootNodes.size() != 1 || !equals(CollectionUtilities.getFirstItem(rootNodes), kbRoot)) {
@@ -79,22 +79,26 @@ public abstract class FrameTreeFinder extends Finder {
                 }
             }
         }
-        Collections.sort(matches, new FrameComparator());
-        return matches;
+        List sortedMatches = new ArrayList(matches);
+        Collections.sort(sortedMatches, new FrameComparator());
+        return sortedMatches;
     }
 
-    protected List getMatchingFrames(String text, int maxMatches) {
+    protected Set getMatchingFrames(String text, int maxMatches) {
         if (!text.endsWith("*")) {
             text += '*';
         }
-        Slot slot = getBrowserSlot(knowledgeBase);
-        List matches = new ArrayList(knowledgeBase.getMatchingFrames(slot, null, false, text,
-                maxMatches));
-        Iterator i = matches.iterator();
+        StringMatcher matcher = new SimpleStringMatcher(text);
+        Set matches = new LinkedHashSet();
+        Collection matchingReferences = knowledgeBase.getMatchingReferences(text, maxMatches);
+        Iterator i = matchingReferences.iterator();
         while (i.hasNext()) {
-            Frame frame = (Frame) i.next();
-            if (!isCorrectType(frame)) {
-                i.remove();
+            Reference ref = (Reference) i.next();
+            Frame frame = ref.getFrame();
+            if (isCorrectType(frame)) {
+                if (matcher.isMatch(frame.getBrowserText())) {
+                    matches.add(frame);
+                }
             }
         }
         return matches;
