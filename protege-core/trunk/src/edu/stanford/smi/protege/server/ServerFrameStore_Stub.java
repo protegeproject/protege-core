@@ -30,72 +30,73 @@ public final class ServerFrameStore_Stub
     private static java.lang.reflect.Method $method_getClsesWithAnyDirectTemplateSlotValue_18;
     private static java.lang.reflect.Method $method_getClsesWithDirectTemplateFacetValue_19;
     private static java.lang.reflect.Method $method_getClsesWithDirectTemplateSlotValue_20;
-    private static java.lang.reflect.Method $method_getClsesWithMatchingDirectTemplateFacetValue_21;
-    private static java.lang.reflect.Method $method_getClsesWithMatchingDirectTemplateSlotValue_22;
-    private static java.lang.reflect.Method $method_getDirectDomain_23;
-    private static java.lang.reflect.Method $method_getDirectInstances_24;
-    private static java.lang.reflect.Method $method_getDirectOwnSlotValues_25;
-    private static java.lang.reflect.Method $method_getDirectOwnSlotValuesClosure_26;
-    private static java.lang.reflect.Method $method_getDirectOwnSlotValuesCount_27;
-    private static java.lang.reflect.Method $method_getDirectSubclasses_28;
-    private static java.lang.reflect.Method $method_getDirectSubslots_29;
-    private static java.lang.reflect.Method $method_getDirectSuperclasses_30;
-    private static java.lang.reflect.Method $method_getDirectSuperslots_31;
-    private static java.lang.reflect.Method $method_getDirectTemplateFacetValues_32;
-    private static java.lang.reflect.Method $method_getDirectTemplateSlotValues_33;
-    private static java.lang.reflect.Method $method_getDirectTemplateSlots_34;
-    private static java.lang.reflect.Method $method_getDirectTypes_35;
-    private static java.lang.reflect.Method $method_getDirectlyOverriddenTemplateFacets_36;
-    private static java.lang.reflect.Method $method_getDirectlyOverriddenTemplateSlots_37;
-    private static java.lang.reflect.Method $method_getDomain_38;
-    private static java.lang.reflect.Method $method_getEvents_39;
-    private static java.lang.reflect.Method $method_getFacetCount_40;
-    private static java.lang.reflect.Method $method_getFacets_41;
-    private static java.lang.reflect.Method $method_getFrame_42;
+    private static java.lang.reflect.Method $method_getClsesWithMatchingBrowserText_21;
+    private static java.lang.reflect.Method $method_getClsesWithMatchingDirectTemplateFacetValue_22;
+    private static java.lang.reflect.Method $method_getClsesWithMatchingDirectTemplateSlotValue_23;
+    private static java.lang.reflect.Method $method_getDirectDomain_24;
+    private static java.lang.reflect.Method $method_getDirectInstances_25;
+    private static java.lang.reflect.Method $method_getDirectOwnSlotValues_26;
+    private static java.lang.reflect.Method $method_getDirectOwnSlotValuesClosure_27;
+    private static java.lang.reflect.Method $method_getDirectOwnSlotValuesCount_28;
+    private static java.lang.reflect.Method $method_getDirectSubclasses_29;
+    private static java.lang.reflect.Method $method_getDirectSubslots_30;
+    private static java.lang.reflect.Method $method_getDirectSuperclasses_31;
+    private static java.lang.reflect.Method $method_getDirectSuperslots_32;
+    private static java.lang.reflect.Method $method_getDirectTemplateFacetValues_33;
+    private static java.lang.reflect.Method $method_getDirectTemplateSlotValues_34;
+    private static java.lang.reflect.Method $method_getDirectTemplateSlots_35;
+    private static java.lang.reflect.Method $method_getDirectTypes_36;
+    private static java.lang.reflect.Method $method_getDirectlyOverriddenTemplateFacets_37;
+    private static java.lang.reflect.Method $method_getDirectlyOverriddenTemplateSlots_38;
+    private static java.lang.reflect.Method $method_getDomain_39;
+    private static java.lang.reflect.Method $method_getEvents_40;
+    private static java.lang.reflect.Method $method_getFacetCount_41;
+    private static java.lang.reflect.Method $method_getFacets_42;
     private static java.lang.reflect.Method $method_getFrame_43;
-    private static java.lang.reflect.Method $method_getFrameCount_44;
-    private static java.lang.reflect.Method $method_getFrameName_45;
-    private static java.lang.reflect.Method $method_getFrameValues_46;
-    private static java.lang.reflect.Method $method_getFrames_47;
-    private static java.lang.reflect.Method $method_getFramesWithAnyDirectOwnSlotValue_48;
-    private static java.lang.reflect.Method $method_getFramesWithDirectOwnSlotValue_49;
-    private static java.lang.reflect.Method $method_getFramesWithMatchingDirectOwnSlotValue_50;
-    private static java.lang.reflect.Method $method_getInstances_51;
-    private static java.lang.reflect.Method $method_getMatchingReferences_52;
-    private static java.lang.reflect.Method $method_getOverriddenTemplateFacets_53;
-    private static java.lang.reflect.Method $method_getOverriddenTemplateSlots_54;
-    private static java.lang.reflect.Method $method_getOwnFacetValues_55;
-    private static java.lang.reflect.Method $method_getOwnFacets_56;
-    private static java.lang.reflect.Method $method_getOwnSlotValues_57;
-    private static java.lang.reflect.Method $method_getOwnSlots_58;
-    private static java.lang.reflect.Method $method_getReferences_59;
-    private static java.lang.reflect.Method $method_getSimpleInstanceCount_60;
-    private static java.lang.reflect.Method $method_getSlotCount_61;
-    private static java.lang.reflect.Method $method_getSlots_62;
-    private static java.lang.reflect.Method $method_getSubclasses_63;
-    private static java.lang.reflect.Method $method_getSubslots_64;
-    private static java.lang.reflect.Method $method_getSuperclasses_65;
-    private static java.lang.reflect.Method $method_getSuperslots_66;
-    private static java.lang.reflect.Method $method_getTemplateFacetValues_67;
-    private static java.lang.reflect.Method $method_getTemplateFacets_68;
-    private static java.lang.reflect.Method $method_getTemplateSlotValues_69;
-    private static java.lang.reflect.Method $method_getTemplateSlots_70;
-    private static java.lang.reflect.Method $method_getTypes_71;
-    private static java.lang.reflect.Method $method_moveDirectOwnSlotValue_72;
-    private static java.lang.reflect.Method $method_moveDirectSubclass_73;
-    private static java.lang.reflect.Method $method_moveDirectSubslot_74;
-    private static java.lang.reflect.Method $method_moveDirectTemplateSlot_75;
-    private static java.lang.reflect.Method $method_preload_76;
-    private static java.lang.reflect.Method $method_removeDirectSuperclass_77;
-    private static java.lang.reflect.Method $method_removeDirectSuperslot_78;
-    private static java.lang.reflect.Method $method_removeDirectTemplateFacetOverrides_79;
-    private static java.lang.reflect.Method $method_removeDirectTemplateSlot_80;
-    private static java.lang.reflect.Method $method_removeDirectType_81;
-    private static java.lang.reflect.Method $method_rollbackTransaction_82;
-    private static java.lang.reflect.Method $method_setDirectOwnSlotValues_83;
-    private static java.lang.reflect.Method $method_setDirectTemplateFacetValues_84;
-    private static java.lang.reflect.Method $method_setDirectTemplateSlotValues_85;
-    private static java.lang.reflect.Method $method_setFrameName_86;
+    private static java.lang.reflect.Method $method_getFrame_44;
+    private static java.lang.reflect.Method $method_getFrameCount_45;
+    private static java.lang.reflect.Method $method_getFrameName_46;
+    private static java.lang.reflect.Method $method_getFrameValues_47;
+    private static java.lang.reflect.Method $method_getFrames_48;
+    private static java.lang.reflect.Method $method_getFramesWithAnyDirectOwnSlotValue_49;
+    private static java.lang.reflect.Method $method_getFramesWithDirectOwnSlotValue_50;
+    private static java.lang.reflect.Method $method_getFramesWithMatchingDirectOwnSlotValue_51;
+    private static java.lang.reflect.Method $method_getInstances_52;
+    private static java.lang.reflect.Method $method_getMatchingReferences_53;
+    private static java.lang.reflect.Method $method_getOverriddenTemplateFacets_54;
+    private static java.lang.reflect.Method $method_getOverriddenTemplateSlots_55;
+    private static java.lang.reflect.Method $method_getOwnFacetValues_56;
+    private static java.lang.reflect.Method $method_getOwnFacets_57;
+    private static java.lang.reflect.Method $method_getOwnSlotValues_58;
+    private static java.lang.reflect.Method $method_getOwnSlots_59;
+    private static java.lang.reflect.Method $method_getReferences_60;
+    private static java.lang.reflect.Method $method_getSimpleInstanceCount_61;
+    private static java.lang.reflect.Method $method_getSlotCount_62;
+    private static java.lang.reflect.Method $method_getSlots_63;
+    private static java.lang.reflect.Method $method_getSubclasses_64;
+    private static java.lang.reflect.Method $method_getSubslots_65;
+    private static java.lang.reflect.Method $method_getSuperclasses_66;
+    private static java.lang.reflect.Method $method_getSuperslots_67;
+    private static java.lang.reflect.Method $method_getTemplateFacetValues_68;
+    private static java.lang.reflect.Method $method_getTemplateFacets_69;
+    private static java.lang.reflect.Method $method_getTemplateSlotValues_70;
+    private static java.lang.reflect.Method $method_getTemplateSlots_71;
+    private static java.lang.reflect.Method $method_getTypes_72;
+    private static java.lang.reflect.Method $method_moveDirectOwnSlotValue_73;
+    private static java.lang.reflect.Method $method_moveDirectSubclass_74;
+    private static java.lang.reflect.Method $method_moveDirectSubslot_75;
+    private static java.lang.reflect.Method $method_moveDirectTemplateSlot_76;
+    private static java.lang.reflect.Method $method_preload_77;
+    private static java.lang.reflect.Method $method_removeDirectSuperclass_78;
+    private static java.lang.reflect.Method $method_removeDirectSuperslot_79;
+    private static java.lang.reflect.Method $method_removeDirectTemplateFacetOverrides_80;
+    private static java.lang.reflect.Method $method_removeDirectTemplateSlot_81;
+    private static java.lang.reflect.Method $method_removeDirectType_82;
+    private static java.lang.reflect.Method $method_rollbackTransaction_83;
+    private static java.lang.reflect.Method $method_setDirectOwnSlotValues_84;
+    private static java.lang.reflect.Method $method_setDirectTemplateFacetValues_85;
+    private static java.lang.reflect.Method $method_setDirectTemplateSlotValues_86;
+    private static java.lang.reflect.Method $method_setFrameName_87;
     
     static {
 	try {
@@ -120,72 +121,73 @@ public final class ServerFrameStore_Stub
 	    $method_getClsesWithAnyDirectTemplateSlotValue_18 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getClsesWithAnyDirectTemplateSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
 	    $method_getClsesWithDirectTemplateFacetValue_19 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getClsesWithDirectTemplateFacetValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, java.lang.Object.class, edu.stanford.smi.protege.server.RemoteSession.class});
 	    $method_getClsesWithDirectTemplateSlotValue_20 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getClsesWithDirectTemplateSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, java.lang.Object.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getClsesWithMatchingDirectTemplateFacetValue_21 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getClsesWithMatchingDirectTemplateFacetValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, java.lang.String.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getClsesWithMatchingDirectTemplateSlotValue_22 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getClsesWithMatchingDirectTemplateSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, java.lang.String.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectDomain_23 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectDomain", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectInstances_24 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectInstances", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectOwnSlotValues_25 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectOwnSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectOwnSlotValuesClosure_26 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectOwnSlotValuesClosure", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectOwnSlotValuesCount_27 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectOwnSlotValuesCount", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectSubclasses_28 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectSubclasses", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectSubslots_29 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectSubslots", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectSuperclasses_30 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectSuperclasses", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectSuperslots_31 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectSuperslots", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectTemplateFacetValues_32 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectTemplateFacetValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectTemplateSlotValues_33 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectTemplateSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectTemplateSlots_34 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectTemplateSlots", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectTypes_35 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectTypes", new java.lang.Class[] {edu.stanford.smi.protege.model.Instance.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectlyOverriddenTemplateFacets_36 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectlyOverriddenTemplateFacets", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDirectlyOverriddenTemplateSlots_37 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectlyOverriddenTemplateSlots", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getDomain_38 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDomain", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getEvents_39 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getEvents", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFacetCount_40 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFacetCount", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFacets_41 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFacets", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFrame_42 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrame", new java.lang.Class[] {edu.stanford.smi.protege.model.FrameID.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFrame_43 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrame", new java.lang.Class[] {java.lang.String.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFrameCount_44 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrameCount", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFrameName_45 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrameName", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFrameValues_46 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrameValues", new java.lang.Class[] {java.util.Collection.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFrames_47 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrames", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFramesWithAnyDirectOwnSlotValue_48 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFramesWithAnyDirectOwnSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFramesWithDirectOwnSlotValue_49 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFramesWithDirectOwnSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, java.lang.Object.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getFramesWithMatchingDirectOwnSlotValue_50 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFramesWithMatchingDirectOwnSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, java.lang.String.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getInstances_51 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getInstances", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getMatchingReferences_52 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getMatchingReferences", new java.lang.Class[] {java.lang.String.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getOverriddenTemplateFacets_53 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOverriddenTemplateFacets", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getOverriddenTemplateSlots_54 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOverriddenTemplateSlots", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getOwnFacetValues_55 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOwnFacetValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getOwnFacets_56 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOwnFacets", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getOwnSlotValues_57 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOwnSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getOwnSlots_58 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOwnSlots", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getReferences_59 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getReferences", new java.lang.Class[] {java.lang.Object.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getSimpleInstanceCount_60 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSimpleInstanceCount", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getSlotCount_61 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSlotCount", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getSlots_62 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSlots", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getSubclasses_63 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSubclasses", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getSubslots_64 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSubslots", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getSuperclasses_65 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSuperclasses", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getSuperslots_66 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSuperslots", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getTemplateFacetValues_67 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getTemplateFacetValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getTemplateFacets_68 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getTemplateFacets", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getTemplateSlotValues_69 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getTemplateSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getTemplateSlots_70 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getTemplateSlots", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_getTypes_71 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getTypes", new java.lang.Class[] {edu.stanford.smi.protege.model.Instance.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_moveDirectOwnSlotValue_72 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("moveDirectOwnSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, int.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_moveDirectSubclass_73 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("moveDirectSubclass", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Cls.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_moveDirectSubslot_74 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("moveDirectSubslot", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Slot.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_moveDirectTemplateSlot_75 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("moveDirectTemplateSlot", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_preload_76 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("preload", new java.lang.Class[] {boolean.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_removeDirectSuperclass_77 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("removeDirectSuperclass", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_removeDirectSuperslot_78 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("removeDirectSuperslot", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_removeDirectTemplateFacetOverrides_79 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("removeDirectTemplateFacetOverrides", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_removeDirectTemplateSlot_80 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("removeDirectTemplateSlot", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_removeDirectType_81 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("removeDirectType", new java.lang.Class[] {edu.stanford.smi.protege.model.Instance.class, edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_rollbackTransaction_82 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("rollbackTransaction", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_setDirectOwnSlotValues_83 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("setDirectOwnSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, java.util.Collection.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_setDirectTemplateFacetValues_84 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("setDirectTemplateFacetValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, java.util.Collection.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_setDirectTemplateSlotValues_85 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("setDirectTemplateSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, java.util.Collection.class, edu.stanford.smi.protege.server.RemoteSession.class});
-	    $method_setFrameName_86 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("setFrameName", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, java.lang.String.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getClsesWithMatchingBrowserText_21 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getClsesWithMatchingBrowserText", new java.lang.Class[] {java.lang.String.class, java.util.Collection.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getClsesWithMatchingDirectTemplateFacetValue_22 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getClsesWithMatchingDirectTemplateFacetValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, java.lang.String.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getClsesWithMatchingDirectTemplateSlotValue_23 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getClsesWithMatchingDirectTemplateSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, java.lang.String.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectDomain_24 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectDomain", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectInstances_25 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectInstances", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectOwnSlotValues_26 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectOwnSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectOwnSlotValuesClosure_27 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectOwnSlotValuesClosure", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectOwnSlotValuesCount_28 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectOwnSlotValuesCount", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectSubclasses_29 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectSubclasses", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectSubslots_30 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectSubslots", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectSuperclasses_31 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectSuperclasses", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectSuperslots_32 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectSuperslots", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectTemplateFacetValues_33 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectTemplateFacetValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectTemplateSlotValues_34 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectTemplateSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectTemplateSlots_35 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectTemplateSlots", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectTypes_36 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectTypes", new java.lang.Class[] {edu.stanford.smi.protege.model.Instance.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectlyOverriddenTemplateFacets_37 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectlyOverriddenTemplateFacets", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDirectlyOverriddenTemplateSlots_38 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDirectlyOverriddenTemplateSlots", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getDomain_39 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getDomain", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getEvents_40 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getEvents", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFacetCount_41 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFacetCount", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFacets_42 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFacets", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFrame_43 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrame", new java.lang.Class[] {edu.stanford.smi.protege.model.FrameID.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFrame_44 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrame", new java.lang.Class[] {java.lang.String.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFrameCount_45 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrameCount", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFrameName_46 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrameName", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFrameValues_47 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrameValues", new java.lang.Class[] {java.util.Collection.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFrames_48 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFrames", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFramesWithAnyDirectOwnSlotValue_49 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFramesWithAnyDirectOwnSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFramesWithDirectOwnSlotValue_50 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFramesWithDirectOwnSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, java.lang.Object.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getFramesWithMatchingDirectOwnSlotValue_51 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getFramesWithMatchingDirectOwnSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, java.lang.String.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getInstances_52 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getInstances", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getMatchingReferences_53 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getMatchingReferences", new java.lang.Class[] {java.lang.String.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getOverriddenTemplateFacets_54 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOverriddenTemplateFacets", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getOverriddenTemplateSlots_55 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOverriddenTemplateSlots", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getOwnFacetValues_56 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOwnFacetValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getOwnFacets_57 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOwnFacets", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getOwnSlotValues_58 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOwnSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getOwnSlots_59 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getOwnSlots", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getReferences_60 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getReferences", new java.lang.Class[] {java.lang.Object.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getSimpleInstanceCount_61 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSimpleInstanceCount", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getSlotCount_62 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSlotCount", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getSlots_63 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSlots", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getSubclasses_64 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSubclasses", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getSubslots_65 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSubslots", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getSuperclasses_66 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSuperclasses", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getSuperslots_67 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getSuperslots", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getTemplateFacetValues_68 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getTemplateFacetValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getTemplateFacets_69 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getTemplateFacets", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getTemplateSlotValues_70 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getTemplateSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getTemplateSlots_71 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getTemplateSlots", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_getTypes_72 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("getTypes", new java.lang.Class[] {edu.stanford.smi.protege.model.Instance.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_moveDirectOwnSlotValue_73 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("moveDirectOwnSlotValue", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, int.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_moveDirectSubclass_74 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("moveDirectSubclass", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Cls.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_moveDirectSubslot_75 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("moveDirectSubslot", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Slot.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_moveDirectTemplateSlot_76 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("moveDirectTemplateSlot", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, int.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_preload_77 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("preload", new java.lang.Class[] {boolean.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_removeDirectSuperclass_78 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("removeDirectSuperclass", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_removeDirectSuperslot_79 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("removeDirectSuperslot", new java.lang.Class[] {edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_removeDirectTemplateFacetOverrides_80 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("removeDirectTemplateFacetOverrides", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_removeDirectTemplateSlot_81 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("removeDirectTemplateSlot", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_removeDirectType_82 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("removeDirectType", new java.lang.Class[] {edu.stanford.smi.protege.model.Instance.class, edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_rollbackTransaction_83 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("rollbackTransaction", new java.lang.Class[] {edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_setDirectOwnSlotValues_84 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("setDirectOwnSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, edu.stanford.smi.protege.model.Slot.class, java.util.Collection.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_setDirectTemplateFacetValues_85 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("setDirectTemplateFacetValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, edu.stanford.smi.protege.model.Facet.class, java.util.Collection.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_setDirectTemplateSlotValues_86 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("setDirectTemplateSlotValues", new java.lang.Class[] {edu.stanford.smi.protege.model.Cls.class, edu.stanford.smi.protege.model.Slot.class, java.util.Collection.class, edu.stanford.smi.protege.server.RemoteSession.class});
+	    $method_setFrameName_87 = edu.stanford.smi.protege.server.RemoteServerFrameStore.class.getMethod("setFrameName", new java.lang.Class[] {edu.stanford.smi.protege.model.Frame.class, java.lang.String.class, edu.stanford.smi.protege.server.RemoteSession.class});
 	} catch (java.lang.NoSuchMethodException e) {
 	    throw new java.lang.NoSuchMethodError(
 		"stub class initialization failed");
@@ -526,12 +528,28 @@ public final class ServerFrameStore_Stub
 	}
     }
     
+    // implementation of getClsesWithMatchingBrowserText(String, Collection, int, RemoteSession)
+    public java.util.Set getClsesWithMatchingBrowserText(java.lang.String $param_String_1, java.util.Collection $param_Collection_2, int $param_int_3, edu.stanford.smi.protege.server.RemoteSession $param_RemoteSession_4)
+	throws java.rmi.RemoteException
+    {
+	try {
+	    Object $result = ref.invoke(this, $method_getClsesWithMatchingBrowserText_21, new java.lang.Object[] {$param_String_1, $param_Collection_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, 2296855330137979424L);
+	    return ((java.util.Set) $result);
+	} catch (java.lang.RuntimeException e) {
+	    throw e;
+	} catch (java.rmi.RemoteException e) {
+	    throw e;
+	} catch (java.lang.Exception e) {
+	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
+	}
+    }
+    
     // implementation of getClsesWithMatchingDirectTemplateFacetValue(Slot, Facet, String, int, RemoteSession)
     public java.util.Set getClsesWithMatchingDirectTemplateFacetValue(edu.stanford.smi.protege.model.Slot $param_Slot_1, edu.stanford.smi.protege.model.Facet $param_Facet_2, java.lang.String $param_String_3, int $param_int_4, edu.stanford.smi.protege.server.RemoteSession $param_RemoteSession_5)
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getClsesWithMatchingDirectTemplateFacetValue_21, new java.lang.Object[] {$param_Slot_1, $param_Facet_2, $param_String_3, new java.lang.Integer($param_int_4), $param_RemoteSession_5}, -7772631619928539816L);
+	    Object $result = ref.invoke(this, $method_getClsesWithMatchingDirectTemplateFacetValue_22, new java.lang.Object[] {$param_Slot_1, $param_Facet_2, $param_String_3, new java.lang.Integer($param_int_4), $param_RemoteSession_5}, -7772631619928539816L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -547,7 +565,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getClsesWithMatchingDirectTemplateSlotValue_22, new java.lang.Object[] {$param_Slot_1, $param_String_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, -9198342235518800064L);
+	    Object $result = ref.invoke(this, $method_getClsesWithMatchingDirectTemplateSlotValue_23, new java.lang.Object[] {$param_Slot_1, $param_String_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, -9198342235518800064L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -563,7 +581,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectDomain_23, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, 6181783431958123255L);
+	    Object $result = ref.invoke(this, $method_getDirectDomain_24, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, 6181783431958123255L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -579,7 +597,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectInstances_24, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, 5658479085014566179L);
+	    Object $result = ref.invoke(this, $method_getDirectInstances_25, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, 5658479085014566179L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -595,7 +613,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectOwnSlotValues_25, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_RemoteSession_3}, -3223807448668152097L);
+	    Object $result = ref.invoke(this, $method_getDirectOwnSlotValues_26, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_RemoteSession_3}, -3223807448668152097L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -611,7 +629,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectOwnSlotValuesClosure_26, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_RemoteSession_3}, -7623172840573910687L);
+	    Object $result = ref.invoke(this, $method_getDirectOwnSlotValuesClosure_27, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_RemoteSession_3}, -7623172840573910687L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -627,7 +645,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectOwnSlotValuesCount_27, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_RemoteSession_3}, -7307264131122339811L);
+	    Object $result = ref.invoke(this, $method_getDirectOwnSlotValuesCount_28, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_RemoteSession_3}, -7307264131122339811L);
 	    return ((java.lang.Integer) $result).intValue();
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -643,7 +661,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectSubclasses_28, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -6505153451971006468L);
+	    Object $result = ref.invoke(this, $method_getDirectSubclasses_29, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -6505153451971006468L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -659,7 +677,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectSubslots_29, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, -12919421225514527L);
+	    Object $result = ref.invoke(this, $method_getDirectSubslots_30, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, -12919421225514527L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -675,7 +693,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectSuperclasses_30, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -695061993573897383L);
+	    Object $result = ref.invoke(this, $method_getDirectSuperclasses_31, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -695061993573897383L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -691,7 +709,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectSuperslots_31, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, -5439283480799426616L);
+	    Object $result = ref.invoke(this, $method_getDirectSuperslots_32, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, -5439283480799426616L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -707,7 +725,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectTemplateFacetValues_32, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_Facet_3, $param_RemoteSession_4}, -636415946955580386L);
+	    Object $result = ref.invoke(this, $method_getDirectTemplateFacetValues_33, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_Facet_3, $param_RemoteSession_4}, -636415946955580386L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -723,7 +741,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectTemplateSlotValues_33, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, -5247423796542903525L);
+	    Object $result = ref.invoke(this, $method_getDirectTemplateSlotValues_34, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, -5247423796542903525L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -739,7 +757,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectTemplateSlots_34, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -1325717992697662262L);
+	    Object $result = ref.invoke(this, $method_getDirectTemplateSlots_35, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -1325717992697662262L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -755,7 +773,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectTypes_35, new java.lang.Object[] {$param_Instance_1, $param_RemoteSession_2}, 2244480489060051006L);
+	    Object $result = ref.invoke(this, $method_getDirectTypes_36, new java.lang.Object[] {$param_Instance_1, $param_RemoteSession_2}, 2244480489060051006L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -771,7 +789,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectlyOverriddenTemplateFacets_36, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, 4591002843020536828L);
+	    Object $result = ref.invoke(this, $method_getDirectlyOverriddenTemplateFacets_37, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, 4591002843020536828L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -787,7 +805,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDirectlyOverriddenTemplateSlots_37, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, 7786346196624302483L);
+	    Object $result = ref.invoke(this, $method_getDirectlyOverriddenTemplateSlots_38, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, 7786346196624302483L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -803,7 +821,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getDomain_38, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, -1799384780364662694L);
+	    Object $result = ref.invoke(this, $method_getDomain_39, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, -1799384780364662694L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -819,7 +837,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getEvents_39, new java.lang.Object[] {$param_RemoteSession_1}, 1464572772953868073L);
+	    Object $result = ref.invoke(this, $method_getEvents_40, new java.lang.Object[] {$param_RemoteSession_1}, 1464572772953868073L);
 	    return ((java.util.List) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -835,7 +853,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFacetCount_40, new java.lang.Object[] {$param_RemoteSession_1}, -3756444135134594700L);
+	    Object $result = ref.invoke(this, $method_getFacetCount_41, new java.lang.Object[] {$param_RemoteSession_1}, -3756444135134594700L);
 	    return ((java.lang.Integer) $result).intValue();
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -851,7 +869,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFacets_41, new java.lang.Object[] {$param_RemoteSession_1}, 5287477769628610471L);
+	    Object $result = ref.invoke(this, $method_getFacets_42, new java.lang.Object[] {$param_RemoteSession_1}, 5287477769628610471L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -867,7 +885,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFrame_42, new java.lang.Object[] {$param_FrameID_1, $param_RemoteSession_2}, -5580899682868097341L);
+	    Object $result = ref.invoke(this, $method_getFrame_43, new java.lang.Object[] {$param_FrameID_1, $param_RemoteSession_2}, -5580899682868097341L);
 	    return ((edu.stanford.smi.protege.model.Frame) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -883,7 +901,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFrame_43, new java.lang.Object[] {$param_String_1, $param_RemoteSession_2}, 3191725554915436376L);
+	    Object $result = ref.invoke(this, $method_getFrame_44, new java.lang.Object[] {$param_String_1, $param_RemoteSession_2}, 3191725554915436376L);
 	    return ((edu.stanford.smi.protege.model.Frame) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -899,7 +917,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFrameCount_44, new java.lang.Object[] {$param_RemoteSession_1}, 4409426202913781279L);
+	    Object $result = ref.invoke(this, $method_getFrameCount_45, new java.lang.Object[] {$param_RemoteSession_1}, 4409426202913781279L);
 	    return ((java.lang.Integer) $result).intValue();
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -915,7 +933,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFrameName_45, new java.lang.Object[] {$param_Frame_1, $param_RemoteSession_2}, -7963024535861349604L);
+	    Object $result = ref.invoke(this, $method_getFrameName_46, new java.lang.Object[] {$param_Frame_1, $param_RemoteSession_2}, -7963024535861349604L);
 	    return ((java.lang.String) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -931,7 +949,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFrameValues_46, new java.lang.Object[] {$param_Collection_1, $param_RemoteSession_2}, -7537576579396866498L);
+	    Object $result = ref.invoke(this, $method_getFrameValues_47, new java.lang.Object[] {$param_Collection_1, $param_RemoteSession_2}, -7537576579396866498L);
 	    return ((java.util.Map) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -947,7 +965,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFrames_47, new java.lang.Object[] {$param_RemoteSession_1}, 8605128879610636719L);
+	    Object $result = ref.invoke(this, $method_getFrames_48, new java.lang.Object[] {$param_RemoteSession_1}, 8605128879610636719L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -963,7 +981,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFramesWithAnyDirectOwnSlotValue_48, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, -627140467059292064L);
+	    Object $result = ref.invoke(this, $method_getFramesWithAnyDirectOwnSlotValue_49, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, -627140467059292064L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -979,7 +997,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFramesWithDirectOwnSlotValue_49, new java.lang.Object[] {$param_Slot_1, $param_Object_2, $param_RemoteSession_3}, -8504298020624761617L);
+	    Object $result = ref.invoke(this, $method_getFramesWithDirectOwnSlotValue_50, new java.lang.Object[] {$param_Slot_1, $param_Object_2, $param_RemoteSession_3}, -8504298020624761617L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -995,7 +1013,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getFramesWithMatchingDirectOwnSlotValue_50, new java.lang.Object[] {$param_Slot_1, $param_String_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, 4817812254701428663L);
+	    Object $result = ref.invoke(this, $method_getFramesWithMatchingDirectOwnSlotValue_51, new java.lang.Object[] {$param_Slot_1, $param_String_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, 4817812254701428663L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1011,7 +1029,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getInstances_51, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -6559514331202863734L);
+	    Object $result = ref.invoke(this, $method_getInstances_52, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -6559514331202863734L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1027,7 +1045,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getMatchingReferences_52, new java.lang.Object[] {$param_String_1, new java.lang.Integer($param_int_2), $param_RemoteSession_3}, 2417343572843862544L);
+	    Object $result = ref.invoke(this, $method_getMatchingReferences_53, new java.lang.Object[] {$param_String_1, new java.lang.Integer($param_int_2), $param_RemoteSession_3}, 2417343572843862544L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1043,7 +1061,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getOverriddenTemplateFacets_53, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, -7884548010720278419L);
+	    Object $result = ref.invoke(this, $method_getOverriddenTemplateFacets_54, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, -7884548010720278419L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1059,7 +1077,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getOverriddenTemplateSlots_54, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -3037521981261557812L);
+	    Object $result = ref.invoke(this, $method_getOverriddenTemplateSlots_55, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -3037521981261557812L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1075,7 +1093,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getOwnFacetValues_55, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_Facet_3, $param_RemoteSession_4}, 8862161658039328980L);
+	    Object $result = ref.invoke(this, $method_getOwnFacetValues_56, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_Facet_3, $param_RemoteSession_4}, 8862161658039328980L);
 	    return ((java.util.Collection) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1091,7 +1109,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getOwnFacets_56, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_RemoteSession_3}, 7497838670956837807L);
+	    Object $result = ref.invoke(this, $method_getOwnFacets_57, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_RemoteSession_3}, 7497838670956837807L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1107,7 +1125,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getOwnSlotValues_57, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_RemoteSession_3}, -6204811068385039035L);
+	    Object $result = ref.invoke(this, $method_getOwnSlotValues_58, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_RemoteSession_3}, -6204811068385039035L);
 	    return ((java.util.Collection) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1123,7 +1141,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getOwnSlots_58, new java.lang.Object[] {$param_Frame_1, $param_RemoteSession_2}, 461442578610608924L);
+	    Object $result = ref.invoke(this, $method_getOwnSlots_59, new java.lang.Object[] {$param_Frame_1, $param_RemoteSession_2}, 461442578610608924L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1139,7 +1157,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getReferences_59, new java.lang.Object[] {$param_Object_1, $param_RemoteSession_2}, -3723473120285379343L);
+	    Object $result = ref.invoke(this, $method_getReferences_60, new java.lang.Object[] {$param_Object_1, $param_RemoteSession_2}, -3723473120285379343L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1155,7 +1173,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getSimpleInstanceCount_60, new java.lang.Object[] {$param_RemoteSession_1}, 4202072932918181897L);
+	    Object $result = ref.invoke(this, $method_getSimpleInstanceCount_61, new java.lang.Object[] {$param_RemoteSession_1}, 4202072932918181897L);
 	    return ((java.lang.Integer) $result).intValue();
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1171,7 +1189,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getSlotCount_61, new java.lang.Object[] {$param_RemoteSession_1}, -4403937944591267070L);
+	    Object $result = ref.invoke(this, $method_getSlotCount_62, new java.lang.Object[] {$param_RemoteSession_1}, -4403937944591267070L);
 	    return ((java.lang.Integer) $result).intValue();
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1187,7 +1205,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getSlots_62, new java.lang.Object[] {$param_RemoteSession_1}, 3578182661453316277L);
+	    Object $result = ref.invoke(this, $method_getSlots_63, new java.lang.Object[] {$param_RemoteSession_1}, 3578182661453316277L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1203,7 +1221,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getSubclasses_63, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -8195302885781192628L);
+	    Object $result = ref.invoke(this, $method_getSubclasses_64, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -8195302885781192628L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1219,7 +1237,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getSubslots_64, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, -2656801373492680055L);
+	    Object $result = ref.invoke(this, $method_getSubslots_65, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, -2656801373492680055L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1235,7 +1253,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getSuperclasses_65, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -3854643750156841655L);
+	    Object $result = ref.invoke(this, $method_getSuperclasses_66, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, -3854643750156841655L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1251,7 +1269,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getSuperslots_66, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, 9167731242645193943L);
+	    Object $result = ref.invoke(this, $method_getSuperslots_67, new java.lang.Object[] {$param_Slot_1, $param_RemoteSession_2}, 9167731242645193943L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1267,7 +1285,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getTemplateFacetValues_67, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_Facet_3, $param_RemoteSession_4}, 302894371510626777L);
+	    Object $result = ref.invoke(this, $method_getTemplateFacetValues_68, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_Facet_3, $param_RemoteSession_4}, 302894371510626777L);
 	    return ((java.util.Collection) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1283,7 +1301,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getTemplateFacets_68, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, -6272831493451040643L);
+	    Object $result = ref.invoke(this, $method_getTemplateFacets_69, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, -6272831493451040643L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1299,7 +1317,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getTemplateSlotValues_69, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, -5059506870148745845L);
+	    Object $result = ref.invoke(this, $method_getTemplateSlotValues_70, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, -5059506870148745845L);
 	    return ((java.util.Collection) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1315,7 +1333,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getTemplateSlots_70, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, 885042636123344977L);
+	    Object $result = ref.invoke(this, $method_getTemplateSlots_71, new java.lang.Object[] {$param_Cls_1, $param_RemoteSession_2}, 885042636123344977L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1331,7 +1349,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_getTypes_71, new java.lang.Object[] {$param_Instance_1, $param_RemoteSession_2}, -2065075309657197029L);
+	    Object $result = ref.invoke(this, $method_getTypes_72, new java.lang.Object[] {$param_Instance_1, $param_RemoteSession_2}, -2065075309657197029L);
 	    return ((java.util.Set) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1347,7 +1365,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_moveDirectOwnSlotValue_72, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, new java.lang.Integer($param_int_3), new java.lang.Integer($param_int_4), $param_RemoteSession_5}, 3299072350860140328L);
+	    ref.invoke(this, $method_moveDirectOwnSlotValue_73, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, new java.lang.Integer($param_int_3), new java.lang.Integer($param_int_4), $param_RemoteSession_5}, 3299072350860140328L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1362,7 +1380,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_moveDirectSubclass_73, new java.lang.Object[] {$param_Cls_1, $param_Cls_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, -4763681098257844589L);
+	    ref.invoke(this, $method_moveDirectSubclass_74, new java.lang.Object[] {$param_Cls_1, $param_Cls_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, -4763681098257844589L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1377,7 +1395,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_moveDirectSubslot_74, new java.lang.Object[] {$param_Slot_1, $param_Slot_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, -8471725442696800293L);
+	    ref.invoke(this, $method_moveDirectSubslot_75, new java.lang.Object[] {$param_Slot_1, $param_Slot_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, -8471725442696800293L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1392,7 +1410,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_moveDirectTemplateSlot_75, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, 384443750941345717L);
+	    ref.invoke(this, $method_moveDirectTemplateSlot_76, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, new java.lang.Integer($param_int_3), $param_RemoteSession_4}, 384443750941345717L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1407,7 +1425,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_preload_76, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1), $param_RemoteSession_2}, 3297179398376787612L);
+	    Object $result = ref.invoke(this, $method_preload_77, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1), $param_RemoteSession_2}, 3297179398376787612L);
 	    return ((java.util.Map) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1423,7 +1441,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_removeDirectSuperclass_77, new java.lang.Object[] {$param_Cls_1, $param_Cls_2, $param_RemoteSession_3}, 9137215973576905607L);
+	    ref.invoke(this, $method_removeDirectSuperclass_78, new java.lang.Object[] {$param_Cls_1, $param_Cls_2, $param_RemoteSession_3}, 9137215973576905607L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1438,7 +1456,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_removeDirectSuperslot_78, new java.lang.Object[] {$param_Slot_1, $param_Slot_2, $param_RemoteSession_3}, 1807858827345604103L);
+	    ref.invoke(this, $method_removeDirectSuperslot_79, new java.lang.Object[] {$param_Slot_1, $param_Slot_2, $param_RemoteSession_3}, 1807858827345604103L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1453,7 +1471,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_removeDirectTemplateFacetOverrides_79, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, -7893540488951765415L);
+	    ref.invoke(this, $method_removeDirectTemplateFacetOverrides_80, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, -7893540488951765415L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1468,7 +1486,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_removeDirectTemplateSlot_80, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, 4459114215641827748L);
+	    ref.invoke(this, $method_removeDirectTemplateSlot_81, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_RemoteSession_3}, 4459114215641827748L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1483,7 +1501,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_removeDirectType_81, new java.lang.Object[] {$param_Instance_1, $param_Cls_2, $param_RemoteSession_3}, -5469535989969118508L);
+	    ref.invoke(this, $method_removeDirectType_82, new java.lang.Object[] {$param_Instance_1, $param_Cls_2, $param_RemoteSession_3}, -5469535989969118508L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1498,7 +1516,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    Object $result = ref.invoke(this, $method_rollbackTransaction_82, new java.lang.Object[] {$param_RemoteSession_1}, 3009422084734366699L);
+	    Object $result = ref.invoke(this, $method_rollbackTransaction_83, new java.lang.Object[] {$param_RemoteSession_1}, 3009422084734366699L);
 	    return ((java.lang.Boolean) $result).booleanValue();
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
@@ -1514,7 +1532,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_setDirectOwnSlotValues_83, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_Collection_3, $param_RemoteSession_4}, -809892014556077100L);
+	    ref.invoke(this, $method_setDirectOwnSlotValues_84, new java.lang.Object[] {$param_Frame_1, $param_Slot_2, $param_Collection_3, $param_RemoteSession_4}, -809892014556077100L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1529,7 +1547,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_setDirectTemplateFacetValues_84, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_Facet_3, $param_Collection_4, $param_RemoteSession_5}, -2818077657293479910L);
+	    ref.invoke(this, $method_setDirectTemplateFacetValues_85, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_Facet_3, $param_Collection_4, $param_RemoteSession_5}, -2818077657293479910L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1544,7 +1562,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_setDirectTemplateSlotValues_85, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_Collection_3, $param_RemoteSession_4}, 290129328092861470L);
+	    ref.invoke(this, $method_setDirectTemplateSlotValues_86, new java.lang.Object[] {$param_Cls_1, $param_Slot_2, $param_Collection_3, $param_RemoteSession_4}, 290129328092861470L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -1559,7 +1577,7 @@ public final class ServerFrameStore_Stub
 	throws java.rmi.RemoteException
     {
 	try {
-	    ref.invoke(this, $method_setFrameName_86, new java.lang.Object[] {$param_Frame_1, $param_String_2, $param_RemoteSession_3}, 7882771145715336691L);
+	    ref.invoke(this, $method_setFrameName_87, new java.lang.Object[] {$param_Frame_1, $param_String_2, $param_RemoteSession_3}, 7882771145715336691L);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
