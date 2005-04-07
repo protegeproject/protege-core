@@ -17,9 +17,11 @@ public class ClsTreeFinder extends FrameTreeFinder {
     public ClsTreeFinder(KnowledgeBase kb, JTree tree) {
         this(kb, tree, ResourceKey.CLASS_SEARCH_FOR);
     }
+
     public ClsTreeFinder(KnowledgeBase kb, JTree tree, ResourceKey key) {
         super(kb, tree, key);
     }
+
     public ClsTreeFinder(KnowledgeBase kb, JTree tree, String description) {
         this(kb, tree, description, Icons.getFindClsIcon());
     }
@@ -50,4 +52,12 @@ public class ClsTreeFinder extends FrameTreeFinder {
         }
         return slot;
     }
+
+    protected Set getMatchingFrames(String text, int maxMatches) {
+        if (!text.endsWith("*")) {
+            text += '*';
+        }
+        return new HashSet(getKnowledgeBase().getClsesWithMatchingBrowserText(text, Collections.EMPTY_LIST, maxMatches));
+    }
+
 }

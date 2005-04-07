@@ -159,6 +159,10 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getReferences(value);
     }
 
+    public Set getClsesWithMatchingBrowserText(String value, Collection superclasses, int maxMatches) {
+        return getDelegate().getClsesWithMatchingBrowserText(value, superclasses, maxMatches);
+    }
+
     public Set getMatchingReferences(String value, int maxMatches) {
         return getDelegate().getMatchingReferences(value, maxMatches);
     }

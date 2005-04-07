@@ -751,21 +751,25 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEqualsSet("slots", results, _testFrameStore.getFacets());
     }
 
+    private Set getMatchingReferences(String text) {
+        return _testFrameStore.getMatchingReferences(text, FrameStore.UNLIMITED_MATCHES);
+    }
+
     public void testGetMatchingReferences() {
         Cls cls = createCls();
         Slot slot = createSlotOnCls(cls, ValueType.STRING, true);
         Instance instance = createSimpleInstance(cls);
-        int exactStartSize = _testFrameStore.getMatchingReferences("refxxx", FrameStore.UNLIMITED_MATCHES).size();
-        int startsWithStartSize = _testFrameStore.getMatchingReferences("refxxx*", FrameStore.UNLIMITED_MATCHES).size();
-        int containsStartSize = _testFrameStore.getMatchingReferences("*EFx*", FrameStore.UNLIMITED_MATCHES).size();
+        int exactStartSize = getMatchingReferences("refxxx").size();
+        int startsWithStartSize = getMatchingReferences("refxxx*").size();
+        int containsStartSize = getMatchingReferences("*EFx*").size();
         _modifiableFrameStore.setDirectOwnSlotValues(instance, slot, makeList("refxxx", "erexxx"));
         Instance instance2 = createSimpleInstance(cls);
         _modifiableFrameStore.setDirectOwnSlotValues(instance2, slot, makeList("refxxxerexxx"));
-        Collection references = _testFrameStore.getMatchingReferences("refxxx", FrameStore.UNLIMITED_MATCHES);
+        Collection references = getMatchingReferences("refxxx");
         assertEquals("exact", exactStartSize + 1, references.size());
-        Collection references2 = _testFrameStore.getMatchingReferences("refxxx*", FrameStore.UNLIMITED_MATCHES);
+        Collection references2 = getMatchingReferences("refxxx*");
         assertEquals("startswith", startsWithStartSize + 2, references2.size());
-        Collection references3 = _testFrameStore.getMatchingReferences("*EFx*", FrameStore.UNLIMITED_MATCHES);
+        Collection references3 = getMatchingReferences("*EFx*");
         assertEquals("contains", containsStartSize + 2, references3.size());
     }
 

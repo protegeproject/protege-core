@@ -739,6 +739,17 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
+    public Set getClsesWithMatchingBrowserText(String text, Collection superclasses, int maxMatches) {
+        try {
+            Set clses = delegate.getClsesWithMatchingBrowserText(text, superclasses, maxMatches, session);
+            localize(clses);
+            return clses;
+        } catch (RemoteException e) {
+            throw convertException(e);
+        }
+
+    }
+
     public Set getMatchingReferences(String string, int maxMatches) {
         try {
             Set references = delegate.getMatchingReferences(string, maxMatches, session);

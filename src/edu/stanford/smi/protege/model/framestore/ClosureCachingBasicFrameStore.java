@@ -100,8 +100,7 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         return _delegate.getFrames();
     }
 
-    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value,
-            int maxMatches) {
+    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
         return _delegate.getMatchingFrames(slot, facet, isTemplate, value, maxMatches);
     }
 

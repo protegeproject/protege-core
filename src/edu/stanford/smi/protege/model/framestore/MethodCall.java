@@ -23,7 +23,7 @@ class MethodCall {
                 Object o = args[i];
                 if (o instanceof Collection) {
                     o = new ArrayList((Collection) o);
-                    Log.getLogger().info("allocating collection");
+                    // Log.getLogger().info("allocating collection");
                 }
                 safeArgs[i] = o;
             }

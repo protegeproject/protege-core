@@ -79,8 +79,7 @@ public class SimpleFrameStore implements FrameStore {
         return clsesToBeDeleted;
     }
 
-    private static boolean reachableByAnotherRoute(Cls subclass, Collection classesToBeDeleted,
-            FrameStore fs) {
+    private static boolean reachableByAnotherRoute(Cls subclass, Collection classesToBeDeleted, FrameStore fs) {
         boolean reachable = false;
         Collection superclasses = fs.getDirectSuperclasses(subclass);
         if (superclasses.size() > 1) {
@@ -126,6 +125,36 @@ public class SimpleFrameStore implements FrameStore {
 
     public Set getMatchingReferences(String value, int maxMatches) {
         return _helper.getMatchingReferences(value, maxMatches);
+    }
+
+    public Set getClsesWithMatchingBrowserText(String value, Collection superclasses, int maxMatches) {
+        StringMatcher matcher = new SimpleStringMatcher(value);
+        Set clses = new HashSet();
+        Set references = _helper.getMatchingReferences(value, FrameStore.UNLIMITED_MATCHES);
+        Iterator i = references.iterator();
+        while (i.hasNext()) {
+            Reference ref = (Reference) i.next();
+            Frame frame = ref.getFrame();
+            if (frame instanceof Cls) {
+                Cls cls = (Cls) frame;
+                if (matcher.isMatch(cls.getBrowserText()) && isSubclassMatch(cls, superclasses)) {
+                    clses.add(cls);
+                    if (maxMatches != UNLIMITED_MATCHES && clses.size() == maxMatches) {
+                        break;
+                    }
+                }
+            }
+        }
+        return clses;
+    }
+
+    private boolean isSubclassMatch(Cls cls, Collection superclasses) {
+        boolean isMatch = true;
+        if (!superclasses.isEmpty()) {
+            Collection clsSuperclasses = new HashSet(cls.getSuperclasses());
+            isMatch = clsSuperclasses.removeAll(superclasses);
+        }
+        return isMatch;
     }
 
     private FrameFactory getFrameFactory() {
@@ -219,8 +248,7 @@ public class SimpleFrameStore implements FrameStore {
             Collection superclassValues = getDirectTemplateFacetValues(cls, slot, facet);
             values = resolveValues(values, superclassValues, facet);
         }
-        Slot associatedSlot = (Slot) getDirectOwnSlotValue(facet, _systemFrames
-                .getAssociatedSlotSlot());
+        Slot associatedSlot = (Slot) getDirectOwnSlotValue(facet, _systemFrames.getAssociatedSlotSlot());
         if (associatedSlot != null) {
             // Collection topLevelValues = getDirectOwnSlotValues(slot, associatedSlot);
             Collection topLevelValues = getOwnSlotValues(slot, associatedSlot);
@@ -260,8 +288,7 @@ public class SimpleFrameStore implements FrameStore {
         return getValuesClosure(frame, slot, facet, isTemplate, slot);
     }
 
-    private Set getValuesClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate,
-            Slot traversalSlot) {
+    private Set getValuesClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate, Slot traversalSlot) {
         Set values;
         Set closure = _helper.getClosure(frame, traversalSlot, null, false);
         if (equals(slot, traversalSlot) && facet == null && isTemplate == false) {
@@ -322,8 +349,7 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     private Collection unmodifiableCollection(Collection collection) {
-        return collection == null ? Collections.EMPTY_LIST : Collections
-                .unmodifiableCollection(collection);
+        return collection == null ? Collections.EMPTY_LIST : Collections.unmodifiableCollection(collection);
     }
 
     // This inner loop has to be optimized
@@ -442,8 +468,8 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public void addDirectSuperslot(Slot slot, Slot superslot) {
-        addDirectOwnSlotValuePair(slot, _systemFrames.getDirectSuperslotsSlot(), _systemFrames
-                .getDirectSubslotsSlot(), superslot);
+        addDirectOwnSlotValuePair(slot, _systemFrames.getDirectSuperslotsSlot(), _systemFrames.getDirectSubslotsSlot(),
+                superslot);
     }
 
     public void removeDirectSuperslot(Slot slot, Slot superslot) {
@@ -452,8 +478,8 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public void addDirectType(Instance instance, Cls type) {
-        addDirectOwnSlotValuePair(instance, _systemFrames.getDirectTypesSlot(), _systemFrames
-                .getDirectInstancesSlot(), type);
+        addDirectOwnSlotValuePair(instance, _systemFrames.getDirectTypesSlot(), _systemFrames.getDirectInstancesSlot(),
+                type);
         swizzleInstance(instance);
     }
 
@@ -513,14 +539,12 @@ public class SimpleFrameStore implements FrameStore {
         newInstance.setIncluded(oldInstance.isIncluded());
     }
 
-    private void addDirectOwnSlotValuePair(Frame source, Slot sourceSlot, Slot targetSlot,
-            Frame target) {
+    private void addDirectOwnSlotValuePair(Frame source, Slot sourceSlot, Slot targetSlot, Frame target) {
         addDirectOwnSlotValue(source, sourceSlot, target);
         addDirectOwnSlotValue(target, targetSlot, source);
     }
 
-    private void removeDirectOwnSlotValuePair(Frame source, Slot sourceSlot, Slot targetSlot,
-            Frame target) {
+    private void removeDirectOwnSlotValuePair(Frame source, Slot sourceSlot, Slot targetSlot, Frame target) {
         removeDirectOwnSlotValue(source, sourceSlot, target);
         removeDirectOwnSlotValue(target, targetSlot, source);
     }
@@ -542,8 +566,8 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public void addDirectTemplateSlot(Cls cls, Slot slot) {
-        addDirectOwnSlotValuePair(cls, _systemFrames.getDirectTemplateSlotsSlot(), _systemFrames
-                .getDirectDomainSlot(), slot);
+        addDirectOwnSlotValuePair(cls, _systemFrames.getDirectTemplateSlotsSlot(), _systemFrames.getDirectDomainSlot(),
+                slot);
     }
 
     public void moveDirectTemplateSlot(Cls cls, Slot slot, int index) {
@@ -572,20 +596,18 @@ public class SimpleFrameStore implements FrameStore {
         addValues(frame, slot, null, false, values);
     }
 
-    private void addValues(Frame frame, Slot slot, Facet facet, boolean isTemplate,
-            Collection values) {
+    private void addValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
         _helper.addValues(frame, slot, facet, isTemplate, values);
     }
 
-    public Cls createCls(FrameID id, String name, Collection directTypes,
-            Collection directSuperclasses, boolean loadDefaults) {
+    public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+            boolean loadDefaults) {
         Cls cls = createCls(id, directTypes);
         addCls(cls, name, directTypes, directSuperclasses, loadDefaults);
         return cls;
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
-            boolean loadDefaults) {
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
         SimpleInstance simpleInstance = createSimpleInstance(id, directTypes);
         addSimpleInstance(simpleInstance, name, directTypes, loadDefaults);
         return simpleInstance;
@@ -597,22 +619,22 @@ public class SimpleFrameStore implements FrameStore {
         return facet;
     }
 
-    private void addSimpleInstance(SimpleInstance simpleInstance, String name,
-            Collection directTypes, boolean loadDefaults) {
+    private void addSimpleInstance(SimpleInstance simpleInstance, String name, Collection directTypes,
+            boolean loadDefaults) {
         name = uniqueName(name, "Instance_");
         addInstance(simpleInstance, name, directTypes, loadDefaults);
     }
 
-    protected void addCls(Cls cls, String name, Collection directTypes,
-            Collection directSuperclasses, boolean loadDefaults) {
+    protected void addCls(Cls cls, String name, Collection directTypes, Collection directSuperclasses,
+            boolean loadDefaults) {
         name = uniqueName(name, "Class_");
         addInstance(cls, name, directTypes, loadDefaults);
         addDirectOwnSlotValuePairs(cls, _systemFrames.getDirectSuperclassesSlot(), _systemFrames
                 .getDirectSubclassesSlot(), directSuperclasses);
     }
 
-    protected void addSlot(Slot slot, String name, Collection directTypes,
-            Collection directSuperslots, boolean loadDefaults) {
+    protected void addSlot(Slot slot, String name, Collection directTypes, Collection directSuperslots,
+            boolean loadDefaults) {
         // Default values interfere with inherited values from superslots. Thus
         // we disable defaults if any
         // superslot is specified.
@@ -627,8 +649,7 @@ public class SimpleFrameStore implements FrameStore {
         }
     }
 
-    private void addDirectOwnSlotValuePairs(Frame source, Slot sourceSlot, Slot targetSlot,
-            Collection targets) {
+    private void addDirectOwnSlotValuePairs(Frame source, Slot sourceSlot, Slot targetSlot, Collection targets) {
         addDirectOwnSlotValues(source, sourceSlot, targets);
         Iterator i = targets.iterator();
         while (i.hasNext()) {
@@ -642,8 +663,8 @@ public class SimpleFrameStore implements FrameStore {
         addInstance(facet, name, directTypes, loadDefaults);
     }
 
-    public Slot createSlot(FrameID id, String name, Collection directTypes,
-            Collection directSuperslots, boolean loadDefaults) {
+    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
+            boolean loadDefaults) {
         Slot slot = createSlot(id, directTypes);
         addSlot(slot, name, directTypes, directSuperslots, loadDefaults);
         return slot;
@@ -654,11 +675,10 @@ public class SimpleFrameStore implements FrameStore {
         setDirectOwnSlotValues(frame, slot, values);
     }
 
-    private void addInstance(Instance instance, String name, Collection directTypes,
-            boolean loadDefaults) {
+    private void addInstance(Instance instance, String name, Collection directTypes, boolean loadDefaults) {
         addFrame(instance, name);
-        addDirectOwnSlotValuePairs(instance, _systemFrames.getDirectTypesSlot(), _systemFrames
-                .getDirectInstancesSlot(), directTypes);
+        addDirectOwnSlotValuePairs(instance, _systemFrames.getDirectTypesSlot(),
+                _systemFrames.getDirectInstancesSlot(), directTypes);
         if (loadDefaults) {
             addDefaults(instance, directTypes);
         }
@@ -795,8 +815,7 @@ public class SimpleFrameStore implements FrameStore {
         return (values.isEmpty()) ? null : values.get(0);
     }
 
-    private void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate,
-            Collection values) {
+    private void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
         _helper.setValues(frame, slot, facet, isTemplate, values);
     }
 
@@ -815,8 +834,7 @@ public class SimpleFrameStore implements FrameStore {
         return getOwnSlots(frame).contains(slot);
     }
 
-    private void addLinksFromNewValues(Frame frame, Slot slot, Collection newValues,
-            Slot inverseSlot) {
+    private void addLinksFromNewValues(Frame frame, Slot slot, Collection newValues, Slot inverseSlot) {
         boolean isInverseSlotSingleCardinality = isCardinalitySingle(inverseSlot);
         Iterator i = newValues.iterator();
         while (i.hasNext()) {
@@ -921,8 +939,7 @@ public class SimpleFrameStore implements FrameStore {
         return _helper.getMatchingFrames(slot, null, true, value, maxMatches);
     }
 
-    public Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value,
-            int maxMatches) {
+    public Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value, int maxMatches) {
         return _helper.getMatchingFrames(slot, facet, true, value, maxMatches);
     }
 
@@ -995,8 +1012,7 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     private void addDefault(Instance instance, Cls type, Slot slot) {
-        Collection values = getTemplateFacetValues(type, slot, _systemFrames
-                .getDefaultValuesFacet());
+        Collection values = getTemplateFacetValues(type, slot, _systemFrames.getDefaultValuesFacet());
         if (!values.isEmpty()) {
             // shouldn't use add here in case slot in case same slot comes from
             // more than one type
@@ -1018,8 +1034,7 @@ public class SimpleFrameStore implements FrameStore {
         Iterator i = getOwnSlots(slot).iterator();
         while (i.hasNext()) {
             Slot ownSlot = (Slot) i.next();
-            Facet facet = (Facet) getDirectOwnSlotValue(ownSlot, _systemFrames
-                    .getAssociatedFacetSlot());
+            Facet facet = (Facet) getDirectOwnSlotValue(ownSlot, _systemFrames.getAssociatedFacetSlot());
             if (facet != null) {
                 facets.add(facet);
             }

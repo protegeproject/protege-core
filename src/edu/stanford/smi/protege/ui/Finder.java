@@ -25,7 +25,7 @@ public abstract class Finder extends JComponent {
     private long actionTime;
     private static final long DELAY = 1000; // one second
     private static final int MAX_MATCHES;
-    private static final int DEFAULT_MAX_MATCHES = 1000;
+    private static final int DEFAULT_MAX_MATCHES = 100;
 
     static {
         MAX_MATCHES = ApplicationProperties.getIntegerProperty(Finder.class.getName() + ".max_matches",
@@ -134,6 +134,9 @@ public abstract class Finder extends JComponent {
                 cursor.hide();
             } else {
                 recordItem(text);
+                if (matches.size() == MAX_MATCHES) {
+                    ModalDialog.showMessageDialog(this, "Search results limited to " + MAX_MATCHES);
+                }
                 String title = "Select from search results (" + matches.size() + " matches)";
                 int initialSelection = getBestMatch(matches, text);
                 Object o = DisplayUtilities.pickInstanceFromCollection(this, matches, initialSelection, title);

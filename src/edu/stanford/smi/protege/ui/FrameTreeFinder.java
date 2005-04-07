@@ -16,6 +16,10 @@ public abstract class FrameTreeFinder extends Finder {
     private JTree tree;
     private KnowledgeBase knowledgeBase;
 
+    protected KnowledgeBase getKnowledgeBase() {
+        return knowledgeBase;
+    }
+
     protected FrameTreeFinder(KnowledgeBase knowledgeBase, JTree tree, ResourceKey key) {
         super(key);
         this.tree = tree;
@@ -105,8 +109,7 @@ public abstract class FrameTreeFinder extends Finder {
     }
 
     protected void getVisiblePathToRoot(Frame frame, Collection path) {
-        Collection roots = new ArrayList((Collection) ((LazyTreeNode) tree.getModel().getRoot())
-                .getUserObject());
+        Collection roots = new ArrayList((Collection) ((LazyTreeNode) tree.getModel().getRoot()).getUserObject());
         Iterator i = roots.iterator();
         while (i.hasNext()) {
             Frame root = (Frame) i.next();
