@@ -393,6 +393,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getMatchingReferences(value, maxMatches);
     }
 
+    public synchronized Set getClsesWithMatchingBrowserText(String value, Collection superclasses, int maxMatches,
+            RemoteSession session) {
+        recordCall(session);
+        return getDelegate().getClsesWithMatchingBrowserText(value, superclasses, maxMatches);
+    }
+
     public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
             boolean loadDefaults, RemoteSession session) {
         recordCall(session);

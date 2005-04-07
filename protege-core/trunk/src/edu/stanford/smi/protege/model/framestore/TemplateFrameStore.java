@@ -255,6 +255,10 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getReferences(object);
     }
 
+    public Set getClsesWithMatchingBrowserText(String text, Collection superclasses, int maxMatches) {
+        return getDelegate().getClsesWithMatchingBrowserText(text, superclasses, maxMatches);
+    }
+
     public Set getMatchingReferences(String string, int maxMatches) {
         return getDelegate().getMatchingReferences(string, maxMatches);
     }

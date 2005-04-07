@@ -435,6 +435,12 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         return getDelegate().getMatchingReferences(string, maxMatches);
     }
 
+    public Set getClsesWithMatchingBrowserText(String text, Collection superclasses, int maxMatches) {
+        checkString(text);
+        checkClses(superclasses);
+        return getDelegate().getClsesWithMatchingBrowserText(text, superclasses, maxMatches);
+    }
+
     public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         checkSlot(slot);
         checkValue(value);

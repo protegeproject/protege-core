@@ -296,7 +296,8 @@ public interface KnowledgeBase extends Disposable {
      */
     Collection getReferences(Object o, int maxReferences);
     Collection getMatchingReferences(String s, int maxReferences);
-
+    
+    Collection getClsesWithMatchingBrowserText(String s, Collection superclasses, int maxMatches);
     Cls getRootCls();
 
     /**

@@ -728,6 +728,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getMatchingReferences(s, maxRefs);
     }
 
+    public synchronized Collection getClsesWithMatchingBrowserText(String s, Collection superclasses, int maxMatches) {
+        return getHeadFrameStore().getClsesWithMatchingBrowserText(s, superclasses, maxMatches);
+    }
+
     public synchronized Cls getRootCls() {
         return _systemFrames.getRootCls();
     }

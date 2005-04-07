@@ -54,8 +54,7 @@ public interface FrameStore {
 
     Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues);
 
-    SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
-            boolean loadDefaultValues);
+    SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaultValues);
 
     /**
      * Delete a single leaf class. The operation fails if the class has subclasses or instances.
@@ -186,6 +185,8 @@ public interface FrameStore {
 
     Set getMatchingReferences(String string, int maxMatches);
 
+    Set getClsesWithMatchingBrowserText(String string, Collection superclasses, int maxMatches);
+
     Set getFramesWithDirectOwnSlotValue(Slot slot, Object value);
 
     Set getFramesWithAnyDirectOwnSlotValue(Slot slot);
@@ -200,8 +201,7 @@ public interface FrameStore {
 
     Set getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value);
 
-    Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value,
-            int maxMatches);
+    Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value, int maxMatches);
 
     // closures
     Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot);

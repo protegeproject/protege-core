@@ -87,10 +87,8 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getClsesWithDirectTemplateFacetValue(slot, facet, value);
     }
 
-    public Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value,
-            int maxMatches) {
-        return getDelegate().getClsesWithMatchingDirectTemplateFacetValue(slot, facet, value,
-                maxMatches);
+    public Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value, int maxMatches) {
+        return getDelegate().getClsesWithMatchingDirectTemplateFacetValue(slot, facet, value, maxMatches);
     }
 
     public Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value) {
@@ -233,8 +231,8 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
-    public Slot createSlot(FrameID id, String name, Collection directTypes,
-            Collection directSuperslots, boolean loadDefaults) {
+    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
+            boolean loadDefaults) {
         return getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
     }
 
@@ -262,8 +260,8 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
     }
 
-    public Cls createCls(FrameID id, String name, Collection directTypes,
-            Collection directSuperclasses, boolean loadDefaults) {
+    public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+            boolean loadDefaults) {
         return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
     }
 
@@ -283,12 +281,15 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getReferences(value);
     }
 
+    public Set getClsesWithMatchingBrowserText(String value, Collection superclasses, int maxMatches) {
+        return getDelegate().getClsesWithMatchingBrowserText(value, superclasses, maxMatches);
+    }
+
     public Set getMatchingReferences(String value, int maxMatches) {
         return getDelegate().getMatchingReferences(value, maxMatches);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
-            boolean loadDefaults) {
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
         return getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
     }
 
