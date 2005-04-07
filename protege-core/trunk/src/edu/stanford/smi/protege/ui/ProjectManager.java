@@ -540,6 +540,7 @@ public class ProjectManager {
         if (closeProjectRequest()) {
             _currentProject = getRequestedProject(parent);
             if (_currentProject != null) {
+                ApplicationProperties.addProjectToMRUList(_currentProject.getProjectURI());
                 long t1 = System.currentTimeMillis();
                 _projectPluginManager.afterLoad(_currentProject);
                 displayCurrentProject();
