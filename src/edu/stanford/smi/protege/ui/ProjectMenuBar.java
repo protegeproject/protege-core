@@ -145,7 +145,7 @@ public class ProjectMenuBar extends JMenuBar {
     }
 
     private void loadFileMenu(JMenu menu) {
-        createItem(menu, new CreateProject2(false));
+        createItem(menu, new CreateProject(false));
         createItem(menu, new OpenProject(false));
         loadOpenRecent(menu);
         createItem(menu, new CloseProject());
