@@ -17,6 +17,6 @@ public class CreateProject extends ProjectAction {
     }
 
     public void actionPerformed(ActionEvent event) {
-        getProjectManager().newProjectRequest();
+        getProjectManager().createNewProjectRequest();
     }
 }
