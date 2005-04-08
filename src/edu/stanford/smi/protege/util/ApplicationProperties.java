@@ -344,7 +344,7 @@ public class ApplicationProperties {
     }
 
     public static String getFAQURLString() {
-        return "http://protege.stanford.edu/faq.html";
+        return "http://protege.stanford.edu/doc/faq.html";
     }
 
     public static String getUsersGuideURLString() {
@@ -352,7 +352,7 @@ public class ApplicationProperties {
     }
 
     public static String getAllHelpURLString() {
-        return "http://protege.stanford.edu/useit.html";
+        return "http://protege.stanford.edu/doc/users.html";
     }
 
     public static String getOntology101URLString() {
