@@ -10,7 +10,7 @@ import edu.stanford.smi.protege.util.*;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-class Record {
+public class Record {
     private Frame frame;
     private Slot slot;
     private Facet facet;

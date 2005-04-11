@@ -97,6 +97,12 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         addActiveFrameStore(frameStore, CollectionUtilities.EMPTY_ARRAY_LIST);
     }
 
+    public void addActiveChildFrameStore(NarrowFrameStore childFrameStore, String parentName) {
+        NarrowFrameStore parentFrameStore = getFrameStore(parentName);
+        frameStoreTree.addChild(parentFrameStore, childFrameStore);
+        setActiveFrameStore(childFrameStore);
+    }
+
     public void addActiveFrameStore(NarrowFrameStore parent, Collection childNames) {
         frameStoreTree.addChild(ROOT_NODE, parent);
         Iterator i = childNames.iterator();
