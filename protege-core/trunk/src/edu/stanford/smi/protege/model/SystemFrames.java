@@ -16,6 +16,10 @@ public class SystemFrames {
         createFrames();
     }
 
+    public void replaceFrame(Frame frame) {
+        _frameIdToFrameMap.put(frame.getFrameID(), frame);
+    }
+
     public Collection getFrames() {
         return new ArrayList(_frameIdToFrameMap.values());
     }
@@ -141,14 +145,10 @@ public class SystemFrames {
         createFacet(Model.FacetID.CONSTRAINTS, Model.Facet.CONSTRAINTS, null);
         createFacet(Model.FacetID.VALUE_TYPE, Model.Facet.VALUE_TYPE, new ValueTypeConstraint());
         createFacet(Model.FacetID.INVERSE, Model.Facet.INVERSE, null);
-        createFacet(
-            Model.FacetID.MAXIMUM_CARDINALITY,
-            Model.Facet.MAXIMUM_CARDINALITY,
-            new MaximumCardinalityConstraint());
-        createFacet(
-            Model.FacetID.MINIMUM_CARDINALITY,
-            Model.Facet.MINIMUM_CARDINALITY,
-            new MinimumCardinalityConstraint());
+        createFacet(Model.FacetID.MAXIMUM_CARDINALITY, Model.Facet.MAXIMUM_CARDINALITY,
+                new MaximumCardinalityConstraint());
+        createFacet(Model.FacetID.MINIMUM_CARDINALITY, Model.Facet.MINIMUM_CARDINALITY,
+                new MinimumCardinalityConstraint());
         createFacet(Model.FacetID.NUMERIC_MINIMUM, Model.Facet.NUMERIC_MINIMUM, new NumericMinimumConstraint());
         createFacet(Model.FacetID.NUMERIC_MAXIMUM, Model.Facet.NUMERIC_MAXIMUM, new NumericMaximumConstraint());
         createFacet(Model.FacetID.VALUES, Model.Facet.VALUES, null);
@@ -694,26 +694,32 @@ public class SystemFrames {
         setCardinality(fs, slot, false);
         setValueType(fs, slot, ValueType.SYMBOL, allowedValues);
     }
+
     private void configureMultiInstanceSlot(FrameStore fs, Slot slot, Cls cls) {
         setCardinality(fs, slot, true);
         setValueType(fs, slot, ValueType.INSTANCE, CollectionUtilities.createCollection(cls));
     }
+
     private void configureMultiClassSlot(FrameStore fs, Slot slot, Cls cls) {
         setCardinality(fs, slot, true);
         setValueType(fs, slot, ValueType.CLS, CollectionUtilities.createCollection(cls));
     }
+
     private void configureSingleInstanceSlot(FrameStore fs, Slot slot, Cls cls) {
         setCardinality(fs, slot, false);
         setValueType(fs, slot, ValueType.INSTANCE, CollectionUtilities.createCollection(cls));
     }
+
     private void configureSingleIntSlot(FrameStore fs, Slot slot) {
         setCardinality(fs, slot, false);
         setValueType(fs, slot, ValueType.INTEGER);
     }
+
     private void configureSingleFloatSlot(FrameStore fs, Slot slot) {
         setCardinality(fs, slot, false);
         setValueType(fs, slot, ValueType.FLOAT);
     }
+
     private void configureMultiAnySlot(FrameStore fs, Slot slot) {
         setCardinality(fs, slot, true);
         setValueType(fs, slot, ValueType.ANY);
