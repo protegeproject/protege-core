@@ -403,7 +403,9 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         Slot slot = getNameSlot();
         if (slot != null) {
             Collection records = (Collection) slotToRecordsMap.get(slot);
-            count = records.size();
+            if (records != null) {
+                count = records.size();
+            }
         }
         return count;
     }
