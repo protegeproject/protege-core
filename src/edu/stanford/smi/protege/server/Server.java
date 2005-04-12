@@ -183,7 +183,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         try {
             String boundName = getLocalBoundName();
             getRegistry().rebind(boundName, this);
-            _baseURI = new URI("rmi:" + "//" + getMachineName() + "/" + boundName);
+            _baseURI = new URI("rmi://" + getMachineName() + "/" + boundName);
         } catch (Exception e) {
             e.printStackTrace();
             if (e instanceof RemoteException) {

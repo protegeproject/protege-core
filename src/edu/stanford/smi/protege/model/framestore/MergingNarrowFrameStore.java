@@ -15,8 +15,11 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     private static final Object ROOT_NODE = new Object();
 
     private NarrowFrameStore activeFrameStore;
+    private Collection removeFrameStores = new LinkedHashSet();
+    private Collection availableFrameStores = new LinkedHashSet();
+    private NarrowFrameStore topFrameStore;
     private NarrowFrameStore systemFrameStore;
-    private Collection availableFrameStores;
+
     private Tree frameStoreTree = new Tree(ROOT_NODE);
 
     public MergingNarrowFrameStore() {
@@ -25,8 +28,8 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     /**
-     * A utility hack to get the merging frame store from a kb until I can decide what sort of "real" API access to
-     * provide.
+     * A utility hack to get the merging frame store from a kb until I can decide 
+     * what sort of "real" API access to provide.
      */
     public static MergingNarrowFrameStore get(KnowledgeBase kb) {
         MergingNarrowFrameStore mergingFrameStore = null;
@@ -73,6 +76,11 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return activeFrameStore;
     }
 
+    public void setRemoveFrameStores(Collection c) {
+        removeFrameStores.clear();
+        removeFrameStores.addAll(c);
+    }
+
     public NarrowFrameStore getFrameStore(String name) {
         NarrowFrameStore frameStore = null;
         Iterator i = frameStoreTree.getDescendents(ROOT_NODE).iterator();
@@ -90,7 +98,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         NarrowFrameStore parentFs = getFrameStore(parent);
         NarrowFrameStore childFs = getFrameStore(child);
         frameStoreTree.addChild(parentFs, childFs);
-        updateAvailableFrameStores();
+        updateQueryableFrameStores();
     }
 
     public void addActiveFrameStore(NarrowFrameStore frameStore) {
@@ -114,20 +122,31 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         setActiveFrameStore(parent);
     }
 
+    public void setTopFrameStore(String name) {
+        topFrameStore = getFrameStore(name);
+        updateQueryableFrameStores();
+    }
+
     public NarrowFrameStore setActiveFrameStore(NarrowFrameStore nfs) {
         NarrowFrameStore oldActiveFrameStore = activeFrameStore;
         if (nfs != null) {
             activeFrameStore = nfs;
-            updateAvailableFrameStores();
+            if (topFrameStore == null) {
+                updateQueryableFrameStores();
+            }
         }
         dumpFrameStores();
         return oldActiveFrameStore;
     }
 
-    private void updateAvailableFrameStores() {
-        availableFrameStores = new LinkedHashSet();
+    public NarrowFrameStore getTopFrameStore() {
+        return (topFrameStore == null) ? activeFrameStore : topFrameStore;
+    }
+
+    private void updateQueryableFrameStores() {
+        availableFrameStores.clear();
         availableFrameStores.add(systemFrameStore);
-        availableFrameStores.addAll(frameStoreTree.getNodeAndDescendents(activeFrameStore));
+        availableFrameStores.addAll(frameStoreTree.getNodeAndDescendents(getTopFrameStore()));
     }
 
     public NarrowFrameStore setActiveFrameStore(String name) {
@@ -320,12 +339,41 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
         getDelegate().removeValue(frame, slot, facet, isTemplate, value);
+        if (!removeFrameStores.isEmpty()) {
+            removeValueFromRemoveFrameStores(frame, slot, facet, isTemplate, value);
+        }
+    }
+
+    private void removeValueFromRemoveFrameStores(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
+        Iterator i = removeFrameStores.iterator();
+        while (i.hasNext()) {
+            NarrowFrameStore frameStore = (NarrowFrameStore) i.next();
+            frameStore.removeValue(frame, slot, facet, isTemplate, value);
+        }
+    }
+
+    private void removeValuesFromRemoveFrameStores(Frame frame, Slot slot, Facet facet, boolean isTemplate,
+            Collection valuesToRemove) {
+        Iterator i = valuesToRemove.iterator();
+        while (i.hasNext()) {
+            Object value = i.next();
+            removeValueFromRemoveFrameStores(frame, slot, facet, isTemplate, value);
+        }
     }
 
     public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
-        Collection newValues = new ArrayList(values);
-        newValues.removeAll(getSecondaryValues(frame, slot, facet, isTemplate));
-        getDelegate().setValues(frame, slot, facet, isTemplate, newValues);
+        Collection secondaryValues = getSecondaryValues(frame, slot, facet, isTemplate);
+
+        if (!removeFrameStores.isEmpty()) {
+            Collection valuesToRemove = new ArrayList(secondaryValues);
+            valuesToRemove.removeAll(values);
+            removeValuesFromRemoveFrameStores(frame, slot, facet, isTemplate, valuesToRemove);
+        }
+
+        Collection valuesToAdd = new ArrayList(values);
+        valuesToAdd.removeAll(secondaryValues);
+        getDelegate().setValues(frame, slot, facet, isTemplate, valuesToAdd);
+
     }
 
     public Set getFrames(Slot slot, Facet facet, boolean isTemplate, Object value) {
