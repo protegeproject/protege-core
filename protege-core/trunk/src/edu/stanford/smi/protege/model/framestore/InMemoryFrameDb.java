@@ -116,6 +116,9 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         if (record != null) {
             record.removeValue(value);
             removeRecord(valueToRecordsMap, value, record);
+            if (record.isEmpty()) {
+                removeRecord(record);
+            }
         }
 
     }
