@@ -76,9 +76,14 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return activeFrameStore;
     }
 
-    public void setRemoveFrameStores(Collection c) {
+    /**
+     * Set frame stores to remove values from.  The collection should not include
+     * the "active" frame store, which is handled separately.
+     * @param narrowFrameStores Collection of NarrowFrameStores
+     */
+    public void setRemoveFrameStores(Collection narrowFrameStores) {
         removeFrameStores.clear();
-        removeFrameStores.addAll(c);
+        removeFrameStores.addAll(narrowFrameStores);
     }
 
     public NarrowFrameStore getFrameStore(String name) {
@@ -122,6 +127,12 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         setActiveFrameStore(parent);
     }
 
+    /**
+     * Sets the top frame store, used to decide the root below which all framesstores are
+     * "available". If you don't set a top frame store then the active frame store is assumed
+     * to be the top.  If a top frame store is set then changing the active frame store
+     * does not affect the top.
+     */
     public void setTopFrameStore(String name) {
         topFrameStore = getFrameStore(name);
         updateQueryableFrameStores();

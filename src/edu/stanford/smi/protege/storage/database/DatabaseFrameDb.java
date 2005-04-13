@@ -1118,15 +1118,35 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         setSlot(_addValuesBatchStmt, 3, slot);
         setFacet(_addValuesBatchStmt, 4, facet);
         setIsTemplate(_addValuesBatchStmt, 5, isTemplate);
+        boolean locationIsSystem = locationIsSystem(frame, slot, facet);
         int index = 0;
         Iterator i = values.iterator();
         while (i.hasNext()) {
             Object value = i.next();
-            setValueIndex(_addValuesBatchStmt, 6, index);
-            setValue(_addValuesBatchStmt, 7, 8, 9, value);
-            addBatch();
-            ++index;
+            if (!(locationIsSystem && valueIsSystem(value))) {
+                setValueIndex(_addValuesBatchStmt, 6, index);
+                setValue(_addValuesBatchStmt, 7, 8, 9, value);
+                addBatch();
+                ++index;
+            }
         }
+    }
+
+    private static boolean locationIsSystem(Frame frame, Slot slot, Facet facet) {
+        boolean isSystem = frame.isSystem() && slot.isSystem();
+        if (isSystem && facet != null) {
+            isSystem = facet.isSystem();
+        }
+        return isSystem;
+    }
+
+    private static boolean valueIsSystem(Object value) {
+        boolean valueIsSystem = true;
+        if (value instanceof Frame) {
+            Frame frame = (Frame) value;
+            valueIsSystem = frame.isSystem();
+        }
+        return valueIsSystem;
     }
 
     private void addBatch() throws SQLException {
