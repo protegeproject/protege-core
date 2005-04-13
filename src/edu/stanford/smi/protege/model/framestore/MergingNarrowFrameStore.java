@@ -142,9 +142,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         NarrowFrameStore oldActiveFrameStore = activeFrameStore;
         if (nfs != null) {
             activeFrameStore = nfs;
-            if (topFrameStore == null) {
-                updateQueryableFrameStores();
-            }
+            updateQueryableFrameStores();
         }
         dumpFrameStores();
         return oldActiveFrameStore;

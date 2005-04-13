@@ -108,6 +108,10 @@ public class Record {
         }
     }
 
+    public boolean isEmpty() {
+        return values.isEmpty();
+    }
+
     public boolean equals(Object o) {
         boolean areEqual = false;
         if (o instanceof Record) {
