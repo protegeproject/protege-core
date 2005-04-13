@@ -74,11 +74,8 @@ public class Record {
         values.add(o);
     }
 
-    public void removeValue(Object o) {
-        boolean succeeded = values.remove(o);
-        if (!succeeded) {
-            Log.getLogger().warning("Unable to remove " + o);
-        }
+    public boolean removeValue(Object o) {
+        return values.remove(o);
     }
 
     public void moveValue(int from, int to) {

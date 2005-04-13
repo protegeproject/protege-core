@@ -168,6 +168,7 @@ public class RobustConnection {
         if (_connection == null) {
             setupConnection();
         } else if (_connection.isClosed()) {
+            Log.getLogger().warning("Found closed connection, reinitializing...");
             close();
             setupConnection();
         }
