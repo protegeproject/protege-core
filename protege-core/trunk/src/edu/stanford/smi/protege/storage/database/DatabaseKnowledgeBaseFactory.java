@@ -1,6 +1,5 @@
 package edu.stanford.smi.protege.storage.database;
 
-import java.lang.reflect.*;
 import java.util.*;
 import java.util.logging.*;
 
@@ -32,18 +31,15 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         String username = getUsername(sources);
         String password = getPassword(sources);
         String tablename = getTableName(sources);
-        copyKnowledgeBase(kb, driver, url, tablename, username, password, errors);
+        copyKnowledgeBase(kb, driver, url, username, password, tablename, errors);
     }
 
-    private void copyKnowledgeBase(KnowledgeBase inputKb, String driver, String url,
-            String tablename, String username, String password, Collection errors) {
+    private void copyKnowledgeBase(KnowledgeBase inputKb, String driver, String url, String username, String password,
+            String tablename, Collection errors) {
         try {
             DefaultKnowledgeBase outputKb = new DefaultKnowledgeBase();
-            DatabaseFrameStore store = new DatabaseFrameStore(outputKb, driver, url, username,
-                    password, tablename, true);
-            // store.reinitializeTable();
-            outputKb.setTerminalFrameStore(store);
-            store.saveKnowledgeBase(inputKb);
+            DatabaseFrameDb db = addFrameStore(outputKb, driver, url, username, password, tablename);
+            db.saveKnowledgeBase(inputKb);
         } catch (Exception e) {
             errors.add(e);
         }
@@ -54,8 +50,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         return kb;
     }
 
-    public KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectName,
-            PropertyList sources) {
+    public KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectName, PropertyList sources) {
         return new DatabaseKnowledgeBaseSourcesEditor(projectName, sources);
     }
 
@@ -94,7 +89,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
             String username = getUsername(sources);
             String password = getPassword(sources);
             String tablename = getTableName(sources);
-            includeKnowledgeBase(kb, driver, tablename, url, username, password, errors);
+            includeKnowledgeBase(kb, driver, url, username, password, tablename, errors);
         }
     }
 
@@ -112,68 +107,51 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
             String username = getUsername(sources);
             String password = getPassword(sources);
             String tablename = getTableName(sources);
-            loadKnowledgeBase(kb, driver, tablename, url, username, password, errors);
+            loadKnowledgeBase(kb, driver, url, username, password, tablename, errors);
         }
     }
 
-    public void includeKnowledgeBase(KnowledgeBase kb, String driver, String table, String url,
-            String user, String password, Collection errors) {
+    public void includeKnowledgeBase(KnowledgeBase kb, String driver, String url, String user, String password,
+            String table, Collection errors) {
         try {
-            DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
-            ensureInitialized(dkb);
-            MergingFrameStoreHandler handler = getMergingFrameStoreHandler(dkb);
-            DatabaseFrameStore store = new DatabaseFrameStore(dkb, driver, url, user, password,
-                    table, false);
-            handler.addSecondaryFrameStore(store);
+            addFrameStore(kb, driver, url, user, password, table);
         } catch (Exception e) {
+            Log.getLogger().log(Level.WARNING, "Unable to load included knowledgebase", e);
             errors.add(e);
         }
     }
 
-    private void ensureInitialized(DefaultKnowledgeBase dkb) {
-        FrameStore fs = dkb.getTerminalFrameStore();
-        if (fs instanceof InMemoryFrameStore) {
-            FrameStore mergingFrameStore = MergingFrameStoreHandler.newInstance();
-            mergingFrameStore.setDelegate(fs);
-            dkb.setTerminalFrameStore(mergingFrameStore);
-        }
+    private static MergingNarrowFrameStore getMergingFrameStore(DefaultKnowledgeBase kb) {
+        return MergingNarrowFrameStore.get(kb);
     }
 
-    private MergingFrameStoreHandler getMergingFrameStoreHandler(DefaultKnowledgeBase kb) {
-        FrameStore fs = kb.getTerminalFrameStore();
-        return (MergingFrameStoreHandler) Proxy.getInvocationHandler(fs);
-    }
-
-    public void loadKnowledgeBase(KnowledgeBase kb, String driver, String table, String url,
-            String user, String password, Collection errors) {
+    public void loadKnowledgeBase(KnowledgeBase kb, String driver, String url, String user, String password,
+            String table, Collection errors) {
         try {
-            DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
-            ensureInitialized(dkb);
-            DatabaseFrameStore store = new DatabaseFrameStore(dkb, driver, url, user, password,
-                    table, true);
-            FrameStore mergingFrameStore = dkb.getTerminalFrameStore();
-            mergingFrameStore.setDelegate(store);
-            updateKnowledgeBase(dkb);
-            dkb.setTerminalFrameStore(mergingFrameStore);
+            addFrameStore(kb, driver, url, user, password, table);
         } catch (Exception e) {
             Log.getLogger().log(Level.WARNING, "Unable to load knowledgebase", e);
             errors.add(e);
         }
     }
 
-    protected void updateKnowledgeBase(DefaultKnowledgeBase kb) {
-        KnowledgeBaseUtils.update(kb);
+    protected DatabaseFrameDb addFrameStore(KnowledgeBase kb, String driver, String url, String user, String password,
+            String table) {
+        DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
+        FrameFactory factory = dkb.getFrameFactory();
+        DatabaseFrameDb store = new DatabaseFrameDb(factory, driver, url, user, password, table);
+        NarrowFrameStore nfs = new ValueCachingNarrowFrameStore(store);
+        MergingNarrowFrameStore mergingFrameStore = getMergingFrameStore(dkb);
+        mergingFrameStore.addActiveFrameStore(nfs);
+        return store;
     }
 
     public void saveKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
         if (kb instanceof DefaultKnowledgeBase) {
-            FrameStore store = ((DefaultKnowledgeBase) kb).getTerminalFrameStore();
-            if (isMergingFrameStore(store)) {
-                DatabaseFrameStore databaseStore = (DatabaseFrameStore) store.getDelegate();
-                if (!databaseStore.getTableName().equals(getTableName(sources))) {
-                    copyKnowledgeBase(kb, sources, errors);
-                }
-            } else {
+            DatabaseFrameDb databaseFrameDb = getDatabaseFrameDb(kb);
+            if (databaseFrameDb == null) {
+                copyKnowledgeBase(kb, sources, errors);
+            } else if (!databaseFrameDb.getTableName().equals(getTableName(sources))) {
                 copyKnowledgeBase(kb, sources, errors);
             }
         } else {
@@ -181,12 +159,14 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         }
     }
 
-    private static boolean isMergingFrameStore(FrameStore fs) {
-        boolean result = false;
-        if (Proxy.isProxyClass(fs.getClass())) {
-            result = Proxy.getInvocationHandler(fs) instanceof MergingFrameStoreHandler;
+    private static DatabaseFrameDb getDatabaseFrameDb(KnowledgeBase kb) {
+        DatabaseFrameDb db = null;
+        MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(kb);
+        NarrowFrameStore active = mnfs.getActiveFrameStore();
+        if (active instanceof ValueCachingNarrowFrameStore) {
+            db = (DatabaseFrameDb) active.getDelegate();
         }
-        return result;
+        return db;
     }
 
     public static void setDriver(PropertyList sources, String driver) {
@@ -209,8 +189,8 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         sources.setString(USERNAME, username);
     }
 
-    public static void setSources(PropertyList sources, String driver, String url, String table,
-            String user, String password) {
+    public static void setSources(PropertyList sources, String driver, String url, String table, String user,
+            String password) {
         setDriver(sources, driver);
         setURL(sources, url);
         setTablename(sources, table);

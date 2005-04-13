@@ -6,11 +6,11 @@ import java.util.*;
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.framestore.*;
 
-public class DatabaseFrameStore extends SimpleFrameStore {
+public class _DatabaseFrameStore extends SimpleFrameStore {
     private DatabaseFrameDb _databaseFrameDb;
     private Map nameToFrameMap = new HashMap();
 
-    public DatabaseFrameStore(DefaultKnowledgeBase kb, String driver, String url, String username, String password,
+    public _DatabaseFrameStore(DefaultKnowledgeBase kb, String driver, String url, String username, String password,
             String tablename, boolean modifiable) {
         super(kb, getBasicFrameStore(new DatabaseFrameDb(getFrameFactory(kb), driver, url, username, password,
                 tablename)));
@@ -30,7 +30,7 @@ public class DatabaseFrameStore extends SimpleFrameStore {
 
     private DatabaseFrameDb getDatabaseFrameDb() {
         ClosureCachingBasicFrameStore closureDelegate = (ClosureCachingBasicFrameStore) getHelper();
-        ValueCachingBasicFrameStore valuesDelegate = (ValueCachingBasicFrameStore) closureDelegate.getDelegate();
+        ValueCachingNarrowFrameStore valuesDelegate = (ValueCachingNarrowFrameStore) closureDelegate.getDelegate();
         return (DatabaseFrameDb) valuesDelegate.getDelegate();
     }
 
@@ -45,7 +45,7 @@ public class DatabaseFrameStore extends SimpleFrameStore {
     }
 
     private static ClosureCachingBasicFrameStore getBasicFrameStore(DatabaseFrameDb db) {
-        return new ClosureCachingBasicFrameStore(new ValueCachingBasicFrameStore(db));
+        return new ClosureCachingBasicFrameStore(new ValueCachingNarrowFrameStore(db));
     }
 
     public String getTableName() {
