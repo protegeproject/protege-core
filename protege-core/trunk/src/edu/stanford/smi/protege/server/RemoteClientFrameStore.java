@@ -12,10 +12,24 @@ import edu.stanford.smi.protege.util.*;
 public class RemoteClientFrameStore implements FrameStore {
     private KnowledgeBase kb;
     private RemoteSession session;
-    private RemoteServerFrameStore delegate;
+    private RemoteServerFrameStore remoteDelegate;
 
     public String getName() {
         return getClass().getName();
+    }
+
+    public RemoteServerFrameStore getRemoteDelegate() {
+        fixLoader();
+        return remoteDelegate;
+    }
+
+    private void fixLoader() {
+        ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader correctLoader = kb.getClass().getClassLoader();
+        if (currentLoader != correctLoader) {
+            // Log.getLogger().info("Changing loader from " + currentLoader + " to " + correctLoader);
+            Thread.currentThread().setContextClassLoader(correctLoader);
+        }
     }
 
     public RemoteClientFrameStore(String host, String user, String password, String projectName, KnowledgeBase kb,
@@ -25,7 +39,7 @@ public class RemoteClientFrameStore implements FrameStore {
             String ipAddress = SystemUtilities.getMachineIpAddress();
             session = server.openSession(user, ipAddress, password);
             RemoteServerProject project = server.openProject(projectName, session);
-            delegate = project.getDomainKbFrameStore(session);
+            remoteDelegate = project.getDomainKbFrameStore(session);
             this.kb = kb;
             preload(preloadAll);
         } catch (Exception e) {
@@ -38,7 +52,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             this.session = session;
             this.kb = kb;
-            this.delegate = delegate;
+            this.remoteDelegate = delegate;
             preload(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
@@ -63,7 +77,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public int getClsCount() {
         try {
-            return delegate.getClsCount(session);
+            return getRemoteDelegate().getClsCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -71,7 +85,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public int getSlotCount() {
         try {
-            return delegate.getSlotCount(session);
+            return getRemoteDelegate().getSlotCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -79,7 +93,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public int getFacetCount() {
         try {
-            return delegate.getFacetCount(session);
+            return getRemoteDelegate().getFacetCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -87,7 +101,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public int getSimpleInstanceCount() {
         try {
-            return delegate.getSimpleInstanceCount(session);
+            return getRemoteDelegate().getSimpleInstanceCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -95,7 +109,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public int getFrameCount() {
         try {
-            return delegate.getFrameCount(session);
+            return getRemoteDelegate().getFrameCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -107,7 +121,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getClses() {
         try {
-            Set clses = delegate.getClses(session);
+            Set clses = getRemoteDelegate().getClses(session);
             localize(clses);
             return clses;
         } catch (RemoteException e) {
@@ -117,7 +131,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getSlots() {
         try {
-            Set slots = delegate.getSlots(session);
+            Set slots = getRemoteDelegate().getSlots(session);
             localize(slots);
             return slots;
         } catch (RemoteException e) {
@@ -127,7 +141,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getFacets() {
         try {
-            Set facets = delegate.getFacets(session);
+            Set facets = getRemoteDelegate().getFacets(session);
             localize(facets);
             return facets;
         } catch (RemoteException e) {
@@ -137,7 +151,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getFrames() {
         try {
-            Set frames = delegate.getFrames(session);
+            Set frames = getRemoteDelegate().getFrames(session);
             localize(frames);
             return frames;
         } catch (RemoteException e) {
@@ -147,7 +161,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Frame getFrame(FrameID id) {
         try {
-            Frame frame = delegate.getFrame(id, session);
+            Frame frame = getRemoteDelegate().getFrame(id, session);
             localize(frame);
             return frame;
         } catch (RemoteException e) {
@@ -175,7 +189,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void setFrameName(Frame frame, String name) {
         try {
             setCachedFrameName(frame, name);
-            delegate.setFrameName(frame, name, session);
+            getRemoteDelegate().setFrameName(frame, name, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -184,7 +198,8 @@ public class RemoteClientFrameStore implements FrameStore {
     public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaultValues) {
         try {
-            Cls cls = delegate.createCls(id, name, directTypes, directSuperclasses, loadDefaultValues, session);
+            Cls cls = getRemoteDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaultValues,
+                    session);
             localize(cls);
             addCacheOwnSlotValue(directTypes, getSystemFrames().getDirectInstancesSlot(), cls);
             addCacheOwnSlotValue(directSuperclasses, getSystemFrames().getDirectSubclassesSlot(), cls);
@@ -197,7 +212,8 @@ public class RemoteClientFrameStore implements FrameStore {
     public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues) {
         try {
-            Slot slot = delegate.createSlot(id, name, directTypes, directSuperslots, loadDefaultValues, session);
+            Slot slot = getRemoteDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaultValues,
+                    session);
             localize(slot);
             addCacheOwnSlotValue(directTypes, getSystemFrames().getDirectInstancesSlot(), slot);
             addCacheOwnSlotValue(directSuperslots, getSystemFrames().getDirectSubslotsSlot(), slot);
@@ -209,7 +225,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
         try {
-            Facet facet = delegate.createFacet(id, name, directTypes, loadDefaultValues, session);
+            Facet facet = getRemoteDelegate().createFacet(id, name, directTypes, loadDefaultValues, session);
             localize(facet);
             addCacheOwnSlotValue(directTypes, getSystemFrames().getDirectInstancesSlot(), facet);
             return facet;
@@ -221,8 +237,8 @@ public class RemoteClientFrameStore implements FrameStore {
     public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
             boolean loadDefaultValues) {
         try {
-            SimpleInstance simpleInstance = delegate.createSimpleInstance(id, name, directTypes, loadDefaultValues,
-                    session);
+            SimpleInstance simpleInstance = getRemoteDelegate().createSimpleInstance(id, name, directTypes,
+                    loadDefaultValues, session);
             localize(simpleInstance);
             addCacheOwnSlotValue(directTypes, getSystemFrames().getDirectInstancesSlot(), simpleInstance);
             return simpleInstance;
@@ -234,7 +250,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void deleteCls(Cls cls) {
         try {
             removeCacheFrame(cls);
-            delegate.deleteCls(cls, session);
+            getRemoteDelegate().deleteCls(cls, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -243,7 +259,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void deleteSlot(Slot slot) {
         try {
             removeCacheFrame(slot);
-            delegate.deleteSlot(slot, session);
+            getRemoteDelegate().deleteSlot(slot, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -252,7 +268,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void deleteFacet(Facet facet) {
         try {
             removeCacheFrame(facet);
-            delegate.deleteFacet(facet, session);
+            getRemoteDelegate().deleteFacet(facet, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -261,7 +277,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void deleteSimpleInstance(SimpleInstance simpleInstance) {
         try {
             removeCacheFrame(simpleInstance);
-            delegate.deleteSimpleInstance(simpleInstance, session);
+            getRemoteDelegate().deleteSimpleInstance(simpleInstance, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -313,7 +329,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
         try {
             moveCacheValue(frame, slot, null, false, from, to);
-            delegate.moveDirectOwnSlotValue(frame, slot, from, to, session);
+            getRemoteDelegate().moveDirectOwnSlotValue(frame, slot, from, to, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -323,7 +339,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             updateCacheInverseSlotValues(frame, slot, values);
             setCacheOwnSlotValues(frame, slot, values);
-            delegate.setDirectOwnSlotValues(frame, slot, values, session);
+            getRemoteDelegate().setDirectOwnSlotValues(frame, slot, values, session);
 
         } catch (RemoteException e) {
             throw convertException(e);
@@ -401,7 +417,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getOverriddenTemplateSlots(Cls cls) {
         try {
-            Set slots = delegate.getOverriddenTemplateSlots(cls, session);
+            Set slots = getRemoteDelegate().getOverriddenTemplateSlots(cls, session);
             localize(slots);
             return slots;
         } catch (RemoteException e) {
@@ -411,7 +427,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getDirectlyOverriddenTemplateSlots(Cls cls) {
         try {
-            Set slots = delegate.getDirectlyOverriddenTemplateSlots(cls, session);
+            Set slots = getRemoteDelegate().getDirectlyOverriddenTemplateSlots(cls, session);
             localize(slots);
             return slots;
         } catch (RemoteException e) {
@@ -423,7 +439,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             addCacheOwnSlotValue(cls, getSystemFrames().getDirectTemplateSlotsSlot(), slot);
             addCacheOwnSlotValue(slot, getSystemFrames().getDirectDomainSlot(), cls);
-            delegate.addDirectTemplateSlot(cls, slot, session);
+            getRemoteDelegate().addDirectTemplateSlot(cls, slot, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -433,7 +449,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             removeCacheOwnSlotValue(cls, getSystemFrames().getDirectTemplateSlotsSlot(), slot);
             removeCacheOwnSlotValue(slot, getSystemFrames().getDirectDomainSlot(), cls);
-            delegate.removeDirectTemplateSlot(cls, slot, session);
+            getRemoteDelegate().removeDirectTemplateSlot(cls, slot, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -442,7 +458,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void moveDirectTemplateSlot(Cls cls, Slot slot, int index) {
         try {
             moveCacheOwnSlotValue(cls, getSystemFrames().getDirectTemplateSlotsSlot(), slot, index);
-            delegate.moveDirectTemplateSlot(cls, slot, index, session);
+            getRemoteDelegate().moveDirectTemplateSlot(cls, slot, index, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -463,7 +479,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values) {
         try {
             setCacheValues(cls, slot, getSystemFrames().getValuesFacet(), true, values);
-            delegate.setDirectTemplateSlotValues(cls, slot, values, session);
+            getRemoteDelegate().setDirectTemplateSlotValues(cls, slot, values, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -471,7 +487,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getTemplateFacets(Cls cls, Slot slot) {
         try {
-            Set facets = delegate.getTemplateFacets(cls, slot, session);
+            Set facets = getRemoteDelegate().getTemplateFacets(cls, slot, session);
             localize(facets);
             return facets;
         } catch (RemoteException e) {
@@ -481,7 +497,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getOverriddenTemplateFacets(Cls cls, Slot slot) {
         try {
-            Set facets = delegate.getOverriddenTemplateFacets(cls, slot, session);
+            Set facets = getRemoteDelegate().getOverriddenTemplateFacets(cls, slot, session);
             localize(facets);
             return facets;
         } catch (RemoteException e) {
@@ -491,7 +507,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot) {
         try {
-            Set facets = delegate.getDirectlyOverriddenTemplateFacets(cls, slot, session);
+            Set facets = getRemoteDelegate().getDirectlyOverriddenTemplateFacets(cls, slot, session);
             localize(facets);
             return facets;
         } catch (RemoteException e) {
@@ -501,7 +517,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
         try {
-            delegate.removeDirectTemplateFacetOverrides(cls, slot, session);
+            getRemoteDelegate().removeDirectTemplateFacetOverrides(cls, slot, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -522,7 +538,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
         try {
             setCacheValues(cls, slot, facet, true, values);
-            delegate.setDirectTemplateFacetValues(cls, slot, facet, values, session);
+            getRemoteDelegate().setDirectTemplateFacetValues(cls, slot, facet, values, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -568,7 +584,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             addCacheOwnSlotValue(superclass, getSystemFrames().getDirectSubclassesSlot(), cls);
             addCacheOwnSlotValue(cls, getSystemFrames().getDirectSuperclassesSlot(), superclass);
-            delegate.addDirectSuperclass(cls, superclass, session);
+            getRemoteDelegate().addDirectSuperclass(cls, superclass, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -578,7 +594,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             removeCacheOwnSlotValue(superclass, getSystemFrames().getDirectSubclassesSlot(), cls);
             removeCacheOwnSlotValue(cls, getSystemFrames().getDirectSuperclassesSlot(), superclass);
-            delegate.removeDirectSuperclass(cls, superclass, session);
+            getRemoteDelegate().removeDirectSuperclass(cls, superclass, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -587,7 +603,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
         try {
             moveCacheOwnSlotValue(cls, getSystemFrames().getDirectSubclassesSlot(), subclass, index);
-            delegate.moveDirectSubclass(cls, subclass, index, session);
+            getRemoteDelegate().moveDirectSubclass(cls, subclass, index, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -629,7 +645,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             addCacheOwnSlotValue(superslot, getSystemFrames().getDirectSubslotsSlot(), slot);
             addCacheOwnSlotValue(slot, getSystemFrames().getDirectSuperslotsSlot(), superslot);
-            delegate.addDirectSuperslot(slot, superslot, session);
+            getRemoteDelegate().addDirectSuperslot(slot, superslot, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -639,7 +655,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             removeCacheOwnSlotValue(superslot, getSystemFrames().getDirectSubslotsSlot(), slot);
             removeCacheOwnSlotValue(slot, getSystemFrames().getDirectSuperslotsSlot(), superslot);
-            delegate.removeDirectSuperslot(slot, superslot, session);
+            getRemoteDelegate().removeDirectSuperslot(slot, superslot, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -648,7 +664,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public void moveDirectSubslot(Slot slot, Slot subslot, int index) {
         try {
             moveCacheOwnSlotValue(slot, getSystemFrames().getDirectSubslotsSlot(), subslot, index);
-            delegate.moveDirectSubslot(slot, subslot, index, session);
+            getRemoteDelegate().moveDirectSubslot(slot, subslot, index, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -680,7 +696,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getInstances(Cls cls) {
         try {
-            Set instances = delegate.getInstances(cls, session);
+            Set instances = getRemoteDelegate().getInstances(cls, session);
             localize(instances);
             return instances;
         } catch (RemoteException e) {
@@ -692,7 +708,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             addCacheOwnSlotValue(instance, getSystemFrames().getDirectTypesSlot(), type);
             addCacheOwnSlotValue(type, getSystemFrames().getDirectInstancesSlot(), instance);
-            delegate.addDirectType(instance, type, session);
+            getRemoteDelegate().addDirectType(instance, type, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -702,7 +718,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             removeCacheOwnSlotValue(instance, getSystemFrames().getDirectTypesSlot(), type);
             removeCacheOwnSlotValue(type, getSystemFrames().getDirectInstancesSlot(), instance);
-            delegate.removeDirectType(instance, type, session);
+            getRemoteDelegate().removeDirectType(instance, type, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -710,7 +726,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public List getEvents() {
         try {
-            List events = delegate.getEvents(session);
+            List events = getRemoteDelegate().getEvents(session);
             localize(events);
             processEvents(events);
             return events;
@@ -721,7 +737,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set executeQuery(Query query) {
         try {
-            Set frames = delegate.executeQuery(query, session);
+            Set frames = getRemoteDelegate().executeQuery(query, session);
             localize(frames);
             return frames;
         } catch (RemoteException e) {
@@ -731,7 +747,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getReferences(Object object) {
         try {
-            Set references = delegate.getReferences(object, session);
+            Set references = getRemoteDelegate().getReferences(object, session);
             localize(references);
             return references;
         } catch (RemoteException e) {
@@ -741,7 +757,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getClsesWithMatchingBrowserText(String text, Collection superclasses, int maxMatches) {
         try {
-            Set clses = delegate.getClsesWithMatchingBrowserText(text, superclasses, maxMatches, session);
+            Set clses = getRemoteDelegate().getClsesWithMatchingBrowserText(text, superclasses, maxMatches, session);
             localize(clses);
             return clses;
         } catch (RemoteException e) {
@@ -752,7 +768,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getMatchingReferences(String string, int maxMatches) {
         try {
-            Set references = delegate.getMatchingReferences(string, maxMatches, session);
+            Set references = getRemoteDelegate().getMatchingReferences(string, maxMatches, session);
             localize(references);
             return references;
         } catch (RemoteException e) {
@@ -762,7 +778,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         try {
-            Set frames = delegate.getFramesWithDirectOwnSlotValue(slot, value, session);
+            Set frames = getRemoteDelegate().getFramesWithDirectOwnSlotValue(slot, value, session);
             localize(frames);
             return frames;
         } catch (RemoteException e) {
@@ -772,7 +788,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         try {
-            Set frames = delegate.getFramesWithAnyDirectOwnSlotValue(slot, session);
+            Set frames = getRemoteDelegate().getFramesWithAnyDirectOwnSlotValue(slot, session);
             localize(frames);
             return frames;
         } catch (RemoteException e) {
@@ -782,7 +798,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
         try {
-            Set frames = delegate.getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches, session);
+            Set frames = getRemoteDelegate().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches, session);
             localize(frames);
             loadReturnedValues(frames);
             return frames;
@@ -793,7 +809,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value) {
         try {
-            Set clses = delegate.getClsesWithDirectTemplateSlotValue(slot, value, session);
+            Set clses = getRemoteDelegate().getClsesWithDirectTemplateSlotValue(slot, value, session);
             localize(clses);
             return clses;
         } catch (RemoteException e) {
@@ -803,7 +819,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         try {
-            Set clses = delegate.getClsesWithAnyDirectTemplateSlotValue(slot, session);
+            Set clses = getRemoteDelegate().getClsesWithAnyDirectTemplateSlotValue(slot, session);
             localize(clses);
             return clses;
         } catch (RemoteException e) {
@@ -813,7 +829,8 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches) {
         try {
-            Set clses = delegate.getClsesWithMatchingDirectTemplateSlotValue(slot, value, maxMatches, session);
+            Set clses = getRemoteDelegate().getClsesWithMatchingDirectTemplateSlotValue(slot, value, maxMatches,
+                    session);
             localize(clses);
             return clses;
         } catch (RemoteException e) {
@@ -823,7 +840,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value) {
         try {
-            Set clses = delegate.getClsesWithDirectTemplateFacetValue(slot, facet, value, session);
+            Set clses = getRemoteDelegate().getClsesWithDirectTemplateFacetValue(slot, facet, value, session);
             localize(clses);
             return clses;
         } catch (RemoteException e) {
@@ -833,7 +850,8 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value, int maxMatches) {
         try {
-            Set clses = delegate.getClsesWithMatchingDirectTemplateFacetValue(slot, facet, value, maxMatches, session);
+            Set clses = getRemoteDelegate().getClsesWithMatchingDirectTemplateFacetValue(slot, facet, value,
+                    maxMatches, session);
             localize(clses);
             return clses;
         } catch (RemoteException e) {
@@ -843,7 +861,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot) {
         try {
-            Set values = delegate.getDirectOwnSlotValuesClosure(frame, slot, session);
+            Set values = getRemoteDelegate().getDirectOwnSlotValuesClosure(frame, slot, session);
             localize(values);
             return values;
         } catch (RemoteException e) {
@@ -853,7 +871,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public boolean beginTransaction(String name) {
         try {
-            return delegate.beginTransaction(name, session);
+            return getRemoteDelegate().beginTransaction(name, session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -861,7 +879,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public boolean commitTransaction() {
         try {
-            return delegate.commitTransaction(session);
+            return getRemoteDelegate().commitTransaction(session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -869,19 +887,19 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public boolean rollbackTransaction() {
         try {
-            return delegate.rollbackTransaction(session);
+            return getRemoteDelegate().rollbackTransaction(session);
         } catch (RemoteException e) {
             throw convertException(e);
         }
     }
 
     public void close() {
-        delegate = null;
+        remoteDelegate = null;
     }
 
     //------------------------------
     public void preload(boolean preloadAll) throws RemoteException {
-        Map fsftValues = delegate.preload(preloadAll, session);
+        Map fsftValues = getRemoteDelegate().preload(preloadAll, session);
         Log.getLogger().info("Preloaded with " + fsftValues.size() + " frames");
         insertValues(fsftValues);
     }
@@ -903,7 +921,7 @@ public class RemoteClientFrameStore implements FrameStore {
         boolean succeeded = calculateClosureFromCacheOnly(frame, slot, facet, isTemplate, closure);
         if (!succeeded) {
             // Log.trace("not in cache: " + frame, this, "getCacheClosure");
-            closure = delegate.getDirectOwnSlotValuesClosure(frame, slot, session);
+            closure = getRemoteDelegate().getDirectOwnSlotValuesClosure(frame, slot, session);
             localize(closure);
             loadReturnedValues(closure);
         }
@@ -959,7 +977,7 @@ public class RemoteClientFrameStore implements FrameStore {
         if (values == null && sftValues.containsKey(lookupSft)) {
             // Log.trace("getting missing values for: " + frame, this,
             // "getCacheValues");
-            values = delegate.getDirectOwnSlotValues(frame, slot, session);
+            values = getRemoteDelegate().getDirectOwnSlotValues(frame, slot, session);
             localize(values);
             sftValues.put(new Sft(slot, facet, isTemplate), new ArrayList(values));
         }
@@ -975,7 +993,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     private void loadValues(Collection frames) throws RemoteException {
-        Map fsftValues = delegate.getFrameValues(frames, session);
+        Map fsftValues = getRemoteDelegate().getFrameValues(frames, session);
         insertValues(fsftValues);
     }
 
@@ -1086,7 +1104,7 @@ public class RemoteClientFrameStore implements FrameStore {
         Frame frame = (Frame) frameNameToFrameMap.get(name);
         if (frame == null) {
             if (!frameNameToFrameMap.containsKey(name)) {
-                frame = delegate.getFrame(name, session);
+                frame = getRemoteDelegate().getFrame(name, session);
                 if (frame != null) {
                     localize(frame);
                 }
@@ -1275,7 +1293,7 @@ public class RemoteClientFrameStore implements FrameStore {
                     Frame frame = frameEvent.getFrame();
                     Slot slot = frameEvent.getSlot();
                     if (isOwnSlotValueCached(frame, slot)) {
-                        List newValues = delegate.getDirectOwnSlotValues(frame, slot, session);
+                        List newValues = getRemoteDelegate().getDirectOwnSlotValues(frame, slot, session);
                         localize(newValues);
                         setCacheOwnSlotValues(frame, slot, newValues);
                     }

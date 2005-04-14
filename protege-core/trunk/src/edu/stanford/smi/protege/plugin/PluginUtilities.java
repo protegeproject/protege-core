@@ -49,8 +49,7 @@ public class PluginUtilities {
 
     private static FilenameFilter _pluginPackageFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
-            return new File(dir, name).isDirectory() && !name.equalsIgnoreCase("meta-inf")
-                    && !name.startsWith(".");
+            return new File(dir, name).isDirectory() && !name.equalsIgnoreCase("meta-inf") && !name.startsWith(".");
         }
     };
 
@@ -84,8 +83,7 @@ public class PluginUtilities {
 
     private static ClassLoader createClassLoader(File directory, ClassLoader parentLoader) {
         // return new DirectoryClassLoader(directory, parentLoader);
-        return (directory == null) ? parentLoader : new DirectoryClassLoader(directory,
-                parentLoader);
+        return (directory == null) ? parentLoader : new DirectoryClassLoader(directory, parentLoader);
     }
 
     public static Class forName(String className) {
@@ -101,6 +99,7 @@ public class PluginUtilities {
      */
     public static Class forName(String className, boolean promiscuous) {
         Class clas = null;
+        ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
         try {
             ClassLoader loader = getClassLoader(className);
             setContextClassLoader(loader);
@@ -112,13 +111,12 @@ public class PluginUtilities {
         } catch (Throwable e) {
             Log.getLogger().warning(e.getMessage());
         }
+        Thread.currentThread().setContextClassLoader(oldLoader);
         return clas;
     }
 
     private static Class promiscuousForName(String className) {
         Class clas = null;
-        // ClassLoader oldLoader =
-        // Thread.currentThread().getContextClassLoader();
         Iterator i = getClassLoaders().iterator();
         while (i.hasNext() && clas == null) {
             ClassLoader loader = (ClassLoader) i.next();
@@ -132,7 +130,6 @@ public class PluginUtilities {
                 // "promiscuousForName", className, loader);
             }
         }
-        // Thread.currentThread().setContextClassLoader(oldLoader);
         return clas;
     }
 
@@ -221,18 +218,17 @@ public class PluginUtilities {
     }
 
     public static String getDefaultWidgetClassName(boolean cardinality, ValueType type, Cls allowedCls) {
-	    DefaultEntry entry = new DefaultEntry(cardinality, type, allowedCls);
-	    String name = (String) _defaultSlotWidgetNames.get(entry);
-		if (name == null && type.equals(ValueType.INSTANCE) && allowedCls != null) {
-		    // now match on any allowed class
-		    entry = new DefaultEntry(cardinality, type, null);
-		    name = (String) _defaultSlotWidgetNames.get(entry);
-		}
-		return name;
+        DefaultEntry entry = new DefaultEntry(cardinality, type, allowedCls);
+        String name = (String) _defaultSlotWidgetNames.get(entry);
+        if (name == null && type.equals(ValueType.INSTANCE) && allowedCls != null) {
+            // now match on any allowed class
+            entry = new DefaultEntry(cardinality, type, null);
+            name = (String) _defaultSlotWidgetNames.get(entry);
+        }
+        return name;
     }
-    
-    public static String getDefaultWidgetClassName(boolean cardinality, ValueType type,
-            Cls allowedCls, Slot slot) {
+
+    public static String getDefaultWidgetClassName(boolean cardinality, ValueType type, Cls allowedCls, Slot slot) {
         String name = null;
         if (slot != null) {
             name = getDefaultWidgetClassName(slot);
@@ -331,8 +327,7 @@ public class PluginUtilities {
     private static void checkPlugins(ClassLoader loader, Attributes attributes, String className) {
         checkPlugin(loader, attributes, className, TAB_WIDGET, TabWidget.class);
         checkPlugin(loader, attributes, className, CLS_WIDGET, ClsWidget.class);
-        boolean added = checkPlugin(loader, attributes, className, FACTORY_PLUGIN,
-                KnowledgeBaseFactory.class);
+        boolean added = checkPlugin(loader, attributes, className, FACTORY_PLUGIN, KnowledgeBaseFactory.class);
         if (added) {
             recordFactoryDefault(className, attributes);
         }
@@ -457,15 +452,15 @@ public class PluginUtilities {
         Collection dependentLoaders = getDependentLoaders(packageDir);
         int count = dependentLoaders.size();
         switch (count) {
-        case 0:
-            parentLoader = PluginUtilities.class.getClassLoader();
-            break;
-        case 1:
-            parentLoader = (ClassLoader) CollectionUtilities.getFirstItem(dependentLoaders);
-            break;
-        default:
-            parentLoader = new MultiplexingClassLoader(dependentLoaders);
-            break;
+            case 0:
+                parentLoader = PluginUtilities.class.getClassLoader();
+                break;
+            case 1:
+                parentLoader = (ClassLoader) CollectionUtilities.getFirstItem(dependentLoaders);
+                break;
+            default:
+                parentLoader = new MultiplexingClassLoader(dependentLoaders);
+                break;
         }
         return parentLoader;
     }
@@ -562,8 +557,7 @@ public class PluginUtilities {
         return properties.getProperty(pluginName, dir.getName());
     }
 
-    private static void loadURL(String name, Properties properties, String property, int i,
-            File dir, Map map) {
+    private static void loadURL(String name, Properties properties, String property, int i, File dir, Map map) {
         String filePropertyName = property + "." + i;
         String fileString = properties.getProperty(filePropertyName);
         if (fileString != null) {
@@ -647,10 +641,8 @@ public class PluginUtilities {
             for (int i = 0; i < count; ++i) {
                 String pluginName = getPluginName(properties, i, dir);
                 _pluginComponentNames.add(pluginName);
-                loadURL(pluginName, properties, ABOUT_PROPERTY, i, dir,
-                        _pluginComponentNameToAboutURLMap);
-                loadURL(pluginName, properties, DOC_PROPERTY, i, dir,
-                        _pluginComponentNameToDocURLMap);
+                loadURL(pluginName, properties, ABOUT_PROPERTY, i, dir, _pluginComponentNameToAboutURLMap);
+                loadURL(pluginName, properties, DOC_PROPERTY, i, dir, _pluginComponentNameToDocURLMap);
             }
         }
     }

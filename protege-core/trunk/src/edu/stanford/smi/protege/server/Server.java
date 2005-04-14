@@ -64,6 +64,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * @see RMISocketFactory#setSocketFactory(RMISocketFactory)
      */
     public static void startServer(String[] args, RMISocketFactory sf) throws IOException {
+        System.setProperty("java.rmi.server.RMIClassLoaderSpi", ProtegeRmiClassLoaderSpi.class.getName());
         RMISocketFactory.setSocketFactory(sf);
         SystemUtilities.initialize();
         new Server(args);
