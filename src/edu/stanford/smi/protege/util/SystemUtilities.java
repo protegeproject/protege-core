@@ -14,7 +14,6 @@ import com.jgoodies.plaf.plastic.*;
 
 import edu.stanford.smi.protege.plugin.*;
 import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.server.*;
 
 /**
  * A set of utilities for accessing the underlying system and for manipulating system level objects.
@@ -128,7 +127,6 @@ public class SystemUtilities {
             logSystemInfo();
             loadParameters();
             loadLookAndFeel();
-            setSecurityManager();
             PluginUtilities.initialize();
             loadUseAntialiasing();
             Toolkit.getDefaultToolkit().setDynamicLayout(true);
@@ -147,14 +145,6 @@ public class SystemUtilities {
         String osName = getSystemProperty("os.name");
         isMac = osName.indexOf("Mac") != -1;
         isWindows = osName.indexOf("Windows") != -1;
-    }
-
-    private static void setSecurityManager() {
-        try {
-            System.setSecurityManager(new LaxSecurityManager());
-        } catch (SecurityException e) {
-            // expect this in applets
-        }
     }
 
     private static void loadLookAndFeel() {

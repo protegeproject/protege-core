@@ -203,7 +203,9 @@ public class ComponentUtilities {
 
     public static void fullSelectionExpand(JTree tree, int max_expansions) {
         TreePath topPath = tree.getLeadSelectionPath();
-        fullExpand(tree, topPath, max_expansions);
+        if (topPath != null) {
+            fullExpand(tree, topPath, max_expansions);
+        }
     }
 
     public static LazyTreeNode getChildNode(LazyTreeNode node, Object userObject) {
