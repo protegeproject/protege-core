@@ -79,8 +79,10 @@ public class ApplicationProperties {
                         _mruProjectList.add(uri);
                     }
                 } catch (IllegalArgumentException e) {
-                    // Not a file so just add it anyway.
-                    _mruProjectList.add(uri);
+                    if (!uri.getScheme().equals("rmi")) {
+                        // Not a file so just add it anyway.
+                        _mruProjectList.add(uri);
+                    }
                 }
             }
         } else {
@@ -95,7 +97,7 @@ public class ApplicationProperties {
     }
 
     public static void addProjectToMRUList(URI uri) {
-        if (uri != null) {
+        if (uri != null && !uri.getScheme().equals("rmi")) {
             uri = uri.normalize();
             _mruProjectList.remove(uri);
             _mruProjectList.add(0, uri);

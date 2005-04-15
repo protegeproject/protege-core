@@ -753,12 +753,11 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             if (value == null) {
                 int index = getIndex(rs, 3);
                 value = getLongValue(frame, slot, facet, isTemplate, index);
+                if (value == null) {
+                    value = new String();
+                }
             }
-            if (value == null) {
-                nullValueError(frame, slot, facet, isTemplate);
-            } else {
-                values.add(value);
-            }
+            values.add(value);
         }
         rs.close();
         return values;
@@ -855,12 +854,11 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             if (value == null) {
                 int index = getIndex(rs, 7);
                 value = getLongValue(frame, slot, facet, isTemplate, index);
+                if (value == null) {
+                    value = new String();
+                }
             }
-            if (value == null) {
-                nullValueError(frame, slot, facet, isTemplate);
-            } else {
-                addToMap(sftToValueMap, slot, facet, isTemplate, value);
-            }
+            addToMap(sftToValueMap, slot, facet, isTemplate, value);
         }
         rs.close();
         return sftToValueMap;
@@ -891,24 +889,14 @@ public class DatabaseFrameDb implements NarrowFrameStore {
                 // int index = getIndex(rs, 8);
                 // value = getLongValue(frame, slot, facet, isTemplate, index);
                 value = getLongValue(rs, 9);
+                if (value == null) {
+                    value = new String();
+                }
             }
-            if (value == null) {
-                nullValueError(frame, slot, facet, isTemplate);
-            } else {
-                addToMap(frameToSftToValueMap, frame, slot, facet, isTemplate, value);
-            }
+            addToMap(frameToSftToValueMap, frame, slot, facet, isTemplate, value);
         }
         rs.close();
         return frameToSftToValueMap;
-    }
-
-    private void nullValueError(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-        String text = "null value: " + id(frame) + " " + id(slot) + " " + id(facet) + " " + isTemplate;
-        Log.getLogger().warning(text);
-    }
-
-    private static FrameID id(Frame frame) {
-        return (frame == null) ? null : frame.getFrameID();
     }
 
     private void addToMap(Map map, Slot slot, Facet facet, boolean isTemplate, Object value) {
