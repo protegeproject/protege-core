@@ -44,10 +44,8 @@ public class ValueTypeWidget extends AbstractSlotWidget {
                 // It is ugly to leave it down when the dialog pops up.
                 _typeComboBox.hidePopup();
 
-                String text =
-                    "There may be instances which have values for this slot.\n"
-                        + "Changing the type will cause these values to be removed.\n"
-                        + "\n"
+                String text = "There may be instances which have values for this slot.\n"
+                        + "Changing the type will cause these values to be removed.\n" + "\n"
                         + "Do you really want to make this change?";
                 int response = ModalDialog.showMessageDialog(ValueTypeWidget.this, text, ModalDialog.MODE_YES_NO);
                 result = response == ModalDialog.OPTION_YES;
@@ -167,7 +165,7 @@ public class ValueTypeWidget extends AbstractSlotWidget {
         Assert.fail("bad type: " + type);
         return null;
     }
-    
+
     public String getLabel() {
         return localizeStandardLabel(super.getLabel(), "Value Type", ResourceKey.VALUE_TYPE_SLOT_WIDGET_LABEL);
     }

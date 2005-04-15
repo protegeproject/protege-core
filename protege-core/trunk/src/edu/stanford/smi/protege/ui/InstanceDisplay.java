@@ -608,6 +608,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
             instance.addInstanceListener(_instanceListener);
         }
         _currentInstance = instance;
+        _currentAssociatedCls = associatedCls;
         if (_header != null) {
             loadHeader();
         }
