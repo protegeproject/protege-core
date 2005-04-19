@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.model;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.event.*;
@@ -15,29 +14,27 @@ import edu.stanford.smi.protege.util.*;
 public abstract class DefaultFrame implements Frame, Localizable, Externalizable {
     private static final char SPECIAL_NAME_CHAR = ':';
 
-    private static final int NOT_DELETED = 0;
-    private static final int BEING_DELETED = 1;
-    private static final int DELETED = 2;
-
     private transient KnowledgeBase knowledgeBase;
     private FrameID id;
-    private int deleteState = NOT_DELETED;
-    private boolean isEditable = true;
-    private boolean isIncluded;
-    private URI definingProjectURI;
+
+    /**
+     * This set of booleans is optimized to a "state" object to cut down on memory consumption.
+     * Large projects use many frame objects.
+     */
+    private static final int READONLY_MASK = 1 << 0;
+    private static final int INCLUDED_MASK = 1 << 1;
+    private static final int DELETING_MASK = 1 << 2;
+    private static final int DELETED_MASK = 1 << 3;
+    private int state;
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         id = (FrameID) in.readObject();
-        deleteState = in.readInt();
-        isEditable = in.readBoolean();
-        isIncluded = in.readBoolean();
+        state = in.readInt();
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(id);
-        out.writeInt(deleteState);
-        out.writeBoolean(isEditable);
-        out.writeBoolean(isIncluded);
+        out.writeInt(state);
     }
 
     protected DefaultFrame() {
@@ -45,7 +42,6 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     }
 
     DefaultFrame(KnowledgeBase kb, FrameID id) {
-        // Assert.assertNotNull("knowledge base", kb);
         Assert.assertNotNull("id", id);
         knowledgeBase = kb;
         this.id = id;
@@ -56,19 +52,31 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     }
 
     public boolean isDeleted() {
-        return deleteState == DELETED;
+        return getState(DELETED_MASK);
     }
 
     public void markDeleted(boolean deleted) {
-        deleteState = (deleted) ? DELETED : NOT_DELETED;
+        setState(DELETED_MASK, deleted);
+    }
+
+    private void setState(int mask, boolean value) {
+        if (value) {
+            state |= mask;
+        } else {
+            state &= ~mask;
+        }
+    }
+
+    private boolean getState(int mask) {
+        return (state & mask) != 0;
     }
 
     public boolean isBeingDeleted() {
-        return deleteState == BEING_DELETED;
+        return getState(DELETING_MASK);
     }
 
     public void markDeleting() {
-        deleteState = BEING_DELETED;
+        setState(DELETING_MASK, true);
     }
 
     /**
@@ -310,7 +318,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     }
 
     public boolean isEditable() {
-        return isEditable && !isIncluded() && !isInReadonlyProject();
+        return !getState(READONLY_MASK) && !isIncluded() && !isInReadonlyProject();
     }
 
     private boolean isInReadonlyProject() {
@@ -318,11 +326,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     }
 
     public boolean isIncluded() {
-        return isIncluded || isSystem();
-    }
-
-    public URI getDefiningProjectURI() {
-        return definingProjectURI;
+        return getState(INCLUDED_MASK) || isSystem();
     }
 
     public boolean isSystem() {
@@ -358,11 +362,11 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     }
 
     public void setEditable(boolean b) {
-        isEditable = b;
+        setState(READONLY_MASK, !b);
     }
 
     public void setIncluded(boolean b) {
-        isIncluded = b;
+        setState(INCLUDED_MASK, b);
     }
 
     public void setName(String newName) {

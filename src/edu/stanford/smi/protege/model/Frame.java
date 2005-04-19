@@ -1,6 +1,5 @@
 package edu.stanford.smi.protege.model;
 
-import java.net.*;
 import java.util.*;
 
 import javax.swing.*;
@@ -136,8 +135,6 @@ public interface Frame extends Comparable {
     boolean isEditable();
 
     boolean isIncluded();
-
-    URI getDefiningProjectURI();
 
     boolean isSystem();
 
