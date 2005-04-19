@@ -50,17 +50,21 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
 
         public void templateSlotRemoved(ClsEvent event) {
-            reloadForm();
+            if (isDisplayingSlot(event.getSlot())) {
+                reloadForm();
+            }
         }
 
         public void templateFacetValueChanged(ClsEvent event) {
-            reloadForm();
+            if (isDisplayingSlot(event.getSlot())) {
+                reloadForm();
+            }
         }
     };
     private FrameListener _frameListener = new FrameAdapter() {
         public void ownSlotValueChanged(FrameEvent event) {
-            super.ownSlotValueChanged(event);
-            if (event.getSlot().hasSuperslot(_templateSlotsSlot)) {
+            Slot slot = event.getSlot();
+            if (slot.hasSuperslot(_templateSlotsSlot)) {
                 reloadForm();
             }
         }
@@ -82,6 +86,19 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
             }
         }
     };
+
+    protected boolean isDisplayingSlot(Slot slot) {
+        boolean isDisplaying = false;
+        Iterator i = _currentWidgets.iterator();
+        while (i.hasNext()) {
+            ClsWidget clsWidget = (ClsWidget) i.next();
+            if (clsWidget.getSlotWidget(slot) != null) {
+                isDisplaying = true;
+                break;
+            }
+        }
+        return isDisplaying;
+    }
 
     private boolean isDisplayingCls(Cls cls) {
         boolean isDisplaying = false;
