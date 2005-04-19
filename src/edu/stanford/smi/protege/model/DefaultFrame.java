@@ -19,7 +19,8 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
 
     /**
      * This set of booleans is optimized to a "state" object to cut down on memory consumption.
-     * Large projects use many frame objects.
+     * Large projects use many frame objects.  Unfortunately the Java VM stores each "boolean"
+     * variable in an "int" object.
      */
     private static final int READONLY_MASK = 1 << 0;
     private static final int INCLUDED_MASK = 1 << 1;
