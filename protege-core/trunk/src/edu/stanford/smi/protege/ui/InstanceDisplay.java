@@ -46,17 +46,19 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
 
         public void templateSlotAdded(ClsEvent event) {
-            reloadForm();
+            if (shouldDisplaySlot(event.getCls(), event.getSlot())) {
+                reloadForm();
+            }
         }
 
         public void templateSlotRemoved(ClsEvent event) {
-            if (isDisplayingSlot(event.getSlot())) {
+            if (isDisplayingSlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
         }
 
         public void templateFacetValueChanged(ClsEvent event) {
-            if (isDisplayingSlot(event.getSlot())) {
+            if (isDisplayingSlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
         }
@@ -87,30 +89,17 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
     };
 
-    protected boolean isDisplayingSlot(Slot slot) {
-        boolean isDisplaying = false;
-        Iterator i = _currentWidgets.iterator();
-        while (i.hasNext()) {
-            ClsWidget clsWidget = (ClsWidget) i.next();
-            if (clsWidget.getSlotWidget(slot) != null) {
-                isDisplaying = true;
-                break;
-            }
-        }
-        return isDisplaying;
+    protected boolean shouldDisplaySlot(Cls cls, Slot slot) {
+        return true;
+    }
+
+    protected boolean isDisplayingSlot(Cls cls, Slot slot) {
+        ClsWidget widget = getClsWidget(cls);
+        return widget.getSlotWidget(slot) != null;
     }
 
     private boolean isDisplayingCls(Cls cls) {
-        boolean isDisplaying = false;
-        Iterator i = _currentWidgets.iterator();
-        while (i.hasNext()) {
-            ClsWidget widget = (ClsWidget) i.next();
-            if (widget.getCls().equals(cls)) {
-                isDisplaying = true;
-                break;
-            }
-        }
-        return isDisplaying;
+        return getClsWidget(cls) != null;
     }
 
     public static boolean equals(Object o1, Object o2) {
@@ -355,6 +344,19 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
 
     public ClsWidget getFirstClsWidget() {
         return (ClsWidget) CollectionUtilities.getFirstItem(_currentWidgets);
+    }
+
+    private ClsWidget getClsWidget(Cls cls) {
+        ClsWidget widget = null;
+        Iterator i = _currentWidgets.iterator();
+        while (i.hasNext()) {
+            ClsWidget clsWidget = (ClsWidget) i.next();
+            if (clsWidget.getCls().equals(cls)) {
+                widget = clsWidget;
+                break;
+            }
+        }
+        return widget;
     }
 
     public Instance getCurrentInstance() {

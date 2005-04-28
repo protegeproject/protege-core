@@ -948,7 +948,11 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public String getFrameName(Frame frame) {
-        return (String) getDirectOwnSlotValue(frame, _systemFrames.getNameSlot());
+        String name = (String) getDirectOwnSlotValue(frame, _systemFrames.getNameSlot());
+        if (name == null) {
+            name = "<<missing frame name for " + frame.getFrameID() + ">>";
+        }
+        return name;
     }
 
     public void setFrameName(Frame frame, String name) {
