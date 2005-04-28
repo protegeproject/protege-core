@@ -13,7 +13,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class AbstractKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
 
-    protected Reader createReader(KnowledgeBase kb, String name, Collection errors) {
+    protected BufferedReader createReader(KnowledgeBase kb, String name, Collection errors) {
         URI projectUri = kb.getProject().getLoadingURI();
         URI inputUri;
         if (projectUri == null) {
@@ -22,7 +22,7 @@ public abstract class AbstractKnowledgeBaseFactory implements KnowledgeBaseFacto
             name = encode(name);
             inputUri = URIUtilities.resolve(projectUri, name);
         }
-        Reader reader = URIUtilities.createBufferedReader(inputUri);
+        BufferedReader reader = URIUtilities.createBufferedReader(inputUri);
         if (reader == null) {
             errors.add("Unable to open " + inputUri + " for " + name);
         }
@@ -59,8 +59,8 @@ public abstract class AbstractKnowledgeBaseFactory implements KnowledgeBaseFacto
         loadKnowledgeBase(kb, sources, true, errors);
     }
 
-    protected abstract void loadKnowledgeBase(KnowledgeBase kb, PropertyList sources,
-            boolean isInclude, Collection error);
+    protected abstract void loadKnowledgeBase(KnowledgeBase kb, PropertyList sources, boolean isInclude,
+            Collection error);
 
     public String toString() {
         return StringUtilities.getClassName(this);
@@ -88,7 +88,7 @@ public abstract class AbstractKnowledgeBaseFactory implements KnowledgeBaseFacto
         FileUtilities.makeTempFilePermanent(file);
     }
 
-    protected Writer createWriter(File file) {
+    protected BufferedWriter createWriter(File file) {
         return FileUtilities.createBufferedWriter(file);
     }
 
@@ -104,8 +104,7 @@ public abstract class AbstractKnowledgeBaseFactory implements KnowledgeBaseFacto
         return null;
     }
 
-    public void prepareToSaveInFormat(KnowledgeBase kb, KnowledgeBaseFactory factory,
-            Collection errors) {
+    public void prepareToSaveInFormat(KnowledgeBase kb, KnowledgeBaseFactory factory, Collection errors) {
         // Log.enter(this, "prepareToSaveInFormat", kb, factory);
         // do nothing
     }

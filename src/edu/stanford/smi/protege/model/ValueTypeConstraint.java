@@ -53,9 +53,21 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
         } else {
             allowedClses = Collections.EMPTY_LIST;
         }
+        ensureClses(allowedClses);
         return allowedClses;
     }
-    
+
+    private static void ensureClses(Collection clses) {
+        Iterator i = clses.iterator();
+        while (i.hasNext()) {
+            Object o = i.next();
+            if (!(o instanceof Cls)) {
+                Log.getLogger().severe("Invalid Class: " + o);
+                clses.remove(o);
+            }
+        }
+    }
+
     private static KnowledgeBase getKb(Collection bindingValue) {
         KnowledgeBase kb = null;
         Iterator i = bindingValue.iterator();
@@ -83,6 +95,7 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
         } else {
             allowedParents = Collections.EMPTY_LIST;
         }
+        ensureClses(allowedParents);
         return allowedParents;
     }
 
@@ -92,8 +105,8 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
     }
 
     public String getInvalidAnyValueText(Object value) {
-        boolean isValid =
-            value instanceof Boolean || value instanceof Frame || value instanceof String || value instanceof Number;
+        boolean isValid = value instanceof Boolean || value instanceof Frame || value instanceof String
+                || value instanceof Number;
         return isValid ? (String) null : "Value must by one of the allowed types";
     }
 
@@ -233,11 +246,11 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
     public static List getValues(ValueType type, Collection values) {
         List value = new ArrayList();
         if (!type.equals(ValueType.ANY)) {
-	        value.add(type.toString());
-	        if (values != null) {
-	            // remove duplicates by putting into a set first
-	            value.addAll(new LinkedHashSet(values));
-	        }
+            value.add(type.toString());
+            if (values != null) {
+                // remove duplicates by putting into a set first
+                value.addAll(new LinkedHashSet(values));
+            }
         }
         return value;
     }
@@ -270,9 +283,11 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
     private Collection resolveClsValues(Collection existingValues, Collection newValues) {
         return (existingValues.isEmpty()) ? newValues : existingValues;
     }
+
     private Collection resolveInstanceValues(Collection existingValues, Collection newValues) {
         return (existingValues.isEmpty()) ? newValues : existingValues;
     }
+
     private Collection resolveSymbolValues(Collection existingValues, Collection newValues) {
         return (existingValues.isEmpty()) ? newValues : existingValues;
     }

@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.model;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.event.*;
@@ -46,6 +47,13 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
         Assert.assertNotNull("id", id);
         knowledgeBase = kb;
         this.id = id;
+    }
+
+    /**
+     * @deprecated
+     */
+    public URI getDefiningProjectURI() {
+        return null;
     }
 
     public FrameID getFrameID() {

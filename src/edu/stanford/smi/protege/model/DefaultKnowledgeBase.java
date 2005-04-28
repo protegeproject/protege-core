@@ -1501,7 +1501,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     public synchronized String getBrowserText(Instance instance) {
         String value;
         if (instance.isDeleted()) {
-            value = "<deleted>";
+            value = "<<deleted>>";
         } else {
             Cls directType = instance.getDirectType();
             if (_project == null) {

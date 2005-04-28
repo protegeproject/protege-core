@@ -36,15 +36,13 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         return getDelegate().getFrame(name);
     }
 
-    public Cls createCls(FrameID id, String name, Collection directTypes, Collection superClasses,
-            boolean loadDefaults) {
+    public Cls createCls(FrameID id, String name, Collection directTypes, Collection superClasses, boolean loadDefaults) {
         Cls cls = getDelegate().createCls(id, name, directTypes, superClasses, loadDefaults);
         generateCreateClsEvents(cls, directTypes);
         return cls;
     }
 
-    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection superslots,
-            boolean loadDefaults) {
+    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection superslots, boolean loadDefaults) {
         Slot slot = getDelegate().createSlot(id, name, directTypes, superslots, loadDefaults);
         generateCreateSlotEvents(slot, directTypes);
         return slot;
@@ -72,8 +70,8 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     private void generateSetDirectOwnSlotValuesEvents(Frame frame, Slot slot, Collection values) {
         generateOwnSlotValuesChangedEvent(frame, slot);
         generateFrameEvent(FrameEvent.BROWSER_TEXT_CHANGED, frame);
-        Slot inverseSlot = (Slot) CollectionUtilities.getFirstItem(getDirectOwnSlotValues(slot,
-                _systemFrames.getInverseSlotSlot()));
+        Slot inverseSlot = (Slot) CollectionUtilities.getFirstItem(getDirectOwnSlotValues(slot, _systemFrames
+                .getInverseSlotSlot()));
         if (inverseSlot != null) {
             // back references from new values
             Iterator i = values.iterator();
@@ -173,8 +171,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         removeReference(frame, slot, facet, isTemplate, instance);
     }
 
-    private void removeReference(Frame frame, Slot slot, Facet facet, boolean isTemplate,
-            Instance instance) {
+    private void removeReference(Frame frame, Slot slot, Facet facet, boolean isTemplate, Instance instance) {
         if (facet == null) {
             if (isTemplate) {
                 removeTemplateSlotValueReference(frame, slot, instance);
@@ -198,8 +195,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         // TODO
     }
 
-    private void removeTemplateFacetValueReference(Frame frame, Slot slot, Facet facet,
-            Instance instance) {
+    private void removeTemplateFacetValueReference(Frame frame, Slot slot, Facet facet, Instance instance) {
         // TODO
     }
 
@@ -223,10 +219,8 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
-            boolean loadDefaults) {
-        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, directTypes,
-                loadDefaults);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
+        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
         generateCreateSimpleInstanceEvents(simpleInstance, directTypes);
         return simpleInstance;
     }
@@ -339,8 +333,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         generateClsEvent(ClsEvent.DIRECT_SUPERCLASS_ADDED, cls, superclass);
         generateClsEvent(ClsEvent.DIRECT_SUBCLASS_ADDED, superclass, cls);
         generateSuperclassTemplateSlotChangedEvents(cls, ClsEvent.TEMPLATE_SLOT_ADDED, addedSlots);
-        generateOwnSlotValuesChangedEvent(cls, superclass, _systemFrames
-                .getDirectSuperclassesSlot());
+        generateOwnSlotValuesChangedEvent(cls, superclass, _systemFrames.getDirectSuperclassesSlot());
     }
 
     private Collection getSlotsToBeAdded(Cls cls, Cls superclass) {
@@ -349,8 +342,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         return slots;
     }
 
-    private void generateSuperclassTemplateSlotChangedEvents(Cls cls, int type,
-            Collection addedSlots) {
+    private void generateSuperclassTemplateSlotChangedEvents(Cls cls, int type, Collection addedSlots) {
         Iterator i = addedSlots.iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();
@@ -391,10 +383,8 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         removedSlots.removeAll(cls.getTemplateSlots());
         generateClsEvent(ClsEvent.DIRECT_SUPERCLASS_REMOVED, cls, superclass);
         generateClsEvent(ClsEvent.DIRECT_SUBCLASS_REMOVED, superclass, cls);
-        generateSuperclassTemplateSlotChangedEvents(cls, ClsEvent.TEMPLATE_SLOT_REMOVED,
-                removedSlots);
-        generateOwnSlotValuesChangedEvent(cls, superclass, _systemFrames
-                .getDirectSuperclassesSlot());
+        generateSuperclassTemplateSlotChangedEvents(cls, ClsEvent.TEMPLATE_SLOT_REMOVED, removedSlots);
+        generateOwnSlotValuesChangedEvent(cls, superclass, _systemFrames.getDirectSuperclassesSlot());
     }
 
     public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
