@@ -4,6 +4,7 @@ import java.net.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.ui.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
@@ -29,6 +30,7 @@ public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin
 
     protected void handleErrors(Collection errors) {
         if (!errors.isEmpty()) {
+            ProjectManager.getProjectManager().displayErrors("Create Project Errors", errors);
             Object error = errors.iterator().next();
             Log.getLogger().severe(error.toString());
         }
@@ -79,33 +81,5 @@ public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin
     protected void initializeSources(PropertyList sources) {
         throw new UnsupportedOperationException();
     }
-
-    /*
-     * protected void setRequiresReloadAfterCreate(boolean b) { requiresReloadAfterCreate = b; }
-     * 
-     * public void handleImportIntoExistingProjectRequest(Project project) { boolean succeeded = promptForSources(); if
-     * (succeeded) { Collection errors = new ArrayList(); importIntoProject(project, errors); handleErrors("Failed to
-     * import project.", errors); } }
-     * 
-     * public Project handleImportIntoNewProjectRequest() { Project project = createProject();
-     * handleImportIntoExistingProjectRequest(project); return project; }
-     * 
-     * private Project createProject() { Collection errors = new ArrayList(); Project project =
-     * Project.createNewProject(factory, errors); if (requiresReloadAfterCreate) { project =
-     * saveAndReloadProject(project, errors); } return project; }
-     * 
-     * protected Project saveAndReloadProject(Project project, Collection errors) { PropertyList sources =
-     * project.getSources(); KnowledgeBaseSourcesEditor editor = project.getKnowledgeBaseFactory()
-     * .createKnowledgeBaseSourcesEditor(null, sources); editor.setShowProject(true); JComponent parent =
-     * ProjectManager.getProjectManager().getMainPanel(); String title =
-     * LocalizedText.getText(ResourceKey.DATABASE_CONFIGURATION_DIALOG_TITLE); int rval = ModalDialog.showDialog(parent,
-     * editor, title, ModalDialog.MODE_OK_CANCEL); if (rval == ModalDialog.OPTION_OK) { editor.saveContents();
-     * WaitCursor cursor = createWaitCursor(); try { URI uri = URIUtilities.createURI(editor.getProjectPath());
-     * project.setProjectURI(uri); project.save(errors); String saveTitle = LocalizedText
-     * .getText(ResourceKey.SAVE_PROJECT_FAILED_DIALOG_TITLE); handleErrors(saveTitle, errors); if (errors.isEmpty()) {
-     * project.dispose(); project = Project.loadProjectFromURI(uri, errors); String reloadTitle = LocalizedText
-     * .getText(ResourceKey.RELOAD_PROJECT_FAILED_DIALOG_TITLE); handleErrors(reloadTitle, errors); if
-     * (!errors.isEmpty()) { project = null; } } else { project = null; } } finally { cursor.hide(); } } return project; }
-     */
 
 }

@@ -1429,18 +1429,24 @@ public class Project {
     }
 
     private static void removeUnreferencedInstances(KnowledgeBase kb) {
-        Instance projectInstance = getProjectInstance(kb);
-        Collection roots = CollectionUtilities.createCollection(projectInstance);
-
-        Iterator i = kb.getUnreachableSimpleInstances(roots).iterator();
-        while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
-            // Log.trace("found unreachable instance: " + instance,
-            // Project.class, "removeUnreferencedInstances");
-            if (instance.isEditable()) {
-                kb.deleteInstance(instance);
-            }
+        if (!isNewProject(kb)) {
+	        Instance projectInstance = getProjectInstance(kb);
+	        Collection roots = CollectionUtilities.createCollection(projectInstance);
+	
+	        Iterator i = kb.getUnreachableSimpleInstances(roots).iterator();
+	        while (i.hasNext()) {
+	            Instance instance = (Instance) i.next();
+	            // Log.trace("found unreachable instance: " + instance,
+	            // Project.class, "removeUnreferencedInstances");
+	            if (instance.isEditable()) {
+	                kb.deleteInstance(instance);
+	            }
+	        }
         }
+    }
+    
+    public static boolean isNewProject(KnowledgeBase kb) {
+        return kb.getBuildString() == null;
     }
 
     public void save(Collection errors) {

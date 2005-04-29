@@ -44,7 +44,9 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     }
 
     DefaultFrame(KnowledgeBase kb, FrameID id) {
-        Assert.assertNotNull("id", id);
+        if (id == null) {
+            Log.getLogger().severe("null frame id");
+        }
         knowledgeBase = kb;
         this.id = id;
     }

@@ -516,18 +516,31 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         Iterator i = values.iterator();
         while (i.hasNext()) {
             Object value = i.next();
-            setValueIndex(stmt, 6, index);
-            setValue(stmt, 7, 8, 9, value);
-            if (useBatch) {
-                stmt.addBatch();
+            if (isNullValue(value)) {
+                Log.getLogger().warning("Skiping null value");
             } else {
-                executeUpdate(stmt);
+                setValueIndex(stmt, 6, index);
+                setValue(stmt, 7, 8, 9, value);
+                if (useBatch) {
+                    stmt.addBatch();
+                } else {
+                    executeUpdate(stmt);
+                }
+                ++index;
             }
-            ++index;
         }
         if (useBatch) {
             stmt.executeBatch();
         }
+    }
+
+    private boolean isNullValue(Object o) {
+        boolean isNull = o == null;
+        if (o instanceof String) {
+            String s = (String) o;
+            isNull = s.trim().length() == 0;
+        }
+        return isNull;
     }
 
     private String _maxIndexText;
