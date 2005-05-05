@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.storage.xml.XMLString.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
@@ -17,13 +18,10 @@ public class XMLStorer {
     private Collection excludeSlots = new HashSet();
     private int indentLevel;
 
-    // private Collection errors;
-
     public XMLStorer(KnowledgeBase kb, Writer writer, Collection errors) {
         this.kb = kb;
         this.writer = new PrintWriter(writer);
         initializeExcludeSlots();
-        // this.errors = errors;
     }
 
     private void initializeExcludeSlots() {
@@ -50,10 +48,6 @@ public class XMLStorer {
         --indentLevel;
     }
 
-    private void unindent(int levels) {
-        indentLevel -= levels;
-    }
-
     public void store() {
         preamble();
         indent();
@@ -67,29 +61,22 @@ public class XMLStorer {
     }
 
     private void storeClses() {
-        List clses = new ArrayList(kb.getClses());
-        // Collections.sort(clses);
-        Iterator i = clses.iterator();
-        while (i.hasNext()) {
-            Cls cls = (Cls) i.next();
-            storeCls(cls);
-        }
+        storeCls(kb.getRootCls(), new HashSet());
     }
 
     private void storeSlots() {
         List slots = new ArrayList(kb.getSlots());
-        // Collections.sort(slots);
+        Collections.sort(slots);
         Iterator i = slots.iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();
             storeSlot(slot);
         }
-
     }
 
     private void storeFacets() {
         List facets = new ArrayList(kb.getFacets());
-        // Collections.sort(facets);
+        Collections.sort(facets);
         Iterator i = facets.iterator();
         while (i.hasNext()) {
             Facet facet = (Facet) i.next();
@@ -98,16 +85,22 @@ public class XMLStorer {
     }
 
     private void storeSimpleInstances() {
-        Set frames = new HashSet(kb.getFrames());
-        frames.removeAll(kb.getClses());
-        frames.removeAll(kb.getSlots());
-        frames.removeAll(kb.getFacets());
-        List simpleInstances = new ArrayList(frames);
-        // Collections.sort(simpleInstances);
-        Iterator i = simpleInstances.iterator();
+        Set storedInstances = new HashSet();
+        Iterator i = kb.getClses().iterator();
         while (i.hasNext()) {
-            SimpleInstance simpleInstance = (SimpleInstance) i.next();
-            storeSimpleInstance(simpleInstance);
+            Cls cls = (Cls) i.next();
+            storeSimpleInstances(cls, storedInstances);
+        }
+    }
+
+    private void storeSimpleInstances(Cls cls, Set storedInstances) {
+        Iterator i = cls.getDirectInstances().iterator();
+        while (i.hasNext()) {
+            Instance instance = (Instance) i.next();
+            if (instance instanceof SimpleInstance && !storedInstances.contains(instance)) {
+                storeSimpleInstance((SimpleInstance) instance);
+                storedInstances.add(instance);
+            }
         }
     }
 
@@ -115,54 +108,57 @@ public class XMLStorer {
         println("<?xml version=\"1.0\" ?>");
     }
 
-    private void printDtd() {
-        println("<!DOCTYPE kb [");
-        indent();
-        println("<!ELEMENT kb (class | slot | facet | simple_instance)*>");
-        println("<!ATTLIST kb xmlns CDATA #IMPLIED>");
-        println();
-        println("<!ELEMENT class (name, type*, superclass*, template_slot*, template_facet_value*, own_slot_value*)>");
-        println("<!ATTLIST class id ID #REQUIRED>");
-        println();
-        println("<!ELEMENT slot (name, type*, superslot*, own_slot_value*)>");
-        println("<!ATTLIST slot id ID #REQUIRED>");
-        println();
-        println("<!ELEMENT facet (name, type*, own_slot_value*)>");
-        println("<!ATTLIST facet id ID #REQUIRED>");
-        println();
-        println("<!ELEMENT simple_instance (name, type*, own_slot_value*)>");
-        println("<!ATTLIST simple_instance id ID #REQUIRED>");
-        println();
-        println("<!ELEMENT name (#PCDATA)>");
-        println("<!ELEMENT type (#PCDATA)>");
-        println("<!ELEMENT superclass (#PCDATA)>");
-        println("<!ELEMENT template_slot (#PCDATA)>");
-        println("<!ELEMENT superslot (#PCDATA)>");
-        println("<!ELEMENT slot_reference (#PCDATA)>");
-        println("<!ELEMENT facet_reference (#PCDATA)>");
-        println();
-        println("<!ELEMENT own_slot_value (slot_reference, (primitive_value | reference_value)*)>");
-        println("<!ELEMENT template_facet_value (slot_reference, facet_reference, (primitive_value | reference_value)*)>");
-
-        println("<!ELEMENT primitive_value (#PCDATA)>");
-        println("<!ATTLIST primitive_value type CDATA #REQUIRED>");
-        println("<!ELEMENT reference_value (#PCDATA)>");
-        println("<!ATTLIST reference_value type CDATA #REQUIRED>");
-        unindent();
-        println("]>");
-    }
+    //    private void printDtd() {
+    //        println("<!DOCTYPE knowledge_base [");
+    //        indent();
+    //        println("<!ELEMENT knowledge_base (class | slot | facet | simple_instance)*>");
+    //        println("<!ATTLIST knowledge_base xmlns CDATA #IMPLIED>");
+    //        println();
+    //        println("<!ELEMENT class (name, type*, superclass*, template_slot*, template_facet_value*, own_slot_value*)>");
+    //        println("<!ATTLIST class id ID #REQUIRED>");
+    //        println();
+    //        println("<!ELEMENT slot (name, type*, superslot*, own_slot_value*)>");
+    //        println("<!ATTLIST slot id ID #REQUIRED>");
+    //        println();
+    //        println("<!ELEMENT facet (name, type*, own_slot_value*)>");
+    //        println("<!ATTLIST facet id ID #REQUIRED>");
+    //        println();
+    //        println("<!ELEMENT simple_instance (name, type*, own_slot_value*)>");
+    //        println("<!ATTLIST simple_instance id ID #REQUIRED>");
+    //        println();
+    //        println("<!ELEMENT name (#PCDATA)>");
+    //        println("<!ELEMENT type (#PCDATA)>");
+    //        println("<!ELEMENT superclass (#PCDATA)>");
+    //        println("<!ELEMENT template_slot (#PCDATA)>");
+    //        println("<!ELEMENT superslot (#PCDATA)>");
+    //        println("<!ELEMENT slot_reference (#PCDATA)>");
+    //        println("<!ELEMENT facet_reference (#PCDATA)>");
+    //        println();
+    //        println("<!ELEMENT own_slot_value (slot_reference, (primitive_value | reference_value)*)>");
+    //        println("<!ELEMENT template_facet_value (slot_reference, facet_reference, (primitive_value | reference_value)*)>");
+    //
+    //        println("<!ELEMENT primitive_value (#PCDATA)>");
+    //        println("<!ATTLIST primitive_value type CDATA #REQUIRED>");
+    //        println("<!ELEMENT reference_value (#PCDATA)>");
+    //        println("<!ATTLIST reference_value type CDATA #REQUIRED>");
+    //        unindent();
+    //        println("]>");
+    //    }
 
     private void preamble() {
         printHeader();
-        indent();
-        printDtd();
-        unindent();
-        printStartTag("kb", "xmlns", "http://protge.stanford.edu/xml");
-
+        // indent();
+        // printDtd();
+        // unindent();
+        String[] attributes = new String[] { "xmlns=\"http://protege.stanford.edu/xml\"",
+                "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"",
+                "xsi:schemaLocation=\"file:///c/temp protege.xsd\"" };
+        println();
+        printStartTag(XMLString.ElementName.KNOWLEDGE_BASE, attributes);
     }
 
     private void postscript() {
-        printEndTag("kb");
+        printEndTag(XMLString.ElementName.KNOWLEDGE_BASE);
     }
 
     private void println(String s) {
@@ -201,11 +197,39 @@ public class XMLStorer {
     }
 
     private void printStartTag(String element) {
-        println("<" + element + ">");
+        printStartTag(element, null);
+    }
+
+    private void printStartTag(String element, String[] attribute) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<");
+        buffer.append(element);
+        if (attribute != null) {
+            String spaces = null;
+            for (int i = 0; i < attribute.length; ++i) {
+                if (true || i == 0) {
+                    buffer.append(" ");
+                } else {
+                    if (spaces == null) {
+                        StringBuffer spaceBuffer = new StringBuffer();
+                        // spaceBuffer.append('\n');
+                        for (int j = 0; j < buffer.length(); ++j) {
+                            spaceBuffer.append(' ');
+                        }
+                        spaces = spaceBuffer.toString();
+                    }
+                    buffer.append(spaces);
+                }
+                buffer.append(attribute[i]);
+            }
+        }
+        buffer.append(">");
+        println(buffer.toString());
+
     }
 
     private void printStartTag(String element, String attribute, String value) {
-        println("<" + element + " " + attribute + "=\"" + value + "\">");
+        printStartTag(element, new String[] { attribute + "=\"" + value + "\"" });
     }
 
     private void printEndTag(String element) {
@@ -213,9 +237,9 @@ public class XMLStorer {
     }
 
     private void beginFrame(Frame frame, String frameType) {
-        printStartTag(frameType, "id", getId(frame));
+        printStartTag(frameType, XMLString.AttributeName.ID, getId(frame));
         indent();
-        printValue("name", frame.getName());
+        printValue(XMLString.ElementName.NAME, frame.getName());
         unindent();
     }
 
@@ -244,13 +268,12 @@ public class XMLStorer {
     private void printOwnSlotValues(Frame frame, Slot slot) {
         Collection values = frame.getDirectOwnSlotValues(slot);
         if (!values.isEmpty()) {
-            printStartTag("own_slot_value");
+            printStartTag(XMLString.ElementName.OWN_SLOT_VALUE);
             indent();
-            printValue("slot_reference", slot.getName());
+            printValue(XMLString.ElementName.SLOT_REFERENCE, slot.getName());
             printValues(frame.getDirectOwnSlotValues(slot));
-            indent();
-            printEndTag("own_slot_value");
-            unindent(2);
+            unindent();
+            printEndTag(XMLString.ElementName.OWN_SLOT_VALUE);
         }
     }
 
@@ -267,30 +290,30 @@ public class XMLStorer {
         String tag;
         String attribute;
         if (o instanceof Frame) {
-            tag = "reference_value";
+            tag = XMLString.ElementName.REFERENCE_VALUE;
             attribute = frameAttribute(o);
             value = frameValue(o);
         } else {
-            tag = "primitive_value";
+            tag = XMLString.ElementName.PRIMITIVE_VALUE;
             if (o instanceof String) {
-                attribute = "string";
+                attribute = XMLString.AttributeValue.STRING_TYPE;
                 value = (String) o;
             } else if (o instanceof Integer) {
-                attribute = "integer";
+                attribute = XMLString.AttributeValue.INTEGER_TYPE;
                 value = o.toString();
             } else if (o instanceof Float) {
-                attribute = "float";
+                attribute = XMLString.AttributeValue.FLOAT_TYPE;
                 value = o.toString();
             } else if (o instanceof Boolean) {
-                attribute = "boolean";
+                attribute = XMLString.AttributeValue.BOOLEAN_TYPE;
                 value = o.toString();
             } else {
                 Log.getLogger().warning("Unexpected object: " + o);
-                attribute = "string";
+                attribute = XMLString.AttributeValue.STRING_TYPE;
                 value = o.toString();
             }
         }
-        printValue(tag, value, "type", attribute);
+        printValue(tag, value, XMLString.AttributeName.VALUE_TYPE, attribute);
     }
 
     private String frameValue(Object o) {
@@ -300,13 +323,13 @@ public class XMLStorer {
     private String frameAttribute(Object o) {
         String attribute;
         if (o instanceof Cls) {
-            attribute = "class";
+            attribute = AttributeValue.CLASS_TYPE;
         } else if (o instanceof Slot) {
-            attribute = "slot";
+            attribute = XMLString.AttributeValue.SLOT_TYPE;
         } else if (o instanceof Facet) {
-            attribute = "facet";
+            attribute = XMLString.AttributeValue.FACET_TYPE;
         } else {
-            attribute = "simple_instance";
+            attribute = XMLString.AttributeValue.SIMPLE_INSTANCE_TYPE;
         }
         return attribute;
     }
@@ -318,7 +341,7 @@ public class XMLStorer {
     private void beginInstance(String frameType, Instance instance) {
         beginFrame(instance, frameType);
         indent();
-        printFrameValues("type", instance.getDirectTypes());
+        printFrameValues(XMLString.ElementName.TYPE, instance.getDirectTypes());
         unindent();
     }
 
@@ -330,14 +353,27 @@ public class XMLStorer {
         }
     }
 
-    private void storeCls(Cls cls) {
-        beginInstance("class", cls);
+    private void storeCls(Cls cls, Set storedClses) {
+        beginInstance(XMLString.ElementName.CLASS, cls);
         indent();
-        printFrameValues("superclass", cls.getDirectSuperclasses());
-        printFrameValues("template_slot", cls.getDirectTemplateSlots());
+        printFrameValues(XMLString.ElementName.SUPERCLASS, cls.getDirectSuperclasses());
+        printFrameValues(XMLString.ElementName.TEMPLATE_SLOT, cls.getDirectTemplateSlots());
         printTemplateFacetValues(cls);
         unindent();
-        endInstance("class", cls);
+        endInstance(XMLString.ElementName.CLASS, cls);
+
+        storedClses.add(cls);
+        storeSubclasses(cls, storedClses);
+    }
+
+    private void storeSubclasses(Cls cls, Set storedClses) {
+        Iterator i = cls.getDirectSubclasses().iterator();
+        while (i.hasNext()) {
+            Cls subclass = (Cls) i.next();
+            if (!storedClses.contains(subclass)) {
+                storeCls(subclass, storedClses);
+            }
+        }
     }
 
     private void printTemplateFacetValues(Cls cls) {
@@ -360,29 +396,29 @@ public class XMLStorer {
     }
 
     private void printTemplateFacetValues(Slot slot, Facet facet, Collection values) {
-        printStartTag("template_facet_value");
+        printStartTag(XMLString.ElementName.TEMPLATE_FACET_VALUE);
         indent();
-        printFrameReference("slot_reference", slot);
-        printFrameReference("facet_reference", facet);
+        printFrameReference(XMLString.ElementName.SLOT_REFERENCE, slot);
+        printFrameReference(XMLString.ElementName.FACET_REFERENCE, facet);
         printValues(values);
         unindent();
-        printEndTag("template_facet_value");
+        printEndTag(XMLString.ElementName.TEMPLATE_FACET_VALUE);
     }
 
     private void storeSlot(Slot slot) {
-        beginInstance("slot", slot);
-        printFrameValues("superslots", slot.getDirectSuperslots());
-        endInstance("slot", slot);
+        beginInstance(XMLString.ElementName.SLOT, slot);
+        printFrameValues(XMLString.ElementName.SUPERSLOT, slot.getDirectSuperslots());
+        endInstance(XMLString.ElementName.SLOT, slot);
     }
 
     private void storeFacet(Facet facet) {
-        beginInstance("facet", facet);
-        endInstance("facet", facet);
+        beginInstance(XMLString.ElementName.FACET, facet);
+        endInstance(XMLString.ElementName.FACET, facet);
     }
 
     private void storeSimpleInstance(SimpleInstance simpleInstance) {
-        beginInstance("simple_instance", simpleInstance);
-        endInstance("simple_instance", simpleInstance);
+        beginInstance(XMLString.ElementName.SIMPLE_INSTANCE, simpleInstance);
+        endInstance(XMLString.ElementName.SIMPLE_INSTANCE, simpleInstance);
     }
 
 }

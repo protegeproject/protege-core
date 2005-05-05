@@ -228,6 +228,7 @@ public interface KnowledgeBase extends Disposable {
     Collection getFacets();
 
     Frame getFrame(String name);
+    SimpleInstance getSimpleInstance(String name);
     Frame getFrame(FrameID id);
 
     int getFrameCount();
