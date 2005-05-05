@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.lang.reflect.*;
+import java.lang.reflect.Proxy;
 import java.net.*;
 import java.util.*;
 

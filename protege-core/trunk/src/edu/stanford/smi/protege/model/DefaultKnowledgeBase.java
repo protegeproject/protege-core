@@ -622,6 +622,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return (Instance) getFrame(name);
     }
 
+    public synchronized SimpleInstance getSimpleInstance(String name) {
+        return (SimpleInstance) getFrame(name);
+    }
+
     public synchronized Collection getInstances() {
         return getFrames();
     }

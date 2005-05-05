@@ -9,9 +9,9 @@ import junit.framework.*;
  */
 public class _ProtegePackage_Test {
 
-	public static Test suite() {
-		TestSuite suite = new TestSuite("app"); //$NON-NLS-1$
-		suite.addTestSuite(Application_Test.class);
-		return suite;
-	}
+    public static Test suite() {
+        TestSuite suite = new TestSuite("app"); //$NON-NLS-1$
+        suite.addTestSuite(Application_Test.class);
+        return suite;
+    }
 }

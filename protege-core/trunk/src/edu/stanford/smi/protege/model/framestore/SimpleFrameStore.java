@@ -1062,7 +1062,8 @@ public class SimpleFrameStore implements FrameStore {
         Iterator i = getDirectTypes((Instance) frame).iterator();
         while (i.hasNext()) {
             Cls cls = (Cls) i.next();
-            values.addAll(getTemplateFacetValues(cls, slot, facet));
+            Collection typeValues = getTemplateFacetValues(cls, slot, facet);
+            values = resolveValues(values, typeValues, facet);
         }
         return values;
     }

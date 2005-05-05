@@ -3,6 +3,8 @@ package edu.stanford.smi.protege.storage.xml;
 import java.io.*;
 import java.util.*;
 
+import javax.xml.parsers.*;
+
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
@@ -16,38 +18,36 @@ import edu.stanford.smi.protege.util.*;
  */
 public class XMLLoader {
     private KnowledgeBase kb;
-    private BufferedReader reader;
     private Collection errors;
-    public static final String VALIDATE = "http://xml.org/sax/features/validation";
+    private BufferedReader reader;
 
     public XMLLoader(KnowledgeBase kb, BufferedReader reader, boolean isInclude, Collection errors) {
         this.kb = kb;
         this.reader = reader;
         this.errors = errors;
-        System.setProperty("org.xml.sax.driver", "org.apache.crimson.parser.XMLReaderImpl");
+        // System.setProperty("org.xml.sax.driver", "org.apache.crimson.parser.XMLReaderImpl");
     }
 
     public void load() {
         try {
-            XMLReader parser = XMLReaderFactory.createXMLReader();
-            parser.setContentHandler(new MyContentHandler(kb));
-            parser.setErrorHandler(new MyErrorHandler(errors));
-            parser.setFeature(VALIDATE, true);
-            parser.parse(new InputSource(reader));
-        } catch (SAXException e) {
-            Log.getLogger().severe(Log.toString(e));
-        } catch (IOException e) {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            SAXParser saxParser = factory.newSAXParser();
+            saxParser.parse(new InputSource(reader), new MyHandler(kb, errors));
+        } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
         }
     }
-
 }
 
-class MyErrorHandler implements ErrorHandler {
+class MyHandler extends DefaultHandler {
+    private KnowledgeBase kb;
     private Collection errors;
 
-    public MyErrorHandler(Collection errors) {
+    public MyHandler(KnowledgeBase kb, Collection errors) {
+        this.kb = kb;
         this.errors = errors;
+        Log.getLogger().info("Reading " + this.kb);
     }
 
     public void error(SAXParseException exception) throws SAXException {
@@ -67,55 +67,38 @@ class MyErrorHandler implements ErrorHandler {
         Log.getLogger().severe(Log.toString(e));
     }
 
-}
-
-class MyContentHandler implements ContentHandler {
-    private int indentLevel;
-    private KnowledgeBase kb;
-
-    public MyContentHandler(KnowledgeBase kb) {
-        this.kb = kb;
-        Log.getLogger().info("Reading " + this.kb);
-    }
-
-    private void output(String s, int delta) {
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < indentLevel; ++i) {
-            buffer.append("    ");
-        }
-        buffer.append(s);
-        Log.getLogger().info(buffer.toString());
-        indentLevel += delta;
+    private void output(String s) {
+        Log.getLogger().info(s);
     }
 
     public void setDocumentLocator(Locator locator) {
-        output("document locator: " + locator, 0);
+        output("document locator: " + locator);
     }
 
     public void startDocument() throws SAXException {
-        output("start document", 1);
+        output("start document");
     }
 
     public void endDocument() throws SAXException {
-        output("end document", -1);
+        // output("end document");
     }
 
     public void startPrefixMapping(String prefix, String uri) throws SAXException {
-        output("start prefix mapping: " + prefix + " " + uri, +1);
+        output("start prefix mapping: " + prefix + " " + uri);
     }
 
     public void endPrefixMapping(String prefix) throws SAXException {
-        output("end prefix mapping: " + prefix, -1);
+        // output("end prefix mapping: " + prefix, -1);
     }
 
     private LinkedList openElements = new LinkedList();
 
     private Element getCurrentElement() {
-        return (Element) openElements.get(openElements.size() - 1);
+        return openElements.isEmpty() ? null : (Element) openElements.get(openElements.size() - 1);
     }
 
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-        if (!qName.equals("kb")) {
+        if (!qName.equals(XMLString.ElementName.KNOWLEDGE_BASE)) {
             Element element = new Element(qName, atts);
             if (openElements.isEmpty()) {
                 openElements.add(element);
@@ -129,7 +112,7 @@ class MyContentHandler implements ContentHandler {
     }
 
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if (!qName.equals("kb")) {
+        if (!qName.equals(XMLString.ElementName.KNOWLEDGE_BASE)) {
             Element lastElement = (Element) openElements.remove(openElements.size() - 1);
             if (openElements.isEmpty()) {
                 createFrame(lastElement);
@@ -140,7 +123,10 @@ class MyContentHandler implements ContentHandler {
 
     public void characters(char[] ch, int start, int length) throws SAXException {
         // output("character: " + new String(ch, start, length), 0);
-        getCurrentElement().addCharacters(new String(ch, start, length));
+        Element currentElement = getCurrentElement();
+        if (currentElement != null) {
+            currentElement.addCharacters(new String(ch, start, length));
+        }
     }
 
     private Collection getElementClsValues(Element root, String tag) {
@@ -166,7 +152,7 @@ class MyContentHandler implements ContentHandler {
     private Cls getCls(String name) {
         Cls cls = kb.getCls(name);
         if (cls == null) {
-            cls = kb.createCls(null, name, kb.getRootClses(), Collections.EMPTY_LIST, false);
+            cls = kb.createCls(null, name, Collections.EMPTY_LIST, Collections.EMPTY_LIST, false);
         }
         return cls;
     }
@@ -179,28 +165,80 @@ class MyContentHandler implements ContentHandler {
         return slot;
     }
 
+    private Facet getFacet(String name) {
+        Facet facet = kb.getFacet(name);
+        if (facet == null) {
+            facet = kb.createFacet(name, null, false);
+        }
+        return facet;
+    }
+
+    private SimpleInstance getSimpleInstance(String name) {
+        SimpleInstance simpleInstance = kb.getSimpleInstance(name);
+        if (simpleInstance == null) {
+            simpleInstance = kb.createSimpleInstance(null, name, Collections.EMPTY_LIST, false);
+        }
+        return simpleInstance;
+    }
+
     private void createFrame(Element root) {
         String kind = root.getName();
-        String name = root.getSubelementValue("name");
-        Collection types = getElementClsValues(root, "type");
+        String name = root.getSubelementValue(XMLString.ElementName.NAME);
+        Collection types = getElementClsValues(root, XMLString.ElementName.TYPE);
         // Log.getLogger().info("create: " + name + ", types=" + types);
 
         Frame frame;
-        if (kind.equals("class")) {
+        if (kind.equals(XMLString.ElementName.CLASS)) {
             frame = createCls(name, types, root);
-        } else if (kind.equals("slot")) {
+        } else if (kind.equals(XMLString.ElementName.SLOT)) {
             frame = createSlot(name, types, root);
-        } else if (kind.equals("facet")) {
+        } else if (kind.equals(XMLString.ElementName.FACET)) {
             frame = createFacet(name, types, root);
-        } else {
+        } else if (kind.equals(XMLString.ElementName.SIMPLE_INSTANCE)) {
             frame = createSimpleInstance(name, types, root);
+        } else {
+            Log.getLogger().warning("bad frame type: " + kind);
+            frame = null;
         }
 
-        addOwnSlotValues(frame, root);
+        if (frame != null) {
+            addOwnSlotValues(frame, root);
+        }
+    }
+
+    private void addTemplateFacetValues(Cls cls, Element root) {
+        Iterator i = root.getSubelements(XMLString.ElementName.TEMPLATE_FACET_VALUE).iterator();
+        while (i.hasNext()) {
+            Element node = (Element) i.next();
+            addTemplateFacetValue(cls, node);
+        }
+
+    }
+
+    private void addTemplateFacetValue(Cls cls, Element node) {
+        Slot slot = null;
+        Facet facet = null;
+        Collection values = new ArrayList();
+        Iterator i = node.getSubelements().iterator();
+        while (i.hasNext()) {
+            Element element = (Element) i.next();
+            String elementName = element.getName();
+            if (elementName.equals(XMLString.ElementName.SLOT_REFERENCE)) {
+                slot = getSlot(element.getValue());
+            } else if (elementName.equals(XMLString.ElementName.FACET_REFERENCE)) {
+                facet = getFacet(element.getValue());
+            } else {
+                Object value = getValue(element);
+                if (value != null) {
+                    values.add(value);
+                }
+            }
+        }
+        cls.setTemplateFacetValues(slot, facet, values);
     }
 
     private void addOwnSlotValues(Frame frame, Element root) {
-        Iterator i = root.getSubelements("own_slot_value").iterator();
+        Iterator i = root.getSubelements(XMLString.ElementName.OWN_SLOT_VALUE).iterator();
         while (i.hasNext()) {
             Element node = (Element) i.next();
             addOwnSlotValue(frame, node);
@@ -213,69 +251,133 @@ class MyContentHandler implements ContentHandler {
         Iterator i = node.getSubelements().iterator();
         while (i.hasNext()) {
             Element element = (Element) i.next();
-            String value = element.getValue();
-            if (element.getName().equals("slot_reference")) {
-                slot = getSlot(value);
+            if (element.getName().equals(XMLString.ElementName.SLOT_REFERENCE)) {
+                slot = getSlot(element.getValue());
             } else {
-                Object slotValue;
-                String typeOfValue = element.getAttributeValue("type");
-                if (typeOfValue.equals("integer")) {
-                    slotValue = new Integer(value);
-                } else if (typeOfValue.equals("float")) {
-                    slotValue = new Float(value);
-                } else if (typeOfValue.equals("string")) {
-                    slotValue = value;
-                } else if (typeOfValue.equals("class")) {
-                    slotValue = getCls(value);
-                } else if (typeOfValue.equals("slot")) {
-                    slotValue = getSlot(value);
-                } else {
-                    slotValue = null;
-                    Log.getLogger().warning("Bad slot value: " + value);
-                }
-                if (slotValue != null) {
-                    values.add(slotValue);
+                Object value = getValue(element);
+                if (value != null) {
+                    values.add(value);
                 }
             }
         }
         frame.setOwnSlotValues(slot, values);
     }
 
+    private Object getValue(Element element) {
+        Object value;
+        if (element.getName().equals(XMLString.ElementName.REFERENCE_VALUE)) {
+            value = getReferenceValue(element);
+        } else if (element.getName().equals(XMLString.ElementName.PRIMITIVE_VALUE)) {
+            value = getPrimitiveValue(element);
+        } else {
+            Log.getLogger().warning("Bad element: " + element);
+            value = null;
+        }
+        return value;
+    }
+
+    private Object getReferenceValue(Element element) {
+        Object value;
+        String frameName = element.getValue();
+        String type = element.getAttributeValue(XMLString.AttributeName.VALUE_TYPE);
+        if (type.equals(XMLString.AttributeValue.CLASS_TYPE)) {
+            value = getCls(frameName);
+        } else if (type.equals(XMLString.AttributeValue.SLOT_TYPE)) {
+            value = getSlot(frameName);
+        } else if (type.equals(XMLString.AttributeValue.FACET_TYPE)) {
+            value = getFacet(frameName);
+        } else if (type.equals(XMLString.AttributeValue.SIMPLE_INSTANCE_TYPE)) {
+            value = getSimpleInstance(frameName);
+        } else {
+            Log.getLogger().warning("bad reference value type: " + type);
+            value = null;
+        }
+        return value;
+    }
+
+    private Object getPrimitiveValue(Element element) {
+        Object value;
+        String valueString = element.getValue();
+        String type = element.getAttributeValue(XMLString.AttributeName.VALUE_TYPE);
+        if (type.equals(XMLString.AttributeValue.STRING_TYPE)) {
+            value = valueString;
+        } else if (type.equals(XMLString.AttributeValue.BOOLEAN_TYPE)) {
+            value = new Boolean(valueString);
+        } else if (type.equals(XMLString.AttributeValue.INTEGER_TYPE)) {
+            value = new Integer(valueString);
+        } else if (type.equals(XMLString.AttributeValue.FLOAT_TYPE)) {
+            value = new Float(valueString);
+        } else {
+            Log.getLogger().warning("bad primitive value type: " + type);
+            value = null;
+        }
+        return value;
+
+    }
+
+    private void addSuperclasses(Cls cls, Collection superclasses) {
+        if (!superclasses.isEmpty()) {
+            Collection currentSuperclasses = cls.getDirectSuperclasses();
+            Iterator i = superclasses.iterator();
+            while (i.hasNext()) {
+                Cls superclass = (Cls) i.next();
+                if (!currentSuperclasses.contains(superclass)) {
+                    cls.addDirectSuperclass(superclass);
+                }
+            }
+        }
+    }
+
+    private void addTypes(Instance instance, Collection types) {
+        if (!types.isEmpty()) {
+            Collection currentTypes = instance.getDirectTypes();
+            Iterator i = types.iterator();
+            while (i.hasNext()) {
+                Cls type = (Cls) i.next();
+                if (!currentTypes.contains(type)) {
+                    instance.addDirectType(type);
+                }
+            }
+        }
+    }
+
     private Cls createCls(String name, Collection types, Element root) {
-        Collection superclasses = getElementClsValues(root, "superclass");
+        Collection superclasses = getElementClsValues(root, XMLString.ElementName.SUPERCLASS);
         Cls cls = kb.getCls(name);
         if (cls == null) {
             cls = kb.createCls(null, name, superclasses, types, false);
         } else {
-            cls.setDirectTypes(types);
+            addTypes(cls, types);
+            addSuperclasses(cls, superclasses);
         }
-        Collection slots = getElementSlotValues(root, "template_slot");
+        Collection slots = getElementSlotValues(root, XMLString.ElementName.TEMPLATE_SLOT);
         Iterator i = slots.iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();
             cls.addDirectTemplateSlot(slot);
         }
+        addTemplateFacetValues(cls, root);
         return cls;
     }
 
     private Slot createSlot(String name, Collection types, Element root) {
-        Cls type = (Cls) CollectionUtilities.getFirstItem(types);
         Slot slot = kb.getSlot(name);
         if (slot == null) {
+            Cls type = (Cls) CollectionUtilities.getFirstItem(types);
             slot = kb.createSlot(name, type, Collections.EMPTY_LIST, false);
         } else {
-            slot.setDirectType(type);
+            addTypes(slot, types);
         }
         return slot;
     }
 
     private Facet createFacet(String name, Collection types, Element root) {
-        Cls type = (Cls) CollectionUtilities.getFirstItem(types);
         Facet facet = kb.getFacet(name);
         if (facet == null) {
+            Cls type = (Cls) CollectionUtilities.getFirstItem(types);
             facet = kb.createFacet(name, type, false);
         } else {
-            facet.setDirectType(type);
+            addTypes(facet, types);
         }
         return facet;
     }
@@ -285,7 +387,7 @@ class MyContentHandler implements ContentHandler {
         if (simpleInstance == null) {
             simpleInstance = kb.createSimpleInstance(null, name, types, false);
         } else {
-            simpleInstance.setDirectTypes(types);
+            addTypes(simpleInstance, types);
         }
         return simpleInstance;
     }
@@ -295,11 +397,11 @@ class MyContentHandler implements ContentHandler {
     }
 
     public void processingInstruction(String target, String data) throws SAXException {
-        output("processing instruction: " + target + " " + data, 0);
+        output("processing instruction: " + target + " " + data);
     }
 
     public void skippedEntity(String name) throws SAXException {
-        output("skipped entity: " + name, 0);
+        output("skipped entity: " + name);
     }
 
 }
