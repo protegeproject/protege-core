@@ -46,19 +46,19 @@ public class FormWidget extends AbstractClsWidget {
             Component c = event.getComponent();
             int key = event.getKeyCode();
             switch (key) {
-                case KeyEvent.VK_LEFT :
+                case KeyEvent.VK_LEFT:
                     translate(c, -1, 0);
                     break;
-                case KeyEvent.VK_RIGHT :
+                case KeyEvent.VK_RIGHT:
                     translate(c, 1, 0);
                     break;
-                case KeyEvent.VK_UP :
+                case KeyEvent.VK_UP:
                     translate(c, 0, -1);
                     break;
-                case KeyEvent.VK_DOWN :
+                case KeyEvent.VK_DOWN:
                     translate(c, 0, 1);
                     break;
-                default :
+                default:
                     // do nothing
                     break;
             }
@@ -68,9 +68,11 @@ public class FormWidget extends AbstractClsWidget {
         public void mousePressed(MouseEvent e) {
             mousePressedOnForm(e.getPoint());
         }
+
         public void mouseDragged(MouseEvent e) {
             mouseDraggedOnForm(e.getPoint());
         }
+
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
                 configure();
@@ -86,9 +88,11 @@ public class FormWidget extends AbstractClsWidget {
         public void mousePressed(MouseEvent e) {
             mousePressedOnWidget(e.getComponent(), e.getPoint());
         }
+
         public void mouseReleased(MouseEvent e) {
             mouseReleasedOnWidget(e.getComponent(), e.getPoint());
         }
+
         public void mouseClicked(MouseEvent e) {
             mouseClickedOnWidget(e.getComponent(), e.getPoint(), e.getClickCount());
         }
@@ -97,6 +101,7 @@ public class FormWidget extends AbstractClsWidget {
         public void mouseDragged(MouseEvent e) {
             mouseDraggedOnWidget(e.getComponent(), e.getPoint());
         }
+
         public void mouseMoved(MouseEvent e) {
             mouseMovedOnWidget(e.getComponent(), e.getPoint());
         }
@@ -105,9 +110,11 @@ public class FormWidget extends AbstractClsWidget {
         public void templateSlotAdded(ClsEvent event) {
             addWidget(event.getSlot());
         }
+
         public void templateSlotRemoved(ClsEvent event) {
             removeWidget(event.getSlot());
         }
+
         public void templateFacetValueChanged(ClsEvent event) {
             updateWidget(event.getSlot());
         }
@@ -168,8 +175,8 @@ public class FormWidget extends AbstractClsWidget {
 
     public boolean configure() {
         FormWidgetConfigurationPanel p = new FormWidgetConfigurationPanel(this);
-        int result =
-            ModalDialog.showDialog(this, p, "Configure form for " + getCls().getName(), ModalDialog.MODE_OK_CANCEL);
+        int result = ModalDialog.showDialog(this, p, "Configure form for " + getCls().getName(),
+                ModalDialog.MODE_OK_CANCEL);
         boolean configured = result == ModalDialog.OPTION_OK;
         if (configured) {
             setModified(true);
@@ -322,7 +329,7 @@ public class FormWidget extends AbstractClsWidget {
         return getComponentCount();
     }
 
-    public static Cls getCustomizedParent(Cls cls) {
+    protected Cls getCustomizedParent(Cls cls) {
         Project project = cls.getProject();
         Cls customizedParent = null;
         Iterator i = cls.getDirectSuperclasses().iterator();
@@ -375,28 +382,29 @@ public class FormWidget extends AbstractClsWidget {
     private Point getParentPoint(Point p) {
         return SwingUtilities.convertPoint(this, p, getParent());
     }
+
     /*
-    public Dimension getPreferredSize() {
-        Dimension preferredSize = new Dimension();
-        Iterator i = getPropertyList().getNames().iterator();
-        while (i.hasNext()) {
-            String widgetName = (String) i.next();
-            if (isSlotName(widgetName)) {
-                WidgetDescriptor descriptor = getPropertyList().getWidgetDescriptor(widgetName);
-                if (!descriptor.isNull()) {
-                    Rectangle r = descriptor.getBounds();
-                    if (r == null) {
-                        Log.warning("null rectangle: " + widgetName, this, "getPreferredSize");
-                    } else {
-                        preferredSize.width = Math.max(preferredSize.width, r.x + r.width);
-                        preferredSize.height = Math.max(preferredSize.height, r.y + r.height);
-                    }
-                }
-            }
-        }
-        return preferredSize;
-    }
-    */
+     public Dimension getPreferredSize() {
+     Dimension preferredSize = new Dimension();
+     Iterator i = getPropertyList().getNames().iterator();
+     while (i.hasNext()) {
+     String widgetName = (String) i.next();
+     if (isSlotName(widgetName)) {
+     WidgetDescriptor descriptor = getPropertyList().getWidgetDescriptor(widgetName);
+     if (!descriptor.isNull()) {
+     Rectangle r = descriptor.getBounds();
+     if (r == null) {
+     Log.warning("null rectangle: " + widgetName, this, "getPreferredSize");
+     } else {
+     preferredSize.width = Math.max(preferredSize.width, r.x + r.width);
+     preferredSize.height = Math.max(preferredSize.height, r.y + r.height);
+     }
+     }
+     }
+     }
+     return preferredSize;
+     }
+     */
     public Dimension getPreferredSize() {
         Dimension preferredSize = new Dimension();
         Iterator i = getPropertyList().getLiveWidgetDescriptors().iterator();
@@ -529,7 +537,7 @@ public class FormWidget extends AbstractClsWidget {
         boolean b = !getPropertyList().getNames().isEmpty();
         return b;
     }
-    
+
     public void setResizeVertically(boolean b) {
         LayoutManager manager = getLayout();
         if (manager instanceof ResizingLayout) {
@@ -554,16 +562,18 @@ public class FormWidget extends AbstractClsWidget {
 
     private void initializeStretching() {
         String horizontalValue = getHorizontalStretcher();
-        putStretchingClientProperty(ResizingLayout.FILLING_HORIZONTALLY, horizontalValue, ResizingLayout.HORIZONTAL_FILL_DEFAULT);
+        putStretchingClientProperty(ResizingLayout.FILLING_HORIZONTALLY, horizontalValue,
+                ResizingLayout.HORIZONTAL_FILL_DEFAULT);
         String verticalValue = getVerticalStretcher();
-        putStretchingClientProperty(ResizingLayout.FILLING_VERTICALLY, verticalValue, ResizingLayout.VERTICAL_FILL_DEFAULT);
+        putStretchingClientProperty(ResizingLayout.FILLING_VERTICALLY, verticalValue,
+                ResizingLayout.VERTICAL_FILL_DEFAULT);
     }
-    
+
     private void putStretchingClientProperty(String propertyName, String value, boolean defaultValue) {
         boolean booleanValue;
         if (value == null) {
             booleanValue = defaultValue;
-        }else {
+        } else {
             booleanValue = !STRETCH_NONE.equals(value);
         }
         putClientProperty(propertyName, new Boolean(booleanValue));
@@ -608,7 +618,7 @@ public class FormWidget extends AbstractClsWidget {
     }
 
     public void layoutLikeParent() {
-        Cls parent = FormWidget.getCustomizedParent(getCls());
+        Cls parent = getCustomizedParent(getCls());
         layoutLikeCls(parent);
         setModified(false);
     }
@@ -713,12 +723,12 @@ public class FormWidget extends AbstractClsWidget {
     }
 
     /*
-    public void paint(Graphics g) {
-        g.setColor(getBackground());
-        g.fillRect(0, 0, getWidth(), getHeight());
-        super.paint(g);
-    }
-    */
+     public void paint(Graphics g) {
+     g.setColor(getBackground());
+     g.fillRect(0, 0, getWidth(), getHeight());
+     super.paint(g);
+     }
+     */
 
     private void propagateSetAssociatedClsToWidgets(Cls associatedCls) {
         for (int i = 0; i < getComponentCount(); ++i) {
@@ -861,8 +871,8 @@ public class FormWidget extends AbstractClsWidget {
                 repaint();
             }
         } else {
-            SlotWidget widget =
-                WidgetUtilities.createSlotWidget(descriptor, true, getProject(), getCls(), oldWidget.getSlot());
+            SlotWidget widget = WidgetUtilities.createSlotWidget(descriptor, true, getProject(), getCls(), oldWidget
+                    .getSlot());
             setupWidget(widget);
             if (_selectedWidget == oldComponent) {
                 setSelection(widget);
@@ -883,35 +893,35 @@ public class FormWidget extends AbstractClsWidget {
         p = gridPoint(p);
         Rectangle r = widget.getBounds();
         switch (_resizeDirection) {
-            case RESIZE_N :
+            case RESIZE_N:
                 adjustNorth(r, p);
                 break;
-            case RESIZE_S :
+            case RESIZE_S:
                 adjustSouth(r, p);
                 break;
-            case RESIZE_E :
+            case RESIZE_E:
                 adjustEast(r, p);
                 break;
-            case RESIZE_W :
+            case RESIZE_W:
                 adjustWest(r, p);
                 break;
-            case RESIZE_NW :
+            case RESIZE_NW:
                 adjustNorth(r, p);
                 adjustWest(r, p);
                 break;
-            case RESIZE_NE :
+            case RESIZE_NE:
                 adjustNorth(r, p);
                 adjustEast(r, p);
                 break;
-            case RESIZE_SW :
+            case RESIZE_SW:
                 adjustSouth(r, p);
                 adjustWest(r, p);
                 break;
-            case RESIZE_SE :
+            case RESIZE_SE:
                 adjustSouth(r, p);
                 adjustEast(r, p);
                 break;
-            default :
+            default:
                 throw new IllegalStateException("Invalid resize direction");
         }
         widget.setBounds(r);
