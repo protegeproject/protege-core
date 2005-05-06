@@ -152,7 +152,8 @@ public class XMLStorer {
         // unindent();
         String[] attributes = new String[] { "xmlns=\"http://protege.stanford.edu/xml\"",
                 "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"",
-                "xsi:schemaLocation=\"file:///c/temp protege.xsd\"" };
+                "xsi:schemaLocation=\"http://protege.stanford.edu/xml/schema file:///c/temp/xml/protege.xsd\"",
+                "xsi:noNamspaceSchemaLocation=\"file:///c/temp/xml/protege.xsd\"" };
         println();
         printStartTag(XMLString.ElementName.KNOWLEDGE_BASE, attributes);
     }
