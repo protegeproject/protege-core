@@ -32,7 +32,7 @@ public class FileSourcesPanel extends KnowledgeBaseSourcesEditor {
 
     public void saveContents() {
         String fileName = getBaseFile(_field);
-        XmlKnowledgeBaseFactory.setSourceFile(getSources(), fileName);
+        XMLKnowledgeBaseFactory.setSourceFile(getSources(), fileName);
     }
 
     public boolean validateContents() {
@@ -40,7 +40,7 @@ public class FileSourcesPanel extends KnowledgeBaseSourcesEditor {
     }
 
     protected JComponent createField() {
-        String file = XmlKnowledgeBaseFactory.getSourceFile(getSources());
+        String file = XMLKnowledgeBaseFactory.getSourceFile(getSources());
         _field = new FileField("XML file name", file, ".xml", null);
         return _field;
     }

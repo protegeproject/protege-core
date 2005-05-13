@@ -20,7 +20,7 @@ public class XMLLoader {
     private Collection errors;
     private BufferedReader reader;
 
-    private static final boolean isValidating = true;
+    private static final boolean isValidating = false;
     private static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
     private static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
 
@@ -29,7 +29,7 @@ public class XMLLoader {
         this.reader = reader;
         this.errors = errors;
 
-        System.setProperty("javax.xml.parsers.SAXParserFactory", "org.apache.xerces.jaxp.SAXParserFactoryImpl");
+        // System.setProperty("javax.xml.parsers.SAXParserFactory", "org.apache.xerces.jaxp.SAXParserFactoryImpl");
     }
 
     public void load() {
