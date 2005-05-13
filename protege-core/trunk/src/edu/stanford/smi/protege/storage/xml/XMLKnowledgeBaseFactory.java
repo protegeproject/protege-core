@@ -14,7 +14,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public class XMLKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
     // ublic static final String DESCRIPTION = Text.getProgramName() + " Files (.xml)";
-    public static final String DESCRIPTION = "XML File (.xml)";
+    public static final String DESCRIPTION = "Experimental XML File (.xml)";
     private final static String SOURCE_FILE_NAME = "source_file_name";
 
     public XMLKnowledgeBaseFactory() {
