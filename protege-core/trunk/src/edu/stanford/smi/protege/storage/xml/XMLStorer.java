@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.framestore.*;
 import edu.stanford.smi.protege.storage.xml.XMLString.*;
 import edu.stanford.smi.protege.util.*;
 
@@ -17,11 +18,16 @@ public class XMLStorer {
     private PrintWriter writer;
     private Collection excludeSlots = new HashSet();
     private int indentLevel;
+    private NarrowFrameStore activeFrameStore;
+    private Collection activeFrames;
 
     public XMLStorer(KnowledgeBase kb, Writer writer, Collection errors) {
         this.kb = kb;
         this.writer = new PrintWriter(writer);
         initializeExcludeSlots();
+
+        activeFrameStore = MergingNarrowFrameStore.get(kb).getActiveFrameStore();
+        activeFrames = activeFrameStore.getFrames();
     }
 
     private void initializeExcludeSlots() {
@@ -34,6 +40,8 @@ public class XMLStorer {
         exclude(Model.Slot.DIRECT_INSTANCES);
         exclude(Model.Slot.DIRECT_SUBSLOTS);
         exclude(Model.Slot.DIRECT_SUPERSLOTS);
+        exclude(Model.Slot.DIRECT_DOMAIN);
+        exclude(Model.Slot.ASSOCIATED_SLOT);
     }
 
     private void exclude(String slotName) {
@@ -108,52 +116,11 @@ public class XMLStorer {
         println("<?xml version=\"1.0\" ?>");
     }
 
-    //    private void printDtd() {
-    //        println("<!DOCTYPE knowledge_base [");
-    //        indent();
-    //        println("<!ELEMENT knowledge_base (class | slot | facet | simple_instance)*>");
-    //        println("<!ATTLIST knowledge_base xmlns CDATA #IMPLIED>");
-    //        println();
-    //        println("<!ELEMENT class (name, type*, superclass*, template_slot*, template_facet_value*, own_slot_value*)>");
-    //        println("<!ATTLIST class id ID #REQUIRED>");
-    //        println();
-    //        println("<!ELEMENT slot (name, type*, superslot*, own_slot_value*)>");
-    //        println("<!ATTLIST slot id ID #REQUIRED>");
-    //        println();
-    //        println("<!ELEMENT facet (name, type*, own_slot_value*)>");
-    //        println("<!ATTLIST facet id ID #REQUIRED>");
-    //        println();
-    //        println("<!ELEMENT simple_instance (name, type*, own_slot_value*)>");
-    //        println("<!ATTLIST simple_instance id ID #REQUIRED>");
-    //        println();
-    //        println("<!ELEMENT name (#PCDATA)>");
-    //        println("<!ELEMENT type (#PCDATA)>");
-    //        println("<!ELEMENT superclass (#PCDATA)>");
-    //        println("<!ELEMENT template_slot (#PCDATA)>");
-    //        println("<!ELEMENT superslot (#PCDATA)>");
-    //        println("<!ELEMENT slot_reference (#PCDATA)>");
-    //        println("<!ELEMENT facet_reference (#PCDATA)>");
-    //        println();
-    //        println("<!ELEMENT own_slot_value (slot_reference, (primitive_value | reference_value)*)>");
-    //        println("<!ELEMENT template_facet_value (slot_reference, facet_reference, (primitive_value | reference_value)*)>");
-    //
-    //        println("<!ELEMENT primitive_value (#PCDATA)>");
-    //        println("<!ATTLIST primitive_value type CDATA #REQUIRED>");
-    //        println("<!ELEMENT reference_value (#PCDATA)>");
-    //        println("<!ATTLIST reference_value type CDATA #REQUIRED>");
-    //        unindent();
-    //        println("]>");
-    //    }
-
     private void preamble() {
         printHeader();
-        // indent();
-        // printDtd();
-        // unindent();
-        String[] attributes = new String[] { "xmlns=\"http://protege.stanford.edu/xml\"",
+        String[] attributes = new String[] { "xmlns=\"" + XMLString.NAMESPACE + "\"",
                 "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"",
-                "xsi:schemaLocation=\"http://protege.stanford.edu/xml/schema file:///c/temp/xml/protege.xsd\"",
-                "xsi:noNamspaceSchemaLocation=\"file:///c/temp/xml/protege.xsd\"" };
+                "xsi:schemaLocation=\"" + XMLString.NAMESPACE + " " + XMLString.SCHEMA_LOCATION + "\"" };
         println();
         printStartTag(XMLString.ElementName.KNOWLEDGE_BASE, attributes);
     }
@@ -173,28 +140,20 @@ public class XMLStorer {
         writer.println();
     }
 
+    private String escape(String value) {
+        return XMLUtil.escape(value);
+    }
+
     private void printValue(String element, String value) {
-        println("<" + element + ">" + value + "</" + element + ">");
+        println("<" + element + ">" + escape(value) + "</" + element + ">");
     }
 
     private void printValue(String element, String elementValue, String attribute, String value) {
-        println("<" + element + " " + attribute + "=\"" + value + "\">" + elementValue + "</" + element + ">");
+        println("<" + element + " " + attribute + "=\"" + value + "\">" + escape(elementValue) + "</" + element + ">");
     }
 
     private void printFrameReference(String tag, Frame frame) {
         printValue(tag, frame.getName());
-    }
-
-    private String getId(Frame frame) {
-        String name = frame.getName();
-        char[] chars = name.toCharArray();
-        for (int i = 0; i < chars.length; ++i) {
-            char c = chars[i];
-            if (!Character.isLetterOrDigit(c)) {
-                chars[i] = '_';
-            }
-        }
-        return new String(chars);
     }
 
     private void printStartTag(String element) {
@@ -206,20 +165,11 @@ public class XMLStorer {
         buffer.append("<");
         buffer.append(element);
         if (attribute != null) {
-            String spaces = null;
             for (int i = 0; i < attribute.length; ++i) {
-                if (true || i == 0) {
+                if (attribute.length == 1) {
                     buffer.append(" ");
                 } else {
-                    if (spaces == null) {
-                        StringBuffer spaceBuffer = new StringBuffer();
-                        // spaceBuffer.append('\n');
-                        for (int j = 0; j < buffer.length(); ++j) {
-                            spaceBuffer.append(' ');
-                        }
-                        spaces = spaceBuffer.toString();
-                    }
-                    buffer.append(spaces);
+                    buffer.append("\n\t");
                 }
                 buffer.append(attribute[i]);
             }
@@ -229,27 +179,8 @@ public class XMLStorer {
 
     }
 
-    private void printStartTag(String element, String attribute, String value) {
-        printStartTag(element, new String[] { attribute + "=\"" + value + "\"" });
-    }
-
     private void printEndTag(String element) {
         println("</" + element + ">");
-    }
-
-    private void beginFrame(Frame frame, String frameType) {
-        printStartTag(frameType, XMLString.AttributeName.ID, getId(frame));
-        indent();
-        printValue(XMLString.ElementName.NAME, frame.getName());
-        unindent();
-    }
-
-    private void endFrame(String frameType, Frame frame) {
-        indent();
-        printOwnSlotValues(frame);
-        unindent();
-        printEndTag(frameType);
-        println("");
     }
 
     private void printOwnSlotValues(Frame frame) {
@@ -291,11 +222,11 @@ public class XMLStorer {
         String tag;
         String attribute;
         if (o instanceof Frame) {
-            tag = XMLString.ElementName.REFERENCE_VALUE;
+            tag = XMLString.ElementName.VALUE;
             attribute = frameAttribute(o);
             value = frameValue(o);
         } else {
-            tag = XMLString.ElementName.PRIMITIVE_VALUE;
+            tag = XMLString.ElementName.VALUE;
             if (o instanceof String) {
                 attribute = XMLString.AttributeValue.STRING_TYPE;
                 value = (String) o;
@@ -336,13 +267,16 @@ public class XMLStorer {
     }
 
     private void endInstance(String frameType, Instance instance) {
-        endFrame(frameType, instance);
+        printEndTag(frameType);
     }
 
     private void beginInstance(String frameType, Instance instance) {
-        beginFrame(instance, frameType);
+        println();
+        printStartTag(frameType);
         indent();
+        printValue(XMLString.ElementName.NAME, instance.getName());
         printFrameValues(XMLString.ElementName.TYPE, instance.getDirectTypes());
+        printOwnSlotValues(instance);
         unindent();
     }
 
@@ -355,16 +289,38 @@ public class XMLStorer {
     }
 
     private void storeCls(Cls cls, Set storedClses) {
-        beginInstance(XMLString.ElementName.CLASS, cls);
-        indent();
-        printFrameValues(XMLString.ElementName.SUPERCLASS, cls.getDirectSuperclasses());
-        printFrameValues(XMLString.ElementName.TEMPLATE_SLOT, cls.getDirectTemplateSlots());
-        printTemplateFacetValues(cls);
-        unindent();
-        endInstance(XMLString.ElementName.CLASS, cls);
+        if (shouldStoreFrame(cls)) {
+            beginInstance(XMLString.ElementName.CLASS, cls);
+            indent();
+            printFrameValues(XMLString.ElementName.SUPERCLASS, cls.getDirectSuperclasses());
+            printFrameValues(XMLString.ElementName.TEMPLATE_SLOT, cls.getDirectTemplateSlots());
+            printTemplateFacetValues(cls);
+            unindent();
+            endInstance(XMLString.ElementName.CLASS, cls);
 
-        storedClses.add(cls);
-        storeSubclasses(cls, storedClses);
+            storedClses.add(cls);
+            storeSubclasses(cls, storedClses);
+        }
+    }
+
+    private boolean shouldStoreFrame(Frame frame) {
+        boolean shouldStoreFrame = activeFrames.contains(frame);
+        if (shouldStoreFrame) {
+            shouldStoreFrame = false;
+            Iterator i = frame.getOwnSlots().iterator();
+            while (i.hasNext()) {
+                Slot slot = (Slot) i.next();
+                if (shouldStoreSlot(slot)) {
+                    shouldStoreFrame = true;
+                    break;
+                }
+            }
+        }
+        return shouldStoreFrame;
+    }
+
+    private boolean shouldStoreSlot(Slot slot) {
+        return !excludeSlots.contains(slot);
     }
 
     private void storeSubclasses(Cls cls, Set storedClses) {
@@ -407,19 +363,25 @@ public class XMLStorer {
     }
 
     private void storeSlot(Slot slot) {
-        beginInstance(XMLString.ElementName.SLOT, slot);
-        printFrameValues(XMLString.ElementName.SUPERSLOT, slot.getDirectSuperslots());
-        endInstance(XMLString.ElementName.SLOT, slot);
+        if (shouldStoreFrame(slot)) {
+            beginInstance(XMLString.ElementName.SLOT, slot);
+            printFrameValues(XMLString.ElementName.SUPERSLOT, slot.getDirectSuperslots());
+            endInstance(XMLString.ElementName.SLOT, slot);
+        }
     }
 
     private void storeFacet(Facet facet) {
-        beginInstance(XMLString.ElementName.FACET, facet);
-        endInstance(XMLString.ElementName.FACET, facet);
+        if (shouldStoreFrame(facet)) {
+            beginInstance(XMLString.ElementName.FACET, facet);
+            endInstance(XMLString.ElementName.FACET, facet);
+        }
     }
 
     private void storeSimpleInstance(SimpleInstance simpleInstance) {
-        beginInstance(XMLString.ElementName.SIMPLE_INSTANCE, simpleInstance);
-        endInstance(XMLString.ElementName.SIMPLE_INSTANCE, simpleInstance);
+        if (shouldStoreFrame(simpleInstance)) {
+            beginInstance(XMLString.ElementName.SIMPLE_INSTANCE, simpleInstance);
+            endInstance(XMLString.ElementName.SIMPLE_INSTANCE, simpleInstance);
+        }
     }
 
 }

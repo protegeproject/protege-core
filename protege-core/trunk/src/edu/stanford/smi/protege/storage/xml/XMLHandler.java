@@ -15,7 +15,7 @@ public class XMLHandler extends DefaultHandler {
     public XMLHandler(KnowledgeBase kb, Collection errors) {
         this.kb = kb;
         this.errors = errors;
-        Log.getLogger().info("Reading " + this.kb);
+        // Log.getLogger().info("Reading " + this.kb);
     }
 
     public void error(SAXParseException exception) throws SAXException {
@@ -40,11 +40,11 @@ public class XMLHandler extends DefaultHandler {
     }
 
     public void setDocumentLocator(Locator locator) {
-        output("document locator: " + locator);
+        // output("document locator: " + locator);
     }
 
     public void startDocument() throws SAXException {
-        output("start document");
+        // output("start document");
     }
 
     public void endDocument() throws SAXException {
@@ -52,7 +52,7 @@ public class XMLHandler extends DefaultHandler {
     }
 
     public void startPrefixMapping(String prefix, String uri) throws SAXException {
-        output("start prefix mapping: " + prefix + " " + uri);
+        // output("start prefix mapping: " + prefix + " " + uri);
     }
 
     public void endPrefixMapping(String prefix) throws SAXException {
@@ -233,41 +233,17 @@ public class XMLHandler extends DefaultHandler {
 
     private Object getValue(Element element) {
         Object value;
-        if (element.getName().equals(XMLString.ElementName.REFERENCE_VALUE)) {
-            value = getReferenceValue(element);
-        } else if (element.getName().equals(XMLString.ElementName.PRIMITIVE_VALUE)) {
-            value = getPrimitiveValue(element);
-        } else {
-            Log.getLogger().warning("Bad element: " + element);
-            value = null;
-        }
-        return value;
-    }
-
-    private Object getReferenceValue(Element element) {
-        Object value;
-        String frameName = element.getValue();
-        String type = element.getAttributeValue(XMLString.AttributeName.VALUE_TYPE);
-        if (type.equals(XMLString.AttributeValue.CLASS_TYPE)) {
-            value = getCls(frameName);
-        } else if (type.equals(XMLString.AttributeValue.SLOT_TYPE)) {
-            value = getSlot(frameName);
-        } else if (type.equals(XMLString.AttributeValue.FACET_TYPE)) {
-            value = getFacet(frameName);
-        } else if (type.equals(XMLString.AttributeValue.SIMPLE_INSTANCE_TYPE)) {
-            value = getSimpleInstance(frameName);
-        } else {
-            Log.getLogger().warning("bad reference value type: " + type);
-            value = null;
-        }
-        return value;
-    }
-
-    private Object getPrimitiveValue(Element element) {
-        Object value;
         String valueString = element.getValue();
         String type = element.getAttributeValue(XMLString.AttributeName.VALUE_TYPE);
-        if (type.equals(XMLString.AttributeValue.STRING_TYPE)) {
+        if (type.equals(XMLString.AttributeValue.CLASS_TYPE)) {
+            value = getCls(valueString);
+        } else if (type.equals(XMLString.AttributeValue.SLOT_TYPE)) {
+            value = getSlot(valueString);
+        } else if (type.equals(XMLString.AttributeValue.FACET_TYPE)) {
+            value = getFacet(valueString);
+        } else if (type.equals(XMLString.AttributeValue.SIMPLE_INSTANCE_TYPE)) {
+            value = getSimpleInstance(valueString);
+        } else if (type.equals(XMLString.AttributeValue.STRING_TYPE)) {
             value = valueString;
         } else if (type.equals(XMLString.AttributeValue.BOOLEAN_TYPE)) {
             value = new Boolean(valueString);
@@ -276,7 +252,7 @@ public class XMLHandler extends DefaultHandler {
         } else if (type.equals(XMLString.AttributeValue.FLOAT_TYPE)) {
             value = new Float(valueString);
         } else {
-            Log.getLogger().warning("bad primitive value type: " + type);
+            Log.getLogger().warning("bad value type: " + type);
             value = null;
         }
         return value;

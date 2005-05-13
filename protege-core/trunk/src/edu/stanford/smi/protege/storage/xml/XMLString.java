@@ -6,6 +6,10 @@ package edu.stanford.smi.protege.storage.xml;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public interface XMLString {
+
+    public String NAMESPACE = "http://protege.stanford.edu/xml";
+    public String SCHEMA_LOCATION = "http://protege.stanford.edu/xml/schema/protege.xsd";
+
     public interface ElementName {
         String KNOWLEDGE_BASE = "knowledge_base";
         String CLASS = "class";
@@ -21,13 +25,11 @@ public interface XMLString {
         String TEMPLATE_FACET_VALUE = "template_facet_value";
         String SLOT_REFERENCE = "slot_reference";
         String FACET_REFERENCE = "facet_reference";
-        String REFERENCE_VALUE = "reference_value";
-        String PRIMITIVE_VALUE = "primitive_value";
+        String VALUE = "value";
     }
 
     public interface AttributeName {
-        String VALUE_TYPE = "type";
-        String ID = "id";
+        String VALUE_TYPE = "value_type";
     }
 
     public interface AttributeValue {
