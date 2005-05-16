@@ -116,6 +116,12 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         setActiveFrameStore(childFrameStore);
     }
 
+    public void removeFrameStore(NarrowFrameStore frameStore) {
+        frameStoreTree.removeNode(frameStore);
+        availableFrameStores.remove(frameStore);
+        removeFrameStores.remove(frameStore);
+    }
+
     public void addActiveFrameStore(NarrowFrameStore parent, Collection childNames) {
         frameStoreTree.addChild(ROOT_NODE, parent);
         Iterator i = childNames.iterator();
