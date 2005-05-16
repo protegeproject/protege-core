@@ -141,7 +141,8 @@ public class URIUtilities {
         } else {
             try {
                 File file = new File(baseURI);
-                if (file.isFile() || file.getName().indexOf('.') != -1) {
+                // if (file.isFile() || file.getName().indexOf('.') != -1) {
+                if (file.isFile()) {
                     File parent = file.getParentFile();
                     baseURI = parent.toURI();
                 }

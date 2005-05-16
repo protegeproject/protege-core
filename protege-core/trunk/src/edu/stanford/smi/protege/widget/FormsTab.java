@@ -67,4 +67,8 @@ public class FormsTab extends AbstractTabWidget {
             _formDisplay.setWidgetCls(null);
         }
     }
+
+    public static boolean isSuitable(Project project, Collection errors) {
+        return !project.isMultiUserClient();
+    }
 }

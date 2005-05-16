@@ -119,6 +119,7 @@ public class FormWidget extends AbstractClsWidget {
             updateWidget(event.getSlot());
         }
     };
+
     private KnowledgeBaseListener _kbListener = new KnowledgeBaseAdapter() {
         public void frameNameChanged(KnowledgeBaseEvent event) {
             Frame frame = event.getFrame();
@@ -134,6 +135,7 @@ public class FormWidget extends AbstractClsWidget {
     };
 
     public FormWidget() {
+        setEnabled(false);
     }
 
     private void addWidget(Slot slot) {

@@ -146,22 +146,29 @@ public class ProjectView extends JComponent {
         }
     }
 
+    private boolean isSuitable(TabWidget widget) {
+        String className = widget.getClass().getName();
+        return WidgetUtilities.isSuitableTab(className, _project, new ArrayList());
+    }
+
     private void addTab(final TabWidget widget, int index) {
-        JComponent component = (JComponent) widget;
-        Icon icon = widget.getIcon();
-        String title = widget.getLabel();
-        String help = widget.getShortDescription();
-        addTab(title, icon, component, help, index);
-        widget.addSelectionListener(new SelectionListener() {
-            public void selectionChanged(SelectionEvent event) {
-                List list = new ArrayList(widget.getSelection());
-                if (!list.isEmpty() && list.get(0) instanceof Collection) {
-                    list.remove(0);
+        if (isSuitable(widget)) {
+            JComponent component = (JComponent) widget;
+            Icon icon = widget.getIcon();
+            String title = widget.getLabel();
+            String help = widget.getShortDescription();
+            addTab(title, icon, component, help, index);
+            widget.addSelectionListener(new SelectionListener() {
+                public void selectionChanged(SelectionEvent event) {
+                    List list = new ArrayList(widget.getSelection());
+                    if (!list.isEmpty() && list.get(0) instanceof Collection) {
+                        list.remove(0);
+                    }
+                    setCurrentClsPath(list);
+                    setCurrentInstances(widget.getSelectedInstances());
                 }
-                setCurrentClsPath(list);
-                setCurrentInstances(widget.getSelectedInstances());
-            }
-        });
+            });
+        }
     }
 
     public boolean attemptClose() {
