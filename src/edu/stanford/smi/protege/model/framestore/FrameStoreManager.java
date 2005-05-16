@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.lang.reflect.*;
-import java.lang.reflect.Proxy;
 import java.net.*;
 import java.util.*;
 
@@ -352,7 +351,7 @@ public class FrameStoreManager {
     }
 
     private static InvocationHandler getHandler(FrameStore fs) {
-        return Proxy.getInvocationHandler(fs);
+        return java.lang.reflect.Proxy.getInvocationHandler(fs);
     }
 
     public void startJournaling(URI journal) {

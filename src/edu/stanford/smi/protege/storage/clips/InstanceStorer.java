@@ -99,16 +99,21 @@ public class InstanceStorer extends ClipsFileWriter {
     }
 
     private Collection getSlots(Instance instance) {
-        Cls type = instance.getDirectType();
-        List slots = (List) _clsToSlotsMap.get(type);
-        if (slots == null) {
-            slots = new ArrayList(type.getTemplateSlots());
-            Collections.sort(slots);
-            _clsToSlotsMap.put(type, slots);
+        List slots = new ArrayList();
+        Iterator i = instance.getDirectTypes().iterator();
+        while (i.hasNext()) {
+            Cls type = (Cls) i.next();
+            List typeSlots = (List) _clsToSlotsMap.get(type);
+            if (typeSlots == null) {
+                typeSlots = new ArrayList(type.getTemplateSlots());
+                Collections.sort(typeSlots);
+                _clsToSlotsMap.put(type, typeSlots);
+            }
+            slots.addAll(typeSlots);
         }
         return slots;
     }
-
+    
     private boolean hasConstraintSlotValues(Instance instance) {
         if (_constraintsSlot == null) {
             _constraintsSlot = (Slot) instance.getKnowledgeBase().getFrame(Model.Slot.CONSTRAINTS);

@@ -83,7 +83,7 @@ public class FormDisplay extends JComponent implements Disposable {
         updateHeader(cls);
         widget.addSelectionListener(_selectionListener);
     }
-    
+
     private void updateHeader(Cls cls) {
         JLabel label = (JLabel) _header.getComponent();
         label.setIcon(cls.getIcon());
@@ -107,13 +107,13 @@ public class FormDisplay extends JComponent implements Disposable {
         controlPanel.setLayout(new BorderLayout());
         controlPanel.add(createBrowserKeySelection(), BorderLayout.WEST);
         controlPanel.add(createWidgetSelection(), BorderLayout.EAST);
-        
+
         JComponent panel = new JPanel(new BorderLayout());
         panel.add(createHeaderPanel(), BorderLayout.CENTER);
         panel.add(controlPanel, BorderLayout.SOUTH);
         return panel;
     }
-    
+
     private JComponent createHeaderPanel() {
         String formEditorLabel = LocalizedText.getText(ResourceKey.FORM_EDITOR_TITLE);
         String forClassLabel = LocalizedText.getText(ResourceKey.CLASS_EDITOR_FOR_CLASS_LABEL);
