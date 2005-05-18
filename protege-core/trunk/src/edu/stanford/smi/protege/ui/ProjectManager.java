@@ -551,6 +551,16 @@ public class ProjectManager {
         return _currentProject != null;
     }
 
+    public void setCurrentProject(Project project) {
+        if (closeProjectRequest()) {
+            _currentProject = project;
+            if (_currentProject != null) {
+                _projectPluginManager.afterLoad(_currentProject);
+                displayCurrentProject(true);
+            }
+        }
+    }
+
     private void printDisplayTime(final long t1) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
