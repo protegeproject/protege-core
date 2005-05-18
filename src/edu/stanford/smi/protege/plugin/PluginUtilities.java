@@ -34,6 +34,7 @@ public class PluginUtilities {
     private static Map _pluginComponentNameToDocURLMap = new HashMap();
     private static Map _pluginPackageToClassLoaderMap = new HashMap();
     private static String defaultFactoryClassName;
+    private static Map cachedClsesWithAttributeMap = new HashMap();
 
     private static File pluginsDir;
 
@@ -669,18 +670,34 @@ public class PluginUtilities {
      */
     public static Collection getClassesWithAttribute(String key, String value) {
         // Log.enter(SystemUtilities.class, "getManifestClasses", key, value);
-        Collection classes = new HashSet();
-        Iterator i = _manifestURLs.iterator();
-        while (i.hasNext()) {
-            URL url = (URL) i.next();
-            try {
-                Manifest manifest = new Manifest(url.openStream());
-                classes.addAll(getManifestClasses(manifest, key, value));
-            } catch (IOException e) {
-                Log.getLogger().warning(e.getMessage());
+        Collection classes = getCachedClsesWithAttribute(key, value);
+        if (classes == null) {
+            classes = new HashSet();
+            Iterator i = _manifestURLs.iterator();
+            while (i.hasNext()) {
+                URL url = (URL) i.next();
+                try {
+                    Manifest manifest = new Manifest(url.openStream());
+                    classes.addAll(getManifestClasses(manifest, key, value));
+                } catch (IOException e) {
+                    Log.getLogger().warning(e.getMessage());
+                }
             }
+            saveCachedClsesWithAttribute(key, value, classes);
         }
-        return classes;
+        return new ArrayList(classes);
+    }
+
+    private static Collection getCachedClsesWithAttribute(String key, String value) {
+        return (Collection) cachedClsesWithAttributeMap.get(getKey(key, value));
+    }
+
+    private static Object getKey(String key, String value) {
+        return key + "=" + value;
+    }
+
+    private static void saveCachedClsesWithAttribute(String key, String value, Collection classes) {
+        cachedClsesWithAttributeMap.put(getKey(key, value), classes);
     }
 
     private static Collection getManifestClasses(Manifest manifest, String key, String value) {

@@ -108,13 +108,21 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
 
     private InstanceListener _instanceListener = new InstanceListener() {
         public void directTypeAdded(InstanceEvent event) {
-            reloadForm();
+            onDirectTypeAdded(event.getCls());
         }
 
         public void directTypeRemoved(InstanceEvent event) {
-            reloadForm();
+            onDirectTypeRemoved(event.getCls());
         }
     };
+
+    protected void onDirectTypeAdded(Cls type) {
+        reloadForm();
+    }
+
+    protected void onDirectTypeRemoved(Cls type) {
+        reloadForm();
+    }
 
     public InstanceDisplay(Project project) {
         this(project, true, true);

@@ -233,6 +233,11 @@ public class Project {
     }
 
     public void clearCachedWidgets() {
+        Iterator i = _cachedDesignTimeClsWidgets.values().iterator();
+        while (i.hasNext()) {
+            ClsWidget widget = (ClsWidget) i.next();
+            ComponentUtilities.dispose((Component)widget);
+        }
         _cachedDesignTimeClsWidgets.clear();
     }
 
