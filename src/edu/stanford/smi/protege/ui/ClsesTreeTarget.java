@@ -35,10 +35,31 @@ public class ClsesTreeTarget extends TreeTarget {
         boolean succeeded = false;
         TreePath path = tree.getPathForRow(targetRow);
         LazyTreeNode targetNode = (LazyTreeNode) path.getLastPathComponent();
-        Cls targetCls = (Cls) targetNode.getUserObject();
-        Cls sourceCls = (Cls) source;
+        if (source instanceof Cls) {
+            succeeded = dropCls(tree, targetNode, (Cls) source, area);
+        } else if (source instanceof FrameSlotCombination) {
+            Slot slot = ((FrameSlotCombination) source).getSlot();
+            succeeded = dropSlot(tree, targetNode, slot);
+        }
+        return succeeded;
+
+    }
+
+    private boolean dropSlot(JTree tree, LazyTreeNode targetNode, Slot sourceSlot) {
+        boolean succeeded = false;
+        Cls cls = (Cls) targetNode.getUserObject();
+        if (!cls.getDirectTemplateSlots().contains(sourceSlot)) {
+            cls.addDirectTemplateSlot(sourceSlot);
+            succeeded = true;
+        }
+        return succeeded;
+    }
+
+    private boolean dropCls(JTree tree, LazyTreeNode targetNode, Cls sourceCls, Object area) {
+        boolean succeeded = false;
         LazyTreeNode parentNode;
         boolean addedSuperclass = false;
+        Cls targetCls = (Cls) targetNode.getUserObject();
         if (area == DefaultRenderer.DROP_TARGET_AREA_ON) {
             parentNode = targetNode;
             succeeded = addSuperclass(sourceCls, targetCls);

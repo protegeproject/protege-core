@@ -457,7 +457,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     public String toString() {
-        return StringUtilities.getClassName(this);
+        return StringUtilities.getClassName(this) + "(" + frameDBName + ")";
     }
 
     public Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate) {

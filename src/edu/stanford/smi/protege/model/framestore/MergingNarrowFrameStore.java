@@ -19,6 +19,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     private Collection availableFrameStores = new LinkedHashSet();
     private NarrowFrameStore topFrameStore;
     private NarrowFrameStore systemFrameStore;
+    private boolean queryAllFrameStores = false;
 
     private Tree frameStoreTree = new Tree(ROOT_NODE);
 
@@ -140,8 +141,12 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
      * does not affect the top.
      */
     public void setTopFrameStore(String name) {
-        topFrameStore = getFrameStore(name);
+        topFrameStore = (name == null) ? null : getFrameStore(name);
         updateQueryableFrameStores();
+    }
+    
+    public NarrowFrameStore getTopFrameStore() {
+        return (topFrameStore == null) ? activeFrameStore : topFrameStore;
     }
 
     public NarrowFrameStore setActiveFrameStore(NarrowFrameStore nfs) {
@@ -153,17 +158,22 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         dumpFrameStores();
         return oldActiveFrameStore;
     }
-
-    public NarrowFrameStore getTopFrameStore() {
-        return (topFrameStore == null) ? activeFrameStore : topFrameStore;
+    
+    public void setQueryAllFrameStores(boolean b) {
+        queryAllFrameStores = b;
+        updateQueryableFrameStores();
     }
 
     private void updateQueryableFrameStores() {
         availableFrameStores.clear();
         availableFrameStores.add(systemFrameStore);
-        availableFrameStores.addAll(frameStoreTree.getNodeAndDescendents(getTopFrameStore()));
+        if (queryAllFrameStores) {
+            availableFrameStores.addAll(frameStoreTree.getDescendents(ROOT_NODE));
+        } else {
+            availableFrameStores.addAll(frameStoreTree.getNodeAndDescendents(getTopFrameStore()));
+        }
     }
-
+    
     public NarrowFrameStore setActiveFrameStore(String name) {
         NarrowFrameStore nfs = getFrameStore(name);
         return setActiveFrameStore(nfs);

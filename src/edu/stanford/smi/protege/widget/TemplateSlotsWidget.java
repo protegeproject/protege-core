@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.widget;
 
+import java.awt.datatransfer.*;
 import java.awt.event.*;
 import java.util.*;
 
@@ -398,7 +399,49 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         addColumn(400, ResourceKey.TEMPLATE_SLOTS_SLOT_WIDGET_OTHER_FACETS, new OtherFacetsRenderer());
         getTable().setAutoCreateColumnsFromModel(false);
         getKnowledgeBase().addKnowledgeBaseListener(_knowledgeBaseListener);
+        setupDragAndDrop();
     }
+
+    private void setupDragAndDrop() {
+        getTable().setDragEnabled(true);
+        getTable().setTransferHandler(new MyTransferHandler());
+    }
+
+    private class MyTransferHandler extends TransferHandler {
+        private Collection getTransferableCombinations() {
+            Collection transferableCombinations = new ArrayList(getSelection());
+            Iterator i = transferableCombinations.iterator();
+            while (i.hasNext()) {
+                FrameSlotCombination combo = (FrameSlotCombination) i.next();
+                Cls cls = (Cls) combo.getFrame();
+                Slot slot = combo.getSlot();
+                if (!cls.hasDirectTemplateSlot(slot)) {
+                    transferableCombinations.clear();
+                    break;
+                }
+            }
+            return transferableCombinations;
+        }
+
+        protected Transferable createTransferable(JComponent c) {
+            Collection collection = getTransferableCombinations();
+            return collection.isEmpty() ? null : new TransferableCollection(collection);
+        }
+
+        protected void exportDone(JComponent source, Transferable data, int action) {
+            if (action == MOVE) {
+                Iterator i = getTransferableCombinations().iterator();
+                while (i.hasNext()) {
+                    FrameSlotCombination combo = (FrameSlotCombination) i.next();
+                    ((Cls) combo.getFrame()).removeDirectTemplateSlot(combo.getSlot());
+                }
+            }
+        }
+
+        public int getSourceActions(JComponent c) {
+            return COPY_OR_MOVE;
+        }
+    };
 
     public static boolean isSuitable(Cls cls, Slot slot, Facet facet) {
         boolean isMetacls = cls.isClsMetaCls();
@@ -406,13 +449,6 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         return isMetacls && (slot.equals(templateSlotsSlot) || slot.hasSuperslot(templateSlotsSlot));
     }
 
-    /**
-     * @deprecated
-     */
-    //    public void reshape(int x, int y, int w, int h) {
-    //        super.reshape(x, y, w, h);
-    //        setOtherFacetsWidth();
-    //    }
     public void setEditable(boolean b) {
         _createAction.setAllowed(b);
         _addAction.setAllowed(b);
