@@ -11,6 +11,7 @@ public class SimpleFrameStore implements FrameStore {
     private SystemFrames _systemFrames;
     private NarrowFrameStore _helper;
     private Set _inheritedSuperslotSlots = new HashSet();
+    private CacheMap nameToFrameMap = new CacheMap();
 
     // private Map frameIdToFrameMap = new HashMap();
 
@@ -108,6 +109,7 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     private void deleteFrame(Frame frame) {
+        nameToFrameMap.remove(getFrameName(frame));
         _helper.deleteFrame(frame);
     }
 
@@ -364,8 +366,15 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public Frame getFrame(String name) {
-        Collection c = getFramesWithDirectOwnSlotValue(_systemFrames.getNameSlot(), name);
-        return c.isEmpty() ? null : (Frame) c.iterator().next();
+        Frame frame = (Frame) nameToFrameMap.get(name);
+        if (frame == null) {
+            Collection c = getFramesWithDirectOwnSlotValue(_systemFrames.getNameSlot(), name);
+            frame = (Frame) CollectionUtilities.getFirstItem(c);
+            if (frame != null) {
+                nameToFrameMap.put(name, frame);
+            }
+        }
+        return frame;
     }
 
     public Frame getFrame(FrameID id) {
@@ -504,6 +513,7 @@ public class SimpleFrameStore implements FrameStore {
             }
             updateNewInstance(newInstance, instance);
             _helper.replaceFrame(newInstance);
+            nameToFrameMap.put(getFrameName(newInstance), newInstance);
         }
     }
 
@@ -961,6 +971,8 @@ public class SimpleFrameStore implements FrameStore {
             throw new IllegalArgumentException("Duplicate frame name: " + name);
         }
         setDirectOwnSlotValue(frame, _systemFrames.getNameSlot(), name);
+        nameToFrameMap.remove(getFrameName(frame));
+        nameToFrameMap.put(name, frame);
     }
 
     protected void addSystemFrames() {
