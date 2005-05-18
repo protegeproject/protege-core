@@ -273,9 +273,17 @@ public class Project {
     public void createDomainKnowledgeBase(KnowledgeBaseFactory factory, Collection errors,
             boolean load) {
         createDomainKB(factory, errors);
+        
         if (load) {
+            MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(_domainKB);
+            if (mnfs != null) {
+                mnfs.setQueryAllFrameStores(true);
+            }
             Collection uris = loadIncludedProjects(getProjectURI(), _projectInstance, errors);
             loadDomainKB(uris, errors);
+            if (mnfs != null) {
+                mnfs.setQueryAllFrameStores(false);
+            }
         }
         _domainKB.addKnowledgeBaseListener(_knowledgeBaseListener);
         loadCachedKnowledgeBaseObjects(_projectInstance);

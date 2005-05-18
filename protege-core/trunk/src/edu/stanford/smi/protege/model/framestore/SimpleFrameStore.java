@@ -413,7 +413,7 @@ public class SimpleFrameStore implements FrameStore {
     private boolean isInDomain(Slot subslot, Cls cls) {
         Collection directDomain = getDirectDomain(subslot);
         boolean isInDomain = directDomain.isEmpty();
-        Iterator i = getDirectDomain(subslot).iterator();
+        Iterator i = directDomain.iterator();
         while (i.hasNext()) {
             Cls directDomainCls = (Cls) i.next();
             if (getSuperclasses(cls).contains(directDomainCls)) {
@@ -602,19 +602,19 @@ public class SimpleFrameStore implements FrameStore {
 
     public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaults) {
-        Cls cls = createCls(id, directTypes);
+        Cls cls = createCls(id, name, directTypes);
         addCls(cls, name, directTypes, directSuperclasses, loadDefaults);
         return cls;
     }
 
     public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
-        SimpleInstance simpleInstance = createSimpleInstance(id, directTypes);
+        SimpleInstance simpleInstance = createSimpleInstance(id, name, directTypes);
         addSimpleInstance(simpleInstance, name, directTypes, loadDefaults);
         return simpleInstance;
     }
 
     public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
-        Facet facet = createFacet(id, directTypes);
+        Facet facet = createFacet(id, name, directTypes);
         addFacet(facet, name, directTypes, loadDefaults);
         return facet;
     }
@@ -665,7 +665,7 @@ public class SimpleFrameStore implements FrameStore {
 
     public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
             boolean loadDefaults) {
-        Slot slot = createSlot(id, directTypes);
+        Slot slot = createSlot(id, name, directTypes);
         addSlot(slot, name, directTypes, directSuperslots, loadDefaults);
         return slot;
     }
@@ -967,30 +967,30 @@ public class SimpleFrameStore implements FrameStore {
         _systemFrames.addSystemFrames(this);
     }
 
-    private FrameID ensureValid(FrameID id) {
+    private FrameID ensureValid(FrameID id, String name) {
         if (id == null) {
             id = _helper.generateFrameID();
         }
         return id;
     }
 
-    protected Cls createCls(FrameID id, Collection directTypes) {
-        id = ensureValid(id);
+    protected Cls createCls(FrameID id, String name, Collection directTypes) {
+        id = ensureValid(id, name);
         return getFrameFactory().createCls(id, directTypes);
     }
 
-    protected Slot createSlot(FrameID id, Collection directTypes) {
-        id = ensureValid(id);
+    protected Slot createSlot(FrameID id, String name, Collection directTypes) {
+        id = ensureValid(id, name);
         return getFrameFactory().createSlot(id, directTypes);
     }
 
-    protected Facet createFacet(FrameID id, Collection directTypes) {
-        id = ensureValid(id);
+    protected Facet createFacet(FrameID id, String name, Collection directTypes) {
+        id = ensureValid(id, name);
         return getFrameFactory().createFacet(id, directTypes);
     }
 
-    protected SimpleInstance createSimpleInstance(FrameID id, Collection directTypes) {
-        id = ensureValid(id);
+    protected SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes) {
+        id = ensureValid(id, name);
         return getFrameFactory().createSimpleInstance(id, directTypes);
     }
 
