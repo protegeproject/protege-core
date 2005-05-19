@@ -36,9 +36,11 @@ public final class Parser {
     }
     
     private void recordError(String msg, Throwable e) {
-    	_itsErrors.add(e);
-    	Log.getLogger().log(Level.SEVERE, msg, e);
+        Object error = (e == null) ? (Object) msg : e;
+        _itsErrors.add(error);
+        Log.getLogger().log(Level.SEVERE, msg, e);
     }
+
     
 
     public void loadClses(KnowledgeBase kb, boolean isIncluded, Collection errors) {
