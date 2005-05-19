@@ -28,7 +28,8 @@ public final class Parser implements ParserConstants {
     }
 
     private void recordError(String msg, Throwable e) {
-        _itsErrors.add(e);
+        Object error = (e == null) ? (Object) msg : e;
+        _itsErrors.add(error);
         Log.getLogger().log(Level.SEVERE, msg, e);
     }
 
