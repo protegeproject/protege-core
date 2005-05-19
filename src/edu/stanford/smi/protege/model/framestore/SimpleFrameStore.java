@@ -37,7 +37,7 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public void reinitialize() {
-        // do nothing
+        nameToFrameMap.clear();
     }
 
     protected void setHelper(NarrowFrameStore helper) {
