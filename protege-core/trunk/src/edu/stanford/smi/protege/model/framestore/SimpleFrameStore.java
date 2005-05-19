@@ -795,6 +795,7 @@ public class SimpleFrameStore implements FrameStore {
                 Cls type = (Cls) i.next();
                 templateSlotValues.addAll(getDirectTemplateSlotValues(type, slot));
             }
+            templateSlotValues.addAll(getDirectOwnSlotValues(slot, _systemFrames.getValuesSlot()));
             values.addAll(templateSlotValues);
         }
     }
