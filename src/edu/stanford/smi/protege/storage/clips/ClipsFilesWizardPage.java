@@ -28,7 +28,7 @@ public class ClipsFilesWizardPage extends WizardPage {
     private void createComponents() {
         clsesFileField = new FileField("Classes (.pont) File", null, ".pont", "Classes File");
         instancesFileField = new FileField("Instances (.pins) File", null, ".pins", "Instances File");
-        
+
         clsesFileField.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent event) {
                 onClsFieldChanged();
@@ -36,17 +36,17 @@ public class ClipsFilesWizardPage extends WizardPage {
             }
         });
     }
-    
+
     private void onClsFieldChanged() {
         String name = getClsesFileName();
         String instancesName = FileUtilities.replaceExtension(name, ".pins");
         instancesFileField.setPath(instancesName);
     }
-    
+
     private void updateSetPageComplete() {
         setPageComplete(getClsesFileName() != null);
     }
-    
+
     private void layoutComponents() {
         setLayout(new BorderLayout());
         Box panel = Box.createVerticalBox();
@@ -54,13 +54,13 @@ public class ClipsFilesWizardPage extends WizardPage {
         panel.add(instancesFileField);
         add(panel, BorderLayout.NORTH);
     }
-    
+
     public void onFinish() {
         String clsesFileName = getClsesFileName();
         String instancesFileName = getInstancesFileName();
         plugin.setFiles(clsesFileName, instancesFileName);
     }
-    
+
     private String getClsesFileName() {
         return getPath(clsesFileField, ".pont");
     }
@@ -68,9 +68,20 @@ public class ClipsFilesWizardPage extends WizardPage {
     private String getInstancesFileName() {
         return getPath(instancesFileField, ".pins");
     }
-    
+
     private String getPath(FileField field, String extension) {
         String path = field.getPath();
         return FileUtilities.ensureExtension(path, extension);
+    }
+
+    public WizardPage getNextPage() {
+        WizardPage page;
+        if (plugin instanceof ClipsFilesCreateProjectPlugin) {
+            ClipsFilesCreateProjectPlugin createPlugin = (ClipsFilesCreateProjectPlugin) plugin;
+            page = new IncludedProjectsWizardPage(getWizard(), createPlugin);
+        } else {
+            page = super.getNextPage();
+        }
+        return page;
     }
 }

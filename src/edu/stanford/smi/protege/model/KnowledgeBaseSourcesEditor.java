@@ -68,8 +68,7 @@ public abstract class KnowledgeBaseSourcesEditor extends JComponent implements V
      * @return Collection of URI's for included projects
      */
     public Collection getIncludedProjects() {
-        return (_includedProjectsList == null) ? Collections.EMPTY_LIST : _includedProjectsList
-                .getURIs();
+        return (_includedProjectsList == null) ? Collections.EMPTY_LIST : _includedProjectsList.getURIs();
     }
 
     public String getProjectPath() {
