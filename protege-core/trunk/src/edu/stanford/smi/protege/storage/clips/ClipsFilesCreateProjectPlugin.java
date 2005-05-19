@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.storage.clips;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.plugin.*;
@@ -15,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
 public class ClipsFilesCreateProjectPlugin extends AbstractCreateProjectPlugin implements ClipsFilesPlugin {
     private String clsesFileName;
     private String instancesFileName;
+    private Collection includedProjects;
 
     public ClipsFilesCreateProjectPlugin() {
         super(ClipsKnowledgeBaseFactory.DESCRIPTION);
@@ -25,8 +27,21 @@ public class ClipsFilesCreateProjectPlugin extends AbstractCreateProjectPlugin i
         this.instancesFileName = instancesFileName;
     }
 
+    public void setIncludedProjects(Collection includedProjects) {
+        this.includedProjects = new ArrayList(includedProjects);
+    }
+
     public boolean canCreateProject(KnowledgeBaseFactory factory, boolean useExistingSources) {
         return factory.getClass() == ClipsKnowledgeBaseFactory.class;
+    }
+
+    protected void initialize(Project project) {
+        super.initialize(project);
+        Iterator i = includedProjects.iterator();
+        while (i.hasNext()) {
+            URI uri = (URI) i.next();
+            project.includeProject(uri, false, null);
+        }
     }
 
     protected void initializeSources(PropertyList sources) {

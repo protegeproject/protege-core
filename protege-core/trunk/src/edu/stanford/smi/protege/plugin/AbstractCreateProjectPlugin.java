@@ -61,10 +61,14 @@ public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin
         return project;
     }
 
+    protected void initialize(Project project) {
+        initializeSources(project.getSources());
+    }
+
     protected Project buildNewProject(KnowledgeBaseFactory factory) {
         Collection errors = new ArrayList();
         Project project = Project.createBuildProject(factory, errors);
-        initializeSources(project.getSources());
+        initialize(project);
         project.createDomainKnowledgeBase(factory, errors, true);
         URI uri = getBuildProjectURI();
         if (uri != null) {
