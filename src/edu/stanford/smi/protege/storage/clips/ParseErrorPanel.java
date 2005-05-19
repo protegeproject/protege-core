@@ -33,7 +33,7 @@ public class ParseErrorPanel extends JComponent {
                 e.printStackTrace(new PrintWriter(s));
                 text = s.toString();
             } else {
-                text = o.toString();
+                text = (o == null) ? "missing message" : o.toString();
             }
             buffer.append(text);
             buffer.append("\n");
