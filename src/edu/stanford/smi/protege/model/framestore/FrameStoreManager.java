@@ -328,6 +328,7 @@ public class FrameStoreManager {
             FrameStore store = (FrameStore) i.next();
             store.reinitialize();
         }
+        terminalFrameStore.reinitialize();
     }
 
     public FrameStore getTerminalFrameStore() {
