@@ -22,6 +22,15 @@ public class DefaultKnowledgeBase_SimpleTest extends SimpleTestCase {
         assertEquals(cls, cls2);
     }
 
+    public void testCreateInstanceWithNoType() {
+        DefaultKnowledgeBase kb = new DefaultKnowledgeBase();
+        Instance instance = kb.createInstance(null, (Cls) null);
+        assertNotNull(instance);
+        String name = instance.getName();
+        Instance instance2 = kb.getInstance(name);
+        assertEquals(instance, instance2);
+    }
+
     public void testGetClses() {
         DefaultKnowledgeBase kb = new DefaultKnowledgeBase();
         Cls cls = kb.createCls(null, kb.getRootClses());
