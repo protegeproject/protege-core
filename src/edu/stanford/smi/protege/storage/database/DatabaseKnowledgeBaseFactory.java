@@ -143,6 +143,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         NarrowFrameStore nfs = new ValueCachingNarrowFrameStore(store);
         MergingNarrowFrameStore mergingFrameStore = getMergingFrameStore(dkb);
         mergingFrameStore.addActiveFrameStore(nfs);
+        kb.flushCache();
         return store;
     }
 
