@@ -20,11 +20,11 @@ public class DeleteInstancesAction extends DeleteAction {
     public DeleteInstancesAction(Selectable selectable) {
         this(ResourceKey.INSTANCE_DELETE, selectable);
     }
-    
+
     public DeleteInstancesAction(ResourceKey key, Selectable selectable) {
         super(key, selectable);
     }
-    
+
     /**
      * @deprecated Use ResourceKey version
      */
@@ -58,9 +58,13 @@ public class DeleteInstancesAction extends DeleteAction {
         Instance instance = (Instance) o;
         if (canDelete(instance)) {
             onAboutToDelete(instance);
-            instance.getKnowledgeBase().deleteFrame(instance);
+            deleteInstance(instance);
             onAfterDelete(o);
         }
+    }
+
+    public void deleteInstance(Instance instance) {
+        instance.getKnowledgeBase().deleteFrame(instance);
     }
 
     public void onSelectionChange() {

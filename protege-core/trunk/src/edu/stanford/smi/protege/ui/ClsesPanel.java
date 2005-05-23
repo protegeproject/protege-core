@@ -126,7 +126,7 @@ public class ClsesPanel extends SelectableContainer {
 
     protected AllowableAction getDeleteClsAction() {
         AllowableAction action = new DeleteClsAction(this) {
-            public void onAboutToDelete() {
+            public void onAboutToDelete(Object o) {
                 _subclassPane.removeSelection();
             }
 

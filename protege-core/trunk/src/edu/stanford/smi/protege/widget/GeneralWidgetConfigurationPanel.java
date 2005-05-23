@@ -15,14 +15,16 @@ import edu.stanford.smi.protege.util.*;
  */
 public class GeneralWidgetConfigurationPanel extends AbstractValidatableComponent {
     private JTextField _labelField;
+    private JTextField _tooltipField;
     private SlotWidget _widget;
 
     public GeneralWidgetConfigurationPanel(SlotWidget widget) {
         _widget = widget;
-        setLayout(new GridLayout(3, 1, 10, 10));
+        setLayout(new GridLayout(0, 1, 10, 10));
         add(createClsNameField(widget));
         add(createSlotNameField(widget));
         add(createLabelNameField(widget));
+        add(createToolTipNameField(widget));
     }
 
     private JComponent createClsNameField(SlotWidget widget) {
@@ -51,12 +53,18 @@ public class GeneralWidgetConfigurationPanel extends AbstractValidatableComponen
         return createFrameField("Slot", widget.getSlot());
     }
 
+    private JComponent createToolTipNameField(SlotWidget widget) {
+        _tooltipField = createField(widget.getDefaultToolTip());
+        return new LabeledComponent("Default Tool Tip", _tooltipField);
+    }
+
     public String getLabel() {
         return _labelField.getText();
     }
 
     public void saveContents() {
         _widget.setLabel(_labelField.getText());
+        _widget.setDefaultToolTip(_tooltipField.getText());
     }
 
     public boolean validateContents() {

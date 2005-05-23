@@ -16,9 +16,14 @@ public interface SlotWidget extends Widget {
     Slot getSlot();
 
     Cls getAssociatedCls();
+
     void setAssociatedCls(Cls associatedCls);
 
     void setInstance(Instance instance);
+
+    String getDefaultToolTip();
+
+    void setDefaultToolTip(String tooltip);
 
     void setup(WidgetDescriptor descriptor, boolean isDesignTime, Project project, Cls cls, Slot slot);
 }

@@ -404,7 +404,7 @@ public class PluginUtilities {
 
     private static void init() {
         try {
-            setContextClassLoader(null);
+            // setContextClassLoader(null);
             loadPlugins();
         } catch (Exception e) {
             e.printStackTrace();
