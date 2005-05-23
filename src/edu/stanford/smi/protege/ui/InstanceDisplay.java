@@ -549,6 +549,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         Cls cls = _currentAssociatedCls;
         removeCurrentWidgets();
         setInstance(instance, cls);
+        Log.getLogger().info("reload form: " + this);
     }
 
     private void removeAllStickies() {
@@ -576,6 +577,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         _scrollPane.setViewportView(null);
         ComponentUtilities.dispose(c);
         _currentWidgets.clear();
+        _currentInstance.removeInstanceListener(_instanceListener);
         _currentInstance = null;
         _currentAssociatedCls = null;
         update();

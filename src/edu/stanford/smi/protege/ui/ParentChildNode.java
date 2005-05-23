@@ -90,7 +90,7 @@ public class ParentChildNode extends LazyTreeNode {
     protected int getChildObjectCount() {
         return (showHidden()) ? getCls().getDirectSubclassCount() : getCls().getVisibleDirectSubclassCount();
     }
-    
+
     protected Collection getChildObjects() {
         return (showHidden()) ? getCls().getDirectSubclasses() : getCls().getVisibleDirectSubclasses();
     }

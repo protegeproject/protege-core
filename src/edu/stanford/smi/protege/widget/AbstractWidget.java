@@ -37,9 +37,11 @@ public abstract class AbstractWidget extends JPanel {
     public WidgetDescriptor getDescriptor() {
         return _descriptor;
     }
+
     public KnowledgeBase getKnowledgeBase() {
         return _project.getKnowledgeBase();
     }
+
     public Project getProject() {
         return _project;
     }
@@ -47,10 +49,12 @@ public abstract class AbstractWidget extends JPanel {
     public PropertyList getPropertyList() {
         return _descriptor.getPropertyList();
     }
+
     public void setPropertyList(PropertyList list) {
         Assert.assertTrue("design time", isDesignTime());
         _descriptor.setPropertyList(list);
     }
+
     public String getStringProperty(String name, String defaultString) {
         String property = getPropertyList().getString(name);
         if (property == null) {
@@ -58,6 +62,7 @@ public abstract class AbstractWidget extends JPanel {
         }
         return property;
     }
+
     public boolean isDesignTime() {
         return _isDesignTime;
     }
@@ -65,6 +70,7 @@ public abstract class AbstractWidget extends JPanel {
     public boolean isRuntime() {
         return !_isDesignTime;
     }
+
     public void show(Cls cls, Slot slot) {
         getProject().show(cls, slot);
     }
@@ -80,9 +86,11 @@ public abstract class AbstractWidget extends JPanel {
     public void setLabel(String label) {
         _descriptor.setLabel(label);
     }
+
     public void addSelectionListener(SelectionListener listener) {
         _selectionListeners.add(this, listener);
     }
+
     public void removeSelectionListener(SelectionListener listener) {
         _selectionListeners.remove(this, listener);
     }
@@ -90,6 +98,7 @@ public abstract class AbstractWidget extends JPanel {
     public void notifySelectionListeners() {
         _selectionListeners.postEvent(this, SelectionEvent.SELECTION_CHANGED);
     }
+
     public void clearSelection() {
         // do nothing
     }
@@ -110,7 +119,7 @@ public abstract class AbstractWidget extends JPanel {
     protected void endTransaction() {
         getKnowledgeBase().endTransaction(true);
     }
-    
+
     public void paint(Graphics g) {
         ComponentUtilities.enableTextAntialiasing(g);
         super.paint(g);

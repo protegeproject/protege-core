@@ -32,6 +32,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     private static final Border _normalBorder;
     private DoubleClickListener _doubleClickListener;
     private ShowInstanceListener _showInstanceListener;
+    private String TOOLTIP_TEXT_PROPERTY = "tooltip_text";
 
     static {
         int n = NORMAL_BORDER_SIZE;
@@ -123,14 +124,27 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         setBorder(border);
     }
 
+    public String getDefaultToolTip() {
+        return getPropertyList().getString(TOOLTIP_TEXT_PROPERTY);
+    }
+
+    public void setDefaultToolTip(String tooltip) {
+        getPropertyList().setString(TOOLTIP_TEXT_PROPERTY, tooltip);
+    }
+
     protected void updateBorder(Collection values) {
-        String text = null;
+        String text = getDefaultToolTip();
+        String invalidInstanceText = null;
         Instance instance = getInstance();
         if (instance != null) {
-            text = getKnowledgeBase().getInvalidOwnSlotValuesText(instance, getSlot(), values);
+            invalidInstanceText = getKnowledgeBase().getInvalidOwnSlotValuesText(instance, getSlot(), values);
+            if (invalidInstanceText != null) {
+                text = invalidInstanceText;
+            }
         }
+
         setToolTipText(text);
-        if (text == null) {
+        if (invalidInstanceText == null) {
             setNormalBorder();
         } else {
             setInvalidValueBorder();
@@ -178,8 +192,8 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
 
     public boolean configure() {
         WidgetConfigurationPanel panel = createWidgetConfigurationPanel();
-        int result = ModalDialog.showDialog(this, panel, "Configure " + getLabel(),
-                ModalDialog.MODE_OK_CANCEL, null, false);
+        int result = ModalDialog.showDialog(this, panel, "Configure " + getLabel(), ModalDialog.MODE_OK_CANCEL, null,
+                false);
         return result == ModalDialog.OPTION_OK;
     }
 
@@ -215,8 +229,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
 
     public String getButtonDescription(Action action) {
         return getPropertyList().getString(
-                ButtonConfigurationPanel.getDescriptionPropertyName((String) action
-                        .getValue(Action.NAME)));
+                ButtonConfigurationPanel.getDescriptionPropertyName((String) action.getValue(Action.NAME)));
     }
 
     public Cls getCls() {
@@ -224,8 +237,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     }
 
     private String getDisplayPropertyName(Action action) {
-        return ButtonConfigurationPanel.getDisplayPropertyName((String) action
-                .getValue(Action.NAME));
+        return ButtonConfigurationPanel.getDisplayPropertyName((String) action.getValue(Action.NAME));
     }
 
     public static Object getFirstItem(Collection c) {
@@ -258,7 +270,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         }
         return label;
     }
-    
+
     protected String getDefaultLabel() {
         Slot slot = getSlot();
         String text = slot.getBrowserText();
@@ -367,8 +379,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
                 _instance.setDirectOwnSlotValues(_slot, newValues);
             } else {
                 Slot instanceSlot = (Slot) _instance;
-                _associatedCls.setTemplateFacetValues(instanceSlot, _slot.getAssociatedFacet(),
-                        newValues);
+                _associatedCls.setTemplateFacetValues(instanceSlot, _slot.getAssociatedFacet(), newValues);
             }
             updateBorder(newValues);
         }
@@ -425,8 +436,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         }
     }
 
-    public void setup(final WidgetDescriptor descriptor, boolean isDesignTime, Project project,
-            Cls cls, Slot slot) {
+    public void setup(final WidgetDescriptor descriptor, boolean isDesignTime, Project project, Cls cls, Slot slot) {
         super.setup(descriptor, isDesignTime, project);
         _cls = cls;
         _slot = slot;
@@ -444,8 +454,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
             values = new ArrayList(_instance.getOwnSlotValues(_slot));
             boolean editable = _instance.isEditable();
             // editable &= _instance.getOwnSlotValueType(_slot) == ValueType.CLS
-            editable &= _slot.getValueType() == ValueType.CLS
-                    || _instance.getOwnSlotAllowsMultipleValues(_slot)
+            editable &= _slot.getValueType() == ValueType.CLS || _instance.getOwnSlotAllowsMultipleValues(_slot)
                     || _instance.getDirectType().getTemplateSlotValues(_slot).isEmpty();
             setEditable(editable);
         } else {

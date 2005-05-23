@@ -48,8 +48,7 @@ public class SubclassPane extends SelectableContainer {
     }
 
     protected SelectableTree createSelectableTree(Action doubleClickAction, Cls rootCls) {
-        return ComponentFactory.createSelectableTree(doubleClickAction,
-                new ParentChildRoot(rootCls));
+        return ComponentFactory.createSelectableTree(doubleClickAction, new ParentChildRoot(rootCls));
     }
 
     private Action createCollapseAllAction() {
@@ -105,15 +104,13 @@ public class SubclassPane extends SelectableContainer {
 
     private Action createSetClsMetaClsAction() {
         final Cls cls = (Cls) getSoleSelection();
-        AbstractAction action = new StandardAction(
-                ResourceKey.CLASS_BROWSER_SET_AS_DEFAULT_METACLASS_MENU_ITEM) {
+        AbstractAction action = new StandardAction(ResourceKey.CLASS_BROWSER_SET_AS_DEFAULT_METACLASS_MENU_ITEM) {
             public void actionPerformed(ActionEvent event) {
                 _knowledgeBase.setDefaultClsMetaCls(cls);
                 repaint();
             }
         };
-        boolean enabled = cls != null && cls.isClsMetaCls() && !cls.isDefaultClsMetaCls()
-                && cls.isConcrete();
+        boolean enabled = cls != null && cls.isClsMetaCls() && !cls.isDefaultClsMetaCls() && cls.isConcrete();
         action.setEnabled(enabled);
         return action;
     }
@@ -141,8 +138,7 @@ public class SubclassPane extends SelectableContainer {
     private Action getChangeMetaclassAction() {
         Action action = new StandardAction(ResourceKey.CLASS_BROWSER_CHANGE_METACLASS_MENU_ITEM) {
             public void actionPerformed(ActionEvent event) {
-                Collection clsMetaClses = CollectionUtilities.createCollection(_knowledgeBase
-                        .getRootClsMetaCls());
+                Collection clsMetaClses = CollectionUtilities.createCollection(_knowledgeBase.getRootClsMetaCls());
                 Cls metaclass = pickConcreteCls(clsMetaClses, "Select Metaclass");
                 if (metaclass != null) {
                     Iterator i = getSelection().iterator();
@@ -162,8 +158,7 @@ public class SubclassPane extends SelectableContainer {
     private boolean canChangeMetaCls() {
         Cls rootMetaclass = _knowledgeBase.getRootClsMetaCls();
         final Collection c = CollectionUtilities.createCollection(rootMetaclass);
-        boolean hasMultipleMetaclasses = DisplayUtilities.hasMultipleConcreteClses(_knowledgeBase,
-                c);
+        boolean hasMultipleMetaclasses = DisplayUtilities.hasMultipleConcreteClses(_knowledgeBase, c);
 
         return hasMultipleMetaclasses && selectionIsEditable();
     }
@@ -185,19 +180,16 @@ public class SubclassPane extends SelectableContainer {
     private Action getChangeSubclassMetaclassAction() {
         Cls rootMetaclass = _knowledgeBase.getRootClsMetaCls();
         Collection c = CollectionUtilities.createCollection(rootMetaclass);
-        boolean hasMultipleMetaclasses = DisplayUtilities.hasMultipleConcreteClses(_knowledgeBase,
-                c);
+        boolean hasMultipleMetaclasses = DisplayUtilities.hasMultipleConcreteClses(_knowledgeBase, c);
 
         final Cls cls = (Cls) getSoleSelection();
-        Action action = new StandardAction(
-                ResourceKey.CLASS_BROWSER_CHANGE_METACLASS_OF_SUBCLASSES_MENU_ITEM) {
+        Action action = new StandardAction(ResourceKey.CLASS_BROWSER_CHANGE_METACLASS_OF_SUBCLASSES_MENU_ITEM) {
             public void actionPerformed(ActionEvent event) {
                 Cls metaCls = cls.getDirectType();
                 String text = "Change metaclass of all subclasses of ";
                 text += cls.getName();
                 text += " to " + metaCls.getName();
-                int result = ModalDialog.showMessageDialog(SubclassPane.this, text,
-                        ModalDialog.MODE_OK_CANCEL);
+                int result = ModalDialog.showMessageDialog(SubclassPane.this, text, ModalDialog.MODE_OK_CANCEL);
                 if (result == ModalDialog.OPTION_OK) {
                     WaitCursor waitCursor = new WaitCursor(SubclassPane.this);
                     try {
@@ -208,15 +200,13 @@ public class SubclassPane extends SelectableContainer {
                 }
             }
         };
-        boolean enabled = cls != null && hasMultipleMetaclasses
-                && cls.getDirectSubclassCount() >= 1;
+        boolean enabled = cls != null && hasMultipleMetaclasses && cls.getDirectSubclassCount() >= 1;
         action.setEnabled(enabled);
         return action;
     }
 
     private Action getCreateClsWithMetaClsAction() {
-        AbstractAction action = new StandardAction(
-                ResourceKey.CLASS_BROWSER_CREATE_SUBCLASS_USING_METACLASS_MENU_ITEM) {
+        AbstractAction action = new StandardAction(ResourceKey.CLASS_BROWSER_CREATE_SUBCLASS_USING_METACLASS_MENU_ITEM) {
             public void actionPerformed(ActionEvent event) {
                 Cls rootMetaCls = _knowledgeBase.getRootClsMetaCls();
                 Collection roots = CollectionUtilities.createCollection(rootMetaCls);
