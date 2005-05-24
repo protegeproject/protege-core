@@ -34,19 +34,19 @@
 		<mkdir dir = "${dist.dir}"/>
 		<!-- get source code from subversion repository -->
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/src ../${project.name}/build/src"/>
+			<arg line = "/c checkout ${svn.core.url}/${project.name}/branches/nci-eval/src/ ../${project.name}/build/src"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/lib ../${project.name}/lib"/>
+			<arg line = "/c checkout ${svn.core.url}/${project.name}/branches/nci-eval/lib/ ../${project.name}/lib"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/bin ../${project.name}/bin"/>
+			<arg line = "/c checkout ${svn.core.url}/${project.name}/branches/nci-eval/bin/ ../${project.name}/bin"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/examples ../${project.name}/examples"/>
+			<arg line = "/c checkout ${svn.core.url}/${project.name}/branches/nci-eval/examples/ ../${project.name}/examples"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk ../${project.name} --non-recursive"/>
+			<arg line = "/c checkout ${svn.core.url}/${project.name}/branches/nci-eval/ ../${project.name} --non-recursive"/>
 		</exec>
 		<!-- add license text to top of source files -->
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
@@ -54,8 +54,8 @@
 		</exec>
 		<!-- increment the build number -->
 		<propertyfile file = "./build/src/edu/stanford/smi/protege/resource/files/build.properties">
-			<entry key = "build.number" default = "01" type = "int" operation = "+" pattern = "000"/>
-			<entry key = "build.number.previous" default = "00" type = "int" operation = "+" pattern = "000"/>
+			<entry key = "build.number" default = "0" type = "int" operation = "+" pattern = "00000"/>
+			<entry key = "build.number.previous" default = "0" type = "int" operation = "+" pattern = "00000"/>
 		</propertyfile>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
 			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/resource/files/build.properties"/>
@@ -187,7 +187,14 @@
 	<target name = "clean" depends = "init">
 		<delete dir = "${build.dir}"/>
 		<delete dir = "${build.javadoc}"/>
+		<delete dir = "${build.scripts}"/>
 		<delete dir = "${dist.dir}"/>
+		<delete dir = "./examples"/>
+		<delete dir = "${lib.dir}"/>
+		<delete file = "build-doap.xml"/>
+		<delete file = "build.xml"/>
+		<delete file = "local.properties.template"/>
+		<delete file = "readme.html"/>
 	</target>
 	<!-- =================================================================== -->
 	
