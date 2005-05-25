@@ -1,488 +1,635 @@
-; Tue Aug 26 11:34:32 PDT 2003
+; Wed May 25 15:12:15 PDT 2005
 ; 
-;+ (version "1.9")
-;+ (build "Build 1102")
+;+ (version "3.1")
+;+ (build "Build 179")
 
-([Apple] of Non-sweet+fruit
+([Apple] of  Non-sweet+fruit
+
 	(name "Apple"))
 
-([Banana] of Sweet+fruit
+([Banana] of  Sweet+fruit
+
 	(name "Banana"))
 
-([Bancroft] of Winery
-	(name "Bancroft"))
+([Bancroft] of  Winery
 
-([Bancroft+Chardonnay] of Chardonnay
+	(name "Bancroft")
+	(produces [Bancroft+Chardonnay]))
+
+([Bancroft+Chardonnay] of  Chardonnay
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Bancroft])
 	(name "Bancroft Chardonnay")
-	(maker [Bancroft]))
+	(sugar DRY))
 
-([Beaujolais] of Wine+template)
+([Beaujolais] of  Wine+template
+)
 
-([Beef+curry] of Spicy+red+meat
+([Beef+curry] of  Spicy+red+meat
+
 	(name "Beef curry"))
 
-([Cabernet+Franc] of Wine+template)
+([Cabernet+Franc] of  Wine+template
+)
 
-([Cabernet+Franc+grape] of Wine+grape
+([Cabernet+Franc+grape] of  Wine+grape
+
 	(name "Cabernet Franc grape"))
 
-([Cabernet+Sauvignon] of Wine+template)
+([Cabernet+Sauvignon] of  Wine+template
+)
 
-([Cabernet+Sauvignon+grape] of Wine+grape
+([Cabernet+Sauvignon+grape] of  Wine+grape
+
 	(name "Cabernet Sauvignon grape"))
 
-([Cake] of Sweet+dessert
+([Cake] of  Sweet+dessert
+
 	(name "Cake"))
 
-([Chablis] of Wine+template)
+([Chablis] of  Wine+template
+)
 
-([Chardonnay] of Wine+template)
+([Chardonnay] of  Wine+template
+)
 
-([Chardonnay+grape] of Wine+grape
+([Chardonnay+grape] of  Wine+grape
+
 	(name "Chardonnay grape"))
 
-([Chateau+Cheval+Blanc+St+Emilion] of St.+Emillion
+([Chateau+Cheval+Blanc+St+Emilion] of  St.+Emillion
+
 	(name "Chateau Cheval Blanc St Emilion"))
 
-([Chateau+D+Ychem] of Winery
-	(location Bordeaux+region)
-	(name "Chateau D Ychem"))
+([Chateau+D+Ychem] of  Winery
 
-([Chateau+D+Ychem+Sauterne] of Sauterne
+	(location Bordeaux+region)
+	(name "Chateau D Ychem")
+	(produces [Chateau+D+Ychem+Sauterne]))
+
+([Chateau+D+Ychem+Sauterne] of  Sauterne
+
 	(flavor STRONG)
 	(grape [Semillon+grape])
-	(name "Chateau D Ychem Sauterne")
-	(maker [Chateau+D+Ychem]))
+	(maker [Chateau+D+Ychem])
+	(name "Chateau D Ychem Sauterne"))
 
-([Chateau+De+Meursault+Meursault] of White+Burgundy
+([Chateau+De+Meursault+Meursault] of  White+Burgundy
+
 	(flavor MODERATE)
 	(name "Chateau De Meursault Meursault"))
 
-([Chateau+Lafite+Rothschild] of Winery
-	(produces [Chateau+Lafite+Rothschild+Pauillac])
-	(name "Chateau Lafite Rothschild"))
+([Chateau+Lafite+Rothschild] of  Winery
 
-([Chateau+Lafite+Rothschild+Pauillac] of Pauillac
+	(name "Chateau Lafite Rothschild")
+	(produces [Chateau+Lafite+Rothschild+Pauillac]))
+
+([Chateau+Lafite+Rothschild+Pauillac] of  Pauillac
+
 	(body FULL)
-	(sugar DRY)
-	(tannin+level MODERATE)
 	(flavor STRONG)
 	(grape [Cabernet+Sauvignon+grape])
+	(maker [Chateau+Lafite+Rothschild])
 	(name "Chateau Lafite Rothschild Pauillac")
-	(maker [Chateau+Lafite+Rothschild]))
+	(sugar DRY)
+	(tannin+level MODERATE))
 
-([Chateau+Margaux] of Margaux
-	(name "Chateau Margaux")
-	(maker [Chateau+Margaux+Winery]))
+([Chateau+Margaux] of  Margaux
 
-([Chateau+Margaux+Winery] of Winery
-	(produces [Chateau+Margaux])
+	(maker [Chateau+Margaux+Winery])
 	(name "Chateau Margaux"))
 
-([Chateau+Morgon] of Winery
-	(produces [Chateau+Morgon+Beaujolais])
-	(name "Chateau Morgon"))
+([Chateau+Margaux+Winery] of  Winery
 
-([Chateau+Morgon+Beaujolais] of Beaujolais
+	(name "Chateau Margaux")
+	(produces [Chateau+Margaux]))
+
+([Chateau+Morgon] of  Winery
+
+	(name "Chateau Morgon")
+	(produces [Chateau+Morgon+Beaujolais]))
+
+([Chateau+Morgon+Beaujolais] of  Beaujolais
+
 	(body LIGHT)
-	(sugar DRY)
-	(tannin+level LOW)
 	(flavor DELICATE)
 	(grape [Gamay+grape])
+	(maker [Chateau+Morgon])
 	(name "Chateau Morgon Beaujolais")
-	(maker [Chateau+Morgon]))
+	(sugar DRY)
+	(tannin+level LOW))
 
-([Cheese] of Cheese%2FNuts+dessert
+([Cheese] of  Cheese%2FNuts+dessert
+
 	(name "Cheese"))
 
-([Chenin+Blanc] of Wine+template)
+([Chenin+Blanc] of  Wine+template
+)
 
-([Chenin+Blanc+grape] of Wine+grape
+([Chenin+Blanc+grape] of  Wine+grape
+
 	(name "Chenin Blanc grape"))
 
-([Chianti] of Wine+template)
+([Chianti] of  Wine+template
+)
 
-([Chianti+Classico] of Chianti
+([Chianti+Classico] of  Chianti
+
 	(body MEDIUM)
 	(name "Chianti Classico"))
 
-([Clams] of Shellfish
+([Clams] of  Shellfish
+
 	(name "Clams"))
 
-([Clos+De+La+Poussie] of Winery
-	(name "Clos De La Poussie"))
+([Clos+De+La+Poussie] of  Winery
 
-([Clos+De+La+Poussie+Sancerre] of Sancerre
-	(name "Clos De La Poussie Sancerre")
-	(maker [Clos+De+La+Poussie]))
+	(name "Clos De La Poussie")
+	(produces [Clos+De+La+Poussie+Sancerre]))
 
-([Clos+De+Vougeot] of Winery
-	(produces [Clos+De+Vougeot+Cotes+D+Or])
-	(name "Clos De Vougeot"))
+([Clos+De+La+Poussie+Sancerre] of  Sancerre
 
-([Clos+De+Vougeot+Cotes+D+Or] of Red+Burgundy
-	(name "Clos De Vougeot Cotes D Or")
-	(maker [Clos+De+Vougeot]))
+	(maker [Clos+De+La+Poussie])
+	(name "Clos De La Poussie Sancerre"))
 
-([Congress+Springs] of Winery
-	(produces [Congress+Springs+Semillon])
-	(name "Congress Springs"))
+([Clos+De+Vougeot] of  Winery
 
-([Congress+Springs+Semillon] of Semillon
+	(name "Clos De Vougeot")
+	(produces [Clos+De+Vougeot+Cotes+D+Or]))
+
+([Clos+De+Vougeot+Cotes+D+Or] of  Red+Burgundy
+
+	(maker [Clos+De+Vougeot])
+	(name "Clos De Vougeot Cotes D Or"))
+
+([Congress+Springs] of  Winery
+
+	(name "Congress Springs")
+	(produces [Congress+Springs+Semillon]))
+
+([Congress+Springs+Semillon] of  Semillon
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Congress+Springs])
 	(name "Congress Springs Semillon")
-	(maker [Congress+Springs]))
+	(sugar DRY))
 
-([Corbans] of Winery
-	(name "Corbans"))
+([Corbans] of  Winery
 
-([Corbans+Dry+White+Riesling] of Dry+Riesling
+	(name "Corbans")
+	(produces
+		[Corbans+Dry+White+Riesling]
+		[Corbans+Private+Bin+Sauvignon+Blanc]
+		[Corbans+Sauvignon+Blanc]))
+
+([Corbans+Dry+White+Riesling] of  Dry+Riesling
+
 	(body MEDIUM)
-	(sugar OFF-DRY)
 	(flavor MODERATE)
+	(maker [Corbans])
 	(name "Corbans Dry White Riesling")
-	(maker [Corbans]))
+	(sugar OFF-DRY))
 
-([Corbans+Private+Bin+Sauvignon+Blanc] of Sauvignon+Blanc
+([Corbans+Private+Bin+Sauvignon+Blanc] of  Sauvignon+Blanc
+
 	(body FULL)
-	(sugar DRY)
 	(flavor STRONG)
+	(maker [Corbans])
 	(name "Corbans Private Bin Sauvignon Blanc")
-	(maker [Corbans]))
+	(sugar DRY))
 
-([Corbans+Sauvignon+Blanc] of Sauvignon+Blanc
+([Corbans+Sauvignon+Blanc] of  Sauvignon+Blanc
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor STRONG)
+	(maker [Corbans])
 	(name "Corbans Sauvignon Blanc")
-	(maker [Corbans]))
+	(sugar DRY))
 
-([Corton+Montrachet] of Winery
-	(name "Corton Montrachet"))
+([Corton+Montrachet] of  Winery
 
-([Corton+Montrachet+White+Burgundy] of White+Burgundy
+	(name "Corton Montrachet")
+	(produces [Corton+Montrachet+White+Burgundy]))
+
+([Corton+Montrachet+White+Burgundy] of  White+Burgundy
+
 	(body FULL)
-	(sugar DRY)
 	(flavor STRONG)
+	(maker [Corton+Montrachet])
 	(name "Corton Montrachet White Burgundy")
-	(maker [Corton+Montrachet]))
+	(sugar DRY))
 
-([Cotes+Chalonnaise] of Wine+template)
+([Cotes+Chalonnaise] of  Wine+template
+)
 
-([Cotes+d%27Or] of Wine+template)
+([Cotes+d%27Or] of  Wine+template
+)
 
-([Cotturi] of Winery
-	(name "Cotturi"))
+([Cotturi] of  Winery
 
-([Cotturi+Zinfandel] of Red+Zinfandel
+	(name "Cotturi")
+	(produces [Cotturi+Zinfandel]))
+
+([Cotturi+Zinfandel] of  Red+Zinfandel
+
 	(body FULL)
-	(sugar DRY)
 	(flavor STRONG)
+	(maker [Cotturi])
 	(name "Cotturi Zinfandel")
-	(maker [Cotturi]))
+	(sugar DRY))
 
-([Crabs] of Shellfish
+([Crabs] of  Shellfish
+
 	(name "Crabs"))
 
-([D+Anjou] of Winery
+([D+Anjou] of  Winery
+
 	(name "D Anjou"))
 
-([Dry+Riesling] of Wine+template)
+([Dry+Riesling] of  Wine+template
+)
 
-([Duck] of Dark+meat+fowl
+([Duck] of  Dark+meat+fowl
+
 	(name "Duck"))
 
-([Elyse] of Winery
-	(name "Elyse"))
+([Elyse] of  Winery
 
-([Elyse+Zinfandel] of Red+Zinfandel
+	(name "Elyse")
+	(produces [Elyse+Zinfandel]))
+
+([Elyse+Zinfandel] of  Red+Zinfandel
+
 	(body FULL)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Elyse])
 	(name "Elyse Zinfandel")
-	(maker [Elyse]))
+	(sugar DRY))
 
-([Fettucine+Alfredo] of Pasta+with+heavy+cream+sauce
+([Fettucine+Alfredo] of  Pasta+with+heavy+cream+sauce
+
 	(name "Fettucine Alfredo"))
 
-([Flounder] of Bland+fish
+([Flounder] of  Bland+fish
+
 	(name "Flounder"))
 
-([Forman] of Winery
-	(name "Forman"))
+([Forman] of  Winery
 
-([Forman+Cabernet+Sauvignon] of Cabernet+Sauvignon
+	(name "Forman")
+	(produces
+		[Forman+Cabernet+Sauvignon]
+		[Forman+Chardonnay]))
+
+([Forman+Cabernet+Sauvignon] of  Cabernet+Sauvignon
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor STRONG)
+	(maker [Forman])
 	(name "Forman Cabernet Sauvignon")
-	(maker [Forman]))
+	(sugar DRY))
 
-([Forman+Chardonnay] of Chardonnay
+([Forman+Chardonnay] of  Chardonnay
+
 	(body FULL)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Forman])
 	(name "Forman Chardonnay")
-	(maker [Forman]))
+	(sugar DRY))
 
-([Foxen] of Winery
-	(name "Foxen"))
+([Foxen] of  Winery
 
-([Foxen+Chenin+Blanc] of Chenin+Blanc
+	(name "Foxen")
+	(produces [Foxen+Chenin+Blanc]))
+
+([Foxen+Chenin+Blanc] of  Chenin+Blanc
+
 	(body FULL)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Foxen])
 	(name "Foxen Chenin Blanc")
-	(maker [Foxen]))
+	(sugar DRY))
 
-([Fra+Diavolo] of Pasta+with+spicy+red+sauce
+([Fra+Diavolo] of  Pasta+with+spicy+red+sauce
+
 	(name "Fra Diavolo"))
 
-([Gamay+grape] of Wine+grape
+([Gamay+grape] of  Wine+grape
+
 	(name "Gamay grape"))
 
-([Garlicky+roast] of Spicy+red+meat
+([Garlicky+roast] of  Spicy+red+meat
+
 	(name "Garlicky roast"))
 
-([Gary+Farrell] of Winery
-	(produces [Gary+Farrell+Merlot])
-	(name "Gary Farrell"))
+([Gary+Farrell] of  Winery
 
-([Gary+Farrell+Merlot] of Red+Merlot
+	(name "Gary Farrell")
+	(produces [Gary+Farrell+Merlot]))
+
+([Gary+Farrell+Merlot] of  Red+Merlot
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Gary+Farrell])
 	(name "Gary Farrell Merlot")
-	(maker [Gary+Farrell]))
+	(sugar DRY))
 
-([Goose] of Dark+meat+fowl
+([Goose] of  Dark+meat+fowl
+
 	(name "Goose"))
 
-([Grape] of Sweet+fruit
+([Grape] of  Sweet+fruit
+
 	(name "Grape"))
 
-([Graves] of Wine+template)
+([Graves] of  Wine+template
+)
 
-([Grilled+chicken] of Light+meat+fowl
+([Grilled+chicken] of  Light+meat+fowl
+
 	(name "Grilled chicken"))
 
-([Halibut] of Bland+fish
+([Halibut] of  Bland+fish
+
 	(name "Halibut"))
 
-([Handley] of Winery
+([Handley] of  Winery
+
 	(name "Handley"))
 
-([Ice+Wine] of Wine+template)
+([Ice+Wine] of  Wine+template
+)
 
-([Kalin+Cellars] of Winery
-	(produces [Kalin+Cellars+Semillon])
-	(name "Kalin Cellars"))
+([Kalin+Cellars] of  Winery
 
-([Kalin+Cellars+Semillon] of Semillon
+	(name "Kalin Cellars")
+	(produces [Kalin+Cellars+Semillon]))
+
+([Kalin+Cellars+Semillon] of  Semillon
+
 	(body FULL)
-	(sugar DRY)
 	(flavor STRONG)
+	(maker [Kalin+Cellars])
 	(name "Kalin Cellars Semillon")
-	(maker [Kalin+Cellars]))
+	(sugar DRY))
 
-([Kathryn+Kennedy] of Winery
+([Kathryn+Kennedy] of  Winery
+
 	(name "Kathryn Kennedy"))
 
-([Lamb] of Red+meat
+([Lamb] of  Red+meat
+
 	(name "Lamb"))
 
-([Lane+Tanner] of Winery
-	(produces [Lane+Tanner+Pinot+Noir])
-	(name "Lane Tanner"))
+([Lane+Tanner] of  Winery
 
-([Lane+Tanner+Pinot+Noir] of Pinot+Noir
+	(name "Lane Tanner")
+	(produces [Lane+Tanner+Pinot+Noir]))
+
+([Lane+Tanner+Pinot+Noir] of  Pinot+Noir
+
 	(body LIGHT)
-	(sugar DRY)
 	(flavor DELICATE)
+	(maker [Lane+Tanner])
 	(name "Lane Tanner Pinot Noir")
-	(maker [Lane+Tanner]))
+	(sugar DRY))
 
-([Lobster] of Shellfish
+([Lobster] of  Shellfish
+
 	(name "Lobster"))
 
-([Longridge] of Winery
-	(produces [Longridge+Merlot])
-	(name "Longridge"))
+([Longridge] of  Winery
 
-([Longridge+Merlot] of Red+Merlot
+	(name "Longridge")
+	(produces [Longridge+Merlot]))
+
+([Longridge+Merlot] of  Red+Merlot
+
 	(body LIGHT)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Longridge])
 	(name "Longridge Merlot")
-	(maker [Longridge]))
+	(sugar DRY))
 
-([Malbec+grape] of Wine+grape
+([Malbec+grape] of  Wine+grape
+
 	(name "Malbec grape"))
 
-([Margaux] of Wine+template)
+([Margaux] of  Wine+template
+)
 
-([Marietta] of Winery
-	(name "Marietta"))
+([Marietta] of  Winery
 
-([Marietta+Cabernet+Sauvignon] of Cabernet+Sauvignon
+	(name "Marietta")
+	(produces
+		[Marietta+Cabernet+Sauvignon]
+		[Marietta+Petite+Syrah]
+		[Marietta+Zinfandel]))
+
+([Marietta+Cabernet+Sauvignon] of  Cabernet+Sauvignon
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Marietta])
 	(name "Marietta Cabernet Sauvignon")
-	(maker [Marietta]))
+	(sugar DRY))
 
-([Marietta+Petite+Syrah] of Petite+Syrah
+([Marietta+Petite+Syrah] of  Petite+Syrah
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Marietta])
 	(name "Marietta Petite Syrah")
-	(maker [Marietta]))
+	(sugar DRY))
 
-([Marietta+Zinfandel] of Red+Zinfandel
+([Marietta+Zinfandel] of  Red+Zinfandel
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Marietta])
 	(name "Marietta Zinfandel")
-	(maker [Marietta]))
+	(sugar DRY))
 
-([Medoc] of Wine+template)
+([Medoc] of  Wine+template
+)
 
-([Merlot+grape] of Wine+grape
+([Merlot+grape] of  Wine+grape
+
 	(name "Merlot grape"))
 
-([Mixed+fruit] of Sweet+fruit
+([Mixed+fruit] of  Sweet+fruit
+
 	(name "Mixed fruit"))
 
-([Mount+Eden+Vineyard] of Winery
-	(name "Mount Eden Vineyard"))
+([Mount+Eden+Vineyard] of  Winery
 
-([Mount+Eden+Vineyard+Edna+Valley+Chardonnay] of Chardonnay
+	(name "Mount Eden Vineyard")
+	(produces
+		[Mount+Eden+Vineyard+Edna+Valley+Chardonnay]
+		[Mount+Eden+Vineyard+Estate+Pinot+Noir]))
+
+([Mount+Eden+Vineyard+Edna+Valley+Chardonnay] of  Chardonnay
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Mount+Eden+Vineyard])
 	(name "Mount Eden Vineyard Edna Valley Chardonnay")
-	(maker [Mount+Eden+Vineyard]))
+	(sugar DRY))
 
-([Mount+Eden+Vineyard+Estate+Pinot+Noir] of Pinot+Noir
+([Mount+Eden+Vineyard+Estate+Pinot+Noir] of  Pinot+Noir
+
 	(body FULL)
-	(sugar DRY)
 	(flavor STRONG)
+	(maker [Mount+Eden+Vineyard])
 	(name "Mount Eden Vineyard Estate Pinot Noir")
-	(maker [Mount+Eden+Vineyard]))
+	(sugar DRY))
 
-([Mountadam] of Winery
-	(name "Mountadam"))
+([Mountadam] of  Winery
 
-([Mountadam+Chardonnay] of Chardonnay
+	(name "Mountadam")
+	(produces
+		[Mountadam+Chardonnay]
+		[Mountadam+Pinot+Noir]
+		[Mountadam+Riesling]))
+
+([Mountadam+Chardonnay] of  Chardonnay
+
 	(body FULL)
-	(sugar DRY)
 	(flavor STRONG)
+	(maker [Mountadam])
 	(name "Mountadam Chardonnay")
-	(maker [Mountadam]))
+	(sugar DRY))
 
-([Mountadam+Pinot+Noir] of Pinot+Noir
+([Mountadam+Pinot+Noir] of  Pinot+Noir
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Mountadam])
 	(name "Mountadam Pinot Noir")
-	(maker [Mountadam]))
+	(sugar DRY))
 
-([Mountadam+Riesling] of Dry+Riesling
+([Mountadam+Riesling] of  Dry+Riesling
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor DELICATE)
+	(maker [Mountadam])
 	(name "Mountadam Riesling")
-	(maker [Mountadam]))
+	(sugar DRY))
 
-([Muscadet] of Wine+template)
+([Muscadet] of  Wine+template
+)
 
-([Mussels] of Shellfish
+([Mussels] of  Shellfish
+
 	(name "Mussels"))
 
-([Nuts] of Cheese%2FNuts+dessert
+([Nuts] of  Cheese%2FNuts+dessert
+
 	(name "Nuts"))
 
-([Oysters] of Shellfish
+([Oysters] of  Shellfish
+
 	(name "Oysters"))
 
-([Page+Mill+Winery] of Winery
-	(produces [Page+Mill+Winery+Cabernet+Sauvignon])
-	(name "Page Mill Winery"))
+([Page+Mill+Winery] of  Winery
 
-([Page+Mill+Winery+Cabernet+Sauvignon] of Cabernet+Sauvignon
+	(name "Page Mill Winery")
+	(produces [Page+Mill+Winery+Cabernet+Sauvignon]))
+
+([Page+Mill+Winery+Cabernet+Sauvignon] of  Cabernet+Sauvignon
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Page+Mill+Winery])
 	(name "Page Mill Winery Cabernet Sauvignon")
-	(maker [Page+Mill+Winery]))
+	(sugar DRY))
 
-([Pasta+with+white+clam+sauce] of Pasta+with+light+cream+sauce
+([Pasta+with+white+clam+sauce] of  Pasta+with+light+cream+sauce
+
 	(name "Pasta with white clam sauce"))
 
-([Pauillac] of Wine+template)
+([Pauillac] of  Wine+template
+)
 
-([Peach] of Sweet+fruit
+([Peach] of  Sweet+fruit
+
 	(name "Peach"))
 
-([Peter+Mccoy] of Winery
-	(produces [Peter+Mccoy+Chardonnay])
-	(name "Peter Mccoy"))
+([Peter+Mccoy] of  Winery
 
-([Peter+Mccoy+Chardonnay] of Chardonnay
+	(name "Peter Mccoy")
+	(produces [Peter+Mccoy+Chardonnay]))
+
+([Peter+Mccoy+Chardonnay] of  Chardonnay
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Peter+Mccoy])
 	(name "Peter Mccoy Chardonnay")
-	(maker [Peter+Mccoy]))
+	(sugar DRY))
 
-([Petite+Syrah] of Wine+template)
+([Petite+Syrah] of  Wine+template
+)
 
-([Petite+Syrah+grape] of Wine+grape
+([Petite+Syrah+grape] of  Wine+grape
+
 	(name "Petite Syrah grape"))
 
-([Petite+Verdot+grape] of Wine+grape
+([Petite+Verdot+grape] of  Wine+grape
+
 	(name "Petite Verdot grape"))
 
-([Pie] of Sweet+dessert
+([Pie] of  Sweet+dessert
+
 	(name "Pie"))
 
-([Pinot+Blanc] of Wine+template)
+([Pinot+Blanc] of  Wine+template
+)
 
-([Pinot+Blanc+grape] of Wine+grape
+([Pinot+Blanc+grape] of  Wine+grape
+
 	(name "Pinot Blanc grape"))
 
-([Pinot+Noir] of Wine+template)
+([Pinot+Noir] of  Wine+template
+)
 
-([Pinot+Noir+grape] of Wine+grape
+([Pinot+Noir+grape] of  Wine+grape
+
 	(name "Pinot Noir grape"))
 
-([Pizza] of Tomato-based+food
+([Pizza] of  Tomato-based+food
+
 	(name "Pizza"))
 
-([Pork] of White+meat
+([Pork] of  White+meat
+
 	(name "Pork"))
 
-([Port] of Wine+template)
+([Port] of  Wine+template
+)
 
-([Pouilly-Fuisse] of Wine+template)
+([Pouilly-Fuisse] of  Wine+template
+)
 
-([Puligny+Montrachet] of Winery
-	(produces [Puligny+Montrachet+White+Burgundy])
-	(name "Puligny Montrachet"))
+([Puligny+Montrachet] of  Winery
 
-([Puligny+Montrachet+White+Burgundy] of White+Burgundy
+	(name "Puligny Montrachet")
+	(produces [Puligny+Montrachet+White+Burgundy]))
+
+([Puligny+Montrachet+White+Burgundy] of  White+Burgundy
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Puligny+Montrachet])
 	(name "Puligny Montrachet White Burgundy")
-	(maker [Puligny+Montrachet]))
+	(sugar DRY))
 
-([Red+Bordeaux] of Wine+template
+([Red+Bordeaux] of  Wine+template
+
 	(best+wineries
 		[Chateau+Lafite+Rothschild]
 		[Chateau+Margaux+Winery]
@@ -490,251 +637,319 @@
 		[wines_00088]
 		[wines_00089]))
 
-([Red+Burgundy] of Wine+template)
+([Red+Burgundy] of  Wine+template
+)
 
-([Red+Merlot] of Wine+template)
+([Red+Merlot] of  Wine+template
+)
 
-([Red+Zinfandel] of Wine+template)
+([Red+Zinfandel] of  Wine+template
+)
 
-([Riesling] of Wine+template)
+([Riesling] of  Wine+template
+)
 
-([Riesling+grape] of Wine+grape
+([Riesling+grape] of  Wine+grape
+
 	(name "Riesling grape"))
 
-([Roast+beef] of Non-spicy+red+meat
+([Roast+beef] of  Non-spicy+red+meat
+
 	(name "Roast beef"))
 
-([Salmon] of Non-bland+fish
+([Salmon] of  Non-bland+fish
+
 	(name "Salmon"))
 
-([Sancerre] of Wine+template)
+([Sancerre] of  Wine+template
+)
 
-([Santa+Cruz+Mountain+Vineyard] of Winery
+([Santa+Cruz+Mountain+Vineyard] of  Winery
+
 	(location Santa+Cruz+Mountains+region)
-	(produces [Santa+Cruz+Mountain+Vineyard+Cabernet+Sauvignon])
-	(name "Santa Cruz Mountain Vineyard"))
+	(name "Santa Cruz Mountain Vineyard")
+	(produces [Santa+Cruz+Mountain+Vineyard+Cabernet+Sauvignon]))
 
-([Santa+Cruz+Mountain+Vineyard+Cabernet+Sauvignon] of Cabernet+Sauvignon
+([Santa+Cruz+Mountain+Vineyard+Cabernet+Sauvignon] of  Cabernet+Sauvignon
+
 	(body FULL)
-	(sugar DRY)
 	(flavor STRONG)
+	(maker [Santa+Cruz+Mountain+Vineyard])
 	(name "Santa Cruz Mountain Vineyard Cabernet Sauvignon")
-	(maker [Santa+Cruz+Mountain+Vineyard]))
+	(sugar DRY))
 
-([Saucelito+Canyon] of Winery
-	(produces [Saucelito+Canyon+Zinfandel])
-	(name "Saucelito Canyon"))
+([Saucelito+Canyon] of  Winery
 
-([Saucelito+Canyon+Zinfandel] of Red+Zinfandel
+	(name "Saucelito Canyon")
+	(produces [Saucelito+Canyon+Zinfandel]))
+
+([Saucelito+Canyon+Zinfandel] of  Red+Zinfandel
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Saucelito+Canyon])
 	(name "Saucelito Canyon Zinfandel")
-	(maker [Saucelito+Canyon]))
+	(sugar DRY))
 
-([Sauterne] of Wine+template)
+([Sauterne] of  Wine+template
+)
 
-([Sauvignon+Blanc] of Wine+template)
+([Sauvignon+Blanc] of  Wine+template
+)
 
-([Sauvignon+Blanc+grape] of Wine+grape
+([Sauvignon+Blanc+grape] of  Wine+grape
+
 	(name "Sauvignon Blanc grape"))
 
-([Schloss+Rothermel] of Winery
-	(location German+region)
-	(name "Schloss Rothermel"))
+([Schloss+Rothermel] of  Winery
 
-([Schloss+Rothermel+Trochenbierenauslese+Riesling] of Sweet+Reisling
-	(sugar DRY)
+	(location German+region)
+	(name "Schloss Rothermel")
+	(produces [Schloss+Rothermel+Trochenbierenauslese+Riesling]))
+
+([Schloss+Rothermel+Trochenbierenauslese+Riesling] of  Sweet+Reisling
+
 	(flavor STRONG)
+	(maker [Schloss+Rothermel])
 	(name "Schloss Rothermel Trochenbierenauslese Riesling")
-	(maker [Schloss+Rothermel]))
+	(sugar DRY))
 
-([Schloss+Volrad] of Winery
+([Schloss+Volrad] of  Winery
+
 	(location German+region)
-	(name "Schloss Volrad"))
+	(name "Schloss Volrad")
+	(produces [Schloss+Volrad+Trochenbierenauslese+Riesling]))
 
-([Schloss+Volrad+Trochenbierenauslese+Riesling] of Sweet+Reisling
+([Schloss+Volrad+Trochenbierenauslese+Riesling] of  Sweet+Reisling
+
 	(flavor MODERATE)
-	(name "Schloss Volrad Trochenbierenauslese Riesling")
-	(maker [Schloss+Volrad]))
+	(maker [Schloss+Volrad])
+	(name "Schloss Volrad Trochenbierenauslese Riesling"))
 
-([Scrod] of Bland+fish
+([Scrod] of  Bland+fish
+
 	(name "Scrod"))
 
-([Sean+Thackrey] of Winery
-	(produces [Sean+Thackrey+Sirius+Petite+Syrah])
-	(name "Sean Thackrey"))
+([Sean+Thackrey] of  Winery
 
-([Sean+Thackrey+Sirius+Petite+Syrah] of Petite+Syrah
+	(name "Sean Thackrey")
+	(produces [Sean+Thackrey+Sirius+Petite+Syrah]))
+
+([Sean+Thackrey+Sirius+Petite+Syrah] of  Petite+Syrah
+
 	(body FULL)
-	(sugar DRY)
 	(flavor STRONG)
+	(maker [Sean+Thackrey])
 	(name "Sean Thackrey Sirius Petite Syrah")
-	(maker [Sean+Thackrey]))
+	(sugar DRY))
 
-([Selaks] of Winery
-	(name "Selaks"))
+([Selaks] of  Winery
 
-([Selaks+Ice+Wine] of Ice+Wine
+	(name "Selaks")
+	(produces
+		[Selaks+Ice+Wine]
+		[Selaks+Sauvignon+Blanc]))
+
+([Selaks+Ice+Wine] of  Ice+Wine
+
 	(body MEDIUM)
 	(flavor MODERATE)
-	(name "Selaks Ice Wine")
-	(maker [Selaks]))
+	(maker [Selaks])
+	(name "Selaks Ice Wine"))
 
-([Selaks+Sauvignon+Blanc] of Sauvignon+Blanc
+([Selaks+Sauvignon+Blanc] of  Sauvignon+Blanc
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Selaks])
 	(name "Selaks Sauvignon Blanc")
-	(maker [Selaks]))
+	(sugar DRY))
 
-([Semillon] of Wine+template)
+([Semillon] of  Wine+template
+)
 
-([Semillon+grape] of Wine+grape
+([Semillon+grape] of  Wine+grape
+
 	(name "Semillon grape"))
 
-([Sevre+Et+Maine] of Winery
-	(produces [Sevre+Et+Maine+Muscadet])
-	(name "Sevre Et Maine"))
+([Sevre+Et+Maine] of  Winery
 
-([Sevre+Et+Maine+Muscadet] of Muscadet
-	(name "Sevre Et Maine Muscadet")
-	(maker [Sevre+Et+Maine]))
+	(name "Sevre Et Maine")
+	(produces [Sevre+Et+Maine+Muscadet]))
 
-([Spaghetti+with+tomato+sauce] of Pasta+with+non-spicy+red+sauce
+([Sevre+Et+Maine+Muscadet] of  Muscadet
+
+	(maker [Sevre+Et+Maine])
+	(name "Sevre Et Maine Muscadet"))
+
+([Spaghetti+with+tomato+sauce] of  Pasta+with+non-spicy+red+sauce
+
 	(name "Spaghetti with tomato sauce"))
 
-([St.+Emillion] of Wine+template)
+([St.+Emillion] of  Wine+template
+)
 
-([Steak] of Non-spicy+red+meat
+([Steak] of  Non-spicy+red+meat
+
 	(name "Steak"))
 
-([Sterling+Vineyards] of Winery
+([Sterling+Vineyards] of  Winery
+
 	(location Napa+Valley+region)
+	(name "Sterling Vineyards")
 	(produces
 		[wines-current_00049]
 		[wines-current_00050]
-		[wines-current_00051])
-	(name "Sterling Vineyards"))
+		[wines-current_00051]))
 
-([Stonleigh] of Winery
-	(name "Stonleigh"))
+([Stonleigh] of  Winery
 
-([Stonleigh+Sauvignon+Blanc] of Sauvignon+Blanc
+	(name "Stonleigh")
+	(produces [Stonleigh+Sauvignon+Blanc]))
+
+([Stonleigh+Sauvignon+Blanc] of  Sauvignon+Blanc
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor DELICATE)
+	(maker [Stonleigh])
 	(name "Stonleigh Sauvignon Blanc")
-	(maker [Stonleigh]))
+	(sugar DRY))
 
-([Sweet+Reisling] of Wine+template)
+([Sweet+Reisling] of  Wine+template
+)
 
-([Swordfish] of Non-bland+fish
+([Swordfish] of  Non-bland+fish
+
 	(name "Swordfish"))
 
-([Taylor] of Winery
-	(produces [Taylor+Port])
-	(name "Taylor"))
+([Taylor] of  Winery
 
-([Taylor+Port] of Port
-	(name "Taylor Port")
-	(maker [Taylor]))
+	(name "Taylor")
+	(produces [Taylor+Port]))
 
-([Tuna] of Non-bland+fish
+([Taylor+Port] of  Port
+
+	(maker [Taylor])
+	(name "Taylor Port"))
+
+([Tuna] of  Non-bland+fish
+
 	(name "Tuna"))
 
-([Turkey] of Light+meat+fowl
+([Turkey] of  Light+meat+fowl
+
 	(name "Turkey"))
 
-([Veal] of Non-spicy+red+meat
+([Veal] of  Non-spicy+red+meat
+
 	(name "Veal"))
 
-([Ventana] of Winery
-	(produces [Ventana+Chenin+Blanc])
-	(name "Ventana"))
+([Ventana] of  Winery
 
-([Ventana+Chenin+Blanc] of Chenin+Blanc
+	(name "Ventana")
+	(produces [Ventana+Chenin+Blanc]))
+
+([Ventana+Chenin+Blanc] of  Chenin+Blanc
+
 	(body MEDIUM)
-	(sugar OFF-DRY)
 	(flavor MODERATE)
+	(maker [Ventana])
 	(name "Ventana Chenin Blanc")
-	(maker [Ventana]))
+	(sugar OFF-DRY))
 
-([White+Burgundy] of Wine+template)
+([White+Burgundy] of  Wine+template
+)
 
-([White+Zinfandel] of Wine+template)
+([White+Zinfandel] of  Wine+template
+)
 
-([Whitehall+Lane] of Winery
+([Whitehall+Lane] of  Winery
+
+	(name "Whitehall Lane")
 	(produces
 		[Whitehall+Lane+Primavera]
-		[Whitehall+Lane+Cabernet+Franc])
-	(name "Whitehall Lane"))
+		[Whitehall+Lane+Cabernet+Franc]))
 
-([Whitehall+Lane+Cabernet+Franc] of Cabernet+Franc
+([Whitehall+Lane+Cabernet+Franc] of  Cabernet+Franc
+
 	(body MEDIUM)
-	(sugar DRY)
 	(flavor MODERATE)
+	(maker [Whitehall+Lane])
 	(name "Whitehall Lane Cabernet Franc")
-	(maker [Whitehall+Lane]))
+	(sugar DRY))
 
-([Whitehall+Lane+Primavera] of Dessert+wine
+([Whitehall+Lane+Primavera] of  Dessert+wine
+
 	(body LIGHT)
 	(flavor DELICATE)
-	(name "Whitehall Lane Primavera")
-	(maker [Whitehall+Lane]))
+	(maker [Whitehall+Lane])
+	(name "Whitehall Lane Primavera"))
 
-([wines-current_00029] of Meal+course
+([wines-current_00029] of  Meal+course
+
 	(drink Red+Bordeaux)
 	(food [Lamb]))
 
-([wines-current_00031] of Meal+course
+([wines-current_00031] of  Meal+course
+
 	(drink Chablis)
 	(food [Oysters]))
 
-([wines-current_00032] of Meal+course
+([wines-current_00032] of  Meal+course
+
 	(drink Port)
 	(food [Nuts]))
 
-([wines-current_00033] of Meal+course
+([wines-current_00033] of  Meal+course
+
 	(drink Pinot+Noir)
 	(food [Salmon]))
 
-([wines-current_00035] of Meal+course
+([wines-current_00035] of  Meal+course
+
 	(drink Beaujolais)
 	(food [Grilled+chicken]))
 
-([wines-current_00036] of %3APAL-CONSTRAINT
-	(%3APAL-STATEMENT "(forall ?wine\n  (=> (and \n               (own-slot-not-null maker ?wine)\n               (own-slot-not-null area ?wine))\n         (= (area (maker ?wine))\n              (area ?wine))\n    )\n)              ")
-	(%3APAL-DESCRIPTION "area of wine and maker are the same")
-	(%3APAL-NAME "area of wine and maker are the same"))
+([wines-current_00036] of  %3APAL-CONSTRAINT
 
-([wines-current_00049] of Red+Merlot
+	(%3APAL-DESCRIPTION "area of wine and maker are the same")
+	(%3APAL-NAME "area of wine and maker are the same")
+	(%3APAL-STATEMENT "(forall ?wine\n  (=> (and \n               (own-slot-not-null maker ?wine)\n               (own-slot-not-null area ?wine))\n         (= (area (maker ?wine))\n              (area ?wine))\n    )\n)              "))
+
+([wines-current_00049] of  Red+Merlot
+
 	(body FULL)
-	(sugar DRY)
 	(flavor STRONG)
 	(grape [Merlot+grape])
+	(maker [Sterling+Vineyards])
 	(name "Sterling Merlot")
-	(maker [Sterling+Vineyards]))
+	(sugar DRY))
 
-([wines-current_00050] of Chardonnay
+([wines-current_00050] of  Chardonnay
+
 	(grape [Chardonnay+grape])
-	(name "Sterling Chardonnay")
-	(maker [Sterling+Vineyards]))
+	(maker [Sterling+Vineyards])
+	(name "Sterling Chardonnay"))
 
-([wines-current_00051] of Cabernet+Sauvignon
-	(sugar DRY)
+([wines-current_00051] of  Cabernet+Sauvignon
+
 	(grape [Cabernet+Sauvignon+grape])
+	(maker [Sterling+Vineyards])
 	(name "Sterling Cabernet Sauvignon")
-	(maker [Sterling+Vineyards]))
+	(sugar DRY))
 
-([wines_00087] of Winery
+([wines_00087] of  Winery
+
 	(name "Chateau Latour"))
 
-([wines_00088] of Winery
+([wines_00088] of  Winery
+
 	(name "Chateau Haut-Brion"))
 
-([wines_00089] of Winery
+([wines_00089] of  Winery
+
 	(name "Chateau Mouton-Rothschild"))
 
-([Zinfandel+grape] of Wine+grape
+([Zinfandel+grape] of  Wine+grape
+
 	(name "Zinfandel grape"))
