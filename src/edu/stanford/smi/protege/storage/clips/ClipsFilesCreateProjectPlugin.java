@@ -37,10 +37,12 @@ public class ClipsFilesCreateProjectPlugin extends AbstractCreateProjectPlugin i
 
     protected void initialize(Project project) {
         super.initialize(project);
-        Iterator i = includedProjects.iterator();
-        while (i.hasNext()) {
-            URI uri = (URI) i.next();
-            project.includeProject(uri, false, null);
+        if (includedProjects != null) {
+            Iterator i = includedProjects.iterator();
+            while (i.hasNext()) {
+                URI uri = (URI) i.next();
+                project.includeProject(uri, false, null);
+            }
         }
     }
 
