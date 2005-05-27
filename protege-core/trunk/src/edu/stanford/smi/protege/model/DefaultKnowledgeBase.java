@@ -149,16 +149,16 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized Cls createCls(FrameID id, String name, Collection directSuperclasses, Collection directTypes,
             boolean loadDefaults) {
-        if (directTypes.isEmpty()) {
-            Cls directType;
-            Cls leadingSuperclass = (Cls) CollectionUtilities.getFirstItem(directSuperclasses);
-            if (leadingSuperclass == null || equals(leadingSuperclass, _systemFrames.getRootCls())) {
-                directType = _defaultClsMetaCls;
-            } else {
-                directType = leadingSuperclass.getDirectType();
-            }
-            directTypes = CollectionUtilities.createCollection(directType);
-        }
+        //        if (directTypes.isEmpty()) {
+        //            Cls directType;
+        //            Cls leadingSuperclass = (Cls) CollectionUtilities.getFirstItem(directSuperclasses);
+        //            if (leadingSuperclass == null || equals(leadingSuperclass, _systemFrames.getRootCls())) {
+        //                directType = _defaultClsMetaCls;
+        //            } else {
+        //                directType = leadingSuperclass.getDirectType();
+        //            }
+        //            directTypes = CollectionUtilities.createCollection(directType);
+        //        }
         return getHeadFrameStore().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
     }
 
@@ -168,10 +168,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized Slot createSlot(FrameID id, String name, Collection directTypes, Collection superslots,
             boolean loadDefaults) {
-        if (directTypes.isEmpty()) {
-            directTypes = new ArrayList();
-            directTypes.add(_defaultSlotMetaCls);
-        }
+        //        if (directTypes.isEmpty()) {
+        //            directTypes = new ArrayList();
+        //            directTypes.add(_defaultSlotMetaCls);
+        //        }
         return getHeadFrameStore().createSlot(id, name, directTypes, superslots, loadDefaults);
     }
 
@@ -318,7 +318,18 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Cls createCls(String name, Collection superclasses) {
-        return createCls(name, superclasses, null);
+        return createCls(name, superclasses, getDefaultClsMetaCls(superclasses));
+    }
+
+    private Cls getDefaultClsMetaCls(Collection superClasses) {
+        Cls clsMetaCls;
+        Cls leadingSuperclass = (Cls) CollectionUtilities.getFirstItem(superClasses);
+        if (leadingSuperclass == null || equals(leadingSuperclass, _systemFrames.getRootCls())) {
+            clsMetaCls = _defaultClsMetaCls;
+        } else {
+            clsMetaCls = leadingSuperclass.getDirectType();
+        }
+        return clsMetaCls;
     }
 
     public synchronized Cls createCls(String name, Collection superclasses, Cls directType) {
@@ -331,7 +342,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Facet createFacet(String name) {
-        return createFacet(name, null);
+        return createFacet(name, _defaultFacetMetaCls);
     }
 
     public synchronized Facet createFacet(String name, Cls directType) {
@@ -339,10 +350,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Facet createFacet(String name, Cls directType, boolean initializeDefaults) {
-        if (directType == null) {
-            directType = _defaultFacetMetaCls;
-        }
-        Collection types = Collections.singleton(directType);
+        Collection types = CollectionUtilities.createCollection(directType);
         return createFacet(null, name, types, initializeDefaults);
     }
 
@@ -393,7 +401,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Slot createSlot(String name) {
-        return createSlot(name, null);
+        return createSlot(name, _defaultSlotMetaCls);
     }
 
     public synchronized Slot createSlot(String name, Cls directType) {

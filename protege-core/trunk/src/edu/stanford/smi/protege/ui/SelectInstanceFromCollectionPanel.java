@@ -30,19 +30,22 @@ public class SelectInstanceFromCollectionPanel extends JComponent {
         add(pane);
         setPreferredSize(new Dimension(300, 150));
     }
-    
+
     private boolean isMultiUserClient() {
         boolean isMultiUserClient = false;
-        Object o = _list.getModel().getElementAt(0);
-        if (o instanceof Frame) {
-            Frame frame = (Frame) o;
-            Project p = frame.getProject();
-            isMultiUserClient = p.isMultiUserClient();
+        if (_list.getModel().getSize() > 0) {
+            Object o = _list.getModel().getElementAt(0);
+            if (o instanceof Frame) {
+                Frame frame = (Frame) o;
+                Project p = frame.getProject();
+                isMultiUserClient = p.isMultiUserClient();
+            }
         }
         return isMultiUserClient;
     }
 
     private Icon _clsIcon;
+
     private void configureRenderer() {
         FrameRenderer renderer;
         if (isMultiUserClient()) {
@@ -62,12 +65,12 @@ public class SelectInstanceFromCollectionPanel extends JComponent {
                 }
             };
         } else {
-		    renderer = FrameRenderer.createInstance();
-		    renderer.setDisplayTrailingIcons(false);
+            renderer = FrameRenderer.createInstance();
+            renderer.setDisplayTrailingIcons(false);
         }
-	    _list.setCellRenderer(renderer);
+        _list.setCellRenderer(renderer);
     }
-    
+
     public Instance getSelection() {
         return (Instance) _list.getSelectedValue();
     }

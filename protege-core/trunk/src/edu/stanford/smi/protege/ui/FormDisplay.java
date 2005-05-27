@@ -23,6 +23,7 @@ public class FormDisplay extends JComponent implements Disposable {
     private SetDisplaySlotPanel _setDisplaySlotPanel;
     private JComboBox _widgetSelectionBox;
     private HeaderComponent _header;
+    private ClsWidget _currentWidget;
 
     /* We need to listen for form changes because the user can do layout operations elsewhere (on the FormsPanel)
      * and we need to update the display with the new form widget.
@@ -73,15 +74,15 @@ public class FormDisplay extends JComponent implements Disposable {
     }
 
     private void addCls(Cls cls) {
-        ClsWidget widget = _project.getDesignTimeClsWidget(cls);
-        JComponent c = (JComponent) widget;
+        _currentWidget = _project.getDesignTimeClsWidget(cls);
+        JComponent c = (JComponent) _currentWidget;
         _mainPanel.add(new JScrollPane(c));
         c.revalidate();
         c.repaint();
         loadBrowserKeySlotsBox(cls);
-        loadWidgetsBox((SlotWidget) CollectionUtilities.getFirstItem(widget.getSelection()));
+        loadWidgetsBox((SlotWidget) CollectionUtilities.getFirstItem(_currentWidget.getSelection()));
         updateHeader(cls);
-        widget.addSelectionListener(_selectionListener);
+        _currentWidget.addSelectionListener(_selectionListener);
     }
 
     private void updateHeader(Cls cls) {
@@ -182,10 +183,14 @@ public class FormDisplay extends JComponent implements Disposable {
     }
 
     private void removeCurrentWidget() {
-        _mainPanel.removeAll();
-        _setDisplaySlotPanel.setCls(null);
-        revalidate();
-        repaint();
+        if (_currentWidget != null) {
+            _currentWidget.removeSelectionListener(_selectionListener);
+            _mainPanel.removeAll();
+            _currentWidget = null;
+            _setDisplaySlotPanel.setCls(null);
+            revalidate();
+            repaint();
+        }
     }
 
     public void setWidgetCls(Cls cls) {

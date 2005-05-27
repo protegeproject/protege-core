@@ -289,7 +289,10 @@ public class XMLStorer {
     }
 
     private void storeCls(Cls cls, Set storedClses) {
-        if (shouldStoreFrame(cls)) {
+        if (cls.getName().equals("HL7_Data_Type")) {
+            Log.getLogger().info("found it");
+        }
+        if (shouldPrintFrame(cls)) {
             beginInstance(XMLString.ElementName.CLASS, cls);
             indent();
             printFrameValues(XMLString.ElementName.SUPERCLASS, cls.getDirectSuperclasses());
@@ -298,25 +301,25 @@ public class XMLStorer {
             unindent();
             endInstance(XMLString.ElementName.CLASS, cls);
 
-            storedClses.add(cls);
-            storeSubclasses(cls, storedClses);
         }
+        storedClses.add(cls);
+        storeSubclasses(cls, storedClses);
     }
 
-    private boolean shouldStoreFrame(Frame frame) {
-        boolean shouldStoreFrame = activeFrames.contains(frame);
-        if (shouldStoreFrame) {
-            shouldStoreFrame = false;
+    private boolean shouldPrintFrame(Frame frame) {
+        boolean shouldPrintFrame = activeFrames.contains(frame);
+        if (shouldPrintFrame) {
+            shouldPrintFrame = false;
             Iterator i = frame.getOwnSlots().iterator();
             while (i.hasNext()) {
                 Slot slot = (Slot) i.next();
                 if (shouldStoreSlot(slot)) {
-                    shouldStoreFrame = true;
+                    shouldPrintFrame = true;
                     break;
                 }
             }
         }
-        return shouldStoreFrame;
+        return shouldPrintFrame;
     }
 
     private boolean shouldStoreSlot(Slot slot) {
@@ -363,7 +366,7 @@ public class XMLStorer {
     }
 
     private void storeSlot(Slot slot) {
-        if (shouldStoreFrame(slot)) {
+        if (shouldPrintFrame(slot)) {
             beginInstance(XMLString.ElementName.SLOT, slot);
             printFrameValues(XMLString.ElementName.SUPERSLOT, slot.getDirectSuperslots());
             endInstance(XMLString.ElementName.SLOT, slot);
@@ -371,14 +374,14 @@ public class XMLStorer {
     }
 
     private void storeFacet(Facet facet) {
-        if (shouldStoreFrame(facet)) {
+        if (shouldPrintFrame(facet)) {
             beginInstance(XMLString.ElementName.FACET, facet);
             endInstance(XMLString.ElementName.FACET, facet);
         }
     }
 
     private void storeSimpleInstance(SimpleInstance simpleInstance) {
-        if (shouldStoreFrame(simpleInstance)) {
+        if (shouldPrintFrame(simpleInstance)) {
             beginInstance(XMLString.ElementName.SIMPLE_INSTANCE, simpleInstance);
             endInstance(XMLString.ElementName.SIMPLE_INSTANCE, simpleInstance);
         }

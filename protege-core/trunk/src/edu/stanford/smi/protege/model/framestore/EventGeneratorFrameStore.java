@@ -73,20 +73,25 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         Slot inverseSlot = (Slot) CollectionUtilities.getFirstItem(getDirectOwnSlotValues(slot, _systemFrames
                 .getInverseSlotSlot()));
         if (inverseSlot != null) {
+            Collection oldValues = getDirectOwnSlotValues(frame, slot);
             // back references from new values
             Iterator i = values.iterator();
             while (i.hasNext()) {
                 Frame newValue = (Frame) i.next();
-                generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, newValue, inverseSlot);
-                // if (cardinalitySingle) {
-                // current references to new values
-                // }
+                if (!oldValues.contains(newValue)) {
+                    generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, newValue, inverseSlot);
+                    // if (cardinalitySingle) {
+                    // current references to new values
+                    // }
+                }
             }
             // back references from old values
-            i = getDirectOwnSlotValues(frame, slot).iterator();
+            i = oldValues.iterator();
             while (i.hasNext()) {
                 Frame oldValue = (Frame) i.next();
-                generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, oldValue, inverseSlot);
+                if (!values.contains(oldValue)) {
+                    generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, oldValue, inverseSlot);
+                }
             }
         }
     }

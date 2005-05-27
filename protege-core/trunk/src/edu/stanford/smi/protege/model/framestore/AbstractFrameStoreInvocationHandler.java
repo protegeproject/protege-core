@@ -28,7 +28,7 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
     }
 
     private static Method getMethod(Class clas, String name) throws Exception {
-        return clas.getMethod(name, null);
+        return clas.getMethod(name, (Class[]) null);
     }
 
     private static Method getMethod(String name, Class arg) throws Exception {

@@ -15,6 +15,28 @@ import edu.stanford.smi.protege.util.*;
 
 public class DefaultKnowledgeBase_Test extends APITestCase {
 
+    public void testFilteredInverseSlotValueNotifications() {
+        Cls cls = createCls();
+        Slot slot = createSlotOnCls(cls);
+        Slot slotInverse = createSlotOnCls(cls);
+        slot.setInverseSlot(slotInverse);
+        slot.setAllowedClses(getDomainKB().getRootClses());
+        Instance instance1 = createInstance(cls);
+        Instance instance2 = createInstance(cls);
+        Instance instance3 = createInstance(cls);
+        Instance instance4 = createInstance(cls);
+        instance1.setOwnSlotValues(slot, makeList(instance2, instance3));
+        final Integer[] counter = new Integer[] { new Integer(0) };
+        FrameListener listener = new FrameAdapter() {
+            public void ownSlotValueChanged(FrameEvent event) {
+                counter[0] = new Integer(counter[0].intValue() + 1);
+            }
+        };
+        getDomainKB().addFrameListener(listener);
+        instance1.addOwnSlotValue(slot, instance4);
+        assertEquals(2, counter[0].intValue());
+    }
+
     public void testInferredInverseSlotValues() {
         Cls cls1 = createCls();
         Slot slot1 = createSlotOnCls(cls1);

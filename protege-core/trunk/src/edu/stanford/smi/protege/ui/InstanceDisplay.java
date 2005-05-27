@@ -549,7 +549,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         Cls cls = _currentAssociatedCls;
         removeCurrentWidgets();
         setInstance(instance, cls);
-        Log.getLogger().info("reload form: " + this);
+        // Log.getLogger().info("reload form: " + this);
     }
 
     private void removeAllStickies() {
