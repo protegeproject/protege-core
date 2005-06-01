@@ -984,6 +984,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         _frameStoreManager = null;
     }
 
+    public synchronized boolean isClosed() {
+        return _frameStoreManager != null;
+    }
+
     public synchronized Collection getReachableSimpleInstances(Frame frame) {
         return getReachableSimpleInstances(CollectionUtilities.createCollection(frame));
     }
@@ -2190,6 +2194,18 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized void flushCache() {
         getFrameStoreManager().reinitialize();
+    }
+
+    public synchronized Cls getReifiedRelationCls() {
+        return _systemFrames.getRelationCls();
+    }
+
+    public synchronized Slot getReifedRelationFromSlot() {
+        return _systemFrames.getFromSlot();
+    }
+
+    public synchronized Slot getReifedRelationToSlot() {
+        return _systemFrames.getToSlot();
     }
 
 }

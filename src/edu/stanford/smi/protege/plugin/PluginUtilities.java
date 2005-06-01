@@ -725,4 +725,8 @@ public class PluginUtilities {
     public static File getPluginsDirectory() {
         return pluginsDir;
     }
+
+    public static boolean isOWL(KnowledgeBase kb) {
+        return kb.getClass().getName().indexOf("OWL") != -1;
+    }
 }

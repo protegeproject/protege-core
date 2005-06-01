@@ -56,8 +56,11 @@ public interface Slot extends Instance {
     int getDirectSuperslotCount();
 
     Collection getDirectSuperslots();
+
     boolean hasDirectSuperslot(Slot slot);
+
     boolean hasSuperslot(Slot slot);
+
     void moveDirectSubslot(Slot movedCls, Slot afterCls);
 
     Collection getDocumentation();
@@ -82,6 +85,7 @@ public interface Slot extends Instance {
     Collection getTemplateSlotClses();
 
     Collection getDirectDomain();
+
     Collection getDomain();
 
     /**
