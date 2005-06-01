@@ -673,4 +673,10 @@ public interface KnowledgeBase extends Disposable {
     void stopJournaling();
     
     void flushCache();
+    
+    Cls getReifiedRelationCls();
+    Slot getReifedRelationFromSlot();
+    Slot getReifedRelationToSlot();
+    
+    boolean isClosed();
 }
