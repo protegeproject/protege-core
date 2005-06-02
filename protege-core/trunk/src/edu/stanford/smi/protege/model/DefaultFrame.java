@@ -203,7 +203,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
 
     private void copyOwnSlotValues(Frame copyFrame, Slot copySlot, Slot origSlot, Map valueMap, boolean isDeep) {
         ValueType type = getOwnSlotValueType(origSlot);
-        Collection origValues = getOwnSlotValues(origSlot);
+        Collection origValues = getDirectOwnSlotValues(origSlot);
         if (isDeep && (type == ValueType.INSTANCE || type == ValueType.CLS)) {
             deepCopyFrameBindingValues(origValues, copyFrame, copySlot, valueMap);
         } else {
