@@ -135,7 +135,6 @@ public class FormWidget extends AbstractClsWidget {
     };
 
     public FormWidget() {
-        setEnabled(false);
     }
 
     private void addWidget(Slot slot) {
@@ -937,7 +936,6 @@ public class FormWidget extends AbstractClsWidget {
     }
 
     private void setCursor(Component c, int direction) {
-        // Log.enter(this, "setCursor", new Integer(direction));
         c.setCursor(Cursor.getPredefinedCursor(direction));
         repaint();
     }

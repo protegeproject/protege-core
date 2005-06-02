@@ -12,9 +12,8 @@ import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
 
 /**
- * Base class for all SlotWidgets. For the moment all of the interesting methods
- * are in _AbstracdWidget.
- * 
+ * Base class for all SlotWidgets. 
+ *  
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 
@@ -142,7 +141,6 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
                 text = invalidInstanceText;
             }
         }
-
         setToolTipText(text);
         if (invalidInstanceText == null) {
             setNormalBorder();
