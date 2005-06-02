@@ -10,11 +10,13 @@ import edu.stanford.smi.protege.util.*;
 
 public class XMLHandler extends DefaultHandler {
     private KnowledgeBase kb;
+    private boolean isIncluded;
     private Collection errors;
 
-    public XMLHandler(KnowledgeBase kb, Collection errors) {
+    public XMLHandler(KnowledgeBase kb, boolean isIncluded, Collection errors) {
         this.kb = kb;
         this.errors = errors;
+        this.isIncluded = isIncluded;
         // Log.getLogger().info("Reading " + this.kb);
     }
 
@@ -290,6 +292,7 @@ public class XMLHandler extends DefaultHandler {
         Cls cls = kb.getCls(name);
         if (cls == null) {
             cls = kb.createCls(null, name, superclasses, types, false);
+            setIncluded(cls);
         } else {
             addTypes(cls, types);
             addSuperclasses(cls, superclasses);
@@ -309,6 +312,7 @@ public class XMLHandler extends DefaultHandler {
         if (slot == null) {
             Cls type = (Cls) CollectionUtilities.getFirstItem(types);
             slot = kb.createSlot(name, type, Collections.EMPTY_LIST, false);
+            setIncluded(slot);
         } else {
             addTypes(slot, types);
         }
@@ -320,6 +324,7 @@ public class XMLHandler extends DefaultHandler {
         if (facet == null) {
             Cls type = (Cls) CollectionUtilities.getFirstItem(types);
             facet = kb.createFacet(name, type, false);
+            setIncluded(facet);
         } else {
             addTypes(facet, types);
         }
@@ -330,10 +335,17 @@ public class XMLHandler extends DefaultHandler {
         SimpleInstance simpleInstance = (SimpleInstance) kb.getInstance(name);
         if (simpleInstance == null) {
             simpleInstance = kb.createSimpleInstance(null, name, types, false);
+            setIncluded(simpleInstance);
         } else {
             addTypes(simpleInstance, types);
         }
         return simpleInstance;
+    }
+
+    private void setIncluded(Frame frame) {
+        if (isIncluded) {
+            frame.setIncluded(true);
+        }
     }
 
     public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
