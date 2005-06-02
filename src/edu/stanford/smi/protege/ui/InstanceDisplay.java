@@ -89,6 +89,16 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
     };
 
+    private InstanceListener _instanceListener = new InstanceListener() {
+        public void directTypeAdded(InstanceEvent event) {
+            onDirectTypeAdded(event.getCls());
+        }
+
+        public void directTypeRemoved(InstanceEvent event) {
+            onDirectTypeRemoved(event.getCls());
+        }
+    };
+
     protected boolean shouldDisplaySlot(Cls cls, Slot slot) {
         return true;
     }
@@ -105,16 +115,6 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     public static boolean equals(Object o1, Object o2) {
         return SystemUtilities.equals(o1, o2);
     }
-
-    private InstanceListener _instanceListener = new InstanceListener() {
-        public void directTypeAdded(InstanceEvent event) {
-            onDirectTypeAdded(event.getCls());
-        }
-
-        public void directTypeRemoved(InstanceEvent event) {
-            onDirectTypeRemoved(event.getCls());
-        }
-    };
 
     protected void onDirectTypeAdded(Cls type) {
         reloadForm();
@@ -577,7 +577,9 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         _scrollPane.setViewportView(null);
         ComponentUtilities.dispose(c);
         _currentWidgets.clear();
-        _currentInstance.removeInstanceListener(_instanceListener);
+        if (_currentInstance != null) {
+            _currentInstance.removeInstanceListener(_instanceListener);
+        }
         _currentInstance = null;
         _currentAssociatedCls = null;
         update();
