@@ -1134,7 +1134,7 @@ public class Project {
     }
     
     private void loadIncludedProject(URI includingURI, URI includedURI, Collection errors) {
-        includedURI = includedURI.normalize();
+        includedURI = URIUtilities.normalize(includedURI);
         boolean alreadyIncluded = isAlreadyIncluded(includedURI);
         projectURITree.addChild(includingURI, includedURI);
         if (alreadyIncluded) {
@@ -1394,7 +1394,8 @@ public class Project {
 
     private void recordIncludedProject(URI name) {
         if (_uri != null) {
-            name = _uri.relativize(name);
+            // name = _uri.relativize(name);
+            name = URIUtilities.relativize(_uri, name);
         }
         addProjectSlotValue(SLOT_INCLUDED_PROJECTS, name.toString());
     }
@@ -1680,9 +1681,10 @@ public class Project {
 
     public void setProjectURI(URI uri) {
         if (_uri != null) {
+            uri = URIUtilities.normalize(uri);
             updateDirectIncludedProjectURIs(uri);
         }
-        _uri = (uri == null) ? null : uri.normalize();
+        _uri = uri;
         updateKBNames();
         updateJournaling();
         projectURITree.swapNode(projectURITree.getRoot(), uri);
@@ -1707,6 +1709,7 @@ public class Project {
     }
     
     public void setActiveRootURI(URI uri) {
+        uri = URIUtilities.normalize(uri);
         activeRootURI = uri;
         setActiveFrameStore(uri);
         _domainKB.flushCache();
