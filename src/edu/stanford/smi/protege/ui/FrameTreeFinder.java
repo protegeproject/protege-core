@@ -131,7 +131,7 @@ public abstract class FrameTreeFinder extends Finder {
         Iterator i = getParents(frame).iterator();
         while (i.hasNext() && !found) {
             Frame parent = (Frame) i.next();
-            if (parent.isVisible()) {
+            if (parent.isVisible() && !path.contains(parent)) {
                 path.add(parent);
                 if (roots.contains(parent)) {
                     found = true;

@@ -144,7 +144,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         topFrameStore = (name == null) ? null : getFrameStore(name);
         updateQueryableFrameStores();
     }
-    
+
     public NarrowFrameStore getTopFrameStore() {
         return (topFrameStore == null) ? activeFrameStore : topFrameStore;
     }
@@ -158,7 +158,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         dumpFrameStores();
         return oldActiveFrameStore;
     }
-    
+
     public void setQueryAllFrameStores(boolean b) {
         queryAllFrameStores = b;
         updateQueryableFrameStores();
@@ -172,10 +172,25 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         } else {
             availableFrameStores.addAll(frameStoreTree.getNodeAndDescendents(getTopFrameStore()));
         }
+        checkAvailable();
     }
-    
+
+    private void checkAvailable() {
+        Iterator i = availableFrameStores.iterator();
+        while (i.hasNext()) {
+            Object o = i.next();
+            if (o == null) {
+                i.remove();
+                Log.getLogger().severe("Null frame store found");
+            }
+        }
+    }
+
     public NarrowFrameStore setActiveFrameStore(String name) {
         NarrowFrameStore nfs = getFrameStore(name);
+        if (nfs == null) {
+            Log.getLogger().severe("Missing frame store: " + name);
+        }
         return setActiveFrameStore(nfs);
     }
 

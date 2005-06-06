@@ -98,7 +98,7 @@ public class ApplicationProperties {
 
     public static void addProjectToMRUList(URI uri) {
         if (uri != null && !uri.getScheme().equals("rmi")) {
-            uri = uri.normalize();
+            uri = URIUtilities.normalize(uri);
             _mruProjectList.remove(uri);
             _mruProjectList.add(0, uri);
 

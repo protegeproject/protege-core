@@ -141,7 +141,6 @@ public class URIUtilities {
         } else {
             try {
                 File file = new File(baseURI);
-                // if (file.isFile() || file.getName().indexOf('.') != -1) {
                 if (file.isFile()) {
                     File parent = file.getParentFile();
                     baseURI = parent.toURI();
@@ -152,6 +151,14 @@ public class URIUtilities {
             relativizedURI = baseURI.relativize(uriToRelativize);
         }
         return relativizedURI;
+    }
+
+    public static URI normalize(URI input) {
+        URI uri = input.normalize();
+        if (SystemUtilities.isWindows() && "file".equals(uri.getScheme())) {
+            // uri = URI.create(uri.toString().toLowerCase());
+        }
+        return uri;
     }
 
     public static URI replaceExtension(URI uri, String extension) {

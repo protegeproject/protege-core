@@ -106,7 +106,11 @@ public class Tree implements Cloneable {
 
     public Set getNodeAndDescendents(Object parent) {
         Set descendents = getDescendents(parent);
-        descendents.add(parent);
+        if (parent == null) {
+            Log.getLogger().severe("Null parent");
+        } else {
+            descendents.add(parent);
+        }
         return descendents;
     }
 
