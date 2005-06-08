@@ -171,15 +171,12 @@ public class ProjectView extends JComponent {
         }
     }
 
-    public boolean attemptClose() {
+    public boolean canClose() {
         boolean canClose = true;
         Iterator i = getTabs().iterator();
         while (canClose && i.hasNext()) {
             TabWidget tab = (TabWidget) i.next();
             canClose = tab.canClose();
-        }
-        if (canClose) {
-            close();
         }
         return canClose;
     }
@@ -202,7 +199,11 @@ public class ProjectView extends JComponent {
         while (i.hasNext()) {
             TabWidget tab = (TabWidget) i.next();
             tab.close();
+            _viewHolder.remove((Component) tab);
         }
+        removeAll();
+        _viewHolder = null;
+        _project = null;
     }
 
     private JComponent createTabbedPane() {
@@ -234,9 +235,6 @@ public class ProjectView extends JComponent {
 
     public void addChangeListener(ChangeListener listener) {
         _viewHolder.addChangeListener(listener);
-    }
-
-    public void dispose() {
     }
 
     public Project getProject() {

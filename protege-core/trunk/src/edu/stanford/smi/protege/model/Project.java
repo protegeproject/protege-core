@@ -428,6 +428,7 @@ public class Project {
     public void dispose() {
         // Log.enter(this, "dispose", _uri);
         postProjectEvent(ProjectEvent.PROJECT_CLOSED);
+        clearWidgets();
         if (_domainKB != null) {
             _domainKB.dispose();
         }
@@ -436,8 +437,22 @@ public class Project {
         }
         _domainKB = null;
         _projectKB = null;
+        _projectInstance = null;
+        _activeClsWidgetDescriptors = null;
+        _cachedDesignTimeClsWidgets = null;
+        _frames = null;
+        _objects = null;
     }
-
+    
+    private void clearWidgets() {
+        Iterator i = _cachedDesignTimeClsWidgets.values().iterator();
+        while (i.hasNext()) {
+            JComponent widget = (JComponent) i.next();
+            ComponentUtilities.dispose(widget);
+        }
+        _cachedDesignTimeClsWidgets.clear();
+    }
+    
     private void flushProjectKBCache() {
         saveBrowserSlots();
         saveCustomizedWidgets();

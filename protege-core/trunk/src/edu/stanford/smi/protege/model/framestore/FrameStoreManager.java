@@ -154,9 +154,25 @@ public class FrameStoreManager {
     }
 
     public void close() {
+        eventDispatchFrameStore.clearListeners();
         closeFrameStores();
         frameStores = null;
         kb = null;
+        deleteSimplificationFrameStore = null;
+        argumentCheckingFrameStore = null;
+        cachingFrameStore = null;
+        cleanDispatchFrameStore = null;
+        eventDispatchFrameStore = null;
+        eventGeneratorFrameStore = null;
+        facetCheckingFrameStore = null;
+        journalingFrameStore = null;
+        modificationRecordFrameStore = null;
+        readonlyFrameStore = null;
+        undoFrameStore = null;
+        changeMonitorFrameStore = null;
+        traceFrameStore = null;
+        terminalFrameStore = null;
+        headFrameStore = null;
     }
 
     private void closeFrameStores() {

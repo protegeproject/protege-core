@@ -349,7 +349,6 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     }
 
     public boolean isVisible() {
-        // return !isValid() || !getProject().isHidden(this);
         return !getProject().isHidden(this);
     }
 

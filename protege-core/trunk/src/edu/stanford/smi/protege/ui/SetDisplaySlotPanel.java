@@ -40,12 +40,15 @@ public class SetDisplaySlotPanel extends JComponent implements Disposable {
         public void directSuperclassAdded(ClsEvent event) {
             reload();
         }
+
         public void directSuperclassRemoved(ClsEvent event) {
             reload();
         }
+
         public void templateSlotAdded(ClsEvent event) {
             reload();
         }
+
         public void templateSlotRemoved(ClsEvent event) {
             reload();
         }
@@ -73,7 +76,7 @@ public class SetDisplaySlotPanel extends JComponent implements Disposable {
             _cls.removeClsListener(_clsListener);
         }
     }
-    
+
     private void layoutComponents() {
         setLayout(new FlowLayout(FlowLayout.LEFT, 3, 0));
         String displaySlotLabel = LocalizedText.getText(ResourceKey.FORM_EDITOR_DISPLAY_SLOT_LABEL);
@@ -216,6 +219,7 @@ class MultiSlotPanel extends JPanel {
         panels.add(slotBox);
         return slotBox;
     }
+
     public BrowserSlotPattern getBrowserTextPattern() {
         List elements = new ArrayList();
         Iterator i = panels.iterator();

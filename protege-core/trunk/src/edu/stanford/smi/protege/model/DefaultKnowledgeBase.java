@@ -982,6 +982,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     public synchronized void dispose() {
         _frameStoreManager.close();
         _frameStoreManager = null;
+        _project = null;
     }
 
     public synchronized boolean isClosed() {
@@ -1756,7 +1757,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     private boolean areComparableTypes(ValueType type1, ValueType type2) {
         return equals(type1, type2) || (isFrameType(type1) && isFrameType(type2))
                 || (isStringType(type1) && isStringType(type2)) || type1.equals(ValueType.ANY)
-                || type1.equals(ValueType.ANY);
+                || type2.equals(ValueType.ANY);
     }
 
     private boolean isFrameType(ValueType type) {

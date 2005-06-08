@@ -15,7 +15,7 @@ public class ResizingLayout implements LayoutManager2 {
     public final static String VERTICAL_STRETCHER = "vertical_strecher";
     public final static String FILLING_VERTICALLY = "filling_vertically";
     public final static String FILLING_HORIZONTALLY = "filling_horizontally";
-    
+
     public final static boolean VERTICAL_FILL_DEFAULT = false;
     public final static boolean HORIZONTAL_FILL_DEFAULT = true;
 
@@ -36,13 +36,14 @@ public class ResizingLayout implements LayoutManager2 {
     private static Component getHorizontalStretcher(Container container) {
         return (Component) ((JComponent) container).getClientProperty(HORIZONTAL_STRETCHER);
     }
-    
+
     public void setResizeVertically(boolean b) {
         _resizeVerticallyOverride = b;
     }
 
     private boolean getIsFillingVertically(Container container) {
-        return _resizeVerticallyOverride || getBooleanClientProperty(container, FILLING_VERTICALLY, VERTICAL_FILL_DEFAULT);
+        return _resizeVerticallyOverride
+                || getBooleanClientProperty(container, FILLING_VERTICALLY, VERTICAL_FILL_DEFAULT);
     }
 
     private static boolean getIsFillingHorizontally(Container container) {
@@ -97,15 +98,8 @@ public class ResizingLayout implements LayoutManager2 {
             }
             for (int i = 0; i < container.getComponentCount(); ++i) {
                 Component c = container.getComponent(i);
-                resize(
-                    c,
-                    oldSize,
-                    newSize,
-                    slidePoint,
-                    horizontalStretcher,
-                    fillingHorizontally,
-                    verticalStretcher,
-                    fillingVertically);
+                resize(c, oldSize, newSize, slidePoint, horizontalStretcher, fillingHorizontally, verticalStretcher,
+                        fillingVertically);
             }
         }
         _previousSize = newSize;
@@ -127,20 +121,14 @@ public class ResizingLayout implements LayoutManager2 {
         // do nothing
     }
 
-    private void resize(
-        Component c,
-        Dimension oldContainerSize,
-        Dimension newContainerSize,
-        Point slidePoint,
-        Component horizontalStretcher,
-        boolean fillingHorizontally,
-        Component verticalStretcher,
-        boolean fillingVertically) {
+    private void resize(Component c, Dimension oldContainerSize, Dimension newContainerSize, Point slidePoint,
+            Component horizontalStretcher, boolean fillingHorizontally, Component verticalStretcher,
+            boolean fillingVertically) {
         Rectangle r = c.getBounds();
         if (fillingHorizontally) {
             if (horizontalStretcher == null) {
-                r.x = (int) Math.round(((double) r.x * newContainerSize.width) / oldContainerSize.width);
-                r.width = (int) Math.round(((double) r.width * newContainerSize.width) / oldContainerSize.width);
+                r.x = rescale(r.x, newContainerSize.width, oldContainerSize.width);
+                r.width = rescale(r.width, newContainerSize.width, oldContainerSize.width);
             } else if (c == horizontalStretcher) {
                 r.width += newContainerSize.width - oldContainerSize.width;
             } else if (r.x >= slidePoint.x) {
@@ -151,8 +139,8 @@ public class ResizingLayout implements LayoutManager2 {
         }
         if (fillingVertically) {
             if (verticalStretcher == null) {
-                r.y = (int) Math.round(((double) r.y * newContainerSize.height) / oldContainerSize.height);
-                r.height = (int) Math.round(((double) r.height * newContainerSize.height) / oldContainerSize.height);
+                r.y = rescale(r.y, newContainerSize.height, oldContainerSize.height);
+                r.height = rescale(r.height, newContainerSize.height, oldContainerSize.height);
             } else if (c == verticalStretcher) {
                 r.height += newContainerSize.height - oldContainerSize.height;
             } else if (r.y >= slidePoint.y) {
@@ -162,5 +150,11 @@ public class ResizingLayout implements LayoutManager2 {
             }
         }
         c.setBounds(r);
+    }
+
+    private int rescale(int x, int mult, int div) {
+        return (int) Math.round(((double) x * mult) / div);
+        // BigDecimal d = new BigDecimal(((long) x) * mult);
+        // return d.divide(new BigDecimal(div), BigDecimal.ROUND_HALF_EVEN).intValue();
     }
 }

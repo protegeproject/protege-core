@@ -88,7 +88,9 @@ public class WelcomeDialog extends JDialog {
             pack();
 
             Runnable doFocus = new Runnable() {
-                public void run() { closeButton.requestFocus(); }
+                public void run() {
+                    closeButton.requestFocus();
+                }
             };
             SwingUtilities.invokeLater(doFocus);
 
@@ -199,7 +201,7 @@ public class WelcomeDialog extends JDialog {
                 closeButton_actionPerformed(e);
             }
         });
-	bottomPanel.add(closeButton);
+        bottomPanel.add(closeButton);
 
         this.getContentPane().setLayout(new BorderLayout(0, 10));
         this.getContentPane().add(panel, BorderLayout.CENTER);
@@ -305,6 +307,6 @@ public class WelcomeDialog extends JDialog {
     }
 
     public void closeButton_actionPerformed(ActionEvent e) {
-	setVisible(false);
+        setVisible(false);
     }
 }

@@ -103,8 +103,7 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
         _textComponent.addKeyListener(_keyListener);
         _defaultColor = _textComponent.getForeground();
         JComponent centerComponent = createCenterComponent(_textComponent);
-        LabeledComponent labeledComponent = new LabeledComponent(getLabel(), centerComponent,
-                isStretchable);
+        LabeledComponent labeledComponent = new LabeledComponent(getLabel(), centerComponent, isStretchable);
         Iterator i = createActions().iterator();
         while (i.hasNext()) {
             Action action = (Action) i.next();

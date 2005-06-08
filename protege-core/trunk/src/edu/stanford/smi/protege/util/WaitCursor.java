@@ -2,7 +2,7 @@ package edu.stanford.smi.protege.util;
 
 import java.awt.*;
 
-import javax.swing.*;
+// import javax.swing.*;
 
 /**
  * A wait cursor that can to enabled and disabled on command.
@@ -16,7 +16,7 @@ public class WaitCursor {
     private static final Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
 
     public WaitCursor(Component c) {
-        rootComponent = SwingUtilities.getRoot(c);
+        rootComponent = null; // SwingUtilities.getRoot(c);
         if (rootComponent != null) {
 	        standardCursor = rootComponent.getCursor();
 	        if (standardCursor == waitCursor) {

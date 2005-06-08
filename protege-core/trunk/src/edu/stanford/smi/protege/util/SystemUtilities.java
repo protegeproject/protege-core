@@ -129,7 +129,6 @@ public class SystemUtilities {
             loadLookAndFeel();
             PluginUtilities.initialize();
             loadUseAntialiasing();
-            Toolkit.getDefaultToolkit().setDynamicLayout(true);
         } catch (Throwable e) {
             // We explicitly do nothing fancy with writing this output. This
             // method is called on startup
