@@ -150,6 +150,7 @@ public class ComponentUtilities {
             UnaryFunction dispose = new UnaryFunction() {
                 public Object apply(Object o) {
                     if (o instanceof Disposable) {
+                        // Log.getLogger().info("disposing: " + o);
                         ((Disposable) o).dispose();
                     }
                     return Boolean.TRUE;
@@ -163,11 +164,6 @@ public class ComponentUtilities {
     }
 
     public static void ensureSelectionIsVisible(final JList list) {
-        /*
-         * SwingUtilities.invokeLater(new Runnable() { public void run() { int
-         * selection = list.getSelectedIndex();
-         * list.ensureIndexIsVisible(selection); } });
-         */
     }
 
     public static void extendSelection(JTree tree, Object userObject) {

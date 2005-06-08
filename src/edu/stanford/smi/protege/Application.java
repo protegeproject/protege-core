@@ -48,7 +48,7 @@ public class Application {
                 projectString += ".pprj";
             }
             uri = URIUtilities.createURI(projectString);
-         }
+        }
 
         return uri;
     }

@@ -17,8 +17,7 @@ import javax.swing.tree.*;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public class DefaultRenderer extends JComponent implements TreeCellRenderer, ListCellRenderer,
-        TableCellRenderer {
+public class DefaultRenderer extends JComponent implements TreeCellRenderer, ListCellRenderer, TableCellRenderer {
     public final static Object DROP_TARGET = new Object();
     public final static Object DROP_TARGET_AREA = new Object();
     public final static Object DROP_TARGET_AREA_ON = new Object();
@@ -94,8 +93,7 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
                 : _backgroundSelectionColorOverride;
     }
 
-    public Component getListCellRendererComponent(JList list, Object value, int row,
-            boolean selected, boolean hasFocus) {
+    public Component getListCellRendererComponent(JList list, Object value, int row, boolean selected, boolean hasFocus) {
         _foregroundSelectionColor = list.getSelectionForeground();
         _backgroundSelectionColor = list.getSelectionBackground();
         _foregroundNormalColor = list.getForeground();
@@ -181,8 +179,8 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         d.width += _fontMetrics.stringWidth(text);
     }
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean selected,
-            boolean hasFocus, int row, int col) {
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean hasFocus,
+            int row, int col) {
         _foregroundSelectionColor = table.getSelectionForeground();
         _backgroundSelectionColor = table.getSelectionBackground();
         _foregroundNormalColor = table.getForeground();
@@ -201,8 +199,8 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         return textColor;
     }
 
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
-            boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded,
+            boolean leaf, int row, boolean hasFocus) {
         _foregroundSelectionColor = _treeForegroundSelectionColor;
         _backgroundSelectionColor = _treeBackgroundSelectionColor;
         _foregroundNormalColor = _treeForegroundNormalColor;
@@ -298,8 +296,7 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         paintString(graphics, text, position, null, size);
     }
 
-    protected void paintString(Graphics graphics, String text, Point position, Color color,
-            Dimension size) {
+    protected void paintString(Graphics graphics, String text, Point position, Color color, Dimension size) {
         if (color != null) {
             graphics.setColor(color);
         }

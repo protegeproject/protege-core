@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.util;
 
 import java.awt.*;
 import java.awt.dnd.*;
+import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
@@ -24,10 +25,13 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
         public void treeNodesInserted(TreeModelEvent event) {
             expandRow(0);
         }
+
         public void treeNodesChanged(TreeModelEvent event) {
         }
+
         public void treeNodesRemoved(TreeModelEvent event) {
         }
+
         public void treeStructureChanged(TreeModelEvent event) {
         }
     };
@@ -50,7 +54,7 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
         putClientProperty(Options.TREE_LINE_STYLE_KEY, Options.TREE_LINE_STYLE_NONE_VALUE);
         // setScrollsOnExpand(false);
     }
-    
+
     public void addSelectionListener(SelectionListener selectionListener) {
         _selectionListeners.add(this, selectionListener);
     }
@@ -89,16 +93,19 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
         return "SelectableTree";
     }
 
+    public void processFocusEvent(FocusEvent event) {
+        // prevent dispatch of focus event if we have been removed from the screen!
+        if (isVisible()) {
+            super.processFocusEvent(event);
+        }
+    }
+
     // these two baffling methods comes from the book "Core Swing: Advanced Programming" by Topley
     public Insets getAutoscrollInsets() {
         Rectangle r = getVisibleRect();
         Dimension size = getSize();
-        Insets insets =
-            new Insets(
-                r.y + SCROLL_INSETS.top,
-                r.x + SCROLL_INSETS.left,
-                size.height - r.y - r.height + SCROLL_INSETS.bottom,
-                size.width - r.x - r.width + SCROLL_INSETS.right);
+        Insets insets = new Insets(r.y + SCROLL_INSETS.top, r.x + SCROLL_INSETS.left, size.height - r.y - r.height
+                + SCROLL_INSETS.bottom, size.width - r.x - r.width + SCROLL_INSETS.right);
         return insets;
     }
 

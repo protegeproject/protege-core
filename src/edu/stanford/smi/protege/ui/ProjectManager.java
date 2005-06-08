@@ -160,7 +160,7 @@ public class ProjectManager {
                     }
                     if (succeeded) {
                         URI uri = _currentProject.getProjectURI();
-                        unloadProject();
+                        closeCurrentProject();
                         loadProject(uri);
                     } else {
                         _currentProject.setIsReadonly(oldIsReadonly);
@@ -180,18 +180,33 @@ public class ProjectManager {
                 succeeded = confirmSave();
             }
             if (succeeded) {
-                succeeded = getCurrentProjectView().attemptClose();
-                if (succeeded) {
-                    closeCurrentProject();
-                }
+                succeeded = closeCurrentProject();
             }
         }
         return succeeded;
     }
 
-    private void closeCurrentProject() {
-        _projectPluginManager.beforeClose(_currentProject);
-        unloadProject();
+    private boolean closeCurrentProject() {
+        boolean succeeded = getCurrentProjectView().canClose();
+        if (succeeded) {
+            _projectPluginManager.beforeHide(_projectView, _mainToolBar, _menuBar);
+            _projectView.setVisible(false);
+            _projectView.close();
+            ComponentUtilities.closeAllWindows();
+            _rootPane.getContentPane().remove(_projectView);
+            ComponentUtilities.dispose(_projectView);
+            _projectView = null;
+
+            _viewSelector = null;
+            _projectPluginManager.beforeClose(_currentProject);
+            _currentProject.dispose();
+            _currentProject = null;
+            updateFrameTitle();
+            createMenuAndToolBar();
+            _rootPane.revalidate();
+            _rootPane.repaint();
+        }
+        return succeeded;
     }
 
     public void configureProjectRequest() {
@@ -779,21 +794,6 @@ public class ProjectManager {
         return "ProjectManager";
     }
 
-    private void unloadProject() {
-        _projectPluginManager.beforeHide(_projectView, _mainToolBar, _menuBar);
-        ComponentUtilities.closeAllWindows();
-        _rootPane.getContentPane().remove(_projectView);
-        ComponentUtilities.dispose(_projectView);
-        _viewSelector = null;
-        _currentProject.dispose();
-        _currentProject = null;
-        _projectView = null;
-        updateFrameTitle();
-        createMenuAndToolBar();
-        _rootPane.revalidate();
-        _rootPane.repaint();
-    }
-
     private void updateFrameTitle() {
         String text;
         String programName = Text.getProgramNameAndVersion();
@@ -849,7 +849,7 @@ public class ProjectManager {
                 }
                 Project newProject = manager.revertToVersion(_currentProject, timestamp);
                 if (newProject != null) {
-                    unloadProject();
+                    closeCurrentProject();
                     _currentProject = newProject;
                     displayCurrentProject();
                 }

@@ -43,11 +43,8 @@ public class ModalDialog extends JDialog implements Disposable {
         public void windowClosing(WindowEvent event) {
             int option = OPTION_CANCEL;
             if (!_enableCloseButton) {
-                int result =
-                    ModalDialog.showMessageDialog(
-                        ModalDialog.this,
-                        LocalizedText.getText(ResourceKey.DIALOG_SAVE_CHANGES_TEXT),
-                        ModalDialog.MODE_YES_NO);
+                int result = ModalDialog.showMessageDialog(ModalDialog.this, LocalizedText
+                        .getText(ResourceKey.DIALOG_SAVE_CHANGES_TEXT), ModalDialog.MODE_YES_NO);
                 if (result == OPTION_YES) {
                     option = OPTION_OK;
                 }
@@ -56,24 +53,14 @@ public class ModalDialog extends JDialog implements Disposable {
         }
     }
 
-    private ModalDialog(
-        Dialog parent,
-        Component panel,
-        String title,
-        int mode,
-        CloseCallback callback,
-        boolean enableClose) {
+    private ModalDialog(Dialog parent, Component panel, String title, int mode, CloseCallback callback,
+            boolean enableClose) {
         super(parent, title, true);
         init(panel, mode, callback, enableClose);
     }
 
-    private ModalDialog(
-        Frame parentFrame,
-        Component panel,
-        String title,
-        int mode,
-        CloseCallback callback,
-        boolean enableCloseButton) {
+    private ModalDialog(Frame parentFrame, Component panel, String title, int mode, CloseCallback callback,
+            boolean enableCloseButton) {
         super(parentFrame, title, true);
         init(panel, mode, callback, enableCloseButton);
     }
@@ -109,7 +96,7 @@ public class ModalDialog extends JDialog implements Disposable {
         ComponentUtilities.dispose(this);
         _currentDialog = null;
     }
-    
+
     private JButton createButton(final int result, ResourceKey key) {
         Action action = new StandardAction(key) {
             public void actionPerformed(ActionEvent event) {
@@ -120,14 +107,14 @@ public class ModalDialog extends JDialog implements Disposable {
         button.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent event) {
                 switch (event.getKeyCode()) {
-                	case KeyEvent.VK_ENTER:
+                    case KeyEvent.VK_ENTER:
                         attemptClose(result);
-                		break;
-                	case KeyEvent.VK_ESCAPE:
+                        break;
+                    case KeyEvent.VK_ESCAPE:
                         attemptClose(OPTION_CANCEL);
-                		break;
-                	default:
-                	    // do nothing
+                        break;
+                    default:
+                // do nothing
                 }
             }
         });
@@ -138,29 +125,29 @@ public class ModalDialog extends JDialog implements Disposable {
         JPanel buttonsGrid = ComponentFactory.createPanel();
         buttonsGrid.setLayout(new GridLayout(1, 3, 10, 10));
         switch (mode) {
-            case MODE_OK_CANCEL :
+            case MODE_OK_CANCEL:
                 buttonsGrid.add(createButton(OPTION_OK, ResourceKey.OK_BUTTON_LABEL));
                 buttonsGrid.add(createButton(OPTION_CANCEL, ResourceKey.CANCEL_BUTTON_LABEL));
                 break;
-            case MODE_YES_NO :
+            case MODE_YES_NO:
                 buttonsGrid.add(createButton(OPTION_YES, ResourceKey.YES_BUTTON_LABEL));
                 buttonsGrid.add(createButton(OPTION_NO, ResourceKey.NO_BUTTON_LABEL));
                 break;
-            case MODE_YES_NO_CANCEL :
+            case MODE_YES_NO_CANCEL:
                 buttonsGrid.add(createButton(OPTION_YES, ResourceKey.YES_BUTTON_LABEL));
                 buttonsGrid.add(createButton(OPTION_NO, ResourceKey.NO_BUTTON_LABEL));
                 buttonsGrid.add(createButton(OPTION_CANCEL, ResourceKey.CANCEL_BUTTON_LABEL));
                 break;
-            case MODE_CLOSE :
+            case MODE_CLOSE:
                 buttonsGrid.add(createButton(OPTION_CLOSE, ResourceKey.CLOSE_BUTTON_LABEL));
                 break;
-            default :
-                }
+            default:
+        }
 
         JPanel panel = ComponentFactory.createPanel();
         panel.setLayout(new FlowLayout());
         panel.add(buttonsGrid);
-        
+
         return panel;
     }
 
@@ -186,13 +173,13 @@ public class ModalDialog extends JDialog implements Disposable {
         addWindowListener(new WindowCloseListener());
 
         switch (mode) {
-            case MODE_OK_CANCEL :
+            case MODE_OK_CANCEL:
                 _result = OPTION_CANCEL;
                 break;
-            case MODE_YES_NO_CANCEL :
+            case MODE_YES_NO_CANCEL:
                 _result = OPTION_CANCEL;
                 break;
-            case MODE_CLOSE :
+            case MODE_CLOSE:
                 _result = OPTION_CLOSE;
                 break;
         }
@@ -227,13 +214,8 @@ public class ModalDialog extends JDialog implements Disposable {
         return showDialog(parent, panel, title, mode, callback, true);
     }
 
-    public static int showDialog(
-        Component parent,
-        Component panel,
-        String title,
-        int mode,
-        CloseCallback callback,
-        boolean enableCloseButton) {
+    public static int showDialog(Component parent, Component panel, String title, int mode, CloseCallback callback,
+            boolean enableCloseButton) {
         ModalDialog dialog;
         Window window;
         if (parent == null || parent instanceof Window) {
@@ -266,10 +248,11 @@ public class ModalDialog extends JDialog implements Disposable {
     public static int showMessageDialog(Component parent, String message, int mode) {
         return showDialog(parent, new MessagePanel(message), "", mode);
     }
+
     public static int showMessageDialog(Component parent, String message, String title, int mode) {
         return showDialog(parent, new MessagePanel(message), title, mode);
     }
-    
+
     public static Action getCloseAction(final Component c) {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent event) {
