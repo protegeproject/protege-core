@@ -12,8 +12,7 @@ import edu.stanford.smi.protege.util.*;
 public class MaximumCardinalityConstraint extends AbstractFacetConstraint {
     private static final Integer CARDINALITY_SINGLE = new Integer(1);
 
-    public String getInvalidValuesText(Frame frame, Slot slot, Collection slotValues,
-            Collection facetValues) {
+    public String getInvalidValuesText(Frame frame, Slot slot, Collection slotValues, Collection facetValues) {
         String result = null;
         Integer i = (Integer) CollectionUtilities.getFirstItem(facetValues);
         if (i != null) {
@@ -35,8 +34,7 @@ public class MaximumCardinalityConstraint extends AbstractFacetConstraint {
     }
 
     public static int getValue(Integer i) {
-        return (i == null) ? edu.stanford.smi.protege.model.KnowledgeBase.MAXIMUM_CARDINALITY_UNBOUNDED
-                : i.intValue();
+        return (i == null) ? edu.stanford.smi.protege.model.KnowledgeBase.MAXIMUM_CARDINALITY_UNBOUNDED : i.intValue();
     }
 
     public static Integer getValue(int i) {
@@ -58,7 +56,7 @@ public class MaximumCardinalityConstraint extends AbstractFacetConstraint {
         return i1 <= i2 ? existingValues : newValues;
     }
 
-    private int getValue(Collection values) {
+    private static int getValue(Collection values) {
         Integer i = (Integer) CollectionUtilities.getFirstItem(values);
         return (i == null) ? Integer.MAX_VALUE : i.intValue();
     }

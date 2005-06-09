@@ -16,8 +16,9 @@ import edu.stanford.smi.protege.resource.*;
 public class DefaultCls extends DefaultInstance implements Cls {
 
     public DefaultCls() {
-        
+
     }
+
     public DefaultCls(KnowledgeBase kb, FrameID id) {
         super(kb, id);
     }
@@ -154,7 +155,7 @@ public class DefaultCls extends DefaultInstance implements Cls {
     public Collection getTemplateFacets(Slot slot) {
         return getDefaultKnowledgeBase().getTemplateFacets(this, slot);
     }
-    
+
     public Collection getOverriddenTemplateFacets(Slot slot) {
         return getDefaultKnowledgeBase().getOverriddenTemplateFacets(this, slot);
     }
@@ -230,6 +231,7 @@ public class DefaultCls extends DefaultInstance implements Cls {
     public int getVisibleDirectSubclassCount() {
         return getVisibleDirectSubclasses().size();
     }
+
     public Collection getVisibleTemplateSlots() {
         return getVisibleFrames(getTemplateSlots());
     }
@@ -237,8 +239,8 @@ public class DefaultCls extends DefaultInstance implements Cls {
     public Collection getVisibleDirectSubclasses() {
         return getVisibleFrames(getDirectSubclasses());
     }
-        
-    private Collection getVisibleFrames(Collection frames) {
+
+    private static Collection getVisibleFrames(Collection frames) {
         Collection visibleFrames = new ArrayList();
         Iterator i = frames.iterator();
         while (i.hasNext()) {

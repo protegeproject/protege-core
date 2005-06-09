@@ -1,10 +1,10 @@
 package edu.stanford.smi.protege;
+//ESCA*JAVA0130
 
 import java.awt.*;
 import java.util.*;
 
 import junit.framework.*;
-
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.test.*;

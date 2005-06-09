@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.model;
+//ESCA*JAVA0130
 
 import edu.stanford.smi.protege.event.*;
 import edu.stanford.smi.protege.model.framestore.*;

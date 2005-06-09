@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.model;
 
+//ESCA*JAVA0037
+
 import java.util.*;
 
 import edu.stanford.smi.protege.model.framestore.*;
@@ -408,7 +410,7 @@ public class SystemFrames {
             configureOverrides(fs);
         } catch (Exception e) {
             // can't happen
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
             throw new RuntimeException(e.toString());
         }
     }
@@ -435,11 +437,11 @@ public class SystemFrames {
         setOwnSlotValue(fs, slota, getInverseSlotSlot(), slotb);
     }
 
-    private void addTemplateSlot(FrameStore fs, Cls cls, Slot slot) {
+    private static void addTemplateSlot(FrameStore fs, Cls cls, Slot slot) {
         fs.addDirectTemplateSlot(cls, slot);
     }
 
-    private void addSuperclass(FrameStore fs, Cls cls, Cls superclass) {
+    private static void addSuperclass(FrameStore fs, Cls cls, Cls superclass) {
         fs.addDirectSuperclass(cls, superclass);
     }
 
@@ -725,12 +727,12 @@ public class SystemFrames {
         setValueType(fs, slot, ValueType.ANY);
     }
 
-    private void setOwnSlotValue(FrameStore fs, Frame frame, Slot slot, Object value) {
+    private static void setOwnSlotValue(FrameStore fs, Frame frame, Slot slot, Object value) {
         Collection values = Collections.singleton(value);
         setOwnSlotValues(fs, frame, slot, values);
     }
 
-    private void setOwnSlotValues(FrameStore fs, Frame frame, Slot slot, Collection values) {
+    private static void setOwnSlotValues(FrameStore fs, Frame frame, Slot slot, Collection values) {
         fs.setDirectOwnSlotValues(frame, slot, values);
     }
 

@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.model;
 
+//ESCA*JAVA0037
+
 import edu.stanford.smi.protege.util.*;
 
 /**
@@ -29,7 +31,7 @@ import edu.stanford.smi.protege.util.*;
 public abstract class Transaction {
     private KnowledgeBase _knowledgeBase;
 
-    public Transaction(KnowledgeBase kb) {
+    protected Transaction(KnowledgeBase kb) {
         _knowledgeBase = kb;
     }
 

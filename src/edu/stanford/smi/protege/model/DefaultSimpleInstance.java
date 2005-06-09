@@ -13,9 +13,9 @@ import edu.stanford.smi.protege.resource.*;
 public class DefaultSimpleInstance extends DefaultInstance implements SimpleInstance {
 
     public DefaultSimpleInstance() {
-        
+
     }
-    
+
     /**
      * This constructor should be used by classes which use the "java_packages" feature of
      * protege to load instances of user defined classes.  The User defined classes must

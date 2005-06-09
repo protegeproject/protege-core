@@ -6,5 +6,6 @@ package edu.stanford.smi.protege.model;
  */
 public interface FrameNameValidator {
     boolean isValid(String name, Frame frame);
+
     String getErrorMessage(String name, Frame frame);
 }

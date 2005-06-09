@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.model;
+//ESCA*JAVA0037
 
 import java.awt.*;
 import java.io.*;
@@ -26,7 +27,7 @@ public abstract class KnowledgeBaseSourcesEditor extends JComponent implements V
     private String _oldProjectPath;
     private boolean _showingProject;
 
-    public KnowledgeBaseSourcesEditor(String projectPath, PropertyList sources) {
+    protected KnowledgeBaseSourcesEditor(String projectPath, PropertyList sources) {
         _sources = sources;
         if (projectPath != null) {
             try {
@@ -108,6 +109,7 @@ public abstract class KnowledgeBaseSourcesEditor extends JComponent implements V
         return _showingProject;
     }
 
+    //ESCA-JAVA0130 
     protected boolean hasValidValue(URIField field) {
         boolean hasValidValue;
         URI value = field.getRelativeURI();
@@ -123,6 +125,7 @@ public abstract class KnowledgeBaseSourcesEditor extends JComponent implements V
     protected void onProjectPathChange(String oldPath, String newPath) {
     }
 
+    //ESCA-JAVA0130 
     protected void updatePath(FileField field, String newBasePath, String ext) {
         String name = new File(newBasePath).getName();
         String fieldText = FileUtilities.replaceExtension(name, ext);

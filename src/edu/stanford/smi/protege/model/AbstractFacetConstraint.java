@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.util.*;
+
 /**
  * Base class for implementions of FacetConstraint.  Implementations are provided for the is/are valid methods that just
  * get the "invalid text" descriptions of the problems and test it.  If there is "invalid text" then the values are

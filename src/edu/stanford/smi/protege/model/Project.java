@@ -1,4 +1,6 @@
 package edu.stanford.smi.protege.model;
+//ESCA*JAVA0100
+//ESCA*JAVA0136
 
 import java.awt.*;
 import java.awt.event.*;
@@ -36,35 +38,37 @@ import edu.stanford.smi.protege.widget.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class Project {
-    private final static String CLASS_PROJECT = "Project";
-    private final static String SLOT_DEFAULT_INSTANCE_WIDGET_CLASS_NAME = "default_instance_widget_class_name";
-    private final static String SLOT_CUSTOMIZED_INSTANCE_WIDGETS = "customized_instance_widgets";
-    private final static String SLOT_BROWSER_SLOTS = "browser_slot_names";
-    private final static String SLOT_TABS = "tabs";
-    private final static String SLOT_INCLUDED_PROJECTS = "included_projects";
-    private final static String SLOT_ALL_KNOWLEDGE_BASE_FACTORY_NAMES = "all_knowledge_base_factory_names";
-    private final static String SLOT_SOURCES = "sources";
-    private final static String SLOT_JAVA_PACKAGES = "java_packages";
-    private final static String SLOT_HIDDEN_FRAMES = "hidden_classes";
-    private final static String SLOT_JOURNALING_ENABLED = "journaling_enabled";
-    private final static String SLOT_DEFAULT_CLS_METACLASS = "default_cls_metaclass";
-    private final static String SLOT_DEFAULT_SLOT_METACLASS = "default_slot_metaclass";
-    private final static String SLOT_DEFAULT_FACET_METACLASS = "default_facet_metaclass";
-    private final static String SLOT_NEXT_FRAME_NUMBER = "next_frame_number";
-    private final static String SLOT_IS_READONLY = "is_readonly";
-    private final static String SLOT_PRETTY_PRINT_SLOT_WIDGET_LABELS = "pretty_print_slot_widget_labels";
+    private static final String CLASS_PROJECT = "Project";
+    private static final String SLOT_DEFAULT_INSTANCE_WIDGET_CLASS_NAME = "default_instance_widget_class_name";
+    private static final String SLOT_CUSTOMIZED_INSTANCE_WIDGETS = "customized_instance_widgets";
+    private static final String SLOT_BROWSER_SLOTS = "browser_slot_names";
+    private static final String SLOT_TABS = "tabs";
+    private static final String SLOT_INCLUDED_PROJECTS = "included_projects";
+    private static final String SLOT_ALL_KNOWLEDGE_BASE_FACTORY_NAMES = "all_knowledge_base_factory_names";
+    private static final String SLOT_SOURCES = "sources";
+    private static final String SLOT_JAVA_PACKAGES = "java_packages";
+    private static final String SLOT_HIDDEN_FRAMES = "hidden_classes";
+    private static final String SLOT_JOURNALING_ENABLED = "journaling_enabled";
+    private static final String SLOT_DEFAULT_CLS_METACLASS = "default_cls_metaclass";
+    private static final String SLOT_DEFAULT_SLOT_METACLASS = "default_slot_metaclass";
+    private static final String SLOT_DEFAULT_FACET_METACLASS = "default_facet_metaclass";
+    private static final String SLOT_NEXT_FRAME_NUMBER = "next_frame_number";
+    private static final String SLOT_IS_READONLY = "is_readonly";
+    private static final String SLOT_PRETTY_PRINT_SLOT_WIDGET_LABELS = "pretty_print_slot_widget_labels";
 
-    private final static String CLASS_OPTIONS = "Options";
-    private final static String SLOT_OPTIONS = "options";
-    private final static String SLOT_DISPLAY_HIDDEN_FRAMES = "display_hidden_classes";
-    private final static String SLOT_DISPLAY_ABSTRACT_CLASS_ICON = "display_abstract_class_icon";
-    private final static String SLOT_DISPLAY_MULTI_PARENT_CLASS_ICON = "display_multi_parent_class_icon";
-    private final static String SLOT_DISPLAY_REMOVE_CONFIRMATION_DIALOG = "confirm_on_remove";
-    private final static String SLOT_UPDATE_MODIFICATION_SLOTS = "update_modification_slots";
-    private final static String SLOT_TABBED_INSTANCE_FORM_LAYOUT = "tabbed_instance_form_layout";
+    private static final String CLASS_OPTIONS = "Options";
+    private static final String SLOT_OPTIONS = "options";
+    private static final String SLOT_DISPLAY_HIDDEN_FRAMES = "display_hidden_classes";
+    private static final String SLOT_DISPLAY_ABSTRACT_CLASS_ICON = "display_abstract_class_icon";
+    private static final String SLOT_DISPLAY_MULTI_PARENT_CLASS_ICON = "display_multi_parent_class_icon";
+    private static final String SLOT_DISPLAY_REMOVE_CONFIRMATION_DIALOG = "confirm_on_remove";
+    private static final String SLOT_UPDATE_MODIFICATION_SLOTS = "update_modification_slots";
+    private static final String SLOT_TABBED_INSTANCE_FORM_LAYOUT = "tabbed_instance_form_layout";
 
-    private final static String CLASS_MAP = "Map";
-    private final static String SLOT_PROPERTY_MAP = "property_map";
+    private static final String CLASS_MAP = "Map";
+    private static final String SLOT_PROPERTY_MAP = "property_map";
+    
+    private static final int WINDOW_OFFSET_PIXELS = 25;
 
     private URI _uri;
     private URI _loadingProjectURI;
@@ -118,10 +122,6 @@ public class Project {
     };
 
     private KnowledgeBaseListener _knowledgeBaseListener = new KnowledgeBaseAdapter() {
-        public void clsCreated(KnowledgeBaseEvent event) {
-            // do nothing
-        }
-
         public void clsDeleted(KnowledgeBaseEvent event) {
             // Log.enter(this, "clsDeleted", event);
             Cls cls = event.getCls();
@@ -334,11 +334,12 @@ public class Project {
             boolean showHeader, boolean showHeaderLabel) {
         InstanceDisplay instanceDisplay = null;
         Class[] classes = new Class[] { Project.class, Boolean.TYPE, Boolean.TYPE };
-        Object[] args = new Object[] { project, new Boolean(showHeader),
-                new Boolean(showHeaderLabel) };
+        Object[] args = new Object[] { project, Boolean.valueOf(showHeader),
+                Boolean.valueOf(showHeaderLabel) };
         try {
             Constructor constructor = clas.getConstructor(classes);
             instanceDisplay = (InstanceDisplay) constructor.newInstance(args);
+        //ESCA-JAVA0166 
         } catch (Exception e) {
             Log.getLogger().warning(e.getMessage());
         }
@@ -445,12 +446,14 @@ public class Project {
     }
     
     private void clearWidgets() {
-        Iterator i = _cachedDesignTimeClsWidgets.values().iterator();
-        while (i.hasNext()) {
-            JComponent widget = (JComponent) i.next();
-            ComponentUtilities.dispose(widget);
+        if (_cachedDesignTimeClsWidgets != null) {
+            Iterator i = _cachedDesignTimeClsWidgets.values().iterator();
+            while (i.hasNext()) {
+                JComponent widget = (JComponent) i.next();
+                ComponentUtilities.dispose(widget);
+            }
+            _cachedDesignTimeClsWidgets.clear();
         }
-        _cachedDesignTimeClsWidgets.clear();
     }
     
     private void flushProjectKBCache() {
@@ -513,7 +516,7 @@ public class Project {
     /**
      * @deprecated
      */
-    private Slot getPatternSlot(BrowserSlotPattern pattern) {
+    private static Slot getPatternSlot(BrowserSlotPattern pattern) {
         return (pattern == null) ? null : pattern.getFirstSlot();
     }
 
@@ -598,7 +601,7 @@ public class Project {
         return _displayMultiParentClassIcon.booleanValue();
     }
 
-    private void setIconImage(JFrame frame, Instance instance) {
+    private static void setIconImage(JFrame frame, Instance instance) {
         Icon icon = instance.getIcon();
         if (icon instanceof ImageIcon) {
             ImageIcon iconImage = (ImageIcon) icon;
@@ -623,8 +626,8 @@ public class Project {
         Collection uriStrings = new ArrayList();
         Iterator i = projectURIs.iterator();
         while (i.hasNext()) {
-            URI includedUri = (URI) i.next();
-            URI relativeURI = URIUtilities.relativize(_uri, includedUri);
+            URI includedURI = (URI) i.next();
+            URI relativeURI = URIUtilities.relativize(_uri, includedURI);
             uriStrings.add(relativeURI.toString());
         }
         setProjectSlotValues(SLOT_INCLUDED_PROJECTS, uriStrings);
@@ -912,6 +915,7 @@ public class Project {
             createNewTabWidgetDescriptors(availableTabNames);
             // saveTabWidgetInstances();
         }
+        //ESCA-JAVA0259 
         return _tabWidgetDescriptors;
     }
 
@@ -989,7 +993,7 @@ public class Project {
         return hasChanged(_domainKB) || hasChanged(_projectKB) || hasChanged();
     }
 
-    private boolean hasChanged(KnowledgeBase kb) {
+    private static boolean hasChanged(KnowledgeBase kb) {
         return kb != null && kb.hasChanged();
     }
 
@@ -1210,7 +1214,7 @@ public class Project {
 
     private Boolean loadOption(String name, boolean defaultValue) {
         boolean b = getOption(name, defaultValue);
-        return new Boolean(b);
+        return Boolean.valueOf(b);
     }
 
     /**
@@ -1617,17 +1621,17 @@ public class Project {
     }
 
     public void setDisplayAbstractClassIcon(boolean b) {
-        _displayAbstractClassIcon = new Boolean(b);
+        _displayAbstractClassIcon = Boolean.valueOf(b);
         setOption(SLOT_DISPLAY_ABSTRACT_CLASS_ICON, b);
     }
 
     public void setDisplayConfirmationOnRemove(boolean b) {
-        _displayConfirmationOnRemove = new Boolean(b);
+        _displayConfirmationOnRemove = Boolean.valueOf(b);
         setOption(SLOT_DISPLAY_REMOVE_CONFIRMATION_DIALOG, b);
     }
 
     public void setDisplayHiddenFrames(boolean b) {
-        _displayHiddenClasses = new Boolean(b);
+        _displayHiddenClasses = Boolean.valueOf(b);
         setOption(SLOT_DISPLAY_HIDDEN_FRAMES, b);
     }
 
@@ -1636,7 +1640,7 @@ public class Project {
     }
 
     public void setDisplayMultiParentClassIcon(boolean b) {
-        _displayMultiParentClassIcon = new Boolean(b);
+        _displayMultiParentClassIcon = Boolean.valueOf(b);
         setOption(SLOT_DISPLAY_MULTI_PARENT_CLASS_ICON, b);
     }
 
@@ -1646,12 +1650,12 @@ public class Project {
     }
 
     public void setIsReadonly(boolean b) {
-        _isReadonly = new Boolean(b);
+        _isReadonly = Boolean.valueOf(b);
         setOption(SLOT_IS_READONLY, b);
     }
 
     public void setJournalingEnabled(boolean enable) {
-        setProjectSlotValue(SLOT_JOURNALING_ENABLED, new Boolean(enable));
+        setProjectSlotValue(SLOT_JOURNALING_ENABLED, Boolean.valueOf(enable));
         if (enable) {
             _domainKB.startJournaling(getJournalURI());
         } else {
@@ -1670,8 +1674,8 @@ public class Project {
             ComponentUtilities.center(window);
             _lastLocation = window.getLocation();
         } else {
-            _lastLocation.x += 25;
-            _lastLocation.y += 25;
+            _lastLocation.x += WINDOW_OFFSET_PIXELS;
+            _lastLocation.y += WINDOW_OFFSET_PIXELS;
             Dimension screenSize = window.getToolkit().getScreenSize();
 
             if (_lastLocation.x + window.getWidth() > screenSize.width
@@ -1683,7 +1687,7 @@ public class Project {
     }
 
     private void setOption(String slotName, boolean value) {
-        setOwnSlotValue(getOptionsInstance(), slotName, new Boolean(value));
+        setOwnSlotValue(getOptionsInstance(), slotName, Boolean.valueOf(value));
     }
 
     private static void setOwnSlotValue(Frame frame, String slotName, Object value) {
@@ -1770,7 +1774,7 @@ public class Project {
     }
 
     public void setUpdateModificationSlots(boolean b) {
-        _updateModificationSlots = new Boolean(b);
+        _updateModificationSlots = Boolean.valueOf(b);
         setOption(SLOT_UPDATE_MODIFICATION_SLOTS, b);
         _domainKB.setModificationRecordUpdatingEnabled(b);
     }
@@ -1941,6 +1945,7 @@ public class Project {
         return _projectKB.getCurrentUsers();
     }
 
+    //ESCA-JAVA0130 
     public String getLocalUser() {
         return null;
     }
@@ -1959,6 +1964,7 @@ public class Project {
         return _frameCounts;
     }
 
+    //ESCA-JAVA0130 
     public boolean isMultiUserClient() {
         return false;
     }
@@ -1967,12 +1973,13 @@ public class Project {
         return isMultiUserServer;
     }
 
+    //ESCA-JAVA0130 
     public String getUserName() {
         return ApplicationProperties.getUserName();
     }
 
     public void setPrettyPrintSlotWidgetLabels(boolean b) {
-        prettyPrintSlotWidgetLabels = new Boolean(b);
+        prettyPrintSlotWidgetLabels = Boolean.valueOf(b);
     }
 
     public boolean getPrettyPrintSlotWidgetLabels() {

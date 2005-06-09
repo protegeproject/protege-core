@@ -11,31 +11,31 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ValueTypeConstraint extends AbstractFacetConstraint {
-    private static final Collection _values;
+    private static final Collection values;
 
     static {
-        _values = new ArrayList();
-        _values.add(ValueType.ANY.toString());
-        _values.add(ValueType.BOOLEAN.toString());
-        _values.add(ValueType.CLS.toString());
-        _values.add(ValueType.FLOAT.toString());
-        _values.add(ValueType.INSTANCE.toString());
-        _values.add(ValueType.INTEGER.toString());
-        _values.add(ValueType.STRING.toString());
-        _values.add(ValueType.SYMBOL.toString());
+        values = new ArrayList();
+        values.add(ValueType.ANY.toString());
+        values.add(ValueType.BOOLEAN.toString());
+        values.add(ValueType.CLS.toString());
+        values.add(ValueType.FLOAT.toString());
+        values.add(ValueType.INSTANCE.toString());
+        values.add(ValueType.INTEGER.toString());
+        values.add(ValueType.STRING.toString());
+        values.add(ValueType.SYMBOL.toString());
     }
 
     private static Collection getAllButFirst(Collection c) {
-        Collection values;
+        Collection remainder;
         if (c == null || c.size() < 1) {
             // Log.stack("empty collection", ValueTypeConstraint.class, "getAllButFirst", c);
-            values = Collections.EMPTY_LIST;
+            remainder = Collections.EMPTY_LIST;
         } else {
             ArrayList list = new ArrayList(c);
             list.remove(0);
-            values = list;
+            remainder = list;
         }
-        return values;
+        return remainder;
     }
 
     public static Collection getAllowedClses(Collection bindingValue) {
@@ -104,20 +104,20 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
         return type.equals(ValueType.SYMBOL) ? getAllButFirst(bindingValue) : Collections.EMPTY_LIST;
     }
 
-    public String getInvalidAnyValueText(Object value) {
+    private static String getInvalidAnyValueText(Object value) {
         boolean isValid = value instanceof Boolean || value instanceof Frame || value instanceof String
                 || value instanceof Number;
         return isValid ? (String) null : "Value must by one of the allowed types";
     }
 
-    public String getInvalidBooleanValueText(Object value) {
+    private static String getInvalidBooleanValueText(Object value) {
         if (value instanceof String) {
             Log.getLogger().warning("String value in boolean slot: " + value);
         }
         return (value instanceof Boolean) ? (String) null : "Value must be a boolean";
     }
 
-    public String getInvalidClsValueText(Object value, Collection allowedParents) {
+    private static String getInvalidClsValueText(Object value, Collection allowedParents) {
         String result = null;
         if (value instanceof Cls) {
             Cls cls = (Cls) value;
@@ -140,11 +140,11 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
         return result;
     }
 
-    public String getInvalidFloatValueText(Object value) {
+    private static String getInvalidFloatValueText(Object value) {
         return (value instanceof Float) ? (String) null : "Value must be a floating point number";
     }
 
-    public String getInvalidInstanceValueText(Object value, Collection allowedClses) {
+    private static String getInvalidInstanceValueText(Object value, Collection allowedClses) {
         String result = null;
         if (value instanceof Instance) {
             if (!allowedClses.isEmpty()) {
@@ -167,15 +167,15 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
         return result;
     }
 
-    public String getInvalidIntegerValueText(Object value) {
+    private static String getInvalidIntegerValueText(Object value) {
         return (value instanceof Integer) ? (String) null : "Value must be an integer";
     }
 
-    public String getInvalidStringValueText(Object value) {
+    private static String getInvalidStringValueText(Object value) {
         return (value instanceof String) ? (String) null : "Value must be a string";
     }
 
-    public String getInvalidSymbolValueText(Object value, Collection allowedValues) {
+    private static String getInvalidSymbolValueText(Object value, Collection allowedValues) {
         return allowedValues.contains(value) ? (String) null : "'" + value + "' is not one of the allowed values";
     }
 
@@ -195,7 +195,7 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
         return getInvalidValueText(facetValues, type, value);
     }
 
-    private String getInvalidValueText(Collection facetValues, ValueType type, Object value) {
+    private static String getInvalidValueText(Collection facetValues, ValueType type, Object value) {
         String result = null;
         if (equals(type, ValueType.BOOLEAN)) {
             result = getInvalidBooleanValueText(value);
@@ -236,59 +236,59 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
     }
 
     public static Collection getValues() {
-        return _values;
+        return Collections.unmodifiableCollection(values);
     }
 
     public static Collection getValues(ValueType type) {
         return getValues(type, Collections.EMPTY_LIST);
     }
 
-    public static List getValues(ValueType type, Collection values) {
-        List value = new ArrayList();
+    public static List getValues(ValueType type, Collection secondaryValues) {
+        List valueTypeValues = new ArrayList();
         if (!type.equals(ValueType.ANY)) {
-            value.add(type.toString());
-            if (values != null) {
+            valueTypeValues.add(type.toString());
+            if (secondaryValues != null) {
                 // remove duplicates by putting into a set first
-                value.addAll(new LinkedHashSet(values));
+                valueTypeValues.addAll(new LinkedHashSet(secondaryValues));
             }
         }
-        return value;
+        return valueTypeValues;
     }
 
     public Collection resolve(Collection existingValues, Collection newValues) {
-        Collection values;
+        Collection resolvedValues;
         ValueType t1 = getType(existingValues);
         ValueType t2 = getType(newValues);
         if (t1.equals(ValueType.ANY)) {
-            values = newValues;
+            resolvedValues = newValues;
         } else if (t2.equals(ValueType.ANY)) {
-            values = existingValues;
+            resolvedValues = existingValues;
         } else if (t1.equals(t2)) {
             if (t1.equals(ValueType.CLS)) {
-                values = resolveClsValues(existingValues, newValues);
+                resolvedValues = resolveClsValues(existingValues, newValues);
             } else if (t1.equals(ValueType.INSTANCE)) {
-                values = resolveInstanceValues(existingValues, newValues);
+                resolvedValues = resolveInstanceValues(existingValues, newValues);
             } else if (t1.equals(ValueType.SYMBOL)) {
-                values = resolveSymbolValues(existingValues, newValues);
+                resolvedValues = resolveSymbolValues(existingValues, newValues);
             } else {
-                values = existingValues;
+                resolvedValues = existingValues;
             }
         } else {
             // Log.warning("incompatible types", this, "resolve", existingValues, newValues);
-            values = existingValues;
+            resolvedValues = existingValues;
         }
-        return values;
+        return resolvedValues;
     }
 
-    private Collection resolveClsValues(Collection existingValues, Collection newValues) {
+    private static Collection resolveClsValues(Collection existingValues, Collection newValues) {
         return (existingValues.isEmpty()) ? newValues : existingValues;
     }
 
-    private Collection resolveInstanceValues(Collection existingValues, Collection newValues) {
+    private static Collection resolveInstanceValues(Collection existingValues, Collection newValues) {
         return (existingValues.isEmpty()) ? newValues : existingValues;
     }
 
-    private Collection resolveSymbolValues(Collection existingValues, Collection newValues) {
+    private static Collection resolveSymbolValues(Collection existingValues, Collection newValues) {
         return (existingValues.isEmpty()) ? newValues : existingValues;
     }
 }

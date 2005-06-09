@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.model;
 
+//ESCA*JAVA0054
+
 import java.util.*;
 
 import edu.stanford.smi.protege.event.*;
@@ -125,7 +127,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     }
 
     public void testRemoveFrameStore() {
-        final boolean called[] = new boolean[] { false };
+        final boolean[] called = new boolean[] { false };
         FrameStore fs = new FrameStoreAdapter() {
             public Frame getFrame(String name) {
                 called[0] = true;
@@ -142,7 +144,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     }
 
     public void testRemoveFrameStoreWithPosition() {
-        final boolean called[] = new boolean[] { false };
+        final boolean[] called = new boolean[] { false };
         FrameStore fs = new FrameStoreAdapter() {
             public Frame getFrame(String name) {
                 called[0] = true;
@@ -156,19 +158,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         getDomainKB().removeFrameStore(fs);
         getDomainKB().getCls("foo");
         assertFalse(called[0]);
-    }
-
-    public void _testFrameByID() {
-        Cls cls = createCls();
-        Frame returnedFrame = getDomainKB().getFrame(cls.getFrameID());
-        assertEquals(cls, returnedFrame);
-    }
-
-    public void _testFrameByIDDb() {
-        setDatabaseProject();
-        Cls cls = createCls();
-        Frame returnedFrame = getDomainKB().getFrame(cls.getFrameID());
-        assertEquals(cls, returnedFrame);
     }
 
     public void testGetOverriddenDefaultValues() {
@@ -408,9 +397,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     public void testGetFrameName() {
     }
 
-    public void testSetFrameName(Frame frame, String name) {
-    }
-
     public void testCreateCls() {
     }
 
@@ -430,61 +416,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     }
 
     public void testDeleteSimpleInstance() {
-    }
-
-    /*
-     * Set getOwnSlots(Frame frame); Collection getOwnSlotValues(Frame frame, Slot slot); List
-     * getDirectOwnSlotValues(Frame frame, Slot slot); int getDirectOwnSlotValuesCount(Frame frame, Slot slot); void
-     * setDirectOwnSlotValues(Frame frame, Slot slot, Collection values); // own facets Set getOwnFacets(Frame frame,
-     * Slot slot); Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet); // template slots Set
-     * getTemplateSlots(Cls cls); List getDirectTemplateSlots(Cls cls); List getDirectDomain(Slot slot); Set
-     * getDomain(Slot slot); // Set getInheritedTemplateSlots(Cls cls); Set getOverriddenTemplateSlots(Cls cls); Set
-     * getDirectlyOverriddenTemplateSlots(Cls cls); void addDirectTemplateSlot(Cls cls, Slot slot); void
-     * removeDirectTemplateSlot(Cls cls, Slot slot); void moveDirectTemplateSlot(Cls cls, Slot slot, int index); //
-     * template slot values Collection getTemplateSlotValues(Cls cls, Slot slot); List getDirectTemplateSlotValues(Cls
-     * cls, Slot slot); void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values); // template facets Set
-     * getTemplateFacets(Cls cls, Slot slot); Set getOverriddenTemplateFacets(Cls cls, Slot slot); Set
-     * getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot); void removeDirectTemplateFacetOverrides(Cls cls, Slot
-     * slot); Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet); List getDirectTemplateFacetValues(Cls
-     * cls, Slot slot, Facet facet); void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection
-     * values); // class hierarchy List getDirectSuperclasses(Cls cls); Set getSuperclasses(Cls cls); List
-     * getDirectSubclasses(Cls cls); Set getSubclasses(Cls cls); void addDirectSuperclass(Cls cls, Cls superclass); void
-     * removeDirectSuperclass(Cls cls, Cls superclass); void moveDirectSubclass(Cls cls, Cls subclass, int index); //
-     * slot hierarchy List getDirectSuperslots(Slot slot); Set getSuperslots(Slot slot); List getDirectSubslots(Slot
-     * slot); Set getSubslots(Slot slot); void addDirectSuperslot(Slot slot, Slot superslot); void
-     * removeDirectSuperslot(Slot slot, Slot superslot); void moveDirectSubslot(Slot slot, Slot subslot, int index); //
-     * type hierarchy List getDirectTypes(Instance instance); Set getTypes(Instance instance); List
-     * getDirectInstances(Cls cls); Set getInstances(Cls cls); void addDirectType(Instance instance, Cls type); void
-     * removeDirectType(Instance instance, Cls type); // arbitrary queries List executeQuery(Query query); List
-     * getReferences(Object object); List getMatchingReferences(String string, int maxMatches); List
-     * getFramesWithDirectOwnSlotValue(Slot slot, Object value); List getFramesWithAnyDirectOwnSlotValue(Slot slot);
-     * List getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches); List
-     * getClsesWithDirectTemplateSlotValue(Slot slot, Object value); List getClsesWithAnyDirectTemplateSlotValue(Slot
-     * slot); List getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches); List
-     * getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value); List
-     * getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value, int maxMatches); // closures
-     * Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot);
-     */
-
-    public void _testSaveLoadTypeAnyValues() {
-        Cls c = createCls();
-        Slot slot = createMultiValuedSlot(ValueType.ANY);
-        String slotName = slot.getName();
-        c.addDirectTemplateSlot(slot);
-        Instance instance = createInstance(c);
-        Collection originalValues = new ArrayList();
-        originalValues.add(new String("foo"));
-        originalValues.add(Boolean.TRUE);
-        originalValues.add(new Float(10.6));
-        originalValues.add(new Integer(8));
-        // originalValues.add(c);
-        // originalValues.add(slot);
-        // originalValues.add(instance);
-        String instanceName = instance.getName();
-        instance.setOwnSlotValues(slot, originalValues);
-        saveAndReload();
-        Collection loadedValues = new ArrayList(getInstance(instanceName).getOwnSlotValues(getSlot(slotName)));
-        assertEquals("values", originalValues, loadedValues);
     }
 
     public void testAddInverseSlotValue() {
@@ -539,16 +470,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertTrue("b cardinality", b.getAllowsMultipleValues());
     }
 
-    public void _testDBJavaPackagesOnInstance() {
-        setDatabaseProject();
-        testJavaPackagesOnInstance();
-    }
-
-    public void _testDBJavaPackagesOnCls() {
-        setDatabaseProject();
-        testJavaPackagesOnCls();
-    }
-
     public void testDBModficationSlots() throws java.text.ParseException {
         setDatabaseProject();
         testModificationSlots();
@@ -566,11 +487,13 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
             deleteFrame(subCls1);
             fail();
         } catch (RuntimeException e) {
+            // do nothing
         }
         assertEquals("delete with direct instance", nFrames, getFrameCount());
         try {
             deleteFrame(cls);
         } catch (RuntimeException e) {
+            // do nothing
         }
         assertEquals("delete with indirect instance", nFrames, getFrameCount());
 
@@ -841,8 +764,8 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertNotNull("after reload", testCls);
         Iterator i = testCls.getDirectInstances().iterator();
         while (i.hasNext()) {
-            Cls clsa = (Cls) i.next();
-            assertTrue("correct class: " + clsa.getClass(), testClass.isInstance(clsa));
+            Cls clsA = (Cls) i.next();
+            assertTrue("correct class: " + clsA.getClass(), testClass.isInstance(clsA));
         }
 
         getProject().removeJavaPackageName(packageName);
@@ -944,11 +867,11 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     }
 
     public void testRecursiveDelete() {
-        Cls clsa = createCls();
-        Cls clsb = createSubCls(clsa);
-        createSubCls(clsb);
+        Cls clsA = createCls();
+        Cls clsB = createSubCls(clsA);
+        createSubCls(clsB);
         int count = getFrameCount();
-        deleteFrame(clsb);
+        deleteFrame(clsB);
         int newCount = count - 2;
         assertEquals(newCount, getFrameCount());
         saveAndReload();
@@ -1088,7 +1011,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         cls.addDirectTemplateSlot(s2);
         Instance instanceA = createInstance(cls);
         Instance instanceB = createInstance(cls);
-        String s1Name = s1.getName();
         String s2Name = s2.getName();
         String instanceAName = instanceA.getName();
         String instanceBName = instanceB.getName();
@@ -1100,7 +1022,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
 
         instanceA.setOwnSlotValues(s1, Collections.singleton(instanceB));
         saveAndReload();
-        s1 = getSlot(s1Name);
         s2 = getSlot(s2Name);
         instanceA = getInstance(instanceAName);
         instanceB = getInstance(instanceBName);
@@ -1132,13 +1053,14 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         cls.addDirectTemplateSlot(slot);
         Instance i = createInstance(cls);
         Collection values = new ArrayList();
-        values.add(new String());
+        values.add("");
         i.setOwnSlotValues(slot, values);
-        values.add(new String());
+        values.add("");
         try {
             i.setOwnSlotValues(slot, values);
             fail("should have thrown exception");
         } catch (IllegalArgumentException e) {
+            // do nothing
         } finally {
             getDomainKB().setValueChecking(false);
         }
@@ -1150,8 +1072,8 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         String instanceAName = instanceA.getName();
         Slot a = createMultiValuedSlot(ValueType.STRING);
         Slot b = createSubSlot(a);
-        String obj1 = new String("a");
-        String obj2 = new String("b");
+        String obj1 = "a";
+        String obj2 = "b";
         String aSlotName = a.getName();
 
         cls.addDirectTemplateSlot(a);
@@ -1387,18 +1309,18 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
             }
         };
         Cls cls = createCls();
-        Cls clsa = createCls();
+        Cls clsA = createCls();
         cls.addClsListener(listener);
         clearEvents();
-        cls.addDirectSuperclass(clsa);
+        cls.addDirectSuperclass(clsA);
         assertEventFired(ClsEvent.DIRECT_SUPERCLASS_ADDED);
         cls.removeClsListener(listener);
         clearEvents();
-        cls.removeDirectSuperclass(clsa);
+        cls.removeDirectSuperclass(clsA);
         assertEquals(0, getEventCount());
 
         getDomainKB().addClsListener(listener);
-        cls.addDirectSuperclass(clsa);
+        cls.addDirectSuperclass(clsA);
         assertEventFired(ClsEvent.DIRECT_SUPERCLASS_ADDED);
     }
 
@@ -1473,6 +1395,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
             frame.setOwnSlotValue(slot, o);
             fail();
         } catch (IllegalArgumentException e) {
+            // do nothing
         }
     }
 
@@ -1515,15 +1438,15 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     }
 
     public void testRecursiveEquivalentClassesDelete() {
-        Cls clsa = createCls();
-        Cls clsb = createCls();
-        Cls clsc = createSubCls(clsb);
+        Cls clsA = createCls();
+        Cls clsB = createCls();
+        Cls clsC = createSubCls(clsB);
         int frameCount = getFrameCount();
-        Cls clsd = createSubCls(clsb);
-        clsc.addDirectSuperclass(clsd);
-        clsd.addDirectSuperclass(clsc);
-        clsd.addDirectSuperclass(clsa);
-        clsd.delete();
+        Cls clsD = createSubCls(clsB);
+        clsC.addDirectSuperclass(clsD);
+        clsD.addDirectSuperclass(clsC);
+        clsD.addDirectSuperclass(clsA);
+        clsD.delete();
         assertEquals(frameCount, getFrameCount());
     }
 
@@ -1559,23 +1482,23 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         Slot slot = createSlot();
         cls.addDirectTemplateSlot(slot);
         Instance instance = createInstance(cls);
-        testUnmodifiable(instance, slot, 0);
+        checkUnmodifiable(instance, slot, 0);
         instance.setOwnSlotValue(slot, "foo");
-        testUnmodifiable(instance, slot, 1);
+        checkUnmodifiable(instance, slot, 1);
     }
 
-    private void testUnmodifiable(Instance instance, Slot slot, int startSize) {
+    private static void checkUnmodifiable(Instance instance, Slot slot, int startSize) {
         Collection c = instance.getDirectOwnSlotValues(slot);
-        testUnmodifiable(c);
+        checkUnmodifiable(c);
         c = instance.getDirectOwnSlotValues(slot);
         assertEquals(startSize, c.size());
         c = instance.getOwnSlotValues(slot);
         assertEquals(startSize, c.size());
-        testUnmodifiable(c);
+        checkUnmodifiable(c);
         assertEquals(startSize, c.size());
     }
 
-    private void testUnmodifiable(Collection c) {
+    private static void checkUnmodifiable(Collection c) {
         try {
             c.add(new Object());
             fail();
@@ -1814,7 +1737,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     static class TestFrameFactory implements FrameFactory {
         private KnowledgeBase kb;
 
-        public TestFrameFactory(KnowledgeBase kb) {
+        TestFrameFactory(KnowledgeBase kb) {
             this.kb = kb;
         }
 
@@ -1878,25 +1801,25 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     static interface TestInterface {
     }
 
-    static public class TestCls extends DefaultCls implements TestInterface {
+    public static class TestCls extends DefaultCls implements TestInterface {
         public TestCls(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }
     }
 
-    static public class TestSlot extends DefaultSlot implements TestInterface {
+    public static class TestSlot extends DefaultSlot implements TestInterface {
         public TestSlot(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }
     }
 
-    static public class TestFacet extends DefaultFacet implements TestInterface {
+    public static class TestFacet extends DefaultFacet implements TestInterface {
         public TestFacet(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }
     }
 
-    static public class TestSimpleInstance extends DefaultSimpleInstance implements TestInterface {
+    public static class TestSimpleInstance extends DefaultSimpleInstance implements TestInterface {
         public TestSimpleInstance(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }

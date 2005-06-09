@@ -24,7 +24,7 @@ public class ModelUtilities_Test extends APITestCase {
         Cls hiddenCls = createSubCls(topCls);
         hiddenCls.setVisible(false);
         Cls visibleCls = createSubCls(topCls);
-        Cls testCls = createSubCls(        hiddenCls);
+        Cls testCls = createSubCls(hiddenCls);
         testCls.addDirectSuperclass(visibleCls);
         List list = ModelUtilities.getPathToRoot(testCls);
         Iterator it = list.iterator();

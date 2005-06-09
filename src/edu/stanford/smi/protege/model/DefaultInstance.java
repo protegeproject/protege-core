@@ -14,12 +14,13 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class DefaultInstance extends DefaultFrame implements Instance {
 
+    //ESCA-JAVA0016 
     DefaultInstance(KnowledgeBase kb, FrameID id) {
         super(kb, id);
     }
-    
+
     protected DefaultInstance() {
-        
+
     }
 
     public void addInstanceListener(InstanceListener listener) {
@@ -29,9 +30,11 @@ public abstract class DefaultInstance extends DefaultFrame implements Instance {
     public Frame deepCopy(KnowledgeBase targetKB, Map valueMap) {
         return copy(targetKB, valueMap, true);
     }
+
     public Frame shallowCopy(KnowledgeBase targetKB, Map valueMap) {
         return copy(targetKB, valueMap, false);
     }
+
     public Frame copy(KnowledgeBase targetKB, Map valueMap, boolean isDeep) {
         // Log.enter(this, "deepCopy", targetKB);
         KnowledgeBase sourceKB = getKnowledgeBase();
@@ -51,6 +54,7 @@ public abstract class DefaultInstance extends DefaultFrame implements Instance {
         }
         return super.copy(targetKB, valueMap, isDeep);
     }
+
     public String getBrowserText() {
         return getDefaultKnowledgeBase().getBrowserText(this);
     }

@@ -36,16 +36,21 @@ public interface Cls extends Instance {
      * @deprecated
      */
     Slot getBrowserSlot();
+
     BrowserSlotPattern getBrowserSlotPattern();
+
     /**
      * @deprecated
      */
     Slot getDirectBrowserSlot();
+
     BrowserSlotPattern getDirectBrowserSlotPattern();
+
     /**
      * @deprecated
      */
     Slot getInheritedBrowserSlot();
+
     BrowserSlotPattern getInheritedBrowserSlotPattern();
 
     int getDirectInstanceCount();
@@ -68,8 +73,9 @@ public interface Cls extends Instance {
 
     /** see {@link Frame} for a description of the returned objects */
     List getDirectTemplateFacetValues(Slot slot, Facet facet);
-    
+
     Collection getOverriddenTemplateFacets(Slot slot);
+
     Collection getDirectlyOverriddenTemplateFacets(Slot slot);
 
     Collection getDirectTemplateSlots();
@@ -164,7 +170,7 @@ public interface Cls extends Instance {
     int getVisibleDirectSubclassCount();
 
     Collection getVisibleDirectSubclasses();
-    
+
     Collection getVisibleTemplateSlots();
 
     /**

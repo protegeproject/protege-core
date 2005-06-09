@@ -23,12 +23,12 @@ public class DefaultCls_Test extends APITestCase {
         assertTrue("attached", !cls.hasDirectlyOverriddenTemplateFacet(slot, facet));
         cls.setTemplateFacetValue(slot, facet, "bar");
         assertTrue("overridden", cls.hasDirectlyOverriddenTemplateFacet(slot, facet));
-        Cls subClass = createSubCls(cls);
-        assertTrue("not overridden in subclass", !subClass.hasDirectlyOverriddenTemplateFacet(slot, facet));
-        Cls subSubClass = createSubCls(subClass);
+        Cls subclass = createSubCls(cls);
+        assertTrue("not overridden in subclass", !subclass.hasDirectlyOverriddenTemplateFacet(slot, facet));
+        Cls subSubClass = createSubCls(subclass);
         assertTrue("not overridden in subsubclass", !subSubClass.hasDirectlyOverriddenTemplateFacet(slot, facet));
-        subClass.setTemplateFacetValue(slot, facet, "baz");
-        assertTrue("overridden in subclass", subClass.hasDirectlyOverriddenTemplateFacet(slot, facet));
+        subclass.setTemplateFacetValue(slot, facet, "baz");
+        assertTrue("overridden in subclass", subclass.hasDirectlyOverriddenTemplateFacet(slot, facet));
         assertTrue("not overridden in subsubclass - 2", !subSubClass.hasDirectlyOverriddenTemplateFacet(slot, facet));
         subSubClass.setTemplateFacetValue(slot, facet, "bat");
         assertTrue("overridden in subsubclass", subSubClass.hasDirectlyOverriddenTemplateFacet(slot, facet));

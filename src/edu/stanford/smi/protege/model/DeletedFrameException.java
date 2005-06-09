@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.model;
+//ESCA*JAVA0051
 
 /**
  * Exception thrown when the client calls a method on default knowledge base (directly or indirectly) and passes 

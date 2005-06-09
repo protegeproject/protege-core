@@ -22,8 +22,7 @@ public interface KnowledgeBaseFactory {
      * @param projectURIString
      * @param sources
      */
-    KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectURIString,
-            PropertyList sources);
+    KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectURIString, PropertyList sources);
 
     String getDescription();
 

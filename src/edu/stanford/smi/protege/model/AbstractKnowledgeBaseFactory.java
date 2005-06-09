@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.model;
+//ESCA*JAVA0130
 
 import java.io.*;
 import java.net.*;
@@ -29,7 +30,7 @@ public abstract class AbstractKnowledgeBaseFactory implements KnowledgeBaseFacto
         return reader;
     }
 
-    private String encode(String name) {
+    private static String encode(String name) {
         StringBuffer encodedName = new StringBuffer();
         name = FileUtilities.urlEncode(name);
         int start = 0;

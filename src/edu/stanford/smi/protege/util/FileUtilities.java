@@ -23,8 +23,7 @@ public class FileUtilities {
         File tmpFile = null;
         if (file != null) {
             if (file.exists() && !file.canWrite()) {
-                throw new IOException("Cannot write to " + file
-                        + ".  Perhaps it is write-protected");
+                throw new IOException("Cannot write to " + file + ".  Perhaps it is write-protected");
             }
             tmpFile = new File(file.toString() + TEMP_EXTENSION);
         }
@@ -44,6 +43,10 @@ public class FileUtilities {
             file = new File(new File(uri), filename);
         }
         return file.getAbsolutePath();
+    }
+
+    public static String getName(String s) {
+        return new File(s).getName();
     }
 
     public static String getBaseName(String s) {
@@ -134,13 +137,11 @@ public class FileUtilities {
         return reader;
     }
 
-    private static OutputStreamWriter createOutputStreamWriter(OutputStream os)
-            throws UnsupportedEncodingException {
+    private static OutputStreamWriter createOutputStreamWriter(OutputStream os) throws UnsupportedEncodingException {
         return new OutputStreamWriter(os, getWriteEncoding());
     }
 
-    private static InputStreamReader createInputStreamReader(InputStream is)
-            throws UnsupportedEncodingException {
+    private static InputStreamReader createInputStreamReader(InputStream is) throws UnsupportedEncodingException {
         return new InputStreamReader(is, getReadEncoding());
     }
 
@@ -190,8 +191,7 @@ public class FileUtilities {
         if (tmpFile != null) {
             String tmpFileName = tmpFile.toString();
             if (tmpFileName.endsWith(TEMP_EXTENSION)) {
-                String fileName = tmpFileName.substring(0, tmpFileName.length()
-                        - TEMP_EXTENSION.length());
+                String fileName = tmpFileName.substring(0, tmpFileName.length() - TEMP_EXTENSION.length());
                 replaceFile(tmpFile, new File(fileName));
             } else {
                 throw new IOException("Not a temporary file: " + tmpFile);
@@ -204,8 +204,7 @@ public class FileUtilities {
             // The File api lets us delete files which are not writable. This
             // is bad so we test for it.
             if (!file.canWrite()) {
-                throw new IOException("Cannot write to file " + file
-                        + ".  It may be write-protected.");
+                throw new IOException("Cannot write to file " + file + ".  It may be write-protected.");
             } else if (!file.delete()) {
                 throw new IOException("Delete of existing " + file + " failed");
             }

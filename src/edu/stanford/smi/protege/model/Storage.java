@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.model;
 
 import java.util.*;
+
 import edu.stanford.smi.protege.util.*;
 
 /**
@@ -14,28 +15,33 @@ public interface Storage extends Disposable {
 
     void addValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value);
 
+    //ESCA-JAVA0138 
     void addValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value, int index);
 
-    public boolean beginTransaction();
+    boolean beginTransaction();
 
     boolean containsFrame(Frame frame);
 
     boolean containsFrame(String name);
 
-    public boolean endTransaction(boolean doCommit);
+    boolean endTransaction(boolean doCommit);
 
     Frame getFrame(FrameID id);
 
     Frame getFrame(String name);
 
     int getFrameCount();
+
     int getFacetCount();
+
     int getSlotCount();
+
     int getClsCount();
 
     Collection getFrames();
 
     Collection getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String s, int maxMatches);
+
     Collection getFramesWithValue(Slot slot, Facet facet, boolean isTemplate, Object o);
 
     // back references
@@ -51,6 +57,7 @@ public interface Storage extends Disposable {
 
     boolean hasValueAtSomeFrame(Slot slot, Facet facet, boolean isTemplate);
 
+    //ESCA-JAVA0138 
     void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to);
 
     void remove(Frame frame, Slot slot, Facet facet, boolean isTemplate);
@@ -68,5 +75,5 @@ public interface Storage extends Disposable {
 
     void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values);
 
-    public boolean supportsTransactions();
+    boolean supportsTransactions();
 }

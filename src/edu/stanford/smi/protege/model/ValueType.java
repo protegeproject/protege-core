@@ -10,21 +10,21 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ValueType implements Comparable {
-    private static int _nValues;
+    private static int _nValues = 0;
     private static Map _values = CollectionUtilities.createSmallMap(); // <string, ValueType>
     private String _string;
     private int _intValue;
     private Class _javaType;
 
-    public final static ValueType ANY = new ValueType("Any", Object.class);
-    public final static ValueType BOOLEAN = new ValueType("Boolean", Boolean.class);
-    public final static ValueType CLS = new ValueType("Class", Cls.class);
-    public final static ValueType FLOAT = new ValueType("Float", Float.class);
-    public final static ValueType INSTANCE = new ValueType("Instance", Instance.class);
-    public final static ValueType INTEGER = new ValueType("Integer", Integer.class);
-    public final static ValueType STRING = new ValueType("String", String.class);
-    public final static ValueType SYMBOL = new ValueType("Symbol", String.class);
-    
+    public static final ValueType ANY = new ValueType("Any", Object.class);
+    public static final ValueType BOOLEAN = new ValueType("Boolean", Boolean.class);
+    public static final ValueType CLS = new ValueType("Class", Cls.class);
+    public static final ValueType FLOAT = new ValueType("Float", Float.class);
+    public static final ValueType INSTANCE = new ValueType("Instance", Instance.class);
+    public static final ValueType INTEGER = new ValueType("Integer", Integer.class);
+    public static final ValueType STRING = new ValueType("String", String.class);
+    public static final ValueType SYMBOL = new ValueType("Symbol", String.class);
+
     private ValueType(String s, Class javaType) {
         _values.put(s, this);
         _string = s;

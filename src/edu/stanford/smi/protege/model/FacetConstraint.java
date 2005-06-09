@@ -19,6 +19,6 @@ public interface FacetConstraint {
     String getInvalidValueText(Frame frame, Slot slot, Object value, Collection facetValues);
 
     boolean isValidValue(Frame frame, Slot slot, Object item, Collection facetValues);
-    
+
     Collection resolve(Collection existingValues, Collection newValues);
 }

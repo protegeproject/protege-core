@@ -35,8 +35,10 @@ public interface Instance extends Frame {
     void removeInstanceListener(InstanceListener listener);
 
     Instance setDirectType(Cls cls);
+
     Instance setDirectTypes(Collection types);
 
     void addDirectType(Cls cls);
+
     void removeDirectType(Cls cls);
 }

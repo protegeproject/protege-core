@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.model;
+//ESCA*JAVA0257
 
 /**
  * System Class, Slot and Facet names and ids
@@ -12,7 +13,7 @@ public interface Model {
      * 
      * @author Ray Fergerson <fergerson@smi.stanford.edu>
      */
-    public interface Cls {
+    interface Cls {
         String THING = ":THING";
         String CLASS = ":CLASS";
         String STANDARD_CLASS = ":STANDARD-CLASS";
@@ -49,7 +50,7 @@ public interface Model {
      * 
      * @author Ray Fergerson <fergerson@smi.stanford.edu>
      */
-    public interface ClsID {
+    interface ClsID {
         int BASE_ID = 1000;
         FrameID THING = FrameID.createSystem(BASE_ID + 0);
         FrameID CLASS = FrameID.createSystem(BASE_ID + 1);
@@ -86,7 +87,7 @@ public interface Model {
      * 
      * @author Ray Fergerson <fergerson@smi.stanford.edu>
      */
-    public interface Slot {
+    interface Slot {
         String DOCUMENTATION = ":DOCUMENTATION";
         String DOMAIN = ":DOMAIN";
 
@@ -155,7 +156,7 @@ public interface Model {
      * 
      * @author Ray Fergerson <fergerson@smi.stanford.edu>
      */
-    public interface SlotID {
+    interface SlotID {
         int BASE_ID = 2000;
         FrameID DOCUMENTATION = FrameID.createSystem(BASE_ID + 0);
         FrameID DOMAIN = FrameID.createSystem(BASE_ID + 1);
@@ -220,7 +221,7 @@ public interface Model {
      * 
      * @author Ray Fergerson <fergerson@smi.stanford.edu>
      */
-    public interface Facet {
+    interface Facet {
         String DIRECT_TEMPLATE_FACETS = ":DIRECT-TEMPLATE-FACETS";
 
         String DOCUMENTATION = ":DOCUMENTATION-IN-FRAME";
@@ -250,7 +251,7 @@ public interface Model {
      * 
      * @author Ray Fergerson <fergerson@smi.stanford.edu>
      */
-    public interface FacetID {
+    interface FacetID {
         int BASE_ID = 3000;
         FrameID DIRECT_TEMPLATE_FACETS = FrameID.createSystem(BASE_ID + 0);
 

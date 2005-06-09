@@ -8,18 +8,18 @@ import java.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class RoleConstraint extends AbstractFacetConstraint {
-    public final static String ABSTRACT = "Abstract";
-    public final static String CONCRETE = "Concrete";
-    private final static Collection _values;
+    public static final String ABSTRACT = "Abstract";
+    public static final String CONCRETE = "Concrete";
+    private static final Collection values;
 
     static {
-        _values = new ArrayList();
-        _values.add(ABSTRACT);
-        _values.add(CONCRETE);
+        values = new ArrayList();
+        values.add(ABSTRACT);
+        values.add(CONCRETE);
     }
 
     public static Collection getValues() {
-        return _values;
+        return Collections.unmodifiableCollection(values);
     }
 
     public static boolean isAbstract(String s) {
