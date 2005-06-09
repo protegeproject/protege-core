@@ -600,7 +600,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEqualsSet("clses end", makeList(cls3, cls4), clses);
     }
 
-    public void testMoveDirectsubclass() {
+    public void testMoveDirectSubclass() {
         Cls cls = createCls();
         Cls clsa = createCls(cls);
         Cls clsb = createCls(cls);
