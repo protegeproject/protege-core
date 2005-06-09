@@ -1703,19 +1703,29 @@ public class Project {
         updateKBNames();
         updateJournaling();
         projectURITree.swapNode(projectURITree.getRoot(), uri);
-        setActiveFrameStore(uri);
+        setActiveFrameStoreName(uri);
         activeRootURI = uri;
-        // Log.trace("uri=" + _uri, this, "setProjectURI", uri);
     }
     
     private MergingNarrowFrameStore getMergingFrameStore() {
         return MergingNarrowFrameStore.get(_domainKB);
     }
     
+    private void setActiveFrameStoreName(URI uri) {
+        if (uri != null) {
+            MergingNarrowFrameStore nfs = getMergingFrameStore();
+            if (nfs != null) {
+                nfs.getActiveFrameStore().setName(uri.toString());
+            }
+        }
+    }
+    
     private void setActiveFrameStore(URI uri) {
-        MergingNarrowFrameStore nfs = getMergingFrameStore();
-        if (nfs != null && uri != null) {
-            nfs.setActiveFrameStore(uri.toString());
+        if (uri != null) {
+            MergingNarrowFrameStore nfs = getMergingFrameStore();
+            if (nfs != null) {
+                nfs.setActiveFrameStore(uri.toString());
+            }
         }
     }
     
