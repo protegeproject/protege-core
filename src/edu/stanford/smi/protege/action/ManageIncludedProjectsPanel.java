@@ -29,7 +29,7 @@ class ManageIncludedProjectsPanel extends SelectableContainer implements Validat
     private Tree originalUriTree;
     private Project project;
 
-    public ManageIncludedProjectsPanel(Project project) {
+    ManageIncludedProjectsPanel(Project project) {
         setLayout(new BorderLayout());
         this.project = project;
         activeProject = project.getActiveRootURI();
@@ -61,18 +61,19 @@ class ManageIncludedProjectsPanel extends SelectableContainer implements Validat
                 JFileChooser chooser = ComponentFactory.createFileChooser("Select Project", "pprj");
                 int openDialogResult = chooser.showOpenDialog(ManageIncludedProjectsPanel.this);
                 switch (openDialogResult) {
-                case JFileChooser.ERROR_OPTION:
-                    // Get this on 'close"
-                    break;
-                case JFileChooser.CANCEL_OPTION:
-                    break;
-                case JFileChooser.APPROVE_OPTION:
-                    URI uri = chooser.getSelectedFile().toURI();
-                    uriTree.addChild(uriTree.getRoot(), uri);
-                    generateTreeModel();
-                    break;
-                default:
-                    Assert.fail("bad result: " + openDialogResult);
+                    case JFileChooser.ERROR_OPTION:
+                        // Get this on 'close"
+                        break;
+                    case JFileChooser.CANCEL_OPTION:
+                        break;
+                    case JFileChooser.APPROVE_OPTION:
+                        URI uri = chooser.getSelectedFile().toURI();
+                        uriTree.addChild(uriTree.getRoot(), uri);
+                        generateTreeModel();
+                        break;
+                    default:
+                        Assert.fail("bad result: " + openDialogResult);
+                        break;
                 }
             }
         };
@@ -94,8 +95,7 @@ class ManageIncludedProjectsPanel extends SelectableContainer implements Validat
     }
 
     private Action createActivateIncludedProjectAction() {
-        activateProjectAction = new StandardAction("Activate Selected Project", Icons
-                .getSelectProjectIcon()) {
+        activateProjectAction = new StandardAction("Activate Selected Project", Icons.getSelectProjectIcon()) {
             public void actionPerformed(ActionEvent event) {
                 URI uri = (URI) CollectionUtilities.getFirstItem(getSelection());
                 if (uri != null) {
@@ -220,7 +220,7 @@ class ProjectRoot extends LazyTreeRoot {
 class ProjectNode extends LazyTreeNode {
     private Tree projectURIs;
 
-    public ProjectNode(LazyTreeNode parent, Object node, Tree projectURIs) {
+    ProjectNode(LazyTreeNode parent, Object node, Tree projectURIs) {
         super(parent, node);
         this.projectURIs = projectURIs;
         // Log.getLogger().info("created: " + node);

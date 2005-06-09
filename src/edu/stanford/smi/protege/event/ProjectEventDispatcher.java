@@ -19,20 +19,21 @@ public class ProjectEventDispatcher implements EventDispatcher {
         while (i.hasNext()) {
             ProjectListener listener = (ProjectListener) i.next();
             switch (type) {
-                case ProjectEvent.PROJECT_CLOSED :
+                case ProjectEvent.PROJECT_CLOSED:
                     listener.projectClosed(event);
                     break;
-                case ProjectEvent.PROJECT_SAVED :
+                case ProjectEvent.PROJECT_SAVED:
                     listener.projectSaved(event);
                     break;
-                case ProjectEvent.FORM_CHANGED :
+                case ProjectEvent.FORM_CHANGED:
                     listener.formChanged(event);
                     break;
-                case ProjectEvent.RUNTIME_CLS_WIDGET_CREATED :
+                case ProjectEvent.RUNTIME_CLS_WIDGET_CREATED:
                     listener.runtimeClsWidgetCreated(event);
                     break;
-                default :
+                default:
                     Assert.fail("bad type: " + type);
+                    break;
             }
         }
     }

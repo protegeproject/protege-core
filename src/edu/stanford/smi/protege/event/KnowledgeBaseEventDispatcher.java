@@ -19,45 +19,46 @@ public class KnowledgeBaseEventDispatcher implements EventDispatcher {
         while (i.hasNext()) {
             KnowledgeBaseListener listener = (KnowledgeBaseListener) i.next();
             switch (type) {
-                case KnowledgeBaseEvent.CLS_CREATED :
+                case KnowledgeBaseEvent.CLS_CREATED:
                     listener.clsCreated(event);
                     break;
-                case KnowledgeBaseEvent.CLS_DELETED :
+                case KnowledgeBaseEvent.CLS_DELETED:
                     listener.clsDeleted(event);
                     break;
-                case KnowledgeBaseEvent.SLOT_CREATED :
+                case KnowledgeBaseEvent.SLOT_CREATED:
                     listener.slotCreated(event);
                     break;
-                case KnowledgeBaseEvent.SLOT_DELETED :
+                case KnowledgeBaseEvent.SLOT_DELETED:
                     listener.slotDeleted(event);
                     break;
-                case KnowledgeBaseEvent.FACET_CREATED :
+                case KnowledgeBaseEvent.FACET_CREATED:
                     listener.facetCreated(event);
                     break;
-                case KnowledgeBaseEvent.FACET_DELETED :
+                case KnowledgeBaseEvent.FACET_DELETED:
                     listener.facetDeleted(event);
                     break;
-                case KnowledgeBaseEvent.INSTANCE_CREATED :
+                case KnowledgeBaseEvent.INSTANCE_CREATED:
                     listener.instanceCreated(event);
                     break;
-                case KnowledgeBaseEvent.INSTANCE_DELETED :
+                case KnowledgeBaseEvent.INSTANCE_DELETED:
                     listener.instanceDeleted(event);
                     break;
-                case KnowledgeBaseEvent.FRAME_NAME_CHANGED :
+                case KnowledgeBaseEvent.FRAME_NAME_CHANGED:
                     listener.frameNameChanged(event);
                     break;
-                case KnowledgeBaseEvent.DEFAULT_CLS_METACLASS_CHANGED :
+                case KnowledgeBaseEvent.DEFAULT_CLS_METACLASS_CHANGED:
                     listener.defaultClsMetaClsChanged(event);
                     break;
-                case KnowledgeBaseEvent.DEFAULT_SLOT_METACLASS_CHANGED :
+                case KnowledgeBaseEvent.DEFAULT_SLOT_METACLASS_CHANGED:
                     listener.defaultSlotMetaClsChanged(event);
                     break;
-                case KnowledgeBaseEvent.DEFAULT_FACET_METACLASS_CHANGED :
+                case KnowledgeBaseEvent.DEFAULT_FACET_METACLASS_CHANGED:
                     listener.defaultFacetMetaClsChanged(event);
                     break;
-                default :
+                default:
                     // Assert.unreachable(type);
                     // Log.trace("dispatch frame kb event", this, "postKnowledgeBaseEvent", event, listener);
+                    break;
             }
         }
     }

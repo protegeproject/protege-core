@@ -13,20 +13,16 @@ class CreateSlotCommand extends AbstractCommand {
     private boolean loadDefaults;
     private Slot createdSlot;
 
-    public CreateSlotCommand(
-        FrameStore delegate,
-        FrameID id,
-        String name,
-        Collection types,
-        Collection superslots,
-        boolean loadDefaults) {
+    CreateSlotCommand(FrameStore delegate, FrameID id, String name, Collection types, Collection superslots,
+            boolean loadDefaults) {
         super(delegate);
         this.id = id;
         this.name = name;
         this.loadDefaults = loadDefaults;
-        this.types = types;
-        this.superslots = superslots;
+        this.types = new ArrayList(types);
+        this.superslots = new ArrayList(superslots);
     }
+
     public Object doIt() {
         createdSlot = getDelegate().createSlot(id, name, types, superslots, loadDefaults);
         id = createdSlot.getFrameID();
@@ -34,10 +30,12 @@ class CreateSlotCommand extends AbstractCommand {
         setDescription("Create slot " + getText(createdSlot));
         return createdSlot;
     }
+
     public void undoIt() {
         getDelegate().deleteSlot(createdSlot);
         createdSlot.markDeleted(true);
     }
+
     public void redoIt() {
         getDelegate().createSlot(id, name, types, superslots, loadDefaults);
         createdSlot.markDeleted(false);

@@ -14,13 +14,10 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class EventDispatchFrameStore extends ModificationFrameStore {
+    //ESCA-JAVA0077 
+    private static final int DELAY_MSEC = 5 * 1000;
     private Map _listeners = new HashMap();
     private Thread _eventThread;
-    private static final int DELAY_MSEC = 1000 * 5;
-
-    public EventDispatchFrameStore() {
-        // Log.enter(this, "EventDispatchFrameStore");
-    }
 
     public void reinitialize() {
         // do nothing. In particular we do not clear the listeners. Dispatch can
@@ -94,49 +91,49 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         while (i.hasNext()) {
             KnowledgeBaseListener listener = (KnowledgeBaseListener) i.next();
             switch (event.getEventType()) {
-            case KnowledgeBaseEvent.CLS_CREATED:
-                // Log.trace("dispatched to " + listener, this,
-                // "dispatchKbEvent", event);
-                listener.clsCreated(event);
-                break;
-            case KnowledgeBaseEvent.CLS_DELETED:
-                // Log.trace("delete dispatched to " + listener, this,
-                // "dispatchKbEvent", event);
-                listener.clsDeleted(event);
-                break;
-            case KnowledgeBaseEvent.SLOT_CREATED:
-                listener.slotCreated(event);
-                break;
-            case KnowledgeBaseEvent.SLOT_DELETED:
-                listener.slotDeleted(event);
-                break;
-            case KnowledgeBaseEvent.FACET_CREATED:
-                listener.facetCreated(event);
-                break;
-            case KnowledgeBaseEvent.FACET_DELETED:
-                listener.facetDeleted(event);
-                break;
-            case KnowledgeBaseEvent.INSTANCE_CREATED:
-                listener.instanceCreated(event);
-                break;
-            case KnowledgeBaseEvent.INSTANCE_DELETED:
-                listener.instanceDeleted(event);
-                break;
-            case KnowledgeBaseEvent.FRAME_NAME_CHANGED:
-                listener.frameNameChanged(event);
-                break;
-            case KnowledgeBaseEvent.DEFAULT_CLS_METACLASS_CHANGED:
-                listener.defaultClsMetaClsChanged(event);
-                break;
-            case KnowledgeBaseEvent.DEFAULT_SLOT_METACLASS_CHANGED:
-                listener.defaultSlotMetaClsChanged(event);
-                break;
-            case KnowledgeBaseEvent.DEFAULT_FACET_METACLASS_CHANGED:
-                listener.defaultFacetMetaClsChanged(event);
-                break;
-            default:
-                Log.getLogger().warning("bad event: " + event);
-                break;
+                case KnowledgeBaseEvent.CLS_CREATED:
+                    // Log.trace("dispatched to " + listener, this,
+                    // "dispatchKbEvent", event);
+                    listener.clsCreated(event);
+                    break;
+                case KnowledgeBaseEvent.CLS_DELETED:
+                    // Log.trace("delete dispatched to " + listener, this,
+                    // "dispatchKbEvent", event);
+                    listener.clsDeleted(event);
+                    break;
+                case KnowledgeBaseEvent.SLOT_CREATED:
+                    listener.slotCreated(event);
+                    break;
+                case KnowledgeBaseEvent.SLOT_DELETED:
+                    listener.slotDeleted(event);
+                    break;
+                case KnowledgeBaseEvent.FACET_CREATED:
+                    listener.facetCreated(event);
+                    break;
+                case KnowledgeBaseEvent.FACET_DELETED:
+                    listener.facetDeleted(event);
+                    break;
+                case KnowledgeBaseEvent.INSTANCE_CREATED:
+                    listener.instanceCreated(event);
+                    break;
+                case KnowledgeBaseEvent.INSTANCE_DELETED:
+                    listener.instanceDeleted(event);
+                    break;
+                case KnowledgeBaseEvent.FRAME_NAME_CHANGED:
+                    listener.frameNameChanged(event);
+                    break;
+                case KnowledgeBaseEvent.DEFAULT_CLS_METACLASS_CHANGED:
+                    listener.defaultClsMetaClsChanged(event);
+                    break;
+                case KnowledgeBaseEvent.DEFAULT_SLOT_METACLASS_CHANGED:
+                    listener.defaultSlotMetaClsChanged(event);
+                    break;
+                case KnowledgeBaseEvent.DEFAULT_FACET_METACLASS_CHANGED:
+                    listener.defaultFacetMetaClsChanged(event);
+                    break;
+                default:
+                    Log.getLogger().warning("bad event: " + event);
+                    break;
             }
         }
     }
@@ -146,48 +143,48 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         while (i.hasNext()) {
             ClsListener listener = (ClsListener) i.next();
             switch (event.getEventType()) {
-            case ClsEvent.DIRECT_SUPERCLASS_ADDED:
-                listener.directSuperclassAdded(event);
-                break;
-            case ClsEvent.DIRECT_SUPERCLASS_REMOVED:
-                listener.directSuperclassRemoved(event);
-                break;
-            case ClsEvent.DIRECT_SUBCLASS_ADDED:
-                listener.directSubclassAdded(event);
-                break;
-            case ClsEvent.DIRECT_SUBCLASS_REMOVED:
-                listener.directSubclassRemoved(event);
-                break;
-            case ClsEvent.DIRECT_INSTANCE_ADDED:
-                listener.directInstanceAdded(event);
-                break;
-            case ClsEvent.DIRECT_INSTANCE_REMOVED:
-                listener.directInstanceRemoved(event);
-                break;
-            case ClsEvent.DIRECT_SUBCLASS_MOVED:
-                listener.directSubclassMoved(event);
-                break;
-            case ClsEvent.TEMPLATE_SLOT_ADDED:
-                listener.templateSlotAdded(event);
-                break;
-            case ClsEvent.TEMPLATE_SLOT_REMOVED:
-                listener.templateSlotRemoved(event);
-                break;
-            case ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED:
-                listener.templateSlotValueChanged(event);
-                break;
-            case ClsEvent.TEMPLATE_FACET_ADDED:
-                listener.templateFacetAdded(event);
-                break;
-            case ClsEvent.TEMPLATE_FACET_REMOVED:
-                listener.templateFacetRemoved(event);
-                break;
-            case ClsEvent.TEMPLATE_FACET_VALUE_CHANGED:
-                listener.templateFacetValueChanged(event);
-                break;
-            default:
-                Log.getLogger().severe("bad event: " + event);
-                break;
+                case ClsEvent.DIRECT_SUPERCLASS_ADDED:
+                    listener.directSuperclassAdded(event);
+                    break;
+                case ClsEvent.DIRECT_SUPERCLASS_REMOVED:
+                    listener.directSuperclassRemoved(event);
+                    break;
+                case ClsEvent.DIRECT_SUBCLASS_ADDED:
+                    listener.directSubclassAdded(event);
+                    break;
+                case ClsEvent.DIRECT_SUBCLASS_REMOVED:
+                    listener.directSubclassRemoved(event);
+                    break;
+                case ClsEvent.DIRECT_INSTANCE_ADDED:
+                    listener.directInstanceAdded(event);
+                    break;
+                case ClsEvent.DIRECT_INSTANCE_REMOVED:
+                    listener.directInstanceRemoved(event);
+                    break;
+                case ClsEvent.DIRECT_SUBCLASS_MOVED:
+                    listener.directSubclassMoved(event);
+                    break;
+                case ClsEvent.TEMPLATE_SLOT_ADDED:
+                    listener.templateSlotAdded(event);
+                    break;
+                case ClsEvent.TEMPLATE_SLOT_REMOVED:
+                    listener.templateSlotRemoved(event);
+                    break;
+                case ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED:
+                    listener.templateSlotValueChanged(event);
+                    break;
+                case ClsEvent.TEMPLATE_FACET_ADDED:
+                    listener.templateFacetAdded(event);
+                    break;
+                case ClsEvent.TEMPLATE_FACET_REMOVED:
+                    listener.templateFacetRemoved(event);
+                    break;
+                case ClsEvent.TEMPLATE_FACET_VALUE_CHANGED:
+                    listener.templateFacetValueChanged(event);
+                    break;
+                default:
+                    Log.getLogger().severe("bad event: " + event);
+                    break;
             }
         }
     }
@@ -197,8 +194,8 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             Iterator i = getListenedToSubclasses(ClsListener.class, event.getCls()).iterator();
             while (i.hasNext()) {
                 Cls cls = (Cls) i.next();
-                ClsEvent subclassEvent = new ClsEvent(cls, event.getEventType(), event
-                        .getArgument1(), event.getArgument2());
+                ClsEvent subclassEvent = new ClsEvent(cls, event.getEventType(), event.getArgument1(), event
+                        .getArgument2());
                 dispatchClsEvent(subclassEvent);
             }
         }
@@ -206,8 +203,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     private static boolean doDispatchToSubclasses(ClsEvent event) {
         int type = event.getEventType();
-        return type == ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED
-                || type == ClsEvent.TEMPLATE_FACET_VALUE_CHANGED
+        return type == ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED || type == ClsEvent.TEMPLATE_FACET_VALUE_CHANGED
                 || type == ClsEvent.TEMPLATE_SLOT_ADDED || type == ClsEvent.TEMPLATE_SLOT_REMOVED;
     }
 
@@ -218,8 +214,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             Iterator i = slot.getDirectDomain().iterator();
             if (i.hasNext()) {
                 Cls cls = (Cls) i.next();
-                ClsEvent clsEvent = new ClsEvent(cls, ClsEvent.TEMPLATE_FACET_VALUE_CHANGED, slot,
-                        facet);
+                ClsEvent clsEvent = new ClsEvent(cls, ClsEvent.TEMPLATE_FACET_VALUE_CHANGED, slot, facet);
                 dispatchClsEvent(clsEvent);
                 dispatchClsEventToSubclasses(clsEvent);
             }
@@ -228,8 +223,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     private static Facet getFacet(FrameEvent event) {
         Facet facet = null;
-        if (event.getFrame() instanceof Slot
-                && event.getEventType() == FrameEvent.OWN_SLOT_VALUE_CHANGED) {
+        if (event.getFrame() instanceof Slot && event.getEventType() == FrameEvent.OWN_SLOT_VALUE_CHANGED) {
             Slot slot = event.getSlot();
             facet = slot.getAssociatedFacet();
         }
@@ -242,30 +236,30 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             SlotListener listener = (SlotListener) i.next();
             int type = event.getEventType();
             switch (type) {
-            case SlotEvent.TEMPLATE_SLOT_CLS_ADDED:
-                listener.templateSlotClsAdded(event);
-                break;
-            case SlotEvent.TEMPLATE_SLOT_CLS_REMOVED:
-                listener.templateSlotClsRemoved(event);
-                break;
-            case SlotEvent.DIRECT_SUBSLOT_ADDED:
-                listener.directSubslotAdded(event);
-                break;
-            case SlotEvent.DIRECT_SUBSLOT_REMOVED:
-                listener.directSubslotRemoved(event);
-                break;
-            case SlotEvent.DIRECT_SUBSLOT_MOVED:
-                listener.directSubslotMoved(event);
-                break;
-            case SlotEvent.DIRECT_SUPERSLOT_ADDED:
-                listener.directSuperslotAdded(event);
-                break;
-            case SlotEvent.DIRECT_SUPERSLOT_REMOVED:
-                listener.directSuperslotRemoved(event);
-                break;
-            default:
-                Assert.fail("bad type: " + type);
-                break;
+                case SlotEvent.TEMPLATE_SLOT_CLS_ADDED:
+                    listener.templateSlotClsAdded(event);
+                    break;
+                case SlotEvent.TEMPLATE_SLOT_CLS_REMOVED:
+                    listener.templateSlotClsRemoved(event);
+                    break;
+                case SlotEvent.DIRECT_SUBSLOT_ADDED:
+                    listener.directSubslotAdded(event);
+                    break;
+                case SlotEvent.DIRECT_SUBSLOT_REMOVED:
+                    listener.directSubslotRemoved(event);
+                    break;
+                case SlotEvent.DIRECT_SUBSLOT_MOVED:
+                    listener.directSubslotMoved(event);
+                    break;
+                case SlotEvent.DIRECT_SUPERSLOT_ADDED:
+                    listener.directSuperslotAdded(event);
+                    break;
+                case SlotEvent.DIRECT_SUPERSLOT_REMOVED:
+                    listener.directSuperslotRemoved(event);
+                    break;
+                default:
+                    Assert.fail("bad type: " + type);
+                    break;
             }
         }
     }
@@ -276,15 +270,15 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             FacetListener listener = (FacetListener) i.next();
             int type = event.getEventType();
             switch (type) {
-            case FacetEvent.FRAME_SLOT_REFERENCE_ADDED:
-                listener.frameSlotReferenceAdded(event);
-                break;
-            case FacetEvent.FRAME_SLOT_REFERENCE_REMOVED:
-                listener.frameSlotReferenceRemoved(event);
-                break;
-            default:
-                Assert.fail("bad type: " + type + " " + listener);
-                break;
+                case FacetEvent.FRAME_SLOT_REFERENCE_ADDED:
+                    listener.frameSlotReferenceAdded(event);
+                    break;
+                case FacetEvent.FRAME_SLOT_REFERENCE_REMOVED:
+                    listener.frameSlotReferenceRemoved(event);
+                    break;
+                default:
+                    Assert.fail("bad type: " + type + " " + listener);
+                    break;
             }
         }
     }
@@ -295,15 +289,15 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             InstanceListener listener = (InstanceListener) i.next();
             int type = event.getEventType();
             switch (type) {
-            case InstanceEvent.DIRECT_TYPE_ADDED:
-                listener.directTypeAdded(event);
-                break;
-            case InstanceEvent.DIRECT_TYPE_REMOVED:
-                listener.directTypeRemoved(event);
-                break;
-            default:
-                Assert.fail("bad type: " + type + " " + listener);
-                break;
+                case InstanceEvent.DIRECT_TYPE_ADDED:
+                    listener.directTypeAdded(event);
+                    break;
+                case InstanceEvent.DIRECT_TYPE_REMOVED:
+                    listener.directTypeRemoved(event);
+                    break;
+                default:
+                    Assert.fail("bad type: " + type + " " + listener);
+                    break;
             }
         }
     }
@@ -313,38 +307,39 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         while (i.hasNext()) {
             FrameListener listener = (FrameListener) i.next();
             switch (event.getEventType()) {
-            case FrameEvent.NAME_CHANGED:
-                listener.nameChanged(event);
-                break;
-            case FrameEvent.VISIBILITY_CHANGED:
-                listener.visibilityChanged(event);
-                break;
-            case FrameEvent.BROWSER_TEXT_CHANGED:
-                listener.browserTextChanged(event);
-                break;
-            case FrameEvent.OWN_SLOT_ADDED:
-                listener.ownSlotAdded(event);
-                break;
-            case FrameEvent.OWN_SLOT_REMOVED:
-                listener.ownSlotRemoved(event);
-                break;
-            case FrameEvent.OWN_FACET_ADDED:
-                listener.ownFacetAdded(event);
-                break;
-            case FrameEvent.OWN_FACET_REMOVED:
-                listener.ownFacetRemoved(event);
-                break;
-            case FrameEvent.OWN_SLOT_VALUE_CHANGED:
-                listener.ownSlotValueChanged(event);
-                break;
-            case FrameEvent.OWN_FACET_VALUE_CHANGED:
-                listener.ownFacetValueChanged(event);
-                break;
-            case FrameEvent.DELETED:
-                listener.deleted(event);
-                break;
-            default:
-                Log.getLogger().severe("bad event: " + event);
+                case FrameEvent.NAME_CHANGED:
+                    listener.nameChanged(event);
+                    break;
+                case FrameEvent.VISIBILITY_CHANGED:
+                    listener.visibilityChanged(event);
+                    break;
+                case FrameEvent.BROWSER_TEXT_CHANGED:
+                    listener.browserTextChanged(event);
+                    break;
+                case FrameEvent.OWN_SLOT_ADDED:
+                    listener.ownSlotAdded(event);
+                    break;
+                case FrameEvent.OWN_SLOT_REMOVED:
+                    listener.ownSlotRemoved(event);
+                    break;
+                case FrameEvent.OWN_FACET_ADDED:
+                    listener.ownFacetAdded(event);
+                    break;
+                case FrameEvent.OWN_FACET_REMOVED:
+                    listener.ownFacetRemoved(event);
+                    break;
+                case FrameEvent.OWN_SLOT_VALUE_CHANGED:
+                    listener.ownSlotValueChanged(event);
+                    break;
+                case FrameEvent.OWN_FACET_VALUE_CHANGED:
+                    listener.ownFacetValueChanged(event);
+                    break;
+                case FrameEvent.DELETED:
+                    listener.deleted(event);
+                    break;
+                default:
+                    Log.getLogger().severe("bad event: " + event);
+                    break;
             }
         }
     }
@@ -361,7 +356,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         return allListeners == null ? Collections.EMPTY_LIST : allListeners;
     }
 
-    private Collection addListeners(Collection listenersToAdd, Collection listeners) {
+    private static Collection addListeners(Collection listenersToAdd, Collection listeners) {
         if (listenersToAdd != null) {
             if (listeners == null) {
                 listeners = new ArrayList(listenersToAdd);
@@ -511,30 +506,25 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         return succeeded;
     }
 
-    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses,
-            boolean loadDefaults) {
+    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses, boolean loadDefaults) {
         Cls cls = getDelegate().createCls(id, name, types, superclasses, loadDefaults);
         dispatchEvents();
         return cls;
     }
 
-    public Facet createFacet(FrameID id, String name, Collection directTypes,
-            boolean loadDefaultValues) {
+    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
         Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaultValues);
         dispatchEvents();
         return facet;
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types,
-            boolean loadDefaultValues) {
-        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, types,
-                loadDefaultValues);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types, boolean loadDefaultValues) {
+        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, types, loadDefaultValues);
         dispatchEvents();
         return simpleInstance;
     }
 
-    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots,
-            boolean loadDefaults) {
+    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots, boolean loadDefaults) {
         Slot slot = getDelegate().createSlot(id, name, types, superslots, loadDefaults);
         dispatchEvents();
         return slot;
@@ -641,6 +631,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                 while (_eventThread == this) {
                     try {
                         pollForEvents();
+                        //ESCA-JAVA0087 
                         Thread.sleep(DELAY_MSEC);
                     } catch (Exception e) {
                         Log.getLogger().warning(e.toString());

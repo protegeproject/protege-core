@@ -9,7 +9,7 @@ import java.util.*;
  */
 public interface FacetListener extends EventListener {
 
-    public void frameSlotReferenceAdded(FacetEvent event);
+    void frameSlotReferenceAdded(FacetEvent event);
 
-    public void frameSlotReferenceRemoved(FacetEvent event);
+    void frameSlotReferenceRemoved(FacetEvent event);
 }

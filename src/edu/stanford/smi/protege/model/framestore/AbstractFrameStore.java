@@ -6,18 +6,18 @@ public abstract class AbstractFrameStore implements FrameStore {
     private FrameStore delegate;
     private String name;
 
-    public AbstractFrameStore(String name) {
+    protected AbstractFrameStore(String name) {
         this.name = name;
     }
-    
-    public AbstractFrameStore() {
+
+    protected AbstractFrameStore() {
         this.name = getClass().getName();
     }
-    
+
     public void close() {
         delegate = null;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -25,6 +25,7 @@ public abstract class AbstractFrameStore implements FrameStore {
     public FrameStore getDelegate() {
         return delegate;
     }
+
     public void setDelegate(FrameStore delegate) {
         this.delegate = delegate;
         onSetDelegate();

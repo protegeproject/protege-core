@@ -37,9 +37,6 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         _lastExecutedCommand = NO_COMMAND;
     }
 
-    public UndoFrameStore() {
-    }
-
     private Object execute(Command c) {
         Object o;
         if (isInTransaction()) {

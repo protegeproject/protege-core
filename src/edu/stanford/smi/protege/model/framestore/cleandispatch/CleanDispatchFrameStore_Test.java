@@ -13,7 +13,7 @@ public class CleanDispatchFrameStore_Test extends FrameStore_Test {
         return fs;
     }
 
-    public void testCleanAddSuperclassDispatch() throws Exception {
+    public void testCleanAddSuperclassDispatch() {
         Cls cls = createCls();
         Cls otherclass = createCls();
         Collection superclasses = new ArrayList(cls.getDirectSuperclasses());

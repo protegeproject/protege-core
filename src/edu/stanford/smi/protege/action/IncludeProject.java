@@ -28,25 +28,30 @@ public class IncludeProject extends LocalProjectAction {
             JFileChooser chooser = ComponentFactory.createFileChooser("Included Project", "pprj");
             int rval = chooser.showOpenDialog(parent);
             switch (rval) {
-                case JFileChooser.ERROR_OPTION :
+                case JFileChooser.ERROR_OPTION:
                     // Get this on 'close"
                     break;
-                case JFileChooser.CANCEL_OPTION :
+                case JFileChooser.CANCEL_OPTION:
                     break;
-                case JFileChooser.APPROVE_OPTION :
+                case JFileChooser.APPROVE_OPTION:
                     Collection includedProjectURIs = new ArrayList(project.getDirectIncludedProjectURIs());
                     URI newProject = chooser.getSelectedFile().toURI();
                     String currentProjectFileName = project.getName() + ".pprj";
                     if (newProject.equals(currentProjectFileName)) {
-                        String text = LocalizedText.getText(ResourceKey.INCLUDE_PROJECT_FAILED_DIALOG_RECURSIVE_INCLUDE_TEXT);
+                        String text = LocalizedText
+                                .getText(ResourceKey.INCLUDE_PROJECT_FAILED_DIALOG_RECURSIVE_INCLUDE_TEXT);
                         ModalDialog.showMessageDialog(parent, text);
                     } else if (includedProjectURIs.contains(newProject)) {
-                        String text = LocalizedText.getText(ResourceKey.INCLUDE_PROJECT_FILED_DIALOG_ALREADY_INCLUDED_TEXT);
+                        String text = LocalizedText
+                                .getText(ResourceKey.INCLUDE_PROJECT_FILED_DIALOG_ALREADY_INCLUDED_TEXT);
                         ModalDialog.showMessageDialog(parent, text);
                     } else {
                         includedProjectURIs.add(newProject);
                         getProjectManager().changeIncludedProjectURIsRequest(includedProjectURIs);
                     }
+                    break;
+                default:
+                    Log.getLogger().warning("Bad value: " + rval);
                     break;
             }
         }

@@ -11,7 +11,7 @@ class DeleteFacetCommand extends SimpleCommand {
     private FrameID id;
     private Collection directTypes;
 
-    public DeleteFacetCommand(FrameStore delegate, Facet facet) {
+    DeleteFacetCommand(FrameStore delegate, Facet facet) {
         super(delegate);
         this.facet = facet;
         this.name = facet.getName();

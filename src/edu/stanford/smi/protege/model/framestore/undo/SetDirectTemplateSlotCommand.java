@@ -11,23 +11,26 @@ class SetDirectTemplateSlotCommand extends AbstractCommand {
     private Collection values;
     private List oldValues;
 
-    public SetDirectTemplateSlotCommand(FrameStore delegate, Cls cls, Collection values, Slot slot) {
+    SetDirectTemplateSlotCommand(FrameStore delegate, Cls cls, Collection values, Slot slot) {
         super(delegate);
         this.cls = cls;
-        this.values = values;
+        this.values = new ArrayList(values);
         this.slot = slot;
-        String description =
-            "Set template slot " + getText(slot) + " at class " + getText(cls) + " to values " + getText(values);
+        String description = "Set template slot " + getText(slot) + " at class " + getText(cls) + " to values "
+                + getText(values);
         setDescription(description);
     }
+
     public Object doIt() {
         oldValues = getDelegate().getDirectTemplateSlotValues(cls, slot);
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
         return null;
     }
+
     public void undoIt() {
         getDelegate().setDirectTemplateSlotValues(cls, slot, oldValues);
     }
+
     public void redoIt() {
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
     }

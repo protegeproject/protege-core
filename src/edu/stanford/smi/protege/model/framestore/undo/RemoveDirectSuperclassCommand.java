@@ -7,7 +7,7 @@ class RemoveDirectSuperclassCommand extends AbstractCommand {
     private Cls superclass;
     private Cls cls;
 
-    public RemoveDirectSuperclassCommand(FrameStore delegate, Cls superclass, Cls cls) {
+    RemoveDirectSuperclassCommand(FrameStore delegate, Cls superclass, Cls cls) {
         super(delegate);
         this.superclass = superclass;
         this.cls = cls;

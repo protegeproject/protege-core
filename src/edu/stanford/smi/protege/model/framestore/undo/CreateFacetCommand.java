@@ -12,11 +12,11 @@ class CreateFacetCommand extends AbstractCommand {
     private Collection types;
     private Facet createdFacet;
 
-    public CreateFacetCommand(FrameStore delegate, FrameID id, String name, Collection types, boolean loadDefaults) {
+    CreateFacetCommand(FrameStore delegate, FrameID id, String name, Collection types, boolean loadDefaults) {
         super(delegate);
         this.id = id;
         this.name = name;
-        this.types = types;
+        this.types = new ArrayList(types);
         this.loadDefaults = loadDefaults;
     }
 
@@ -27,10 +27,12 @@ class CreateFacetCommand extends AbstractCommand {
         setDescription("Create facet " + getText(createdFacet));
         return createdFacet;
     }
+
     public void undoIt() {
         getDelegate().deleteFacet(createdFacet);
         createdFacet.markDeleted(true);
     }
+
     public void redoIt() {
         getDelegate().createFacet(id, name, types, loadDefaults);
         createdFacet.markDeleted(false);

@@ -27,11 +27,13 @@ public class CallCachingFrameStore extends AbstractFrameStoreInvocationHandler {
         return result;
     }
 
-    private boolean isGetEvents(Method m) {
+    private static boolean isGetEvents(Method m) {
         return m.getName().equals("getEvents");
     }
 
-    int hit, miss;
+    private int hit = 0;
+    private int miss = 0;
+
     private Object query(Method method, Object[] args) {
         _lookupMethodCall.set(method, args);
         Object o = _cache.get(_lookupMethodCall);
@@ -48,12 +50,13 @@ public class CallCachingFrameStore extends AbstractFrameStoreInvocationHandler {
     private void clearCache() {
         _cache.clear();
     }
+
     public void handleClose() {
         _cache.clear();
         _cache = null;
     }
+
     protected void handleReinitialize() {
         _cache.clear();
     }
 }
-

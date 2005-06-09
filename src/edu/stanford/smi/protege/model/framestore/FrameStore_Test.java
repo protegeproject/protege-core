@@ -10,17 +10,19 @@ public abstract class FrameStore_Test extends SimpleTestCase {
     private FrameStore _testFrameStore;
     private FrameStore _modifiableFrameStore;
 
-    public FrameStore_Test() {
+    protected FrameStore_Test() {
     }
 
-    protected void setUp() {
+    protected void setUp() throws Exception {
+        super.setUp();
         _kb = new DefaultKnowledgeBase();
         _testFrameStore = createFrameStore(_kb);
         _modifiableFrameStore = getModifiableFrameStore(_kb);
         _kb.setTerminalFrameStore(_testFrameStore);
     }
 
-    protected void tearDown() {
+    protected void tearDown() throws Exception {
+        super.tearDown();
         _kb.close();
         _kb = null;
         _testFrameStore = null;
@@ -289,12 +291,12 @@ public abstract class FrameStore_Test extends SimpleTestCase {
     public void testGetOwnSlots() {
         Cls cls = createCls();
         createSlotOnCls(cls);
-        Cls subClass = createCls(cls);
-        createSlotOnCls(subClass);
-        Collection subclasses = makeList(subClass);
+        Cls subclass = createCls(cls);
+        createSlotOnCls(subclass);
+        Collection subclasses = makeList(subclass);
         SimpleInstance instance = _modifiableFrameStore.createSimpleInstance(getID(), null, subclasses, true);
         Set ownSlots = _testFrameStore.getOwnSlots(instance);
-        Set templateSlots = _testFrameStore.getTemplateSlots(subClass);
+        Set templateSlots = _testFrameStore.getTemplateSlots(subclass);
         assertEquals("size", 2, templateSlots.size());
         Set testOwnSlots = new HashSet(templateSlots);
         testOwnSlots.add(getFrame(Model.Slot.NAME));
@@ -305,10 +307,10 @@ public abstract class FrameStore_Test extends SimpleTestCase {
     public void testGetTemplateSlots() {
         Cls cls = createCls();
         Slot slot = createSlotOnCls(cls);
-        Cls subClass = createCls(cls);
-        Slot slotb = createSlotOnCls(subClass);
-        Cls subSubClass = createCls(subClass);
-        Collection slots = _modifiableFrameStore.getTemplateSlots(subSubClass);
+        Cls subclass = createCls(cls);
+        Slot slotb = createSlotOnCls(subclass);
+        Cls subsubclass = createCls(subclass);
+        Collection slots = _modifiableFrameStore.getTemplateSlots(subsubclass);
         assertEquals("size", 2, slots.size());
         assertTrue("slot", slots.contains(slot));
         assertTrue("slotb", slots.contains(slotb));
@@ -598,7 +600,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEqualsSet("clses end", makeList(cls3, cls4), clses);
     }
 
-    public void testMoveDirectSubclass() {
+    public void testMoveDirectsubclass() {
         Cls cls = createCls();
         Cls clsa = createCls(cls);
         Cls clsb = createCls(cls);
@@ -703,10 +705,10 @@ public abstract class FrameStore_Test extends SimpleTestCase {
 
     public void testGetDirectInstances() {
         Cls cls = createCls();
-        Instance instancea = createSimpleInstance(null, cls);
-        Instance instanceb = createSimpleInstance(null, cls);
+        Instance instanceA = createSimpleInstance(null, cls);
+        Instance instanceB = createSimpleInstance(null, cls);
         Instance instancec = createSimpleInstance(null, cls);
-        assertEqualsList("1", makeList(instancea, instanceb, instancec), _testFrameStore.getDirectInstances(cls));
+        assertEqualsList("1", makeList(instanceA, instanceB, instancec), _testFrameStore.getDirectInstances(cls));
     }
 
     public void testAddDirectType() {
@@ -776,26 +778,26 @@ public abstract class FrameStore_Test extends SimpleTestCase {
     public void testGetFramesWithOwnSlotValue() {
         Cls cls = createCls();
         Slot slot = createSlotOnCls(cls, ValueType.STRING, true);
-        Instance instancea = createSimpleInstance(cls);
-        _modifiableFrameStore.setDirectOwnSlotValues(instancea, slot, makeList("own", "value"));
-        Instance instanceb = createSimpleInstance(cls);
-        _modifiableFrameStore.setDirectOwnSlotValues(instanceb, slot, makeList("foo", "own"));
-        assertEqualsSet("values", makeList(instancea, instanceb), _testFrameStore.getFramesWithDirectOwnSlotValue(slot,
+        Instance instanceA = createSimpleInstance(cls);
+        _modifiableFrameStore.setDirectOwnSlotValues(instanceA, slot, makeList("own", "value"));
+        Instance instanceB = createSimpleInstance(cls);
+        _modifiableFrameStore.setDirectOwnSlotValues(instanceB, slot, makeList("foo", "own"));
+        assertEqualsSet("values", makeList(instanceA, instanceB), _testFrameStore.getFramesWithDirectOwnSlotValue(slot,
                 "own"));
     }
 
     public void testGetFramesWithMatchingOwnSlotValue() {
         Cls cls = createCls();
         Slot slot = createSlotOnCls(cls, ValueType.STRING, true);
-        Instance instancea = createSimpleInstance(cls);
-        _modifiableFrameStore.setDirectOwnSlotValues(instancea, slot, makeList("own", "value"));
-        Instance instanceb = createSimpleInstance(cls);
-        _modifiableFrameStore.setDirectOwnSlotValues(instanceb, slot, makeList("foo", "own"));
+        Instance instanceA = createSimpleInstance(cls);
+        _modifiableFrameStore.setDirectOwnSlotValues(instanceA, slot, makeList("own", "value"));
+        Instance instanceB = createSimpleInstance(cls);
+        _modifiableFrameStore.setDirectOwnSlotValues(instanceB, slot, makeList("foo", "own"));
         Instance instancec = createSimpleInstance(cls);
         _modifiableFrameStore.setDirectOwnSlotValues(instancec, slot, makeList("owx"));
-        assertEqualsSet("exact", makeList(instancea, instanceb), _testFrameStore
+        assertEqualsSet("exact", makeList(instanceA, instanceB), _testFrameStore
                 .getFramesWithMatchingDirectOwnSlotValue(slot, "own", FrameStore.UNLIMITED_MATCHES));
-        assertEqualsSet("starts with", makeList(instancea, instanceb, instancec), _testFrameStore
+        assertEqualsSet("starts with", makeList(instanceA, instanceB, instancec), _testFrameStore
                 .getFramesWithMatchingDirectOwnSlotValue(slot, "OW*", FrameStore.UNLIMITED_MATCHES));
     }
 

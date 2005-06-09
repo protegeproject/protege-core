@@ -13,12 +13,12 @@ public class UndoFrameStore_Test extends FrameStore_Test {
         return _frameStore;
     }
 
-    public void tearDown() {
+    public void tearDown() throws Exception {
         super.tearDown();
         _frameStore = null;
     }
 
-    public void testUndoCreateCls() throws Exception {
+    public void testUndoCreateCls() {
         Cls cls = createCls();
         String name = cls.getName();
         assertNotNull("name", name);
@@ -32,7 +32,8 @@ public class UndoFrameStore_Test extends FrameStore_Test {
         frame = getFrame(name);
         assertEquals("recreated", frame.getName(), name);
     }
-    public void testUndoCreateSimpleInstance() throws Exception {
+
+    public void testUndoCreateSimpleInstance() {
         Cls cls = createCls();
         Instance instance = createSimpleInstance(cls);
         String name = instance.getName();
@@ -47,7 +48,8 @@ public class UndoFrameStore_Test extends FrameStore_Test {
         instance = (Instance) getFrame(name);
         assertEquals("recreated", instance.getName(), name);
     }
-    public void testUndoCreateSlot() throws Exception {
+
+    public void testUndoCreateSlot() {
         Slot slot = createSlot();
         String name = slot.getName();
         assertNotNull("name", name);
@@ -61,9 +63,11 @@ public class UndoFrameStore_Test extends FrameStore_Test {
         frame = getFrame(name);
         assertEquals("recreated", frame.getName(), name);
     }
-    public void testUndoCreateFacet() throws Exception {
+
+    public void testUndoCreateFacet() {
     }
-    public void testUndoDeleteCls() throws Exception {
+
+    public void testUndoDeleteCls() {
         Cls clsA = createCls();
         Cls clsB = createCls();
         Cls clsA1 = createCls(clsA);
@@ -125,40 +129,58 @@ public class UndoFrameStore_Test extends FrameStore_Test {
 
     public void testUndoDeleteFacet() {
     }
+
     public void testUndoDeleteSimpleInstance() {
     }
+
     public void testUndoSetDirectOwnSlotValues() {
     }
+
     public void testUndoSetFrameName() {
     }
+
     public void testUndoAddDirectTemplateSlot() {
     }
+
     public void testUndoRemoveDirectTemplateSlot() {
     }
+
     public void testUndoMoveDirectTemplateSlot() {
     }
+
     public void testUndoSetDirectTemplateSlotValues() {
     }
+
     public void testUndoRemoveDirectTemplateFacetOverrides() {
     }
+
     public void testUndoSetDirectTemplateFacetValues() {
     }
+
     public void testUndoAddDirectSuperclass() {
     }
+
     public void testUndoRemoveDirectSuperclass() {
     }
+
     public void testUndoMoveDirectSubclass() {
     }
+
     public void testUndoAddDirectSuperslot() {
     }
+
     public void testUndoRemoveDirectSuperslot() {
     }
+
     public void testUndoAddDirectType() {
     }
+
     public void testUndoMoveDirectType() {
     }
+
     public void testUndoCommitTransaction() {
     }
+
     public void testUndoRollbackTransaction() {
     }
 }

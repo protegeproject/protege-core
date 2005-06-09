@@ -7,7 +7,7 @@ import edu.stanford.smi.protege.model.*;
 public abstract class TransactionFrameStore extends ModificationFrameStore {
     private boolean _inExternalTransaction;
 
-    public TransactionFrameStore() {
+    protected TransactionFrameStore() {
     }
 
     public boolean beginTransaction(String name) {
@@ -25,6 +25,7 @@ public abstract class TransactionFrameStore extends ModificationFrameStore {
             // getDelegate().beginTransaction();
         }
     }
+
     private void localEndTransaction() {
         if (!_inExternalTransaction) {
             // getDelegate().endTransaction(true);

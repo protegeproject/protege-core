@@ -4,6 +4,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.util.*;
 
 public class TraceFrameStoreHandler extends AbstractFrameStoreInvocationHandler {
     private Map methodCounts = new HashMap();
@@ -20,23 +21,23 @@ public class TraceFrameStoreHandler extends AbstractFrameStoreInvocationHandler 
         methodCounts.put(method, next);
         print(next.intValue(), method, args);
     }
-    
+
     public static void print(int next, Method method, Object[] args) {
-        System.out.println(next + " " + method.getName() + " " + argString(args));
+        Log.getLogger().info(next + " " + method.getName() + " " + argString(args));
     }
+
     private static String argString(Object[] args) {
         StringBuffer buffer = new StringBuffer();
         if (args != null) {
-	        for (int i = 0; i < args.length; ++i) {
-	            Object o = args[i];
-	            if (o instanceof Frame) {
-	                o = ((Frame)o).getFrameID();
-	            }
-	            buffer.append(o);
-	            buffer.append(" ");
-	        }
+            for (int i = 0; i < args.length; ++i) {
+                Object o = args[i];
+                if (o instanceof Frame) {
+                    o = ((Frame) o).getFrameID();
+                }
+                buffer.append(o);
+                buffer.append(" ");
+            }
         }
         return buffer.toString();
     }
 }
-

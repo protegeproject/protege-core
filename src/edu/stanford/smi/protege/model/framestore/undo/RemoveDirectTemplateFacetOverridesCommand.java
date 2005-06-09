@@ -7,7 +7,7 @@ class RemoveDirectTemplateFacetOverridesCommand extends AbstractCommand {
     private Cls cls;
     private Slot slot;
 
-    public RemoveDirectTemplateFacetOverridesCommand(FrameStore delegate, Cls cls, Slot slot) {
+    RemoveDirectTemplateFacetOverridesCommand(FrameStore delegate, Cls cls, Slot slot) {
         super(delegate);
         this.cls = cls;
         this.slot = slot;

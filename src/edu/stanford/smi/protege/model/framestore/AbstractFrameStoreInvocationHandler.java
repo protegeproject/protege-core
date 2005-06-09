@@ -140,13 +140,13 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
         try {
             result = m.invoke(frameStore, args);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            Log.getLogger().warning(Log.toString(e));
         } catch (InvocationTargetException targetException) {
             Throwable cause = targetException.getCause();
             if (cause instanceof RuntimeException) {
                 throw (RuntimeException) cause;
             }
-            cause.printStackTrace();
+            Log.getLogger().warning(Log.toString(cause));
         }
         return result;
     }

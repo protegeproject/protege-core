@@ -179,7 +179,7 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         }
     }
 
-    private void removeFrameAsValueFromMap(Frame frame, Map frameToClosureMap) {
+    private static void removeFrameAsValueFromMap(Frame frame, Map frameToClosureMap) {
         Iterator i = frameToClosureMap.values().iterator();
         while (i.hasNext()) {
             Set closure = (Set) i.next();

@@ -9,7 +9,7 @@ class MoveDirectOwnSlotValueCommand extends AbstractCommand {
     private int from;
     private int to;
 
-    public MoveDirectOwnSlotValueCommand(FrameStore delegate, Frame frame, Slot slot, int from, int to) {
+    MoveDirectOwnSlotValueCommand(FrameStore delegate, Frame frame, Slot slot, int from, int to) {
         super(delegate);
         this.frame = frame;
         this.slot = slot;

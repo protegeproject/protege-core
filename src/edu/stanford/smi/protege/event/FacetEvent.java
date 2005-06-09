@@ -9,9 +9,9 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FacetEvent extends AbstractEvent {
-    private final static int BASE = 500;
-    public final static int FRAME_SLOT_REFERENCE_ADDED = BASE + 1;
-    public final static int FRAME_SLOT_REFERENCE_REMOVED = BASE + 2;
+    private static final int BASE = 500;
+    public static final int FRAME_SLOT_REFERENCE_ADDED = BASE + 1;
+    public static final int FRAME_SLOT_REFERENCE_REMOVED = BASE + 2;
 
     public FacetEvent(Facet facet, int type, Frame frame, Slot slot) {
         super(facet, type, frame, slot);

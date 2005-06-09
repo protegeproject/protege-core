@@ -29,6 +29,7 @@ public class MacroCommand implements Command {
 
     public void undoIt() {
         ListIterator i = _commands.listIterator(_commands.size());
+        //ESCA-JAVA0281 
         while (i.hasPrevious()) {
             Command command = (Command) i.previous();
             // Log.trace("macro undoing: " + command.getDescription(), this, "undoIt");

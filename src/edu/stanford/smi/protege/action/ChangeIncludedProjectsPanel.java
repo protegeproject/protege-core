@@ -16,7 +16,7 @@ import edu.stanford.smi.protege.util.*;
 class ChangeIncludedProjectsPanel extends JComponent {
     private SelectableList _list;
 
-    public ChangeIncludedProjectsPanel(Project project) {
+    ChangeIncludedProjectsPanel(Project project) {
         setLayout(new BorderLayout());
         _list = ComponentFactory.createSelectableList(null);
         ComponentUtilities.setListValues(_list, project.getDirectIncludedProjectURIs());
@@ -37,16 +37,17 @@ class ChangeIncludedProjectsPanel extends JComponent {
                 JFileChooser chooser = ComponentFactory.createFileChooser("Select Project", "pprj");
                 int openDialogResult = chooser.showOpenDialog(ChangeIncludedProjectsPanel.this);
                 switch (openDialogResult) {
-                    case JFileChooser.ERROR_OPTION :
+                    case JFileChooser.ERROR_OPTION:
                         // Get this on 'close"
                         break;
-                    case JFileChooser.CANCEL_OPTION :
+                    case JFileChooser.CANCEL_OPTION:
                         break;
-                    case JFileChooser.APPROVE_OPTION :
+                    case JFileChooser.APPROVE_OPTION:
                         ComponentUtilities.addListValue(_list, chooser.getSelectedFile().toURI());
                         break;
-                    default :
+                    default:
                         Assert.fail("bad result: " + openDialogResult);
+                        break;
                 }
             }
         };

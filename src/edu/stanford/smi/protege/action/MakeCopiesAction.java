@@ -58,6 +58,7 @@ public class MakeCopiesAction extends AllowableAction {
         }
     }
 
+    //ESCA-JAVA0130 
     protected Instance copy(Instance instance, boolean isDeep) {
         return (Instance) instance.copy(null, null, isDeep);
     }

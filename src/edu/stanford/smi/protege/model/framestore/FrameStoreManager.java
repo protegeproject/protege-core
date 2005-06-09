@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.model.framestore;
 
+//ESCA*JAVA0100
+
 import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
@@ -74,7 +76,7 @@ public class FrameStoreManager {
         return frameStore;
     }
 
-    private boolean isHandlerClass(Class clas) {
+    private static boolean isHandlerClass(Class clas) {
         return AbstractFrameStoreInvocationHandler.class.isAssignableFrom(clas);
     }
 
@@ -114,6 +116,7 @@ public class FrameStoreManager {
     private FrameStore getPreceedingEnabledFrameStore(int index) {
         FrameStore preceedingEnabled = null;
         ListIterator i = frameStores.listIterator(index);
+        //ESCA-JAVA0281 
         while (i.hasPrevious()) {
             FrameStore prev = (FrameStore) i.previous();
             if (isEnabled(prev)) {
@@ -149,7 +152,7 @@ public class FrameStoreManager {
         return wasEnabled;
     }
 
-    private boolean isEnabled(FrameStore frameStore) {
+    private static boolean isEnabled(FrameStore frameStore) {
         return frameStore.getDelegate() != null;
     }
 

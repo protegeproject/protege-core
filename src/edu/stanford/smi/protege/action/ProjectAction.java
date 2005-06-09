@@ -18,46 +18,46 @@ public abstract class ProjectAction extends StandardAction {
     {
         setEnabled(getProjectManager().getCurrentProject() != null);
     }
-    
-    public ProjectAction(String text) {
+
+    protected ProjectAction(String text) {
         super(text);
     }
-    
-    public ProjectAction(String label, Icon icon) {
+
+    protected ProjectAction(String label, Icon icon) {
         super(label, icon);
     }
-    
-    public ProjectAction(ResourceKey key) {
+
+    protected ProjectAction(ResourceKey key) {
         super(key);
     }
-    
-    public ProjectAction(ResourceKey key, boolean useLargeIcon) {
+
+    protected ProjectAction(ResourceKey key, boolean useLargeIcon) {
         super(key, useLargeIcon);
     }
-    
-    protected ProjectManager getProjectManager() {
+
+    protected static ProjectManager getProjectManager() {
         return ProjectManager.getProjectManager();
     }
 
-    protected Project getProject() {
+    protected static Project getProject() {
         return getProjectManager().getCurrentProject();
     }
 
-    protected KnowledgeBase getKnowledgeBase() {
+    protected static KnowledgeBase getKnowledgeBase() {
         Project p = getProject();
         return (p == null) ? null : p.getKnowledgeBase();
     }
 
-    protected ProjectView getProjectView() {
+    protected static ProjectView getProjectView() {
         return getProjectManager().getCurrentProjectView();
     }
 
-    protected CommandManager getCommandManager() {
+    protected static CommandManager getCommandManager() {
         KnowledgeBase kb = getKnowledgeBase();
         return (kb == null) ? null : kb.getCommandManager();
     }
 
-    protected JComponent getMainPanel() {
+    protected static JComponent getMainPanel() {
         return getProjectManager().getMainPanel();
     }
 }

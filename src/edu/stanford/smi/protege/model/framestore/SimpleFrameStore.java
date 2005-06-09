@@ -150,7 +150,7 @@ public class SimpleFrameStore implements FrameStore {
         return clses;
     }
 
-    private boolean isSubclassMatch(Cls cls, Collection superclasses) {
+    private static boolean isSubclassMatch(Cls cls, Collection superclasses) {
         boolean isMatch = true;
         if (!superclasses.isEmpty()) {
             Collection clsSuperclasses = new HashSet(cls.getSuperclasses());
@@ -259,7 +259,7 @@ public class SimpleFrameStore implements FrameStore {
         return unmodifiableCollection(values);
     }
 
-    private Collection resolveValues(Collection values, Collection newValues, Facet facet) {
+    private static Collection resolveValues(Collection values, Collection newValues, Facet facet) {
         if (!newValues.isEmpty()) {
             if (values.isEmpty()) {
                 values.addAll(newValues);
@@ -293,7 +293,7 @@ public class SimpleFrameStore implements FrameStore {
     private Set getValuesClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate, Slot traversalSlot) {
         Set values;
         Set closure = _helper.getClosure(frame, traversalSlot, null, false);
-        if (equals(slot, traversalSlot) && facet == null && isTemplate == false) {
+        if (equals(slot, traversalSlot) && facet == null && !isTemplate) {
             values = closure;
         } else {
             values = new HashSet(getValues(frame, slot, facet, isTemplate));
@@ -341,16 +341,16 @@ public class SimpleFrameStore implements FrameStore {
         return unmodifiableSet(types);
     }
 
-    private Set unmodifiableSet(Set set) {
+    private static Set unmodifiableSet(Set set) {
         return set == null ? Collections.EMPTY_SET : Collections.unmodifiableSet(set);
         // return set == null ? Collections.EMPTY_SET : set;
     }
 
-    private List unmodifiableList(List list) {
+    private static List unmodifiableList(List list) {
         return list == null ? Collections.EMPTY_LIST : Collections.unmodifiableList(list);
     }
 
-    private Collection unmodifiableCollection(Collection collection) {
+    private static Collection unmodifiableCollection(Collection collection) {
         return collection == null ? Collections.EMPTY_LIST : Collections.unmodifiableCollection(collection);
     }
 
@@ -544,7 +544,7 @@ public class SimpleFrameStore implements FrameStore {
         return types;
     }
 
-    private void updateNewInstance(Instance newInstance, Instance oldInstance) {
+    private static void updateNewInstance(Instance newInstance, Instance oldInstance) {
         newInstance.setEditable(oldInstance.isEditable());
         newInstance.setIncluded(oldInstance.isIncluded());
     }

@@ -9,23 +9,23 @@ import java.util.*;
  */
 public interface FrameListener extends EventListener {
 
-    public void browserTextChanged(FrameEvent event);
+    void browserTextChanged(FrameEvent event);
 
-    public void deleted(FrameEvent event);
+    void deleted(FrameEvent event);
 
-    public void nameChanged(FrameEvent event);
+    void nameChanged(FrameEvent event);
 
-    public void ownFacetAdded(FrameEvent event);
+    void ownFacetAdded(FrameEvent event);
 
-    public void ownFacetRemoved(FrameEvent event);
+    void ownFacetRemoved(FrameEvent event);
 
-    public void ownFacetValueChanged(FrameEvent event);
+    void ownFacetValueChanged(FrameEvent event);
 
-    public void ownSlotAdded(FrameEvent event);
+    void ownSlotAdded(FrameEvent event);
 
-    public void ownSlotRemoved(FrameEvent event);
+    void ownSlotRemoved(FrameEvent event);
 
-    public void ownSlotValueChanged(FrameEvent event);
+    void ownSlotValueChanged(FrameEvent event);
 
-    public void visibilityChanged(FrameEvent event);
+    void visibilityChanged(FrameEvent event);
 }

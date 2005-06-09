@@ -18,14 +18,15 @@ public class FacetEventDispatcher implements EventDispatcher {
         while (i.hasNext()) {
             FacetListener listener = (FacetListener) i.next();
             switch (type) {
-                case FacetEvent.FRAME_SLOT_REFERENCE_ADDED :
+                case FacetEvent.FRAME_SLOT_REFERENCE_ADDED:
                     listener.frameSlotReferenceAdded(event);
                     break;
-                case FacetEvent.FRAME_SLOT_REFERENCE_REMOVED :
+                case FacetEvent.FRAME_SLOT_REFERENCE_REMOVED:
                     listener.frameSlotReferenceRemoved(event);
                     break;
-                default :
+                default:
                     Assert.fail("bad type: " + type);
+                    break;
             }
         }
     }

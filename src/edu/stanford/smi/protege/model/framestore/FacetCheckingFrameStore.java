@@ -9,14 +9,17 @@ import edu.stanford.smi.protege.model.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FacetCheckingFrameStore extends FrameStoreAdapter {
-    public static class AbstractClassException extends IllegalArgumentException{}
-    public static class FacetException extends IllegalArgumentException{}
+    public static class AbstractClassException extends IllegalArgumentException {
+    }
+
+    public static class FacetException extends IllegalArgumentException {
+    }
 
     public void setFrameName(Frame frame, String name) {
         getDelegate().setFrameName(frame, name);
     }
-    
-    private void checkAbstract(Collection types) {
+
+    private static void checkAbstract(Collection types) {
         Iterator i = types.iterator();
         while (i.hasNext()) {
             Cls cls = (Cls) i.next();
@@ -50,7 +53,7 @@ public class FacetCheckingFrameStore extends FrameStoreAdapter {
         checkOwnSlotValues(frame, slot, values);
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
     }
-    
+
     private void checkOwnSlotValues(Frame frame, Slot slot, Collection values) {
         Iterator i = getOwnFacets(frame, slot).iterator();
         while (i.hasNext()) {
@@ -80,7 +83,7 @@ public class FacetCheckingFrameStore extends FrameStoreAdapter {
         checkTemplateFacetValues(cls, slot, facet, values);
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
     }
-    
+
     private void checkTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
         Slot associatedSlot = facet.getAssociatedSlot();
         if (associatedSlot == null) {

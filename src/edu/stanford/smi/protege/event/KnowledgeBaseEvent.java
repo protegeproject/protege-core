@@ -10,20 +10,20 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class KnowledgeBaseEvent extends AbstractEvent {
-    private final static int BASE = 600;
-    public final static int CLS_CREATED = BASE + 1;
-    public final static int CLS_DELETED = BASE + 2;
-    public final static int SLOT_CREATED = BASE + 3;
-    public final static int SLOT_DELETED = BASE + 4;
-    public final static int FACET_CREATED = BASE + 5;
-    public final static int FACET_DELETED = BASE + 6;
-    public final static int INSTANCE_CREATED = BASE + 7;
-    public final static int INSTANCE_DELETED = BASE + 8;
-    public final static int FRAME_NAME_CHANGED = FrameEvent.NAME_CHANGED;
+    private static final int BASE = 600;
+    public static final int CLS_CREATED = BASE + 1;
+    public static final int CLS_DELETED = BASE + 2;
+    public static final int SLOT_CREATED = BASE + 3;
+    public static final int SLOT_DELETED = BASE + 4;
+    public static final int FACET_CREATED = BASE + 5;
+    public static final int FACET_DELETED = BASE + 6;
+    public static final int INSTANCE_CREATED = BASE + 7;
+    public static final int INSTANCE_DELETED = BASE + 8;
+    public static final int FRAME_NAME_CHANGED = FrameEvent.NAME_CHANGED;
 
-    public final static int DEFAULT_CLS_METACLASS_CHANGED = BASE + 10;
-    public final static int DEFAULT_SLOT_METACLASS_CHANGED = BASE + 11;
-    public final static int DEFAULT_FACET_METACLASS_CHANGED = BASE + 12;
+    public static final int DEFAULT_CLS_METACLASS_CHANGED = BASE + 10;
+    public static final int DEFAULT_SLOT_METACLASS_CHANGED = BASE + 11;
+    public static final int DEFAULT_FACET_METACLASS_CHANGED = BASE + 12;
 
     public KnowledgeBaseEvent(KnowledgeBase kb, int type, Frame frame) {
         super(kb, type, frame);

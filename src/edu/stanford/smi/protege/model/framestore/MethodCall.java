@@ -12,10 +12,10 @@ class MethodCall {
 
     private static final Object[] NULL_ARGS = new Object[0];
 
-    public MethodCall() {
+    MethodCall() {
     }
 
-    public MethodCall(Method m, Object[] args) {
+    MethodCall(Method m, Object[] args) {
         Object[] safeArgs = null;
         if (args != null) {
             safeArgs = new Object[args.length];
@@ -46,6 +46,7 @@ class MethodCall {
         boolean equals = _method.equals(rhs._method);
         equals &= _args.length == rhs._args.length;
         for (int i = 0; equals && i < _args.length; ++i) {
+            //ESCA-JAVA0119 
             equals = _args[i] == rhs._args[i];
         }
         return equals;

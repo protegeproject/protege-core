@@ -12,7 +12,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         return fs;
     }
 
-    public void tearDown() {
+    public void tearDown() throws Exception {
         super.tearDown();
         _modifiableFrameStore = null;
     }
@@ -50,6 +50,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         }
         assertTrue(passed);
     }
+
     public void testCreateFacet() {
         boolean passed = false;
         try {
@@ -59,6 +60,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         }
         assertTrue(passed);
     }
+
     public void testDeleteCls() {
         boolean passed = false;
         try {
@@ -68,6 +70,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         }
         assertTrue(passed);
     }
+
     public void testDeleteSlot() {
         boolean passed = false;
         try {
@@ -77,6 +80,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         }
         assertTrue(passed);
     }
+
     public void testDeleteFacet() {
         boolean passed = false;
         try {
@@ -86,6 +90,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         }
         assertTrue(passed);
     }
+
     public void testDeleteSimpleInstance() {
         boolean passed = false;
         try {
@@ -95,6 +100,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         }
         assertTrue(passed);
     }
+
     public void testAddDirectTemplateSlot() {
         boolean passed = false;
         try {
@@ -104,6 +110,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         }
         assertTrue(passed);
     }
+
     public void testSetOwnSlotValues() {
         boolean passed = false;
         try {
@@ -203,6 +210,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         }
         assertTrue(passed);
     }
+
     public void testAddDirectSuperslot() {
         boolean passed = false;
         try {
@@ -243,6 +251,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         assertTrue(passed);
     }
 
+    //ESCA-JAVA0025 
     public void testSetInverseSlotValues() {
         // do nothing
     }

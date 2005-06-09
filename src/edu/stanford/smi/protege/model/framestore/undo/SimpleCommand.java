@@ -4,7 +4,7 @@ import edu.stanford.smi.protege.model.framestore.*;
 
 abstract class SimpleCommand extends AbstractCommand {
 
-    public SimpleCommand(FrameStore delegate) {
+    protected SimpleCommand(FrameStore delegate) {
         super(delegate);
     }
 

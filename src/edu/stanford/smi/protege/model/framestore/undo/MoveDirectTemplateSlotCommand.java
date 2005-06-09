@@ -9,21 +9,24 @@ class MoveDirectTemplateSlotCommand extends AbstractCommand {
     private int index;
     private int oldIndex;
 
-    public MoveDirectTemplateSlotCommand(FrameStore delegate, Slot slot, Cls cls, int index) {
+    MoveDirectTemplateSlotCommand(FrameStore delegate, Slot slot, Cls cls, int index) {
         super(delegate);
         this.slot = slot;
         this.cls = cls;
         this.index = index;
         setDescription("Move template slot " + getText(slot) + " to index " + index);
     }
+
     public Object doIt() {
         oldIndex = getDelegate().getDirectTemplateSlots(cls).indexOf(slot);
         getDelegate().moveDirectTemplateSlot(cls, slot, index);
         return null;
     }
+
     public void undoIt() {
         getDelegate().moveDirectTemplateSlot(cls, slot, oldIndex);
     }
+
     public void redoIt() {
         getDelegate().moveDirectTemplateSlot(cls, slot, index);
     }

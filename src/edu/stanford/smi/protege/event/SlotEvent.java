@@ -9,14 +9,14 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SlotEvent extends AbstractEvent {
-    private final static int BASE = 400;
-    public final static int TEMPLATE_SLOT_CLS_ADDED = BASE + 1;
-    public final static int TEMPLATE_SLOT_CLS_REMOVED = BASE + 2;
-    public final static int DIRECT_SUBSLOT_ADDED = BASE + 5;
-    public final static int DIRECT_SUBSLOT_REMOVED = BASE + 6;
-    public final static int DIRECT_SUPERSLOT_ADDED = BASE + 7;
-    public final static int DIRECT_SUPERSLOT_REMOVED = BASE + 8;
-    public final static int DIRECT_SUBSLOT_MOVED = BASE + 9;
+    private static final int BASE = 400;
+    public static final int TEMPLATE_SLOT_CLS_ADDED = BASE + 1;
+    public static final int TEMPLATE_SLOT_CLS_REMOVED = BASE + 2;
+    public static final int DIRECT_SUBSLOT_ADDED = BASE + 5;
+    public static final int DIRECT_SUBSLOT_REMOVED = BASE + 6;
+    public static final int DIRECT_SUPERSLOT_ADDED = BASE + 7;
+    public static final int DIRECT_SUPERSLOT_REMOVED = BASE + 8;
+    public static final int DIRECT_SUBSLOT_MOVED = BASE + 9;
 
     public SlotEvent(Slot slot, int type, Frame frame) {
         super(slot, type, frame);

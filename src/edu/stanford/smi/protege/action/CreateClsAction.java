@@ -16,7 +16,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class CreateClsAction extends CreateAction {
 
-    public CreateClsAction() {
+    protected CreateClsAction() {
         super(ResourceKey.CLASS_CREATE);
     }
 }
