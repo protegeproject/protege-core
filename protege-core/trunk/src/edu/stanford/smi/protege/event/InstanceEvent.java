@@ -9,10 +9,10 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InstanceEvent extends AbstractEvent {
-    private final static int BASE = 200;
+    private static final int BASE = 200;
 
-    public final static int DIRECT_TYPE_ADDED = BASE + 2;
-    public final static int DIRECT_TYPE_REMOVED = BASE + 3;
+    public static final int DIRECT_TYPE_ADDED = BASE + 2;
+    public static final int DIRECT_TYPE_REMOVED = BASE + 3;
 
     // public final static int DIRECT_TYPE_CHANGED = DIRECT_TYPE_ADDED;
 

@@ -15,11 +15,11 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class FontAction extends StandardAction {
 
-    public FontAction(ResourceKey text) {
+    protected FontAction(ResourceKey text) {
         super(text);
     }
 
-    protected void changeSize(int delta) {
+    protected static void changeSize(int delta) {
         changeSize("Tree.font", delta);
         changeSize("Label.font", delta);
         changeSize("Table.font", delta);
@@ -38,12 +38,12 @@ public abstract class FontAction extends StandardAction {
         changeSize("TabbedPane.font", delta);
         changeSize("RadioButton.font", delta);
         changeSize("ToolTip.font", delta);
-        changeSize("OptionPane.font", delta);        
-        
+        changeSize("OptionPane.font", delta);
+
         ProjectManager.getProjectManager().reloadUI(true);
     }
 
-    private void changeSize(String key, int delta) {
+    private static void changeSize(String key, int delta) {
         Font oldFont = UIManager.getFont(key);
         Font newFont = new Font(oldFont.getName(), oldFont.getStyle(), oldFont.getSize() + delta);
         UIManager.put(key, newFont);

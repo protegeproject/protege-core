@@ -12,7 +12,7 @@ class DeleteClsCommand extends SimpleCommand {
     private Collection directTypes;
     private Collection directSuperclasses;
 
-    public DeleteClsCommand(FrameStore delegate, Cls cls) {
+    DeleteClsCommand(FrameStore delegate, Cls cls) {
         super(delegate);
         this.cls = cls;
         this.name = cls.getName();

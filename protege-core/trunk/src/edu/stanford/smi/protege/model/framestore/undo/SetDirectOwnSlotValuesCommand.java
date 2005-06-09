@@ -11,22 +11,25 @@ class SetDirectOwnSlotValuesCommand extends AbstractCommand {
     private Frame frame;
     private List _oldValues;
 
-    public SetDirectOwnSlotValuesCommand(FrameStore delegate, Collection values, Slot slot, Frame frame) {
+    SetDirectOwnSlotValuesCommand(FrameStore delegate, Collection values, Slot slot, Frame frame) {
         super(delegate);
         this.values = new ArrayList(values);
         this.slot = slot;
         this.frame = frame;
-        setDescription(
-            "Set own slot " + getText(slot) + " at frame " + getText(frame) + " to {" + getText(values) + "}");
+        setDescription("Set own slot " + getText(slot) + " at frame " + getText(frame) + " to {" + getText(values)
+                + "}");
     }
+
     public Object doIt() {
         _oldValues = getDelegate().getDirectOwnSlotValues(frame, slot);
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
         return null;
     }
+
     public void undoIt() {
         getDelegate().setDirectOwnSlotValues(frame, slot, _oldValues);
     }
+
     public void redoIt() {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
     }

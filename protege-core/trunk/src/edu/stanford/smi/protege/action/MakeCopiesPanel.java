@@ -17,7 +17,7 @@ class MakeCopiesPanel extends JComponent {
     private JTextField _textField = new JTextField();
     private JCheckBox _checkBox = new JCheckBox("Deep Copy (copy all referenced instances)");
 
-    public MakeCopiesPanel() {
+    MakeCopiesPanel() {
         setLayout(new GridLayout(0, 1));
         JPanel panel = new JPanel();
         panel.add(ComponentFactory.createLabel("Number of Copies"));
@@ -28,6 +28,7 @@ class MakeCopiesPanel extends JComponent {
         _textField.setText(_lastNumberOfCopies.toString());
         _textField.setColumns(5);
     }
+
     public Integer getNumberOfCopies() {
         String text = _textField.getText();
         text = text.trim();
@@ -35,12 +36,14 @@ class MakeCopiesPanel extends JComponent {
         try {
             i = Integer.valueOf(text);
         } catch (NumberFormatException e) {
+            // do nothing
         }
         if (i != null) {
             _lastNumberOfCopies = i;
         }
         return i;
     }
+
     public boolean getIsDeepCopy() {
         _lastIsDeep = _checkBox.isSelected();
         return _lastIsDeep;

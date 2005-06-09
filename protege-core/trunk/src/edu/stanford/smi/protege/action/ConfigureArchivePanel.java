@@ -25,22 +25,24 @@ public class ConfigureArchivePanel extends JPanel {
         add(createOptionsPanel(), BorderLayout.SOUTH);
     }
 
-    private JComponent createOptionsPanel() {
+    private static JComponent createOptionsPanel() {
         JPanel panel = new JPanel(new GridLayout(0, 1));
         panel.add(createAutoArchivePanel());
         panel.add(createNumberOfArchivedVersionsPanel());
         return panel;
     }
-    private JComponent createAutoArchivePanel() {
+
+    private static JComponent createAutoArchivePanel() {
         return new JCheckBox("Automatically archive the current version on Save");
     }
 
-    private JComponent createNumberOfArchivedVersionsPanel() {
+    private static JComponent createNumberOfArchivedVersionsPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.add(ComponentFactory.createLabel("Maximum number of archived versions"));
         panel.add(new JTextField(5));
         return panel;
     }
+
     private JComponent createExistingArchiveVersionsPanel() {
         JTable table = new JTable(); // ComponentFactory.createTable(null);
         table.setModel(createTableModel());
@@ -49,10 +51,10 @@ public class ConfigureArchivePanel extends JPanel {
         return c;
     }
 
-    private Action createDeleteVersionButton() {
+    private static Action createDeleteVersionButton() {
         return new AbstractAction("Delete Selected Version", Icons.getDeleteIcon()) {
             public void actionPerformed(ActionEvent event) {
-                System.out.println("delete selected version");
+                Log.getLogger().info("delete selected version");
             }
         };
     }

@@ -63,6 +63,7 @@ public class DeleteInstancesAction extends DeleteAction {
         }
     }
 
+    //ESCA-JAVA0130 
     public void deleteInstance(Instance instance) {
         instance.getKnowledgeBase().deleteFrame(instance);
     }

@@ -9,7 +9,7 @@ class MoveDirectSubslotCommand extends AbstractCommand {
     private Slot subslot;
     private int oldIndex;
 
-    public MoveDirectSubslotCommand(FrameStore delegate, Slot slot, int index, Slot subslot) {
+    MoveDirectSubslotCommand(FrameStore delegate, Slot slot, int index, Slot subslot) {
         super(delegate);
         this.slot = slot;
         this.index = index;
@@ -17,13 +17,16 @@ class MoveDirectSubslotCommand extends AbstractCommand {
         oldIndex = getDelegate().getDirectSubslots(slot).indexOf(subslot);
         setDescription("Move subslot " + getText(subslot) + " of slot " + getText(slot) + " to index " + index);
     }
+
     public Object doIt() {
         getDelegate().moveDirectSubslot(slot, subslot, index);
         return null;
     }
+
     public void undoIt() {
         getDelegate().moveDirectSubslot(slot, subslot, oldIndex);
     }
+
     public void redoIt() {
         getDelegate().moveDirectSubslot(slot, subslot, index);
     }

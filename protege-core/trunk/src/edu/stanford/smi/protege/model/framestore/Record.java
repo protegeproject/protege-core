@@ -55,6 +55,7 @@ public class Record {
     }
 
     public List getInternalValues() {
+        //ESCA-JAVA0259 
         return values;
     }
 

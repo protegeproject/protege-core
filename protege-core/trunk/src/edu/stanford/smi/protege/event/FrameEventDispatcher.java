@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.event;
 
 import java.util.*;
+
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.util.*;
 
@@ -17,38 +18,39 @@ public class FrameEventDispatcher implements EventDispatcher {
         while (i.hasNext()) {
             FrameListener listener = (FrameListener) i.next();
             switch (type) {
-                case FrameEvent.NAME_CHANGED :
+                case FrameEvent.NAME_CHANGED:
                     listener.nameChanged(event);
                     break;
-                case FrameEvent.OWN_SLOT_ADDED :
+                case FrameEvent.OWN_SLOT_ADDED:
                     listener.ownSlotAdded(event);
                     break;
-                case FrameEvent.OWN_SLOT_REMOVED :
+                case FrameEvent.OWN_SLOT_REMOVED:
                     listener.ownSlotRemoved(event);
                     break;
-                case FrameEvent.BROWSER_TEXT_CHANGED :
+                case FrameEvent.BROWSER_TEXT_CHANGED:
                     listener.browserTextChanged(event);
                     break;
-                case FrameEvent.DELETED :
+                case FrameEvent.DELETED:
                     listener.deleted(event);
                     break;
-                case FrameEvent.OWN_FACET_ADDED :
+                case FrameEvent.OWN_FACET_ADDED:
                     listener.ownFacetAdded(event);
                     break;
-                case FrameEvent.OWN_FACET_REMOVED :
+                case FrameEvent.OWN_FACET_REMOVED:
                     listener.ownFacetRemoved(event);
                     break;
-                case FrameEvent.OWN_SLOT_VALUE_CHANGED :
+                case FrameEvent.OWN_SLOT_VALUE_CHANGED:
                     listener.ownSlotValueChanged(event);
                     break;
-                case FrameEvent.OWN_FACET_VALUE_CHANGED :
+                case FrameEvent.OWN_FACET_VALUE_CHANGED:
                     listener.ownFacetValueChanged(event);
                     break;
-                case FrameEvent.VISIBILITY_CHANGED :
+                case FrameEvent.VISIBILITY_CHANGED:
                     listener.visibilityChanged(event);
                     break;
-                default :
+                default:
                     Assert.fail("bad type: " + type);
+                    break;
             }
         }
     }

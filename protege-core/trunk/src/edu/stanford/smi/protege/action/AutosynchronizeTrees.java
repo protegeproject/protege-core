@@ -16,6 +16,7 @@ public class AutosynchronizeTrees extends ProjectAction {
     public AutosynchronizeTrees() {
         super(ResourceKey.AUTOSYNCHRONIZE_CLASS_TREES);
     }
+
     public void actionPerformed(ActionEvent event) {
         ProjectView view = getProjectView();
         if (view != null) {

@@ -1,7 +1,7 @@
 package edu.stanford.smi.protege.event;
 
-import edu.stanford.smi.protege.widget.*;
 import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.widget.*;
 
 /**
  * Event generated when a widget changes.
@@ -9,8 +9,8 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class WidgetEvent extends AbstractEvent {
-    public final static int LABEL_CHANGED = 1;
-    public final static int LAYOUT_CHANGED = 2;
+    public static final int LABEL_CHANGED = 1;
+    public static final int LAYOUT_CHANGED = 2;
 
     public WidgetEvent(Widget source, int type) {
         super(source, type);

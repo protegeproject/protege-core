@@ -7,7 +7,7 @@ class AddDirectTemplateSlotCommand extends SimpleCommand {
     private Cls cls;
     private Slot slot;
 
-    public AddDirectTemplateSlotCommand(FrameStore delegate, Cls cls, Slot slot) {
+    AddDirectTemplateSlotCommand(FrameStore delegate, Cls cls, Slot slot) {
         super(delegate);
         this.cls = cls;
         this.slot = slot;

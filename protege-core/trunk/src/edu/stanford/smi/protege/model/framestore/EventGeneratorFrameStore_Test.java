@@ -15,7 +15,7 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         return fs;
     }
 
-    public void tearDown() {
+    public void tearDown() throws Exception {
         super.tearDown();
         _kb = null;
     }
@@ -27,14 +27,11 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         Slot instancesSlot = _kb.getSlot(Model.Slot.DIRECT_INSTANCES);
         Cls cls = createCls();
         List events = getTestFrameStore().getEvents();
-        assertTrue(events
-                .contains(new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_CREATED, cls)));
+        assertTrue(events.contains(new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_CREATED, cls)));
         assertTrue(events.contains(new ClsEvent(rootCls, ClsEvent.DIRECT_SUBCLASS_ADDED, cls)));
-        assertTrue(events.contains(new FrameEvent(rootCls, FrameEvent.OWN_SLOT_VALUE_CHANGED,
-                subclassesSlot)));
+        assertTrue(events.contains(new FrameEvent(rootCls, FrameEvent.OWN_SLOT_VALUE_CHANGED, subclassesSlot)));
         assertTrue(events.contains(new ClsEvent(stdCls, ClsEvent.DIRECT_INSTANCE_ADDED, cls)));
-        assertTrue(events.contains(new FrameEvent(stdCls, FrameEvent.OWN_SLOT_VALUE_CHANGED,
-                instancesSlot, null)));
+        assertTrue(events.contains(new FrameEvent(stdCls, FrameEvent.OWN_SLOT_VALUE_CHANGED, instancesSlot, null)));
     }
 
     public void testAddSuperclassEvent() {
@@ -51,8 +48,7 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
 
     public void testDeleteClsEvents() {
         Cls cls = createCls();
-        KnowledgeBaseEvent testEvent1 = new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_DELETED,
-                cls, cls.getName());
+        KnowledgeBaseEvent testEvent1 = new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_DELETED, cls, cls.getName());
         getTestFrameStore().getEvents();
         getTestFrameStore().deleteCls(cls);
         Collection events = getTestFrameStore().getEvents();

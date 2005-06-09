@@ -14,7 +14,7 @@ abstract class AbstractCommand implements Command {
     private FrameStore delegate;
     private String description;
 
-    public AbstractCommand(FrameStore delegate) {
+    protected AbstractCommand(FrameStore delegate) {
         this.delegate = delegate;
     }
 
@@ -37,6 +37,7 @@ abstract class AbstractCommand implements Command {
         }
         return s;
     }
+
     protected static String getText(Collection values) {
         return CollectionUtilities.toString(values);
     }

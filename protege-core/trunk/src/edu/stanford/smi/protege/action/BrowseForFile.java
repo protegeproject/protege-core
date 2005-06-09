@@ -15,29 +15,29 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class BrowseForFile extends AbstractAction {
-	private String _extension;
-	private String _description;
-	private JComponent _parent;
+    private String _extension;
+    private String _description;
+    private JComponent _parent;
 
-	public BrowseForFile(JComponent parent, String description) {
-		this(parent, description, null);
-	}
+    protected BrowseForFile(JComponent parent, String description) {
+        this(parent, description, null);
+    }
 
-	public BrowseForFile(JComponent parent, String description, String extension) {
-		super("Browse for " + description, Icons.getFindIcon());
-		_extension = extension;
-		_description = description;
-		_parent = parent;
-	}
+    protected BrowseForFile(JComponent parent, String description, String extension) {
+        super("Browse for " + description, Icons.getFindIcon());
+        _extension = extension;
+        _description = description;
+        _parent = parent;
+    }
 
-	public void actionPerformed(ActionEvent event) {
-		JFileChooser chooser = ComponentFactory.createFileChooser(_description, _extension);
-		int rval = chooser.showOpenDialog(_parent);
-		if (rval == JFileChooser.APPROVE_OPTION) {
-			File file = chooser.getSelectedFile();
-			onFileChosen(file);
-		}
-	}
+    public void actionPerformed(ActionEvent event) {
+        JFileChooser chooser = ComponentFactory.createFileChooser(_description, _extension);
+        int rval = chooser.showOpenDialog(_parent);
+        if (rval == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            onFileChosen(file);
+        }
+    }
 
-	public abstract void onFileChosen(File file);
+    public abstract void onFileChosen(File file);
 }

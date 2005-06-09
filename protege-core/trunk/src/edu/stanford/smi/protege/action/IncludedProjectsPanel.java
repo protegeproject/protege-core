@@ -16,7 +16,7 @@ import edu.stanford.smi.protege.util.*;
 class IncludedProjectsPanel extends JComponent implements Validatable {
     private JList list;
 
-    public IncludedProjectsPanel(Project project) {
+    protected IncludedProjectsPanel(Project project) {
         setLayout(new BorderLayout());
         list = ComponentFactory.createList(null);
         ComponentUtilities.setListValues(list, project.getIncludedProjects());
@@ -25,12 +25,11 @@ class IncludedProjectsPanel extends JComponent implements Validatable {
     }
 
     public void saveContents() {
-        System.out.println("save contents");
+        Log.getLogger().info("save contents");
     }
 
     public boolean validateContents() {
         return true;
     }
-    
-    
+
 }

@@ -7,7 +7,7 @@ class RemoveDirectSuperslotCommand extends AbstractCommand {
     private Slot superslot;
     private Slot slot;
 
-    public RemoveDirectSuperslotCommand(FrameStore delegate, Slot superslot, Slot slot) {
+    RemoveDirectSuperslotCommand(FrameStore delegate, Slot superslot, Slot slot) {
         super(delegate);
         this.superslot = superslot;
         this.slot = slot;

@@ -11,7 +11,7 @@ class DeleteSimpleInstanceCommand extends SimpleCommand {
     private FrameID id;
     private Collection directTypes;
 
-    public DeleteSimpleInstanceCommand(FrameStore delegate, SimpleInstance simpleInstance) {
+    DeleteSimpleInstanceCommand(FrameStore delegate, SimpleInstance simpleInstance) {
         super(delegate);
         this.simpleInstance = simpleInstance;
         this.name = simpleInstance.getName();
@@ -19,11 +19,13 @@ class DeleteSimpleInstanceCommand extends SimpleCommand {
         this.directTypes = new ArrayList(simpleInstance.getDirectTypes());
         setDescription("Delete instance " + getText(simpleInstance));
     }
+
     public Object doIt() {
         getDelegate().deleteSimpleInstance(simpleInstance);
         simpleInstance.markDeleted(true);
         return null;
     }
+
     public void undoIt() {
         getDelegate().createSimpleInstance(id, name, directTypes, false);
         simpleInstance.markDeleted(false);

@@ -68,7 +68,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
         commitTransaction();
     }
 
-    private Collection getSlotsToRemoveOnSuperclassRemove(Cls cls, Cls superclass) {
+    private static Collection getSlotsToRemoveOnSuperclassRemove(Cls cls, Cls superclass) {
         Collection slotsToRemove = new HashSet(cls.getTemplateSlots());
         slotsToRemove.removeAll(cls.getDirectTemplateSlots());
         Iterator i = cls.getDirectSuperclasses().iterator();

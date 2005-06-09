@@ -9,11 +9,11 @@ import edu.stanford.smi.protege.resource.*;
  */
 public abstract class LocalProjectAction extends ProjectAction {
 
-    public LocalProjectAction(ResourceKey key) {
+    protected LocalProjectAction(ResourceKey key) {
         this(key, false);
     }
-    
-    public LocalProjectAction(ResourceKey key, boolean useLargeIcons) {
+
+    protected LocalProjectAction(ResourceKey key, boolean useLargeIcons) {
         super(key, useLargeIcons);
         if (isEnabled()) {
             Project p = getProject();

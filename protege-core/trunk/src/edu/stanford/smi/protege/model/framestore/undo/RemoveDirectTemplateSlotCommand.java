@@ -7,7 +7,7 @@ class RemoveDirectTemplateSlotCommand extends SimpleCommand {
     private Slot slot;
     private Cls cls;
 
-    public RemoveDirectTemplateSlotCommand(FrameStore delegate, Slot slot, Cls cls) {
+    RemoveDirectTemplateSlotCommand(FrameStore delegate, Slot slot, Cls cls) {
         super(delegate);
         this.slot = slot;
         this.cls = cls;

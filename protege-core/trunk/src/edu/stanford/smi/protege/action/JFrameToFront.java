@@ -10,27 +10,27 @@ import javax.swing.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class JFrameToFront extends AbstractAction {
-	private final static int MAX_LENGTH = 25;
-	private JFrame frame;
+    private static final int MAX_LENGTH = 25;
+    private JFrame frame;
 
-	public JFrameToFront(JFrame frame) {
-		super(getMenuText(frame));
-		this.frame = frame;
-	}
+    public JFrameToFront(JFrame frame) {
+        super(getMenuText(frame));
+        this.frame = frame;
+    }
 
-	public void actionPerformed(ActionEvent event) {
-		frame.toFront();
-		frame.requestFocus();
-	}
+    public void actionPerformed(ActionEvent event) {
+        frame.toFront();
+        frame.requestFocus();
+    }
 
-	private static String getMenuText(JFrame frame) {
-		String menuText;
-		String text = frame.getTitle();
-		if (text.length() < MAX_LENGTH) {
-			menuText = text;
-		} else {
-			menuText = text.substring(0, MAX_LENGTH - 3) + "...";
-		}
-		return menuText;
-	}
+    private static String getMenuText(JFrame frame) {
+        String menuText;
+        String text = frame.getTitle();
+        if (text.length() < MAX_LENGTH) {
+            menuText = text;
+        } else {
+            menuText = text.substring(0, MAX_LENGTH - 3) + "...";
+        }
+        return menuText;
+    }
 }

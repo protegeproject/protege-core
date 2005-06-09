@@ -11,18 +11,18 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameEvent extends AbstractEvent {
-    private final static int BASE = 100;
-    public final static int NAME_CHANGED = BASE + 1;
-    public final static int DELETED = BASE + 2;
-    public final static int VISIBILITY_CHANGED = BASE + 3;
-    public final static int BROWSER_TEXT_CHANGED = BASE + 5;
+    private static final int BASE = 100;
+    public static final int NAME_CHANGED = BASE + 1;
+    public static final int DELETED = BASE + 2;
+    public static final int VISIBILITY_CHANGED = BASE + 3;
+    public static final int BROWSER_TEXT_CHANGED = BASE + 5;
 
-    public final static int OWN_SLOT_ADDED = BASE + 6;
-    public final static int OWN_SLOT_REMOVED = BASE + 7;
-    public final static int OWN_FACET_ADDED = BASE + 8;
-    public final static int OWN_FACET_REMOVED = BASE + 9;
-    public final static int OWN_SLOT_VALUE_CHANGED = BASE + 10;
-    public final static int OWN_FACET_VALUE_CHANGED = BASE + 11;
+    public static final int OWN_SLOT_ADDED = BASE + 6;
+    public static final int OWN_SLOT_REMOVED = BASE + 7;
+    public static final int OWN_FACET_ADDED = BASE + 8;
+    public static final int OWN_FACET_REMOVED = BASE + 9;
+    public static final int OWN_SLOT_VALUE_CHANGED = BASE + 10;
+    public static final int OWN_FACET_VALUE_CHANGED = BASE + 11;
 
     public FrameEvent(Frame frame, int type) {
         super(frame, type);

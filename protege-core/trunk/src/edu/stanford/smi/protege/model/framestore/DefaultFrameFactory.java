@@ -169,7 +169,7 @@ public class DefaultFrameFactory implements FrameFactory {
         return implementationClass;
     }
 
-    private boolean isValidImplementationClass(Class implementationClass, Class defaultClass) {
+    private static boolean isValidImplementationClass(Class implementationClass, Class defaultClass) {
         return defaultClass.isAssignableFrom(implementationClass);
     }
 
@@ -191,6 +191,7 @@ public class DefaultFrameFactory implements FrameFactory {
         return className.toString();
     }
 
+    //ESCA-JAVA0130 
     protected boolean isValidCharacter(char c, int i) {
         return (i == 0) ? Character.isJavaIdentifierStart(c) : Character.isJavaIdentifierPart(c);
     }
@@ -230,7 +231,7 @@ public class DefaultFrameFactory implements FrameFactory {
         return frame;
     }
 
-    private Collection createRange(int value) {
+    private static Collection createRange(int value) {
         Collection c = new ArrayList();
         c.add(new Integer(value));
         return c;

@@ -9,7 +9,7 @@ class MoveDirectSubclassCommand extends AbstractCommand {
     private Cls subclass;
     private int oldIndex;
 
-    public MoveDirectSubclassCommand(FrameStore delegate, Cls cls, int index, Cls subclass) {
+    MoveDirectSubclassCommand(FrameStore delegate, Cls cls, int index, Cls subclass) {
         super(delegate);
         this.cls = cls;
         this.index = index;
@@ -17,13 +17,16 @@ class MoveDirectSubclassCommand extends AbstractCommand {
         oldIndex = getDelegate().getDirectSubclasses(cls).indexOf(subclass);
         setDescription("Move subclass " + getText(subclass) + " of class " + getText(cls) + " to index " + index);
     }
+
     public Object doIt() {
         getDelegate().moveDirectSubclass(cls, subclass, index);
         return null;
     }
+
     public void undoIt() {
         getDelegate().moveDirectSubclass(cls, subclass, oldIndex);
     }
+
     public void redoIt() {
         getDelegate().moveDirectSubclass(cls, subclass, index);
     }

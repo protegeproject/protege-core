@@ -30,10 +30,11 @@ public class ReferenceImpl implements Reference, Serializable, Localizable {
     }
 
     public void set(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-        if (frame == null)
+        if (frame == null) {
             throw new RuntimeException("null frame");
-        if (slot == null)
+        } else if (slot == null) {
             throw new RuntimeException("null slot");
+        }
         _frame = frame;
         _slot = slot;
         _facet = facet;
@@ -63,10 +64,8 @@ public class ReferenceImpl implements Reference, Serializable, Localizable {
 
     public boolean equals(Object o) {
         ReferenceImpl rhs = (ReferenceImpl) o;
-        return equals(_frame, rhs._frame)
-            && equals(_slot, rhs._slot)
-            && equals(_facet, rhs._facet)
-            && _isTemplate == rhs._isTemplate;
+        return equals(_frame, rhs._frame) && equals(_slot, rhs._slot) && equals(_facet, rhs._facet)
+                && _isTemplate == rhs._isTemplate;
     }
 
     public static boolean equals(Object o1, Object o2) {
@@ -80,7 +79,7 @@ public class ReferenceImpl implements Reference, Serializable, Localizable {
     public boolean usesFrame(Frame frame) {
         return frame.equals(_frame) || frame.equals(_slot) || frame.equals(_facet);
     }
-    
+
     public void localize(KnowledgeBase kb) {
         LocalizeUtils.localize(_frame, kb);
         LocalizeUtils.localize(_slot, kb);

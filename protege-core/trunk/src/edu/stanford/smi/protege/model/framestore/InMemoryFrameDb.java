@@ -6,6 +6,7 @@ import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.query.*;
 import edu.stanford.smi.protege.util.*;
 
+//ESCA-JAVA0100 
 public class InMemoryFrameDb implements NarrowFrameStore {
     private static final int INITIAL_MAP_SIZE = 32771;
     private Map referenceToRecordMap = new HashMap(INITIAL_MAP_SIZE);
@@ -39,14 +40,6 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return FrameID.createLocal(counter++);
     }
 
-    public List createList() {
-        return new ArrayList();
-    }
-
-    public Set createSet() {
-        return new LinkedHashSet();
-    }
-
     public void close() {
         referenceToRecordMap = null;
         frameToRecordsMap = null;
@@ -61,7 +54,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return (Record) referenceToRecordMap.get(lookupRecord);
     }
 
-    private void addRecord(Map map, Object key, Record record) {
+    private static void addRecord(Map map, Object key, Record record) {
         if (key != null) {
             Set set = (Set) map.get(key);
             if (set == null) {
@@ -72,7 +65,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         }
     }
 
-    public void removeRecord(Map map, Object key, Record record) {
+    public static void removeRecord(Map map, Object key, Record record) {
         if (key != null) {
             Set set = (Set) map.get(key);
             if (set != null) {
@@ -130,7 +123,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         }
     }
 
-    private Set lookupRecords(Map map, Object value) {
+    private static Set lookupRecords(Map map, Object value) {
         return (Set) map.get(value);
     }
 
@@ -162,7 +155,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return matches;
     }
 
-    private Set recordsToReferences(Set records) {
+    private static Set recordsToReferences(Set records) {
         Set references;
         if (records == null) {
             references = Collections.EMPTY_SET;
@@ -177,7 +170,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return references;
     }
 
-    private Reference recordToReference(Record record) {
+    private static Reference recordToReference(Record record) {
         Frame frame = record.getFrame();
         Slot slot = record.getSlot();
         Facet facet = record.getFacet();
@@ -273,7 +266,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         }
     }
 
-    private void removeFrameValue(Map map, Frame frame) {
+    private static void removeFrameValue(Map map, Frame frame) {
         Set records = lookupRecords(map, frame);
         if (records != null) {
             Iterator i = records.iterator();
@@ -357,7 +350,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return false;
     }
 
-    private void replaceFrameKey(Map map, Frame frame) {
+    private static void replaceFrameKey(Map map, Frame frame) {
         Collection records = (Collection) map.remove(frame);
         if (records != null) {
             map.put(frame, records);

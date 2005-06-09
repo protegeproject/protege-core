@@ -12,16 +12,12 @@ class CreateSimpleInstanceCommand extends AbstractCommand {
     private boolean loadDefaults;
     private SimpleInstance createdInstance;
 
-    public CreateSimpleInstanceCommand(
-        FrameStore delegate,
-        FrameID id,
-        String name,
-        Collection types,
-        boolean loadDefaults) {
+    CreateSimpleInstanceCommand(FrameStore delegate, FrameID id, String name, Collection types,
+            boolean loadDefaults) {
         super(delegate);
         this.id = id;
         this.name = name;
-        this.types = types;
+        this.types = new ArrayList(types);
         this.loadDefaults = loadDefaults;
     }
 
@@ -32,10 +28,12 @@ class CreateSimpleInstanceCommand extends AbstractCommand {
         setDescription("Create instance " + getText(createdInstance) + " of type " + getText(types));
         return createdInstance;
     }
+
     public void undoIt() {
         getDelegate().deleteSimpleInstance(createdInstance);
         createdInstance.markDeleted(true);
     }
+
     public void redoIt() {
         getDelegate().createSimpleInstance(id, name, types, loadDefaults);
         createdInstance.markDeleted(false);

@@ -13,18 +13,13 @@ class CreateClsCommand extends AbstractCommand {
     private Collection superclasses;
     private boolean loadDefaults;
 
-    public CreateClsCommand(
-        FrameStore delegate,
-        FrameID id,
-        String name,
-        Collection types,
-        Collection superclasses,
-        boolean loadDefaults) {
+    CreateClsCommand(FrameStore delegate, FrameID id, String name, Collection types, Collection superclasses,
+            boolean loadDefaults) {
         super(delegate);
         this.id = id;
         this.name = name;
-        this.types = types;
-        this.superclasses = superclasses;
+        this.types = new ArrayList(types);
+        this.superclasses = new ArrayList(superclasses);
         this.loadDefaults = loadDefaults;
     }
 
@@ -35,10 +30,12 @@ class CreateClsCommand extends AbstractCommand {
         setDescription("Create class " + getText(createdCls));
         return createdCls;
     }
+
     public void undoIt() {
         getDelegate().deleteCls(createdCls);
         createdCls.markDeleted(true);
     }
+
     public void redoIt() {
         getDelegate().createCls(id, name, types, superclasses, loadDefaults);
         createdCls.markDeleted(false);

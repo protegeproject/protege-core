@@ -155,7 +155,6 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
             activeFrameStore = nfs;
             updateQueryableFrameStores();
         }
-        dumpFrameStores();
         return oldActiveFrameStore;
     }
 
@@ -192,49 +191,6 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
             Log.getLogger().severe("Missing frame store: " + name);
         }
         return setActiveFrameStore(nfs);
-    }
-
-    private void dumpFrameStores() {
-        if (false)
-            dumpFrameStoreList();
-        if (false)
-            dumpFrameStoreTree();
-    }
-
-    private void dumpFrameStoreTree() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("FrameStore tree");
-        dumpFrameStoreTree(activeFrameStore, buffer, 1);
-        Log.getLogger().info(buffer.toString());
-    }
-
-    private void dumpFrameStoreTree(NarrowFrameStore store, StringBuffer buffer, int indent) {
-        output(buffer, store.getName(), indent);
-        Iterator i = frameStoreTree.getChildren(store).iterator();
-        while (i.hasNext()) {
-            NarrowFrameStore child = (NarrowFrameStore) i.next();
-            dumpFrameStoreTree(child, buffer, indent + 1);
-        }
-    }
-
-    private void output(StringBuffer buffer, String name, int indent) {
-        buffer.append("\n");
-        for (int i = 0; i < indent; ++i) {
-            buffer.append(" ");
-        }
-        buffer.append(name);
-    }
-
-    private void dumpFrameStoreList() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("FrameStores");
-        Iterator i = availableFrameStores.iterator();
-        while (i.hasNext()) {
-            NarrowFrameStore nfs = (NarrowFrameStore) i.next();
-            buffer.append("\n\t" + nfs.getName());
-        }
-
-        Log.getLogger().info(buffer.toString());
     }
 
     public NarrowFrameStore getDelegate() {
@@ -446,7 +402,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return frames;
     }
 
-    private boolean hasEnoughMatches(int size, int limit) {
+    private static boolean hasEnoughMatches(int size, int limit) {
         return limit != FrameStore.UNLIMITED_MATCHES && size >= limit;
     }
 
