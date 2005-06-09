@@ -47,7 +47,9 @@ public class ClipsFilesCreateProjectPlugin extends AbstractCreateProjectPlugin i
     }
 
     protected void initializeSources(PropertyList sources) {
-        ClipsKnowledgeBaseFactory.setSourceFiles(sources, clsesFileName, instancesFileName);
+        String className = FileUtilities.getName(clsesFileName);
+        String instancesName = FileUtilities.getName(instancesFileName);
+        ClipsKnowledgeBaseFactory.setSourceFiles(sources, className, instancesName);
     }
 
     protected URI getBuildProjectURI() {

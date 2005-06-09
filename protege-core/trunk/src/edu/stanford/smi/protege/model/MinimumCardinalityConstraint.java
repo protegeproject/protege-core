@@ -30,12 +30,15 @@ public class MinimumCardinalityConstraint extends AbstractFacetConstraint {
     public String getInvalidValueText(Frame frame, Slot slot, Object o, Collection facetValues) {
         return null;
     }
+
     public static int getValue(Integer i) {
         return (i == null) ? 0 : i.intValue();
     }
+
     public static Integer getValue(int i) {
         return (i == 0) ? null : new Integer(i);
     }
+
     public Collection resolve(Collection existingValues, Collection newValues) {
         // higher value wins
         int i1 = getValue(existingValues);
@@ -43,7 +46,7 @@ public class MinimumCardinalityConstraint extends AbstractFacetConstraint {
         return i1 >= i2 ? existingValues : newValues;
     }
 
-    private int getValue(Collection values) {
+    private static int getValue(Collection values) {
         Integer i = (Integer) CollectionUtilities.getFirstItem(values);
         return (i == null) ? Integer.MIN_VALUE : i.intValue();
     }

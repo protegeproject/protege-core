@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.model;
+//ESCA*JAVA0037
 
 import java.io.*;
 import java.util.*;
@@ -87,11 +88,11 @@ class BackwardsCompatibilityProjectFixups {
             updateStandardForms(kb);
         }
     }
-    
+
     private static boolean shouldUpdate(KnowledgeBase kb) {
         return !isCurrentBuild(kb) && !isOwl(kb);
     }
-    
+
     private static boolean isOwl(KnowledgeBase kb) {
         Instance instance = kb.getInstance("PROJECT");
         Slot slot = kb.getSlot("default_cls_metaclass");
@@ -101,8 +102,8 @@ class BackwardsCompatibilityProjectFixups {
 
     private static Instance getClsWidgetInstance(String name, KnowledgeBase kb) {
         Instance result = null;
-        Collection values =
-            ModelUtilities.getDirectOwnSlotValues(getProjectInstance(kb), "customized_instance_widgets");
+        Collection values = ModelUtilities
+                .getDirectOwnSlotValues(getProjectInstance(kb), "customized_instance_widgets");
         Iterator i = values.iterator();
         while (i.hasNext()) {
             Instance widgetInstance = (Instance) i.next();
@@ -161,8 +162,8 @@ class BackwardsCompatibilityProjectFixups {
      */
     private static boolean isClsMetaclass(Instance formWidgetInstance) {
         boolean result = false;
-        Instance propertyListInstance =
-            (Instance) ModelUtilities.getDirectOwnSlotValue(formWidgetInstance, "property_list");
+        Instance propertyListInstance = (Instance) ModelUtilities.getDirectOwnSlotValue(formWidgetInstance,
+                "property_list");
         Iterator i = ModelUtilities.getDirectOwnSlotValues(propertyListInstance, "properties").iterator();
         while (i.hasNext()) {
             Instance slotWidgetInstance = (Instance) i.next();
@@ -174,7 +175,7 @@ class BackwardsCompatibilityProjectFixups {
         }
         return result;
     }
-    
+
     private static boolean isCurrentBuild(KnowledgeBase kb) {
         String currentBuild = Text.getBuildInfo();
         String kbBuild = kb.getBuildString();
@@ -190,8 +191,8 @@ class BackwardsCompatibilityProjectFixups {
      */
     private static boolean isSlotMetaclass(Instance formWidgetInstance) {
         boolean result = false;
-        Instance propertyListInstance =
-            (Instance) ModelUtilities.getDirectOwnSlotValue(formWidgetInstance, "property_list");
+        Instance propertyListInstance = (Instance) ModelUtilities.getDirectOwnSlotValue(formWidgetInstance,
+                "property_list");
         Iterator i = ModelUtilities.getDirectOwnSlotValues(propertyListInstance, "properties").iterator();
         while (i.hasNext()) {
             Instance slotWidgetInstance = (Instance) i.next();
@@ -340,8 +341,8 @@ class BackwardsCompatibilityProjectFixups {
             ModelUtilities.addOwnSlotValue(projectInstance, "customized_instance_widgets", projectClsWidget);
             // Log.trace("added customization for new class " + name, BackwardsCompatibilityProjectFixups.class, "replaceFormWidget");
         }
-        Instance templatePropertyList =
-            (Instance) ModelUtilities.getDirectOwnSlotValue(templateClsWidget, "property_list");
+        Instance templatePropertyList = (Instance) ModelUtilities.getDirectOwnSlotValue(templateClsWidget,
+                "property_list");
         Instance newPropertyList = (Instance) templatePropertyList.deepCopy(projectKB, null);
         ModelUtilities.setOwnSlotValue(projectClsWidget, "property_list", newPropertyList);
         return templateClsWidget != null;
@@ -351,8 +352,8 @@ class BackwardsCompatibilityProjectFixups {
         KnowledgeBase templateProjectKB = getTemplateKnowledgeBase(projectKB);
         Instance templateProjectInstance = getProjectInstance(templateProjectKB);
         // Instance projectInstance = getProjectInstance(projectKB);
-        Iterator i =
-            ModelUtilities.getDirectOwnSlotValues(templateProjectInstance, "customized_instance_widgets").iterator();
+        Iterator i = ModelUtilities.getDirectOwnSlotValues(templateProjectInstance, "customized_instance_widgets")
+                .iterator();
         while (i.hasNext()) {
             Instance widgetInstance = (Instance) i.next();
             String widgetClsName = (String) ModelUtilities.getDirectOwnSlotValue(widgetInstance, "name");

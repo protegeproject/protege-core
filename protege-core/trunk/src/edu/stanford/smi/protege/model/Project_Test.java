@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.model;
+//ESCA*JAVA0130
 
 import java.awt.*;
 import java.io.*;
@@ -51,15 +52,15 @@ public class Project_Test extends APITestCase {
         assertNotNull(p);
     }
 
-    private File getTempSubdirectory() {
+    private static File getTempSubdirectory() {
         return getTempSubdirectory(SUBDIR);
     }
 
-    private void deleteTempSubdirectory() {
+    private static void deleteTempSubdirectory() {
         deleteTempSubdirectory(SUBDIR);
     }
 
-    private Project createProjectOnDisk(File directory, String name) {
+    private static Project createProjectOnDisk(File directory, String name) {
         Collection errors = new ArrayList();
         Project project = Project.createNewProject(null, errors);
         checkErrors(errors);
@@ -109,7 +110,7 @@ public class Project_Test extends APITestCase {
         return p;
     }
 
-    private Project loadProjectFromURI(URI uri) {
+    private static Project loadProjectFromURI(URI uri) {
         Collection errors = new ArrayList();
         Project p = Project.loadProjectFromURI(uri, errors);
         checkErrors(errors);
@@ -167,7 +168,7 @@ public class Project_Test extends APITestCase {
         saveAndReload(p);
     }
 
-    private Project saveAndReload(Project p) {
+    private static Project saveAndReload(Project p) {
         Collection errors = new ArrayList();
         int frameCount = p.getKnowledgeBase().getFrameCount();
         URI uri = p.getProjectURI();

@@ -25,7 +25,7 @@ public class NumericMaximumConstraint extends AbstractFacetConstraint {
         return result;
     }
 
-    private String getInvalidValueText(double max, Object value) {
+    private static String getInvalidValueText(double max, Object value) {
         String result = null;
         if (value instanceof Number) {
             Number n = (Number) value;
@@ -53,7 +53,7 @@ public class NumericMaximumConstraint extends AbstractFacetConstraint {
         return n1 < n2 ? existingValues : newValues;
     }
 
-    private double getValue(Collection values) {
+    private static double getValue(Collection values) {
         Number n = (Number) CollectionUtilities.getFirstItem(values);
         return (n == null) ? Double.MAX_VALUE : n.doubleValue();
     }

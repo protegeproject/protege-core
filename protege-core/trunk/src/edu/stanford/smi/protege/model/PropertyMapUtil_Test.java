@@ -14,18 +14,21 @@ public class PropertyMapUtil_Test extends APITestCase {
     protected Instance _mapInstance;
 
     public static class TestClass {
-        public String _value;
+        String _value;
 
         public TestClass(String s) {
             _value = s;
         }
+
         public String toString() {
             return _value;
         }
+
         public boolean equals(Object o) {
             TestClass tco = (TestClass) o;
             return _value.equals(tco._value);
         }
+
         public int hashCode() {
             return _value.hashCode();
         }

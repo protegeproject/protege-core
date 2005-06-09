@@ -29,13 +29,13 @@ public class PropertyMapUtil {
     private static Map _valuesToMaps = new HashMap();
 
     private static class Entry {
-        public Entry(String v, Class c) {
+        private String value;
+        String valueClass;
+
+        Entry(String v, Class c) {
             value = v;
             valueClass = c.getName();
         }
-
-        public String value;
-        public String valueClass;
 
         public String toString() {
             return value;

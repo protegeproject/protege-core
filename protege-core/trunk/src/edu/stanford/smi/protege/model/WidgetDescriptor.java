@@ -12,12 +12,12 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class WidgetDescriptor implements Cloneable {
-    private final static String CLASS_WIDGET = "Widget";
-    private final static String SLOT_WIDGET_CLASSNAME = "widget_class_name";
-    private final static String SLOT_PROPERTY_LIST = "property_list";
-    private final static String SLOT_LABEL = "label";
-    private final static String SLOT_NAME = "name";
-    private final static String SLOT_HIDDEN = "is_hidden";
+    private static final String CLASS_WIDGET = "Widget";
+    private static final String SLOT_WIDGET_CLASSNAME = "widget_class_name";
+    private static final String SLOT_PROPERTY_LIST = "property_list";
+    private static final String SLOT_LABEL = "label";
+    private static final String SLOT_NAME = "name";
+    private static final String SLOT_HIDDEN = "is_hidden";
     private boolean _isTemporary;
     private boolean _isDirectlyCustomizedByUser;
 
@@ -58,8 +58,7 @@ public class WidgetDescriptor implements Cloneable {
         boolean isActive = false;
         Cls type = instance.getDirectType();
         if (type.getName().equals(CLASS_WIDGET)) {
-            String className = (String) ModelUtilities.getDirectOwnSlotValue(instance,
-                    SLOT_WIDGET_CLASSNAME);
+            String className = (String) ModelUtilities.getDirectOwnSlotValue(instance, SLOT_WIDGET_CLASSNAME);
             isActive = className != null;
         }
         return isActive;
@@ -85,7 +84,7 @@ public class WidgetDescriptor implements Cloneable {
         return create(instance);
     }
 
-    private void deletePropertyListInstance(Instance propertyInstance) {
+    private static void deletePropertyListInstance(Instance propertyInstance) {
         KnowledgeBase kb = propertyInstance.getKnowledgeBase();
         Collection roots = CollectionUtilities.createCollection(propertyInstance);
         Iterator i = kb.getReachableSimpleInstances(roots).iterator();
@@ -140,8 +139,7 @@ public class WidgetDescriptor implements Cloneable {
     }
 
     private Object getValue(String slotName) {
-        return (_instance == null) ? (Object) null : ModelUtilities.getDirectOwnSlotValue(
-                _instance, slotName);
+        return (_instance == null) ? (Object) null : ModelUtilities.getDirectOwnSlotValue(_instance, slotName);
     }
 
     public String getWidgetClassName() {
@@ -224,7 +222,7 @@ public class WidgetDescriptor implements Cloneable {
     }
 
     public void setVisible(boolean b) {
-        setValue(SLOT_HIDDEN, new Boolean(!b));
+        setValue(SLOT_HIDDEN, Boolean.valueOf(!b));
     }
 
     public void setWidgetClassName(String name) {

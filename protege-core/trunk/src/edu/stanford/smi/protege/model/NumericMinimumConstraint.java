@@ -25,7 +25,7 @@ public class NumericMinimumConstraint extends AbstractFacetConstraint {
         return result;
     }
 
-    private String getInvalidValueText(double min, Object value) {
+    private static String getInvalidValueText(double min, Object value) {
         String result = null;
         if (value instanceof Number) {
             Number n = (Number) value;
@@ -53,7 +53,7 @@ public class NumericMinimumConstraint extends AbstractFacetConstraint {
         return d1 > d2 ? existingValues : newValues;
     }
 
-    private double getValue(Collection values) {
+    private static double getValue(Collection values) {
         Number n = (Number) CollectionUtilities.getFirstItem(values);
         return (n == null) ? Double.MIN_VALUE : n.doubleValue();
     }

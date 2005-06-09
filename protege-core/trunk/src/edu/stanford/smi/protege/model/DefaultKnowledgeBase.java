@@ -1,5 +1,8 @@
 package edu.stanford.smi.protege.model;
 
+//ESCA*JAVA0136
+//ESCA*JAVA0100
+
 import java.net.*;
 import java.util.*;
 
@@ -15,6 +18,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson (fergerson@smi.stanford.edu)
  */
 public class DefaultKnowledgeBase implements KnowledgeBase {
+    private static final int GENERATED_NAME_LENGTH = 8;
 
     private FrameStoreManager _frameStoreManager;
     private SystemFrames _systemFrames;
@@ -47,7 +51,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     private void initializeKBName() {
         String randomString = String.valueOf(Math.random());
-        int len = Math.min(randomString.length(), 8);
+        int len = Math.min(randomString.length(), GENERATED_NAME_LENGTH);
         _name = "KB_" + randomString.substring(2, len);
     }
 
@@ -321,9 +325,9 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return createCls(name, superclasses, getDefaultClsMetaCls(superclasses));
     }
 
-    private Cls getDefaultClsMetaCls(Collection superClasses) {
+    private Cls getDefaultClsMetaCls(Collection superclasses) {
         Cls clsMetaCls;
-        Cls leadingSuperclass = (Cls) CollectionUtilities.getFirstItem(superClasses);
+        Cls leadingSuperclass = (Cls) CollectionUtilities.getFirstItem(superclasses);
         if (leadingSuperclass == null || equals(leadingSuperclass, _systemFrames.getRootCls())) {
             clsMetaCls = _defaultClsMetaCls;
         } else {
@@ -502,7 +506,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         markAsDeleted(slot);
     }
 
-    private void markAsDeleted(Frame frame) {
+    private static void markAsDeleted(Frame frame) {
         frame.markDeleted(true);
     }
 
@@ -1540,14 +1544,17 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return value;
     }
 
+    //ESCA-JAVA0130 
     protected String getMissingTypeString(Instance instance) {
         return instance.getName();
     }
 
+    //ESCA-JAVA0130 
     protected String getDisplaySlotNotSetString(Instance instance) {
         return instance.getName();
     }
 
+    //ESCA-JAVA0130 
     protected String getDisplaySlotPatternValueNotSetString(Instance instance, BrowserSlotPattern slotPattern) {
         return instance.getName();
     }
@@ -1561,10 +1568,12 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return (o instanceof Frame) ? toStringForFrame((Frame) o) : toStringForObject(o);
     }
 
+    //ESCA-JAVA0130 
     protected String toStringForFrame(Frame frame) {
         return frame.getBrowserText();
     }
 
+    //ESCA-JAVA0130 
     protected String toStringForObject(Object o) {
         return o.toString();
     }
@@ -1754,17 +1763,17 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    private boolean areComparableTypes(ValueType type1, ValueType type2) {
+    private static boolean areComparableTypes(ValueType type1, ValueType type2) {
         return equals(type1, type2) || (isFrameType(type1) && isFrameType(type2))
                 || (isStringType(type1) && isStringType(type2)) || type1.equals(ValueType.ANY)
                 || type2.equals(ValueType.ANY);
     }
 
-    private boolean isFrameType(ValueType type) {
+    private static boolean isFrameType(ValueType type) {
         return equals(type, ValueType.CLS) || equals(type, ValueType.INSTANCE);
     }
 
-    private boolean isStringType(ValueType type) {
+    private static boolean isStringType(ValueType type) {
         return equals(type, ValueType.STRING) || equals(type, ValueType.SYMBOL);
     }
 
@@ -1843,7 +1852,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     private void setTemplateSlotValueTypeValues(Cls cls, Slot slot, Collection values) {
         ValueType oldValueType = getTemplateSlotValueType(cls, slot);
-        ValueType newValueType = (values.isEmpty()) ? null : ValueTypeConstraint.getType(values);
+        ValueType newValueType = (values.isEmpty()) ? ValueType.STRING : ValueTypeConstraint.getType(values);
         getHeadFrameStore().setDirectTemplateFacetValues(cls, slot, _systemFrames.getValueTypeFacet(), values);
         if (!areComparableTypes(oldValueType, newValueType)) {
             setTemplateSlotDefaultValues(cls, slot, Collections.EMPTY_LIST);

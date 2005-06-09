@@ -51,10 +51,10 @@ public class FrameIDHelper {
     public FrameID createFrameID(String s) {
         int index = s.indexOf(SEPARATOR);
         String localProjectPartString = s.substring(0, index);
-        int localProjectPart = Integer.valueOf(localProjectPartString).intValue();
+        int localProjectPart = Integer.parseInt(localProjectPartString);
 
         String localPartString = s.substring(index + 1);
-        int localPart = Integer.valueOf(localPartString).intValue();
+        int localPart = Integer.parseInt(localPartString);
 
         return createFrameID(localProjectPart, localPart);
     }

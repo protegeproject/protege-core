@@ -18,23 +18,23 @@ import edu.stanford.smi.protege.util.*;
 public class DefaultFacet extends DefaultInstance implements Facet {
 
     private FacetConstraint _constraint;
-    
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _constraint = (FacetConstraint) in.readObject();
         super.readExternal(in);
     }
-    
+
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(_constraint);
         super.writeExternal(out);
     }
-    
+
     public DefaultFacet(KnowledgeBase kb, FrameID id) {
         super(kb, id);
     }
-    
+
     public DefaultFacet() {
-        
+
     }
 
     public void addFacetListener(FacetListener listener) {

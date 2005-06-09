@@ -7,10 +7,6 @@ package edu.stanford.smi.protege.model;
  */
 public class NullFrameException extends IllegalArgumentException {
 
-    /**
-     * DeletedFrameException constructor comment.
-     * @param s java.lang.String
-     */
     public NullFrameException(String s) {
         super(s);
     }

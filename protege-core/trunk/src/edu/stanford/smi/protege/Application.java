@@ -53,7 +53,7 @@ public class Application {
         return uri;
     }
 
-    private static void init(String[] args) throws Exception {
+    private static void init(String[] args) {
         parseOptions(args);
 
         // Construct the application's main frame.
@@ -78,8 +78,8 @@ public class Application {
         } else {
             showMainFrame();
             // Check to see if the user wants to see the welcome dialog.
-            boolean b = ApplicationProperties.getWelcomeDialogShow();
-            if (b == true) {
+            boolean show = ApplicationProperties.getWelcomeDialogShow();
+            if (show) {
                 // Load the main frame and show the welcome dialog.
                 _welcome = new WelcomeDialog(_mainFrame, "Welcome to " + Text.getProgramName(), true);
                 _welcome.setSize(new Dimension(600, 350));

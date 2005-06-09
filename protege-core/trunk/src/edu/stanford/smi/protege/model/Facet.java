@@ -25,6 +25,7 @@ public interface Facet extends Instance {
     String getInvalidValueText(Frame frame, Slot slot, Object item);
 
     ValueType getValueType();
+
     boolean getAllowsMultipleValues();
 
     boolean isValidValue(Frame frame, Slot slot, Object value);
@@ -34,6 +35,6 @@ public interface Facet extends Instance {
     void setAssociatedSlot(Slot slot);
 
     void setConstraint(FacetConstraint constraint);
-    
+
     Collection resolveValues(Collection originalValues, Collection newValues);
 }

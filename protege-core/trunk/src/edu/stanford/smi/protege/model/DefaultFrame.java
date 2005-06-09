@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import javax.swing.*;
+
 import edu.stanford.smi.protege.event.*;
 import edu.stanford.smi.protege.util.*;
 
@@ -43,6 +45,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
 
     }
 
+    //ESCA-JAVA0016 
     DefaultFrame(KnowledgeBase kb, FrameID id) {
         if (id == null) {
             Log.getLogger().severe("null frame id");
@@ -54,6 +57,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     /**
      * @deprecated
      */
+    //ESCA-JAVA0130 
     public URI getDefiningProjectURI() {
         return null;
     }
@@ -169,7 +173,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
         return SystemUtilities.equals(o1, o2);
     }
 
-    private void deepCopyFrameBindingValues(Collection values, Frame copyFrame, Slot copySlot, Map valueMap) {
+    private static void deepCopyFrameBindingValues(Collection values, Frame copyFrame, Slot copySlot, Map valueMap) {
 
         KnowledgeBase copyKB = copyFrame.getKnowledgeBase();
         Collection copyValues = new ArrayList();
@@ -417,9 +421,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
         getDefaultKnowledgeBase().notifyVisibilityChanged(this);
     }
 
-    public abstract String toString();
-
-    public javax.swing.Icon getIcon() {
+    public Icon getIcon() {
         return null;
     }
 }

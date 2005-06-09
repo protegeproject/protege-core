@@ -19,9 +19,9 @@ public class DefaultSlot extends DefaultInstance implements Slot {
     public DefaultSlot(KnowledgeBase kb, FrameID id) {
         super(kb, id);
     }
-    
+
     public DefaultSlot() {
-        
+
     }
 
     public void addDirectSuperslot(Slot superslot) {

@@ -126,7 +126,7 @@ public interface Frame extends Comparable {
 
     Project getProject();
 
-    public Collection getReferences();
+    Collection getReferences();
 
     Collection getReferences(int maxReferences);
 
@@ -161,7 +161,7 @@ public interface Frame extends Comparable {
     void removeFrameListener(FrameListener listener);
 
     /** Remove _all_ occurrences of this value. */
-    public void removeOwnSlotValue(Slot slot, Object value);
+    void removeOwnSlotValue(Slot slot, Object value);
 
     void setDocumentation(String documentation);
 

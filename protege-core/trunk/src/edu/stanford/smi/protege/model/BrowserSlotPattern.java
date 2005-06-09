@@ -20,7 +20,7 @@ public class BrowserSlotPattern {
     public BrowserSlotPattern(List elements) {
         this.elements = new ArrayList(elements);
     }
-    
+
     public boolean isSimple() {
         return elements.size() == 1 && getFirstSlot() != null;
     }
@@ -71,24 +71,24 @@ public class BrowserSlotPattern {
         boolean inText = false;
         List elements = new ArrayList();
         if (s != null) {
-	        StringTokenizer tokenizer = new StringTokenizer(s, "{}", true);
-	        while (tokenizer.hasMoreTokens()) {
-	            String token = tokenizer.nextToken();
-	            if (token.equals("{")) {
-	                inText = true;
-	            } else if (token.equals("}")) {
-	                inText = false;
-	            } else if (inText) {
-	                String text = fromSafeText(token);
-	                elements.add(text);
-	            } else {
-	                String name = fromSafeText(token);
-	                Slot slot = kb.getSlot(name);
-	                if (slot != null) {
-	                    elements.add(slot);
-	                }
-	            }
-	        }
+            StringTokenizer tokenizer = new StringTokenizer(s, "{}", true);
+            while (tokenizer.hasMoreTokens()) {
+                String token = tokenizer.nextToken();
+                if (token.equals("{")) {
+                    inText = true;
+                } else if (token.equals("}")) {
+                    inText = false;
+                } else if (inText) {
+                    String text = fromSafeText(token);
+                    elements.add(text);
+                } else {
+                    String name = fromSafeText(token);
+                    Slot slot = kb.getSlot(name);
+                    if (slot != null) {
+                        elements.add(slot);
+                    }
+                }
+            }
 
         }
         return (elements.isEmpty()) ? null : new BrowserSlotPattern(elements);
@@ -141,13 +141,13 @@ public class BrowserSlotPattern {
         return (buffer.length() == 0) ? null : buffer.toString();
     }
 
-    private String getText(Slot slot, Instance instance) {
+    private static String getText(Slot slot, Instance instance) {
         String text;
-         Collection values = instance.getDirectOwnSlotValues(slot);
+        Collection values = instance.getDirectOwnSlotValues(slot);
         if (values.size() > 1) {
             StringBuffer buffer = new StringBuffer();
-           buffer.append("{");
-           boolean isFirst = true;
+            buffer.append("{");
+            boolean isFirst = true;
             Iterator i = values.iterator();
             while (i.hasNext()) {
                 if (isFirst) {
@@ -162,12 +162,12 @@ public class BrowserSlotPattern {
             text = buffer.toString();
         } else {
             Object o = CollectionUtilities.getFirstItem(values);
-           text = getText(o, instance); 
+            text = getText(o, instance);
         }
         return text;
     }
-    
-    private String getText(Object o, Instance instance) {
+
+    private static String getText(Object o, Instance instance) {
         String text;
         if (o == null) {
             text = "";

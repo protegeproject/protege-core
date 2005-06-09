@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.model;
 
 import edu.stanford.smi.protege.util.*;
+
 /**
  * A holder for a frame-slot pair.  This combination comes up often enought that this class is useful.  The particular
  * reason why the frame and the slot are being held together is not specified by this class but should be evident from
@@ -26,7 +27,7 @@ public class FrameSlotCombination {
         }
         return equals;
     }
-    
+
     public static boolean equals(Object o1, Object o2) {
         return SystemUtilities.equals(o1, o2);
     }
