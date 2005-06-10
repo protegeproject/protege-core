@@ -95,7 +95,7 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
 
     public void processFocusEvent(FocusEvent event) {
         // prevent dispatch of focus event if we have been removed from the screen!
-        if (isVisible()) {
+        if (getParent() != null) {
             super.processFocusEvent(event);
         }
     }
