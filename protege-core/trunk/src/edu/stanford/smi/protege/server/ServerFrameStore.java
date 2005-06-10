@@ -19,6 +19,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private static final int MAX_VALUES = 20;
     private static final int MIN_PRELOAD_FRAMES = Integer.getInteger("preload.frame.limit", 5000).intValue();
 
+    //ESCA-JAVA0160 
     public ServerFrameStore(FrameStore delegate, KnowledgeBase kb) throws RemoteException {
         _delegate = delegate;
         _kb = kb;
@@ -34,7 +35,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return _delegate;
     }
 
-    private int nDelayedCalls;
+    private int nDelayedCalls = 0;
 
     private void delay() {
         if (DELAY_MSEC != 0) {
@@ -532,35 +533,32 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         _isDirty = false;
     }
 
-    public synchronized List getDirectDomain(Slot slot, RemoteSession session) throws RemoteException {
+    public synchronized List getDirectDomain(Slot slot, RemoteSession session) {
         recordCall(session);
         return getDelegate().getDirectDomain(slot);
     }
 
-    public synchronized Set getDomain(Slot slot, RemoteSession session) throws RemoteException {
+    public synchronized Set getDomain(Slot slot, RemoteSession session) {
         recordCall(session);
         return getDelegate().getDomain(slot);
     }
 
-    public synchronized void moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session)
-            throws RemoteException {
+    public synchronized void moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session) {
         recordCall(session);
         getDelegate().moveDirectSubslot(slot, subslot, index);
     }
 
-    public synchronized Set getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws RemoteException {
+    public synchronized Set getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) {
         recordCall(session);
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
     }
 
-    public synchronized Set getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session)
-            throws RemoteException {
+    public synchronized Set getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) {
         recordCall(session);
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
     }
 
-    public synchronized Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot, RemoteSession session)
-            throws RemoteException {
+    public synchronized Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot, RemoteSession session) {
         recordCall(session);
         return getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
     }

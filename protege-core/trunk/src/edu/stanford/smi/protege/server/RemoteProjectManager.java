@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.server;
 
+//ESCA*JAVA0130
+
 import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
@@ -84,7 +86,7 @@ public class RemoteProjectManager {
             RemoteServerProject serverProject = server.openProject(name, session);
             p = RemoteClientProject.createProject(serverProject, session, true);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
         }
         return p;
     }

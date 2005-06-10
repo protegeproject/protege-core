@@ -16,7 +16,7 @@ public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin
     private KnowledgeBaseFactory knowledgeBaseFactory;
     private boolean useExistingSources;
 
-    public AbstractCreateProjectPlugin(String name) {
+    protected AbstractCreateProjectPlugin(String name) {
         this.name = name;
     }
 
@@ -28,6 +28,7 @@ public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin
         // do nothing
     }
 
+    //ESCA-JAVA0130 
     protected void handleErrors(Collection errors) {
         if (!errors.isEmpty()) {
             ProjectManager.getProjectManager().displayErrors("Create Project Errors", errors);
@@ -78,10 +79,12 @@ public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin
         return project;
     }
 
+    //ESCA-JAVA0130 
     protected URI getBuildProjectURI() {
         return null;
     }
 
+    //ESCA-JAVA0130 
     protected void initializeSources(PropertyList sources) {
         throw new UnsupportedOperationException();
     }

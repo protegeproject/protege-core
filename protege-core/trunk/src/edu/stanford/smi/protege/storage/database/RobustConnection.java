@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.storage.database;
 
+//ESCA*JAVA0100
+
 import java.sql.*;
 import java.util.*;
 
@@ -30,15 +32,15 @@ public class RobustConnection {
     private String _driverIntegerTypeName;
     private String _driverVarcharTypeName;
     private String _driverCharTypeName;
-    private final static String OLD_PROPERTY_LONGVARCHAR_TYPE_NAME = "SimpleJdbcDatabaseManager.longvarcharname";
-    private final static String PROPERTY_LONGVARCHAR_TYPE_NAME = "Database.typename.longvarchar";
-    private final static String PROPERTY_VARCHAR_TYPE_NAME = "Database.typename.varchar";
-    private final static String PROPERTY_INTEGER_TYPE_NAME = "Database.typename.integer";
-    private final static String PROPERTY_SMALL_INTEGER_TYPE_NAME = "Database.typename.small_integer";
+    private static final String OLD_PROPERTY_LONGVARCHAR_TYPE_NAME = "SimpleJdbcDatabaseManager.longvarcharname";
+    private static final String PROPERTY_LONGVARCHAR_TYPE_NAME = "Database.typename.longvarchar";
+    private static final String PROPERTY_VARCHAR_TYPE_NAME = "Database.typename.varchar";
+    private static final String PROPERTY_INTEGER_TYPE_NAME = "Database.typename.integer";
+    private static final String PROPERTY_SMALL_INTEGER_TYPE_NAME = "Database.typename.small_integer";
     // private final static String PROPERTY_TINY_INTEGER_TYPE_NAME =
     // "Database.typename.tiny_integer";
-    private final static String PROPERTY_BIT_TYPE_NAME = "Database.typename.bit";
-    private final static String PROPERTY_CHAR_TYPE_NAME = "Database.typename.char";
+    private static final String PROPERTY_BIT_TYPE_NAME = "Database.typename.bit";
+    private static final String PROPERTY_CHAR_TYPE_NAME = "Database.typename.char";
 
     public RobustConnection(String driver, String url, String username, String password) throws SQLException {
         _url = url;
@@ -93,7 +95,7 @@ public class RobustConnection {
     private void initializeMaxVarcharSize() throws SQLException {
         String property = SystemUtilities.getSystemProperty("database.varcharsize");
         if (property != null && property.length() != 0) {
-            _maxVarcharSize = Integer.valueOf(property).intValue();
+            _maxVarcharSize = Integer.parseInt(property);
         } else if (isOracle()) {
             _maxVarcharSize = ORACLE_MAX_VARCHAR_SIZE;
         } else if (isSqlServer()) {
@@ -265,8 +267,10 @@ public class RobustConnection {
                     if (_driverCharTypeName == null) {
                         _driverCharTypeName = name;
                     }
+                    break;
                 default:
-            // do nothing
+                    // do nothing
+                    break;
             }
         }
         rs.close();

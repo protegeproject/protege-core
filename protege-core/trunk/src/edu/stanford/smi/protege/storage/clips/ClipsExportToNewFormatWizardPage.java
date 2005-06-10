@@ -49,7 +49,7 @@ public class ClipsExportToNewFormatWizardPage extends WizardPage {
         replaceName(clsesFileField, ".pont", name);
     }
     
-    private void replaceName(JTextField field, String extension, String baseName) {
+    private static void replaceName(JTextField field, String extension, String baseName) {
         String name = FileUtilities.replaceExtension(baseName, extension);
         name = new File(name).getName();
         field.setText(name);
@@ -80,7 +80,7 @@ public class ClipsExportToNewFormatWizardPage extends WizardPage {
         return getPath(projectFileField, ".pprj");
     }
 
-    private String getPath(FileField field, String extension) {
+    private static String getPath(FileField field, String extension) {
         String path = field.getPath();
         return FileUtilities.ensureExtension(path, extension);
     }

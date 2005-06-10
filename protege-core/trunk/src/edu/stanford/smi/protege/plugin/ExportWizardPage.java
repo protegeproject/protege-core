@@ -9,7 +9,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class ExportWizardPage extends WizardPage {
     
-    public ExportWizardPage(String name, ExportWizard wizard) {
+    protected ExportWizardPage(String name, ExportWizard wizard) {
         super(name, wizard);
     }
     protected ExportWizard getExportProjectWizard() {

@@ -1,9 +1,9 @@
 package edu.stanford.smi.protege.plugin;
+//ESCA*JAVA0130
 
 import java.util.*;
 
 import junit.framework.*;
-
 import edu.stanford.smi.protege.util.*;
 import edu.stanford.smi.protege.widget.*;
 

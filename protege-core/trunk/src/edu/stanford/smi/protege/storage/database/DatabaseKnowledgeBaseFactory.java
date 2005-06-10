@@ -15,15 +15,11 @@ import edu.stanford.smi.protege.util.*;
  */
 public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
     public static final String DESCRIPTION = Text.getProgramName() + " Database";
-    final static String USERNAME = "username";
-    final static String PASSWORD = "password";
-    final static String URL = "url";
-    final static String DRIVER = "driver";
-    final static String TABLENAME = "table";
-
-    public DatabaseKnowledgeBaseFactory() {
-        // Log.enter(this, "JdbcKnowledgeBaseFactory");
-    }
+    static final String USERNAME_PROPERTY = "username";
+    static final String PASSWORD_PROPERTY = "password";
+    static final String URL_PROPERTY = "url";
+    static final String DRIVER_PROPERTY = "driver";
+    static final String TABLENAME_PROPERTY = "table";
 
     private void copyKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
         String driver = getDriver(sources);
@@ -59,11 +55,11 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
     }
 
     public static String getDriver(PropertyList sources) {
-        return sources.getString(DRIVER);
+        return sources.getString(DRIVER_PROPERTY);
     }
 
     public static String getPassword(PropertyList sources) {
-        return sources.getString(PASSWORD);
+        return sources.getString(PASSWORD_PROPERTY);
     }
 
     public String getProjectFilePath() {
@@ -71,15 +67,15 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
     }
 
     public static String getTableName(PropertyList sources) {
-        return sources.getString(TABLENAME);
+        return sources.getString(TABLENAME_PROPERTY);
     }
 
     public static String getURL(PropertyList sources) {
-        return sources.getString(URL);
+        return sources.getString(URL_PROPERTY);
     }
 
     public static String getUsername(PropertyList sources) {
-        return sources.getString(USERNAME);
+        return sources.getString(USERNAME_PROPERTY);
     }
 
     public void includeKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
@@ -94,10 +90,10 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
     }
 
     public boolean isComplete(PropertyList sources) {
-        String tableName = getTableName(sources);
+        String tablename = getTableName(sources);
         String url = getURL(sources);
         String driver = getDriver(sources);
-        return tableName != null && url != null && driver != null;
+        return tablename != null && url != null && driver != null;
     }
 
     public void loadKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
@@ -135,6 +131,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         }
     }
 
+    //ESCA-JAVA0130 
     protected DatabaseFrameDb addFrameStore(KnowledgeBase kb, String driver, String url, String user, String password,
             String table) {
         DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
@@ -171,23 +168,23 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
     }
 
     public static void setDriver(PropertyList sources, String driver) {
-        sources.setString(DRIVER, driver);
+        sources.setString(DRIVER_PROPERTY, driver);
     }
 
     public static void setPassword(PropertyList sources, String password) {
-        sources.setString(PASSWORD, password);
+        sources.setString(PASSWORD_PROPERTY, password);
     }
 
     public static void setTablename(PropertyList sources, String tablename) {
-        sources.setString(TABLENAME, tablename);
+        sources.setString(TABLENAME_PROPERTY, tablename);
     }
 
     public static void setURL(PropertyList sources, String url) {
-        sources.setString(URL, url);
+        sources.setString(URL_PROPERTY, url);
     }
 
     public static void setUsername(PropertyList sources, String username) {
-        sources.setString(USERNAME, username);
+        sources.setString(USERNAME_PROPERTY, username);
     }
 
     public static void setSources(PropertyList sources, String driver, String url, String table, String user,

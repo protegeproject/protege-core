@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.plugin;
 
+//ESCA*JAVA0100
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -46,7 +48,7 @@ public class PluginUtilities {
     private static final String DEPENDENCY_COUNT_PROPERTY = "plugin.dependency.count";
     private static final String DEPENDENCY_PROPERTY = "plugin.dependency";
 
-    public final static String EXTRA_MANIFEST_PATH = "protege.plugin.manifest";
+    public static final String EXTRA_MANIFEST_PATH = "protege.plugin.manifest";
 
     private static FilenameFilter _pluginPackageFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
@@ -109,6 +111,7 @@ public class PluginUtilities {
             if (promiscuous) {
                 clas = promiscuousForName(className);
             }
+            //ESCA-JAVA0170 
         } catch (Throwable e) {
             Log.getLogger().warning(e.getMessage());
         }
@@ -126,6 +129,7 @@ public class PluginUtilities {
                 clas = Class.forName(className, true, loader);
             } catch (ClassNotFoundException e) {
                 // do nothing
+                //ESCA-JAVA0170 
             } catch (NoClassDefFoundError error) {
                 // Log.error(error.getMessage(), PluginUtilities.class,
                 // "promiscuousForName", className, loader);
@@ -159,7 +163,7 @@ public class PluginUtilities {
                 }
             }
         }
-        return _factories;
+        return Collections.unmodifiableCollection(_factories);
     }
 
     private static Collection getPluginNames(String pluginType) {
@@ -257,6 +261,7 @@ public class PluginUtilities {
                     Log.getLogger().warning(className + " does not implement " + interfac);
                 }
             }
+            //ESCA-JAVA0170 
         } catch (Throwable e) {
             Log.getLogger().warning(e.toString());
         }
@@ -297,7 +302,7 @@ public class PluginUtilities {
                 addNew(url, manifests);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
         }
         return manifests;
     }
@@ -404,10 +409,9 @@ public class PluginUtilities {
 
     private static void init() {
         try {
-            // setContextClassLoader(null);
             loadPlugins();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
         }
     }
 
@@ -591,6 +595,7 @@ public class PluginUtilities {
             try {
                 url = uri.toURL();
             } catch (MalformedURLException e) {
+                // do nothing
             }
         }
         return url;

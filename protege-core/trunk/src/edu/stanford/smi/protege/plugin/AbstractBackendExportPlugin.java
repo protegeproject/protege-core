@@ -39,6 +39,7 @@ public abstract class AbstractBackendExportPlugin extends AbstractExportPlugin i
         return newProject;
     }
 
+    //ESCA-JAVA0130 
     protected boolean isCompatibleProject(Project project) {
         String factoryName = project.getKnowledgeBaseFactory().getClass().getName();
         return factoryName.indexOf("OWL") == -1;

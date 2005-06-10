@@ -13,29 +13,20 @@ public class RemoteClientProject extends Project {
     private RemoteSession _session;
     private Thread shutdownHook;
 
-    public static Project createProject(
-        RemoteServerProject serverProject,
-        RemoteSession session,
-        boolean pollForEvents)
-        throws RemoteException {
+    public static Project createProject(RemoteServerProject serverProject, RemoteSession session, boolean pollForEvents)
+            throws RemoteException {
         return new RemoteClientProject(serverProject, session, pollForEvents);
     }
 
     public RemoteClientProject(RemoteServerProject serverProject, RemoteSession session, boolean pollForEvents)
-        throws RemoteException {
+            throws RemoteException {
         super(null, null, new ArrayList(), false);
         _serverProject = serverProject;
         _session = session;
-        KnowledgeBase domainKb =
-            createKnowledgeBase(
-                serverProject.getDomainKbFrameStore(session),
-                serverProject.getDomainKbFactoryClassName(),
-                session, false);
-        KnowledgeBase projectKb =
-            createKnowledgeBase(
-                serverProject.getProjectKbFrameStore(session),
-                serverProject.getProjectKbFactoryClassName(),
-                session, true);
+        KnowledgeBase domainKb = createKnowledgeBase(serverProject.getDomainKbFrameStore(session), serverProject
+                .getDomainKbFactoryClassName(), session, false);
+        KnowledgeBase projectKb = createKnowledgeBase(serverProject.getProjectKbFrameStore(session), serverProject
+                .getProjectKbFactoryClassName(), session, true);
         projectKb = copyKb(projectKb);
         setKnowledgeBases(domainKb, projectKb);
         if (pollForEvents) {
@@ -43,7 +34,7 @@ public class RemoteClientProject extends Project {
         }
         installShutdownHook();
     }
-    
+
     private static KnowledgeBase copyKb(KnowledgeBase remoteKb) {
         Collection errors = new ArrayList();
         KnowledgeBase localKb = loadProjectKB(null, null, errors);
@@ -53,11 +44,9 @@ public class RemoteClientProject extends Project {
         return localKb;
     }
 
-    private static KnowledgeBase createKnowledgeBase(
-        RemoteServerFrameStore serverFrameStore,
-        String factoryClassName,
-        RemoteSession session, boolean preloadAll) {
-         Class factoryClass = SystemUtilities.forName(factoryClassName, true);
+    private static KnowledgeBase createKnowledgeBase(RemoteServerFrameStore serverFrameStore, String factoryClassName,
+            RemoteSession session, boolean preloadAll) {
+        Class factoryClass = SystemUtilities.forName(factoryClassName, true);
         KnowledgeBaseFactory factory = (KnowledgeBaseFactory) SystemUtilities.newInstance(factoryClass);
         DefaultKnowledgeBase kb = (DefaultKnowledgeBase) factory.createKnowledgeBase(new ArrayList());
         // Log.trace("created kb=" + kb, RemoteClientProject.class, "createKnowledgeBase");
@@ -73,7 +62,7 @@ public class RemoteClientProject extends Project {
         try {
             uri = _serverProject.getURI(_session);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
         }
         return uri;
     }
@@ -83,7 +72,7 @@ public class RemoteClientProject extends Project {
         try {
             url = new URL(getProjectURI().toString());
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
         }
         return url;
     }
@@ -98,11 +87,11 @@ public class RemoteClientProject extends Project {
                 users.add(session.getUserName());
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
         }
         return users;
     }
-    
+
     public String getLocalUser() {
         return _session.getUserName();
     }
@@ -112,7 +101,7 @@ public class RemoteClientProject extends Project {
         attemptClose();
         uninstallShutdownHook();
     }
-    
+
     private void attemptClose() {
         try {
             _serverProject.close(_session);
@@ -124,23 +113,24 @@ public class RemoteClientProject extends Project {
     public KnowledgeBaseFactory getKnowledgeBaseFactory() {
         return null;
     }
+
     public boolean isMultiUserClient() {
         return true;
     }
-    
+
     private void installShutdownHook() {
         shutdownHook = new Thread("Remote Project ShutdownHook") {
-            public void run() { 
+            public void run() {
                 attemptClose();
             }
         };
         Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
-    
+
     private void uninstallShutdownHook() {
         Runtime.getRuntime().removeShutdownHook(shutdownHook);
     }
-    
+
     public boolean isDirty() {
         // changes are committed automatically so we are never dirty.
         return false;

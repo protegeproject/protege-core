@@ -16,11 +16,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ClipsKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
     public static final String DESCRIPTION = Text.getProgramName() + " Files (.pont and .pins)";
-    private final static String CLSES_FILE_NAME = "classes_file_name";
-    private final static String INSTANCES_FILE_NAME = "instances_file_name";
-
-    public ClipsKnowledgeBaseFactory() {
-    }
+    private static final String CLSES_FILE_NAME = "classes_file_name";
+    private static final String INSTANCES_FILE_NAME = "instances_file_name";
 
     public KnowledgeBase createKnowledgeBase(Collection errors) {
         KnowledgeBase kb = new DefaultKnowledgeBase(this);
@@ -75,12 +72,9 @@ public class ClipsKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
         close(instancesReader);
     }
 
-    public void loadKnowledgeBase(
-        KnowledgeBase kb,
-        Reader clsesReader,
-        Reader instancesReader,
-        boolean isInclude,
-        Collection errors) {
+    //ESCA-JAVA0130 
+    public void loadKnowledgeBase(KnowledgeBase kb, Reader clsesReader, Reader instancesReader, boolean isInclude,
+            Collection errors) {
         // Log.enter(this, "loadKnowledgeBase", kb, new Boolean(isInclude));
         boolean cachingEnabled = kb.setCallCachingEnabled(false);
         boolean eventsEnabled = kb.setGenerateEventsEnabled(false);
@@ -96,12 +90,8 @@ public class ClipsKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
         kb.setCallCachingEnabled(cachingEnabled);
     }
 
-    public void loadKnowledgeBase(
-        KnowledgeBase kb,
-        String clsesName,
-        String instancesName,
-        boolean isInclude,
-        Collection errors) {
+    public void loadKnowledgeBase(KnowledgeBase kb, String clsesName, String instancesName, boolean isInclude,
+            Collection errors) {
         Reader clsesReader = createReader(kb, clsesName, errors);
         Reader instancesReader = createReader(kb, instancesName, errors);
         loadKnowledgeBase(kb, clsesReader, instancesReader, isInclude, errors);
@@ -140,6 +130,7 @@ public class ClipsKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
         saveKnowledgeBase(kb, clsesName, instancesName, errors);
     }
 
+    //ESCA-JAVA0130 
     public void saveKnowledgeBase(KnowledgeBase kb, Writer clsesWriter, Writer instancesWriter, Collection errors) {
         if (clsesWriter != null) {
             ClsStorer clsStorer = new ClsStorer(clsesWriter);
@@ -151,16 +142,12 @@ public class ClipsKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
         }
     }
 
-    public void saveKnowledgeBase(
-        KnowledgeBase kb,
-        String clsesFilename,
-        String instancesFilename,
-        Collection errors) {
+    public void saveKnowledgeBase(KnowledgeBase kb, String clsesFileName, String instancesFileName, Collection errors) {
         Writer pontWriter = null;
         Writer pinsWriter = null;
         try {
-            File pontFile = createTempFile(kb, clsesFilename);
-            File pinsFile = createTempFile(kb, instancesFilename);
+            File pontFile = createTempFile(kb, clsesFileName);
+            File pinsFile = createTempFile(kb, instancesFileName);
             pontWriter = createWriter(pontFile);
             pinsWriter = createWriter(pinsFile);
             saveKnowledgeBase(kb, pontWriter, pinsWriter, errors);

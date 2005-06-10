@@ -142,7 +142,7 @@ public class DatabaseWizardPage extends WizardPage {
         add(panel, BorderLayout.NORTH);
     }
 
-    private void addField(Box panel, JComponent component, String text) {
+    private static void addField(Box panel, JComponent component, String text) {
         panel.add(new LabeledComponent(text, component));
     }
 

@@ -26,7 +26,7 @@ public final class Text {
             InputStream stream = FileUtilities.getResourceStream(Text.class, directory, buildFile);
             props.load(stream);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
         }
     }
 

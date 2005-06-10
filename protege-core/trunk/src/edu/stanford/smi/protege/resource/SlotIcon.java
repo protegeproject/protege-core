@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.resource;
 
 import java.awt.*;
-import java.io.*;
 
 import javax.swing.*;
 
@@ -9,7 +8,7 @@ import javax.swing.*;
  * TODO Class Comment
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-class SlotIcon implements Icon, Serializable {
+class SlotIcon implements Icon {
     private static final int ICON_SIZE = 16;
     private static final int HEIGHT = 7;
     private static final int WIDTH = 12;

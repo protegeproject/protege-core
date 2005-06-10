@@ -98,8 +98,7 @@ public class ServerPanel extends JPanel implements Validatable {
         try {
             server = (RemoteServer) Naming.lookup("//" + serverName + "/" + Server.getBoundName());
         } catch (Exception e) {
-            e.printStackTrace();
-            // do nothing
+            Log.getLogger().severe(Log.toString(e));
         }
         return server;
     }
@@ -109,8 +108,7 @@ public class ServerPanel extends JPanel implements Validatable {
         try {
             session = _server.openSession(username, SystemUtilities.getMachineIpAddress(), password);
         } catch (RemoteException e) {
-            e.printStackTrace();
-            // do nothing
+            Log.getLogger().severe(Log.toString(e));
         }
         return session;
     }

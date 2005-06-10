@@ -28,6 +28,7 @@ public class FileSourcesPanel extends KnowledgeBaseSourcesEditor {
         add(panel);
     }
 
+    //ESCA-JAVA0130 
     public URI getProjectURI() {
         return null;
         // return getProjectURI(_clsesField);
