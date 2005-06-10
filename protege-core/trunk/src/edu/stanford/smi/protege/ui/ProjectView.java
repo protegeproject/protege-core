@@ -199,9 +199,7 @@ public class ProjectView extends JComponent {
         while (i.hasNext()) {
             TabWidget tab = (TabWidget) i.next();
             tab.close();
-            // _viewHolder.remove((Component) tab);
         }
-        _viewHolder = null;
         _project = null;
     }
 

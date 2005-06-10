@@ -152,6 +152,7 @@ public class DatabaseKnowledgeBaseSourcesEditor extends KnowledgeBaseSourcesEdit
                 String userName = _usernameComponent.getText();
                 String password = _passwordComponent.getText();
                 Connection c = DriverManager.getConnection(url, userName, password);
+                isValid = confirmOverwriteIfNecessary(c);
                 c.close();
             } catch (SQLException e) {
                 isValid = false;
@@ -161,6 +162,31 @@ public class DatabaseKnowledgeBaseSourcesEditor extends KnowledgeBaseSourcesEdit
             }
         }
         return isValid;
+    }
+
+    private boolean confirmOverwriteIfNecessary(Connection c) {
+        boolean canCreate = true;
+        if (tableExists(c, _tableNameComponent.getText())) {
+            String text = "Table already exists.  Overwrite it?";
+            int rval = ModalDialog.showMessageDialog(this, text, ModalDialog.MODE_YES_NO);
+            canCreate = rval == ModalDialog.OPTION_YES;
+        }
+        return canCreate;
+    }
+
+    private static boolean tableExists(Connection connection, String tableName) {
+        boolean exists = false;
+        try {
+            Statement statement = connection.createStatement();
+            String query = "SELECT COUNT(*) FROM " + tableName;
+            ResultSet rs = statement.executeQuery(query);
+            rs.close();
+            statement.close();
+            exists = true;
+        } catch (SQLException e) {
+            // do nothing
+        }
+        return exists;
     }
 
     private void complain(String text) {
