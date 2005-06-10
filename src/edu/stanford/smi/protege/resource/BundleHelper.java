@@ -12,7 +12,7 @@ import edu.stanford.smi.protege.util.*;
 public class BundleHelper {
     private ResourceBundle resourceBundle;
     private static boolean colorLookup;
-    
+
     static {
         try {
             colorLookup = Boolean.getBoolean("protege.text.colorlookup");
@@ -27,7 +27,7 @@ public class BundleHelper {
             loader = fixLoader(loader);
             Locale locale = Locale.getDefault();
             resourceBundle = ResourceBundle.getBundle(bundleName, locale, loader);
-         } catch (MissingResourceException e) {
+        } catch (MissingResourceException e) {
             Log.getLogger().warning("missing bundle: " + bundleName);
         }
     }
@@ -46,7 +46,7 @@ public class BundleHelper {
      * than loading the resource bundle. This seems really strange but does
      * appear to work.
      */
-    private ClassLoader fixLoader(ClassLoader loader) {
+    private static ClassLoader fixLoader(ClassLoader loader) {
         if (loader == BundleHelper.class.getClassLoader()) {
             File applicationDirectory = ApplicationProperties.getApplicationDirectory();
             if (applicationDirectory != null) {
@@ -55,7 +55,7 @@ public class BundleHelper {
         }
         return loader;
     }
-    
+
     public boolean hasText(ResourceKey key) {
         return internalGetText(key) != null;
     }
@@ -63,11 +63,11 @@ public class BundleHelper {
     public String getText(ResourceKey key) {
         String text = internalGetText(key);
         if (colorLookup) {
-	        if (text == null) {
-	            text = "<html><font color=ff0000>" + key + "</font></html>";
-	        } else {
-	            text = "<html><font color=0000ff>" + text + "</font></html>";
-	        }
+            if (text == null) {
+                text = "<html><font color=ff0000>" + key + "</font></html>";
+            } else {
+                text = "<html><font color=0000ff>" + text + "</font></html>";
+            }
         }
         return text == null ? key.toString() : text;
     }

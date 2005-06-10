@@ -26,6 +26,7 @@ public class Server_Test extends SimpleTestCase {
 
     public void setUp() throws Exception {
         try {
+            super.setUp();
             _server = (RemoteServer) Naming.lookup(NAME);
             _server.reinitialize();
         } catch (NotBoundException e) {

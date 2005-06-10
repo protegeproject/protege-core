@@ -15,7 +15,7 @@ import edu.stanford.smi.protege.util.*;
 public abstract class ClipsFileWriter {
     private PrintWriter _writer;
 
-    public ClipsFileWriter(Writer writer) {
+    protected ClipsFileWriter(Writer writer) {
         _writer = new PrintWriter(writer);
         printVersion();
     }
@@ -59,11 +59,11 @@ public abstract class ClipsFileWriter {
         println(";+ (build \"" + Text.getBuildInfo() + "\")");
     }
 
-    public String toExternalFrameName(Frame frame) {
+    public static String toExternalFrameName(Frame frame) {
         return toExternalFrameName(frame.getName());
     }
 
-    public String toExternalFrameName(String internalFrameName) {
+    public static String toExternalFrameName(String internalFrameName) {
         return ClipsUtil.toExternalSymbol(internalFrameName);
     }
 

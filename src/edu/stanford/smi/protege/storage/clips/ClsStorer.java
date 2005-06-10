@@ -36,7 +36,7 @@ public class ClsStorer extends ClipsFileWriter {
         super(writer);
     }
 
-    protected boolean isStorable(Cls cls) {
+    protected static boolean isStorable(Cls cls) {
         return cls == null || (!cls.isSystem() && !cls.isIncluded());
     }
 
@@ -226,6 +226,7 @@ public class ClsStorer extends ClipsFileWriter {
 
     public void storeClses(KnowledgeBase kb, Collection errors) {
         _kb = kb;
+        //ESCA-JAVA0256 
         _errors = errors;
         storeTopLevelSlots(kb);
         Cls root = kb.getRootCls();

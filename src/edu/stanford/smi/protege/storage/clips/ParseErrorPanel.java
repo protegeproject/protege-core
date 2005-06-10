@@ -21,7 +21,7 @@ public class ParseErrorPanel extends JComponent {
         setPreferredSize(new Dimension(700, 400));
     }
 
-    private String getText(Collection errors) {
+    private static String getText(Collection errors) {
         StringBuffer buffer = new StringBuffer();
         Iterator i = errors.iterator();
         while (i.hasNext()) {

@@ -50,10 +50,6 @@ class DatabaseUtils {
         return (id == null) ? "0" : String.valueOf(id.getLocalPart());
     }
 
-    public static String getFrameIdValueString(Frame frame) {
-        return getFrameIDValueString(getId(frame));
-    }
-
     private static void setValueType(PreparedStatement stmt, int index, Object o, FrameFactory factory)
             throws SQLException {
         setValueType(stmt, index, valueType(o, factory));
@@ -280,7 +276,7 @@ class DatabaseUtils {
                 }
                 break;
             default:
-                int valueInt = Integer.valueOf(valueString).intValue();
+                int valueInt = Integer.parseInt(valueString);
                 FrameID id = createFrameID(valueInt);
                 value = getFrame(id, type, factory);
                 break;

@@ -69,7 +69,7 @@ public class ClipsFilesWizardPage extends WizardPage {
         return getPath(instancesFileField, ".pins");
     }
 
-    private String getPath(FileField field, String extension) {
+    private static String getPath(FileField field, String extension) {
         String path = field.getPath();
         return FileUtilities.ensureExtension(path, extension);
     }

@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.server;
+//ESCA*JAVA0085
 
 import java.net.*;
 import java.rmi.server.*;
@@ -17,8 +18,7 @@ public class ProtegeRmiClassLoaderSpi extends RMIClassLoaderSpi {
         Log.getLogger().config("Installed ProtegeRmiClassLoaderSpi");
     }
 
-    public Class loadClass(String codebase, String name, ClassLoader defaultLoader) throws ClassNotFoundException,
-            MalformedURLException {
+    public Class loadClass(String codebase, String name, ClassLoader defaultLoader) throws MalformedURLException {
         Class clas;
         try {
             clas = sun.rmi.server.LoaderHandler.loadClass(codebase, name, defaultLoader);

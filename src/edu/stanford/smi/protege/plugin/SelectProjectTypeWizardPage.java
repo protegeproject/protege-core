@@ -42,7 +42,7 @@ public class SelectProjectTypeWizardPage extends WizardPage {
         Iterator i = factories.iterator();
         while (i.hasNext()) {
             KnowledgeBaseFactory factory = (KnowledgeBaseFactory) i.next();
-            if (factory.getClass().getName() == selectedFactoryName) {
+            if (factory.getClass().getName().equals(selectedFactoryName)) {
                 selection = factory;
             }
         }
@@ -122,7 +122,8 @@ public class SelectProjectTypeWizardPage extends WizardPage {
         return page;
     }
 
-    private Collection getAppropriateCreateProjectPlugins(KnowledgeBaseFactory factory, boolean useExistingSources) {
+    private static Collection getAppropriateCreateProjectPlugins(KnowledgeBaseFactory factory,
+            boolean useExistingSources) {
         Collection appropriatePlugins = new ArrayList();
         Iterator i = PluginUtilities.getAvailableCreateProjectPluginClassNames().iterator();
         while (i.hasNext()) {
@@ -138,7 +139,7 @@ public class SelectProjectTypeWizardPage extends WizardPage {
 
 class DefaultCreateProjectPlugin extends AbstractCreateProjectPlugin {
 
-    public DefaultCreateProjectPlugin() {
+    DefaultCreateProjectPlugin() {
         super("default import plugin");
     }
 
@@ -150,4 +151,3 @@ class DefaultCreateProjectPlugin extends AbstractCreateProjectPlugin {
         return null;
     }
 }
-

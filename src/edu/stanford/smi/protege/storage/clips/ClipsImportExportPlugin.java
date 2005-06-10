@@ -36,11 +36,10 @@ public class ClipsImportExportPlugin implements ImportPlugin, ExportPlugin {
         return project;
     }
 
-    private void handleImportRequest(Project project) {
+    private static void handleImportRequest(Project project) {
         ClipsFilePanel panel = new ClipsFilePanel();
         String title = LocalizedText.getText(ResourceKey.CLIPS_FILES_TO_IMPORT_DIALOG_TITLE);
-        int rval = ModalDialog.showDialog(null, panel, title,
-                ModalDialog.MODE_OK_CANCEL);
+        int rval = ModalDialog.showDialog(null, panel, title, ModalDialog.MODE_OK_CANCEL);
         if (rval == ModalDialog.OPTION_OK) {
             String classesFileName = panel.getClsesFileName();
             String instancesFileName = panel.getInstancesFileName();
@@ -53,7 +52,7 @@ public class ClipsImportExportPlugin implements ImportPlugin, ExportPlugin {
         }
     }
 
-    private void importProject(Project project, String clsesFileName, String instancesFileName) {
+    private static void importProject(Project project, String clsesFileName, String instancesFileName) {
         Collection errors = new ArrayList();
         KnowledgeBase kb = project.getKnowledgeBase();
         ClipsKnowledgeBaseFactory factory = new ClipsKnowledgeBaseFactory();
@@ -66,8 +65,7 @@ public class ClipsImportExportPlugin implements ImportPlugin, ExportPlugin {
     public void handleExportRequest(Project project) {
         ClipsFilePanel panel = new ClipsFilePanel();
         String title = LocalizedText.getText(ResourceKey.CLIPS_FILES_TO_EXPORT_DIALOG_TITLE);
-        int rval = ModalDialog.showDialog(null, panel, title,
-                ModalDialog.MODE_OK_CANCEL);
+        int rval = ModalDialog.showDialog(null, panel, title, ModalDialog.MODE_OK_CANCEL);
         if (rval == ModalDialog.OPTION_OK) {
             String classesFileName = panel.getClsesFileName();
             String instancesFileName = panel.getInstancesFileName();
@@ -80,7 +78,7 @@ public class ClipsImportExportPlugin implements ImportPlugin, ExportPlugin {
         }
     }
 
-    private void exportProject(Project project, String clsesFileName, String instancesFileName) {
+    private static void exportProject(Project project, String clsesFileName, String instancesFileName) {
         Collection errors = new ArrayList();
         KnowledgeBase kb = project.getKnowledgeBase();
         ClipsKnowledgeBaseFactory factory = new ClipsKnowledgeBaseFactory();
@@ -90,7 +88,7 @@ public class ClipsImportExportPlugin implements ImportPlugin, ExportPlugin {
         handleErrors(errors);
     }
 
-    private void handleErrors(Collection errors) {
+    private static void handleErrors(Collection errors) {
         if (!errors.isEmpty()) {
             Iterator i = errors.iterator();
             while (i.hasNext()) {

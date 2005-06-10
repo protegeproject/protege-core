@@ -11,9 +11,9 @@ import edu.stanford.smi.protege.util.*;
  * @author Jennifer Vendetti
  */
 public class Files {
-    private final static String CLSES = "standard_project.pont";
-    private final static String INSTANCES = "standard_project.pins";
-    private final static String DIRECTORY = "files";
+    private static final String CLSES = "standard_project.pont";
+    private static final String INSTANCES = "standard_project.pins";
+    private static final String DIRECTORY = "files";
 
     private static Reader getReader(String name) {
         return FileUtilities.getResourceReader(Files.class, DIRECTORY, name);

@@ -7,29 +7,28 @@ class DefaultEntry {
     private boolean cardinalityMultiple;
     private String typeName;
     private String allowedClsName;
-    private String slotname; 
+    private String slotname;
 
-    public DefaultEntry(String cardinality, String typeName, String allowedClsName, String slotname) {
+    DefaultEntry(String cardinality, String typeName, String allowedClsName, String slotname) {
         this.cardinalityMultiple = "multiple".equalsIgnoreCase(cardinality);
         this.typeName = typeName;
         this.allowedClsName = allowedClsName;
         this.slotname = slotname;
     }
 
-    public DefaultEntry(boolean cardinality, ValueType type, Cls allowedCls) {
+    DefaultEntry(boolean cardinality, ValueType type, Cls allowedCls) {
         this.cardinalityMultiple = cardinality;
         this.typeName = type.toString();
         this.allowedClsName = (allowedCls == null) ? null : allowedCls.getName();
     }
-    
-    public DefaultEntry(Slot slot) {
+
+    DefaultEntry(Slot slot) {
         this.slotname = slot.getName();
     }
 
     public boolean equals(Object o) {
         DefaultEntry rhs = (DefaultEntry) o;
-        boolean isEquals =
-            (cardinalityMultiple == rhs.cardinalityMultiple)
+        boolean isEquals = (cardinalityMultiple == rhs.cardinalityMultiple)
                 && SystemUtilities.equals(typeName, rhs.typeName)
                 && SystemUtilities.equals(allowedClsName, rhs.allowedClsName)
                 && SystemUtilities.equals(slotname, rhs.slotname);

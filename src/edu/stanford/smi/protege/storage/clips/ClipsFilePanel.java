@@ -18,6 +18,7 @@ public class ClipsFilePanel extends JComponent {
         createComponents();
         layoutComponents();
     }
+
     private void createComponents() {
         clsesFileField = new FileField("Classes File", null, ".pont", "Classes File");
         instancesFileField = new FileField("Instances File", null, ".pins", "Instances File");
@@ -38,8 +39,8 @@ public class ClipsFilePanel extends JComponent {
     public String getInstancesFileName() {
         return getPath(instancesFileField, ".pins");
     }
-    
-    private String getPath(FileField field, String extension) {
+
+    private static String getPath(FileField field, String extension) {
         String path = field.getPath();
         return FileUtilities.ensureExtension(path, extension);
     }

@@ -71,7 +71,7 @@ public class RemoteClientFrameStore implements FrameStore {
         // do nothing
     }
 
-    private RuntimeException convertException(Exception e) {
+    private static RuntimeException convertException(Exception e) {
         return new RuntimeException(e);
     }
 
@@ -1161,7 +1161,7 @@ public class RemoteClientFrameStore implements FrameStore {
         return CollectionUtilities.getFirstItem(values);
     }
 
-    private Collection resolveValues(Collection values, Collection newValues, Facet facet) {
+    private static Collection resolveValues(Collection values, Collection newValues, Facet facet) {
         if (!newValues.isEmpty()) {
             if (values.isEmpty()) {
                 values.addAll(newValues);

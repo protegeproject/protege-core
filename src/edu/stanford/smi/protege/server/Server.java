@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.server;
 
+//ESCA*JAVA0100
+
 import java.io.*;
 import java.net.*;
 import java.net.UnknownHostException;
@@ -79,7 +81,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return getBoundName();
     }
 
-    private Registry getRegistry() throws RemoteException {
+    private static Registry getRegistry() throws RemoteException {
         int port = Integer.getInteger("protege.rmi.registry.port", Registry.REGISTRY_PORT).intValue();
         return LocateRegistry.getRegistry(null, port, RMISocketFactory.getSocketFactory());
     }
@@ -105,7 +107,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private void extractSaveInterval(String s) {
         if (s.startsWith(SAVE_INTERVAL_OPTION)) {
             String min = s.substring(SAVE_INTERVAL_OPTION.length());
-            int seconds = Integer.valueOf(min).intValue();
+            int seconds = Integer.parseInt(min);
             Log.getLogger().config("Save interval sec=" + seconds);
             if (seconds > 0) {
                 _saveIntervalMsec = seconds * 1000;
@@ -119,6 +121,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         metaprojectURI = URIUtilities.createURI(s);
     }
 
+    //ESCA-JAVA0130 
     protected void printUsage() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("usage: java -cp protege.jar edu.stanford.smi.protege.server.Server [options] <metaproject>");
@@ -127,6 +130,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         buffer.append("\n\t\t\tSave any dirty projects every n minutes (only needed for file based projects)");
         buffer.append("\n\t\t" + NOPRELOAD_OPTION);
         buffer.append("\n\t\t\tDon't preload projects.");
+        //ESCA-JAVA0267 
         System.err.println(buffer.toString());
         System.exit(-1);
     }
@@ -186,7 +190,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             getRegistry().rebind(boundName, this);
             _baseURI = new URI("rmi://" + getMachineName() + "/" + boundName);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
             if (e instanceof RemoteException) {
                 throw (RemoteException) e;
             }
@@ -194,12 +198,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
     }
 
-    private String getMachineName() {
+    private static String getMachineName() {
         String name;
         try {
             name = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
             name = "localhost";
         }
         return name;
@@ -320,12 +324,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return location;
     }
 
-    private void localizeProject(Project project) {
+    private static void localizeProject(Project project) {
         localizeKB(project.getKnowledgeBase());
         localizeKB(project.getInternalProjectKnowledgeBase());
     }
 
-    private void localizeKB(KnowledgeBase kb) {
+    private static void localizeKB(KnowledgeBase kb) {
         FrameStore fs = new LocalizeFrameStoreHandler(kb).newFrameStore();
         kb.insertFrameStore(fs);
     }
@@ -375,7 +379,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return sessions;
     }
 
-    private boolean isCurrent(Session session) {
+    private static boolean isCurrent(Session session) {
         return true;
         // return System.currentTimeMillis() - session.getLastAccessTime() > 10000;
     }
@@ -411,6 +415,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                             saveAllProjects();
                         }
                     } catch (InterruptedException e) {
+                        // do nothing
                     }
                 }
             };
@@ -434,23 +439,19 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
     }
 
-    private void save(ServerProject serverProject, Project project) {
-        try {
-            Log.getLogger().info("saving " + project);
-            Collection errors = new ArrayList();
-            synchronized (serverProject.getDomainKbFrameStore(null)) {
-                synchronized (serverProject.getProjectKbFrameStore(null)) {
-                    project.save(errors);
-                }
+    private static void save(ServerProject serverProject, Project project) {
+        Log.getLogger().info("saving " + project);
+        Collection errors = new ArrayList();
+        synchronized (serverProject.getDomainKbFrameStore(null)) {
+            synchronized (serverProject.getProjectKbFrameStore(null)) {
+                project.save(errors);
             }
-            serverProject.setClean();
-            dumpErrors(project, errors);
-        } catch (RemoteException e) {
-            Log.getLogger().severe(Log.toString(e));
         }
+        serverProject.setClean();
+        dumpErrors(project, errors);
     }
 
-    private void dumpErrors(Project p, Collection errors) {
+    private static void dumpErrors(Project p, Collection errors) {
         if (!errors.isEmpty()) {
             Log.getLogger().warning("Unable to save project " + p);
             Iterator i = errors.iterator();

@@ -52,7 +52,7 @@ public class InstanceStorer extends ClipsFileWriter {
         super(writer);
     }
 
-    private Collection anyToStrings(Collection anyValues) {
+    private static Collection anyToStrings(Collection anyValues) {
         Collection strings = new ArrayList();
         Iterator i = anyValues.iterator();
         while (i.hasNext()) {
@@ -72,7 +72,7 @@ public class InstanceStorer extends ClipsFileWriter {
         return strings;
     }
 
-    private Collection booleansToStrings(Collection booleans) {
+    private static Collection booleansToStrings(Collection booleans) {
         Collection strings = new ArrayList();
         Iterator i = booleans.iterator();
         while (i.hasNext()) {
@@ -83,7 +83,7 @@ public class InstanceStorer extends ClipsFileWriter {
         return strings;
     }
 
-    private Collection clsesToStrings(Collection clses) {
+    private static Collection clsesToStrings(Collection clses) {
         Collection strings = new ArrayList();
         Iterator i = clses.iterator();
         while (i.hasNext()) {
@@ -121,7 +121,7 @@ public class InstanceStorer extends ClipsFileWriter {
         return instance.getOwnSlotValueCount(_constraintsSlot) != 0;
     }
 
-    private Collection instancesToStrings(Collection instances) {
+    private static Collection instancesToStrings(Collection instances) {
         Collection strings = new ArrayList();
         Iterator i = instances.iterator();
         while (i.hasNext()) {
@@ -131,7 +131,7 @@ public class InstanceStorer extends ClipsFileWriter {
         return strings;
     }
 
-    private Collection internalToExternalStrings(Collection internalStrings) {
+    private static Collection internalToExternalStrings(Collection internalStrings) {
         Collection externalStrings = new ArrayList();
         Iterator i = internalStrings.iterator();
         while (i.hasNext()) {
@@ -143,7 +143,7 @@ public class InstanceStorer extends ClipsFileWriter {
         return externalStrings;
     }
 
-    private Collection internalToExternalSymbols(Collection internalSymbols) {
+    private static Collection internalToExternalSymbols(Collection internalSymbols) {
         Collection externalStrings = new ArrayList();
         Iterator i = internalSymbols.iterator();
         while (i.hasNext()) {
@@ -155,7 +155,7 @@ public class InstanceStorer extends ClipsFileWriter {
         return externalStrings;
     }
 
-    private boolean isStandardClsSlot(Instance instance) {
+    private static boolean isStandardClsSlot(Instance instance) {
         Collection types = instance.getDirectTypes();
         boolean isStandard = false;
         if (types.size() == 1) {
@@ -248,6 +248,7 @@ public class InstanceStorer extends ClipsFileWriter {
     }
 
     public void storeInstances(KnowledgeBase kb, Collection errors) {
+        //ESCA-JAVA0256 
         _errors = errors;
         List instances = new ArrayList(kb.getInstances());
         // Log.trace("instance=" + instances, this, "storeInstances");
@@ -324,11 +325,11 @@ public class InstanceStorer extends ClipsFileWriter {
             allowsMultipleValues = (Boolean) slotToBooleanMap.get(slot);
             if (allowsMultipleValues == null) {
                 boolean allowsMultiple = instance.getOwnSlotAllowsMultipleValues(slot);
-                allowsMultipleValues = new Boolean(allowsMultiple);
+                allowsMultipleValues = Boolean.valueOf(allowsMultiple);
                 slotToBooleanMap.put(slot, allowsMultipleValues);
             }
          } else {
-            allowsMultipleValues = new Boolean(instance.getOwnSlotAllowsMultipleValues(slot));
+            allowsMultipleValues = Boolean.valueOf(instance.getOwnSlotAllowsMultipleValues(slot));
         }
         return allowsMultipleValues.booleanValue();
     }

@@ -55,7 +55,7 @@ public class Session implements RemoteSession, Externalizable {
         lastAccessTime = currentTime();
     }
 
-    private long currentTime() {
+    private static long currentTime() {
         return System.currentTimeMillis();
     }
 

@@ -8,18 +8,17 @@ package edu.stanford.smi.protege.plugin;
 public abstract class AbstractImportExportSpecification {
     private String comment;
     private Plugin plugin;
-    
-    public AbstractImportExportSpecification(Plugin plugin, String comment) {
+
+    protected AbstractImportExportSpecification(Plugin plugin, String comment) {
         this.plugin = plugin;
         this.comment = comment;
     }
-    
+
     public String getComment() {
         return comment;
     }
-    
+
     protected Plugin getPlugin() {
         return plugin;
     }
 }
-

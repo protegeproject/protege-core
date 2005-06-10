@@ -19,11 +19,11 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         return _uri;
     }
 
-    public String getDomainKbFactoryClassName() throws RemoteException {
+    public String getDomainKbFactoryClassName() {
         return _project.getKnowledgeBase().getKnowledgeBaseFactory().getClass().getName();
     }
 
-    public String getProjectKbFactoryClassName() throws RemoteException {
+    public String getProjectKbFactoryClassName() {
         return _project.getInternalProjectKnowledgeBase().getKnowledgeBaseFactory().getClass().getName();
     }
 
@@ -35,18 +35,18 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         _projectKbFrameStore = createServerFrameStore(_project.getInternalProjectKnowledgeBase());
     }
 
-    private ServerFrameStore createServerFrameStore(KnowledgeBase kb) throws RemoteException {
+    private static ServerFrameStore createServerFrameStore(KnowledgeBase kb) throws RemoteException {
         FrameStore fs = ((DefaultKnowledgeBase) kb).getHeadFrameStore();
         ServerFrameStore sfs = new ServerFrameStore(fs, kb);
 
         return sfs;
     }
-    
-    public RemoteServerFrameStore getDomainKbFrameStore(RemoteSession session) throws RemoteException {
+
+    public RemoteServerFrameStore getDomainKbFrameStore(RemoteSession session) {
         return _domainKbFrameStore;
     }
 
-    public RemoteServerFrameStore getProjectKbFrameStore(RemoteSession session) throws RemoteException {
+    public RemoteServerFrameStore getProjectKbFrameStore(RemoteSession session) {
         return _projectKbFrameStore;
     }
 

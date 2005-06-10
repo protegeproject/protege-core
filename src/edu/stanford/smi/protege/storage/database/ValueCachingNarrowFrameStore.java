@@ -87,14 +87,14 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         return values;
     }
 
-    private boolean isSpecial(Slot slot, Facet facet, boolean isTemplate) {
+    private static boolean isSpecial(Slot slot, Facet facet, boolean isTemplate) {
         return facet == null
             && !isTemplate
             && equals(slot, Model.SlotID.DIRECT_INSTANCES);
             // || equals(slot, Model.SlotID.DIRECT_SUBCLASSES));
     }
 
-    private boolean equals(Slot slot, FrameID id) {
+    private static boolean equals(Slot slot, FrameID id) {
         return slot.getFrameID().equals(id);
     }
 
@@ -114,6 +114,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             count = getDelegate().getValuesCount(frame, slot, facet, isTemplate);
             if (count < LOAD_THRESHOLD) {
                 sftToValuesMap = loadFrameIntoCache(frame);
+                _frameToSftToValuesMap.put(frame, sftToValuesMap);
             }
         } else {
             List values = lookup(sftToValuesMap, slot, facet, isTemplate);

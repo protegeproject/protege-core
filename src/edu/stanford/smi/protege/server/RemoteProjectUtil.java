@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public class RemoteProjectUtil {
     private static Thread thread;
+    //ESCA-JAVA0077 
     private static final int DELAY_MSEC = 2000;
 
     public static void configure(ProjectView view) {
@@ -32,6 +33,7 @@ public class RemoteProjectUtil {
                         sleep(DELAY_MSEC);
                         updateStatus(project, bar);
                     } catch (InterruptedException e) {
+                        // do nothing
                     }
                 }
             }

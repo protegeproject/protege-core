@@ -31,13 +31,13 @@ public class ClientRmiSocketFactory extends RMISocketFactory {
         registryPort = getPort(REGISTRY_PORT, Registry.REGISTRY_PORT);
         registryLocalPort = getPort(REGISTRY_LOCAL_PORT, 0);
         if (!isDefault()) {
-            Log.getLogger().config("server=" + serverPort + ", serverLocal= "
-                    + serverLocalPort + ", registryPort=" + registryPort
-                    + ", registryLocal=" + registryLocalPort);
+            Log.getLogger().config(
+                    "server=" + serverPort + ", serverLocal= " + serverLocalPort + ", registryPort=" + registryPort
+                            + ", registryLocal=" + registryLocalPort);
         }
     }
 
-    private int getPort(String name, int defaultValue) {
+    private static int getPort(String name, int defaultValue) {
         Integer i = Integer.getInteger(name);
         return i == null ? defaultValue : i.intValue();
     }
@@ -57,8 +57,8 @@ public class ClientRmiSocketFactory extends RMISocketFactory {
         }
         return socket;
     }
-    
-    private Socket createSocket(String host, int hostPort, int localPort) throws IOException {
+
+    private static Socket createSocket(String host, int hostPort, int localPort) throws IOException {
         SocketAddress serverAddress = new InetSocketAddress(host, hostPort);
         SocketAddress localAddress = new InetSocketAddress(localPort);
         Socket socket = new Socket();
@@ -69,13 +69,11 @@ public class ClientRmiSocketFactory extends RMISocketFactory {
     }
 
     private boolean isDefault() {
-        return serverPort == 0 && serverLocalPort == 0
-                && registryPort == Registry.REGISTRY_PORT
+        return serverPort == 0 && serverLocalPort == 0 && registryPort == Registry.REGISTRY_PORT
                 && registryLocalPort == 0;
     }
 
-    public ServerSocket createServerSocket(int requestedPort)
-            throws IOException {
+    public ServerSocket createServerSocket(int requestedPort) {
         throw new UnsupportedOperationException();
     }
 

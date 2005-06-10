@@ -13,7 +13,7 @@ import edu.stanford.smi.protege.util.*;
 public abstract class AbstractExportPlugin implements ExportProjectPlugin {
     private String name;
 
-    public AbstractExportPlugin(String name) {
+    protected AbstractExportPlugin(String name) {
         this.name = name;
     }
 
@@ -24,6 +24,7 @@ public abstract class AbstractExportPlugin implements ExportProjectPlugin {
     public void dispose() {
     }
 
+    //ESCA-JAVA0130 
     protected void handleErrors(Collection errors) {
         if (!errors.isEmpty()) {
             Iterator i = errors.iterator();

@@ -12,9 +12,9 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ClipsUtil {
 
-    public final static String TOP_LEVEL_SLOT_CLASS = ":CLIPS_TOP_LEVEL_SLOT_CLASS";
-    public final static String FALSE = "FALSE";
-    public final static String TRUE = "TRUE";
+    public static final String TOP_LEVEL_SLOT_CLASS = ":CLIPS_TOP_LEVEL_SLOT_CLASS";
+    public static final String FALSE = "FALSE";
+    public static final String TRUE = "TRUE";
 
     private static char REAL_SPACE = ' ';
     private static char FAKE_SPACE = '^';
@@ -40,19 +40,19 @@ public class ClipsUtil {
         for (int i = 0; i < s.length(); ++i) {
             char c = s.charAt(i);
             switch (c) {
-                case '\n' :
+                case '\n':
                     buffer.append("\\n");
                     break;
-                case '\r' :
+                case '\r':
                     // discard
                     break;
-                case '\"' :
+                case '\"':
                     buffer.append("\\\"");
                     break;
-                case '\\' :
+                case '\\':
                     buffer.append("\\\\");
                     break;
-                default :
+                default:
                     buffer.append(c);
                     break;
             }
@@ -81,6 +81,7 @@ public class ClipsUtil {
             for (int i = 1; i < len - 1; ++i) {
                 char c = s.charAt(i);
                 if (c == '\\') {
+                    //ESCA-JAVA0119 
                     ++i;
                     c = s.charAt(i);
                     if (c == 'n') {

@@ -34,6 +34,7 @@ public class ServerProjectPanel extends JPanel {
             Iterator iterator = names.iterator();
             Object[][] data = new Object[names.size()][2];
             for (int i = 0; i < names.size(); ++i) {
+                //ESCA-JAVA0282 
                 String name = (String) iterator.next();
                 data[i][0] = name;
                 data[i][1] = sessionsToString(_server.getCurrentSessions(name, _session));
@@ -43,7 +44,7 @@ public class ServerProjectPanel extends JPanel {
             _projectTable.createDefaultColumnsFromModel();
             _projectTable.setRowSelectionInterval(0, 0);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
         }
     }
 
