@@ -4,7 +4,6 @@ import java.io.*;
 import java.util.*;
 
 import junit.framework.*;
-
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.util.*;
 
@@ -26,7 +25,7 @@ public abstract class AbstractTestCase extends TestCase {
             FileUtilities.deleteDirectory(dir);
             dir.mkdirs();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
         }
         return dir;
     }
@@ -101,6 +100,7 @@ public abstract class AbstractTestCase extends TestCase {
         Iterator i2 = c2.iterator();
         while (i1.hasNext()) {
             Object o1 = i1.next();
+            //ESCA-JAVA0282 
             Object o2 = i2.next();
             assertEquals(o1, o2);
         }
@@ -144,7 +144,7 @@ public abstract class AbstractTestCase extends TestCase {
     protected void delete(Frame frame) {
         getDomainKB().deleteFrame(frame);
     }
-    
+
     protected Instance createInstance(Cls cls) {
         return createInstance(null, cls);
     }
@@ -226,7 +226,7 @@ public abstract class AbstractTestCase extends TestCase {
         return getDomainKB().getInstance(name);
     }
 
-    protected void setCompleteValueType(Cls cls, Slot slot, ValueType type) {
+    protected static void setCompleteValueType(Cls cls, Slot slot, ValueType type) {
         if (type == ValueType.INSTANCE) {
             slot.setAllowedClses(Collections.singleton(cls));
         } else if (type == ValueType.CLS) {
@@ -236,7 +236,7 @@ public abstract class AbstractTestCase extends TestCase {
         }
     }
 
-    public void assertEqualsArray(Object[] array1, Object[] array2) {
+    public static void assertEqualsArray(Object[] array1, Object[] array2) {
         assertEqualsList(Arrays.asList(array1), Arrays.asList(array2));
     }
 }

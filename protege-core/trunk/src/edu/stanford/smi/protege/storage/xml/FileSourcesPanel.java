@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.storage.xml;
 
 import java.awt.*;
-import java.net.*;
 
 import javax.swing.*;
 
@@ -23,11 +22,6 @@ public class FileSourcesPanel extends KnowledgeBaseSourcesEditor {
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(box, BorderLayout.NORTH);
         add(panel);
-    }
-
-    public URI getProjectURI() {
-        return null;
-        // return getProjectURI(_clsesField);
     }
 
     public void saveContents() {

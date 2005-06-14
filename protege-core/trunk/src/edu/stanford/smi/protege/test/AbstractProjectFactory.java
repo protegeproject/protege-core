@@ -4,9 +4,9 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import junit.framework.*;
-
+import junit.framework.Assert;
 import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.util.*;
 
 /**
  * 
@@ -19,9 +19,8 @@ public abstract class AbstractProjectFactory implements ProjectFactory {
             Iterator i = c.iterator();
             while (i.hasNext()) {
                 Object o = i.next();
-                System.err.println("Error: " + o.toString());
+                Log.getLogger().severe("Error: " + o.toString());
             }
-            System.err.flush();
             Assert.fail();
         }
     }

@@ -34,7 +34,7 @@ public class PropertyMapUtil_Test extends APITestCase {
         }
     }
 
-    public void setUp() {
+    public void setUp() throws Exception {
         super.setUp();
         KnowledgeBase projectKB = getProject().getSources().getWrappedInstance().getKnowledgeBase();
         Cls mapCls = projectKB.getCls("Map");

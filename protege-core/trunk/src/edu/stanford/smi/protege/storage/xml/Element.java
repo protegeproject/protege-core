@@ -50,6 +50,7 @@ class Element {
     }
 
     public Collection getSubelements() {
+        //ESCA-JAVA0259 
         return subelements;
     }
 

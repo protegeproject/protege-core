@@ -17,7 +17,7 @@ public class XMLStorer {
     private KnowledgeBase kb;
     private PrintWriter writer;
     private Collection excludeSlots = new HashSet();
-    private int indentLevel;
+    private int indentLevel = 0;
     private NarrowFrameStore activeFrameStore;
     private Collection activeFrames;
 
@@ -140,7 +140,7 @@ public class XMLStorer {
         writer.println();
     }
 
-    private String escape(String value) {
+    private static String escape(String value) {
         return XMLUtil.escape(value);
     }
 
@@ -248,11 +248,11 @@ public class XMLStorer {
         printValue(tag, value, XMLString.AttributeName.VALUE_TYPE, attribute);
     }
 
-    private String frameValue(Object o) {
+    private static String frameValue(Object o) {
         return ((Frame) o).getName();
     }
 
-    private String frameAttribute(Object o) {
+    private static String frameAttribute(Object o) {
         String attribute;
         if (o instanceof Cls) {
             attribute = AttributeValue.CLASS_TYPE;

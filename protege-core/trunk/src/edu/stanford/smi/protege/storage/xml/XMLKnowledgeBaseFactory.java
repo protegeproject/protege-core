@@ -15,10 +15,7 @@ import edu.stanford.smi.protege.util.*;
 public class XMLKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
     // ublic static final String DESCRIPTION = Text.getProgramName() + " Files (.xml)";
     public static final String DESCRIPTION = "Experimental XML File (.xml)";
-    private final static String SOURCE_FILE_NAME = "source_file_name";
-
-    public XMLKnowledgeBaseFactory() {
-    }
+    private static final String SOURCE_FILE_NAME = "source_file_name";
 
     public KnowledgeBase createKnowledgeBase(Collection errors) {
         KnowledgeBase kb = new DefaultKnowledgeBase(this);
@@ -58,7 +55,7 @@ public class XMLKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
         close(reader);
     }
 
-    public void loadKnowledgeBase(KnowledgeBase kb, BufferedReader reader, boolean isInclude, Collection errors) {
+    public static void loadKnowledgeBase(KnowledgeBase kb, BufferedReader reader, boolean isInclude, Collection errors) {
         boolean cachingEnabled = kb.setCallCachingEnabled(false);
         boolean eventsEnabled = kb.setGenerateEventsEnabled(false);
         new XMLLoader(kb, reader, isInclude, errors).load();
@@ -78,9 +75,9 @@ public class XMLKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
         return kb;
     }
 
-    public KnowledgeBase loadKnowledgeBase(String fileName, Collection errors) {
+    public KnowledgeBase loadKnowledgeBase(String filename, Collection errors) {
         KnowledgeBase kb = createKnowledgeBase(errors);
-        loadKnowledgeBase(kb, fileName, false, errors);
+        loadKnowledgeBase(kb, filename, false, errors);
         return kb;
     }
 
@@ -94,7 +91,7 @@ public class XMLKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
         saveKnowledgeBase(kb, sourceName, errors);
     }
 
-    public void saveKnowledgeBase(KnowledgeBase kb, Writer writer, Collection errors) {
+    public static void saveKnowledgeBase(KnowledgeBase kb, Writer writer, Collection errors) {
         new XMLStorer(kb, writer, errors).store();
     }
 
@@ -114,8 +111,8 @@ public class XMLKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
         }
     }
 
-    public static void setSourceFile(PropertyList sources, String fileName) {
-        setProperty(sources, SOURCE_FILE_NAME, fileName);
+    public static void setSourceFile(PropertyList sources, String filename) {
+        setProperty(sources, SOURCE_FILE_NAME, filename);
     }
 
     public static void setSourceURIs(PropertyList sources, URI relativeURI) {

@@ -26,7 +26,7 @@ public abstract class UITestCase extends AbstractTestCase {
         p = factory.saveAndReloadProject(p);
         URI uri = p.getProjectURI();
         p.dispose();
-        Application.main(new String[] { uri.toString()});
+        Application.main(new String[] { uri.toString() });
     }
 
     public Project getProject() {
@@ -39,13 +39,13 @@ public abstract class UITestCase extends AbstractTestCase {
         TestUtilities.pressButton(c, icon);
     }
 
-    protected void pressToolBarButton(Icon icon) {
+    protected static void pressToolBarButton(Icon icon) {
         JComponent c = getSystemToolBar();
         assertNotNull(c);
         pressButton(c, icon);
     }
 
-    protected JToolBar getSystemToolBar() {
+    protected static JToolBar getSystemToolBar() {
         return ProjectManager.getProjectManager().getCurrentProjectMainToolBar();
     }
 
@@ -61,9 +61,9 @@ public abstract class UITestCase extends AbstractTestCase {
 
     protected static void delaySeconds(int seconds) {
         try {
-            Thread.sleep(seconds * 1000);
+            Thread.sleep(seconds * 1000L);
         } catch (InterruptedException e) {
-
+            // do nothing
         }
     }
 
@@ -77,7 +77,9 @@ public abstract class UITestCase extends AbstractTestCase {
                 }
             });
         } catch (InterruptedException e1) {
+            // do nothing
         } catch (InvocationTargetException ex) {
+            // do nothing
         }
     }
 
@@ -105,7 +107,7 @@ public abstract class UITestCase extends AbstractTestCase {
         sync();
     }
 
-    protected void executeOnNextModalDialog(final Runnable runnable) {
+    protected static void executeOnNextModalDialog(final Runnable runnable) {
         Thread thread = new Thread() {
             public void run() {
                 ModalDialog dialog = null;
@@ -125,19 +127,19 @@ public abstract class UITestCase extends AbstractTestCase {
         thread.start();
     }
 
-    protected void setSelectionOnTree(Icon icon, Object[] path) {
+    protected static void setSelectionOnTree(Icon icon, Object[] path) {
         TestUtilities.setSelectionOnTree(getMainWindow(), icon, path);
     }
 
-    protected Object[] getSelectionOnTree(Icon icon) {
+    protected static Object[] getSelectionOnTree(Icon icon) {
         return TestUtilities.getSelectionOnTree(getMainWindow(), icon);
     }
 
-    protected JTree getTreeOnTab(Icon icon) {
+    protected static JTree getTreeOnTab(Icon icon) {
         return TestUtilities.getTreeOnTab(getMainWindow(), icon);
     }
 
-    protected void unpressToolBarButton(Icon icon) {
+    protected static void unpressToolBarButton(Icon icon) {
         sync();
         AbstractButton button = getToolBarButton(icon);
         assertNotNull(button);
@@ -146,7 +148,7 @@ public abstract class UITestCase extends AbstractTestCase {
         }
     }
 
-    protected AbstractButton getToolBarButton(Icon icon) {
+    protected static AbstractButton getToolBarButton(Icon icon) {
         return TestUtilities.getButton(getSystemToolBar(), icon);
     }
 }

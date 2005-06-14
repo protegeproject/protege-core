@@ -33,6 +33,7 @@ public class XMLUtil {
                 break;
             default:
                 ref = null;
+                break;
         }
         return ref;
     }
@@ -67,7 +68,7 @@ public class XMLUtil {
      *
      * @param   source   the string to escape.
      */
-    static public String escape(String source) {
+    public static String escape(String source) {
         StringBuffer buffer = new StringBuffer();
         for (int i = 0; i < source.length(); ++i) {
             buffer.append(escape(source.charAt(i)));

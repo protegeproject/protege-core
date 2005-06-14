@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.storage.xml;
+//ESCA*JAVA0257
 
 /**
  * TODO Class Comment
@@ -7,10 +8,10 @@ package edu.stanford.smi.protege.storage.xml;
  */
 public interface XMLString {
 
-    public String NAMESPACE = "http://protege.stanford.edu/xml";
-    public String SCHEMA_LOCATION = "http://protege.stanford.edu/xml/schema/protege.xsd";
+    String NAMESPACE = "http://protege.stanford.edu/xml";
+    String SCHEMA_LOCATION = "http://protege.stanford.edu/xml/schema/protege.xsd";
 
-    public interface ElementName {
+    interface ElementName {
         String KNOWLEDGE_BASE = "knowledge_base";
         String CLASS = "class";
         String SLOT = "slot";
@@ -28,11 +29,11 @@ public interface XMLString {
         String VALUE = "value";
     }
 
-    public interface AttributeName {
+    interface AttributeName {
         String VALUE_TYPE = "value_type";
     }
 
-    public interface AttributeValue {
+    interface AttributeValue {
         String CLASS_TYPE = "class";
         String SLOT_TYPE = "slot";
         String FACET_TYPE = "facet";
