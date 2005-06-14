@@ -1438,23 +1438,17 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized void setTemplateSlotAllowedClses(Cls cls, Slot slot, Collection values) {
-        if (!values.isEmpty()) {
-            values = ValueTypeConstraint.getValues(ValueType.INSTANCE, values);
-        }
+        values = ValueTypeConstraint.getValues(ValueType.INSTANCE, values);
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 
     public synchronized void setTemplateSlotAllowedParents(Cls cls, Slot slot, Collection values) {
-        if (!values.isEmpty()) {
-            values = ValueTypeConstraint.getValues(ValueType.CLS, values);
-        }
+        values = ValueTypeConstraint.getValues(ValueType.CLS, values);
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 
     public synchronized void setTemplateSlotAllowedValues(Cls cls, Slot slot, Collection values) {
-        if (!values.isEmpty()) {
-            values = ValueTypeConstraint.getValues(ValueType.SYMBOL, values);
-        }
+        values = ValueTypeConstraint.getValues(ValueType.SYMBOL, values);
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 

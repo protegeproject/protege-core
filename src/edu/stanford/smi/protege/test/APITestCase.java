@@ -45,13 +45,15 @@ public abstract class APITestCase extends AbstractTestCase {
         return matchEvent;
     }
 
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         _factory = new ClipsProjectFactory();
         _isFileProject = true;
         _dbType = INITIAL_DB_TYPE;
     }
 
-    public final void tearDown() {
+    public final void tearDown() throws Exception {
+        super.tearDown();
         if (_scratchProject != null) {
             // careful here in case there is an error
             Project p = _scratchProject;
@@ -70,15 +72,18 @@ public abstract class APITestCase extends AbstractTestCase {
 
     private static void configureDBSources(PropertyList sources) {
         switch (_dbType) {
-        case MS_ACCESS:
-            configureForAccess(sources);
-            break;
-        case ORACLE:
-            configureForOracle(sources);
-            break;
-        case MYSQL:
-            configureForMySQL(sources);
-            break;
+            case MS_ACCESS:
+                configureForAccess(sources);
+                break;
+            case ORACLE:
+                configureForOracle(sources);
+                break;
+            case MYSQL:
+                configureForMySQL(sources);
+                break;
+            default:
+                Log.getLogger().severe("Bad db type: " + _dbType);
+                break;
         }
     }
 
@@ -153,7 +158,7 @@ public abstract class APITestCase extends AbstractTestCase {
         return getDomainKB().getSlot(name);
     }
 
-    public static void _init() {
+    public static void init() {
         _scratchProject = null;
     }
 
@@ -161,7 +166,7 @@ public abstract class APITestCase extends AbstractTestCase {
         _firedEvents.add(event);
     }
 
-    protected void saveAndReload() {
+    protected static void saveAndReload() {
         _scratchProject = _factory.saveAndReloadProject(_scratchProject);
     }
 
@@ -171,7 +176,7 @@ public abstract class APITestCase extends AbstractTestCase {
         _scratchProject = createScratchDatabaseProject();
     }
 
-    protected void setDatabaseProject(int database) {
+    protected static void setDatabaseProject(int database) {
         _dbType = database;
         setDatabaseProject();
     }

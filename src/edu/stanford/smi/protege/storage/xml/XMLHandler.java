@@ -15,20 +15,21 @@ public class XMLHandler extends DefaultHandler {
 
     public XMLHandler(KnowledgeBase kb, boolean isIncluded, Collection errors) {
         this.kb = kb;
+        //ESCA-JAVA0256 
         this.errors = errors;
         this.isIncluded = isIncluded;
         // Log.getLogger().info("Reading " + this.kb);
     }
 
-    public void error(SAXParseException exception) throws SAXException {
+    public void error(SAXParseException exception) {
         handle(exception);
     }
 
-    public void fatalError(SAXParseException exception) throws SAXException {
+    public void fatalError(SAXParseException exception) {
         handle(exception);
     }
 
-    public void warning(SAXParseException exception) throws SAXException {
+    public void warning(SAXParseException exception) {
         handle(exception);
     }
 
@@ -37,37 +38,13 @@ public class XMLHandler extends DefaultHandler {
         Log.getLogger().severe(Log.toString(e));
     }
 
-    private void output(String s) {
-        Log.getLogger().info(s);
-    }
-
-    public void setDocumentLocator(Locator locator) {
-        // output("document locator: " + locator);
-    }
-
-    public void startDocument() throws SAXException {
-        // output("start document");
-    }
-
-    public void endDocument() throws SAXException {
-        // output("end document");
-    }
-
-    public void startPrefixMapping(String prefix, String uri) throws SAXException {
-        // output("start prefix mapping: " + prefix + " " + uri);
-    }
-
-    public void endPrefixMapping(String prefix) throws SAXException {
-        // output("end prefix mapping: " + prefix, -1);
-    }
-
     private LinkedList openElements = new LinkedList();
 
     private Element getCurrentElement() {
         return openElements.isEmpty() ? null : (Element) openElements.get(openElements.size() - 1);
     }
 
-    public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+    public void startElement(String uri, String localName, String qName, Attributes atts) {
         if (!qName.equals(XMLString.ElementName.KNOWLEDGE_BASE)) {
             Element element = new Element(qName, atts);
             if (openElements.isEmpty()) {
@@ -81,7 +58,7 @@ public class XMLHandler extends DefaultHandler {
 
     }
 
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(String uri, String localName, String qName) {
         if (!qName.equals(XMLString.ElementName.KNOWLEDGE_BASE)) {
             Element lastElement = (Element) openElements.remove(openElements.size() - 1);
             if (openElements.isEmpty()) {
@@ -91,7 +68,7 @@ public class XMLHandler extends DefaultHandler {
         // output("end element: " + uri + " " + localName + " " + qName, -1);
     }
 
-    public void characters(char[] ch, int start, int length) throws SAXException {
+    public void characters(char[] ch, int start, int length) {
         // output("character: " + new String(ch, start, length), 0);
         Element currentElement = getCurrentElement();
         if (currentElement != null) {
@@ -248,7 +225,7 @@ public class XMLHandler extends DefaultHandler {
         } else if (type.equals(XMLString.AttributeValue.STRING_TYPE)) {
             value = valueString;
         } else if (type.equals(XMLString.AttributeValue.BOOLEAN_TYPE)) {
-            value = new Boolean(valueString);
+            value = Boolean.valueOf(valueString);
         } else if (type.equals(XMLString.AttributeValue.INTEGER_TYPE)) {
             value = new Integer(valueString);
         } else if (type.equals(XMLString.AttributeValue.FLOAT_TYPE)) {
@@ -261,7 +238,7 @@ public class XMLHandler extends DefaultHandler {
 
     }
 
-    private void addSuperclasses(Cls cls, Collection superclasses) {
+    private static void addSuperclasses(Cls cls, Collection superclasses) {
         if (!superclasses.isEmpty()) {
             Collection currentSuperclasses = cls.getDirectSuperclasses();
             Iterator i = superclasses.iterator();
@@ -274,7 +251,7 @@ public class XMLHandler extends DefaultHandler {
         }
     }
 
-    private void addTypes(Instance instance, Collection types) {
+    private static void addTypes(Instance instance, Collection types) {
         if (!types.isEmpty()) {
             Collection currentTypes = instance.getDirectTypes();
             Iterator i = types.iterator();
@@ -346,18 +323,6 @@ public class XMLHandler extends DefaultHandler {
         if (isIncluded) {
             frame.setIncluded(true);
         }
-    }
-
-    public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-        //output("ignorable whitespace: " + new String(ch, start, length) + " " + start + " " + length);
-    }
-
-    public void processingInstruction(String target, String data) throws SAXException {
-        output("processing instruction: " + target + " " + data);
-    }
-
-    public void skippedEntity(String name) throws SAXException {
-        output("skipped entity: " + name);
     }
 
 }

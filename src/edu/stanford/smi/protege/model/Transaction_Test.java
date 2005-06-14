@@ -9,7 +9,7 @@ import edu.stanford.smi.protege.test.*;
  */
 public class Transaction_Test extends APITestCase {
 
-    public void setUp() {
+    public void setUp() throws Exception {
         super.setUp();
         setDatabaseProject(ORACLE);
     }

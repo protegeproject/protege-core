@@ -24,6 +24,7 @@ public class XMLLoader {
     public XMLLoader(KnowledgeBase kb, BufferedReader reader, boolean isIncluded, Collection errors) {
         this.kb = kb;
         this.reader = reader;
+        //ESCA-JAVA0256 
         this.errors = errors;
         this.isIncluded = isIncluded;
     }
