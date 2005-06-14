@@ -34,7 +34,7 @@ class ChangeIncludedProjectsPanel extends JComponent {
     private Action createSelectProjectAction() {
         return new AddAction(ResourceKey.PROJECT_ADD) {
             public void onAdd() {
-                JFileChooser chooser = ComponentFactory.createFileChooser("Select Project", "pprj");
+                JFileChooser chooser = ComponentFactory.createFileChooser("Select Project", "Project Files", "pprj");
                 int openDialogResult = chooser.showOpenDialog(ChangeIncludedProjectsPanel.this);
                 switch (openDialogResult) {
                     case JFileChooser.ERROR_OPTION:

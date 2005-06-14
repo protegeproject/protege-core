@@ -58,7 +58,8 @@ class ManageIncludedProjectsPanel extends SelectableContainer implements Validat
     private Action createAddIncludedProjectAction() {
         addProjectAction = new AddAction(ResourceKey.PROJECT_ADD) {
             public void onAdd() {
-                JFileChooser chooser = ComponentFactory.createFileChooser("Select Project", "pprj");
+                String type = Text.getProgramName() + " Project Files";
+                JFileChooser chooser = ComponentFactory.createFileChooser("Select Project", type, "pprj");
                 int openDialogResult = chooser.showOpenDialog(ManageIncludedProjectsPanel.this);
                 switch (openDialogResult) {
                     case JFileChooser.ERROR_OPTION:
