@@ -1438,17 +1438,23 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized void setTemplateSlotAllowedClses(Cls cls, Slot slot, Collection values) {
-        values = ValueTypeConstraint.getValues(ValueType.INSTANCE, values);
+        if (!values.isEmpty()) {
+            values = ValueTypeConstraint.getValues(ValueType.INSTANCE, values);
+        }
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 
     public synchronized void setTemplateSlotAllowedParents(Cls cls, Slot slot, Collection values) {
-        values = ValueTypeConstraint.getValues(ValueType.CLS, values);
+        if (!values.isEmpty()) {
+            values = ValueTypeConstraint.getValues(ValueType.CLS, values);
+        }
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 
     public synchronized void setTemplateSlotAllowedValues(Cls cls, Slot slot, Collection values) {
-        values = ValueTypeConstraint.getValues(ValueType.SYMBOL, values);
+        if (!values.isEmpty()) {
+            values = ValueTypeConstraint.getValues(ValueType.SYMBOL, values);
+        }
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 
@@ -1759,8 +1765,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     private static boolean areComparableTypes(ValueType type1, ValueType type2) {
         return equals(type1, type2) || (isFrameType(type1) && isFrameType(type2))
-                || (isStringType(type1) && isStringType(type2)) || type1.equals(ValueType.ANY)
-                || type2.equals(ValueType.ANY);
+                || (isStringType(type1) && isStringType(type2)) || type1.equals(ValueType.ANY) || type2 == null;
     }
 
     private static boolean isFrameType(ValueType type) {
@@ -1846,7 +1851,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     private void setTemplateSlotValueTypeValues(Cls cls, Slot slot, Collection values) {
         ValueType oldValueType = getTemplateSlotValueType(cls, slot);
-        ValueType newValueType = (values.isEmpty()) ? ValueType.STRING : ValueTypeConstraint.getType(values);
+        ValueType newValueType = (values.isEmpty()) ? null : ValueTypeConstraint.getType(values);
         getHeadFrameStore().setDirectTemplateFacetValues(cls, slot, _systemFrames.getValueTypeFacet(), values);
         if (!areComparableTypes(oldValueType, newValueType)) {
             setTemplateSlotDefaultValues(cls, slot, Collections.EMPTY_LIST);
