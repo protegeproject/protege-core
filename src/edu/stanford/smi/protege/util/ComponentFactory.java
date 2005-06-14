@@ -24,16 +24,16 @@ import edu.stanford.smi.protege.resource.*;
  * @author Monica Crubezy <crubezy@smi.stanford.edu>
  */
 public class ComponentFactory {
-    public final static int STANDARD_BUTTON_HEIGHT = 25;
-    public final static Dimension STANDARD_BUTTON_SIZE = new Dimension(STANDARD_BUTTON_HEIGHT, STANDARD_BUTTON_HEIGHT);
-    public final static int LARGE_BUTTON_HEIGHT = 33;
-    public final static int STANDARD_FIELD_HEIGHT = STANDARD_BUTTON_HEIGHT;
+    public static final int STANDARD_BUTTON_HEIGHT = 25;
+    public static final Dimension STANDARD_BUTTON_SIZE = new Dimension(STANDARD_BUTTON_HEIGHT, STANDARD_BUTTON_HEIGHT);
+    public static final int LARGE_BUTTON_HEIGHT = 33;
+    public static final int STANDARD_FIELD_HEIGHT = STANDARD_BUTTON_HEIGHT;
 
     private static int _offset;
-    private final static int OFFSET_SIZE = 25;
+    private static final int OFFSET_SIZE = 25;
 
     private static class DisposableFrame extends JFrame implements Disposable {
-        public DisposableFrame() {
+        DisposableFrame() {
             ComponentUtilities.registerWindow(this);
             enableEvents(AWTEvent.WINDOW_EVENT_MASK);
         }
@@ -230,6 +230,10 @@ public class ComponentFactory {
     }
 
     public static JFileChooser createFileChooser(String description, String extension) {
+        return createFileChooser(description, null, extension);
+    }
+
+    public static JFileChooser createFileChooser(String title, String fileDescription, String fileExtension) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
         JFileChooser chooser = new JFileChooser(lastDirectory) {
             public int showDialog(Component c, String s) {
@@ -240,12 +244,12 @@ public class ComponentFactory {
                 return rval;
             }
         };
-        chooser.setDialogTitle(description);
-        if (extension == null) {
+        chooser.setDialogTitle(title);
+        if (fileExtension == null) {
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         } else {
-            String text = Text.getProgramName() + " " + description;
-            chooser.setFileFilter(new ExtensionFilter(extension, text));
+            String text = fileDescription;
+            chooser.setFileFilter(new ExtensionFilter(fileExtension, text));
         }
         return chooser;
     }

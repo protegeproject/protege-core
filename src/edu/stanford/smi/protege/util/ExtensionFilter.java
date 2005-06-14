@@ -12,7 +12,11 @@ public class ExtensionFilter extends FileFilter {
     private String _description;
 
     public ExtensionFilter(String extension, String description) {
-        _extension = extension;
+        if (extension.startsWith(".")) {
+            _extension = extension;
+        } else {
+            _extension = "." + extension;
+        }
         _description = description;
     }
 
@@ -21,6 +25,12 @@ public class ExtensionFilter extends FileFilter {
     }
 
     public String getDescription() {
-        return _description + " (*" + _extension + ")";
+        String text;
+        if (_description == null) {
+            text = "*" + _extension + " files ";
+        } else {
+            text = _description + " (*" + _extension + ")";
+        }
+        return text;
     }
 }
