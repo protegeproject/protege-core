@@ -1413,7 +1413,6 @@ public class Project {
 
     private void recordIncludedProject(URI name) {
         if (_uri != null) {
-            // name = _uri.relativize(name);
             name = URIUtilities.relativize(_uri, name);
         }
         addProjectSlotValue(SLOT_INCLUDED_PROJECTS, name.toString());
@@ -1700,14 +1699,15 @@ public class Project {
 
     public void setProjectURI(URI uri) {
         if (_uri != null) {
-            uri = URIUtilities.normalize(uri);
             updateDirectIncludedProjectURIs(uri);
         }
-        _uri = uri;
+        _uri = URIUtilities.normalize(uri);
         updateKBNames();
         updateJournaling();
         projectURITree.swapNode(projectURITree.getRoot(), uri);
-        setActiveFrameStoreName(uri);
+        if (uri != null) {
+            setActiveFrameStoreName(uri);
+        }
         activeRootURI = uri;
     }
     

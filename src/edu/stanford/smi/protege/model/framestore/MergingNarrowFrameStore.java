@@ -112,7 +112,13 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public void addActiveChildFrameStore(NarrowFrameStore childFrameStore, String parentName) {
+        if (childFrameStore == null) {
+            throw new IllegalArgumentException("Null child");
+        }
         NarrowFrameStore parentFrameStore = getFrameStore(parentName);
+        if (parentFrameStore == null) {
+            throw new IllegalArgumentException("Null parent: " + parentName);
+        }
         frameStoreTree.addChild(parentFrameStore, childFrameStore);
         setActiveFrameStore(childFrameStore);
     }
@@ -124,6 +130,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public void addActiveFrameStore(NarrowFrameStore parent, Collection childNames) {
+        if (parent == null) {
+            throw new IllegalArgumentException("Null parent");
+        }
         frameStoreTree.addChild(ROOT_NODE, parent);
         Iterator i = childNames.iterator();
         while (i.hasNext()) {
@@ -179,8 +188,8 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         while (i.hasNext()) {
             Object o = i.next();
             if (o == null) {
-                i.remove();
                 Log.getLogger().severe("Null frame store found");
+                i.remove();
             }
         }
     }

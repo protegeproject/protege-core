@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.model;
+
 //ESCA*JAVA0130
 
 import java.io.*;

@@ -70,11 +70,11 @@ public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin
         Collection errors = new ArrayList();
         Project project = Project.createBuildProject(factory, errors);
         initialize(project);
-        project.createDomainKnowledgeBase(factory, errors, true);
         URI uri = getBuildProjectURI();
         if (uri != null) {
             project.setProjectURI(uri);
         }
+        project.createDomainKnowledgeBase(factory, errors, true);
         handleErrors(errors);
         return project;
     }
