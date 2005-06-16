@@ -154,9 +154,16 @@ public class URIUtilities {
     }
 
     public static URI normalize(URI input) {
-        URI uri = input.normalize();
-        if (SystemUtilities.isWindows() && "file".equals(uri.getScheme())) {
-            // uri = URI.create(uri.toString().toLowerCase());
+        URI uri = null;
+        if (input != null) {
+            uri = input.normalize();
+            if ("file".equals(uri.getScheme())) {
+                try {
+                    uri = new File(uri).getCanonicalFile().toURI();
+                } catch (IOException e) {
+                    Log.getLogger().info(Log.toString(e));
+                }
+            }
         }
         return uri;
     }
@@ -242,7 +249,7 @@ public class URIUtilities {
         try {
             uri = new File(s).toURI();
         } catch (SecurityException ex) {
-            ex.printStackTrace();
+            Log.getLogger().severe(Log.toString(ex));
         }
         return uri;
     }

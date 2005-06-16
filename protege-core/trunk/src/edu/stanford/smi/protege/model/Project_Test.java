@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.model;
+
 //ESCA*JAVA0130
 
 import java.awt.*;
@@ -128,7 +129,7 @@ public class Project_Test extends APITestCase {
     public void testIncludeFromSameDirectory() {
         Project p1 = createProjectOnDisk(getTempDirectory(), MAIN_PROJECT_NAME);
         Project p2 = createProjectOnDisk(getTempDirectory(), INCLUDED_PROJECT_NAME);
-        checkInclusion(p2, p1);
+        checkInclusion(p1, p2);
     }
 
     private void checkInclusion(Project includingProject, Project includedProject) {
