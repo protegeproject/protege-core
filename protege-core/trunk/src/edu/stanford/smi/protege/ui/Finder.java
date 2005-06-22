@@ -32,7 +32,7 @@ public abstract class Finder extends JComponent {
                 DEFAULT_MAX_MATCHES);
     }
 
-    public Finder(String description) {
+    protected Finder(String description) {
         this(description, Icons.getFindIcon());
     }
 
@@ -45,7 +45,7 @@ public abstract class Finder extends JComponent {
         return (actionTime - lastTime) > DELAY && !_comboBox.isPopupVisible();
     }
 
-    public Finder(String description, Icon icon) {
+    protected Finder(String description, Icon icon) {
         _findAction = new StandardAction(description, icon) {
             public void actionPerformed(ActionEvent e) {
                 handleActionEvent(e);
@@ -68,7 +68,7 @@ public abstract class Finder extends JComponent {
         }
     }
 
-    public Finder(ResourceKey key) {
+    protected Finder(ResourceKey key) {
         _findAction = new StandardAction(key) {
             public void actionPerformed(ActionEvent e) {
                 handleActionEvent(e);
@@ -116,7 +116,7 @@ public abstract class Finder extends JComponent {
         };
     }
 
-    private void recordItem(String text) {
+    private static void recordItem(String text) {
         searchedForStrings.remove(text);
         searchedForStrings.add(0, text);
     }

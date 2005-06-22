@@ -11,19 +11,16 @@ import javax.swing.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ResizingLayout implements LayoutManager2 {
-    public final static String HORIZONTAL_STRETCHER = "horizonal_stretcher";
-    public final static String VERTICAL_STRETCHER = "vertical_strecher";
-    public final static String FILLING_VERTICALLY = "filling_vertically";
-    public final static String FILLING_HORIZONTALLY = "filling_horizontally";
+    public static final String HORIZONTAL_STRETCHER = "horizonal_stretcher";
+    public static final String VERTICAL_STRETCHER = "vertical_strecher";
+    public static final String FILLING_VERTICALLY = "filling_vertically";
+    public static final String FILLING_HORIZONTALLY = "filling_horizontally";
 
-    public final static boolean VERTICAL_FILL_DEFAULT = false;
-    public final static boolean HORIZONTAL_FILL_DEFAULT = true;
+    public static final boolean VERTICAL_FILL_DEFAULT = false;
+    public static final boolean HORIZONTAL_FILL_DEFAULT = true;
 
     private Dimension _previousSize;
     private boolean _resizeVerticallyOverride;
-
-    public ResizingLayout() {
-    }
 
     public void addLayoutComponent(Component c, Object constraint) {
         // do nothing
@@ -121,7 +118,7 @@ public class ResizingLayout implements LayoutManager2 {
         // do nothing
     }
 
-    private void resize(Component c, Dimension oldContainerSize, Dimension newContainerSize, Point slidePoint,
+    private static void resize(Component c, Dimension oldContainerSize, Dimension newContainerSize, Point slidePoint,
             Component horizontalStretcher, boolean fillingHorizontally, Component verticalStretcher,
             boolean fillingVertically) {
         Rectangle r = c.getBounds();
@@ -152,9 +149,7 @@ public class ResizingLayout implements LayoutManager2 {
         c.setBounds(r);
     }
 
-    private int rescale(int x, int mult, int div) {
+    private static int rescale(int x, int mult, int div) {
         return (int) Math.round(((double) x * mult) / div);
-        // BigDecimal d = new BigDecimal(((long) x) * mult);
-        // return d.divide(new BigDecimal(div), BigDecimal.ROUND_HALF_EVEN).intValue();
     }
 }

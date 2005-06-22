@@ -75,7 +75,7 @@ public class SelectInstanceFromCollectionPanel extends JComponent {
         return (Instance) _list.getSelectedValue();
     }
 
-    private Collection removeHidden(Collection instances) {
+    private static Collection removeHidden(Collection instances) {
         Collection result;
         Project p = ((Instance) (CollectionUtilities.getFirstItem(instances))).getProject();
         if (p.getDisplayHiddenClasses()) {

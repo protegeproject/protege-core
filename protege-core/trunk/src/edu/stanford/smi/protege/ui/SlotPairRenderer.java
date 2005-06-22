@@ -57,8 +57,8 @@ public class SlotPairRenderer extends DefaultRenderer implements Cloneable {
         }
         return text;
     }
-    
-    private void appendInheritanceInformation(Cls cls, Slot slot, StringBuffer buffer) {
+
+    private static void appendInheritanceInformation(Cls cls, Slot slot, StringBuffer buffer) {
         if (!cls.hasDirectTemplateSlot(slot)) {
             buffer.append("<b>");
             buffer.append(slot.getBrowserText());
@@ -79,8 +79,8 @@ public class SlotPairRenderer extends DefaultRenderer implements Cloneable {
             }
         }
     }
-    
-    private void appendFacetOverrideInformation(Cls cls, Slot slot, StringBuffer buffer) {
+
+    private static void appendFacetOverrideInformation(Cls cls, Slot slot, StringBuffer buffer) {
         Collection facets = cls.getDirectlyOverriddenTemplateFacets(slot);
         if (!facets.isEmpty()) {
             if (buffer.length() != 0) {
@@ -96,7 +96,7 @@ public class SlotPairRenderer extends DefaultRenderer implements Cloneable {
             }
         }
     }
-    
+
     public static void setPrototypeInstance(SlotPairRenderer renderer) {
         _prototypeInstance = renderer;
     }

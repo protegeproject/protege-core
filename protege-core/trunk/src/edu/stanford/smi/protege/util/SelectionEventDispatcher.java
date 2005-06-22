@@ -18,6 +18,9 @@ public class SelectionEventDispatcher implements EventDispatcher {
                 case SelectionEvent.SELECTION_CHANGED:
                     listener.selectionChanged(event);
                     break;
+                default:
+                    // do nothing
+                    break;
             }
         }
     }

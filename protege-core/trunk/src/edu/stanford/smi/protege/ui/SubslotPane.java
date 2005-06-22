@@ -27,7 +27,7 @@ public class SubslotPane extends SelectableContainer {
     private Action _viewSlotAction;
     private LabeledComponent _labeledComponent;
 
-    private final static int MAX_EXPANSIONS = 100;
+    private static final int MAX_EXPANSIONS = 100;
 
     public SubslotPane(Project p) {
         _project = p;
@@ -62,11 +62,11 @@ public class SubslotPane extends SelectableContainer {
         _viewSlotAction.setEnabled(true);
         _deleteSlotAction.setEnabled(true);
     }
-    
+
     public LabeledComponent getLabeledComponent() {
         return _labeledComponent;
     }
-    
+
     private JComponent createHeader() {
         JLabel label = ComponentFactory.createLabel(Icons.getProjectIcon());
         label.setText(_project.getName());
@@ -77,6 +77,7 @@ public class SubslotPane extends SelectableContainer {
         return header;
     }
 
+    //ESCA-JAVA0130 
     protected LazyTreeRoot createRoot(KnowledgeBase kb) {
         return new SlotSubslotRoot(kb);
     }
@@ -186,13 +187,13 @@ public class SubslotPane extends SelectableContainer {
         return new CreateAction(ResourceKey.SLOT_CREATE_SUBSLOT) {
             public void onCreate() {
                 // SystemUtilities.debugBreak();
-                Collection superSlots = SubslotPane.this.getSelection();
-                Slot firstSuperslot = (Slot) CollectionUtilities.getFirstItem(superSlots);
+                Collection superslots = SubslotPane.this.getSelection();
+                Slot firstSuperslot = (Slot) CollectionUtilities.getFirstItem(superslots);
                 if (firstSuperslot != null) {
-                    _knowledgeBase.beginTransaction("Create subslot of " + superSlots);
+                    _knowledgeBase.beginTransaction("Create subslot of " + superslots);
                     Cls metaCls = firstSuperslot.getDirectType();
-                    Slot slot = _knowledgeBase.createSlot(null, metaCls, superSlots, true);
-                    createInverseSlot(slot, superSlots);
+                    Slot slot = _knowledgeBase.createSlot(null, metaCls, superslots, true);
+                    createInverseSlot(slot, superslots);
                     _knowledgeBase.endTransaction(true);
                     extendSelection(slot);
                 }
@@ -342,10 +343,8 @@ public class SubslotPane extends SelectableContainer {
     }
 
     private void setupDragAndDrop() {
-        DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(
-            getTree(),
-            DnDConstants.ACTION_COPY_OR_MOVE,
-            new SlotsTreeDragSourceListener());
+        DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(getTree(),
+                DnDConstants.ACTION_COPY_OR_MOVE, new SlotsTreeDragSourceListener());
         new DropTarget(getTree(), DnDConstants.ACTION_COPY_OR_MOVE, new SlotsTreeTarget());
     }
 

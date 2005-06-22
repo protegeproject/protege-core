@@ -24,7 +24,7 @@ public class DoubleClickActionAdapter extends MouseAdapter {
         }
     }
 
-    private boolean wantDoubleClick(MouseEvent event) {
+    private static boolean wantDoubleClick(MouseEvent event) {
         boolean wantDoubleClick = true;
         Object source = event.getSource();
         if (source instanceof JTree) {

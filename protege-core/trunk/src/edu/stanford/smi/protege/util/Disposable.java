@@ -7,5 +7,5 @@ package edu.stanford.smi.protege.util;
  */
 public interface Disposable {
 
-    public void dispose();
+    void dispose();
 }

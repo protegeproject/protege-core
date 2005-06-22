@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.ui;
 
+//ESCA*JAVA0100
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -47,7 +49,7 @@ public class FormDisplay extends JComponent implements Disposable {
             if (event.getStateChange() == ItemEvent.SELECTED) {
                 _selectionListener.disable();
                 String widgetClassName = (String) _widgetSelectionBox.getSelectedItem();
-                if (widgetClassName == WidgetClassNameRenderer.NONE) {
+                if (widgetClassName.equals(WidgetClassNameRenderer.NONE)) {
                     widgetClassName = null;
                 }
                 getCurrentWidget().replaceSelectedWidget(widgetClassName);
@@ -153,7 +155,7 @@ public class FormDisplay extends JComponent implements Disposable {
         return widget;
     }
 
-    private boolean haveFocus() {
+    private static boolean haveFocus() {
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         return manager.getFocusOwner() != null;
     }

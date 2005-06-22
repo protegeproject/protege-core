@@ -65,7 +65,7 @@ public class WelcomeDialog extends JDialog {
     // individual list item.
     private class ProjectList extends JList {
 
-        public ProjectList(DefaultListModel model) {
+        ProjectList(DefaultListModel model) {
             this.setModel(model);
             ToolTipManager.sharedInstance().registerComponent(this);
         }
@@ -95,11 +95,11 @@ public class WelcomeDialog extends JDialog {
             SwingUtilities.invokeLater(doFocus);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Log.getLogger().severe(Log.toString(ex));
         }
     }
 
-    void jbInit() throws Exception {
+    void jbInit() {
         titledBorder1 = createBorder(ResourceKey.WELCOME_DIALOG_OPEN_RECENT_PROJECT_TITLE);
         titledBorder2 = createBorder(ResourceKey.WELCOME_DIALOG_HELP_TITLE);
         openPanel.setBorder(titledBorder1);
@@ -208,20 +208,20 @@ public class WelcomeDialog extends JDialog {
         this.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    private JButton createButton(ResourceKey key) {
+    private static JButton createButton(ResourceKey key) {
         return new JButton(LocalizedText.getText(key));
     }
 
-    private JButton createButton(ResourceKey key, Icon icon) {
+    private static JButton createButton(ResourceKey key, Icon icon) {
         return new JButton(LocalizedText.getText(key), icon);
     }
 
-    private TitledBorder createBorder(ResourceKey key) {
+    private static TitledBorder createBorder(ResourceKey key) {
         String text = LocalizedText.getText(key);
         return new TitledBorder(BorderFactory.createEtchedBorder(), text);
     }
 
-    private void setToolTipText(AbstractButton button, ResourceKey key) {
+    private static void setToolTipText(AbstractButton button, ResourceKey key) {
         String text = LocalizedText.getText(key);
         button.setToolTipText(text);
     }
@@ -290,19 +290,19 @@ public class WelcomeDialog extends JDialog {
         }
     }
 
-    public void faqButton_actionPerformed(ActionEvent ae) {
+    private static void faqButton_actionPerformed(ActionEvent ae) {
         SystemUtilities.showHTML(ApplicationProperties.getFAQURLString());
     }
 
-    public void topicsButton_actionPerformed(ActionEvent ae) {
+    private static void topicsButton_actionPerformed(ActionEvent ae) {
         SystemUtilities.showHTML(ApplicationProperties.getAllHelpURLString());
     }
 
-    public void tutorialButton_actionPerformed(ActionEvent ae) {
+    private static void tutorialButton_actionPerformed(ActionEvent ae) {
         SystemUtilities.showHTML(ApplicationProperties.getGettingStartedURLString());
     }
 
-    public void usersGuideButton_actionPerformed(ActionEvent ae) {
+    private static void usersGuideButton_actionPerformed(ActionEvent ae) {
         SystemUtilities.showHTML(ApplicationProperties.getUsersGuideURLString());
     }
 

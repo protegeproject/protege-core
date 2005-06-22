@@ -46,12 +46,16 @@ public class LazyTreeModel extends DefaultTreeModel {
         getLazyTreeRoot().dispose();
     }
 
-    public void setRoot(LazyTreeRoot root) {
+    public void setRoot(TreeNode root) {
         if (root == null) {
             root = new EmptyRoot();
         }
         removeRoot();
         super.setRoot(root);
-        root.setModel(this);
+        if (root instanceof LazyTreeRoot) {
+            ((LazyTreeRoot) root).setModel(this);
+        } else {
+            Log.getLogger().severe("LazyTreeeModel requires LazyTreeRoot");
+        }
     }
 }

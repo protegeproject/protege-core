@@ -10,11 +10,11 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class WidgetClassNameRenderer extends DefaultRenderer {
-    public final static String NONE = LocalizedText.getText(ResourceKey.FORM_EDITOR_SELECT_NO_WIDGET);
+    public static final String NONE = LocalizedText.getText(ResourceKey.FORM_EDITOR_SELECT_NO_WIDGET);
 
     public void load(Object o) {
         String text;
-        if (o == NONE) {
+        if (NONE.equals(o)) {
             text = NONE;
         } else {
             String longName = (String) o;

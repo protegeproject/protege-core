@@ -20,7 +20,7 @@ public abstract class TreeTarget implements DropTargetListener {
     private boolean _allowsBetweenDrops;
     private static boolean lastDropSucceeded; // Hack for Mac 1.4.2 JDK bug
 
-    public TreeTarget(boolean allowsBetweenDrops) {
+    protected TreeTarget(boolean allowsBetweenDrops) {
         _allowsBetweenDrops = allowsBetweenDrops;
     }
 
@@ -69,7 +69,7 @@ public abstract class TreeTarget implements DropTargetListener {
                 }
                 e.acceptDrop(action);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Log.getLogger().warning(Log.toString(ex));
             }
         } else {
             e.rejectDrop();
@@ -87,11 +87,11 @@ public abstract class TreeTarget implements DropTargetListener {
     public void dropActionChanged(DropTargetDragEvent e) {
     }
 
-    private JTree getTree(DropTargetDragEvent e) {
+    private static JTree getTree(DropTargetDragEvent e) {
         return (JTree) e.getDropTargetContext().getComponent();
     }
 
-    private JTree getTree(DropTargetEvent e) {
+    private static JTree getTree(DropTargetEvent e) {
         return (JTree) e.getDropTargetContext().getComponent();
     }
 

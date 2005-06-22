@@ -31,6 +31,14 @@ public class ComponentFactory {
 
     private static int _offset;
     private static final int OFFSET_SIZE = 25;
+    private static final int MIN_LEFT_SPLIT_PANE_WIDTH = getMinLeftSplitPaneWidth();
+
+    private static int getMinLeftSplitPaneWidth() {
+        String property = ComponentFactory.class.getName() + ".min_left_split_pane_width";
+        String value = ApplicationProperties.getApplicationOrSystemProperty(property);
+        int i = (value == null) ? 275 : Integer.parseInt(value);
+        return i;
+    }
 
     private static class DisposableFrame extends JFrame implements Disposable {
         DisposableFrame() {
@@ -531,7 +539,7 @@ public class ComponentFactory {
                         setDividerLocation(location);
                     } else {
                         int location = getLeftComponent().getPreferredSize().width;
-                        location = Math.max(location, 275);
+                        location = Math.max(location, MIN_LEFT_SPLIT_PANE_WIDTH);
                         setDividerLocation(location);
                     }
                 }

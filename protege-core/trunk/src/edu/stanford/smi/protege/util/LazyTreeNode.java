@@ -18,7 +18,7 @@ public abstract class LazyTreeNode implements TreeNode {
     private boolean _isLoaded;
     private boolean isDuplicate;
 
-    public LazyTreeNode(LazyTreeNode parent, Object userObject) {
+    protected LazyTreeNode(LazyTreeNode parent, Object userObject) {
         _parent = parent;
         _userObject = userObject;
         isDuplicate = isDuplicate(userObject, parent);
@@ -196,8 +196,9 @@ public abstract class LazyTreeNode implements TreeNode {
     }
 
     public boolean isLeaf() {
-        if (isDuplicate)
+        if (isDuplicate) {
             return true;
+        }
         ensureChildCountLoaded();
         return _childCount == 0;
     }

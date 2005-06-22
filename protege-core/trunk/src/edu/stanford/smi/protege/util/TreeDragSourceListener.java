@@ -34,7 +34,7 @@ public abstract class TreeDragSourceListener implements DragGestureListener, Dra
         }
     }
 
-    private boolean dropSucceeded(DragSourceDropEvent e) {
+    private static boolean dropSucceeded(DragSourceDropEvent e) {
         boolean succeeded;
         if (SystemUtilities.isMac()) {
             succeeded = TreeTarget.getLastDropSucceeded();

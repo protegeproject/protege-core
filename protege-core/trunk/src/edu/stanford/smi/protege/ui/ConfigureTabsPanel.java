@@ -27,7 +27,7 @@ class ConfigureTabsPanel extends AbstractValidatableComponent {
     private boolean _dirty;
 
     private class MoveTabUp extends AbstractAction {
-        public MoveTabUp() {
+        MoveTabUp() {
             super("Move selected tab up", Icons.getUpIcon());
         }
 
@@ -43,7 +43,7 @@ class ConfigureTabsPanel extends AbstractValidatableComponent {
     }
 
     private class MoveTabDown extends AbstractAction {
-        public MoveTabDown() {
+        MoveTabDown() {
             super("Move selected tab down", Icons.getDownIcon());
         }
 
@@ -100,7 +100,7 @@ class ConfigureTabsPanel extends AbstractValidatableComponent {
         return WidgetUtilities.isSuitableTab(d.getWidgetClassName(), _project, strings);
     }
 
-    public ConfigureTabsPanel(Project project) {
+    protected ConfigureTabsPanel(Project project) {
         setLayout(new BorderLayout());
         _project = project;
         _table = ComponentFactory.createTable(getConfigureAction());
@@ -130,7 +130,7 @@ class ConfigureTabsPanel extends AbstractValidatableComponent {
         while (i.hasNext()) {
             WidgetDescriptor d = (WidgetDescriptor) i.next();
             if (all || canEnable(d)) {
-                model.addRow(new Object[] { new Boolean(d.isVisible()), d });
+                model.addRow(new Object[] { Boolean.valueOf(d.isVisible()), d });
             }
         }
         return model;
@@ -155,8 +155,8 @@ class ConfigureTabsPanel extends AbstractValidatableComponent {
                 int row = _table.getSelectedRow();
                 WidgetDescriptor d = getDescriptor(row);
                 if (d.isVisible()) {
-                    TabWidget widget =
-                        ProjectManager.getProjectManager().getCurrentProjectView().getTabByClassName(d.getWidgetClassName());
+                    TabWidget widget = ProjectManager.getProjectManager().getCurrentProjectView().getTabByClassName(
+                            d.getWidgetClassName());
                     widget.configure();
                 }
             }
@@ -183,12 +183,15 @@ class ConfigureTabsPanel extends AbstractValidatableComponent {
     public boolean validateContents() {
         return true;
     }
+
     private boolean canEnable(String className) {
         return WidgetUtilities.isSuitableTab(className, _project, new ArrayList());
     }
+
     private WidgetDescriptor getDescriptor(int row) {
         return (WidgetDescriptor) getTabModel().getValueAt(row, 1);
     }
+
     private boolean canEnable(int row) {
         WidgetDescriptor d = getDescriptor(row);
         return canEnable(d);
@@ -241,13 +244,9 @@ class ConfigureTabsPanel extends AbstractValidatableComponent {
                 }
             };
         }
-        public Component getTableCellRendererComponent(
-            JTable table,
-            Object value,
-            boolean isSelected,
-            boolean b,
-            int row,
-            int col) {
+
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean b,
+                int row, int col) {
             Component c;
             if (canEnable(row)) {
                 c = super.getTableCellRendererComponent(table, value, isSelected, b, row, col);

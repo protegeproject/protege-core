@@ -44,10 +44,8 @@ public class ClsInverseRelationshipPanel extends SelectableContainer {
         _project = p;
         setLayout(new BorderLayout());
         _list = createList();
-        String superclassesLabel = LocalizedText
-                .getText(ResourceKey.CLASS_BROWSER_SUPERCLASSES_LABEL);
-        LabeledComponent c = new LabeledComponent(superclassesLabel, ComponentFactory
-                .createScrollPane(_list));
+        String superclassesLabel = LocalizedText.getText(ResourceKey.CLASS_BROWSER_SUPERCLASSES_LABEL);
+        LabeledComponent c = new LabeledComponent(superclassesLabel, ComponentFactory.createScrollPane(_list));
         addHeaderButtons(c);
         add(c);
         setSelectable(_list);
@@ -64,28 +62,22 @@ public class ClsInverseRelationshipPanel extends SelectableContainer {
         boolean canBeSuperclass = true;
         if (cls == _viewedCls || cls.hasSuperclass(_viewedCls) || _viewedCls.hasSuperclass(cls)) {
             canBeSuperclass = false;
-            ModalDialog.showMessageDialog(this, cls.getName() + " can not be a superclass of "
-                    + _viewedCls.getName());
+            ModalDialog.showMessageDialog(this, cls.getName() + " can not be a superclass of " + _viewedCls.getName());
         }
         return canBeSuperclass;
     }
 
-    private SelectableList createList() {
+    private static SelectableList createList() {
         SelectableList list = ComponentFactory.createSelectableList(null);
         list.setCellRenderer(FrameRenderer.createInstance());
         return list;
     }
 
     private void doRemoveSuperclasses(Collection superclasses) {
-        try {
-            // beginTransaction("Remove superclasses from " + _viewedCls);
-            Iterator i = superclasses.iterator();
-            while (i.hasNext()) {
-                Cls superclass = (Cls) i.next();
-                _viewedCls.removeDirectSuperclass(superclass);
-            }
-        } finally {
-            // endTransaction();
+        Iterator i = superclasses.iterator();
+        while (i.hasNext()) {
+            Cls superclass = (Cls) i.next();
+            _viewedCls.removeDirectSuperclass(superclass);
         }
     }
 
@@ -101,7 +93,7 @@ public class ClsInverseRelationshipPanel extends SelectableContainer {
     }
 
     private void addSuperclass() {
-        KnowledgeBase kb = getKnowledgeBase(); 
+        KnowledgeBase kb = getKnowledgeBase();
         Slot slot = kb.getSystemFrames().getDirectSuperclassesSlot();
         Cls type = _viewedCls.getDirectType();
         Collection parents = type.getTemplateSlotAllowedParents(slot);
@@ -142,8 +134,7 @@ public class ClsInverseRelationshipPanel extends SelectableContainer {
     }
 
     private void reload() {
-        Collection values = (_viewedCls == null) ? Collections.EMPTY_LIST : _viewedCls
-                .getDirectSuperclasses();
+        Collection values = (_viewedCls == null) ? Collections.EMPTY_LIST : _viewedCls.getDirectSuperclasses();
         ComponentUtilities.setListValues(_list, values);
     }
 
@@ -183,8 +174,7 @@ public class ClsInverseRelationshipPanel extends SelectableContainer {
     protected void updateButtons() {
         boolean canModify = (_viewedCls != null) && _viewedCls.isEditable();
         _addAction.setEnabled(canModify);
-        boolean canRemove = canModify
-                && getSelection().size() < _viewedCls.getDirectSuperclassCount();
+        boolean canRemove = canModify && getSelection().size() < _viewedCls.getDirectSuperclassCount();
         _removeAction.setAllowed(canRemove);
     }
 }

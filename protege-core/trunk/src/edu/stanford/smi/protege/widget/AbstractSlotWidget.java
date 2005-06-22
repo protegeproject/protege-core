@@ -28,14 +28,14 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     private int _preferredRows = 0;
     private static final int NORMAL_BORDER_SIZE = 5;
     private static final int SELECTED_BORDER_SIZE = 3;
-    private static final Border _normalBorder;
+    private static final Border NORMAL_BORDER;
     private DoubleClickListener _doubleClickListener;
     private ShowInstanceListener _showInstanceListener;
     private String TOOLTIP_TEXT_PROPERTY = "tooltip_text";
 
     static {
         int n = NORMAL_BORDER_SIZE;
-        _normalBorder = BorderFactory.createEmptyBorder(n, n, n, n);
+        NORMAL_BORDER = BorderFactory.createEmptyBorder(n, n, n, n);
     }
 
     private ClsListener _clsListener = new ClsAdapter() {
@@ -54,17 +54,18 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         }
     };
 
-    private class ButtonInfo {
-        public Action action;
-        public boolean defaultState;
+    private static class ButtonInfo {
+        //ESCA-JAVA0098 
+        Action action;
+        boolean defaultState;
 
-        public ButtonInfo(Action action, boolean defaultState) {
+        ButtonInfo(Action action, boolean defaultState) {
             this.action = action;
             this.defaultState = defaultState;
         }
     }
 
-    public AbstractSlotWidget() {
+    protected AbstractSlotWidget() {
         setNormalBorder();
     }
 
@@ -105,7 +106,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     }
 
     public void setNormalBorder() {
-        setBorder(_normalBorder);
+        setBorder(NORMAL_BORDER);
     }
 
     public void setSelectedBorder() {
@@ -234,7 +235,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         return _cls;
     }
 
-    private String getDisplayPropertyName(Action action) {
+    private static String getDisplayPropertyName(Action action) {
         return ButtonConfigurationPanel.getDisplayPropertyName((String) action.getValue(Action.NAME));
     }
 
@@ -484,6 +485,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         // do nothing
     }
 
+    //ESCA-JAVA0130 
     public Collection getValues() {
         // do nothing
         return Collections.EMPTY_LIST;

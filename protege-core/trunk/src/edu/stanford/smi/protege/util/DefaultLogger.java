@@ -9,8 +9,8 @@ import java.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DefaultLogger implements Log.LegacyLogger {
-    private final static boolean INDENTATION_ENABLED = false;
-    private int _nEntries;
+    private static final boolean INDENTATION_ENABLED = false;
+    private int _nEntries = 0;
     private PrintWriter _writer;
     private boolean _displayTrace = true;
     private boolean _displayWarnings = true;
@@ -22,6 +22,7 @@ public class DefaultLogger implements Log.LegacyLogger {
     private int _directErrorCount;
 
     public DefaultLogger() {
+        //ESCA-JAVA0267 
         _writer = new PrintWriter(System.err);
     }
 
@@ -38,10 +39,8 @@ public class DefaultLogger implements Log.LegacyLogger {
         }
         buf.append(prefix);
         buf.append(": ");
-        String className =
-            (object instanceof Class)
-                ? StringUtilities.getClassName((Class) object)
-                : StringUtilities.getClassName(object);
+        String className = (object instanceof Class) ? StringUtilities.getClassName((Class) object) : StringUtilities
+                .getClassName(object);
         buf.append(className);
         buf.append(".");
         buf.append(methodName);
@@ -102,13 +101,7 @@ public class DefaultLogger implements Log.LegacyLogger {
         output(prefix, entry, object, methodName, arguments, false);
     }
 
-    private void output(
-        String prefix,
-        String entry,
-        Object object,
-        String methodName,
-        Object[] arguments,
-        boolean stack) {
+    private void output(String prefix, String entry, Object object, String methodName, Object[] arguments, boolean stack) {
         String message = createMessage(prefix, entry, object, methodName, arguments);
         if (stack || _showStack) {
             new Throwable(message).printStackTrace(_writer);
@@ -148,7 +141,7 @@ public class DefaultLogger implements Log.LegacyLogger {
         _directTraceCount++;
     }
 
-    private String toString(Object o) {
+    private static String toString(Object o) {
         String string;
         try {
             if (o == null) {

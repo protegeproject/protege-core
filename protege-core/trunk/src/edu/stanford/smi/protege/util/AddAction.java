@@ -14,18 +14,18 @@ import edu.stanford.smi.protege.resource.*;
  */
 public abstract class AddAction extends AllowableAction {
 
-    public AddAction(ResourceKey key) {
+    protected AddAction(ResourceKey key) {
         super(key);
     }
     
-    public AddAction(String text) {
+    protected AddAction(String text) {
         super(text, null);
         if (getIcon() == null) {
             setIcon(Icons.getAddIcon());
         }
     }
 
-    public AddAction(String text, Icon icon) {
+    protected AddAction(String text, Icon icon) {
         super("Add", text, icon, null);
     }
 

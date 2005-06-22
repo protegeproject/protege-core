@@ -31,7 +31,7 @@ public class EncodingsPanel extends JPanel {
         return panel;
     }
 
-    private JComponent createCurrentEncoding() {
+    private static JComponent createCurrentEncoding() {
         JTextField textField = ComponentFactory.createTextField();
         textField.setEnabled(false);
         textField.setText(SystemUtilities.getFileEncoding());
@@ -46,7 +46,7 @@ public class EncodingsPanel extends JPanel {
         return new LabeledComponent("Read Override", readEncodingComboBox);
     }
 
-    private String getCurrentReadEncodingOverride() {
+    private static String getCurrentReadEncodingOverride() {
         String override = FileUtilities.getReadEncodingOverride();
         if (override != null) {
             Charset charset = Charset.forName(override);
@@ -55,14 +55,14 @@ public class EncodingsPanel extends JPanel {
         return override;
     }
 
-    private ComboBoxModel getEncodingModel() {
+    private static ComboBoxModel getEncodingModel() {
         Collection charsets = Charset.availableCharsets().keySet();
         DefaultComboBoxModel model = new DefaultComboBoxModel(charsets.toArray());
         model.insertElementAt(null, 0);
         return model;
     }
 
-    private JComponent createLocalePanel() {
+    private static JComponent createLocalePanel() {
         JTextField field = ComponentFactory.createTextField();
         field.setEnabled(false);
         String text = Locale.getDefault().getDisplayName(Locale.ENGLISH);

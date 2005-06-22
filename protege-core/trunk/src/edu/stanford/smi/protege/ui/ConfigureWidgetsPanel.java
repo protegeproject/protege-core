@@ -16,7 +16,7 @@ import edu.stanford.smi.protege.util.*;
  */
 class ConfigureWidgetsPanel extends AbstractValidatableComponent {
 
-    public ConfigureWidgetsPanel(Project project) {
+    ConfigureWidgetsPanel(Project project) {
         setLayout(new BorderLayout());
         add(ComponentFactory.createLabel("Configure Widgets", SwingConstants.CENTER));
     }

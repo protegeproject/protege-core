@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ReferencersPanel extends SelectableContainer {
     private SelectableTable _table;
+
     // private Project _project;
 
     public ReferencersPanel(Instance instance) {
@@ -77,7 +78,7 @@ public class ReferencersPanel extends SelectableContainer {
         createColumns();
     }
 
-    private TableModel createTableModel(Instance instance) {
+    private static TableModel createTableModel(Instance instance) {
         DefaultTableModel model = new DefaultTableModel() {
             public boolean isCellEditable(int row, int col) {
                 return false;

@@ -1,6 +1,5 @@
 package edu.stanford.smi.protege.util;
 
-
 import java.util.*;
 
 /**
@@ -12,11 +11,11 @@ import java.util.*;
 public abstract class LazyTreeRoot extends LazyTreeNode {
     private LazyTreeModel _model;
 
-    public LazyTreeRoot(Object o) {
+    protected LazyTreeRoot(Object o) {
         super(null, CollectionUtilities.createCollection(o));
     }
 
-    public LazyTreeRoot(Collection c) {
+    protected LazyTreeRoot(Collection c) {
         super(null, c);
     }
 
@@ -30,12 +29,12 @@ public abstract class LazyTreeRoot extends LazyTreeNode {
 
     public void notifyChildNodeAdded(LazyTreeNode parent, int index, LazyTreeNode child) {
         // Log.enter("LazyTreeRoot.notifyChildNodeAdded", parent, new Integer(index), child);
-        _model.nodesWereInserted(parent, new int[]{index});
+        _model.nodesWereInserted(parent, new int[] { index });
     }
 
     public void notifyChildNodeRemoved(LazyTreeNode parent, int index, LazyTreeNode child) {
         // Log.enter("LazyTreeRoot.notifyChildNodeRemoved", parent, new Integer(index), child);
-        _model.nodesWereRemoved(parent, new int[]{index}, new Object[]{child});
+        _model.nodesWereRemoved(parent, new int[] { index }, new Object[] { child });
     }
 
     public void notifyNodeChanged(LazyTreeNode node) {

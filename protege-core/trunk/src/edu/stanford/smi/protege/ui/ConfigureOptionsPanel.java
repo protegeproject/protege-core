@@ -24,7 +24,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     private JCheckBox prettyPrintSlotWidgetLabelsCheckBox;
     private JCheckBox tabbedInstanceFormCheckBox;
 
-    public ConfigureOptionsPanel(Project project) {
+    ConfigureOptionsPanel(Project project) {
         _project = project;
         setLayout(new BorderLayout());
         JComponent c = new Box(BoxLayout.Y_AXIS);

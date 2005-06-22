@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.util;
 
+//ESCA*JAVA0025
+
 import java.awt.*;
 import java.awt.dnd.*;
 import java.util.*;
@@ -18,11 +20,11 @@ import javax.swing.tree.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DefaultRenderer extends JComponent implements TreeCellRenderer, ListCellRenderer, TableCellRenderer {
-    public final static Object DROP_TARGET = new Object();
-    public final static Object DROP_TARGET_AREA = new Object();
-    public final static Object DROP_TARGET_AREA_ON = new Object();
-    public final static Object DROP_TARGET_AREA_BELOW = new Object();
-    public final static Object DROP_TARGET_AREA_ABOVE = new Object();
+    public static final Object DROP_TARGET = new Object();
+    public static final Object DROP_TARGET_AREA = new Object();
+    public static final Object DROP_TARGET_AREA_ON = new Object();
+    public static final Object DROP_TARGET_AREA_BELOW = new Object();
+    public static final Object DROP_TARGET_AREA_ABOVE = new Object();
 
     protected Color _backgroundNormalColor;
     protected Color _foregroundNormalColor;
@@ -125,7 +127,7 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         return d;
     }
 
-    private int getNiceWidth(JComponent component, int x) {
+    private static int getNiceWidth(JComponent component, int x) {
         int width;
         JViewport port = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, component);
         if (port != null) {
@@ -140,7 +142,7 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
     // hack to avoid infinite recursion
     private boolean gettingRowBounds;
 
-    private int getGap(Object previousElement, Object currentElement) {
+    private static int getGap(Object previousElement, Object currentElement) {
         int gap;
         if (previousElement == null) {
             gap = currentElement instanceof String ? 3 : 0;
@@ -170,7 +172,7 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         }
     }
 
-    private void updatePreferredSize(Dimension d, Icon icon) {
+    private static void updatePreferredSize(Dimension d, Icon icon) {
         d.width += icon.getIconHeight();
         d.height = Math.max(d.height, icon.getIconHeight());
     }
@@ -330,18 +332,22 @@ public class DefaultRenderer extends JComponent implements TreeCellRenderer, Lis
         return (Icon) getFirst(Icon.class);
     }
 
+    //ESCA-JAVA0130 
     public int getIconTextGap() {
         return ICON_TEXT_GAP;
     }
 
+    //ESCA-JAVA0130 
     public int getTextIconGap() {
         return TEXT_ICON_GAP;
     }
 
+    //ESCA-JAVA0130 
     public int getTextTextGap() {
         return TEXT_TEXT_GAP;
     }
 
+    //ESCA-JAVA0130 
     public int getIconIconGap() {
         return ICON_ICON_GAP;
     }

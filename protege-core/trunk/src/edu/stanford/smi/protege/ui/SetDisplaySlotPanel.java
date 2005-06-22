@@ -26,7 +26,7 @@ public class SetDisplaySlotPanel extends JComponent implements Disposable {
         public void actionPerformed(ActionEvent event) {
             if (_cls != null) {
                 Object o = _displaySlotComboBox.getSelectedItem();
-                if (o == MULTISLOT) {
+                if (MULTISLOT.equals(o)) {
                     setMultiSlotPattern();
                 } else {
                     BrowserSlotPattern pattern = (BrowserSlotPattern) _displaySlotComboBox.getSelectedItem();
@@ -157,7 +157,7 @@ class MultiSlotPanel extends JPanel {
     private BrowserSlotPattern pattern;
     private List panels = new ArrayList();
 
-    public MultiSlotPanel(BrowserSlotPattern pattern, Cls cls) {
+    MultiSlotPanel(BrowserSlotPattern pattern, Cls cls) {
         this.cls = cls;
         this.pattern = pattern;
         createUI();

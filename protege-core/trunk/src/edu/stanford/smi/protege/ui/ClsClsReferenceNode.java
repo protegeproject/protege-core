@@ -19,7 +19,7 @@ public class ClsClsReferenceNode extends LazyTreeNode {
         _slot = slot;
     }
 
-    private void addClsReferences(Cls cls, Slot slot, Collection references) {
+    private static void addClsReferences(Cls cls, Slot slot, Collection references) {
         ValueType type = cls.getTemplateSlotValueType(slot);
         if (equals(type, ValueType.INSTANCE)) {
             references.addAll(cls.getTemplateSlotAllowedClses(slot));

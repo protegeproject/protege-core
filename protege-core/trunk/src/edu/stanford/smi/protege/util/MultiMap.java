@@ -11,11 +11,11 @@ import java.util.*;
 public abstract class MultiMap {
     private Map _map;
 
-    public MultiMap() {
+    protected MultiMap() {
         this(11);
     }
 
-    public MultiMap(int initSize) {
+    protected MultiMap(int initSize) {
         _map = new HashMap(initSize);
     }
 

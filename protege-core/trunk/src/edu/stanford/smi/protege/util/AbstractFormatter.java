@@ -4,7 +4,6 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.util.logging.*;
-import java.util.logging.Formatter;
 
 import edu.stanford.smi.protege.model.*;
 
@@ -16,7 +15,8 @@ import edu.stanford.smi.protege.model.*;
 public abstract class AbstractFormatter extends Formatter {
     private static final String lineSeparator = SystemUtilities.getLineSeparator();
     private static final DateFormat dateFormat = new StandardDateFormat();
-    
+
+    //ESCA-JAVA0130 
     protected String format(LogRecord record, String user, boolean showDate, boolean showMethod) {
         StringBuffer buffer = new StringBuffer();
         if (showDate) {
@@ -33,24 +33,24 @@ public abstract class AbstractFormatter extends Formatter {
         buffer.append(record.getMessage());
         Throwable throwable = record.getThrown();
         if (throwable == null) {
-	        String className = record.getSourceClassName();
-	        if (showMethod && className != null) {
-	            buffer.append(" -- ");
-	            buffer.append(StringUtilities.getShortClassName(className));
-	            buffer.append(".");
-	            buffer.append(record.getSourceMethodName());
-	            buffer.append("(");
-	            Object[] arguments = record.getParameters();
-		        if (arguments != null) {
-			        for (int i = 0; i < arguments.length; ++i) {
-			            if (i != 0) {
-			                buffer.append(", ");
-			            }
-			            buffer.append(toString(arguments[i]));
-			        }
-		        }
-		        buffer.append(")");
-	        }
+            String className = record.getSourceClassName();
+            if (showMethod && className != null) {
+                buffer.append(" -- ");
+                buffer.append(StringUtilities.getShortClassName(className));
+                buffer.append(".");
+                buffer.append(record.getSourceMethodName());
+                buffer.append("(");
+                Object[] arguments = record.getParameters();
+                if (arguments != null) {
+                    for (int i = 0; i < arguments.length; ++i) {
+                        if (i != 0) {
+                            buffer.append(", ");
+                        }
+                        buffer.append(toString(arguments[i]));
+                    }
+                }
+                buffer.append(")");
+            }
         } else {
             buffer.append(" -- ");
             StringWriter writer = new StringWriter();
@@ -59,17 +59,17 @@ public abstract class AbstractFormatter extends Formatter {
         }
         buffer.append(lineSeparator);
         return buffer.toString();
-     }
-    
-    protected String getLineSeparator() {
+    }
+
+    protected static String getLineSeparator() {
         return lineSeparator;
     }
-    
-    protected String getDateString() {
-        return dateFormat.format(new Date());        
+
+    protected static String getDateString() {
+        return dateFormat.format(new Date());
     }
-    
-     protected String toString(Object o) {
+
+    protected static String toString(Object o) {
         String string;
         try {
             if (o == null) {
@@ -79,7 +79,7 @@ public abstract class AbstractFormatter extends Formatter {
             } else if (o.getClass().isArray()) {
                 string = "{" + CollectionUtilities.toString(Arrays.asList((Object[]) o)) + "}";
             } else if (o instanceof Frame) {
-                string = ((Frame)o).getBrowserText();
+                string = ((Frame) o).getBrowserText();
             } else {
                 string = o.toString();
             }
@@ -90,4 +90,3 @@ public abstract class AbstractFormatter extends Formatter {
     }
 
 }
-

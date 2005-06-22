@@ -1667,7 +1667,14 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Facet getAssociatedFacet(Slot slot) {
-        return (Facet) getOwnSlotValue(slot, _systemFrames.getAssociatedFacetSlot());
+        Facet facet = null;
+        Object o = getOwnSlotValue(slot, _systemFrames.getAssociatedFacetSlot());
+        if (o instanceof Facet) {
+            facet = (Facet) o;
+        } else if (o != null) {
+            Log.getLogger().warning("Invalid facet: " + o);
+        }
+        return facet;
     }
 
     public synchronized Collection getDefaultValues(Slot slot) {

@@ -95,7 +95,7 @@ public class Tree implements Cloneable {
         }
     }
 
-    private void logNoSuchChild(Object parent, Object child) {
+    private static void logNoSuchChild(Object parent, Object child) {
         Log.getLogger().warning("No such child: " + parent + " " + child);
     }
 

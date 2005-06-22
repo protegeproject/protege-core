@@ -12,16 +12,17 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class ConfigureAction extends StandardAction {
-    
-    public ConfigureAction() {
+
+    protected ConfigureAction() {
         super(ResourceKey.COMPONENT_MENU);
     }
+
     public void actionPerformed(ActionEvent event) {
         JPopupMenu menu = new JPopupMenu();
         loadPopupMenu(menu);
         JComponent c = (JComponent) event.getSource();
-        menu.show(c,  0, c.getHeight());
+        menu.show(c, 0, c.getHeight());
     }
-    
+
     public abstract void loadPopupMenu(JPopupMenu menu);
 }

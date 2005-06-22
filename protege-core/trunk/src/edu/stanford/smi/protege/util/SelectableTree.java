@@ -19,7 +19,8 @@ import com.jgoodies.plaf.*;
  */
 public class SelectableTree extends JTree implements Selectable, Disposable, Autoscroll {
     private ListenerCollection _selectionListeners = new ListenerList(new SelectionEventDispatcher());
-    private static final Insets SCROLL_INSETS = new Insets(8, 8, 8, 8);
+    // private static final Insets SCROLL_INSETS = new Insets(8, 8, 8, 8);
+    private static final int SCROLL_BORDER = 8;
 
     private TreeModelListener listener = new TreeModelListener() {
         public void treeNodesInserted(TreeModelEvent event) {
@@ -67,6 +68,7 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
         }
     }
 
+    //ESCA-JAVA0130 
     public JPopupMenu getPopupMenu() {
         return null;
     }
@@ -104,8 +106,8 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
     public Insets getAutoscrollInsets() {
         Rectangle r = getVisibleRect();
         Dimension size = getSize();
-        Insets insets = new Insets(r.y + SCROLL_INSETS.top, r.x + SCROLL_INSETS.left, size.height - r.y - r.height
-                + SCROLL_INSETS.bottom, size.width - r.x - r.width + SCROLL_INSETS.right);
+        Insets insets = new Insets(r.y + SCROLL_BORDER, r.x + SCROLL_BORDER, size.height - r.y - r.height
+                + SCROLL_BORDER, size.width - r.x - r.width + SCROLL_BORDER);
         return insets;
     }
 
@@ -115,16 +117,16 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
             JScrollBar hBar = scroller.getHorizontalScrollBar();
             JScrollBar vBar = scroller.getVerticalScrollBar();
             Rectangle r = getVisibleRect();
-            if (location.x <= r.x + SCROLL_INSETS.left) {
+            if (location.x <= r.x + SCROLL_BORDER) {
                 scroll(hBar, -1);
             }
-            if (location.y <= r.y + SCROLL_INSETS.top) {
+            if (location.y <= r.y + SCROLL_BORDER) {
                 scroll(vBar, -1);
             }
-            if (location.x >= r.x + r.width - SCROLL_INSETS.right) {
+            if (location.x >= r.x + r.width - SCROLL_BORDER) {
                 scroll(hBar, +1);
             }
-            if (location.y >= r.y + r.height - SCROLL_INSETS.bottom) {
+            if (location.y >= r.y + r.height - SCROLL_BORDER) {
                 scroll(vBar, +1);
             }
         }

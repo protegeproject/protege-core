@@ -23,7 +23,7 @@ public class SubclassPane extends SelectableContainer {
     private Action _createClsAction;
     private Action _deleteClsAction;
 
-    private final static int MAX_EXPANSIONS = 1000;
+    private static final int MAX_EXPANSIONS = 1000;
 
     public SubclassPane(Action doubleClickAction, Cls rootCls, Action createCls, Action deleteCls) {
         _knowledgeBase = rootCls.getKnowledgeBase();
@@ -47,6 +47,7 @@ public class SubclassPane extends SelectableContainer {
         });
     }
 
+    //ESCA-JAVA0130 
     protected SelectableTree createSelectableTree(Action doubleClickAction, Cls rootCls) {
         return ComponentFactory.createSelectableTree(doubleClickAction, new ParentChildRoot(rootCls));
     }
@@ -89,11 +90,11 @@ public class SubclassPane extends SelectableContainer {
         return menu;
     }
 
-    private void add(JPopupMenu menu, Action action) {
+    private static void add(JPopupMenu menu, Action action) {
         menu.add(action);
     }
 
-    private void addSeparator(JPopupMenu menu) {
+    private static void addSeparator(JPopupMenu menu) {
         // never add two separators in a row
         int count = menu.getComponentCount();
         Component c = menu.getComponent(count - 1);

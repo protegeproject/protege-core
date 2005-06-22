@@ -16,7 +16,7 @@ public class ClsesTreeTarget extends TreeTarget {
         super(true);
     }
 
-    private boolean addSuperclass(Cls source, Cls parent) {
+    private static boolean addSuperclass(Cls source, Cls parent) {
         boolean succeeded = false;
         if (parent == source) {
             //
@@ -45,7 +45,7 @@ public class ClsesTreeTarget extends TreeTarget {
 
     }
 
-    private boolean dropSlot(JTree tree, LazyTreeNode targetNode, Slot sourceSlot) {
+    private static boolean dropSlot(JTree tree, LazyTreeNode targetNode, Slot sourceSlot) {
         boolean succeeded = false;
         Cls cls = (Cls) targetNode.getUserObject();
         if (!cls.getDirectTemplateSlots().contains(sourceSlot)) {
@@ -55,7 +55,7 @@ public class ClsesTreeTarget extends TreeTarget {
         return succeeded;
     }
 
-    private boolean dropCls(JTree tree, LazyTreeNode targetNode, Cls sourceCls, Object area) {
+    private static boolean dropCls(JTree tree, LazyTreeNode targetNode, Cls sourceCls, Object area) {
         boolean succeeded = false;
         LazyTreeNode parentNode;
         boolean addedSuperclass = false;

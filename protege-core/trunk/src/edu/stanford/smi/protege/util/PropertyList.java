@@ -15,17 +15,17 @@ import edu.stanford.smi.protege.model.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class PropertyList {
-    public final static String CLASS_PROPERTY_LIST = "Property_List";
-    private final static String CLASS_WIDGET_DESCRIPTOR = "Widget";
-    private final static String CLASS_STRING = "String";
-    private final static String CLASS_INTEGER = "Integer";
-    private final static String CLASS_BOOLEAN = "Boolean";
-    private final static String CLASS_RECTANGLE = "Rectangle";
-    private final static String SLOT_NAME = "name";
-    private final static String SLOT_BOOLEAN_VALUE = "boolean_value";
-    private final static String SLOT_INTEGER_VALUE = "integer_value";
-    private final static String SLOT_STRING_VALUE = "string_value";
-    private final static String SLOT_PROPERTIES = "properties";
+    public static final String CLASS_PROPERTY_LIST = "Property_List";
+    private static final String CLASS_WIDGET_DESCRIPTOR = "Widget";
+    private static final String CLASS_STRING = "String";
+    private static final String CLASS_INTEGER = "Integer";
+    private static final String CLASS_BOOLEAN = "Boolean";
+    private static final String CLASS_RECTANGLE = "Rectangle";
+    private static final String SLOT_NAME = "name";
+    private static final String SLOT_BOOLEAN_VALUE = "boolean_value";
+    private static final String SLOT_INTEGER_VALUE = "integer_value";
+    private static final String SLOT_STRING_VALUE = "string_value";
+    private static final String SLOT_PROPERTIES = "properties";
 
     private Map nameToSlotMap = new HashMap();
 
@@ -94,8 +94,7 @@ public class PropertyList {
 
     public Boolean getBoolean(String name) {
         Instance property = getProperty(name);
-        return (property == null) ? (Boolean) null : (Boolean) getValue(property,
-                SLOT_BOOLEAN_VALUE);
+        return (property == null) ? (Boolean) null : (Boolean) getValue(property, SLOT_BOOLEAN_VALUE);
     }
 
     public Dimension getDimension(String name) {
@@ -105,8 +104,7 @@ public class PropertyList {
 
     public Integer getInteger(String name) {
         Instance property = getProperty(name);
-        return (property == null) ? (Integer) null : (Integer) getValue(property,
-                SLOT_INTEGER_VALUE);
+        return (property == null) ? (Integer) null : (Integer) getValue(property, SLOT_INTEGER_VALUE);
     }
 
     public KnowledgeBase getKnowledgeBase() {
@@ -234,7 +232,7 @@ public class PropertyList {
     }
 
     public void setBoolean(String name, boolean b) {
-        setProperty(name, CLASS_BOOLEAN, SLOT_BOOLEAN_VALUE, new Boolean(b));
+        setProperty(name, CLASS_BOOLEAN, SLOT_BOOLEAN_VALUE, Boolean.valueOf(b));
     }
 
     public void setInteger(String name, int i) {

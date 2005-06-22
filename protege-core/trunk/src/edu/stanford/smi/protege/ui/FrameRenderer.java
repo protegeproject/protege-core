@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.ui;
 
+//ESCA*JAVA0100
+
 import javax.swing.*;
 
 import edu.stanford.smi.protege.model.*;
@@ -16,9 +18,9 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameRenderer extends DefaultRenderer implements Cloneable {
-    protected final static int NONE = 0;
-    protected final static int DIRECT = 1;
-    protected final static int ALL = 2;
+    protected static final int NONE = 0;
+    protected static final int DIRECT = 1;
+    protected static final int ALL = 2;
 
     protected int _instanceCountType = NONE;
     protected boolean _hasLoadedIconFlags = false;
@@ -31,9 +33,6 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     protected boolean _displayType = false;
 
     protected static FrameRenderer _frameRendererPrototype = new FrameRenderer();
-
-    public FrameRenderer() {
-    }
 
     public static FrameRenderer createInstance() {
         FrameRenderer renderer;
@@ -59,18 +58,19 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     protected String getInstanceCountString(Cls cls) {
         int count;
         switch (_instanceCountType) {
-        case NONE:
-            count = 0;
-            break;
-        case DIRECT:
-            count = cls.getDirectInstanceCount();
-            break;
-        case ALL:
-            count = cls.getInstanceCount();
-            break;
-        default:
-            Assert.fail("bad type: " + _instanceCountType);
-            count = 0;
+            case NONE:
+                count = 0;
+                break;
+            case DIRECT:
+                count = cls.getDirectInstanceCount();
+                break;
+            case ALL:
+                count = cls.getInstanceCount();
+                break;
+            default:
+                Assert.fail("bad type: " + _instanceCountType);
+                count = 0;
+                break;
         }
         String s;
         if (count > 0) {
@@ -116,6 +116,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
         }
     }
 
+    //ESCA-JAVA0130 
     protected Icon getIcon(Cls cls) {
         return cls.getIcon();
     }
@@ -142,7 +143,9 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
         setBackgroundSelectionColor(Colors.getInstanceSelectionColor());
     }
 
+    //ESCA-JAVA0025 
     public void loadNull() {
+        // do nothing
     }
 
     protected void loadSlot(Slot slot) {

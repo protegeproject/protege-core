@@ -44,16 +44,17 @@ public class URIField extends JComponent {
         chooser.setApproveButtonText("Select");
         int openDialogResult = chooser.showOpenDialog(this);
         switch (openDialogResult) {
-            case JFileChooser.ERROR_OPTION :
+            case JFileChooser.ERROR_OPTION:
                 // Get this on 'close"
                 break;
-            case JFileChooser.CANCEL_OPTION :
+            case JFileChooser.CANCEL_OPTION:
                 break;
-            case JFileChooser.APPROVE_OPTION :
+            case JFileChooser.APPROVE_OPTION:
                 _textField.setText(chooser.getSelectedFile().getPath());
                 break;
-            default :
+            default:
                 Assert.fail("bad result: " + openDialogResult);
+                break;
         }
     }
 

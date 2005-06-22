@@ -46,7 +46,7 @@ public class AboutPluginsBox extends JPanel {
         return list;
     }
 
-    private ListModel createPluginsModel() {
+    private static ListModel createPluginsModel() {
         List names = new ArrayList(PluginUtilities.getPluginComponentNames());
         Iterator i = names.iterator();
         while (i.hasNext()) {
@@ -60,7 +60,7 @@ public class AboutPluginsBox extends JPanel {
         return new SimpleListModel(names);
     }
 
-    private JEditorPane createAboutViewer() {
+    private static JEditorPane createAboutViewer() {
         JEditorPane pane = ComponentFactory.createHTMLBrowser(null);
         pane.setPreferredSize(new Dimension(600, 600));
         return pane;

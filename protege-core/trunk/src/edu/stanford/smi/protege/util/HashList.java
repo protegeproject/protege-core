@@ -15,8 +15,6 @@ public class HashList extends AbstractSequentialList implements Cloneable, Seria
     private Map _valueEntryMap = new HashMap();
     private List _unmodifiableList;
 
-    private final static long serialVersionUID = 876323262645176354L;
-
     private class ListItr implements ListIterator {
         private Entry lastReturned = header;
         private Entry next;
@@ -493,8 +491,8 @@ public class HashList extends AbstractSequentialList implements Cloneable, Seria
      * @exception  java.io.IOException     Description of Exception
      * @exception  ClassNotFoundException  Description of Exception
      */
-    private synchronized void readObject(java.io.ObjectInputStream s)
-        throws java.io.IOException, ClassNotFoundException {
+    private synchronized void readObject(java.io.ObjectInputStream s) throws java.io.IOException,
+            ClassNotFoundException {
         // Read in any hidden serialization magic
         s.defaultReadObject();
 

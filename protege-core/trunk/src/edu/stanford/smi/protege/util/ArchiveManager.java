@@ -13,19 +13,22 @@ import edu.stanford.smi.protege.model.*;
  */
 public class ArchiveManager {
 
-    private static final ArchiveManager _theInstance = new ArchiveManager();
-    private static final DateFormat _theFormat = new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss");
+    private static final ArchiveManager THE_INSTANCE = new ArchiveManager();
+    private static final DateFormat THE_FORMAT = new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss");
 
     public static ArchiveManager getArchiveManager() {
-        return _theInstance;
+        return THE_INSTANCE;
     }
+
     public static DateFormat getDateFormat() {
-        return _theFormat;
+        return THE_FORMAT;
     }
+
     private ArchiveManager() {
         // do nothing    
     }
 
+    //ESCA-JAVA0130 
     public void archive(Project p, String comment) {
         String name = p.getProjectName();
         File projectDir = getProjectDirectoryFile(p);
@@ -43,29 +46,29 @@ public class ArchiveManager {
         }
     }
 
-    private File getProjectDirectoryFile(Project p) {
+    private static File getProjectDirectoryFile(Project p) {
         URI uri = p.getProjectURI();
         return (uri == null) ? null : new File(uri).getParentFile();
     }
 
-    private File createArchiveDir(String name, File projectDir, Date date) {
+    private static File createArchiveDir(String name, File projectDir, Date date) {
         File archiveDir = getArchiveDir(name, projectDir, date);
         archiveDir.mkdirs();
         return archiveDir;
     }
 
-    private File getArchiveDir(String name, File projectDir, Date date) {
+    private static File getArchiveDir(String name, File projectDir, Date date) {
         File mainArchiveDir = getMainArchiveDir(name, projectDir);
         return new File(mainArchiveDir, getTimestamp(date));
     }
 
-    private File getMainArchiveDir(String name, File projectDir) {
+    private static File getMainArchiveDir(String name, File projectDir) {
         File mainArchiveDir = new File(projectDir, name + ".parc");
         mainArchiveDir.mkdir();
         return mainArchiveDir;
     }
 
-    private void moveProject(String projectName, File sourceDir, File targetDir) {
+    private static void moveProject(String projectName, File sourceDir, File targetDir) {
         File[] files = sourceDir.listFiles();
         if (files != null) {
             for (int i = 0; i < files.length; ++i) {
@@ -81,7 +84,7 @@ public class ArchiveManager {
         }
     }
 
-    private File getEmptyTempDir(String projectName, File archiveDir) {
+    private static File getEmptyTempDir(String projectName, File archiveDir) {
         File tempDir = new File(archiveDir, "temp");
         boolean created = tempDir.mkdir();
         if (!created) {
@@ -95,6 +98,7 @@ public class ArchiveManager {
         return tempDir;
     }
 
+    //ESCA-JAVA0130 
     public Collection getArchiveRecords(Project p) {
         Collection records = new ArrayList();
         File[] file = getMainArchiveDir(p.getProjectName(), getProjectDirectoryFile(p)).listFiles();
@@ -104,6 +108,7 @@ public class ArchiveManager {
         return records;
     }
 
+    //ESCA-JAVA0130 
     public Project revertToVersion(Project p, Date date) {
         Project revertedProject = null;
         String name = p.getProjectName();
@@ -123,11 +128,11 @@ public class ArchiveManager {
         return revertedProject;
     }
 
-    private String getTimestamp(Date date) {
-        return _theFormat.format(date);
+    private static String getTimestamp(Date date) {
+        return THE_FORMAT.format(date);
     }
 
-    private String getComment(File directory) {
+    private static String getComment(File directory) {
         String comment = null;
         File file = getCommentFile(directory);
         if (file != null) {
@@ -142,11 +147,11 @@ public class ArchiveManager {
         return comment;
     }
 
-    private File getCommentFile(File directory) {
+    private static File getCommentFile(File directory) {
         return new File(directory, "comment.txt");
     }
 
-    private void createComment(File directory, String comment) {
+    private static void createComment(File directory, String comment) {
         if (comment != null && comment.length() > 0) {
             File file = getCommentFile(directory);
             try {

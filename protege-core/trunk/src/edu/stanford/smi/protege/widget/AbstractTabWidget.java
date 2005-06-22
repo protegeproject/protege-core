@@ -20,11 +20,11 @@ import edu.stanford.smi.protege.util.*;
 public abstract class AbstractTabWidget extends AbstractWidget implements TabWidget {
     private Icon _icon;
     private String _label;
-    private Collection _splitPanes;
     private String _shortDescription;
     private JTree _clsTree;
     private Selectable _instanceSelectable;
 
+    //ESCA-JAVA0130 
     public JButton addMainWindowToolBarButton(Action action) {
         JButton button;
         JToolBar toolBar = getMainWindowToolBar();
@@ -74,26 +74,27 @@ public abstract class AbstractTabWidget extends AbstractWidget implements TabWid
         return _icon;
     }
 
-    public JMenuBar getMainWindowMenuBar() {
+    protected static JMenuBar getMainWindowMenuBar() {
         return ProjectManager.getProjectManager().getCurrentProjectMenuBar();
     }
 
-    protected JToolBar getMainWindowToolBar() {
+    protected static JToolBar getMainWindowToolBar() {
         return ProjectManager.getProjectManager().getCurrentProjectMainToolBar();
     }
 
-    protected JToolBar getUserToolBar(String name) {
+    protected static JToolBar getUserToolBar(String name) {
         return ProjectManager.getProjectManager().getUserToolBar(name);
     }
 
-    protected void addUserToolBar(JToolBar toolbar) {
-        ProjectManager.getProjectManager().addUserToolBar(toolbar);
+    protected static void addUserToolBar(JToolBar toolBar) {
+        ProjectManager.getProjectManager().addUserToolBar(toolBar);
     }
 
-    protected void removeUserToolBar(JToolBar toolbar) {
-        ProjectManager.getProjectManager().removeUserToolBar(toolbar);
+    protected static void removeUserToolBar(JToolBar toolBar) {
+        ProjectManager.getProjectManager().removeUserToolBar(toolBar);
     }
 
+    //ESCA-JAVA0130 
     public void removeMainWindowToolBarButton(JButton button) {
         JToolBar toolBar = getMainWindowToolBar();
         if (toolBar != null) {
@@ -102,7 +103,6 @@ public abstract class AbstractTabWidget extends AbstractWidget implements TabWid
     }
 
     public void save() {
-        saveSplitterLocations();
     }
 
     public void close() {
@@ -111,17 +111,6 @@ public abstract class AbstractTabWidget extends AbstractWidget implements TabWid
 
     public String getShortDescription() {
         return _shortDescription;
-    }
-
-    private void saveSplitterLocations() {
-        if (_splitPanes != null) {
-            Iterator i = _splitPanes.iterator();
-            while (i.hasNext()) {
-                JSplitPane pane = (JSplitPane) i.next();
-                int location = pane.getDividerLocation();
-                getPropertyList().setInteger(pane.getName(), location);
-            }
-        }
     }
 
     public void setIcon(Icon icon) {

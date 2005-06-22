@@ -21,6 +21,7 @@ public class ListTarget implements DropTargetListener {
         setDropSelectionIndex(list, -1);
     }
 
+    //ESCA-JAVA0130 
     public void doDrop(JList list, Collection sources, int targetIndex, Object dropArea) {
         int dropIndex = targetIndex;
         if (dropArea == DefaultRenderer.DROP_TARGET_AREA_BELOW) {
@@ -64,11 +65,11 @@ public class ListTarget implements DropTargetListener {
             try {
                 int action = e.getDropAction();
                 e.acceptDrop(action);
-                Collection sources =
-                    (Collection) e.getTransferable().getTransferData(TransferableCollection.getCollectionFlavor());
+                Collection sources = (Collection) e.getTransferable().getTransferData(
+                        TransferableCollection.getCollectionFlavor());
                 doDrop(list, sources, _dropSelectionIndex, _dropTargetArea);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Log.getLogger().severe(Log.toString(ex));
             }
         } else {
             e.rejectDrop();

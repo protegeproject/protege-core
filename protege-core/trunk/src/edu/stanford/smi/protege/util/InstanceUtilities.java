@@ -11,12 +11,12 @@ import edu.stanford.smi.protege.model.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InstanceUtilities {
-    private final static String CLASS_DIMENSION = "Dimension";
+    private static final String CLASS_DIMENSION = "Dimension";
 
-    private final static String SLOT_X = "x";
-    private final static String SLOT_Y = "y";
-    private final static String SLOT_WIDTH = "width";
-    private final static String SLOT_HEIGHT = "height";
+    private static final String SLOT_X = "x";
+    private static final String SLOT_Y = "y";
+    private static final String SLOT_WIDTH = "width";
+    private static final String SLOT_HEIGHT = "height";
 
     public static Dimension getDimension(Instance instance) {
         Assert.assertEquals("class name", instance.getDirectType().getName(), CLASS_DIMENSION);

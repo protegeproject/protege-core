@@ -14,21 +14,21 @@ import edu.stanford.smi.protege.util.*;
  */
 public class OtherFacetsRenderer extends DefaultRenderer {
 
-    private void addAllowedValuesText(StringBuffer s, Cls cls, Slot slot) {
+    private static void addAllowedValuesText(StringBuffer s, Cls cls, Slot slot) {
         if (equals(cls.getTemplateSlotValueType(slot), ValueType.SYMBOL)) {
             Collection values = cls.getTemplateSlotAllowedValues(slot);
             appendValues(s, "allowed-values", values);
         }
     }
 
-    private void addDefaultValuesText(StringBuffer s, Cls cls, Slot slot) {
+    private static void addDefaultValuesText(StringBuffer s, Cls cls, Slot slot) {
         Collection defaults = cls.getTemplateSlotDefaultValues(slot);
         if (!defaults.isEmpty()) {
             addObjects(s, "default", defaults);
         }
     }
 
-    private void addObjects(StringBuffer s, String text, Collection objects) {
+    private static void addObjects(StringBuffer s, String text, Collection objects) {
         Collection strings = new ArrayList();
         Iterator i = objects.iterator();
         while (i.hasNext()) {
@@ -44,7 +44,7 @@ public class OtherFacetsRenderer extends DefaultRenderer {
         appendValues(s, text, strings);
     }
 
-    private void addRangeText(StringBuffer s, Cls cls, Slot slot, ValueType type) {
+    private static void addRangeText(StringBuffer s, Cls cls, Slot slot, ValueType type) {
         Number min = cls.getTemplateSlotMinimumValue(slot);
         Number max = cls.getTemplateSlotMaximumValue(slot);
         if (equals(type, ValueType.INTEGER)) {
@@ -71,14 +71,14 @@ public class OtherFacetsRenderer extends DefaultRenderer {
         }
     }
 
-    private void addValuesText(StringBuffer s, Cls cls, Slot slot) {
+    private static void addValuesText(StringBuffer s, Cls cls, Slot slot) {
         Collection values = cls.getTemplateSlotValues(slot);
         if (!values.isEmpty()) {
             addObjects(s, "value", values);
         }
     }
 
-    private void appendValues(StringBuffer s, String text, Collection values) {
+    private static void appendValues(StringBuffer s, String text, Collection values) {
         boolean first = true;
         s.append(text);
         s.append("=");
@@ -100,7 +100,7 @@ public class OtherFacetsRenderer extends DefaultRenderer {
         s.append(" ");
     }
 
-    private void addInverseSlotText(StringBuffer buffer, Slot slot) {
+    private static void addInverseSlotText(StringBuffer buffer, Slot slot) {
         Slot inverseSlot = slot.getInverseSlot();
         if (inverseSlot != null) {
             buffer.append("inverse-slot=");

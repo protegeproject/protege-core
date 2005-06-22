@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.util;
 
+//ESCA*JAVA0150
+
 /**
  * A utility class for checking assertions.  This class predates the buildin "assert" language construct.  This
  * class is now implemented in terms of the "assert" language construct.
@@ -9,7 +11,7 @@ package edu.stanford.smi.protege.util;
  * @author    Ray Fergerson (fergerson@smi.stanford.edu)
  */
 public class Assert {
-    
+
     public static void assertEquals(float x1, float x2, float delta) {
         boolean equal = Math.abs(x1 - x2) < delta;
         if (!equal) {

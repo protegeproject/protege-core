@@ -6,7 +6,7 @@ package edu.stanford.smi.protege.util;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectionEvent extends AbstractEvent {
-    public final static int SELECTION_CHANGED = 1;
+    public static final int SELECTION_CHANGED = 1;
 
     public SelectionEvent(Selectable selectable, int type) {
         super(selectable, type);

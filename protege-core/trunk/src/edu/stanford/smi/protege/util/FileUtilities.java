@@ -11,7 +11,7 @@ import edu.stanford.smi.protege.model.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FileUtilities {
-    public final static char EXTENSION_SEPARATOR = '.';
+    public static final char EXTENSION_SEPARATOR = '.';
     private static final String TEMP_EXTENSION = ".tmp";
     private static String _readEncodingOverride;
     private static String _writeEncodingOverride;
@@ -154,12 +154,12 @@ public class FileUtilities {
         return printWriter;
     }
 
-    public static Writer getWriter(String fileName) {
-        return (fileName == null) ? null : createBufferedWriter(new File(fileName), false);
+    public static Writer getWriter(String filename) {
+        return (filename == null) ? null : createBufferedWriter(new File(filename), false);
     }
 
-    public static Reader getReader(String fileName) {
-        return createBufferedReader(new File(fileName));
+    public static Reader getReader(String filename) {
+        return createBufferedReader(new File(filename));
     }
 
     public static Reader getResourceReader(Class clas, String path) {
@@ -191,8 +191,8 @@ public class FileUtilities {
         if (tmpFile != null) {
             String tmpFileName = tmpFile.toString();
             if (tmpFileName.endsWith(TEMP_EXTENSION)) {
-                String fileName = tmpFileName.substring(0, tmpFileName.length() - TEMP_EXTENSION.length());
-                replaceFile(tmpFile, new File(fileName));
+                String filename = tmpFileName.substring(0, tmpFileName.length() - TEMP_EXTENSION.length());
+                replaceFile(tmpFile, new File(filename));
             } else {
                 throw new IOException("Not a temporary file: " + tmpFile);
             }

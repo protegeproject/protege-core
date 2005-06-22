@@ -79,6 +79,7 @@ public class ClsesPanel extends SelectableContainer {
         _relationshipPane = createRelationshipPane(_viewAction);
     }
 
+    //ESCA-JAVA0130 
     protected RelationshipPane createRelationshipPane(Action viewAction) {
         return new RelationshipPane(viewAction);
     }
@@ -93,10 +94,12 @@ public class ClsesPanel extends SelectableContainer {
     //        return _relationshipView;
     //    }
 
+    //ESCA-JAVA0130 
     protected SubclassPane createSubclassPane(Action viewAction, Cls root, Action createAction, Action action) {
         return new SubclassPane(viewAction, root, createAction, action);
     }
 
+    //ESCA-JAVA0130 
     protected void enableButton(AllowableAction action, boolean enabled) {
         if (action != null) {
             action.setAllowed(enabled);
