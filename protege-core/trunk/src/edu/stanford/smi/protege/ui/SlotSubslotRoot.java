@@ -76,6 +76,7 @@ public class SlotSubslotRoot extends LazyTreeRoot {
     public void dispose() {
         super.dispose();
         _knowledgeBase.removeKnowledgeBaseListener(_listener);
+        _knowledgeBase.removeSlotListener(_slotListener);
     }
 
     public Comparator getComparator() {
