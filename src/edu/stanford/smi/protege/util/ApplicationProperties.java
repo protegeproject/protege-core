@@ -11,7 +11,7 @@ import edu.stanford.smi.protege.plugin.*;
 
 /**
  * Utility class for accessing system properties and properties from the application properties file.
- * 
+ *
  * @author Ray Fergerson
  * @author Jennifer Vendetti
  */
@@ -87,12 +87,22 @@ public class ApplicationProperties {
                 }
             }
         } else {
-            // If there are none, use some example projects provided
-            // with the protege installation.
+            // If there are none, use some example projects provided with the
+            // protege installation.
             char sep = java.io.File.separatorChar;
-            String exampleProjectName = getApplicationDirectory().getPath() + sep + "examples" + sep + "newspaper"
-                    + sep + "newspaper.pprj";
-            URI uri = URIUtilities.createURI(exampleProjectName);
+            String exampleProjectName;
+            URI uri;
+
+            if (PluginUtilities.isOWLAvailable()) {
+                exampleProjectName = getApplicationDirectory().getPath() +
+                    sep + "examples" + sep + "pizza" + sep + "pizza.owl.pprj";
+                uri = URIUtilities.createURI(exampleProjectName);
+                addProjectToMRUList(uri);
+            }
+
+            exampleProjectName = getApplicationDirectory().getPath() +
+                sep + "examples" + sep + "newspaper" + sep + "newspaper.pprj";
+            uri = URIUtilities.createURI(exampleProjectName);
             addProjectToMRUList(uri);
         }
     }
