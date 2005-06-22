@@ -734,4 +734,8 @@ public class PluginUtilities {
     public static boolean isOWL(KnowledgeBase kb) {
         return kb.getClass().getName().indexOf("OWL") != -1;
     }
+
+    public static boolean isOWLAvailable() {
+        return true;
+    }
 }
