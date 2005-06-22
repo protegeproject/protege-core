@@ -13,7 +13,7 @@ import javax.swing.*;
 public abstract class PopupMenuMouseListener extends MouseAdapter {
     private JComponent _component;
 
-    public PopupMenuMouseListener(JComponent c) {
+    protected PopupMenuMouseListener(JComponent c) {
         _component = c;
     }
 

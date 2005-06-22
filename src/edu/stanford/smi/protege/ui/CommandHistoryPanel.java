@@ -45,23 +45,24 @@ public class CommandHistoryPanel extends JPanel implements Disposable {
         _manager.removeChangeListener(_changeListener);
     }
 
-    private JList createList() {
+    private static JList createList() {
         return ComponentFactory.createList(null);
     }
 
-    private JButton createRedoButton() {
+    private static JButton createRedoButton() {
         JButton button = ComponentFactory.createButton(new RedoAction(true));
         button.setText("Redo");
 
         return button;
     }
 
-    private JButton createUndoButton() {
+    private static JButton createUndoButton() {
         JButton button = ComponentFactory.createButton(new UndoAction(true));
         button.setText("Undo");
         return button;
     }
 
+    //ESCA-JAVA0130 
     public String getTitle() {
         return "Command History";
     }

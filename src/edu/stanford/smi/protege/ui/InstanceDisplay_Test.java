@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.test.*;
 import edu.stanford.smi.protege.util.*;
+
 /**
  * Unit tests for the InstanceDisplay class
  *
@@ -40,7 +41,7 @@ public class InstanceDisplay_Test extends APITestCase {
         return frame1;
     }
 
-    private void pressMessageOK() {
+    private static void pressMessageOK() {
         Thread t = new Thread() {
             public void run() {
                 JDialog dialog = null;
@@ -58,7 +59,7 @@ public class InstanceDisplay_Test extends APITestCase {
         t.start();
     }
 
-    private void pressButton(Component c, Icon icon) {
+    private static void pressButton(Component c, Icon icon) {
         TestUtilities.pressButton(c, icon);
     }
 

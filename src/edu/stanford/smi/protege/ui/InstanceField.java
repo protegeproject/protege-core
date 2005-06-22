@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.ui;
 
+//ESCA*JAVA0100
+
 import java.awt.*;
 import java.util.*;
 
@@ -33,7 +35,13 @@ public class InstanceField extends SelectableContainer {
     };
 
     public InstanceField(String label, Collection allowedClses) {
-        this._allowedClses = new ArrayList(allowedClses);
+        _allowedClses = new ArrayList(allowedClses);
+
+        Iterator i = _allowedClses.iterator();
+        if (i.hasNext()) {
+            Cls cls = (Cls) i.next();
+            _project = cls.getProject();
+        }
 
         _listComponent = ComponentFactory.createSingleItemList(null);
         setSelectable(_listComponent);

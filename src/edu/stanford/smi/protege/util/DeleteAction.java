@@ -15,18 +15,18 @@ import edu.stanford.smi.protege.resource.*;
  */
 public abstract class DeleteAction extends AllowableAction {
 
-    public DeleteAction(String text, Selectable selectable, Icon icon) {
+    protected DeleteAction(String text, Selectable selectable, Icon icon) {
         super(text, text, icon, selectable);
     }
 
-    public DeleteAction(String text, Selectable selectable) {
+    protected DeleteAction(String text, Selectable selectable) {
         super(text, selectable);
         if (getIcon() == null) {
             setIcon(Icons.getDeleteIcon());
         }
     }
-    
-    public DeleteAction(ResourceKey key, Selectable selectable) {
+
+    protected DeleteAction(ResourceKey key, Selectable selectable) {
         super(key, selectable);
     }
 
@@ -58,6 +58,7 @@ public abstract class DeleteAction extends AllowableAction {
         }
     }
 
+    //ESCA-JAVA0130 
     public void onDelete(Object o) {
         Log.getLogger().warning("onDelete called: should have been overridden");
     }

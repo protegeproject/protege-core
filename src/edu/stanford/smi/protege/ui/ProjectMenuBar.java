@@ -102,11 +102,11 @@ public class ProjectMenuBar extends JMenuBar {
         }
     }
 
-    private void createItem(JMenu menu, Action action) {
+    private static void createItem(JMenu menu, Action action) {
         ComponentFactory.addMenuItem(menu, action);
     }
 
-    private void createCheckBoxItem(JMenu menu, Action action, boolean selected) {
+    private static void createCheckBoxItem(JMenu menu, Action action, boolean selected) {
         ComponentFactory.addCheckBoxMenuItem(menu, action, selected);
     }
 
@@ -168,7 +168,7 @@ public class ProjectMenuBar extends JMenuBar {
         createItem(menu, new ExitApplication());
     }
 
-    private void createItem(JMenu menu, String className) {
+    private static void createItem(JMenu menu, String className) {
         Action action = null;
         Class clas = SystemUtilities.forName(className, true);
         if (clas != null) {
@@ -179,7 +179,7 @@ public class ProjectMenuBar extends JMenuBar {
         }
     }
 
-    private void loadProjectMenu(JMenu menu) {
+    private static void loadProjectMenu(JMenu menu) {
         createItem(menu, new ArchiveProject(false));
         createItem(menu, new RevertProject(false));
         menu.addSeparator();
@@ -220,7 +220,7 @@ public class ProjectMenuBar extends JMenuBar {
      * (menu.getItemCount() == 0) { menu.setEnabled(false); } return menu; }
      */
 
-    private JMenu createExportSubmenu() {
+    private static JMenu createExportSubmenu() {
         JMenu menu = ComponentFactory.createMenu(ResourceKey.PROJECT_EXPORT_TO_FORMAT);
         menu.setEnabled(ProjectManager.getProjectManager().getCurrentProject() != null);
         Collection classNames = PluginUtilities.getAvailableExportPluginClassNames();
@@ -235,13 +235,13 @@ public class ProjectMenuBar extends JMenuBar {
         return menu;
     }
 
-    private List getSortedPlugins(Collection classNames) {
+    private static List getSortedPlugins(Collection classNames) {
         List plugins = getPlugins(classNames);
         Collections.sort(plugins, new PluginComparator());
         return plugins;
     }
 
-    private List getPlugins(Collection classNames) {
+    private static List getPlugins(Collection classNames) {
         List plugins = new ArrayList();
         Iterator i = classNames.iterator();
         while (i.hasNext()) {
@@ -254,7 +254,7 @@ public class ProjectMenuBar extends JMenuBar {
         return plugins;
     }
 
-    private boolean exists(URI uri) {
+    private static boolean exists(URI uri) {
         return true;
     }
 
@@ -300,7 +300,7 @@ public class ProjectMenuBar extends JMenuBar {
         ComponentFactory.addSubmenu(menu, subMenu);
     }
 
-    private ArrayList buildList(String path) {
+    private static ArrayList buildList(String path) {
         ArrayList list = new ArrayList();
         StringTokenizer st = new StringTokenizer(path, "/");
         for (int i = 0; st.hasMoreElements(); i++) {
@@ -329,7 +329,7 @@ public class ProjectMenuBar extends JMenuBar {
         }
         // size is 2
         else if (list.size() == 2) {
-            if (list.get(0) == "...") {
+            if (list.get(0).equals("...")) {
                 list.remove(0);
             } else {
                 list.set(0, "...");
@@ -364,20 +364,20 @@ public class ProjectMenuBar extends JMenuBar {
         return reduce(list);
     }
 
-    private int getLength(ArrayList list) {
+    private static int getLength(ArrayList list) {
         String path = "";
         String sep = "/";
         for (int i = 0; i < list.size(); i++) {
-            path = path + list.get(i) + sep;
+            path += list.get(i) + sep;
         }
         return path.length() - 1;
     }
 
-    private String rebuildPath(ArrayList list) {
+    private static String rebuildPath(ArrayList list) {
         String path = "";
         String sep = "/";
         for (int i = 0; i < list.size(); i++) {
-            path = path + list.get(i) + sep;
+            path += list.get(i) + sep;
         }
         path = path.substring(0, (path.length() - 1));
         return path;

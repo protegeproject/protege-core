@@ -12,7 +12,7 @@ public abstract class ListenerCollection {
     private boolean _isPostingEnabled = true;
     private EventDispatcher _dispatcher;
 
-    public ListenerCollection(EventDispatcher dispatcher) {
+    protected ListenerCollection(EventDispatcher dispatcher) {
         _dispatcher = dispatcher;
     }
 
@@ -43,11 +43,11 @@ public abstract class ListenerCollection {
         return _isPostingEnabled;
     }
 
-    private Collection newCollection() {
+    private static Collection newCollection() {
         return new LinkedList();
     }
 
-    private Collection newCollection(Collection c) {
+    private static Collection newCollection(Collection c) {
         return new LinkedList(c);
     }
 

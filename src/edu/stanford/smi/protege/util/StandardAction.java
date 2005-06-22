@@ -14,19 +14,19 @@ import edu.stanford.smi.protege.resource.*;
 public abstract class StandardAction extends AbstractAction {
     public static final String DISABLED_ICON = "DisabledSmallIcon";
 
-    public StandardAction(String name) {
+    protected StandardAction(String name) {
         super(name);
     }
 
-    public StandardAction(String name, Icon icon) {
+    protected StandardAction(String name, Icon icon) {
         super(name, icon);
     }
 
-    public StandardAction(ResourceKey key) {
+    protected StandardAction(ResourceKey key) {
         this(key, false);
     }
 
-    public StandardAction(ResourceKey key, boolean useLargeIcons) {
+    protected StandardAction(ResourceKey key, boolean useLargeIcons) {
         initialize(this, key, useLargeIcons);
     }
 

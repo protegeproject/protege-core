@@ -17,24 +17,24 @@ public abstract class AllowableAction extends StandardAction {
     private Selectable _selectable;
     private boolean _isAllowed = true;
 
-    public AllowableAction(ResourceKey key) {
+    protected AllowableAction(ResourceKey key) {
         super(key);
     }
-    
-    public AllowableAction(ResourceKey key, Selectable selectable) {
+
+    protected AllowableAction(ResourceKey key, Selectable selectable) {
         super(key);
         initializeSelectable(selectable);
     }
 
-    public AllowableAction(String name, Selectable selectable) {
+    protected AllowableAction(String name, Selectable selectable) {
         this(name, name, null, selectable);
     }
 
-    public AllowableAction(String name, Icon icon, Selectable selectable) {
+    protected AllowableAction(String name, Icon icon, Selectable selectable) {
         this(name, name, icon, selectable);
     }
 
-    public AllowableAction(String name, String description, Icon icon, Selectable selectable) {
+    protected AllowableAction(String name, String description, Icon icon, Selectable selectable) {
         super(name, icon);
         putValue(Action.SHORT_DESCRIPTION, description);
         initializeSelectable(selectable);

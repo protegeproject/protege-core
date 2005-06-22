@@ -35,12 +35,12 @@ public class FileList extends AbstractSelectableComponent {
         chooser.setMultiSelectionEnabled(true);
         int openDialogResult = chooser.showOpenDialog(this);
         switch (openDialogResult) {
-            case JFileChooser.ERROR_OPTION :
+            case JFileChooser.ERROR_OPTION:
                 // Get this on 'close"
                 break;
-            case JFileChooser.CANCEL_OPTION :
+            case JFileChooser.CANCEL_OPTION:
                 break;
-            case JFileChooser.APPROVE_OPTION :
+            case JFileChooser.APPROVE_OPTION:
                 File[] files = chooser.getSelectedFiles();
                 if (files != null) {
                     for (int i = 0; i < files.length; ++i) {
@@ -48,8 +48,9 @@ public class FileList extends AbstractSelectableComponent {
                     }
                 }
                 break;
-            default :
+            default:
                 Assert.fail("bad result: " + openDialogResult);
+                break;
         }
     }
 

@@ -1,7 +1,9 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.Color;
+import java.awt.*;
+
 import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.Frame;
 
 /**
  * Frame Renderer that makes it clear whether the frame being rendered is valid or not.  Invalid frames are rendered in
@@ -10,7 +12,7 @@ import edu.stanford.smi.protege.model.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class OwnSlotValueFrameRenderer extends FrameRenderer {
-    private static final Color _invalidItemColor = Color.red;
+    private static final Color INVALID_ITEM_COLOR = Color.red;
     private final Frame _frame;
     private final Slot _slot;
 
@@ -22,7 +24,7 @@ public class OwnSlotValueFrameRenderer extends FrameRenderer {
     public void load(Object o) {
         super.load(o);
         if (!_frame.isValidOwnSlotValue(_slot, o)) {
-            setForegroundColorOverride(_invalidItemColor);
+            setForegroundColorOverride(INVALID_ITEM_COLOR);
         }
     }
 }

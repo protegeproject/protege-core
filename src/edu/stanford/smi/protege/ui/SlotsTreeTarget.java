@@ -20,7 +20,7 @@ public class SlotsTreeTarget extends TreeTarget {
         super(true);
     }
 
-    private boolean addSuperslot(Slot source, Slot parent) {
+    private static boolean addSuperslot(Slot source, Slot parent) {
         boolean succeeded = false;
         if (parent == source) {
             //

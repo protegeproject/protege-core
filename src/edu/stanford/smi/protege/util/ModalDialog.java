@@ -15,17 +15,17 @@ import edu.stanford.smi.protege.resource.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ModalDialog extends JDialog implements Disposable {
-    public final static int OPTION_OK = 1;
-    public final static int OPTION_YES = 2;
-    public final static int OPTION_NO = 3;
-    public final static int OPTION_CANCEL = 4;
-    public final static int OPTION_CLOSE = 5;
-    public final static int RESULT_ERROR = 6;
+    public static final int OPTION_OK = 1;
+    public static final int OPTION_YES = 2;
+    public static final int OPTION_NO = 3;
+    public static final int OPTION_CANCEL = 4;
+    public static final int OPTION_CLOSE = 5;
+    public static final int RESULT_ERROR = 6;
 
-    public final static int MODE_OK_CANCEL = 11;
-    public final static int MODE_YES_NO_CANCEL = 12;
-    public final static int MODE_YES_NO = 13;
-    public final static int MODE_CLOSE = 14;
+    public static final int MODE_OK_CANCEL = 11;
+    public static final int MODE_YES_NO_CANCEL = 12;
+    public static final int MODE_YES_NO = 13;
+    public static final int MODE_CLOSE = 14;
 
     private int _result;
     private Component _panel;
@@ -114,7 +114,8 @@ public class ModalDialog extends JDialog implements Disposable {
                         attemptClose(OPTION_CANCEL);
                         break;
                     default:
-                // do nothing
+                        // do nothing
+                        break;
                 }
             }
         });
@@ -142,6 +143,8 @@ public class ModalDialog extends JDialog implements Disposable {
                 buttonsGrid.add(createButton(OPTION_CLOSE, ResourceKey.CLOSE_BUTTON_LABEL));
                 break;
             default:
+                // do nothing
+                break;
         }
 
         JPanel panel = ComponentFactory.createPanel();
@@ -181,6 +184,9 @@ public class ModalDialog extends JDialog implements Disposable {
                 break;
             case MODE_CLOSE:
                 _result = OPTION_CLOSE;
+                break;
+            default:
+                // do nothing
                 break;
         }
 

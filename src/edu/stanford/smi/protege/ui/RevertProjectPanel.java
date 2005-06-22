@@ -8,6 +8,7 @@ import javax.swing.table.*;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.util.*;
+
 /**
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
@@ -18,7 +19,7 @@ class RevertProjectPanel extends JPanel {
     private JCheckBox _archiveCurrentCheckBox;
     private JTable _table;
 
-    public RevertProjectPanel(Project p) {
+    RevertProjectPanel(Project p) {
         super(new BorderLayout());
         _currentProject = p;
         add(createVersionsTable(), BorderLayout.CENTER);

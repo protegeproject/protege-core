@@ -16,15 +16,16 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectInstancesPanel extends JComponent {
+    //ESCA-JAVA0098 
     protected JTree _clsTree;
     protected JList _instanceList;
     protected JComboBox _directAllInstanceComboBox;
-    
-    private static String DIRECT = "Direct Instances";
-    private static String ALL = "All Instances";
+
+    private static String DIRECT_INSTANCES_TEXT = "Direct Instances";
+    private static String ALL_INSTANCES_TEXT = "All Instances";
 
     // static to remember the state across dialog openings.
-    private static Object _oldDirectAllInstancesState = DIRECT;
+    private static Object _oldDirectAllInstancesState = DIRECT_INSTANCES_TEXT;
 
     protected SelectInstancesPanel(KnowledgeBase kb, Collection clses) {
         setPreferredSize(new Dimension(500, 300));
@@ -62,7 +63,7 @@ public class SelectInstancesPanel extends JComponent {
     }
 
     private void fixRenderer() {
-        boolean displayType = _directAllInstanceComboBox.getSelectedItem().equals(ALL);
+        boolean displayType = _directAllInstanceComboBox.getSelectedItem().equals(ALL_INSTANCES_TEXT);
         FrameRenderer frameRenderer = (FrameRenderer) _instanceList.getCellRenderer();
         frameRenderer.setDisplayType(displayType);
     }
@@ -76,8 +77,8 @@ public class SelectInstancesPanel extends JComponent {
 
     protected JComboBox createDirectAllInstanceComboBox() {
         _directAllInstanceComboBox = ComponentFactory.createComboBox();
-        _directAllInstanceComboBox.addItem(DIRECT);
-        _directAllInstanceComboBox.addItem(ALL);
+        _directAllInstanceComboBox.addItem(DIRECT_INSTANCES_TEXT);
+        _directAllInstanceComboBox.addItem(ALL_INSTANCES_TEXT);
         loadState();
         _directAllInstanceComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -92,6 +93,7 @@ public class SelectInstancesPanel extends JComponent {
     private void saveState() {
         _oldDirectAllInstancesState = _directAllInstanceComboBox.getSelectedItem();
     }
+
     private void loadState() {
         _directAllInstanceComboBox.setSelectedItem(_oldDirectAllInstancesState);
     }
@@ -139,7 +141,7 @@ public class SelectInstancesPanel extends JComponent {
     }
 
     protected Collection getInstances(Cls cls) {
-        boolean direct = _directAllInstanceComboBox.getSelectedItem().equals(DIRECT);
+        boolean direct = _directAllInstanceComboBox.getSelectedItem().equals(DIRECT_INSTANCES_TEXT);
         return (direct) ? cls.getDirectInstances() : cls.getInstances();
     }
 }

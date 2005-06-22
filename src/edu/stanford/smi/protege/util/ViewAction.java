@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.util;
 
+//ESCA*JAVA0130
+
 import java.awt.event.*;
 import java.util.*;
 
@@ -15,19 +17,19 @@ import edu.stanford.smi.protege.resource.*;
  */
 public abstract class ViewAction extends AllowableAction {
 
-    public ViewAction(ResourceKey key, Selectable selectable) {
+    protected ViewAction(ResourceKey key, Selectable selectable) {
         super(key, selectable);
     }
-    
-    public ViewAction(Selectable selectable) {
+
+    protected ViewAction(Selectable selectable) {
         super(ResourceKey.VALUE_VIEW, selectable);
     }
-    
-    public ViewAction(String text, Selectable selectable) {
+
+    protected ViewAction(String text, Selectable selectable) {
         super(text, Icons.getViewIcon(), selectable);
     }
 
-    public ViewAction(String text, Selectable selectable, Icon icon) {
+    protected ViewAction(String text, Selectable selectable, Icon icon) {
         super(text, text, icon, selectable);
     }
 

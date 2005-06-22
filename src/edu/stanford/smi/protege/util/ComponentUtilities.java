@@ -183,6 +183,7 @@ public class ComponentUtilities {
         for (int i = 0; i < count && nExpansions > 0; ++i) {
             TreeNode child = parent.getChildAt(i);
             TreePath childPath = parentPath.pathByAddingChild(child);
+            //ESCA-JAVA0119 
             nExpansions = fullExpand(tree, childPath, nExpansions);
         }
         tree.expandPath(parentPath);
@@ -230,8 +231,6 @@ public class ComponentUtilities {
     public static Collection getDescendentsOfClass(final Class componentClass, Component root) {
         final Collection results = new ArrayList();
         UnaryFunction f = new UnaryFunction() {
-            public Object result = null;
-
             public Object apply(Object o) {
                 if (componentClass.isInstance(o)) {
                     results.add(o);
@@ -428,7 +427,7 @@ public class ComponentUtilities {
                     Component topComponent = SwingUtilities.getRoot(c);
                     topComponent.setVisible(false);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.getLogger().severe(Log.toString(e));
                 }
             }
         };
@@ -572,7 +571,7 @@ public class ComponentUtilities {
     }
 
     public static void setDragAndDropEnabled(JComponent c, boolean enable) {
-        c.putClientProperty(ComponentUtilities.class, new Boolean(enable));
+        c.putClientProperty(ComponentUtilities.class, Boolean.valueOf(enable));
     }
 
     public static void setEnabled(Component component, final boolean enabled) {

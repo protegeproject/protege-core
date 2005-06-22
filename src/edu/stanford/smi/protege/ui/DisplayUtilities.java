@@ -14,11 +14,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class DisplayUtilities {
 
-    public static String editString(
-        final Component component,
-        String label,
-        Object startValue,
-        final Validator validator) {
+    public static String editString(final Component component, String label, Object startValue,
+            final Validator validator) {
         final EditStringPanel panel = new EditStringPanel(startValue, label);
 
         ModalDialog.CloseCallback callback = new ModalDialog.CloseCallback() {
@@ -128,12 +125,8 @@ public class DisplayUtilities {
         return pickClses(component, kb, rootClses, label, true);
     }
 
-    private static Collection pickClses(
-        Component component,
-        KnowledgeBase kb,
-        Collection rootClses,
-        String label,
-        boolean multiple) {
+    private static Collection pickClses(Component component, KnowledgeBase kb, Collection rootClses, String label,
+            boolean multiple) {
         Collection clses;
         if (rootClses.isEmpty()) {
             clses = Collections.EMPTY_LIST;
@@ -178,17 +171,17 @@ public class DisplayUtilities {
         Cls cls;
         Collection concreteClses = getFirstTwoConcreteClses(kb, allowedClses);
         switch (concreteClses.size()) {
-            case 0 :
+            case 0:
                 ModalDialog.showMessageDialog(component, "There are no concrete allowed classes");
                 cls = null;
                 break;
-            case 1 :
+            case 1:
                 cls = (Cls) CollectionUtilities.getFirstItem(concreteClses);
                 break;
-            case 2 :
+            case 2:
                 cls = promptForConcreteCls(component, kb, allowedClses, label);
                 break;
-            default :
+            default:
                 Assert.fail("bad size: " + concreteClses.size());
                 cls = null;
                 break;
@@ -225,11 +218,8 @@ public class DisplayUtilities {
         return (Instance) CollectionUtilities.getFirstItem(pickInstances(component, allowedClses, label));
     }
 
-    public static Instance pickInstanceFromCollection(
-        Component component,
-        Collection collection,
-        int initialSelection,
-        String label) {
+    public static Instance pickInstanceFromCollection(Component component, Collection collection, int initialSelection,
+            String label) {
         Instance instance;
         SelectInstanceFromCollectionPanel panel = new SelectInstanceFromCollectionPanel(collection, initialSelection);
         int result = ModalDialog.showDialog(component, panel, label, ModalDialog.MODE_OK_CANCEL);
@@ -272,11 +262,7 @@ public class DisplayUtilities {
         return kb;
     }
 
-    public static Collection pickInstances(
-        Component component,
-        KnowledgeBase kb,
-        Collection allowedClses,
-        String label) {
+    public static Collection pickInstances(Component component, KnowledgeBase kb, Collection allowedClses, String label) {
         Collection instances = Collections.EMPTY_LIST;
         SelectInstancesPanel panel = new SelectInstancesPanel(kb, allowedClses);
         int result = ModalDialog.showDialog(component, panel, label, ModalDialog.MODE_OK_CANCEL);
@@ -291,13 +277,14 @@ public class DisplayUtilities {
         SelectInstancesFromCollectionPanel panel = new SelectInstancesFromCollectionPanel(instances);
         int result = ModalDialog.showDialog(component, panel, label, ModalDialog.MODE_OK_CANCEL);
         switch (result) {
-            case ModalDialog.OPTION_OK :
+            case ModalDialog.OPTION_OK:
                 selectedSlots = panel.getSelection();
                 break;
-            case ModalDialog.OPTION_CANCEL :
+            case ModalDialog.OPTION_CANCEL:
                 break;
-            default :
+            default:
                 Assert.fail("bad result: " + result);
+                break;
         }
         return selectedSlots;
     }
@@ -328,11 +315,8 @@ public class DisplayUtilities {
         return value;
     }
 
-    private static Cls promptForConcreteCls(
-        final Component component,
-        KnowledgeBase kb,
-        Collection clses,
-        final String label) {
+    private static Cls promptForConcreteCls(final Component component, KnowledgeBase kb, Collection clses,
+            final String label) {
         final SelectClsesPanel p = new SelectClsesPanel(kb, clses);
 
         ModalDialog.CloseCallback callback = new ModalDialog.CloseCallback() {

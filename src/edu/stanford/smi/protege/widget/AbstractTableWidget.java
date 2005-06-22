@@ -18,7 +18,7 @@ public abstract class AbstractTableWidget extends AbstractSlotWidget {
     private JTable _table;
     private LabeledComponent _labeledComponent;
 
-    public AbstractTableWidget() {
+    protected AbstractTableWidget() {
         setPreferredColumns(2);
         setPreferredRows(4);
     }
@@ -74,11 +74,12 @@ public abstract class AbstractTableWidget extends AbstractSlotWidget {
 
     public abstract TableModel createTableModel();
 
+    //ESCA-JAVA0130 
     public JPopupMenu getPopupMenu() {
         return null;
     }
 
-    private int getRow(TableModel model, Object o) {
+    private static int getRow(TableModel model, Object o) {
         int row = -1;
         int nRows = model.getRowCount();
         for (int i = 0; i < nRows; ++i) {

@@ -18,15 +18,15 @@ public class PreferencesPanel extends Box implements Validatable {
     private JTextField userNameField;
     private JRadioButton useLoginUserNameButton;
     private JRadioButton useSpecifiedUserNameButton;
-    
+
     private JRadioButton protegeDefaultLocaleButton;
     private JRadioButton systemDefaultLocaleButton;
     private JRadioButton otherLocaleButton;
     private JComboBox localeComboBox;
-    
+
     private JCheckBox showWelcomeDialogCheckBox;
     private JCheckBox prettyPrintLabelsCheckBox;
-    
+
     public PreferencesPanel() {
         super(BoxLayout.Y_AXIS);
         add(createShowWelcomeDialogCheckBox());
@@ -34,14 +34,14 @@ public class PreferencesPanel extends Box implements Validatable {
         add(createUsernamePanel());
         add(createLocalePanel());
     }
-    
+
     private JComponent createUsernamePanel() {
         String applicationUserName = ApplicationProperties.getUserName();
         String systemUserName = SystemUtilities.getUserName();
-        
+
         userNameField = ComponentFactory.createTextField();
         userNameField.setColumns(15);
-        
+
         Box box = Box.createVerticalBox();
         box.setBorder(BorderFactory.createTitledBorder("User Name"));
         useLoginUserNameButton = new JRadioButton("Use Login Name: " + systemUserName);
@@ -63,7 +63,8 @@ public class PreferencesPanel extends Box implements Validatable {
         ButtonGroup group = new ButtonGroup();
         group.add(useSpecifiedUserNameButton);
         group.add(useLoginUserNameButton);
-        if (applicationUserName == null || applicationUserName.length() == 0 || systemUserName.equals(applicationUserName)) {
+        if (applicationUserName == null || applicationUserName.length() == 0
+                || systemUserName.equals(applicationUserName)) {
             useLoginUserNameButton.setSelected(true);
         } else {
             useSpecifiedUserNameButton.setSelected(true);
@@ -73,14 +74,15 @@ public class PreferencesPanel extends Box implements Validatable {
         box.add(useSpecifiedPanel);
         return box;
     }
-    
+
     private JComponent createLocalePanel() {
         Box box = Box.createVerticalBox();
         Locale defaultLocale = ApplicationProperties.getLocale();
         Locale systemLocale = SystemUtilities.getSystemLocale();
         Locale protegeDefaultLocale = SystemUtilities.getProtegeSystemDefaultLocale();
         box.setBorder(BorderFactory.createTitledBorder("Locale"));
-        protegeDefaultLocaleButton = new JRadioButton(Text.getProgramName() + " Default:   " + protegeDefaultLocale.getDisplayName());
+        protegeDefaultLocaleButton = new JRadioButton(Text.getProgramName() + " Default:   "
+                + protegeDefaultLocale.getDisplayName());
         systemDefaultLocaleButton = new JRadioButton("System Default:   " + systemLocale.getDisplayName());
         otherLocaleButton = new JRadioButton("Other:   ");
         localeComboBox = ComponentFactory.createComboBox();
@@ -99,49 +101,49 @@ public class PreferencesPanel extends Box implements Validatable {
         if (systemLocale.equals(protegeDefaultLocale)) {
             systemDefaultLocaleButton.setEnabled(false);
         }
-        
+
         ActionListener actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-            	localeComboBox.setEnabled(otherLocaleButton.isSelected());
+                localeComboBox.setEnabled(otherLocaleButton.isSelected());
             }
         };
         protegeDefaultLocaleButton.addActionListener(actionListener);
         systemDefaultLocaleButton.addActionListener(actionListener);
-        otherLocaleButton.addActionListener(actionListener);       
-        
+        otherLocaleButton.addActionListener(actionListener);
+
         ButtonGroup group = new ButtonGroup();
         group.add(protegeDefaultLocaleButton);
         group.add(systemDefaultLocaleButton);
         group.add(otherLocaleButton);
-        
+
         Box otherLocalePanel = Box.createHorizontalBox();
         otherLocalePanel.add(otherLocaleButton);
         otherLocalePanel.add(localeComboBox);
         otherLocalePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
+
         box.add(protegeDefaultLocaleButton);
         box.add(systemDefaultLocaleButton);
         box.add(otherLocalePanel);
         box.setVisible(SystemUtilities.showAlphaFeatures());
         return box;
     }
-    
-    private Locale[] getSortedLocales() {
+
+    private static Locale[] getSortedLocales() {
         Locale[] locales = Locale.getAvailableLocales();
         Arrays.sort(locales, new LocaleComparator());
         return locales;
     }
-    
+
     private JComponent createShowWelcomeDialogCheckBox() {
         showWelcomeDialogCheckBox = ComponentFactory.createCheckBox("Show Welcome Dialog on Start-up");
-	    showWelcomeDialogCheckBox.setSelected(ApplicationProperties.getWelcomeDialogShow());
-	    return showWelcomeDialogCheckBox;
+        showWelcomeDialogCheckBox.setSelected(ApplicationProperties.getWelcomeDialogShow());
+        return showWelcomeDialogCheckBox;
     }
 
     private JComponent createPrettyPrintLabelsCheckBox() {
         prettyPrintLabelsCheckBox = ComponentFactory.createCheckBox("Capitalize Slot Widget Labels");
         prettyPrintLabelsCheckBox.setSelected(ApplicationProperties.getPrettyPrintSlotWidgetLabels());
-	    return prettyPrintLabelsCheckBox;
+        return prettyPrintLabelsCheckBox;
     }
 
     public void saveContents() {
@@ -163,4 +165,3 @@ public class PreferencesPanel extends Box implements Validatable {
         return true;
     }
 }
-

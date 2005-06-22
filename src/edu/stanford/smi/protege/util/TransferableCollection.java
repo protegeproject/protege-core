@@ -12,7 +12,7 @@ import edu.stanford.smi.protege.model.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class TransferableCollection implements Transferable {
-    private final static Collection flavors = new ArrayList();
+    private static final Collection flavors = new ArrayList();
     private static DataFlavor collectionFlavor;
     private ArrayList frames;
 
@@ -25,7 +25,7 @@ public class TransferableCollection implements Transferable {
             flavors.add(collectionFlavor);
             flavors.add(DataFlavor.stringFlavor);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.getLogger().warning(Log.toString(e));
         }
     }
 
@@ -50,7 +50,7 @@ public class TransferableCollection implements Transferable {
     }
 
     public Object getCollectionTransferData() {
-        return frames;
+        return new ArrayList(frames);
     }
 
     public Object getStringTransferData() {

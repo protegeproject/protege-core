@@ -8,7 +8,7 @@ import edu.stanford.smi.protege.util.*;
 
 class DisplaySlotRenderer extends DefaultRenderer {
 
-    public DisplaySlotRenderer(Cls cls) {
+    DisplaySlotRenderer(Cls cls) {
     }
 
     public void loadNull() {

@@ -27,6 +27,7 @@ public class FloatValidator implements NumberValidator {
             convertToNumber((String) o);
             isValid = true;
         } catch (NumberFormatException e) {
+            // do nothing
         }
         return isValid;
     }

@@ -42,13 +42,14 @@ public class SlotSubslotRoot extends LazyTreeRoot {
         }
     };
 
-    public SlotListener _slotListener = new SlotAdapter() {
+    private SlotListener _slotListener = new SlotAdapter() {
         public void directSuperslotAdded(SlotEvent event) {
             Slot slot = event.getSlot();
             if (slot.getDirectSuperslotCount() == 1) {
                 childRemoved(slot);
             }
         }
+
         public void directSuperslotRemoved(SlotEvent event) {
             Slot slot = event.getSlot();
             if (slot.getDirectSuperslotCount() == 0) {

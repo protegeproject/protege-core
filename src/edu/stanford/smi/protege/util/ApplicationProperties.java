@@ -16,40 +16,41 @@ import edu.stanford.smi.protege.plugin.*;
  * @author Jennifer Vendetti
  */
 public class ApplicationProperties {
-    public final static String FILE_NAME = "protege.properties";
-    public final static String NEXT_FRAME_NUMBER = "next_frame_number";
-    public final static String APPLICATION_INSTALL_DIRECTORY = "protege.dir";
-    public final static String LAST_FILE_DIRECTORY = "filechooser.last_directory";
-    public final static String LAST_LOADED_URI = "projectchooser.last_uri";
-    public final static String CURRENT_WORKING_DIRECTORY = "user.dir";
-    public final static String USERS_HOME_DIRECTORY = "user.home";
-    public final static String PROPERTIES_IN_USER_HOME = "protege.properties.in.user.home";
-    public final static String EXTRA_MANIFEST_PATH = PluginUtilities.EXTRA_MANIFEST_PATH;
-    public final static String MRU_PROJECTS = "history.projects.reopen";
-    public final static String WELCOME_DIALOG = "ui.welcomedialog.show";
-    public final static String MAIN_FRAME_RECTANGLE = "mainframe.rectangle";
-    public final static String LOOK_AND_FEEL = "swing.defaultlaf";
-    public final static String BROWSER = "browser.html";
+    public static final String FILE_NAME = "protege.properties";
+    public static final String NEXT_FRAME_NUMBER = "next_frame_number";
+    public static final String APPLICATION_INSTALL_DIRECTORY = "protege.dir";
+    public static final String LAST_FILE_DIRECTORY = "filechooser.last_directory";
+    public static final String LAST_LOADED_URI = "projectchooser.last_uri";
+    public static final String CURRENT_WORKING_DIRECTORY = "user.dir";
+    public static final String USERS_HOME_DIRECTORY = "user.home";
+    public static final String PROPERTIES_IN_USER_HOME = "protege.properties.in.user.home";
+    public static final String EXTRA_MANIFEST_PATH = PluginUtilities.EXTRA_MANIFEST_PATH;
+    public static final String MRU_PROJECTS = "history.projects.reopen";
+    public static final String WELCOME_DIALOG = "ui.welcomedialog.show";
+    public static final String MAIN_FRAME_RECTANGLE = "mainframe.rectangle";
+    public static final String LOOK_AND_FEEL = "swing.defaultlaf";
+    public static final String BROWSER = "browser.html";
     private static final String AUTOSYNCHRONIZE_PROPERTY = "trees.autosynchronize";
     private static final String PRETTY_PRINT_SLOT_WIDGET_LABELS = "labels.pretty_print";
 
-    private final static Properties _properties = new Properties();
+    private static final Properties PROPERTIES = new Properties();
     private static File _propertyFile;
 
-    private final static int num_MRUProjects = 10;
+    private static final int num_MRUProjects = 10;
     private static List _mruProjectList = new ArrayList(num_MRUProjects);
 
     static {
         try {
             _propertyFile = new File(getPropertiesDirectory(), FILE_NAME);
             InputStream is = new FileInputStream(_propertyFile);
-            _properties.load(is);
+            PROPERTIES.load(is);
             is.close();
             loadMRUProjectList();
 
         } catch (IOException e) {
             // Log.exception(e, ApplicationProperties.class, "<static>");
         } catch (SecurityException e) {
+            // do nothing -- expected in applets
         }
     }
 
@@ -66,7 +67,7 @@ public class ApplicationProperties {
     }
 
     private static void loadMRUProjectList() {
-        String projectNames = _properties.getProperty(MRU_PROJECTS);
+        String projectNames = PROPERTIES.getProperty(MRU_PROJECTS);
         if (projectNames != null) {
             StringTokenizer st = new StringTokenizer(projectNames, ",");
             for (int i = 0; ((i < num_MRUProjects) && (st.hasMoreElements())); i++) {
@@ -114,12 +115,13 @@ public class ApplicationProperties {
         try {
             if (_propertyFile != null) {
                 OutputStream os = new FileOutputStream(_propertyFile);
-                _properties.store(os, "Protege Properties");
+                PROPERTIES.store(os, "Protege Properties");
                 os.close();
             }
         } catch (IOException e) {
             Log.getLogger().warning(e.toString());
         } catch (SecurityException e) {
+            // do nothing -- expected in applets
         }
     }
 
@@ -162,10 +164,10 @@ public class ApplicationProperties {
 
     public static int getIntegerProperty(String name, int defaultValue) {
         int value = defaultValue;
-        String propString = _properties.getProperty(name);
+        String propString = PROPERTIES.getProperty(name);
         if (propString != null) {
             try {
-                value = Integer.valueOf(propString).intValue();
+                value = Integer.parseInt(propString);
             } catch (Exception e) {
                 // do nothing
             }
@@ -175,7 +177,7 @@ public class ApplicationProperties {
 
     public static boolean getBooleanProperty(String name, boolean defaultValue) {
         boolean value = defaultValue;
-        String propString = _properties.getProperty(name);
+        String propString = PROPERTIES.getProperty(name);
         if (propString != null) {
             try {
                 value = Boolean.valueOf(propString).booleanValue();
@@ -194,7 +196,7 @@ public class ApplicationProperties {
     }
 
     public static int getOldNextFrameNumber() {
-        String nextInstanceString = _properties.getProperty(NEXT_FRAME_NUMBER, "0");
+        String nextInstanceString = PROPERTIES.getProperty(NEXT_FRAME_NUMBER, "0");
         int nextInstance = Integer.parseInt(nextInstanceString);
         // properties.setProperty(NEXT_FRAME_NUMBER,
         // String.valueOf(nextInstance+1));
@@ -202,7 +204,7 @@ public class ApplicationProperties {
     }
 
     public static String getBrowser() {
-        String property = _properties.getProperty(BROWSER);
+        String property = PROPERTIES.getProperty(BROWSER);
         if (property != null && property.length() == 0) {
             property = null;
         }
@@ -211,7 +213,7 @@ public class ApplicationProperties {
 
     private static Rectangle getRectangle(String name) {
         Rectangle rectangle = null;
-        String property = _properties.getProperty(name);
+        String property = PROPERTIES.getProperty(name);
         if (property != null) {
             rectangle = parseRectangle(property);
         }
@@ -223,7 +225,7 @@ public class ApplicationProperties {
     }
 
     public static String getApplicationOrSystemProperty(String name, String defaultValue) {
-        String value = _properties.getProperty(name);
+        String value = PROPERTIES.getProperty(name);
         if (value == null) {
             try {
                 value = System.getProperty(name);
@@ -242,7 +244,7 @@ public class ApplicationProperties {
     }
 
     public static String getString(String name, String defaultValue) {
-        return _properties.getProperty(name, defaultValue);
+        return PROPERTIES.getProperty(name, defaultValue);
     }
 
     private static Rectangle parseRectangle(String text) {
@@ -286,9 +288,9 @@ public class ApplicationProperties {
     private static void setProperty(String property, String value) {
         try {
             if (value == null) {
-                _properties.remove(property);
+                PROPERTIES.remove(property);
             } else {
-                _properties.setProperty(property, value);
+                PROPERTIES.setProperty(property, value);
             }
             flush();
         } catch (Exception e) {

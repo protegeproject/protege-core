@@ -51,7 +51,7 @@ class MyCardPanel extends JPanel implements TabbedPaneInterface {
     private CardLayout layout = new CardLayout();
     private ChangeListener changeListener;
 
-    public MyCardPanel() {
+    MyCardPanel() {
         setLayout(layout);
     }
 
@@ -361,7 +361,7 @@ public class ProjectView extends JComponent {
         }
     }
 
-    private void closeDetachedTab(TabWidget tab) {
+    private static void closeDetachedTab(TabWidget tab) {
         Component c = (Component) tab;
         JFrame frame = (JFrame) SwingUtilities.getRoot(c);
         frame.dispose();
@@ -378,7 +378,7 @@ public class ProjectView extends JComponent {
         }
     }
 
-    private boolean isEnabled(TabWidget tab) {
+    private static boolean isEnabled(TabWidget tab) {
         return tab.getDescriptor().isVisible();
     }
 
@@ -454,16 +454,17 @@ public class ProjectView extends JComponent {
         synchronizeClsTree();
     }
 
+    //ESCA-JAVA0130 
     public boolean isAutosynchronizingClsTrees() {
         return ApplicationProperties.isAutosynchronizingClsTrees();
     }
 
     private void setCurrentClsPath(Collection c) {
-        _currentClsPath = c;
+        _currentClsPath = new ArrayList(c);
     }
 
     private void setCurrentInstances(Collection instances) {
-        _currentInstances = instances;
+        _currentInstances = (instances == null) ? null : new ArrayList(instances);
     }
 
     public void synchronizeClsTree() {

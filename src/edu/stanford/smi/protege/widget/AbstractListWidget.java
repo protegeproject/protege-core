@@ -19,7 +19,7 @@ public abstract class AbstractListWidget extends AbstractSlotWidget {
     private LabeledComponent _labeledComponent;
     private SwitchableListSelectionListener _listListener = new ListSelectionListenerAdapter(this);
 
-    public AbstractListWidget() {
+    protected AbstractListWidget() {
         setPreferredColumns(2);
         setPreferredRows(2);
     }
@@ -74,6 +74,7 @@ public abstract class AbstractListWidget extends AbstractSlotWidget {
         return _labeledComponent;
     }
 
+    //ESCA-JAVA0130 
     protected ListCellRenderer createRenderer() {
         return FrameRenderer.createInstance();
     }
@@ -117,7 +118,7 @@ public abstract class AbstractListWidget extends AbstractSlotWidget {
             SystemUtilities.beep();
         }
     }
-    
+
     protected boolean canRemove(Collection items) {
         return areDirectValues(items);
     }
@@ -130,10 +131,8 @@ public abstract class AbstractListWidget extends AbstractSlotWidget {
         Iterator i = _labeledComponent.getHeaderButtonActions().iterator();
         while (i.hasNext()) {
             Action action = (Action) i.next();
-            if (action instanceof CreateAction
-                || action instanceof AddAction
-                || action instanceof RemoveAction
-                || action instanceof DeleteAction) {
+            if (action instanceof CreateAction || action instanceof AddAction || action instanceof RemoveAction
+                    || action instanceof DeleteAction) {
                 ((AllowableAction) action).setAllowed(b);
             }
 

@@ -10,7 +10,7 @@ import java.util.*;
 
 class ErrorLazyTreeNode extends LazyTreeNode {
 
-    public ErrorLazyTreeNode(LazyTreeNode parent, Object o) {
+    ErrorLazyTreeNode(LazyTreeNode parent, Object o) {
         super(parent, "INVALID -- " + o);
     }
 

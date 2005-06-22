@@ -42,7 +42,7 @@ public class ReferenceNode extends LazyTreeNode {
         }
     }
 
-    private void addOwnSlotReferences(Frame frame, Slot slot, Collection references) {
+    private static void addOwnSlotReferences(Frame frame, Slot slot, Collection references) {
         if (frame.hasOwnSlot(slot)) {
             ValueType type = frame.getOwnSlotValueType(slot);
             if (type.equals(ValueType.INSTANCE) || type.equals(ValueType.CLS)) {
@@ -51,7 +51,7 @@ public class ReferenceNode extends LazyTreeNode {
         }
     }
 
-    private void addReferences(Frame frame, Slot slot, Collection references) {
+    private static void addReferences(Frame frame, Slot slot, Collection references) {
         if (frame instanceof Cls) {
             Cls cls = (Cls) frame;
             addTemplateSlotReferences(cls, slot, references);
@@ -59,7 +59,7 @@ public class ReferenceNode extends LazyTreeNode {
         addOwnSlotReferences(frame, slot, references);
     }
 
-    private void addTemplateSlotReferences(Cls cls, Slot slot, Collection references) {
+    private static void addTemplateSlotReferences(Cls cls, Slot slot, Collection references) {
         if (cls.hasTemplateSlot(slot)) {
             ValueType type = cls.getTemplateSlotValueType(slot);
             if (type.equals(ValueType.INSTANCE)) {

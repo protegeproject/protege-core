@@ -11,7 +11,7 @@ import javax.swing.*;
  */
 public abstract class TablePopupMenuMouseListener extends PopupMenuMouseListener {
 
-    public TablePopupMenuMouseListener(JTable table) {
+    protected TablePopupMenuMouseListener(JTable table) {
         super(table);
     }
 

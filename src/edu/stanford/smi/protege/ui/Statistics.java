@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.ui;
 
+//ESCA*JAVA0007
+
 import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
@@ -12,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
 class Statistics {
 
     // -- Frames
+    //ESCA-JAVA0098 
     public int nFrames;
     public int nSystemFrames;
     public int nIncludedFrames;
@@ -41,7 +44,7 @@ class Statistics {
     public int nIncludedInstances;
     public int nDirectInstances;
 
-    public Statistics(KnowledgeBase kb) {
+    Statistics(KnowledgeBase kb) {
         Iterator i = new ArrayList(kb.getFrames()).iterator();
         while (i.hasNext()) {
             Frame frame = (Frame) i.next();

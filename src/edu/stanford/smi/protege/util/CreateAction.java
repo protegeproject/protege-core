@@ -12,16 +12,16 @@ import edu.stanford.smi.protege.resource.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class CreateAction extends AllowableAction {
-    
-    public CreateAction(ResourceKey key) {
+
+    protected CreateAction(ResourceKey key) {
         super(key);
     }
-    
-    public CreateAction(String text) {
+
+    protected CreateAction(String text) {
         this(text, Icons.getCreateIcon());
     }
 
-    public CreateAction(String text, Icon icon) {
+    protected CreateAction(String text, Icon icon) {
         super(text, text, icon, null);
     }
 

@@ -1,4 +1,5 @@
 package edu.stanford.smi.protege.ui;
+//ESCA*JAVA0100
 
 import java.awt.*;
 import java.awt.event.*;
@@ -421,7 +422,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         return instances;
     }
 
-    private Collection removeHiddenInstances(Collection instances) {
+    private static Collection removeHiddenInstances(Collection instances) {
         Collection visibleInstances = new ArrayList(instances);
         Iterator i = visibleInstances.iterator();
         while (i.hasNext()) {

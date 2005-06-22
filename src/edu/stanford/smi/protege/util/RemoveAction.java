@@ -17,19 +17,19 @@ import edu.stanford.smi.protege.ui.*;
  */
 public abstract class RemoveAction extends AllowableAction {
 
-    public RemoveAction(ResourceKey key, Selectable selectable) {
+    protected RemoveAction(ResourceKey key, Selectable selectable) {
         super(key, selectable);
     }
-    
-    public RemoveAction(String text, Selectable selectable) {
+
+    protected RemoveAction(String text, Selectable selectable) {
         this(text, selectable, Icons.getRemoveIcon());
     }
 
-    public RemoveAction(String text, Selectable selectable, Icon icon) {
+    protected RemoveAction(String text, Selectable selectable, Icon icon) {
         this("Remove", text, selectable, icon);
     }
 
-    public RemoveAction(String name, String text, Selectable selectable, Icon icon) {
+    protected RemoveAction(String name, String text, Selectable selectable, Icon icon) {
         super(name, text, icon, selectable);
     }
 
@@ -60,6 +60,7 @@ public abstract class RemoveAction extends AllowableAction {
         }
     }
 
+    //ESCA-JAVA0130 
     public void onRemove(Object o) {
         Log.getLogger().warning("onRemove called: should have been overridden");
     }

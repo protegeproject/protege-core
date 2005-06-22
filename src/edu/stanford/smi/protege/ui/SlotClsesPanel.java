@@ -31,27 +31,23 @@ public class SlotClsesPanel extends JComponent {
     }
 
     public void setSlot(Slot slot) {
-        if(slot == null)  {
+        if (slot == null) {
             ComponentUtilities.setListValues(_list, Collections.EMPTY_LIST);
-        }
-        else {
+        } else {
             Collection allClses = slot.getDirectDomain();
-            if(slot.getKnowledgeBase().getProject().getDisplayHiddenClasses()) {
+            if (slot.getKnowledgeBase().getProject().getDisplayHiddenClasses()) {
                 ComponentUtilities.setListValues(_list, allClses);
-            }
-            else {
+            } else {
                 Collection visibleClses = new ArrayList();
-                for (Iterator it = allClses.iterator(); it.hasNext();) {
-                    Cls cls = (Cls) it.next();
-                    if(cls.isVisible()) {
+                Iterator i = allClses.iterator();
+                while (i.hasNext()) {
+                    Cls cls = (Cls) i.next();
+                    if (cls.isVisible()) {
                         visibleClses.add(cls);
                     }
                 }
                 ComponentUtilities.setListValues(_list, visibleClses);
             }
         }
-        // Old method body:
-        // Collection clses = (slot == null) ? Collections.EMPTY_LIST : slot.getDirectDomain();
-        // ComponentUtilities.setListValues(_list, clses);
     }
 }

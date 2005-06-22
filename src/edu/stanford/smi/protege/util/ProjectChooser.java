@@ -217,7 +217,7 @@ public class ProjectChooser extends JFileChooser {
 class URLPanel extends JPanel implements Validatable {
     private JTextField field;
 
-    public URLPanel() {
+    URLPanel() {
         field = ComponentFactory.createTextField();
         setLayout(new BorderLayout());
         add(new LabeledComponent("URL", field), BorderLayout.NORTH);
@@ -252,7 +252,7 @@ class URLPanel extends JPanel implements Validatable {
         try {
             uri = new URI(text);
         } catch (URISyntaxException e) {
-
+            // do nothing
         }
         return uri;
     }

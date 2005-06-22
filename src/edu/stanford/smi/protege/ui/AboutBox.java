@@ -20,13 +20,13 @@ public class AboutBox extends JPanel {
         URL url = Text.getAboutURL();
         JEditorPane pane = ComponentFactory.createHTMLBrowser(url);
         substitute(pane);
-        
+
         add(new JScrollPane(pane));
         pane.setEditable(false);
         setPreferredSize(new Dimension(535, 550));
     }
 
-    private void substitute(JEditorPane pane) {
+    private static void substitute(JEditorPane pane) {
         String text = getText(pane);
         text = replace(text, "{0}", Text.getVersion());
         text = replace(text, "{1}", Text.getBuildInfo());
@@ -47,7 +47,7 @@ public class AboutBox extends JPanel {
         return text;
     }
 
-    private String replace(String text, String macro, String replaceString) {
+    private static String replace(String text, String macro, String replaceString) {
         return StringUtilities.replace(text, macro, replaceString);
     }
 }

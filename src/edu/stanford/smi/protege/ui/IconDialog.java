@@ -16,73 +16,27 @@ import edu.stanford.smi.protege.util.*;
 
 public class IconDialog extends JDialog {
     // Initialize array of Protege-2000 icons to display in this dialog.
-    Icon[] icons =
-        {
-            null,
-            Icons.getAddIcon(),
-            Icons.getRemoveIcon(),
-            Icons.getCreateIcon(),
-            Icons.getDeleteIcon(),
-            Icons.getViewIcon(),
-            Icons.getViewInstanceReferencersIcon(),
-            Icons.getUpIcon(),
-            Icons.getDownIcon(),
-            Icons.getCreateInstanceNoteIcon(),
-            Icons.getDeleteInstanceNoteIcon(),
-            null,
-            Icons.getClsIcon(),
-            Icons.getClsIcon(false, true, false, false),
-            Icons.getClsIcon(true, false, false, false),
-            Icons.getClsIcon(true, true, false, false),
-            Icons.getFacetIcon(),
-            Icons.getInstanceIcon(),
-            Icons.getSlotIcon(),
-            Icons.getSlotIcon(true, false, false, false),
-            Icons.getSlotIcon(false, true, false, false),
-            Icons.getSlotIcon(true, true, false, false),
-            Icons.getViewSlotIcon(),
-            Icons.getViewSlotAtClassIcon(),
-            Icons.getRemoveSlotOverrideIcon(),
-            null,
-            Icons.getFormIcon(),
-            Icons.getRelayoutIcon(),
-            Icons.getLayoutLikeOtherFormIcon(),
-            Icons.getFormIcon(true),
-            Icons.getRemoveCustomizationsIcon()};
+    Icon[] icons = { null, Icons.getAddIcon(), Icons.getRemoveIcon(), Icons.getCreateIcon(), Icons.getDeleteIcon(),
+            Icons.getViewIcon(), Icons.getViewInstanceReferencersIcon(), Icons.getUpIcon(), Icons.getDownIcon(),
+            Icons.getCreateInstanceNoteIcon(), Icons.getDeleteInstanceNoteIcon(), null, Icons.getClsIcon(),
+            Icons.getClsIcon(false, true, false, false), Icons.getClsIcon(true, false, false, false),
+            Icons.getClsIcon(true, true, false, false), Icons.getFacetIcon(), Icons.getInstanceIcon(),
+            Icons.getSlotIcon(), Icons.getSlotIcon(true, false, false, false),
+            Icons.getSlotIcon(false, true, false, false), Icons.getSlotIcon(true, true, false, false),
+            Icons.getViewSlotIcon(), Icons.getViewSlotAtClassIcon(), Icons.getRemoveSlotOverrideIcon(), null,
+            Icons.getFormIcon(), Icons.getRelayoutIcon(), Icons.getLayoutLikeOtherFormIcon(), Icons.getFormIcon(true),
+            Icons.getRemoveCustomizationsIcon() };
 
     // Initialize array of textual descriptions for above icons.
-    String[] iconText =
-        {
-            "General Icons",
-            "Add, attach, or select",
-            "Remove selected object from view but not from the knowledge base",
-            "Create a class, slot, or instance",
+    String[] iconText = { "General Icons", "Add, attach, or select",
+            "Remove selected object from view but not from the knowledge base", "Create a class, slot, or instance",
             "Delete selected class, slot, or instance from the knowledge base",
-            "View selected class, slot, or instance",
-            "Display references to selected class, slot, or instance",
-            "Move selected item up in list",
-            "Move selected item down in list",
-            "Create note",
-            "Delete note",
-            "Frame Icons",
-            "Class",
-            "Abstract class (a class with no instances)",
-            "Metaclass",
-            "Abstract metaclass",
-            "Facet",
-            "Instance",
-            "Slot",
-            "Inherited slot",
-            "Overridden slot",
-            "Overridden inherited slot",
-            "View selected slots",
-            "View selected slots at class",
-            "Remove slot override",
-            "Form Icons",
-            "Form",
-            "Default layout with current widgets",
-            "Layout like form...",
-            "Customized Form",
+            "View selected class, slot, or instance", "Display references to selected class, slot, or instance",
+            "Move selected item up in list", "Move selected item down in list", "Create note", "Delete note",
+            "Frame Icons", "Class", "Abstract class (a class with no instances)", "Metaclass", "Abstract metaclass",
+            "Facet", "Instance", "Slot", "Inherited slot", "Overridden slot", "Overridden inherited slot",
+            "View selected slots", "View selected slots at class", "Remove slot override", "Form Icons", "Form",
+            "Default layout with current widgets", "Layout like form...", "Customized Form",
             "Remove all customizations" };
 
     public IconDialog() {
@@ -95,7 +49,7 @@ public class IconDialog extends JDialog {
             init();
             pack();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.getLogger().severe(Log.toString(e));
         }
     }
 
@@ -139,7 +93,7 @@ public class IconDialog extends JDialog {
         return textField;
     }
 
-    private void init() throws Exception {
+    private void init() {
         JPanel iconPanel = new JPanel(new GridLayout(icons.length, 1));
 
         // Get the max width and height of the icons to display.

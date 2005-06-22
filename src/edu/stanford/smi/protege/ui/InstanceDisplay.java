@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.ui;
 
+//ESCA*JAVA0100
+
 import java.awt.*;
 import java.awt.event.*;
 import java.text.*;
@@ -99,6 +101,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
     };
 
+    //ESCA-JAVA0130 
     protected boolean shouldDisplaySlot(Cls cls, Slot slot) {
         return true;
     }
@@ -160,6 +163,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         return (JLabel) _header.getComponent();
     }
 
+    //ESCA-JAVA0130 
     protected JScrollPane makeInstanceScrollPane() {
         JScrollPane pane = ComponentFactory.createScrollPane();
         pane.setBorder(null);
@@ -211,6 +215,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         return _project.getTabbedInstanceFormLayout();
     }
 
+    //ESCA-JAVA0130 
     protected JComponent createTabbedWidgetLayout(Collection widgets) {
         JTabbedPane tabbedPane = ComponentFactory.createTabbedPane(false);
         Iterator i = widgets.iterator();
@@ -448,7 +453,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         setResource(_deleteNoteButton, ResourceKey.CLASS_NOTE_DELETE);
     }
 
-    private void setResource(AbstractButton button, ResourceKey key) {
+    private static void setResource(AbstractButton button, ResourceKey key) {
         button.setIcon(Icons.getIcon(key));
         button.setToolTipText(LocalizedText.getText(key));
     }
@@ -486,6 +491,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
     }
 
+    //ESCA-JAVA0130 
     protected String getTypeText(Instance instance) {
         StringBuffer typeText = new StringBuffer();
         Iterator i = instance.getDirectTypes().iterator();
@@ -676,8 +682,9 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     private void showYellowSticky(Instance instance) {
         JInternalFrame frame = loadIntoFrame(instance);
         String author = (String) ModelUtilities.getDirectOwnSlotValue(instance, Model.Slot.CREATOR);
-        if (author == null || author.length() == 0)
+        if (author == null || author.length() == 0) {
             author = "<unknown author>";
+        }
         String timeString = getTimeString(instance);
         String title = author;
         if (timeString != null) {
@@ -690,10 +697,11 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         try {
             frame.setSelected(true);
         } catch (Exception e) {
+            // do nothing
         }
     }
 
-    private String getTimeString(Instance instance) {
+    private static String getTimeString(Instance instance) {
         String timeString = null;
         String timestamp = (String) ModelUtilities.getDirectOwnSlotValue(instance, Model.Slot.CREATION_TIMESTAMP);
         if (timestamp != null) {

@@ -1,4 +1,8 @@
 package edu.stanford.smi.protege.util;
+//ESCA*JAVA0068
+//ESCA*JAVA0174
+//ESCA*JAVA0031
+//ESCA*JAVA0078
 
 import java.io.*;
 import java.lang.reflect.*;

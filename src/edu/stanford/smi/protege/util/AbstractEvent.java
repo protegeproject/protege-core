@@ -17,19 +17,19 @@ public abstract class AbstractEvent extends EventObject implements Localizable {
     private Object _argument2;
     private Object _argument3;
 
-    public AbstractEvent(Object source, int type) {
+    protected AbstractEvent(Object source, int type) {
         this(source, type, null, null, null);
     }
 
-    public AbstractEvent(Object source, int type, Object arg1) {
+    protected AbstractEvent(Object source, int type, Object arg1) {
         this(source, type, arg1, null, null);
     }
 
-    public AbstractEvent(Object source, int type, Object arg1, Object arg2) {
+    protected AbstractEvent(Object source, int type, Object arg1, Object arg2) {
         this(source, type, arg1, arg2, null);
     }
 
-    public AbstractEvent(Object source, int type, Object arg1, Object arg2, Object arg3) {
+    protected AbstractEvent(Object source, int type, Object arg1, Object arg2, Object arg3) {
         super(source);
         if (source instanceof Serializable) {
             _source = source;
@@ -78,8 +78,11 @@ public abstract class AbstractEvent extends EventObject implements Localizable {
 
     public String toString() {
         String text = StringUtilities.getClassName(this);
-        return text + "(" + getSource() + ", " + _eventType + ", " + getArgument1() + ", "
-                + getArgument2() + ")";
+        return text + "(" + getSource() + ", " + _eventType + ", " + getArgument1() + ", " + getArgument2() + ")";
+    }
+
+    public int hashCode() {
+        return HashUtils.getHash(source, _argument1, _argument2);
     }
 
     public boolean equals(Object o) {

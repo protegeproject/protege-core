@@ -9,7 +9,7 @@ import javax.swing.*;
  */
 public abstract class TreePopupMenuMouseListener extends PopupMenuMouseListener {
 
-    public TreePopupMenuMouseListener(JTree tree) {
+    protected TreePopupMenuMouseListener(JTree tree) {
         super(tree);
     }
 

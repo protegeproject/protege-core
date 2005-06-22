@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.util;
 
 import java.util.*;
+
 /**
  * Callback interface for double-clicks
  *
@@ -9,5 +10,5 @@ import java.util.*;
 public interface DoubleClickListener extends EventListener {
 
     /** called when an item is double-clicked. */
-    public void onDoubleClick(Object item);
+    void onDoubleClick(Object item);
 }

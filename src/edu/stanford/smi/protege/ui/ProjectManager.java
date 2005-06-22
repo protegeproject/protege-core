@@ -39,7 +39,7 @@ public class ProjectManager {
     private static class FactoryPanel extends JPanel {
         private JList _list;
 
-        public FactoryPanel() {
+        FactoryPanel() {
             _list = ComponentFactory.createList(null);
             _list.addMouseListener(new ModalDialogCloseDoubleClickAdapter());
             _list.setCellRenderer(new FactoryRenderer());
@@ -55,7 +55,7 @@ public class ProjectManager {
         }
     }
 
-    public ProjectManager() {
+    private ProjectManager() {
     }
 
     private static void advance(Point p) {
@@ -117,6 +117,7 @@ public class ProjectManager {
         return succeeded;
     }
 
+    //ESCA-JAVA0130 
     public void cascadeWindows(Point p, Collection w) {
         ArrayList windows = new ArrayList(w);
         Collections.sort(windows, new WindowComparator());
@@ -292,6 +293,7 @@ public class ProjectManager {
         if (!errors.isEmpty()) {
             JComponent panel = new ParseErrorPanel(errors);
             _errorFrame = ComponentFactory.showInFrame(panel, label);
+            bringErrorFrameToFront();
         }
     }
 
@@ -349,7 +351,7 @@ public class ProjectManager {
      }
      */
 
-    private Project getRequestedProject(Component parent) {
+    private static Project getRequestedProject(Component parent) {
         Project project = null;
         ProjectChooser chooser = new ProjectChooser();
         int rval = chooser.showOpenDialog(parent);
@@ -576,7 +578,7 @@ public class ProjectManager {
         }
     }
 
-    private void printDisplayTime(final long t1) {
+    private static void printDisplayTime(final long t1) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 long t2 = System.currentTimeMillis();
@@ -585,7 +587,7 @@ public class ProjectManager {
         });
     }
 
-    private Project getRequestedRemoteProject() {
+    private static Project getRequestedRemoteProject() {
         return RemoteProjectManager.getInstance().getRemoteProject();
     }
 
@@ -637,7 +639,7 @@ public class ProjectManager {
         Application.repaint();
     }
 
-    private void commitChanges() {
+    private static void commitChanges() {
         Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
         TextComponentWidget widget = (TextComponentWidget) SwingUtilities.getAncestorOfClass(TextComponentWidget.class,
                 c);
@@ -817,6 +819,7 @@ public class ProjectManager {
         ComponentUtilities.setFrameTitle(_rootPane, text);
     }
 
+    //ESCA-JAVA0130 
     public void updateLookAndFeel(Collection windows) {
         Iterator i = windows.iterator();
         while (i.hasNext()) {

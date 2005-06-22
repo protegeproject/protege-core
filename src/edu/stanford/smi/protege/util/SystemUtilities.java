@@ -1,5 +1,9 @@
 package edu.stanford.smi.protege.util;
 
+//ESCA*JAVA0267
+//ESCA*JAVA0266
+//ESCA*JAVA0170
+
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.*;
@@ -58,9 +62,10 @@ public class SystemUtilities {
     }
 
     public static void gc() {
-        // Log.enter(SystemUtilities.class, "gc");
+        //ESCA-JAVA0284 
         System.gc();
         System.runFinalization();
+        //ESCA-JAVA0284 
         System.gc();
     }
 
@@ -129,12 +134,14 @@ public class SystemUtilities {
             loadLookAndFeel();
             PluginUtilities.initialize();
             loadUseAntialiasing();
+            //ESCA-JAVA0170 
         } catch (Throwable e) {
             // We explicitly do nothing fancy with writing this output. This
             // method is called on startup
             // and there may be problems with almost anything (i.e. System.out).
             // This is the best chance we
             // have to getting a reasonable error message.
+            //ESCA-JAVA0266 
             System.out.println(e.getMessage());
             // e.printStackTrace();
         }
@@ -188,7 +195,7 @@ public class SystemUtilities {
             Constructor constructor = clas.getConstructor(argumentClasses);
             instance = constructor.newInstance(arguments);
         } catch (Throwable e) {
-            Log.getLogger().warning(e.toString());
+            Log.getLogger().warning(Log.toString(e));
         }
         return instance;
     }
@@ -203,7 +210,7 @@ public class SystemUtilities {
                 o = clas.newInstance();
             }
         } catch (Throwable e) {
-            Log.getLogger().warning(e.toString());
+            Log.getLogger().warning(Log.toString(e));
         }
         return o;
     }
@@ -213,7 +220,7 @@ public class SystemUtilities {
         try {
             o = clas.newInstance();
         } catch (Throwable e) {
-            Log.getLogger().warning(e.toString());
+            Log.getLogger().warning(Log.toString(e));
         }
         return o;
     }
@@ -228,6 +235,7 @@ public class SystemUtilities {
                 System.in.read();
             }
         } catch (Exception e) {
+            Log.getLogger().warning(Log.toString(e));
         }
     }
 

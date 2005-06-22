@@ -177,7 +177,7 @@ public class ViewSelector extends JComponent {
 class TabRenderer extends DefaultRenderer {
     private ProjectView projectView;
 
-    public TabRenderer(ProjectView view) {
+    TabRenderer(ProjectView view) {
         // Log.enter(this, "TabRenderer");
         projectView = view;
     }
