@@ -50,6 +50,8 @@ public class PluginUtilities {
 
     public static final String EXTRA_MANIFEST_PATH = "protege.plugin.manifest";
 
+    private static Boolean isOWLAvailable = null;
+
     private static FilenameFilter _pluginPackageFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
             return new File(dir, name).isDirectory() && !name.equalsIgnoreCase("meta-inf") && !name.startsWith(".");
@@ -736,6 +738,10 @@ public class PluginUtilities {
     }
 
     public static boolean isOWLAvailable() {
-        return true;
+        if (isOWLAvailable == null) {
+            Class clas = promiscuousForName("edu.stanford.smi.protegex.owl.model.OWLClass");
+            isOWLAvailable = Boolean.valueOf(clas != null);
+        }
+        return isOWLAvailable.booleanValue();
     }
 }

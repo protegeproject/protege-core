@@ -1191,7 +1191,7 @@ public class Project {
             if (_uri == null) {
                 uri = URI.create(name);
             } else {
-                uri = _uri.resolve(name);
+                uri = URIUtilities.resolve(_uri, name);
             }
             loadIncludedProject(projectURI, uri, errors);
             uris.add(uri);
