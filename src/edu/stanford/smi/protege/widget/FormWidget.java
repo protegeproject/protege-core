@@ -18,21 +18,21 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FormWidget extends AbstractClsWidget {
-    public final static String STRETCH_ALL = "<<all>>";
-    public final static String STRETCH_NONE = "<<none>>";
+    public static final String STRETCH_ALL = "<<all>>";
+    public static final String STRETCH_NONE = "<<none>>";
 
-    private final static String PROPERTY_LAYOUT_PROPERTIES = "layout properties";
-    private final static String PROPERTY_HORIZONTAL_STRETCHER = "horizontal_stretcher";
-    private final static String PROPERTY_VERTICAL_STRETCHER = "vertical_stretcher";
-    private final static int RESIZE_NONE = Cursor.DEFAULT_CURSOR;
-    private final static int RESIZE_NW = Cursor.NW_RESIZE_CURSOR;
-    private final static int RESIZE_N = Cursor.N_RESIZE_CURSOR;
-    private final static int RESIZE_NE = Cursor.NE_RESIZE_CURSOR;
-    private final static int RESIZE_E = Cursor.E_RESIZE_CURSOR;
-    private final static int RESIZE_SE = Cursor.SE_RESIZE_CURSOR;
-    private final static int RESIZE_S = Cursor.S_RESIZE_CURSOR;
-    private final static int RESIZE_SW = Cursor.SW_RESIZE_CURSOR;
-    private final static int RESIZE_W = Cursor.W_RESIZE_CURSOR;
+    private static final String PROPERTY_LAYOUT_PROPERTIES = "layout properties";
+    private static final String PROPERTY_HORIZONTAL_STRETCHER = "horizontal_stretcher";
+    private static final String PROPERTY_VERTICAL_STRETCHER = "vertical_stretcher";
+    private static final int RESIZE_NONE = Cursor.DEFAULT_CURSOR;
+    private static final int RESIZE_NW = Cursor.NW_RESIZE_CURSOR;
+    private static final int RESIZE_N = Cursor.N_RESIZE_CURSOR;
+    private static final int RESIZE_NE = Cursor.NE_RESIZE_CURSOR;
+    private static final int RESIZE_E = Cursor.E_RESIZE_CURSOR;
+    private static final int RESIZE_SE = Cursor.SE_RESIZE_CURSOR;
+    private static final int RESIZE_S = Cursor.S_RESIZE_CURSOR;
+    private static final int RESIZE_SW = Cursor.SW_RESIZE_CURSOR;
+    private static final int RESIZE_W = Cursor.W_RESIZE_CURSOR;
 
     private WidgetLayoutStrategy _cachedLayoutStrategy = new DefaultWidgetLayoutStrategy();
     private AbstractSlotWidget _selectedWidget;
@@ -67,10 +67,6 @@ public class FormWidget extends AbstractClsWidget {
     private MouseListener _formMouseListener = new MouseAdapter() {
         public void mousePressed(MouseEvent e) {
             mousePressedOnForm(e.getPoint());
-        }
-
-        public void mouseDragged(MouseEvent e) {
-            mouseDraggedOnForm(e.getPoint());
         }
 
         public void mouseClicked(MouseEvent e) {
@@ -133,9 +129,6 @@ public class FormWidget extends AbstractClsWidget {
             }
         }
     };
-
-    public FormWidget() {
-    }
 
     private void addWidget(Slot slot) {
         int count = getCustomizedComponentCount();
@@ -427,7 +420,7 @@ public class FormWidget extends AbstractClsWidget {
         return preferredSize;
     }
 
-    private int getResizeDirection(Component c, Point p) {
+    private static int getResizeDirection(Component c, Point p) {
         int direction;
         Rectangle outerRect = c.getBounds();
         Rectangle innerRect = new Rectangle(outerRect);
@@ -577,7 +570,7 @@ public class FormWidget extends AbstractClsWidget {
         } else {
             booleanValue = !STRETCH_NONE.equals(value);
         }
-        putClientProperty(propertyName, new Boolean(booleanValue));
+        putClientProperty(propertyName, Boolean.valueOf(booleanValue));
     }
 
     private void initializeWidgets() {
@@ -599,7 +592,7 @@ public class FormWidget extends AbstractClsWidget {
         return getDescriptor().isDirectlyCustomizedByUser();
     }
 
-    private boolean isSlotName(String name) {
+    private static boolean isSlotName(String name) {
         return !name.equals(PROPERTY_LAYOUT_PROPERTIES);
     }
 
@@ -650,15 +643,6 @@ public class FormWidget extends AbstractClsWidget {
             resizeWidget(c, p);
         }
         updateSize();
-    }
-
-    private void mouseDraggedOnForm(Point point) {
-        if (_resizeDirection != RESIZE_NONE) {
-            resizeWidget(this, getParentPoint(point));
-            getParent().invalidate();
-            getParent().validate();
-            getParent().repaint();
-        }
     }
 
     public void mouseDraggedOnWidget(Component c, Point p) {

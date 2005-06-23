@@ -14,7 +14,7 @@ import edu.stanford.smi.protege.model.*;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public class PropertyList {
+public class PropertyList implements Cloneable {
     public static final String CLASS_PROPERTY_LIST = "Property_List";
     private static final String CLASS_WIDGET_DESCRIPTOR = "Widget";
     private static final String CLASS_STRING = "String";

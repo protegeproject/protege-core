@@ -123,7 +123,7 @@ public class DefaultFrameFactory implements FrameFactory {
         return _kb.getSystemFrames().getFrame(id);
     }
 
-    private Class getImplementationClass(Collection directTypes, Class defaultClass) {
+    protected Class getImplementationClass(Collection directTypes, Class defaultClass) {
         Class implementationClass;
         if (_packages.isEmpty() || directTypes.size() != 1) {
             implementationClass = defaultClass;
