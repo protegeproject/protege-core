@@ -46,17 +46,29 @@ public class SlotSubslotRoot extends LazyTreeRoot {
         public void directSuperslotAdded(SlotEvent event) {
             Slot slot = event.getSlot();
             if (slot.getDirectSuperslotCount() == 1) {
-                childRemoved(slot);
+                removeChild(slot);
             }
         }
 
         public void directSuperslotRemoved(SlotEvent event) {
             Slot slot = event.getSlot();
             if (slot.getDirectSuperslotCount() == 0) {
-                childAdded(slot);
+                addChild(slot);
             }
         }
     };
+
+    private void removeChild(Slot slot) {
+        List slots = (List) getUserObject();
+        slots.remove(slot);
+        childRemoved(slot);
+    }
+
+    private void addChild(Slot slot) {
+        List slots = (List) getUserObject();
+        slots.add(slot);
+        childAdded(slot);
+    }
 
     public SlotSubslotRoot(KnowledgeBase kb) {
         this(kb, getSlots(kb));

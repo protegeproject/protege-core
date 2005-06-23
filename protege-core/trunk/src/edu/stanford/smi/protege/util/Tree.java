@@ -62,6 +62,12 @@ public class Tree implements Cloneable {
     }
 
     public void addChild(Object parent, Object child) {
+        if (parent == null) {
+            throw new IllegalArgumentException("Null parent");
+        }
+        if (child == null) {
+            throw new IllegalArgumentException("Null child");
+        }
         // Log.getLogger().info("add child: " + parent + " " + child);
         Set children = (Set) nodeToChildrenMap.get(parent);
         if (children == null) {
