@@ -103,8 +103,25 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     public void addRelation(String parent, String child) {
         NarrowFrameStore parentFs = getFrameStore(parent);
         NarrowFrameStore childFs = getFrameStore(child);
-        frameStoreTree.addChild(parentFs, childFs);
-        updateQueryableFrameStores();
+        if (parentFs == null || childFs == null) {
+            String text = "Unable to add relation between " + parent + "(" + parentFs + ")";
+            text += " and " + child + "(" + childFs + ")";
+            Log.getLogger().warning(text);
+            if (false) {
+                dumpFrameStores();
+            }
+        } else {
+            frameStoreTree.addChild(parentFs, childFs);
+            updateQueryableFrameStores();
+        }
+    }
+
+    private void dumpFrameStores() {
+        Iterator i = frameStoreTree.getNodes().iterator();
+        while (i.hasNext()) {
+            Object o = i.next();
+            Log.getLogger().info("*" + o);
+        }
     }
 
     public void addActiveFrameStore(NarrowFrameStore frameStore) {
@@ -138,7 +155,11 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         while (i.hasNext()) {
             String name = i.next().toString();
             NarrowFrameStore child = getFrameStore(name);
-            frameStoreTree.addChild(parent, child);
+            if (child == null) {
+                Log.getLogger().warning("Unable to find child FrameStore: " + name);
+            } else {
+                frameStoreTree.addChild(parent, child);
+            }
         }
         setActiveFrameStore(parent);
     }

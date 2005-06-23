@@ -659,7 +659,7 @@ public class Project {
         Iterator i = getProjectSlotValues(SLOT_INCLUDED_PROJECTS).iterator();
         while (i.hasNext()) {
             String s = (String) i.next();
-            URI uri = _uri.resolve(s);
+            URI uri = URIUtilities.resolve(_uri, s);
             uris.add(uri);
         }
         return uris;
@@ -1161,7 +1161,7 @@ public class Project {
         } else {
             // Log.enter(this, "loadIncludedProject", includedURI);
             KnowledgeBase kb = loadProjectKB(includedURI, null, errors);
-            if (kb != null) { // && errors.size() == 0) {
+            if (kb != null) { 
                 // This business allows included projects (and their domain kbs)
                 // to load from other subdirectories
                 URI oldLoadingProjectURI = _loadingProjectURI;
@@ -1183,13 +1183,13 @@ public class Project {
      * @param errors  See class note for information about this argument.
      */
     public Collection loadIncludedProjects(URI projectURI, Instance projectInstance, Collection errors) {
-        Collection uris = new ArrayList();
+        Collection uris = new LinkedHashSet();
         Iterator i = getProjectSlotValues(projectInstance, SLOT_INCLUDED_PROJECTS).iterator();
         while (i.hasNext()) {
             String name = (String) i.next();
             URI uri;
             if (_uri == null) {
-                uri = URI.create(name);
+                uri = URIUtilities.createURI(name);
             } else {
                 uri = URIUtilities.resolve(_uri, name);
             }

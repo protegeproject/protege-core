@@ -86,12 +86,6 @@ public class PropertyList implements Cloneable {
         return desc;
     }
 
-    /*
-     * private void setProperty(String name, Instance instance) { Instance
-     * property = getOrCreateProperty(name); setValue(property,
-     * SLOT_PROPERTY_VALUE, instance.getID()); }
-     */
-
     public Boolean getBoolean(String name) {
         Instance property = getProperty(name);
         return (property == null) ? (Boolean) null : (Boolean) getValue(property, SLOT_BOOLEAN_VALUE);
