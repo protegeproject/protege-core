@@ -141,7 +141,7 @@ public class URIUtilities {
         } else {
             try {
                 File file = new File(baseURI);
-                if (file.isFile()) {
+                if (!file.isDirectory()) {
                     File parent = file.getParentFile();
                     baseURI = parent.toURI();
                 }
@@ -236,6 +236,7 @@ public class URIUtilities {
                 }
             }
         }
+        uri = normalize(uri);
         return uri;
     }
 
@@ -248,7 +249,8 @@ public class URIUtilities {
         URI uri = null;
         try {
             uri = new File(s).toURI();
-        } catch (SecurityException ex) {
+            uri = normalize(uri);
+        } catch (Exception ex) {
             Log.getLogger().severe(Log.toString(ex));
         }
         return uri;
