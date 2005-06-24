@@ -161,7 +161,7 @@ public class URIUtilities {
                 try {
                     uri = new File(uri).getCanonicalFile().toURI();
                 } catch (IOException e) {
-                    Log.getLogger().info(Log.toString(e));
+                    uri = new File(uri).toURI();
                 }
             }
         }
