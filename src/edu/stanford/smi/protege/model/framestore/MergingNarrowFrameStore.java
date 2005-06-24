@@ -107,20 +107,17 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
             String text = "Unable to add relation between " + parent + "(" + parentFs + ")";
             text += " and " + child + "(" + childFs + ")";
             Log.getLogger().warning(text);
-            if (false) {
-                dumpFrameStores();
-            }
         } else {
             frameStoreTree.addChild(parentFs, childFs);
             updateQueryableFrameStores();
         }
     }
 
-    private void dumpFrameStores() {
+    public void dumpFrameStores() {
         Iterator i = frameStoreTree.getNodes().iterator();
         while (i.hasNext()) {
-            Object o = i.next();
-            Log.getLogger().info("*" + o);
+            NarrowFrameStore nfs = (NarrowFrameStore) i.next();
+            Log.getLogger().info("*" + nfs.getName() + " " + frameStoreTree.getChildren(nfs));
         }
     }
 

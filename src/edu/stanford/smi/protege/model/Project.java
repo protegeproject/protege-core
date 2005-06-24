@@ -1156,9 +1156,7 @@ public class Project {
         includedURI = URIUtilities.normalize(includedURI);
         boolean alreadyIncluded = isAlreadyIncluded(includedURI);
         projectURITree.addChild(includingURI, includedURI);
-        if (alreadyIncluded) {
-            getMergingFrameStore().addRelation(includingURI.toString(), includedURI.toString());
-        } else {
+        if (!alreadyIncluded) {
             // Log.enter(this, "loadIncludedProject", includedURI);
             KnowledgeBase kb = loadProjectKB(includedURI, null, errors);
             if (kb != null) { 
