@@ -166,12 +166,18 @@ public class DatabaseKnowledgeBaseSourcesEditor extends KnowledgeBaseSourcesEdit
 
     private boolean confirmOverwriteIfNecessary(Connection c) {
         boolean canCreate = true;
-        if (tableExists(c, _tableNameComponent.getText())) {
+        String tableName = _tableNameComponent.getText();
+        if (newTable(tableName) && tableExists(c, tableName)) {
             String text = "Table already exists.  Overwrite it?";
             int rval = ModalDialog.showMessageDialog(this, text, ModalDialog.MODE_YES_NO);
             canCreate = rval == ModalDialog.OPTION_YES;
         }
         return canCreate;
+    }
+
+    private boolean newTable(String tableName) {
+        String existingTableName = DatabaseKnowledgeBaseFactory.getTableName(getSources());
+        return !tableName.equals(existingTableName);
     }
 
     private static boolean tableExists(Connection connection, String tableName) {
