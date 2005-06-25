@@ -74,23 +74,23 @@ public abstract class AbstractTabWidget extends AbstractWidget implements TabWid
         return _icon;
     }
 
-    protected static JMenuBar getMainWindowMenuBar() {
+    protected JMenuBar getMainWindowMenuBar() {
         return ProjectManager.getProjectManager().getCurrentProjectMenuBar();
     }
 
-    protected static JToolBar getMainWindowToolBar() {
+    protected JToolBar getMainWindowToolBar() {
         return ProjectManager.getProjectManager().getCurrentProjectMainToolBar();
     }
 
-    protected static JToolBar getUserToolBar(String name) {
+    protected JToolBar getUserToolBar(String name) {
         return ProjectManager.getProjectManager().getUserToolBar(name);
     }
 
-    protected static void addUserToolBar(JToolBar toolBar) {
+    protected void addUserToolBar(JToolBar toolBar) {
         ProjectManager.getProjectManager().addUserToolBar(toolBar);
     }
 
-    protected static void removeUserToolBar(JToolBar toolBar) {
+    protected void removeUserToolBar(JToolBar toolBar) {
         ProjectManager.getProjectManager().removeUserToolBar(toolBar);
     }
 
