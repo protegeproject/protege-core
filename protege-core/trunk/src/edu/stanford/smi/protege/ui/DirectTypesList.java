@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.ui;
 
 import java.awt.*;
+import java.awt.datatransfer.*;
 import java.util.*;
 
 import javax.swing.*;
@@ -45,7 +46,42 @@ public class DirectTypesList extends SelectableContainer {
         setLayout(new BorderLayout());
         add(c);
         setPreferredSize(new Dimension(0, 100));
+
+        list.setDragEnabled(true);
+        list.setTransferHandler(new FrameTransferHandler());
     }
+
+    private class FrameTransferHandler extends TransferHandler {
+        protected Transferable createTransferable(JComponent c) {
+            Collection collection = getSelection();
+            return collection.isEmpty() ? null : new TransferableCollection(collection);
+        }
+
+        public boolean canImport(JComponent c, DataFlavor[] flavors) {
+            return true;
+        }
+
+        public boolean importData(JComponent component, Transferable data) {
+            return true;
+        }
+
+        protected void exportDone(JComponent source, Transferable data, int action) {
+            if (action == MOVE) {
+                Iterator i = getSelection().iterator();
+                while (i.hasNext()) {
+                    Cls type = (Cls) i.next();
+                    int index = 0;
+                    Log.getLogger().info("Move to: " + index);
+                    instance.moveDirectType(type, index);
+                    updateModel();
+                }
+            }
+        }
+
+        public int getSourceActions(JComponent c) {
+            return MOVE;
+        }
+    };
 
     public void setInstance(Instance newInstance) {
         if (instance != null) {

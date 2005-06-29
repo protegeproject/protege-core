@@ -41,4 +41,6 @@ public interface Instance extends Frame {
     void addDirectType(Cls cls);
 
     void removeDirectType(Cls cls);
+
+    void moveDirectType(Cls cls, int index);
 }

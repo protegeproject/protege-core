@@ -208,6 +208,10 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         execute(new RemoveDirectTypeCommand(getDelegate(), type, instance));
     }
 
+    public void moveDirectType(Instance instance, Cls type, int index) {
+        execute(new MoveDirectTypeCommand(getDelegate(), instance, type, index));
+    }
+
     public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
         execute(new RemoveDirectTemplateFacetOverridesCommand(getDelegate(), cls, slot));
     }

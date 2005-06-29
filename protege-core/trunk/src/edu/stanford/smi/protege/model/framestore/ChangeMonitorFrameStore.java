@@ -151,6 +151,11 @@ public class ChangeMonitorFrameStore extends ModificationFrameStore {
         getDelegate().removeDirectType(instance, type);
     }
 
+    public void moveDirectType(Instance instance, Cls type, int index) {
+        markChanged();
+        getDelegate().moveDirectType(instance, type, index);
+    }
+
     public boolean beginTransaction(String name) {
         return getDelegate().beginTransaction(name);
     }

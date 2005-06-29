@@ -160,6 +160,8 @@ public interface RemoteServerFrameStore extends Remote {
 
     void removeDirectType(Instance instance, Cls type, RemoteSession session) throws RemoteException;
 
+    void moveDirectType(Instance instance, Cls type, int index, RemoteSession session) throws RemoteException;
+
     // events
     List getEvents(RemoteSession session) throws RemoteException;
 

@@ -437,6 +437,11 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         generateOwnSlotValuesChangedEvent(instance, type, _systemFrames.getDirectTypesSlot());
     }
 
+    public void moveDirectType(Instance instance, Cls cls, int index) {
+        getDelegate().moveDirectType(instance, cls, index);
+        generateOwnSlotValuesChangedEvent(instance, _systemFrames.getDirectTypesSlot());
+    }
+
     public void addDirectTemplateSlot(Cls cls, Slot slot) {
         getDelegate().addDirectTemplateSlot(cls, slot);
         generateClsEvent(ClsEvent.TEMPLATE_SLOT_ADDED, cls, slot);

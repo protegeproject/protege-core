@@ -34,6 +34,10 @@ public abstract class AbstractTableWidget extends AbstractSlotWidget {
         }
     }
 
+    protected boolean hasButton(Icon icon) {
+        return _labeledComponent.hasHeaderButton(icon);
+    }
+
     public void addColumn(int width, ResourceKey key, TableCellRenderer renderer) {
         TableColumn column = new TableColumn(0, width, renderer, null);
         String name = LocalizedText.getText(key);

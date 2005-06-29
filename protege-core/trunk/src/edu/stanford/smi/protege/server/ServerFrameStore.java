@@ -413,6 +413,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         markDirty();
     }
 
+    public synchronized void moveDirectType(Instance instance, Cls cls, int index, RemoteSession session) {
+        recordCall(session);
+        getDelegate().moveDirectType(instance, cls, index);
+        markDirty();
+    }
+
     public synchronized List getDirectSuperslots(Slot slot, RemoteSession session) {
         recordCall(session);
         return getDelegate().getDirectSuperslots(slot);

@@ -421,6 +421,12 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         getDelegate().removeDirectType(instance, type);
     }
 
+    public void moveDirectType(Instance instance, Cls type, int index) {
+        checkInstance(instance);
+        checkCls(type);
+        getDelegate().moveDirectType(instance, type, index);
+    }
+
     public Set executeQuery(Query query) {
         return getDelegate().executeQuery(query);
     }

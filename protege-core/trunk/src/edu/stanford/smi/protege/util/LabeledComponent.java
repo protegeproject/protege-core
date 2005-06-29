@@ -138,6 +138,19 @@ public class LabeledComponent extends JComponent {
         return buttons;
     }
 
+    public boolean hasHeaderButton(Icon icon) {
+        boolean hasHeaderButton = false;
+        Iterator i = getHeaderButtons().iterator();
+        while (i.hasNext()) {
+            AbstractButton button = (AbstractButton) i.next();
+            if (button.getIcon().equals(icon)) {
+                hasHeaderButton = true;
+                break;
+            }
+        }
+        return hasHeaderButton;
+    }
+
     public Component getHeaderComponent() {
         int count = _headerComponentHolder.getComponentCount();
         return (count == 0) ? (Component) null : _headerComponentHolder.getComponent(0);
