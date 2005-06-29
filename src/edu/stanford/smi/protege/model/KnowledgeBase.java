@@ -617,7 +617,8 @@ public interface KnowledgeBase extends Disposable {
     // 
     void addDirectType(Instance instance, Cls directType);
     void removeDirectType(Instance instance, Cls directType);
-    
+    void moveDirectType(Instance instance, Cls directType, int index);
+   
     CommandManager getCommandManager();
     
     void setFrameNameValidator(FrameNameValidator validator);

@@ -565,6 +565,11 @@ public class SimpleFrameStore implements FrameStore {
         swizzleInstance(instance);
     }
 
+    public void moveDirectType(Instance instance, Cls type, int index) {
+        int from = getDirectTypes(instance).indexOf(type);
+        moveDirectOwnSlotValue(instance, _systemFrames.getDirectTypesSlot(), from, index);
+    }
+
     public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
         int from = getDirectSubclasses(cls).indexOf(subclass);
         moveDirectOwnSlotValue(cls, _systemFrames.getDirectSubclassesSlot(), from, index);

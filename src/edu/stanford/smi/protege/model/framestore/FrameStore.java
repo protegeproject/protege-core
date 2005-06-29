@@ -175,6 +175,8 @@ public interface FrameStore {
 
     void removeDirectType(Instance instance, Cls type);
 
+    void moveDirectType(Instance instance, Cls type, int index);
+
     // events
     List getEvents();
 

@@ -21,9 +21,7 @@ import edu.stanford.smi.protege.util.*;
 public abstract class Finder extends JComponent {
     private static List searchedForStrings = new ArrayList();
     private JComboBox _comboBox;
-    private Action _findAction;
-    private long actionTime;
-    private static final long DELAY = 1000; // one second
+    private Action _findButtonAction;
     private static final int MAX_MATCHES;
     private static final int DEFAULT_MAX_MATCHES = 100;
 
@@ -36,42 +34,19 @@ public abstract class Finder extends JComponent {
         this(description, Icons.getFindIcon());
     }
 
-    /* 
-     * Remove events that come too close together in time.
-     */
-    private boolean isFindAction(ActionEvent event) {
-        long lastTime = actionTime;
-        actionTime = event.getWhen();
-        return (actionTime - lastTime) > DELAY && !_comboBox.isPopupVisible();
-    }
-
     protected Finder(String description, Icon icon) {
-        _findAction = new StandardAction(description, icon) {
+        _findButtonAction = new StandardAction(description, icon) {
             public void actionPerformed(ActionEvent e) {
-                handleActionEvent(e);
+                doFind();
             }
         };
         initialize();
     }
 
-    private void handleActionEvent(ActionEvent event) {
-        if (isFindAction(event)) {
-            /*
-             * This is a real hack to make the duplicated events that show up sometimes
-             * happen close enough together in time that they can be removed.
-             */
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    doFind();
-                }
-            });
-        }
-    }
-
     protected Finder(ResourceKey key) {
-        _findAction = new StandardAction(key) {
+        _findButtonAction = new StandardAction(key) {
             public void actionPerformed(ActionEvent e) {
-                handleActionEvent(e);
+                doFind();
             }
         };
         initialize();
@@ -86,14 +61,30 @@ public abstract class Finder extends JComponent {
 
     private JComponent createFindButton() {
         JToolBar toolBar = ComponentFactory.createToolBar();
-        ComponentFactory.addToolBarButton(toolBar, _findAction);
+        ComponentFactory.addToolBarButton(toolBar, _findButtonAction);
         return toolBar;
     }
 
     private JComponent createTextField() {
         _comboBox = ComponentFactory.createComboBox();
         _comboBox.setEditable(true);
-        _comboBox.addActionListener(_findAction);
+        _comboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                String command = event.getActionCommand();
+                int modifiers = event.getModifiers();
+                if (command.equals("comboBoxChanged") && (modifiers & InputEvent.BUTTON1_MASK) != 0) {
+                    doFind();
+                }
+
+            }
+        });
+        _comboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == KeyEvent.VK_ENTER) {
+                    doFind();
+                }
+            }
+        });
         _comboBox.addPopupMenuListener(createPopupMenuListener());
         return _comboBox;
     }
@@ -122,6 +113,7 @@ public abstract class Finder extends JComponent {
     }
 
     private void doFind() {
+        Log.getLogger().info("doFind");
         String text = (String) _comboBox.getSelectedItem();
         if (text != null && text.length() != 0) {
             List matches = getMatches(text, MAX_MATCHES);

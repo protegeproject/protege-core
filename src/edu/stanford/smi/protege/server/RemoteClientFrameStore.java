@@ -724,6 +724,15 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
+    public void moveDirectType(Instance instance, Cls type, int index) {
+        try {
+            moveCacheOwnSlotValue(instance, getSystemFrames().getDirectTypesSlot(), type, index);
+            getRemoteDelegate().moveDirectType(instance, type, index, session);
+        } catch (RemoteException e) {
+            throw convertException(e);
+        }
+    }
+
     public List getEvents() {
         try {
             List events = getRemoteDelegate().getEvents(session);

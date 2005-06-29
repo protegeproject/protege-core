@@ -1128,6 +1128,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         getHeadFrameStore().removeDirectType(instance, directType);
     }
 
+    public synchronized void moveDirectType(Instance instance, Cls directType, int index) {
+        getHeadFrameStore().moveDirectType(instance, directType, index);
+    }
+
     public synchronized void addDirectTemplateSlot(Cls cls, Slot slot) {
         getHeadFrameStore().addDirectTemplateSlot(cls, slot);
     }

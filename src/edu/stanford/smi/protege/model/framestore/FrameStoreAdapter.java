@@ -297,6 +297,10 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().addDirectType(instance, type);
     }
 
+    public void moveDirectType(Instance instance, Cls type, int index) {
+        getDelegate().moveDirectType(instance, type, index);
+    }
+
     public List getDirectSuperslots(Slot slot) {
         return getDelegate().getDirectSuperslots(slot);
     }

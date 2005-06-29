@@ -574,6 +574,11 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         dispatchEvents();
     }
 
+    public void moveDirectType(Instance instance, Cls type, int index) {
+        getDelegate().moveDirectType(instance, type, index);
+        dispatchEvents();
+    }
+
     public void removeDirectSuperclass(Cls cls, Cls superclass) {
         getDelegate().removeDirectSuperclass(cls, superclass);
         dispatchEvents();

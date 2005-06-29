@@ -94,15 +94,19 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         }
     }
 
+    private boolean isSorting() {
+        return !hasButton(Icons.getUpIcon());
+    }
+
     protected void addTemplateSlots(Collection slots, Cls cls) {
-        // addDirectTemplateSlots(slots, cls);
-        // addInheritedTemplateSlots(slots, cls);
         List templateSlots = new ArrayList(cls.getVisibleTemplateSlots());
-        Collections.sort(templateSlots);
+        if (isSorting()) {
+            Collections.sort(templateSlots);
+        }
         slots.addAll(templateSlots);
     }
 
-    private void addDirectTemplateSlots(Collection slots, Cls cls) {
+    private static void addDirectTemplateSlots(Collection slots, Cls cls) {
         Iterator i = getDirectTemplateSlots(cls).iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();
@@ -112,7 +116,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         }
     }
 
-    private Collection getDirectTemplateSlots(Cls cls) {
+    private static Collection getDirectTemplateSlots(Cls cls) {
         return cls.getDirectTemplateSlots();
         // return cls.getOwnSlotValues(getSlot());
     }
@@ -315,7 +319,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         }
     }
 
-    private void handleRemoveCombination(FrameSlotCombination combination) {
+    private static void handleRemoveCombination(FrameSlotCombination combination) {
         Cls cls = (Cls) combination.getFrame();
         Slot slot = combination.getSlot();
         cls.removeDirectTemplateSlot(slot);
@@ -341,7 +345,6 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
     protected List getSlots(Cls cls) {
         List slots = new ArrayList();
         addTemplateSlots(slots, cls);
-
         return slots;
     }
 
