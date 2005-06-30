@@ -104,15 +104,18 @@ public class FormWidget extends AbstractClsWidget {
     };
     private ClsListener _clsListener = new ClsAdapter() {
         public void templateSlotAdded(ClsEvent event) {
-            addWidget(event.getSlot());
+            // addWidget(event.getSlot());
+            reload();
         }
 
         public void templateSlotRemoved(ClsEvent event) {
-            removeWidget(event.getSlot());
+            // removeWidget(event.getSlot());
+            reload();
         }
 
         public void templateFacetValueChanged(ClsEvent event) {
-            updateWidget(event.getSlot());
+            // updateWidget(event.getSlot());
+            reload();
         }
     };
 
@@ -130,11 +133,11 @@ public class FormWidget extends AbstractClsWidget {
         }
     };
 
-    private void addWidget(Slot slot) {
-        int count = getCustomizedComponentCount();
-        createWidget(slot);
-        layoutWidgets(count);
-    }
+//    private void addWidget(Slot slot) {
+//        int count = getCustomizedComponentCount();
+//        createWidget(slot);
+//        layoutWidgets(count);
+//    }
 
     private static void adjustEast(Rectangle r, Point p) {
         r.width -= r.x + r.width - p.x;
@@ -268,7 +271,7 @@ public class FormWidget extends AbstractClsWidget {
         if (isDesignTime()) {
             removeMouseListener(_formMouseListener);
             removeMouseMotionListener(_formMouseMotionListener);
-            getCls().removeClsListener(_clsListener);
+            removeClsListener(getCls(), _clsListener);
         }
     }
 
@@ -548,10 +551,37 @@ public class FormWidget extends AbstractClsWidget {
         if (isDesignTime()) {
             addMouseListener(_formMouseListener);
             addMouseMotionListener(_formMouseMotionListener);
-            getCls().addClsListener(_clsListener);
+            addClsListener(getCls(), _clsListener);
         } else {
             setLayout(new ResizingLayout());
         }
+    }
+
+    private static void addClsListener(Cls cls, ClsListener clsListener) {
+        cls.addClsListener(clsListener);
+        Iterator i = cls.getSuperclasses().iterator();
+        while (i.hasNext()) {
+            Cls superclass = (Cls) i.next();
+            superclass.addClsListener(clsListener);
+        }
+    }
+
+    private static void removeClsListener(Cls cls, ClsListener clsListener) {
+        cls.removeClsListener(clsListener);
+        Iterator i = cls.getSuperclasses().iterator();
+        while (i.hasNext()) {
+            Cls superclass = (Cls) i.next();
+            superclass.removeClsListener(clsListener);
+        }
+    }
+
+    public void reload() {
+        Component[] components = getComponents();
+        removeAll();
+        for (int i = 0; i < components.length; ++i) {
+            ComponentUtilities.dispose(components[i]);
+        }
+        initializeWidgets();
     }
 
     private void initializeStretching() {
@@ -786,25 +816,25 @@ public class FormWidget extends AbstractClsWidget {
         widget.dispose();
     }
 
-    private void removeWidget(Slot slot) {
-        int startIndex = getCustomizedComponentCount();
-        int nComponents = getComponentCount();
-        for (int i = 0; i < nComponents; ++i) {
-            Component c = getComponent(i);
-            if (c instanceof Widget) {
-                SlotWidget w = (SlotWidget) c;
-                if (equals(w.getSlot(), slot)) {
-                    removeSlotWidget(w);
-                    break;
-                }
-            }
-        }
-        String name = slot.getName();
-        if (name != null) {
-            getPropertyList().remove(name);
-        }
-        layoutWidgets(startIndex);
-    }
+    //    private void removeWidget(Slot slot) {
+    //        int startIndex = getCustomizedComponentCount();
+    //        int nComponents = getComponentCount();
+    //        for (int i = 0; i < nComponents; ++i) {
+    //            Component c = getComponent(i);
+    //            if (c instanceof Widget) {
+    //                SlotWidget w = (SlotWidget) c;
+    //                if (equals(w.getSlot(), slot)) {
+    //                    removeSlotWidget(w);
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //        String name = slot.getName();
+    //        if (name != null) {
+    //            getPropertyList().remove(name);
+    //        }
+    //        layoutWidgets(startIndex);
+    //    }
 
     public void removeWidgetDescriptor(String slotName) {
         getPropertyList().remove(slotName);
