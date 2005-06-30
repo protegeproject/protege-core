@@ -22,6 +22,7 @@ public class ClsesAndInstancesTab extends AbstractTabWidget {
     private InstanceDisplay _instanceDisplay;
     private ClsesPanel _clsesPanel;
     private DirectInstancesList _directInstancesList;
+    private DirectTypesList _directTypesList;
     // private SelectableList _clsList;
     private ClsInverseRelationshipPanel _inverseRelationshipPanel;
     private boolean _isUpdating;
@@ -92,8 +93,8 @@ public class ClsesAndInstancesTab extends AbstractTabWidget {
                     } else {
                         selectedInstance = null;
                     }
-                    // _clsList.clearSelection();
                     _instanceDisplay.setInstance(selectedInstance);
+                    _directTypesList.setInstance(selectedInstance);
                     _isUpdating = false;
                 }
             }
@@ -108,14 +109,15 @@ public class ClsesAndInstancesTab extends AbstractTabWidget {
     }
 
     private JComponent createInstancesPanel() {
-        /*
-         JPanel panel = ComponentFactory.createPanel();
-         panel.setLayout(new BorderLayout(10, 10));
-         panel.add(createClsDisplay(), BorderLayout.NORTH);
-         panel.add(createDirectInstancesList(), BorderLayout.CENTER);
-         return panel;
-         */
-        return createDirectInstancesList();
+        JSplitPane panel = ComponentFactory.createTopBottomSplitPane();
+        panel.setTopComponent(createDirectInstancesList());
+        panel.setBottomComponent(createDirectTypesList());
+        return panel;
+    }
+
+    protected JComponent createDirectTypesList() {
+        _directTypesList = new DirectTypesList(getProject());
+        return _directTypesList;
     }
 
     private JComponent createInstanceSplitter() {
