@@ -71,7 +71,7 @@ public class DirectTypesList extends SelectableContainer {
                 while (i.hasNext()) {
                     Cls type = (Cls) i.next();
                     int index = 0;
-                    Log.getLogger().info("Move to: " + index);
+                    Log.getLogger().info("Move " + type + " to: " + index);
                     instance.moveDirectType(type, index);
                     updateModel();
                 }

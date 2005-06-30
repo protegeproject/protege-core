@@ -47,12 +47,22 @@ public abstract class DefaultInstance extends DefaultFrame implements Instance {
         Instance copy = (Instance) valueMap.get(this);
         if (copy == null) {
             String name = null;
-            Cls copyCls = (Cls) valueMap.get(getDirectType());
-            Assert.assertNotNull("copy class", copyCls);
-            copy = targetKB.createInstance(name, copyCls);
+            Collection copyTypes = getCopyTypes(valueMap);
+            copy = targetKB.createInstance(name, copyTypes);
             valueMap.put(this, copy);
         }
         return super.copy(targetKB, valueMap, isDeep);
+    }
+
+    private Collection getCopyTypes(Map valueMap) {
+        Collection copyTypes = new ArrayList();
+        Iterator i = getDirectTypes().iterator();
+        while (i.hasNext()) {
+            Cls type = (Cls) i.next();
+            Cls copyType = (Cls) valueMap.get(type);
+            copyTypes.add(copyType);
+        }
+        return copyTypes;
     }
 
     public String getBrowserText() {
