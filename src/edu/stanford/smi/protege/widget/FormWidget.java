@@ -105,19 +105,33 @@ public class FormWidget extends AbstractClsWidget {
     private ClsListener _clsListener = new ClsAdapter() {
         public void templateSlotAdded(ClsEvent event) {
             // addWidget(event.getSlot());
-            reload();
+            if (canChangeThisClass(event.getCls())) {
+                reload();
+                Log.getLogger().info("templateSlotAdded: " + event + " on " + this);
+            }
         }
 
         public void templateSlotRemoved(ClsEvent event) {
             // removeWidget(event.getSlot());
-            reload();
+            if (canChangeThisClass(event.getCls())) {
+                reload();
+                Log.getLogger().info("templateSlotRemoved: " + event + " on " + this);
+            }
         }
 
         public void templateFacetValueChanged(ClsEvent event) {
             // updateWidget(event.getSlot());
-            reload();
+            if (canChangeThisClass(event.getCls())) {
+                reload();
+                Log.getLogger().info("templateFacetValueChanged: " + event + " on " + this);
+            }
         }
     };
+
+    private boolean canChangeThisClass(Cls cls) {
+        Cls currentCls = getCls();
+        return currentCls.equals(cls) || currentCls.hasSuperclass(cls);
+    }
 
     private KnowledgeBaseListener _kbListener = new KnowledgeBaseAdapter() {
         public void frameNameChanged(KnowledgeBaseEvent event) {
@@ -133,11 +147,11 @@ public class FormWidget extends AbstractClsWidget {
         }
     };
 
-//    private void addWidget(Slot slot) {
-//        int count = getCustomizedComponentCount();
-//        createWidget(slot);
-//        layoutWidgets(count);
-//    }
+    //    private void addWidget(Slot slot) {
+    //        int count = getCustomizedComponentCount();
+    //        createWidget(slot);
+    //        layoutWidgets(count);
+    //    }
 
     private static void adjustEast(Rectangle r, Point p) {
         r.width -= r.x + r.width - p.x;
@@ -271,7 +285,7 @@ public class FormWidget extends AbstractClsWidget {
         if (isDesignTime()) {
             removeMouseListener(_formMouseListener);
             removeMouseMotionListener(_formMouseMotionListener);
-            removeClsListener(getCls(), _clsListener);
+            getKnowledgeBase().removeClsListener(_clsListener);
         }
     }
 
@@ -551,31 +565,16 @@ public class FormWidget extends AbstractClsWidget {
         if (isDesignTime()) {
             addMouseListener(_formMouseListener);
             addMouseMotionListener(_formMouseMotionListener);
-            addClsListener(getCls(), _clsListener);
+            getKnowledgeBase().addClsListener(_clsListener);
         } else {
             setLayout(new ResizingLayout());
         }
     }
 
-    private static void addClsListener(Cls cls, ClsListener clsListener) {
-        cls.addClsListener(clsListener);
-        Iterator i = cls.getSuperclasses().iterator();
-        while (i.hasNext()) {
-            Cls superclass = (Cls) i.next();
-            superclass.addClsListener(clsListener);
-        }
-    }
-
-    private static void removeClsListener(Cls cls, ClsListener clsListener) {
-        cls.removeClsListener(clsListener);
-        Iterator i = cls.getSuperclasses().iterator();
-        while (i.hasNext()) {
-            Cls superclass = (Cls) i.next();
-            superclass.removeClsListener(clsListener);
-        }
-    }
+    // private int reloadCount = 0;
 
     public void reload() {
+        // Log.getLogger().info("reload " + ++reloadCount);
         Component[] components = getComponents();
         removeAll();
         for (int i = 0; i < components.length; ++i) {
