@@ -107,7 +107,7 @@ public class FormWidget extends AbstractClsWidget {
             // addWidget(event.getSlot());
             if (canChangeThisClass(event.getCls())) {
                 reload();
-                Log.getLogger().info("templateSlotAdded: " + event + " on " + this);
+                // Log.getLogger().info("templateSlotAdded: " + event + " on " + this);
             }
         }
 
@@ -115,7 +115,7 @@ public class FormWidget extends AbstractClsWidget {
             // removeWidget(event.getSlot());
             if (canChangeThisClass(event.getCls())) {
                 reload();
-                Log.getLogger().info("templateSlotRemoved: " + event + " on " + this);
+                // Log.getLogger().info("templateSlotRemoved: " + event + " on " + this);
             }
         }
 
@@ -123,7 +123,7 @@ public class FormWidget extends AbstractClsWidget {
             // updateWidget(event.getSlot());
             if (canChangeThisClass(event.getCls())) {
                 reload();
-                Log.getLogger().info("templateFacetValueChanged: " + event + " on " + this);
+                // Log.getLogger().info("templateFacetValueChanged: " + event + " on " + this);
             }
         }
     };

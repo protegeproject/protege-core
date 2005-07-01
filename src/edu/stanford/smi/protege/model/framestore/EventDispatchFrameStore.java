@@ -214,6 +214,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             Iterator i = slot.getDirectDomain().iterator();
             if (i.hasNext()) {
                 Cls cls = (Cls) i.next();
+                // Log.getLogger().info("** dispatch frame event as cls facet event: " + event + " " + facet);
                 ClsEvent clsEvent = new ClsEvent(cls, ClsEvent.TEMPLATE_FACET_VALUE_CHANGED, slot, facet);
                 dispatchClsEvent(clsEvent);
                 dispatchClsEventToSubclasses(clsEvent);
