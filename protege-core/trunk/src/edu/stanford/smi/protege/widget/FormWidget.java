@@ -310,7 +310,9 @@ public class FormWidget extends AbstractClsWidget {
                 Point p = c.getLocation();
                 if (p.x == 0 && p.y == 0) {
                     if (topLeftAlreadyPresent) {
-                        Log.getLogger().warning("moving hidden widget: " + c);
+                        if (false) {
+                            Log.getLogger().warning("moving hidden widget: " + c);
+                        }
                         // just move it to the end
                         c.setLocation(0, getPreferredSize().height);
                         revalidate();
@@ -583,7 +585,7 @@ public class FormWidget extends AbstractClsWidget {
     }
 
     public void reload() {
-        Log.getLogger().info("reload " + this);
+        // Log.getLogger().info("reload " + this);
         Component[] components = getComponents();
         removeAll();
         for (int i = 0; i < components.length; ++i) {
