@@ -106,7 +106,7 @@ public class FormWidget extends AbstractClsWidget {
         public void templateSlotAdded(ClsEvent event) {
             // addWidget(event.getSlot());
             if (canChangeThisClass(event.getCls())) {
-                reload();
+                onTemplateSlotAdded(event.getCls(), event.getSlot());
                 // Log.getLogger().info("templateSlotAdded: " + event + " on " + this);
             }
         }
@@ -114,7 +114,7 @@ public class FormWidget extends AbstractClsWidget {
         public void templateSlotRemoved(ClsEvent event) {
             // removeWidget(event.getSlot());
             if (canChangeThisClass(event.getCls())) {
-                reload();
+                onTemplateSlotRemoved(event.getCls(), event.getSlot());
                 // Log.getLogger().info("templateSlotRemoved: " + event + " on " + this);
             }
         }
@@ -122,11 +122,22 @@ public class FormWidget extends AbstractClsWidget {
         public void templateFacetValueChanged(ClsEvent event) {
             // updateWidget(event.getSlot());
             if (canChangeThisClass(event.getCls())) {
-                reload();
-                // Log.getLogger().info("templateFacetValueChanged: " + event + " on " + this);
+                onTemplateFacetValueChanged(event.getCls(), event.getSlot(), event.getFacet());
             }
         }
     };
+    
+    protected void onTemplateSlotAdded(Cls cls, Slot slot) {
+        reload();
+    }
+    
+    protected void onTemplateSlotRemoved(Cls cls, Slot slot) {
+        reload();
+    }
+    
+    protected void onTemplateFacetValueChanged(Cls cls, Slot slot, Facet facet) {
+        reload();
+    }
 
     private boolean canChangeThisClass(Cls cls) {
         Cls currentCls = getCls();
@@ -571,10 +582,8 @@ public class FormWidget extends AbstractClsWidget {
         }
     }
 
-    // private int reloadCount = 0;
-
     public void reload() {
-        // Log.getLogger().info("reload " + ++reloadCount);
+        Log.getLogger().info("reload " + this);
         Component[] components = getComponents();
         removeAll();
         for (int i = 0; i < components.length; ++i) {
