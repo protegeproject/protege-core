@@ -1315,6 +1315,7 @@ public class Project {
                         d.setIncluded(true);
                     }
                     d.setDirectlyCustomizedByUser(true);
+                    // Log.getLogger().info("**" + cls + " " + d.getWidgetClassName());
                     // be careful not to overwrite widgets on an "include"
                     // command.
                     WidgetDescriptor existingDescriptor = (WidgetDescriptor) _activeClsWidgetDescriptors
