@@ -42,7 +42,7 @@ class SymbolValuesComponent extends AbstractValuesComponent implements Selectabl
             public void onCreate() {
                 String s = DisplayUtilities.editString(_list, "Create Symbol", null, new SymbolValidator());
                 if (s != null && s.length() > 0) {
-                    ComponentUtilities.addSelectedListValue(_list, s);
+                    ComponentUtilities.addUniqueListValues(_list, CollectionUtilities.createCollection(s));
                     valueChanged();
                 }
             }
