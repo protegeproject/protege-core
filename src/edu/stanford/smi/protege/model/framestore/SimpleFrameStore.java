@@ -976,8 +976,8 @@ public class SimpleFrameStore implements FrameStore {
         if (name == null || (frameWithName != null && !frameWithName.equals(frame))) {
             throw new IllegalArgumentException("Duplicate frame name: " + name);
         }
-        setDirectOwnSlotValue(frame, _systemFrames.getNameSlot(), name);
         nameToFrameMap.remove(getFrameName(frame));
+        setDirectOwnSlotValue(frame, _systemFrames.getNameSlot(), name);
         nameToFrameMap.put(name, frame);
     }
 
