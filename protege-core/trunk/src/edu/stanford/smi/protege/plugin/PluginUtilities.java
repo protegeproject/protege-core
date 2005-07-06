@@ -117,7 +117,7 @@ public class PluginUtilities {
         } catch (Throwable e) {
             Log.getLogger().warning(e.getMessage());
         }
-        Thread.currentThread().setContextClassLoader(oldLoader);
+        setContextClassLoader(oldLoader);
         return clas;
     }
 
