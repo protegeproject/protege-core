@@ -38,7 +38,8 @@ public class InverseSlotWidget extends AbstractSlotWidget {
                 slotName += "_";
             }
             Collection inverseSuperslots = getSuperslotInverses(forwardSlot);
-            inverseSlot = getKnowledgeBase().createSlot(slotName, null, inverseSuperslots, true);
+            Cls metaSlot = getKnowledgeBase().getDefaultSlotMetaCls();
+            inverseSlot = getKnowledgeBase().createSlot(slotName, metaSlot, inverseSuperslots, true);
             Collection range = forwardSlot.getAllowedClses();
             Collection domain = forwardSlot.getDirectDomain();
             inverseSlot.setAllowedClses(domain);
