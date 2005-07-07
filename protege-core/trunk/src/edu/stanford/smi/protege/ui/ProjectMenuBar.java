@@ -17,7 +17,7 @@ import edu.stanford.smi.protege.util.*;
 
 /**
  * The main menu bar for the application.
- * 
+ *
  * @author Ray Fergerson
  */
 public class ProjectMenuBar extends JMenuBar {
@@ -158,7 +158,6 @@ public class ProjectMenuBar extends JMenuBar {
             menu.addSeparator();
             ComponentFactory.addSubmenu(menu, createExportSubmenu());
             createItem(menu, new ChangeProjectStorageFormat());
-            createItem(menu, "edu.stanford.smi.protegex.htmldoc.GenerateHtml");
         }
 
         menu.addSeparator();
