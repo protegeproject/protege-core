@@ -196,7 +196,7 @@ public abstract class LazyTreeNode implements TreeNode {
     }
 
     public boolean isLeaf() {
-        if (isDuplicate) {
+        if (isDuplicate()) {
             return true;
         }
         ensureChildCountLoaded();
