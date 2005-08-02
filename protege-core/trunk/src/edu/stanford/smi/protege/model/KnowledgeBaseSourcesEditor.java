@@ -61,6 +61,7 @@ public abstract class KnowledgeBaseSourcesEditor extends JComponent implements V
                 _oldProjectPath = newProjectPath;
             }
         });
+        _projectPathField.setDialogType(JFileChooser.SAVE_DIALOG);
         return _projectPathField;
     }
 
