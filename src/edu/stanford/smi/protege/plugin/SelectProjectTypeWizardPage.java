@@ -100,9 +100,9 @@ public class SelectProjectTypeWizardPage extends WizardPage {
     }
 
     public void onFinish() {
-        plugin.setKnowledgeBaseFactory(getSelectedFactory());
-        plugin.setUseExistingSources(getUseExistingSources());
         if (plugin != null) {
+            plugin.setKnowledgeBaseFactory(getSelectedFactory());
+            plugin.setUseExistingSources(getUseExistingSources());
             getCreateProjectWizard().setPlugin(plugin);
         }
     }
@@ -117,7 +117,7 @@ public class SelectProjectTypeWizardPage extends WizardPage {
             page = plugin.createCreateProjectWizardPage(getCreateProjectWizard(), getUseExistingSources());
         } else {
             plugin = null;
-            // page = new PickImportPluginPage(plugins);
+            page = new PickCreateProjectPluginPage(plugins, getSelectedFactory(), getWizard());
         }
         return page;
     }
@@ -134,6 +134,50 @@ public class SelectProjectTypeWizardPage extends WizardPage {
             }
         }
         return appropriatePlugins;
+    }
+}
+
+class PickCreateProjectPluginPage extends WizardPage {
+    private SelectableList list;
+    private KnowledgeBaseFactory factory;
+    
+    PickCreateProjectPluginPage(Collection plugins, KnowledgeBaseFactory factory, Wizard wizard) {
+        super("pick plugin", wizard);
+        createList(plugins);
+        add(new LabeledComponent("Existing Source Type", ComponentFactory.createScrollPane(list)));
+        list.setCellRenderer(new CreateProjectPluginRenderer());
+    }
+    
+    private JList createList(Collection plugins) {
+        list = ComponentFactory.createSelectableList(null);
+        ComponentUtilities.setListValues(list, plugins);
+        list.setSelectedIndex(0);
+        list.addSelectionListener(new SelectionListener() {
+            public void selectionChanged(SelectionEvent event) {
+                updateNextPage();
+            }
+        });
+        return list;
+    }
+    
+    public void onFinish() {
+        CreateProjectPlugin plugin = (CreateProjectPlugin) list.getSelectedValue();
+        plugin.setKnowledgeBaseFactory(factory);
+        plugin.setUseExistingSources(true);
+        CreateProjectWizard wizard = (CreateProjectWizard) getWizard();
+        wizard.setPlugin(plugin);
+    }
+    
+    public WizardPage getNextPage() {
+        CreateProjectPlugin plugin = (CreateProjectPlugin) list.getSelectedValue();
+        return plugin.createCreateProjectWizardPage((CreateProjectWizard) getWizard(), true);
+    }
+}
+
+class CreateProjectPluginRenderer extends DefaultRenderer {
+    public void load(Object o) {
+        CreateProjectPlugin plugin = (CreateProjectPlugin) o;
+        setMainText(plugin.getName());
     }
 }
 

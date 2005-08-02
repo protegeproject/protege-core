@@ -21,6 +21,7 @@ public class FileField extends JComponent {
     private String _extension;
     private ChangeListener _changeListener;
     private int _fileMode;
+    private int _dialogType = JFileChooser.OPEN_DIALOG;
 
     /** Constructor for selecting a file */
     public FileField(String label, String path, String extension, String description) {
@@ -30,6 +31,11 @@ public class FileField extends JComponent {
     /** Constructor for selecting a directory */
     public FileField(String label, String path, String description) {
         this(label, path, "", description, JFileChooser.DIRECTORIES_ONLY);
+    }
+    
+    public void setDialogType(int dialogType) {
+        Log.getLogger().info("setting dialog type to : " + dialogType);
+        _dialogType = dialogType;
     }
 
     private FileField(String label, String path, String extension, String description, int mode) {
@@ -55,8 +61,9 @@ public class FileField extends JComponent {
         JFileChooser chooser = ComponentFactory.createFileChooser(_description, _extension);
         chooser.setApproveButtonText("Select");
         chooser.setFileSelectionMode(_fileMode);
-        int openDialogResult = chooser.showOpenDialog(this);
-        switch (openDialogResult) {
+        chooser.setDialogType(_dialogType);
+        int dialogResult = chooser.showDialog(this, "Select");
+        switch (dialogResult) {
             case JFileChooser.ERROR_OPTION:
                 // Get this on 'close"
                 break;
@@ -66,7 +73,7 @@ public class FileField extends JComponent {
                 _textField.setText(chooser.getSelectedFile().getPath());
                 break;
             default:
-                Assert.fail("bad result: " + openDialogResult);
+                Assert.fail("bad result: " + dialogResult);
                 break;
         }
     }
