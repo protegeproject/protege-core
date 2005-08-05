@@ -62,7 +62,7 @@ public class FrameStoreManager {
         return isEnabled(eventGeneratorFrameStore);
     }
 
-    private FrameStore create(Class clas) {
+    protected FrameStore create(Class clas) {
         FrameStore frameStore = null;
         try {
             if (isHandlerClass(clas)) {
