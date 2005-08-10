@@ -247,9 +247,13 @@ public class FormWidget extends AbstractClsWidget {
         // Log.trace("insert in pl: " + d.getName(), this, "createWidgetDescriptor", slot);
         return d;
     }
+    
+    protected Collection getClsSlots() {
+        return getCls().getVisibleTemplateSlots();
+    }
 
-    private void createWidgets() {
-        Collection slots = new HashSet(getCls().getVisibleTemplateSlots());
+    protected void createWidgets() {
+        Collection slots = new HashSet(getClsSlots());
         Iterator i = getPropertyList().getNames().iterator();
         while (i.hasNext()) {
             String name = (String) i.next();
