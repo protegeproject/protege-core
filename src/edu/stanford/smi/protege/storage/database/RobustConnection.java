@@ -24,6 +24,7 @@ public class RobustConnection {
     private String _escapeClause;
     private boolean _supportsTransactions;
     private int _maxVarcharSize;
+    private int _nestedTransactionLevel;
     // private int _driverVarcharMaxSize;
     private String _driverLongvarcharTypeName;
     private String _driverTinyIntTypeName;
@@ -380,11 +381,14 @@ public class RobustConnection {
     public boolean beginTransaction() {
         boolean begun = false;
         try {
-            if (_connection.getAutoCommit()) {
-                if (isMsAccess()) {
-                    closeStatements();
+            if (_supportsTransactions) {
+                if (_nestedTransactionLevel == 0) {
+                    if (isMsAccess()) {
+                        closeStatements();
+                    }
+                    _connection.setAutoCommit(false);
                 }
-                _connection.setAutoCommit(false);
+                ++_nestedTransactionLevel;
             }
             begun = true;
         } catch (SQLException e) {
@@ -396,9 +400,12 @@ public class RobustConnection {
     public boolean commitTransaction() {
         boolean committed = false;
         try {
-            if (!_connection.getAutoCommit()) {
-                _connection.commit();
-                _connection.setAutoCommit(true);
+            if (_supportsTransactions) {
+                --_nestedTransactionLevel;
+                if (_nestedTransactionLevel == 0) {
+                    _connection.commit();
+                    _connection.setAutoCommit(true);
+                }
             }
             committed = true;
         } catch (SQLException e) {
@@ -410,9 +417,12 @@ public class RobustConnection {
     public boolean rollbackTransaction() {
         boolean rolledBack = false;
         try {
-            if (!_connection.getAutoCommit()) {
-                _connection.rollback();
-                _connection.setAutoCommit(true);
+            if (_supportsTransactions) {
+                --_nestedTransactionLevel;
+                 if (_nestedTransactionLevel == 0) {
+                    _connection.rollback();
+                    _connection.setAutoCommit(true);
+                }
             }
             rolledBack = true;
         } catch (SQLException e) {

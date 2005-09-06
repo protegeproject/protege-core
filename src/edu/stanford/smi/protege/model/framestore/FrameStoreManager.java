@@ -185,6 +185,7 @@ public class FrameStoreManager {
             frameStore.close();
         }
         frameStores.clear();
+        terminalFrameStore.close();
     }
 
     public boolean getDispatchEventsEnabled() {

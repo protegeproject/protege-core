@@ -39,6 +39,18 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertEquals(2, counter[0].intValue());
     }
 
+    public void testGetOwnSlotValuesWithSubslotInCoreProtege() {
+         Slot hasMemberSlot = createSlot();
+         Slot hasLeaderSlot = createSlot();
+         hasLeaderSlot.addDirectSuperslot(hasMemberSlot);
+         Instance person = getDomainKB().getRootCls().createDirectInstance("Person");
+         Instance team = getDomainKB().getRootCls().createDirectInstance("Team");
+         team.addOwnSlotValue(hasLeaderSlot, person);
+         assertEquals(1, team.getOwnSlotValues(hasMemberSlot).size());
+         team.addOwnSlotValue(hasMemberSlot, person);
+         assertEquals(1, team.getOwnSlotValues(hasMemberSlot).size());
+    }
+
     public void testInferredInverseSlotValues() {
         Cls cls1 = createCls();
         Slot slot1 = createSlotOnCls(cls1);

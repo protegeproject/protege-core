@@ -13,4 +13,8 @@ public class RemoteClientFrameStore_Test extends FrameStore_Test {
 
         return new RemoteClientFrameStore(host, user, password, projectName, kb, false);
     }
+    
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
 }

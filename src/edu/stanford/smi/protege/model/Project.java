@@ -963,7 +963,6 @@ public class Project {
             mergingFrameStore.addActiveFrameStore(nfs, uris);
         }
         factory.includeKnowledgeBase(_domainKB, sources, errors);
-
     }
     
     public void includeProject(String path, Collection errors) {

@@ -13,5 +13,4 @@ public interface KnowledgeBaseFactory2 extends KnowledgeBaseFactory {
     void prepareToSaveInFormat(KnowledgeBase kb, KnowledgeBaseFactory factory, Collection errors);
 
     NarrowFrameStore createNarrowFrameStore(String name);
-
 }

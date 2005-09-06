@@ -46,7 +46,7 @@ public class FileUtilities {
     }
 
     public static String getName(String s) {
-        return new File(s).getName();
+        return (s == null) ? null : new File(s).getName();
     }
 
     public static String getBaseName(String s) {

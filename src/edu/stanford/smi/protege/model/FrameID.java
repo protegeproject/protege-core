@@ -18,11 +18,14 @@ import edu.stanford.smi.protege.util.*;
  */
 public class FrameID implements Externalizable {
     public static final int NULL_FRAME_ID_VALUE = 0;
+    public static final int NULL_FRAME_ID_LOCAL_VALUE = NULL_FRAME_ID_VALUE;
     public static final int INITIAL_USER_FRAME_ID = 10000;
     public static final int SYSTEM_PROJECT_ID = 0;
     public static final int LOCAL_PROJECT_ID = 1;
+    public static final int NULL_FRAME_ID_PROJECT_VALUE = SYSTEM_PROJECT_ID;
     private int localPart;
-    private int projectPart;
+    private int diskProjectPart;
+    private int memoryProjectPart;
     private int hashCode;
 
     public FrameID() {
@@ -31,59 +34,87 @@ public class FrameID implements Externalizable {
 
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeInt(localPart);
-        out.writeInt(projectPart);
+        out.writeInt(diskProjectPart);
+        out.writeInt(memoryProjectPart);
     }
 
     public void readExternal(ObjectInput in) throws IOException {
         localPart = in.readInt();
-        projectPart = in.readInt();
+        diskProjectPart = in.readInt();
+        memoryProjectPart = in.readInt();
         cacheHashCode();
     }
 
     public static FrameID createSystem(int value) {
         Assert.assertTrue("value=" + value, 0 < value && value < INITIAL_USER_FRAME_ID);
-        return create(SYSTEM_PROJECT_ID, value);
+        return create(SYSTEM_PROJECT_ID, SYSTEM_PROJECT_ID, value);
     }
 
     public static FrameID createLocal(int value) {
         Assert.assertTrue("value=" + value, INITIAL_USER_FRAME_ID <= value);
-        return create(LOCAL_PROJECT_ID, value);
+        return create(LOCAL_PROJECT_ID, LOCAL_PROJECT_ID, value);
     }
 
-    public static FrameID create(int projectPart, int localPart) {
-        return (localPart == NULL_FRAME_ID_VALUE) ? null : new FrameID(projectPart, localPart);
+    public static FrameID create(int diskProjectPart, int memoryProjectPart, int localPart) {
+        return (localPart == NULL_FRAME_ID_VALUE) ? null : new FrameID(diskProjectPart, memoryProjectPart, localPart);
     }
-
-    private FrameID(int projectPart, int localPart) {
-        if (projectPart > 1) {
-            Log.getLogger().severe("unknown project part: " + projectPart);
+    
+    public static String toStringRepresentation(FrameID id) {
+        String text;
+        if (id == null) {
+            text = toStringRepresentation(NULL_FRAME_ID_PROJECT_VALUE, NULL_FRAME_ID_LOCAL_VALUE);
+        } else {
+            text = id.toStringRepresentation();
         }
-        this.projectPart = projectPart;
+        return text;
+    }
+    public String toStringRepresentation() {
+        return toStringRepresentation(diskProjectPart, localPart);
+    }
+    
+    private static String toStringRepresentation(int projectPart, int localPart) {
+        return projectPart + ":" + localPart;
+    }
+    public static FrameID fromStringRepresentation(int memoryProjectPart, String text) {
+        int index = text.indexOf(":");
+        int diskProjectPart = Integer.parseInt(text.substring(0, index));
+        int localPart = Integer.parseInt(text.substring(index+1));
+        return create(diskProjectPart, memoryProjectPart, localPart);
+    }
+    
+
+    private FrameID(int diskProjectPart, int memoryProjectPart, int localPart) {
+        this.diskProjectPart = diskProjectPart;
+        this.memoryProjectPart = memoryProjectPart;
         this.localPart = localPart;
         cacheHashCode();
     }
 
     private void cacheHashCode() {
-        hashCode = HashUtils.getHash(String.valueOf(projectPart), String.valueOf(localPart));
+        hashCode = HashUtils.getHash(String.valueOf(memoryProjectPart), String.valueOf(localPart));
     }
 
     public boolean isSystem() {
-        return projectPart == SYSTEM_PROJECT_ID;
+        return memoryProjectPart == SYSTEM_PROJECT_ID;
     }
 
     public int getLocalPart() {
         return localPart;
     }
 
-    public int getProjectPart() {
-        return projectPart;
+    public int getMemoryProjectPart() {
+        return memoryProjectPart;
+    }
+
+    public int getDiskProjectPart() {
+        return memoryProjectPart;
     }
 
     public boolean equals(Object o) {
         boolean result = false;
         if (o instanceof FrameID) {
             FrameID other = (FrameID) o;
-            result = projectPart == other.projectPart && localPart == other.localPart;
+            result = memoryProjectPart == other.memoryProjectPart && localPart == other.localPart;
         }
         return result;
     }
@@ -97,6 +128,6 @@ public class FrameID implements Externalizable {
     }
 
     public String toString() {
-        return "FrameID(" + projectPart + ":" + localPart + ")";
+        return "FrameID(" + memoryProjectPart + ":" + localPart + " " + diskProjectPart + ")";
     }
 }

@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.util.*;
 public class RemoteClientFrameStore implements FrameStore {
     private KnowledgeBase kb;
     private RemoteSession session;
+    private RemoteServer server;
     private RemoteServerFrameStore remoteDelegate;
 
     public String getName() {
@@ -35,7 +36,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public RemoteClientFrameStore(String host, String user, String password, String projectName, KnowledgeBase kb,
             boolean preloadAll) {
         try {
-            RemoteServer server = (RemoteServer) Naming.lookup("//" + host + "/" + Server.getBoundName());
+            server = (RemoteServer) Naming.lookup("//" + host + "/" + Server.getBoundName());
             String ipAddress = SystemUtilities.getMachineIpAddress();
             session = server.openSession(user, ipAddress, password);
             RemoteServerProject project = server.openProject(projectName, session);
@@ -903,7 +904,15 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public void close() {
-        remoteDelegate = null;
+        try {
+            if (server != null) {
+                server.closeSession(session);
+                server = null;
+            }
+            remoteDelegate = null;
+        } catch (RemoteException e) {
+            throw convertException(e);
+        }
     }
 
     //------------------------------

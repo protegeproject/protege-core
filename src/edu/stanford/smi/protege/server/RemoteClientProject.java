@@ -97,6 +97,7 @@ public class RemoteClientProject extends Project {
     }
 
     public void dispose() {
+        Log.getLogger().info("remote project dispose");
         super.dispose();
         attemptClose();
         uninstallShutdownHook();
