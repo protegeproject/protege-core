@@ -50,12 +50,12 @@ class DatabaseUtils {
         return (id == null) ? "0" : String.valueOf(id.getLocalPart());
     }
 
-    private static void setValueType(PreparedStatement stmt, int index, Object o, FrameFactory factory)
+    public static void setValueType(PreparedStatement stmt, int index, Object o, FrameFactory factory)
             throws SQLException {
         setValueType(stmt, index, valueType(o, factory));
     }
 
-    private static void setValueType(PreparedStatement stmt, int index, int type) throws SQLException {
+    public static void setValueType(PreparedStatement stmt, int index, int type) throws SQLException {
         /*
          * The setByte below is correct but the JdbcOdbc bridge fails on this call even though the underlying data type
          * is a byte. Thus we use setInt.
@@ -64,7 +64,7 @@ class DatabaseUtils {
         stmt.setInt(index, (short) type);
     }
 
-    private static int valueType(Object value, FrameFactory factory) {
+    public static int valueType(Object value, FrameFactory factory) {
         int type;
         if (value instanceof String) {
             type = VALUE_TYPE_STRING;

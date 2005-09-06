@@ -18,6 +18,7 @@ import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
+    private static Server serverInstance;
     private Map _nameToOpenProjectMap = new HashMap();
     private Map _projectToServerProjectMap = new HashMap();
     private KnowledgeBase _systemKb;
@@ -69,8 +70,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         System.setProperty("java.rmi.server.RMIClassLoaderSpi", ProtegeRmiClassLoaderSpi.class.getName());
         RMISocketFactory.setSocketFactory(sf);
         SystemUtilities.initialize();
-        new Server(args);
+        serverInstance = new Server(args);
         Log.getLogger().info("Protege server ready to accept connections...");
+    }
+    
+    public static Server getInstance() {
+        return serverInstance;
     }
 
     public static String getBoundName() {
@@ -221,6 +226,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     public void closeSession(RemoteSession session) {
         _sessions.remove(session);
     }
+    
+    public boolean isActive(RemoteSession session) {
+        return _sessions.contains(session);
+    }
 
     public RemoteServerProject openProject(String projectName, RemoteSession session) {
         ServerProject serverProject = null;
@@ -251,6 +260,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         // Log.enter(this, "recordDisconnection", session, project);
         Collection projects = (Collection) _sessionToProjectsMap.get(session);
         projects.remove(project);
+        _sessions.remove(session);
+        Log.getLogger().info("removing session: " + session);
     }
 
     private ServerProject getServerProject(String projectName) {

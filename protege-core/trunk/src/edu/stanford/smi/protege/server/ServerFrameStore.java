@@ -511,7 +511,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         // events);
         return events;
     }
-
+    
     public synchronized boolean beginTransaction(String name, RemoteSession session) {
         recordCall(session);
         return getDelegate().beginTransaction(name);

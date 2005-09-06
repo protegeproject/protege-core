@@ -5,7 +5,6 @@ import java.net.*;
 import java.rmi.server.*;
 
 import edu.stanford.smi.protege.plugin.*;
-import edu.stanford.smi.protege.util.*;
 
 /**
  * TODO Class Comment
@@ -15,7 +14,6 @@ import edu.stanford.smi.protege.util.*;
 public class ProtegeRmiClassLoaderSpi extends RMIClassLoaderSpi {
 
     public ProtegeRmiClassLoaderSpi() {
-        Log.getLogger().config("Installed ProtegeRmiClassLoaderSpi");
     }
 
     public Class loadClass(String codebase, String name, ClassLoader defaultLoader) throws MalformedURLException {

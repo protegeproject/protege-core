@@ -22,5 +22,4 @@ public class RemoteProjectManager_Test extends APITestCase {
         assertNotNull(cls);
         p.dispose();
     }
-
 }

@@ -140,7 +140,7 @@ public class SubclassPane extends SelectableContainer {
         Action action = new StandardAction(ResourceKey.CLASS_BROWSER_CHANGE_METACLASS_MENU_ITEM) {
             public void actionPerformed(ActionEvent event) {
                 Collection clsMetaClses = CollectionUtilities.createCollection(_knowledgeBase.getRootClsMetaCls());
-                Cls metaclass = pickConcreteCls(clsMetaClses, "Select Metaclass");
+                Cls metaclass = pickConcreteCls(clsMetaClses, "Select Concrete Metaclass");
                 if (metaclass != null) {
                     Iterator i = getSelection().iterator();
                     while (i.hasNext()) {

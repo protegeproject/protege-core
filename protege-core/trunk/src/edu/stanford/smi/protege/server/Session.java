@@ -21,7 +21,7 @@ public class Session implements RemoteSession, Externalizable {
     public Session() {
 
     }
-
+    
     public void writeExternal(ObjectOutput output) throws IOException {
         output.writeInt(id);
         output.writeUTF(userName);
