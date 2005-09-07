@@ -106,7 +106,7 @@
 	
 	<!-- =================================================================== -->
 	<target name = "compile" depends = "javacc">
-		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "${debug}" optimize = "${optimize}" includeAntRuntime = "${includeAntRuntime}" source = "1.4">
+		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "${debug}" optimize = "${optimize}" includeAntRuntime = "${includeAntRuntime}" source = "1.5">
 			<classpath>
 				<fileset dir = "${lib.dir}">
 					<include name = "**/*.jar"/>
