@@ -14,7 +14,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.plaf.metal.*;
 
-import com.jgoodies.plaf.plastic.*;
+import com.jgoodies.looks.plastic.*;
 
 import edu.stanford.smi.protege.plugin.*;
 import edu.stanford.smi.protege.resource.*;
@@ -26,6 +26,9 @@ import edu.stanford.smi.protege.resource.*;
  * @author Joe Edelman (jxe@dartmouth.edu)
  */
 public class SystemUtilities {
+    private static final String OLD_PLASTIC_LAF_NAME = "com.jgoodies.plaf.plastic.PlasticLookAndFeel";
+    private static final String NEW_PLASTIC_LAF_NAME = "com.jgoodies.looks.plastic.PlasticLookAndFeel";
+    
     private static boolean isMac;
     private static boolean isWindows;
     private static boolean isApplet;
@@ -155,6 +158,10 @@ public class SystemUtilities {
 
     private static void loadLookAndFeel() {
         String lafName = ApplicationProperties.getLookAndFeelClassName();
+        if (lafName.equals(OLD_PLASTIC_LAF_NAME)) {
+            lafName = NEW_PLASTIC_LAF_NAME;
+            ApplicationProperties.setLookAndFeel(lafName);
+        }
         setLookAndFeel(lafName);
     }
 
