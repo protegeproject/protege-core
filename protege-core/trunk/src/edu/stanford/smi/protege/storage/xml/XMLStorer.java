@@ -289,9 +289,6 @@ public class XMLStorer {
     }
 
     private void storeCls(Cls cls, Set storedClses) {
-        if (cls.getName().equals("HL7_Data_Type")) {
-            Log.getLogger().info("found it");
-        }
         if (shouldPrintFrame(cls)) {
             beginInstance(XMLString.ElementName.CLASS, cls);
             indent();
@@ -308,6 +305,9 @@ public class XMLStorer {
 
     private boolean shouldPrintFrame(Frame frame) {
         boolean shouldPrintFrame = activeFrames.contains(frame);
+        if (frame.getName().equals("label")) {
+            Log.getLogger().info("label: " + shouldPrintFrame);
+        }
         if (shouldPrintFrame) {
             shouldPrintFrame = false;
             Iterator i = frame.getOwnSlots().iterator();
