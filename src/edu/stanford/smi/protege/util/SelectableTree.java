@@ -9,7 +9,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 
-import com.jgoodies.plaf.*;
+import com.jgoodies.looks.*;
 
 /**
  * A JTree component that implements the {@link Selectable} interface.  It also implements Autoscroll so the 

@@ -61,7 +61,7 @@ public class ApplicationProperties {
     public static String getLookAndFeelClassName() {
         String name = getApplicationOrSystemProperty(LOOK_AND_FEEL);
         if (name == null) {
-            name = "com.jgoodies.plaf.plastic.PlasticLookAndFeel";
+            name = "com.jgoodies.looks.plastic.PlasticLookAndFeel";
         }
         return name;
     }

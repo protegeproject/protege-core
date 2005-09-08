@@ -5,7 +5,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.plaf.*;
 
-import com.jgoodies.plaf.plastic.theme.*;
+import com.jgoodies.looks.plastic.theme.*;
 
 import edu.stanford.smi.protege.resource.*;
 
@@ -21,14 +21,12 @@ public class ProtegePlasticTheme extends ExperienceBlue {
 
     public void addCustomEntriesToTable(UIDefaults table) {
         super.addCustomEntriesToTable(table);
-        Object[] uiDefaults = { "Tree.expandedIcon", Icons.getHierarchyExpandedIcon(),
-                "Tree.collapsedIcon", Icons.getHierarchyCollapsedIcon(),
-                "Table.selectionForeground", getMenuItemSelectedForeground(),
-                "Table.selectionBackground", getMenuItemSelectedBackground(),
-                "List.selectionForeground", getMenuItemSelectedForeground(),
-                "List.selectionBackground", getMenuItemSelectedBackground(),
-                "Tree.selectionForeground", getMenuItemSelectedForeground(),
-                "Tree.selectionBackground", getMenuItemSelectedBackground(), };
+        Object[] uiDefaults = { "Tree.expandedIcon", Icons.getHierarchyExpandedIcon(), "Tree.collapsedIcon",
+                Icons.getHierarchyCollapsedIcon(), "Table.selectionForeground", getMenuItemSelectedForeground(),
+                "Table.selectionBackground", getMenuItemSelectedBackground(), "List.selectionForeground",
+                getMenuItemSelectedForeground(), "List.selectionBackground", getMenuItemSelectedBackground(),
+                "Tree.selectionForeground", getMenuItemSelectedForeground(), "Tree.selectionBackground",
+                getMenuItemSelectedBackground(), };
         table.putDefaults(uiDefaults);
     }
 
