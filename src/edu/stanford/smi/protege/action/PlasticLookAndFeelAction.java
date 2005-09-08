@@ -2,7 +2,7 @@ package edu.stanford.smi.protege.action;
 
 import java.awt.event.*;
 
-import com.jgoodies.plaf.plastic.*;
+import com.jgoodies.looks.plastic.*;
 
 import edu.stanford.smi.protege.util.*;
 
@@ -11,9 +11,9 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class PlasticLookAndFeelAction extends LookAndFeelAction {
-    private static final String className = "com.jgoodies.plaf.plastic.PlasticLookAndFeel";
+    private static final String className = "com.jgoodies.looks.plastic.PlasticLookAndFeel";
     private static final String name = "Protege Default";
-        
+
     public PlasticLookAndFeelAction() {
         super(name, className);
     }
