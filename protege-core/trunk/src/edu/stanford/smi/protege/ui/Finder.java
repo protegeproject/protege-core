@@ -113,12 +113,12 @@ public abstract class Finder extends JComponent {
     }
 
     private void doFind() {
-        Log.getLogger().info("doFind");
         String text = (String) _comboBox.getSelectedItem();
         if (text != null && text.length() != 0) {
             List matches = getMatches(text, MAX_MATCHES);
             if (matches.isEmpty()) {
                 getToolkit().beep();
+                ModalDialog.showMessageDialog(this, "No matches found");
             } else if (matches.size() == 1) {
                 WaitCursor cursor = new WaitCursor(this);
                 recordItem(text);
