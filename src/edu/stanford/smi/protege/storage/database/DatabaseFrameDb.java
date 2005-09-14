@@ -1332,6 +1332,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             }
             int id = -1;
             PreparedStatement stmt = getCurrentConnection().getPreparedStatement(queryFrameTypeIdCommand);
+            setFrame(stmt, 1, frame);
             stmt.setMaxRows(1);
             ResultSet rs = executeQuery(stmt);
             while (rs.next()) {
