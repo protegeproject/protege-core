@@ -87,12 +87,16 @@ public abstract class FrameTreeFinder extends Finder {
         Collections.sort(sortedMatches, new FrameComparator());
         return sortedMatches;
     }
+    
+    protected StringMatcher getStringMatcher(String text) {
+        return new SimpleStringMatcher(text);
+    }
 
     protected Set getMatchingFrames(String text, int maxMatches) {
         if (!text.endsWith("*")) {
             text += '*';
         }
-        StringMatcher matcher = new SimpleStringMatcher(text);
+        StringMatcher matcher = getStringMatcher(text);
         Set matches = new LinkedHashSet();
         Collection matchingReferences = knowledgeBase.getMatchingReferences(text, maxMatches);
         Iterator i = matchingReferences.iterator();
