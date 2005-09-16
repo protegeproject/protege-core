@@ -12,7 +12,7 @@ Name: edu/stanford/smi/protege/storage/database/DatabaseKnowledgeBaseFactory.cla
 Storage-Factory: True
 
 Name: edu/stanford/smi/protege/storage/database_with_include/DatabaseKnowledgeBaseFactory.class
-Storage-Factory: True
+Storage-Factory: False
 
 Name: edu/stanford/smi/protege/storage/xml/XMLKnowledgeBaseFactory.class
 Storage-Factory: True
