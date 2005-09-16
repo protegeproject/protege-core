@@ -169,6 +169,7 @@ public class SystemUtilities {
         try {
             LookAndFeel lookAndFeel = (LookAndFeel) Class.forName(lafName).newInstance();
             if (lafName.indexOf("Plastic") != -1) {
+                PopupFactory.setSharedInstance(new PopupFactory());
                 PlasticLookAndFeel.setMyCurrentTheme(PlasticHack.createTheme());
                 PlasticLookAndFeel.setTabStyle(PlasticLookAndFeel.TAB_STYLE_METAL_VALUE);
             } else if (lafName.indexOf("Metal") != -1) {
