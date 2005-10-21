@@ -53,98 +53,98 @@ public interface KnowledgeBase extends Disposable {
      * @deprecated Renamed to #setFrameName(Frame, String)
      */
     void changeFrameName(Frame oldFrame, String newFrameName);
-    
+
     void setFrameName(Frame oldFrame, String newFrameName);
 
     boolean containsFrame(String name);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Cls createCls(String name, Collection parents);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Cls createCls(String name, Collection parents, Cls metaCls);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Cls createCls(String name, Collection parents, Cls metaCls, boolean initializeDefaults);
 
     /**
      * @param id Pass null to cause the system to generate an id
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Cls createCls(FrameID id, String name, Collection parents, Collection metaClses, boolean initializeDefaults);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Facet createFacet(String name);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Facet createFacet(String name, Cls metaCls);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Facet createFacet(String name, Cls metaCls, boolean initializeDefaults);
     // Facet createFacet(FrameID id, String name, Collection metaClses, boolean initializeDefaults);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Instance createInstance(String name, Cls directType);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Instance createInstance(String name, Collection directTypes);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Instance createInstance(String name, Cls directType, boolean initializeDefaults);
 
     /**
      * @param id Pass null to cause the system to generate an id
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Instance createInstance(FrameID id, String name, Cls directType, boolean initializeDefaults);
 
     /**
      * @param id Pass null to cause the system to generate an id
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Instance createInstance(FrameID id, String name, Collection directTypes, boolean initializeDefaults);
-    
+
     /**
      * @param id Pass null to cause the system to generate an id
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean initializeDefaults);
-    
+
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Slot createSlot(String name);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Slot createSlot(String name, Cls metaCls);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Slot createSlot(String name, Cls metaCls, boolean initializeDefaults);
 
     /**
-     * @param name Pass null to cause the system to generate a name 
+     * @param name Pass null to cause the system to generate a name
      */
     Slot createSlot(String name, Cls metaCls, Collection superslots, boolean initializeDefaults);
     // Slot createSlot(FrameID id, String name, Collection metaClses, Collection superslots, boolean initializeDefaults);
@@ -249,11 +249,11 @@ public interface KnowledgeBase extends Disposable {
 
     /**
      * Gets frames with a particular own/template slot/facet value.
-     * 
+     *
      * @param slot The slot to use.  Must not be null.
-     * @param facet If null then the value parameter is a slot value.  Otherwise it is a facet value. 
+     * @param facet If null then the value parameter is a slot value.  Otherwise it is a facet value.
      * @param isTemplate If true then the return value is a template slot/facet value.
-     * @param value A value to match exactly.  The type of the object can be one of those listed in the documentation 
+     * @param value A value to match exactly.  The type of the object can be one of those listed in the documentation
      * for {@link Frame}
      * @return Collection of frames.
      */
@@ -273,12 +273,12 @@ public interface KnowledgeBase extends Disposable {
 
     /**
      * Finds all occurances of a string in the knowledge base.
-     * 
+     *
      * @param slot The slot to use.  Must not be null.
-     * @param facet If null then the value parameter is a slot value.  Otherwise it is a facet value. 
+     * @param facet If null then the matchString parameter is a slot value.  Otherwise it is a facet value.
      * @param isTemplate If true then the return value is a template slot/facet value.
      * @param matchString The string to match on.  The string can include wild cards.  The matching is case insensitive.
-     * @param maxMatches maximum number of matches.  Use -1 to get all matches.  Be careful though.  If the use 
+     * @param maxMatches maximum number of matches.  Use -1 to get all matches.  Be careful though.  If the use
      * searches on "e" do you really want to return 1M frames?
      * @return Collection of frames.
      */
@@ -297,7 +297,7 @@ public interface KnowledgeBase extends Disposable {
      */
     Collection getReferences(Object o, int maxReferences);
     Collection getMatchingReferences(String s, int maxReferences);
-    
+
     Collection getClsesWithMatchingBrowserText(String s, Collection superclasses, int maxMatches);
     Cls getRootCls();
 
@@ -356,7 +356,7 @@ public interface KnowledgeBase extends Disposable {
     boolean isSlotMetaCls(Cls cls);
 
     boolean isValidOwnSlotValue(Frame frame, Slot slot, Object value);
-    
+
     void removeJavaLoadPackage(String path);
 
     void removeKnowledgeBaseListener(KnowledgeBaseListener listener);
@@ -388,19 +388,19 @@ public interface KnowledgeBase extends Disposable {
      */
     boolean setEventsEnabled(boolean enabled);
     boolean setUndoEnabled(boolean enabled);
-    
+
     boolean getDispatchEventsEnabled();
     boolean setDispatchEventsEnabled(boolean enabled);
-    
+
     boolean getGenerateEventsEnabled();
     boolean setGenerateEventsEnabled(boolean enabled);
     boolean setGenerateDeletingFrameEventsEnabled(boolean enabled);
-    
+
     void setPollForEvents(boolean enabled);
-    
+
     boolean setJournalingEnabled(boolean enabled);
     boolean isJournalingEnabled();
-    
+
     boolean setArgumentCheckingEnabled(boolean enabled);
     boolean setChangeMonitorEnabled(boolean enabled);
     boolean setCleanDispatchEnabled(boolean enabled);
@@ -427,7 +427,7 @@ public interface KnowledgeBase extends Disposable {
     void setValueChecking(boolean b);
 
     void setVersionString(String s);
-    
+
     void setFrameFactory(FrameFactory factory);
 
     // new methods
@@ -458,7 +458,7 @@ public interface KnowledgeBase extends Disposable {
     void setDocumentation(Frame frame, String text);
     void setDocumentation(Frame frame, Collection text);
     void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values);
-    
+
     /** same as #setDirectOwnSlotValues(Frame, Slot, Collection) */
     void setOwnSlotValues(Frame frame, Slot slot, Collection values);
     void notifyVisibilityChanged(Frame frame);
@@ -610,40 +610,40 @@ public interface KnowledgeBase extends Disposable {
     Collection getOverriddenTemplateFacets(Cls cls, Slot slot);
 
     Collection getCurrentUsers();
-    
+
     boolean beginTransaction(String name);
     boolean endTransaction(boolean doCommit);
-    
-    // 
+
+    //
     void addDirectType(Instance instance, Cls directType);
     void removeDirectType(Instance instance, Cls directType);
     void moveDirectType(Instance instance, Cls directType, int index);
-   
+
     CommandManager getCommandManager();
-    
+
     void setFrameNameValidator(FrameNameValidator validator);
     boolean isValidFrameName(String s, Frame frame);
     String getInvalidFrameNameDescription(String s, Frame frame);
-    
+
     void setDirectBrowserSlot(Cls cls, Slot slot);
-    
+
     /**
      * Inserts a new frame store into the delegation chain.
-     * 
+     *
      * @param newFrameStore
      * @param position Position in the frame store list to insert this frame store.
      */
     void insertFrameStore(FrameStore newFrameStore, int position);
-    
+
     /**
      * Inserts a new frame store into the front of the delegation chain.
-     * 
+     *
      * @param newFrameStore
      */
     void insertFrameStore(FrameStore newFrameStore);
-    
+
     void removeFrameStore(FrameStore frameStore);
-    
+
     /**
      * Returns a list of FrameStores available to the system.  This includes both enabled and disabled frame stores.
      * @return List of #FrameStore
@@ -654,30 +654,30 @@ public interface KnowledgeBase extends Disposable {
     SystemFrames getSystemFrames();
 
     /**
-     * 
+     *
      */
     void clearAllListeners();
 
     FrameCounts getFrameCounts();
-    
+
     void setDirectBrowserSlotPattern(Cls cls, BrowserSlotPattern pattern);
     BrowserSlotPattern getDirectBrowserSlotPattern(Cls cls);
-    
+
     Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot);
-    
+
     boolean setCallCachingEnabled(boolean enabled);
     boolean isCallCachingEnabled();
-    
+
     boolean getValueChecking();
-    
+
     void startJournaling(URI uri);
     void stopJournaling();
-    
+
     void flushCache();
-    
+
     Cls getReifiedRelationCls();
     Slot getReifedRelationFromSlot();
     Slot getReifedRelationToSlot();
-    
+
     boolean isClosed();
 }
