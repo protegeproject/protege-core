@@ -141,8 +141,9 @@
 	
 	<!-- =================================================================== -->
 	<target name = "javadoc" depends = "prepare-src">
+		<property file = "${build.dir}/src/edu/stanford/smi/protege/resource/files/build.properties"/>
 		<mkdir dir = "${build.javadoc}"/>
-		<javadoc packagenames = "${packages}" sourcepath = "${build.src}" destdir = "${build.javadoc}" doctitle = "${Name}" header = "${Name}" footer = "${Name}" windowtitle = "${Name}" author = "true" source = "1.4">
+		<javadoc packagenames = "${packages}" sourcepath = "${build.src}" destdir = "${build.javadoc}" doctitle = "${Name} ${build.status}" header = "${Name} ${build.status}" footer = "${Name} ${build.status}" windowtitle = "${Name} ${build.status}" author = "true" source = "1.4">
 			<bottom><![CDATA[
 					<small>
 					<a href=mailto:protege-help@smi.stanford.edu>Submit a bug report or feature request</a><br>
