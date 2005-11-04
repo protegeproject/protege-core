@@ -2227,5 +2227,13 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     public synchronized Slot getReifedRelationToSlot() {
         return _systemFrames.getToSlot();
     }
+    
+    public synchronized void addTransactionListener(TransactionListener listener) {
+        addListener(TransactionListener.class, this, listener);
+    }
+    
+    public synchronized void removeTransactionListener(TransactionListener listener) {
+        removeListener(TransactionListener.class, this, listener);
+    }
 
 }

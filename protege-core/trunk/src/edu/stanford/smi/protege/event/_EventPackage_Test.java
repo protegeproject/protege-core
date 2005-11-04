@@ -9,10 +9,11 @@ import junit.framework.*;
  */
 public class _EventPackage_Test {
 
-    public static TestSuite suite() {
+    public static Test suite() {
         TestSuite suite = new TestSuite("event");
         suite.addTestSuite(ProjectListener_Test.class);
         suite.addTestSuite(FrameListener_Test.class);
+        suite.addTestSuite(TransactionListener_Test.class);
         return suite;
     }
 }

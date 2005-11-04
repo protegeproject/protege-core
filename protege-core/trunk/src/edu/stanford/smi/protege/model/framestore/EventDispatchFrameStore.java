@@ -80,9 +80,30 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         } else if (event instanceof FrameEvent) {
             dispatchFrameEvent((FrameEvent) event);
             dispatchFrameEventAsClsFacetEvent((FrameEvent) event);
+        } else if (event instanceof TransactionEvent) {
+            dispatchTransactionEvent((TransactionEvent) event);
         } else {
             throw new RuntimeException("unknown event type: " + event);
         }
+    }
+    
+    private void dispatchTransactionEvent(TransactionEvent event) {
+        Iterator i = getListeners(TransactionListener.class, event.getSource()).iterator();
+        while (i.hasNext()) {
+            TransactionListener listener = (TransactionListener) i.next();
+            switch (event.getEventType()) {
+                case TransactionEvent.TRANSACTION_BEGIN:
+                    listener.transactionBegin(event);
+                    break;
+                case TransactionEvent.TRANSACTION_END:
+                    listener.transactionEnded(event);
+                    break;
+                default:
+                    Log.getLogger().warning("bad event: " + event);
+                    break;
+            }
+        }
+        
     }
 
     private void dispatchKbEvent(KnowledgeBaseEvent event) {
@@ -498,7 +519,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
 
     public boolean beginTransaction(String name) {
-        return getDelegate().beginTransaction(name);
+        boolean succeeded = getDelegate().beginTransaction(name);
+        dispatchEvents();
+        return succeeded;
     }
 
     public boolean commitTransaction() {
