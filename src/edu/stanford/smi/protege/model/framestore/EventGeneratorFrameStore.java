@@ -489,10 +489,15 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
 
     public boolean beginTransaction(String name) {
         boolean allowsTransactions = getDelegate().beginTransaction(name);
+        generateTransactionEvent(TransactionEvent.TRANSACTION_BEGIN, name);
         if (allowsTransactions) {
             _transactionStartSize = _events.size();
         }
         return allowsTransactions;
+    }
+    
+    private void generateTransactionEvent(int type, String name) {
+        _events.add(new TransactionEvent(_kb, type, name));
     }
 
     public boolean commitTransaction() {
@@ -500,6 +505,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         if (!commitTransaction && _transactionStartSize != NO_VALUE) {
             _events.subList(_transactionStartSize + 1, _events.size()).clear();
         }
+        generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);
         _transactionStartSize = NO_VALUE;
         return commitTransaction;
     }
@@ -509,6 +515,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         if (rollbackTransaction && _transactionStartSize != NO_VALUE) {
             _events.subList(_transactionStartSize + 1, _events.size()).clear();
         }
+        generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);
         _transactionStartSize = NO_VALUE;
         return rollbackTransaction;
     }
