@@ -680,4 +680,7 @@ public interface KnowledgeBase extends Disposable {
     Slot getReifedRelationToSlot();
 
     boolean isClosed();
+    
+    void addTransactionListener(TransactionListener listener);
+    void removeTransactionListener(TransactionListener listener);
 }
