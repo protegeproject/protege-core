@@ -1,7 +1,16 @@
 package edu.stanford.smi.protege.util;
 
-import java.io.*;
-import java.util.logging.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * A utility class that prints trace messages of various sorts to a log. By
@@ -35,6 +44,19 @@ import java.util.logging.*;
 public class Log {
     private static Logger logger;
     private static LegacyLogger legacyLogger;
+    private static Handler consoleHandler;
+    private static Handler fileHandler;
+    
+    /**
+     * This is to support for detailed logging.  Logging settings can be set programatically here
+     * and at some later time (4.0?) we should switch to something more flexible like log4j.
+     */
+    static {
+        Logger rootlog = Logger.getLogger("");
+        rootlog.setLevel(Level.WARNING);
+        // Example of programatic level setting
+        // Logger.getLogger("edu.stanford.smi.protege.model.framestore").setLevel(Level.FINEST);
+    }
 
     private Log() {
 
@@ -502,6 +524,17 @@ public class Log {
         }
         return logger;
     }
+    
+    public static Logger getLogger(Class c) {
+        Logger l = Logger.getLogger(c.getName());
+        try {
+            l.addHandler(getFileHandler());
+        } catch (IOException e) {
+            getLogger().warning("IO exception getting logger" + e);
+        }
+        l.addHandler(getConsoleHandler());
+        return l;
+    }
 
     public static String toString(Throwable t) {
         Writer writer = new StringWriter();
@@ -512,14 +545,30 @@ public class Log {
     }
 
     private static void addConsoleHandler() {
-        Handler handler = new ConsoleHandler();
-        handler.setFormatter(new ConsoleFormatter());
-        handler.setLevel(Level.ALL);
-        logger.addHandler(handler);
+        logger.addHandler(getConsoleHandler());
+    }
+    
+    private static Handler getConsoleHandler() {
+        if (consoleHandler == null) {
+            consoleHandler = new ConsoleHandler();
+            consoleHandler.setFormatter(new ConsoleFormatter());
+            consoleHandler.setLevel(Level.ALL);
+        }
+        return consoleHandler;
     }
 
     private static void addFileHandler() {
         try {
+            Handler handler = getFileHandler();
+            logger.addHandler(handler);
+            handler.publish(new LogRecord(Level.INFO, "*** SYSTEM START ***"));
+        } catch (IOException e) {
+            // do nothing, happens in applets
+        }
+    }
+    
+    private static Handler getFileHandler() throws IOException {
+        if (fileHandler == null) {
             String path;
             File file = ApplicationProperties.getLogFileDirectory();
             if (file == null) {
@@ -528,13 +577,10 @@ public class Log {
             } else {
                 path = file.getPath();
             }
-            Handler handler = new FileHandler(path + File.separatorChar + "protege_%u.log", true);
-            handler.setFormatter(new FileFormatter());
-            handler.setLevel(Level.ALL);
-            logger.addHandler(handler);
-            handler.publish(new LogRecord(Level.INFO, "*** SYSTEM START ***"));
-        } catch (IOException e) {
-            // do nothing, happens in applets
+            fileHandler = new FileHandler(path + File.separatorChar + "protege_%u.log", true);
+            fileHandler.setFormatter(new FileFormatter());
+            fileHandler.setLevel(Level.ALL);
         }
+        return fileHandler;
     }
 }
