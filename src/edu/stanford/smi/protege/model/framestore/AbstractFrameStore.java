@@ -1,16 +1,29 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import edu.stanford.smi.protege.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.StringUtilities;
 
 public abstract class AbstractFrameStore implements FrameStore {
+    private static Logger log = Log.getLogger(AbstractFrameStore.class);
     private FrameStore delegate;
     private String name;
 
     protected AbstractFrameStore(String name) {
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Constructing abstract frame store name = " + name + " class = " + this.getClass());
+            log.fine("FrameStore being constructed = " + this + "/" + this.hashCode());
+        }
         this.name = name;
     }
 
     protected AbstractFrameStore() {
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Constructing abstract frame store class = " + this.getClass());
+            log.fine("FrameStore being constructed = " + this + "/" + this.hashCode());
+        }
         this.name = getClass().getName();
     }
 
@@ -27,6 +40,13 @@ public abstract class AbstractFrameStore implements FrameStore {
     }
 
     public void setDelegate(FrameStore delegate) {
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Setting delegate for " + this + "/" + this.hashCode() 
+                    + " delegate = " + delegate);
+            if (delegate != null) {
+                log.fine("delegate hash = " + delegate.hashCode());
+            }
+        }
         this.delegate = delegate;
         onSetDelegate();
     }
