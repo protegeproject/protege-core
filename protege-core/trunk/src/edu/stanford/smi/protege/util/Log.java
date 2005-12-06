@@ -47,10 +47,6 @@ public class Log {
     private static Handler consoleHandler;
     private static Handler fileHandler;
     
-    /**
-     * This is to support for detailed logging.  Logging settings can be set programatically here
-     * and at some later time (4.0?) we should switch to something more flexible like log4j.
-     */
     static {
         Logger rootlog = Logger.getLogger("");
         rootlog.setLevel(Level.WARNING);
