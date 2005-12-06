@@ -42,10 +42,7 @@ public abstract class AbstractFrameStore implements FrameStore {
     public void setDelegate(FrameStore delegate) {
         if (log.isLoggable(Level.FINE)) {
             log.fine("Setting delegate for " + this + "/" + this.hashCode() 
-                    + " delegate = " + delegate);
-            if (delegate != null) {
-                log.fine("delegate hash = " + delegate.hashCode());
-            }
+                    + " delegate = " + delegate + "/" + (delegate == null ? -1 : delegate.hashCode()));
         }
         this.delegate = delegate;
         onSetDelegate();

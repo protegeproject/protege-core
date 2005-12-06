@@ -1,6 +1,8 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.query.*;
@@ -12,6 +14,8 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class MergingNarrowFrameStore implements NarrowFrameStore {
+	private static Logger log = Log.getLogger(MergingNarrowFrameStore.class);
+	
     private static final Object ROOT_NODE = new Object();
 
     private NarrowFrameStore activeFrameStore;
@@ -177,6 +181,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public NarrowFrameStore setActiveFrameStore(NarrowFrameStore nfs) {
+    	if (log.isLoggable(Level.FINE)) {
+    		log.fine("Setting the delegate for " + this + " to " + nfs);
+    	}
         NarrowFrameStore oldActiveFrameStore = activeFrameStore;
         if (nfs != null) {
             activeFrameStore = nfs;
