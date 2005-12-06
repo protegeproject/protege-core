@@ -1,6 +1,8 @@
 package edu.stanford.smi.protege.storage.database;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.framestore.*;
@@ -14,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  */
 
 public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
+	private Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private DatabaseFrameDb _delegate;
     private final Sft _lookupSft = new Sft();
     private CacheMap _frameToSftToValuesMap = new CacheMap();
@@ -35,6 +38,9 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public ValueCachingNarrowFrameStore(DatabaseFrameDb delegate) {
+    	if (log.isLoggable(Level.FINE)) {
+    		log.fine("Constructing ValueCachingNarrowFrameStore with delegate " + delegate);
+    	}
         _delegate = delegate;
     }
 

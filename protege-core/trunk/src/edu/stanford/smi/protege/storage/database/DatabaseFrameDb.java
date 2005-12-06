@@ -2,17 +2,44 @@ package edu.stanford.smi.protege.storage.database;
 
 //ESCA*JAVA0100
 
-import java.sql.*;
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.model.query.*;
-import edu.stanford.smi.protege.server.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameFactory;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
+import edu.stanford.smi.protege.model.framestore.ReferenceImpl;
+import edu.stanford.smi.protege.model.framestore.Sft;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.server.Server;
+import edu.stanford.smi.protege.server.ServerFrameStore;
+import edu.stanford.smi.protege.server.Session;
+import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.CacheMap;
+import edu.stanford.smi.protege.util.Log;
 
 public class DatabaseFrameDb implements NarrowFrameStore {
+	private static Logger log = Log.getLogger(DatabaseFrameDb.class);
+	
     private static final String FRAME_COLUMN = "frame";
     private static final String FRAME_TYPE_COLUMN = "frame_type";
     private static final String SLOT_COLUMN = "slot";
@@ -83,6 +110,10 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     public DatabaseFrameDb(FrameFactory factory, String driver, String url, String user, String pass, String table) {
+    	if (log.isLoggable(Level.FINE)) {
+    		log.fine("Constructing database frame narrow frame store for " + driver + " " + url + " " + table);
+    		log.fine("No delegates");
+    	}
         _table = table;
         _frameFactory = factory;
         _driver = driver;
