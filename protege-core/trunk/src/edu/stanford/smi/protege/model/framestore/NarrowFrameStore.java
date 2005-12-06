@@ -1,9 +1,14 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.query.*;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.query.Query;
 
 public interface NarrowFrameStore {
 

@@ -1,6 +1,8 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.query.*;
@@ -8,6 +10,8 @@ import edu.stanford.smi.protege.util.*;
 
 //ESCA-JAVA0100 
 public class InMemoryFrameDb implements NarrowFrameStore {
+    private static Logger log = Log.getLogger(InMemoryFrameDb.class);
+    
     private static final int INITIAL_MAP_SIZE = 32771;
     private Map referenceToRecordMap = new HashMap(INITIAL_MAP_SIZE);
     private Map frameToRecordsMap = new HashMap(INITIAL_MAP_SIZE);
@@ -32,7 +36,11 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         frameDBName = name;
     }
 
+    
     public InMemoryFrameDb(String name) {
+    	if (log.isLoggable(Level.FINE)) {
+    		log.fine("Constructing InMemoryFrameDb with name " + name + " No delegate...");
+    	}
         frameDBName = name;
     }
 
