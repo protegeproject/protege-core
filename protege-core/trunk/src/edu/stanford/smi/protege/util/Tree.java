@@ -110,7 +110,7 @@ public class Tree<X> implements Cloneable {
         return (Set<X>)((children == null) ?  Collections.EMPTY_SET : Collections.unmodifiableSet(children));
     }
 
-    public Set getNodeAndDescendents(X parent) {
+    public Set<X> getNodeAndDescendents(X parent) {
         Set<X> descendents = getDescendents(parent);
         if (parent == null) {
             Log.getLogger().severe("Null parent");
