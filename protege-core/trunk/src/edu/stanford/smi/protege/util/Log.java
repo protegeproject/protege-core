@@ -11,6 +11,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.LogManager;
 
 /**
  * A utility class that prints trace messages of various sorts to a log. By
@@ -48,6 +49,21 @@ public class Log {
     private static Handler fileHandler;
     
     static {
+    	String logProperty = "java.util.logging.config.file";
+    	String rootDir = System.getProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
+    	try {
+    		if (rootDir != null) {
+    			File logconfig = new File(rootDir + File.separator + "logs" + File.separator + "logging.properties");
+    			if (logconfig.canRead()) {
+    				System.setProperty(logProperty, logconfig.getAbsolutePath());
+    				LogManager.getLogManager().readConfiguration();
+    			} else {
+    				Log.getLogger().info("No log configuration file available");
+    			}
+    		}
+    	} catch (Exception e) {
+    		Log.getLogger().log(Level.WARNING, "Could not set up class specific logging", e);
+    	}
         Logger rootlog = Logger.getLogger("");
         rootlog.setLevel(Level.WARNING);
         // Example of programatic level setting
