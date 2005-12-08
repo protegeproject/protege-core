@@ -1,10 +1,12 @@
 package edu.stanford.smi.protege.model;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
-import edu.stanford.smi.protege.event.*;
+import edu.stanford.smi.protege.event.FrameListener;
 
 /**
  * A container for slot and facet values. This definition of a Frame is roughly consistent with the OKBC notion.
