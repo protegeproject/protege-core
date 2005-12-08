@@ -7,11 +7,11 @@ import java.util.*;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public class Tree implements Cloneable {
-    private Object root;
-    private Map nodeToChildrenMap = new LinkedHashMap();
+public class Tree<X> implements Cloneable {
+    private X root;
+    private Map<X,Set<X>> nodeToChildrenMap = new LinkedHashMap<X,Set<X>>();
 
-    public Tree(Object root) {
+    public Tree(X root) {
         setRoot(root);
     }
 
@@ -19,33 +19,33 @@ public class Tree implements Cloneable {
     }
 
     public Object clone() {
-        Tree tree = new Tree(root);
-        Iterator i = nodeToChildrenMap.entrySet().iterator();
+        Tree<X> tree = new Tree<X>(root);
+        Iterator<Map.Entry<X,Set<X>>> i = nodeToChildrenMap.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry entry = (Map.Entry) i.next();
-            Object node = entry.getKey();
-            Set children = (Set) entry.getValue();
-            tree.nodeToChildrenMap.put(node, new LinkedHashSet(children));
+            Map.Entry<X,Set<X>> entry = i.next();
+            X node = entry.getKey();
+            Set<X> children = entry.getValue();
+            tree.nodeToChildrenMap.put(node, new LinkedHashSet<X>(children));
         }
         return tree;
     }
 
-    public void setRoot(Object root) {
+    public void setRoot(X root) {
         // Log.getLogger().info("set root: " + root);
         this.root = root;
     }
 
-    public void swapNode(Object oldNode, Object newNode) {
+    public void swapNode(X oldNode, X newNode) {
         if (root == oldNode) {
             root = newNode;
         }
-        Set children = (Set) nodeToChildrenMap.remove(oldNode);
+        Set<X> children = nodeToChildrenMap.remove(oldNode);
         if (children != null) {
             nodeToChildrenMap.put(newNode, children);
         }
-        Iterator i = nodeToChildrenMap.values().iterator();
+        Iterator<Set<X>> i = nodeToChildrenMap.values().iterator();
         while (i.hasNext()) {
-            Set nodeChildren = (Set) i.next();
+            Set<X> nodeChildren = i.next();
             boolean succeeded = nodeChildren.remove(oldNode);
             if (succeeded) {
                 nodeChildren.add(newNode);
@@ -53,15 +53,15 @@ public class Tree implements Cloneable {
         }
     }
 
-    public Object getRoot() {
+    public X getRoot() {
         return root;
     }
 
-    public boolean isReachable(Object node) {
+    public boolean isReachable(X node) {
         return root == node || getDescendents(root).contains(node);
     }
 
-    public void addChild(Object parent, Object child) {
+    public void addChild(X parent, X child) {
         if (parent == null) {
             throw new IllegalArgumentException("Null parent");
         }
@@ -69,16 +69,16 @@ public class Tree implements Cloneable {
             throw new IllegalArgumentException("Null child");
         }
         // Log.getLogger().info("add child: " + parent + " " + child);
-        Set children = (Set) nodeToChildrenMap.get(parent);
+        Set<X> children = nodeToChildrenMap.get(parent);
         if (children == null) {
-            children = new LinkedHashSet();
+            children = new LinkedHashSet<X>();
             nodeToChildrenMap.put(parent, children);
         }
         children.add(child);
     }
 
-    public void removeChild(Object parent, Object child) {
-        Set children = (Set) nodeToChildrenMap.get(parent);
+    public void removeChild(X parent, X child) {
+        Set<X> children =  nodeToChildrenMap.get(parent);
         if (children == null) {
             logNoSuchChild(parent, child);
         } else {
@@ -89,14 +89,14 @@ public class Tree implements Cloneable {
         }
     }
 
-    public void removeNode(Object node) {
+    public void removeNode(X node) {
         if (root == node) {
             root = null;
         }
         nodeToChildrenMap.remove(node);
-        Iterator i = nodeToChildrenMap.values().iterator();
+        Iterator<Set<X>> i = nodeToChildrenMap.values().iterator();
         while (i.hasNext()) {
-            Set children = (Set) i.next();
+            Set children = i.next();
             children.remove(node);
         }
     }
@@ -105,13 +105,13 @@ public class Tree implements Cloneable {
         Log.getLogger().warning("No such child: " + parent + " " + child);
     }
 
-    public Set getChildren(Object parent) {
-        Set children = (Set) nodeToChildrenMap.get(parent);
-        return (children == null) ? Collections.EMPTY_SET : Collections.unmodifiableSet(children);
+    public Set<X> getChildren(X parent) {
+        Set<X> children = nodeToChildrenMap.get(parent);
+        return (Set<X>)((children == null) ?  Collections.EMPTY_SET : Collections.unmodifiableSet(children));
     }
 
-    public Set getNodeAndDescendents(Object parent) {
-        Set descendents = getDescendents(parent);
+    public Set getNodeAndDescendents(X parent) {
+        Set<X> descendents = getDescendents(parent);
         if (parent == null) {
             Log.getLogger().severe("Null parent");
         } else {
@@ -120,18 +120,18 @@ public class Tree implements Cloneable {
         return descendents;
     }
 
-    public Set getDescendents(Object parent) {
-        Set descendents = new LinkedHashSet();
+    public Set<X> getDescendents(X parent) {
+        Set<X> descendents = new LinkedHashSet<X>();
         getDescendents(parent, descendents);
         return descendents;
     }
 
-    private void getDescendents(Object parent, Set descendents) {
-        Set children = (Set) nodeToChildrenMap.get(parent);
+    private void getDescendents(X parent, Set<X> descendents) {
+        Set<X> children =  nodeToChildrenMap.get(parent);
         if (children != null) {
-            Iterator i = children.iterator();
+            Iterator<X> i = children.iterator();
             while (i.hasNext()) {
-                Object o = i.next();
+                X o = i.next();
                 boolean changed = descendents.add(o);
                 if (changed) {
                     getDescendents(o, descendents);
@@ -140,7 +140,7 @@ public class Tree implements Cloneable {
         }
     }
 
-    public Set getNodes() {
+    public Set<X> getNodes() {
         return getDescendents(root);
     }
 }
