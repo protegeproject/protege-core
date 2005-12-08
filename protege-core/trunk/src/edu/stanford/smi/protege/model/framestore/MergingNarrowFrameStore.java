@@ -29,18 +29,21 @@ import edu.stanford.smi.protege.util.Tree;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class MergingNarrowFrameStore implements NarrowFrameStore {
-	private static Logger log = Log.getLogger(MergingNarrowFrameStore.class);
+    private static Logger log = Log.getLogger(MergingNarrowFrameStore.class);
 	
-    private static final Object ROOT_NODE = new Object();
+    private static final NarrowFrameStore ROOT_NODE = new PlaceHolderNarrowFrameStore();
 
     private NarrowFrameStore activeFrameStore;
-    private Collection removeFrameStores = new LinkedHashSet();
-    private Collection availableFrameStores = new LinkedHashSet();
+    private Collection<NarrowFrameStore> removeFrameStores 
+                                = new LinkedHashSet<NarrowFrameStore>();
+    private Collection<NarrowFrameStore> availableFrameStores 
+                               = new LinkedHashSet<NarrowFrameStore>();
     private NarrowFrameStore topFrameStore;
     private NarrowFrameStore systemFrameStore;
     private boolean queryAllFrameStores = false;
 
-    private Tree frameStoreTree = new Tree(ROOT_NODE);
+    private Tree<NarrowFrameStore> frameStoreTree 
+      = new Tree<NarrowFrameStore>(ROOT_NODE);
 
     public MergingNarrowFrameStore() {
         systemFrameStore = new InMemoryFrameDb("system");
@@ -74,12 +77,12 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return systemFrameStore;
     }
 
-    public Collection getAvailableFrameStores() {
-        return new ArrayList(availableFrameStores);
+    public Collection<NarrowFrameStore> getAvailableFrameStores() {
+        return new ArrayList<NarrowFrameStore>(availableFrameStores);
     }
 
-    public Collection getAllFrameStores() {
-        Collection frameStores = frameStoreTree.getNodes();
+    public Collection<NarrowFrameStore> getAllFrameStores() {
+        Collection<NarrowFrameStore> frameStores = frameStoreTree.getNodes();
         frameStores.add(systemFrameStore);
         return frameStores;
     }
@@ -101,16 +104,17 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
      * the "active" frame store, which is handled separately.
      * @param narrowFrameStores Collection of NarrowFrameStores
      */
-    public void setRemoveFrameStores(Collection narrowFrameStores) {
+    public void setRemoveFrameStores(Collection<NarrowFrameStore> narrowFrameStores) {
         removeFrameStores.clear();
         removeFrameStores.addAll(narrowFrameStores);
     }
 
     public NarrowFrameStore getFrameStore(String name) {
         NarrowFrameStore frameStore = null;
-        Iterator i = frameStoreTree.getDescendents(ROOT_NODE).iterator();
+        Iterator<NarrowFrameStore> i 
+          = frameStoreTree.getDescendents(ROOT_NODE).iterator();
         while (i.hasNext()) {
-            NarrowFrameStore testFrameStore = (NarrowFrameStore) i.next();
+            NarrowFrameStore testFrameStore = i.next();
             if (name.equals(testFrameStore.getName())) {
                 frameStore = testFrameStore;
                 break;
@@ -120,6 +124,10 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public void addRelation(String parent, String child) {
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Adding frame store relation between " 
+                     + parent + " and " + child);
+        }
         NarrowFrameStore parentFs = getFrameStore(parent);
         NarrowFrameStore childFs = getFrameStore(child);
         if (parentFs == null || childFs == null) {
@@ -127,17 +135,33 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
             text += " and " + child + "(" + childFs + ")";
             Log.getLogger().warning(text);
         } else {
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("...Added");
+                dumpFrameStores(Level.FINE);
+            }
             frameStoreTree.addChild(parentFs, childFs);
             updateQueryableFrameStores();
         }
     }
-
+    
     public void dumpFrameStores() {
-        Iterator i = frameStoreTree.getNodes().iterator();
-        while (i.hasNext()) {
-            NarrowFrameStore nfs = (NarrowFrameStore) i.next();
-            Log.getLogger().info("*" + nfs.getName() + " " + frameStoreTree.getChildren(nfs));
+        dumpFrameStores(Level.INFO);
+    }
+
+    public void dumpFrameStores(Level lev) {
+        if (!log.isLoggable(lev)) {
+            return;
         }
+        log.log(lev, "------------Starting Merged Narrow Frame Store Dump");
+        Iterator<NarrowFrameStore> i = frameStoreTree.getNodes().iterator();
+        while (i.hasNext()) {
+            NarrowFrameStore nfs = i.next();
+            log.log(lev,"*" + nfs.getClass() + " " + nfs.getName() + " " + frameStoreTree.getChildren(nfs));
+        }
+        if (activeFrameStore != null) {
+            log.log(lev, "Active frame store = " + activeFrameStore.getName());
+        }
+        log.log(lev, "------------Merged Narrow Frame Store Dump Completed");
     }
 
     public void addActiveFrameStore(NarrowFrameStore frameStore) {
@@ -154,12 +178,20 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         }
         frameStoreTree.addChild(parentFrameStore, childFrameStore);
         setActiveFrameStore(childFrameStore);
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Adding child frame store (and making active?) " 
+                     + childFrameStore);
+            dumpFrameStores(Level.FINE);
+        }
     }
 
     public void removeFrameStore(NarrowFrameStore frameStore) {
         frameStoreTree.removeNode(frameStore);
         availableFrameStores.remove(frameStore);
         removeFrameStores.remove(frameStore);
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("removing frame store " + frameStore);
+        }
     }
 
     public void addActiveFrameStore(NarrowFrameStore parent, Collection childNames) {
@@ -178,6 +210,10 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
             }
         }
         setActiveFrameStore(parent);
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Added new active frame store");
+            dumpFrameStores(Level.FINE);
+        }
     }
 
     /**
@@ -224,9 +260,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     private void checkAvailable() {
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            Object o = i.next();
+            NarrowFrameStore o = i.next();
             if (o == null) {
                 Log.getLogger().severe("Null frame store found");
                 i.remove();
@@ -254,9 +290,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public int getFrameCount() {
         int count = 0;
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             count += fs.getFrameCount();
         }
         return count;
@@ -264,9 +300,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public Set getFrames() {
         Set frames = new HashSet();
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             frames.addAll(fs.getFrames());
         }
         return frames;
@@ -274,9 +310,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public int getClsCount() {
         int count = 0;
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             count += fs.getClsCount();
         }
         return count;
@@ -284,9 +320,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public int getSlotCount() {
         int count = 0;
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             count += fs.getSlotCount();
         }
         return count;
@@ -294,9 +330,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public int getFacetCount() {
         int count = 0;
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             count += fs.getFacetCount();
         }
         return count;
@@ -304,9 +340,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public int getSimpleInstanceCount() {
         int count = 0;
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             count += fs.getSimpleInstanceCount();
         }
         return count;
@@ -314,9 +350,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public Frame getFrame(FrameID id) {
         Frame frame = null;
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext() && frame == null) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             frame = fs.getFrame(id);
         }
         return frame;
@@ -332,9 +368,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     private List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, boolean skipActive) {
         List values = null;
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             if (fs != activeFrameStore || !skipActive) {
                 List fsValues = fs.getValues(frame, slot, facet, isTemplate);
                 if (!fsValues.isEmpty()) {
@@ -354,9 +390,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public int getValuesCount(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         int count = 0;
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             count += fs.getValuesCount(frame, slot, facet, isTemplate);
         }
         return count;
@@ -390,9 +426,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     private void removeValueFromRemoveFrameStores(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
-        Iterator i = removeFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = removeFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore frameStore = (NarrowFrameStore) i.next();
+            NarrowFrameStore frameStore = i.next();
             frameStore.removeValue(frame, slot, facet, isTemplate, value);
         }
     }
@@ -423,9 +459,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public Set getFrames(Slot slot, Facet facet, boolean isTemplate, Object value) {
         Set frames = new HashSet();
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             frames.addAll(fs.getFrames(slot, facet, isTemplate, value));
         }
         return frames;
@@ -433,9 +469,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public Set getFramesWithAnyValue(Slot slot, Facet facet, boolean isTemplate) {
         Set frames = new HashSet();
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             frames.addAll(fs.getFramesWithAnyValue(slot, facet, isTemplate));
         }
         return frames;
@@ -443,9 +479,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
         Set frames = new HashSet();
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext() && !hasEnoughMatches(frames.size(), maxMatches)) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             frames.addAll(fs.getMatchingFrames(slot, facet, isTemplate, value, maxMatches - frames.size()));
         }
         return frames;
@@ -457,9 +493,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public Set getReferences(Object value) {
         Set references = new HashSet();
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             references.addAll(fs.getReferences(value));
         }
         return references;
@@ -467,9 +503,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public Set getMatchingReferences(String value, int maxMatches) {
         Set references = new HashSet();
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext() && !hasEnoughMatches(references.size(), maxMatches)) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             references.addAll(fs.getMatchingReferences(value, maxMatches - references.size()));
         }
         return references;
@@ -477,9 +513,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public Set executeQuery(Query query) {
         Set results = new HashSet();
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             results.addAll(fs.executeQuery(query));
         }
         return results;
@@ -487,9 +523,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         Set frames = new HashSet();
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             frames.addAll(fs.getClosure(frame, slot, facet, isTemplate));
         }
         return frames;
@@ -500,9 +536,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public void close() {
-        Iterator i = availableFrameStores.iterator();
+        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
-            NarrowFrameStore fs = (NarrowFrameStore) i.next();
+            NarrowFrameStore fs = i.next();
             fs.close();
         }
         availableFrameStores.clear();
