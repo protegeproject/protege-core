@@ -19,7 +19,7 @@
 	<property name = "optimize" value = "on"/>  
 	<property name = "packages" value = "edu.*"/>  
 	<property name = "includeAntRuntime" value = "no"/>
-	<property name = "source" value = "1.4"/>
+	<property name = "source" value = "1.5"/>
 	<path id = "project.classpath">    
 		<pathelement location = "${lib}/junit.jar"/>
 		<pathelement location = "${lib}/looks.jar"/>
@@ -45,6 +45,7 @@
 		<echo message = "   dist     --> generates source and binary distributions"/>
 		<echo message = "   jar      --> generates the protege JAR file"/>
 		<echo message = "   javadocs --> generates the API docs"/>
+                <echo message = "   junit    --> runs the junit tests (needs a little work...)"/>
 		<echo message = "   usage    --> provides help on using the build tool (default)"/>
 		<echo message = ""/>
 		<echo message = "-------------------------------------------------------------"/>
@@ -174,4 +175,23 @@
 		<delete dir = "${javadocs}"/>
 		<delete file = "${protege.jar}"/>
 	</target>
+	
+	<!-- =================================================================== -->
+
+        <target name = "junit" description = "test the system" depends="jar">
+        <!-- depends="jar" -->
+          <junit  printsummary="withOutAndErr" haltonerror="on">
+            <classpath refid="project.classpath"/>
+            <classpath>
+              <pathelement path="${dist}/protege.jar"/>
+            </classpath>
+            <batchtest>
+              <fileset dir="${src}">
+                <include name="**/*Test.java"/>
+                <exclude name="**/Application_Test.java"/>
+                <exclude name="**/action/*.java"/>
+              </fileset>
+            </batchtest>
+          </junit>
+        </target>
 </project>
