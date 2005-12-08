@@ -2,24 +2,70 @@ package edu.stanford.smi.protege.model;
 //ESCA*JAVA0100
 //ESCA*JAVA0136
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-import java.util.logging.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.Reader;
+import java.lang.reflect.Constructor;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.plugin.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.storage.clips.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
-import edu.stanford.smi.protege.widget.*;
+import edu.stanford.smi.protege.event.KnowledgeBaseAdapter;
+import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.ProjectEvent;
+import edu.stanford.smi.protege.event.ProjectEventDispatcher;
+import edu.stanford.smi.protege.event.ProjectListener;
+import edu.stanford.smi.protege.event.WidgetAdapter;
+import edu.stanford.smi.protege.event.WidgetEvent;
+import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
+import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
+import edu.stanford.smi.protege.plugin.PluginUtilities;
+import edu.stanford.smi.protege.resource.Files;
+import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
+import edu.stanford.smi.protege.ui.InstanceDisplay;
+import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.FileUtilities;
+import edu.stanford.smi.protege.util.ListenerCollection;
+import edu.stanford.smi.protege.util.ListenerList;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.PropertyList;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.Tree;
+import edu.stanford.smi.protege.util.URIUtilities;
+import edu.stanford.smi.protege.widget.ClsWidget;
+import edu.stanford.smi.protege.widget.DefaultWidgetMapper;
+import edu.stanford.smi.protege.widget.UglyClsWidget;
+import edu.stanford.smi.protege.widget.Widget;
+import edu.stanford.smi.protege.widget.WidgetMapper;
+import edu.stanford.smi.protege.widget.WidgetUtilities;
 
 /**
  * The aggregation of a domain knowledge base with its user interface.
@@ -38,6 +84,8 @@ import edu.stanford.smi.protege.widget.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class Project {
+	private static Logger log = Log.getLogger(Project.class);
+	
     private static final String CLASS_PROJECT = "Project";
     private static final String SLOT_DEFAULT_INSTANCE_WIDGET_CLASS_NAME = "default_instance_widget_class_name";
     private static final String SLOT_CUSTOMIZED_INSTANCE_WIDGETS = "customized_instance_widgets";
@@ -897,18 +945,20 @@ public class Project {
             while (i.hasNext()) {
                 Instance instance = (Instance) i.next();
                 WidgetDescriptor d = WidgetDescriptor.create(instance);
-                if (PluginUtilities.isLoadableClass(d.getWidgetClassName())) {
+                String name = d.getWidgetClassName();
+                if (log.isLoggable(Level.FINE)) {
+                	log.fine("Project found tab plugin called " + name);
+                }
+                if (PluginUtilities.isLoadableClass(name)) {
                     _tabWidgetDescriptors.add(d);
                 } else {
-                    // String text = "removing reference to missing tab: " +
-                    // d.getWidgetClassName();
-                    // Log.warning(text, this, "getTabWidgetDescriptors");
+                	if (log.isLoggable(Level.INFO)) {
+                		log.info("Could not find slot tab classname " + name);
+                	}
                 }
-                String name = d.getWidgetClassName();
                 boolean removed = availableTabNames.remove(name);
-                if (!removed) {
-                    // Log.warning("tab " + name + " not in manifest", this,
-                    // "getTabWidgetDescriptors");
+                if (!removed && log.isLoggable(Level.INFO)) {
+                	log.info("tab " + name + " not in manifest");
                 }
             }
 
