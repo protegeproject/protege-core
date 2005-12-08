@@ -1,8 +1,12 @@
 package edu.stanford.smi.protege.model;
 
-import java.io.*;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.HashUtils;
 
 /**
  * A wrapper around a numeric value that uniquely identifies the frame. The frame name also uniquely identifies it but
