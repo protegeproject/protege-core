@@ -262,7 +262,7 @@ public class SubslotPane extends SelectableContainer {
         return slot;
     }
 
-    public JComponent getDropComponent() {
+    public JTree getDropComponent() {
         return getTree();
     }
 
