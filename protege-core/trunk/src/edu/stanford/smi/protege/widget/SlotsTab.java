@@ -1,13 +1,20 @@
 package edu.stanford.smi.protege.widget;
 
-import java.util.*;
+import java.util.Collection;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JSplitPane;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.ui.InstanceDisplay;
+import edu.stanford.smi.protege.ui.SubslotPane;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SelectionEvent;
+import edu.stanford.smi.protege.util.SelectionListener;
 
 /**
  * The standard slot tab.  This tab displays slots and subslots in a tree and allows
@@ -70,6 +77,7 @@ public class SlotsTab extends AbstractTabWidget {
         setLabel(LocalizedText.getText(ResourceKey.SLOTS_VIEW_TITLE));
         add(createMainSplitter());
         transmitSelection();
+        setClsTree(_slotsPanel.getDropComponent());
     }
 
     private void transmitSelection() {
