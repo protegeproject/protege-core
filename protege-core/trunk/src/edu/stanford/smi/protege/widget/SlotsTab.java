@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.resource.ResourceKey;
 import edu.stanford.smi.protege.ui.InstanceDisplay;
 import edu.stanford.smi.protege.ui.SubslotPane;
 import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.LabeledComponent;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SelectionEvent;
 import edu.stanford.smi.protege.util.SelectionListener;
@@ -70,6 +71,10 @@ public class SlotsTab extends AbstractTabWidget {
         _clsesSplitter.setTopComponent(createSlotsPanel());
         _clsesSplitter.setBottomComponent(createSuperslotsPanel());
         return _clsesSplitter;
+    }
+    
+    public LabeledComponent getLabeledComponent() {
+        return _slotsPanel.getLabeledComponent();
     }
 
     public void initialize() {

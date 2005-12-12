@@ -83,6 +83,10 @@ public class InstancesTab extends AbstractTabWidget {
         pane.setRightComponent(_instanceDisplay);
         return pane;
     }
+    
+    public LabeledComponent getLabeledComponent() {
+        return _clsesPanel.getLabeledComponent();
+    }
 
     public void initialize() {
         setIcon(Icons.getInstanceIcon());
