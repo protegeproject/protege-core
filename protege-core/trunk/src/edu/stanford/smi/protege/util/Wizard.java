@@ -7,7 +7,7 @@ import javax.swing.*;
 
 /**
  * TODO Class Comment
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class Wizard extends JDialog {
@@ -25,6 +25,15 @@ public abstract class Wizard extends JDialog {
 
     protected Wizard(JComponent owner, String title) {
         super(getFrame(owner), title, true);
+        initialize();
+    }
+
+    protected Wizard(Dialog owner, String title) {
+        super(owner, title, true);
+        initialize();
+    }
+
+    protected void initialize() {
         getContentPane().setLayout(new BorderLayout());
         layout = new CardLayout();
         cardHolder = new JPanel(layout);
@@ -67,7 +76,7 @@ public abstract class Wizard extends JDialog {
         action.setMnemonic('F');
         return createButton(action);
     }
-    
+
     private JButton createButton(Action action) {
         JButton button = ComponentFactory.createButton(action);
         button.addFocusListener(new FocusListener() {
@@ -78,7 +87,7 @@ public abstract class Wizard extends JDialog {
                 updateDefaultButton();
             }
         });
-        
+
         return button;
     }
 
@@ -195,7 +204,7 @@ public abstract class Wizard extends JDialog {
         finishButton.setEnabled(canFinish());
         updateDefaultButton();
     }
-    
+
     private void updateDefaultButton() {
         if (backButton.hasFocus()) {
             setDefaultButton(backButton);
@@ -213,7 +222,7 @@ public abstract class Wizard extends JDialog {
             setDefaultButton(null);
         }
     }
-        
+
     private void setDefaultButton(JButton button) {
         getRootPane().setDefaultButton(button);
     }
