@@ -79,6 +79,10 @@ public class ClsesTab extends AbstractTabWidget {
         setClsTree(_clsesPanel.getClsesTree());
     }
     
+    public LabeledComponent getLabeledComponent() {
+        return _clsesPanel.getLabeledComponent();
+    }
+    
     public void setFinderComponent(JComponent c) {
         _clsesPanel.setFinderComponent(c);
     }

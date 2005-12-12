@@ -20,11 +20,13 @@ import edu.stanford.smi.protege.util.*;
 public class InstanceClsesPanel extends SelectableContainer {
     private Project _project;
     private SelectableTree _clsTree;
+    private LabeledComponent _labeledComponent;
 
     public InstanceClsesPanel(Project project) {
         _project = project;
         add(createHeaderPanel(), BorderLayout.NORTH);
-        add(createClsesPanel(), BorderLayout.CENTER);
+        _labeledComponent = createClsesPanel();
+        add(_labeledComponent, BorderLayout.CENTER);
         setSelectable(_clsTree);
     }
     
@@ -38,7 +40,7 @@ public class InstanceClsesPanel extends SelectableContainer {
         return header;
     }
 
-    private JComponent createClsesPanel() {
+    private LabeledComponent createClsesPanel() {
         Cls root = _project.getKnowledgeBase().getRootCls();
         _clsTree = ComponentFactory.createSelectableTree(null, new ParentChildRoot(root));
         _clsTree.setLargeModel(true);
@@ -57,6 +59,10 @@ public class InstanceClsesPanel extends SelectableContainer {
 
     public JTree getDropComponent() {
         return _clsTree;
+    }
+    
+    public LabeledComponent getLabeledComponent() {
+        return _labeledComponent;
     }
 
     private Action getViewClsAction() {

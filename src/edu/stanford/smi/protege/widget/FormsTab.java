@@ -47,6 +47,10 @@ public class FormsTab extends AbstractTabWidget {
         transmitSelection();
         setClsTree(_formsPanel.getFormsTree());
     }
+    
+    public LabeledComponent getLabeledComponent() {
+        return _formsPanel.getLabeledComponent();
+    }
 
     /**
      * Selects a given Cls in the classes tree.
