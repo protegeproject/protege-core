@@ -1,17 +1,46 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
-import edu.stanford.smi.protege.widget.*;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.WidgetDescriptor;
+import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.ListenerCollection;
+import edu.stanford.smi.protege.util.ListenerList;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ProjectViewDispatcher;
+import edu.stanford.smi.protege.util.ProjectViewEvent;
+import edu.stanford.smi.protege.util.ProjectViewListener;
+import edu.stanford.smi.protege.util.SelectionEvent;
+import edu.stanford.smi.protege.util.SelectionListener;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.widget.TabWidget;
+import edu.stanford.smi.protege.widget.WidgetUtilities;
 
 /**
  * The GUI view of a project.  This is basically the outer tabbed pane for the application.
@@ -115,6 +144,10 @@ class MyJTabbedPane extends JTabbedPane implements TabbedPaneInterface {
 }
 
 public class ProjectView extends JComponent {
+    static private Logger log = Log.getLogger(ProjectView.class);
+    
+	private ListenerCollection projectViewListeners = new ListenerList(new ProjectViewDispatcher());
+	
     private Project _project;
     private TabbedPaneInterface _viewHolder;
     private Collection _currentClsPath;
@@ -129,8 +162,14 @@ public class ProjectView extends JComponent {
     }
 
     public TabWidget addTab(WidgetDescriptor widgetDescriptor) {
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Adding tab " + widgetDescriptor);
+        }
         TabWidget widget = WidgetUtilities.createTabWidget(widgetDescriptor, _project);
         addTab(widget);
+        projectViewListeners.postEvent(this, 
+        		                       ProjectViewEvent.Type.addTab.ordinal(), 
+        		                       widget);
         return widget;
     }
 
@@ -191,6 +230,7 @@ public class ProjectView extends JComponent {
         if (canSave) {
             save();
         }
+        projectViewListeners.postEvent(this, ProjectViewEvent.Type.save.ordinal());
         return canSave;
     }
 
@@ -201,6 +241,7 @@ public class ProjectView extends JComponent {
             tab.close();
         }
         _project = null;
+        projectViewListeners.postEvent(this, ProjectViewEvent.Type.close.ordinal());
     }
 
     private JComponent createTabbedPane() {
@@ -209,8 +250,14 @@ public class ProjectView extends JComponent {
         } else {
             _viewHolder = new MyJTabbedPane();
         }
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Added view holder " + _viewHolder + " for project " + this);
+        }
         _viewHolder.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("project view tabbed pane received change event " + e);
+                }
                 if (isAutosynchronizingClsTrees()) {
                     synchronizeClsTree();
                     synchronizeInstances();
@@ -232,6 +279,14 @@ public class ProjectView extends JComponent {
 
     public void addChangeListener(ChangeListener listener) {
         _viewHolder.addChangeListener(listener);
+    }
+    
+    public void addProjectViewListener(ProjectViewListener pvl) {
+        projectViewListeners.add(this, pvl);
+    }
+    
+    public void removeProjectViewListener(ProjectViewListener pvl) {
+        projectViewListeners.remove(this, pvl);
     }
 
     public Project getProject() {
