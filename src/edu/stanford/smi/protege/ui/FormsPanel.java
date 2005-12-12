@@ -21,6 +21,7 @@ import edu.stanford.smi.protege.widget.*;
 public class FormsPanel extends SelectableContainer {
     private Project _project;
     private SelectableTree _tree;
+    private LabeledComponent _labeledComponent;
 
     private ProjectListener _projectListener = new ProjectAdapter() {
         public void formChanged(ProjectEvent event) {
@@ -40,16 +41,16 @@ public class FormsPanel extends SelectableContainer {
 
         _tree = createTree();
         String formsLabel = LocalizedText.getText(ResourceKey.FORM_BROWSER_FORMS_LABEL);
-        LabeledComponent c = new LabeledComponent(formsLabel, ComponentFactory.createScrollPane(_tree));
-        c.setBorder(ComponentUtilities.getAlignBorder());
-        c.addHeaderButton(createCustomizationsAction());
-        c.addHeaderButton(createRemoveCustomizationsAction());
-        c.addHeaderButton(createRelayoutAction());
-        c.addHeaderButton(createLayoutLikeOtherFormAction());
-        c.setFooterComponent(createFinderControl());
+        _labeledComponent = new LabeledComponent(formsLabel, ComponentFactory.createScrollPane(_tree));
+        _labeledComponent.setBorder(ComponentUtilities.getAlignBorder());
+        _labeledComponent.addHeaderButton(createCustomizationsAction());
+        _labeledComponent.addHeaderButton(createRemoveCustomizationsAction());
+        _labeledComponent.addHeaderButton(createRelayoutAction());
+        _labeledComponent.addHeaderButton(createLayoutLikeOtherFormAction());
+        _labeledComponent.setFooterComponent(createFinderControl());
 
         _tree.setCellRenderer(new FormRenderer(_project));
-        add(c, BorderLayout.CENTER);
+        add(_labeledComponent, BorderLayout.CENTER);
         add(createHeader(), BorderLayout.NORTH);
         setSelectable(_tree);
     }
@@ -162,6 +163,10 @@ public class FormsPanel extends SelectableContainer {
 
     private KnowledgeBase getKnowledgeBase() {
         return _project.getKnowledgeBase();
+    }
+    
+    public LabeledComponent getLabeledComponent() {
+        return _labeledComponent;
     }
 
     private JPopupMenu getPopupMenu() {
