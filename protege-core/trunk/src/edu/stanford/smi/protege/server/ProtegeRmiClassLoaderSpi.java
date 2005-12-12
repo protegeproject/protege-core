@@ -8,7 +8,7 @@ import edu.stanford.smi.protege.plugin.*;
 
 /**
  * TODO Class Comment
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ProtegeRmiClassLoaderSpi extends RMIClassLoaderSpi {
@@ -35,7 +35,7 @@ public class ProtegeRmiClassLoaderSpi extends RMIClassLoaderSpi {
         return sun.rmi.server.LoaderHandler.getClassLoader(codebase);
     }
 
-    public String getClassAnnotation(Class cl) {
+    public String getClassAnnotation(Class<?> cl) {
         return sun.rmi.server.LoaderHandler.getClassAnnotation(cl);
     }
 }
