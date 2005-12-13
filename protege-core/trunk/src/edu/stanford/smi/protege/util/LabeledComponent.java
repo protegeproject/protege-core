@@ -1,10 +1,25 @@
 package edu.stanford.smi.protege.util;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 
 /**
  * The component that handles the standard layout of slot widgets. This layout
@@ -17,7 +32,7 @@ import javax.swing.*;
  * @author Holger Knublauch <holger@smi.stanford.edu>(minor extensions)
  */
 public class LabeledComponent extends JComponent {
-    private List actions = new ArrayList();
+    private List<Action> actions = new ArrayList<Action>();
     private JComponent _header;
     private JToolBar _toolBar;
     private JLabel _label;
@@ -56,6 +71,15 @@ public class LabeledComponent extends JComponent {
 
     public void addHeaderSeparator() {
         _toolBar.addSeparator();
+    }
+
+    public JToggleButton addHeaderToggleButton(Action action) {
+        JToggleButton button = null;
+        if (action != null) {
+            actions.add(action);
+            button = ComponentFactory.addToggleToolBarButton(_toolBar, action);
+        }
+        return button;
     }
 
     private JComponent createCenterComponentHolder() {
@@ -123,7 +147,7 @@ public class LabeledComponent extends JComponent {
         return (count == 0) ? (Component) null : _footerComponentHolder.getComponent(0);
     }
 
-    public Collection getHeaderButtonActions() {
+    public Collection<Action> getHeaderButtonActions() {
         return Collections.unmodifiableCollection(actions);
     }
 
@@ -228,7 +252,7 @@ public class LabeledComponent extends JComponent {
     public void setHeaderIcon(Icon icon) {
         _label.setIcon(icon);
     }
-
+    
     public void doLayout() {
         super.doLayout();
         adjustToolTipText();
