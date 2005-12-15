@@ -1006,13 +1006,18 @@ public class Project {
                 .getString(KnowledgeBaseFactory.FACTORY_CLASS_NAME);
         KnowledgeBaseFactory factory = (KnowledgeBaseFactory) SystemUtilities.newInstance(factoryName);
         PropertyList sources = getSources(projectInstance);
-
+        // TODO remove this fragment of code and include it in the 
         if (factory instanceof KnowledgeBaseFactory2) {
             NarrowFrameStore nfs = ((KnowledgeBaseFactory2)factory).createNarrowFrameStore(name);
             MergingNarrowFrameStore mergingFrameStore = getMergingFrameStore();
             mergingFrameStore.addActiveFrameStore(nfs, uris);
         }
-        factory.includeKnowledgeBase(_domainKB, sources, errors);
+        // TODO remove this fragment of code by merging the two interfaces.
+        if (factory instanceof KnowledgeBaseFactoryNew) {
+          ((KnowledgeBaseFactoryNew) factory).includeKnowledgeBase(_domainKB, sources, name, uris, errors);
+        } else {  
+          factory.includeKnowledgeBase(_domainKB, sources, errors);
+        }
     }
     
     public void includeProject(String path, Collection errors) {
@@ -1162,7 +1167,8 @@ public class Project {
         if (factory != null) {
             _frameCounts.updateIncludedFrameCounts(_domainKB);
             boolean enabled = _domainKB.setGenerateEventsEnabled(false);
-
+            
+            // TODO - remove this fragment and include it in the factory
             if (factory instanceof KnowledgeBaseFactory2) {
                 URI uri = getProjectURI();
                 String name = (uri == null) ? "<new>" : uri.toString();
@@ -1170,8 +1176,12 @@ public class Project {
                 MergingNarrowFrameStore mergingFrameStore = getMergingFrameStore();
                 mergingFrameStore.addActiveFrameStore(nfs, uris);
             }
-            
-            factory.loadKnowledgeBase(_domainKB, getSources(), errors);
+            // TODO - remove this fragment of code by merging the new interface with the old
+            if (factory instanceof KnowledgeBaseFactoryNew) {
+              ((KnowledgeBaseFactoryNew) factory).loadKnowledgeBase(_domainKB, getSources(), uris, errors);
+            } else {
+              factory.loadKnowledgeBase(_domainKB, getSources(), errors);
+            }
             _domainKB.setGenerateEventsEnabled(enabled);
         }
     }
