@@ -43,31 +43,38 @@ import java.util.logging.LogManager;
  */
 
 public class Log {
+    private static Logger loggerLogger = Logger.getLogger(Log.class.getName());
+  
     private static Logger logger;
     private static LegacyLogger legacyLogger;
     private static Handler consoleHandler;
     private static Handler fileHandler;
+    private static boolean configuredByFile = false;
     
     static {
-    	String logProperty = "java.util.logging.config.file";
-    	String rootDir = System.getProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
-    	try {
-    		if (rootDir != null) {
-    			File logconfig = new File(rootDir + File.separator + "logs" + File.separator + "logging.properties");
-    			if (logconfig.canRead()) {
-    				System.setProperty(logProperty, logconfig.getAbsolutePath());
-    				LogManager.getLogManager().readConfiguration();
-    			} else {
-    				Log.getLogger().info("No log configuration file available");
-    			}
-    		}
-    	} catch (Exception e) {
-    		Log.getLogger().log(Level.WARNING, "Could not set up class specific logging", e);
-    	}
-        Logger rootlog = Logger.getLogger("");
-        rootlog.setLevel(Level.WARNING);
-        // Example of programatic level setting
-        // Logger.getLogger("edu.stanford.smi.protege.model.framestore").setLevel(Level.FINEST);
+      String logProperty = "java.util.logging.config.file";
+      String rootDir = System.getProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
+      try {
+        if (System.getProperty(logProperty) != null) {
+          // already configured...
+          configuredByFile = true;
+        } else if (rootDir != null) {
+          File logconfig = new File(rootDir + File.separator + "logs" + File.separator + "logging.properties");
+          if (logconfig.canRead()) {
+            System.setProperty(logProperty, logconfig.getAbsolutePath());
+            LogManager.getLogManager().readConfiguration();
+            configuredByFile = true;
+          } else {
+            Log.getLogger().info("No log configuration file available");
+          }
+        }
+      } catch (Exception e) {
+        Log.getLogger().log(Level.WARNING, "Could not set up class specific logging", e);
+      }
+      Logger rootlog = Logger.getLogger("");
+      rootlog.setLevel(Level.WARNING);
+      // Example of programatic level setting
+      // Logger.getLogger("edu.stanford.smi.protege.model.framestore").setLevel(Level.FINEST);
     }
 
     private Log() {
@@ -524,27 +531,32 @@ public class Log {
     public static Logger getLogger() {
         if (logger == null) {
             logger = Logger.getLogger("protege.system");
-            try {
+            if (!configuredByFile) {
+              try {
                 logger.setUseParentHandlers(false);
                 logger.setLevel(Level.ALL);
                 addConsoleHandler();
                 addFileHandler();
-            } catch (SecurityException e) {
+              } catch (SecurityException e) {
                 // do nothing, happens in applets
+                // NOTE - empty catch blocks are VERY DANGEROUS
+                // but this might be ok...
+              }
             }
-
         }
         return logger;
     }
     
     public static Logger getLogger(Class c) {
         Logger l = Logger.getLogger(c.getName());
-        try {
+        if (!configuredByFile) {     
+          try {
             l.addHandler(getFileHandler());
-        } catch (IOException e) {
+          } catch (IOException e) {
             getLogger().warning("IO exception getting logger" + e);
+          }
+          l.addHandler(getConsoleHandler());
         }
-        l.addHandler(getConsoleHandler());
         return l;
     }
 
@@ -576,6 +588,8 @@ public class Log {
             handler.publish(new LogRecord(Level.INFO, "*** SYSTEM START ***"));
         } catch (IOException e) {
             // do nothing, happens in applets
+          // NOTE - empty catch blocks are VERY DANGEROUS
+          // but this might be ok...
         }
     }
     
