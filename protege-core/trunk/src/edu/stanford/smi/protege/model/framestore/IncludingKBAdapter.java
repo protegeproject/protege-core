@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
@@ -19,6 +21,8 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 
+import edu.stanford.smi.protege.util.Log;
+
 /**
  * 
  * 
@@ -27,6 +31,7 @@ import edu.stanford.smi.protege.model.query.Query;
  */
 public abstract class IncludingKBAdapter 
   implements NarrowFrameStore, IncludingKBSupport {
+  private static Logger log = Log.getLogger(IncludingKBAdapter.class);
 
   private InherittedFrameLookup iframes;
   
@@ -34,14 +39,16 @@ public abstract class IncludingKBAdapter
   
   private NarrowFrameStore delegate;
   
-  private int memoryProjectId;
+  protected int memoryProjectId;
   
   private Set<Frame> frameSetCache;
-
-  public IncludingKBAdapter(FrameFactory frameFactory, 
-                            NarrowFrameStore delegate) {
-    this.frameFactory = frameFactory;
+  
+  public IncludingKBAdapter(NarrowFrameStore delegate) {
     this.delegate = delegate;
+  }
+  
+  public void initialize(FrameFactory frameFactory) {
+    this.frameFactory = frameFactory;
     FrameID fid = delegate.generateFrameID();
     memoryProjectId = fid.getMemoryProjectPart();
   }
@@ -86,20 +93,38 @@ public abstract class IncludingKBAdapter
   }
   
   public Frame mapGlobalFrame(Frame frame, boolean create) {
+    if (log.isLoggable(Level.FINEST) && frame != null) {
+      log.finest("(" + memoryProjectId + ") Mapping global frame with id = " + 
+                 frame.getFrameID() + " create flag = " + create);
+    }
     if (frame == null || frame.getFrameID().isSystem() || !isGlobalFrameInherited(frame)) {
+      if (log.isLoggable(Level.FINEST)) {
+        log.finest("no mapping needed");
+      }
       return frame;
     }
     String name = iframes.getInherittedFrameName(frame);
-    for (Frame localFrame : delegate.getMatchingFrames(iframes.getNameSlot(), 
-                                                       (Facet) null, 
-                                                       false, name, 1)) {
-      return localFrame;
+    if (log.isLoggable(Level.FINEST)) {
+      log.finest("global frame has name = " + name);
+    }
+    if (name != null) {
+      for (Frame localFrame : delegate.getMatchingFrames(iframes.getNameSlot(), 
+                                                         (Facet) null, 
+                                                         false, name, 1)) {
+        if (log.isLoggable(Level.FINEST)) {
+          log.finest("found local frame with appropriate name with id = " + localFrame.getFrameID());
+        }
+        return localFrame;
+      }
     }
     if (create) {
-      return createLocalFrame(frame, name);
-    } else {
-      return null;
+      Frame localFrame = createLocalFrame(frame, name);
+      if (log.isLoggable(Level.FINEST)) {
+        log.finest("Created mapped local frame with id = " + localFrame.getFrameID());
+      }
+      return localFrame;
     }
+    return null;
   }
   
   protected Frame createLocalFrame(Frame global, String name) {
@@ -116,11 +141,13 @@ public abstract class IncludingKBAdapter
     Frame localFrame = 
       frameFactory.createFrameFromClassId(javaClassId, 
                                           delegate.generateFrameID());
-    delegate.addValues(localFrame, 
-                       iframes.getNameSlot(), 
-                       (Facet) null, 
-                       false, 
-                       Collections.singleton(name));
+    if (name != null) {
+      delegate.addValues(localFrame, 
+                         iframes.getNameSlot(), 
+                         (Facet) null, 
+                         false, 
+                         Collections.singleton(name));
+    }
     return localFrame;
   }
 
