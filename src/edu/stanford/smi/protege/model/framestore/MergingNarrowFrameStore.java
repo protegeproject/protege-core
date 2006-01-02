@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.CollectionUtilities;
@@ -210,10 +211,19 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
             }
         }
         setActiveFrameStore(parent);
+        if (parent instanceof IncludingKBSupport) { 
+          InherittedFrameLookup ifl = new InherittedFrameLookupImpl(getNameSlot(),
+                                                                    parent, frameStoreTree);
+          ((IncludingKBSupport) parent).setInheritedFrames(ifl);
+        }
         if (log.isLoggable(Level.FINE)) {
             log.fine("Added new active frame store");
             dumpFrameStores(Level.FINE);
         }
+    }
+    
+    public Slot getNameSlot() {
+      return (Slot) systemFrameStore.getFrame(Model.SlotID.NAME);
     }
 
     /**
