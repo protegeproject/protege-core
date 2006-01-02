@@ -1,16 +1,34 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.DefaultCls;
+import edu.stanford.smi.protege.model.DefaultFacet;
+import edu.stanford.smi.protege.model.DefaultSimpleInstance;
+import edu.stanford.smi.protege.model.DefaultSlot;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameFactory;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class DefaultFrameFactory implements FrameFactory {
-    private static final int DEFAULT_CLS_JAVA_CLASS_ID = 6;
-    private static final int DEFAULT_SLOT_JAVA_CLASS_ID = 7;
-    private static final int DEFAULT_FACET_JAVA_CLASS_ID = 8;
-    private static final int DEFAULT_SIMPLE_INSTANCE_JAVA_CLASS_ID = 5;
+    public static final int DEFAULT_CLS_JAVA_CLASS_ID = 6;
+    public static final int DEFAULT_SLOT_JAVA_CLASS_ID = 7;
+    public static final int DEFAULT_FACET_JAVA_CLASS_ID = 8;
+    public static final int DEFAULT_SIMPLE_INSTANCE_JAVA_CLASS_ID = 5;
 
     private static final Class[] CONSTRUCTOR_PARAMETERS = { KnowledgeBase.class, FrameID.class };
     private KnowledgeBase _kb;
