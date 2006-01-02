@@ -1,13 +1,43 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EventListener;
+import java.util.EventObject;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.ClsEvent;
+import edu.stanford.smi.protege.event.ClsListener;
+import edu.stanford.smi.protege.event.FacetEvent;
+import edu.stanford.smi.protege.event.FacetListener;
+import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.event.InstanceEvent;
+import edu.stanford.smi.protege.event.InstanceListener;
+import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.SlotEvent;
+import edu.stanford.smi.protege.event.SlotListener;
+import edu.stanford.smi.protege.event.TransactionEvent;
+import edu.stanford.smi.protege.event.TransactionListener;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.Log;
 
 /**
  * 
@@ -52,7 +82,12 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                 dispatchEvent(event);
             } catch (Exception e) {
                 if (!ignoreExceptions) {
-                    Log.getLogger().warning(e.toString());
+                  if (Log.getLogger().isLoggable(Level.FINE)) {
+                    Log.getLogger().log(Level.FINE, "Exception caught", e);
+                  } else {
+                    Log.getLogger().warning("Excepction caught " + e.toString());
+                    Log.getLogger().warning("using fine logging for more details");
+                  }
                 }
             }
         }
