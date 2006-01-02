@@ -1,19 +1,28 @@
 package edu.stanford.smi.protege.storage.database;
 
-import java.util.*;
-import java.util.logging.*;
+import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
+import edu.stanford.smi.protege.model.FrameFactory;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
+import edu.stanford.smi.protege.model.KnowledgeBaseFactory2;
+import edu.stanford.smi.protege.model.KnowledgeBaseSourcesEditor;
+import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
+import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
+import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.PropertyList;
 
 /**
  * Description of the class
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
+public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
     public static final String DESCRIPTION = Text.getProgramName() + " Database";
     static final String USERNAME_PROPERTY = "username";
     static final String PASSWORD_PROPERTY = "password";
@@ -30,12 +39,17 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         copyKnowledgeBase(kb, driver, url, username, password, tablename, errors);
     }
 
-    private void copyKnowledgeBase(KnowledgeBase inputKb, String driver, String url, String username, String password,
-            String tablename, Collection errors) {
+    private void copyKnowledgeBase(KnowledgeBase inputKb, 
+                                   String driver, 
+                                   String url, 
+                                   String username, 
+                                   String password,
+                                   String tablename, 
+                                   Collection errors) {
         try {
             DefaultKnowledgeBase outputKb = new DefaultKnowledgeBase();
-            DatabaseFrameDb db = addFrameStore(outputKb, driver, url, username, password, tablename);
-            db.saveKnowledgeBase(inputKb);
+            initialize(outputKb, driver, url, username, password, tablename);
+            getIncludingDatabaseAdapter(outputKb).saveKnowledgeBase(inputKb);
         } catch (Exception e) {
             errors.add(e);
         }
@@ -77,16 +91,18 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
     public static String getUsername(PropertyList sources) {
         return sources.getString(USERNAME_PROPERTY);
     }
-
-    public void includeKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
-        String driver = getDriver(sources);
-        String url = getURL(sources);
-        if (driver != null && url != null) {
-            String username = getUsername(sources);
-            String password = getPassword(sources);
-            String tablename = getTableName(sources);
-            includeKnowledgeBase(kb, driver, url, username, password, tablename, errors);
-        }
+    
+    public void includeKnowledgeBase(KnowledgeBase kb, 
+                                     PropertyList sources, 
+                                     Collection errors) {
+      String driver = getDriver(sources);
+      String url = getURL(sources);
+      if (driver != null && url != null) {
+          String username = getUsername(sources);
+          String password = getPassword(sources);
+          String tablename = getTableName(sources);
+          includeKnowledgeBase(kb, driver, url, username, password, tablename, errors);
+      }
     }
 
     public boolean isComplete(PropertyList sources) {
@@ -95,22 +111,29 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         String driver = getDriver(sources);
         return tablename != null && url != null && driver != null;
     }
-
-    public void loadKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
-        String driver = getDriver(sources);
-        String url = getURL(sources);
-        if (driver != null && url != null) {
-            String username = getUsername(sources);
-            String password = getPassword(sources);
-            String tablename = getTableName(sources);
-            loadKnowledgeBase(kb, driver, url, username, password, tablename, errors);
-        }
+    
+    public void loadKnowledgeBase(KnowledgeBase kb, 
+                                  PropertyList sources, 
+                                  Collection errors) {
+      String driver = getDriver(sources);
+      String url = getURL(sources);
+      if (driver != null && url != null) {
+          String username = getUsername(sources);
+          String password = getPassword(sources);
+          String tablename = getTableName(sources);
+          loadKnowledgeBase(kb, driver, url, username, password, tablename, errors);
+      }
     }
 
-    public void includeKnowledgeBase(KnowledgeBase kb, String driver, String url, String user, String password,
-            String table, Collection errors) {
+    public void includeKnowledgeBase(KnowledgeBase kb, 
+                                     String driver, 
+                                     String url, 
+                                     String user, 
+                                     String password,
+                                     String table,
+                                     Collection errors) {
         try {
-            addFrameStore(kb, driver, url, user, password, table);
+            initialize(kb, driver, url, user, password, table);
         } catch (Exception e) {
             Log.getLogger().log(Level.WARNING, "Unable to load included knowledgebase", e);
             errors.add(e);
@@ -121,10 +144,17 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         return MergingNarrowFrameStore.get(kb);
     }
 
-    public void loadKnowledgeBase(KnowledgeBase kb, String driver, String url, String user, String password,
-            String table, Collection errors) {
+    public void loadKnowledgeBase(KnowledgeBase kb,
+                                  String driver, 
+                                  String url, 
+                                  String user, 
+                                  String password,
+                                  String table,
+                                  Collection errors) {
         try {
-            addFrameStore(kb, driver, url, user, password, table);
+          URI uri = kb.getProject().getProjectURI();
+          String name = (uri==null ? "<new>" : uri.toString());
+          initialize(kb, driver, url, user, password, table);
         } catch (Exception e) {
             Log.getLogger().log(Level.WARNING, "Unable to load knowledgebase", e);
             errors.add(e);
@@ -132,17 +162,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
     }
 
     //ESCA-JAVA0130 
-    protected DatabaseFrameDb addFrameStore(KnowledgeBase kb, String driver, String url, String user, String password,
-            String table) {
-        DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
-        FrameFactory factory = dkb.getFrameFactory();
-        DatabaseFrameDb store = new DatabaseFrameDb(factory, driver, url, user, password, table);
-        NarrowFrameStore nfs = new ValueCachingNarrowFrameStore(store);
-        MergingNarrowFrameStore mergingFrameStore = getMergingFrameStore(dkb);
-        mergingFrameStore.addActiveFrameStore(nfs);
-        kb.flushCache();
-        return store;
-    }
+   
 
     public void saveKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
         if (kb instanceof DefaultKnowledgeBase) {
@@ -158,13 +178,25 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
     }
 
     private static DatabaseFrameDb getDatabaseFrameDb(KnowledgeBase kb) {
-        DatabaseFrameDb db = null;
-        MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(kb);
-        NarrowFrameStore active = mnfs.getActiveFrameStore();
-        if (active instanceof ValueCachingNarrowFrameStore) {
-            db = (DatabaseFrameDb) active.getDelegate();
+        NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb); // Assumes this is the top
+                                                                // of the narrow frame stores.
+        while ((nfs = nfs.getDelegate()) != null) {
+          if (nfs instanceof DatabaseFrameDb) {
+            return (DatabaseFrameDb) nfs;
+          }
         }
-        return db;
+        return null;
+    }
+    
+    private static IncludingDatabaseAdapter getIncludingDatabaseAdapter(KnowledgeBase kb) {
+      NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb); // Assumes this is the top
+                                                              // of the narrow frame stores.
+      while ((nfs = nfs.getDelegate()) != null) {
+        if (nfs instanceof IncludingDatabaseAdapter) {
+          return (IncludingDatabaseAdapter) nfs;
+        }
+      }
+      return null;
     }
 
     public static void setDriver(PropertyList sources, String driver) {
@@ -194,5 +226,35 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory {
         setTablename(sources, table);
         setUsername(sources, user);
         setPassword(sources, password);
+    }
+
+    public void prepareToSaveInFormat(KnowledgeBase kb, KnowledgeBaseFactory factory, Collection errors) {
+      return;
+    }
+
+    public IncludingDatabaseAdapter createNarrowFrameStore(String name) {
+      DatabaseFrameDb store = new DatabaseFrameDb();
+      ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
+      IncludingDatabaseAdapter ida = new IncludingDatabaseAdapter(vcnfs);
+      ida.setName(name);
+      return ida;
+    }
+    
+    protected void initialize(KnowledgeBase kb, 
+                              String driver, 
+                              String url, 
+                              String user, 
+                              String password,
+                              String table) {
+        DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
+        FrameFactory factory = dkb.getFrameFactory();
+        IncludingDatabaseAdapter ida = getIncludingDatabaseAdapter(dkb);
+        if (ida == null) {
+          ida = createNarrowFrameStore(" <new> ");
+          MergingNarrowFrameStore mnfs = getMergingFrameStore(dkb);
+          mnfs.addActiveFrameStore(ida);
+        }
+        ida.initialize(factory, driver, url, user, password, table);
+        kb.flushCache();
     }
 }
