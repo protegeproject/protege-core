@@ -1,11 +1,14 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.logging.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.Log;
 
 public class JournalingFrameStoreHandler extends AbstractFrameStoreInvocationHandler {
     private Logger journaler;
@@ -15,7 +18,7 @@ public class JournalingFrameStoreHandler extends AbstractFrameStoreInvocationHan
     public void start(URI journalURI) {
         try {
             stop();
-            handler = new FileHandler(new File(journalURI).getPath(), true);
+            handler = new java.util.logging.FileHandler(new File(journalURI).getPath(), true);
             journaler = Logger.getLogger("protege.journal");
             journaler.setUseParentHandlers(false);
             journaler.addHandler(handler);
