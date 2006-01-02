@@ -1012,12 +1012,7 @@ public class Project {
             MergingNarrowFrameStore mergingFrameStore = getMergingFrameStore();
             mergingFrameStore.addActiveFrameStore(nfs, uris);
         }
-        // TODO remove this fragment of code by merging the two interfaces.
-        if (factory instanceof KnowledgeBaseFactoryNew) {
-          ((KnowledgeBaseFactoryNew) factory).includeKnowledgeBase(_domainKB, sources, name, uris, errors);
-        } else {  
-          factory.includeKnowledgeBase(_domainKB, sources, errors);
-        }
+        factory.includeKnowledgeBase(_domainKB, sources, errors);
     }
     
     public void includeProject(String path, Collection errors) {
@@ -1177,11 +1172,7 @@ public class Project {
                 mergingFrameStore.addActiveFrameStore(nfs, uris);
             }
             // TODO - remove this fragment of code by merging the new interface with the old
-            if (factory instanceof KnowledgeBaseFactoryNew) {
-              ((KnowledgeBaseFactoryNew) factory).loadKnowledgeBase(_domainKB, getSources(), uris, errors);
-            } else {
-              factory.loadKnowledgeBase(_domainKB, getSources(), errors);
-            }
+            factory.loadKnowledgeBase(_domainKB, getSources(), errors);
             _domainKB.setGenerateEventsEnabled(enabled);
         }
     }
