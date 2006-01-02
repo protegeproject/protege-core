@@ -1,11 +1,15 @@
 package edu.stanford.smi.protege.plugin;
 
-import java.net.*;
-import java.util.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.logging.Level;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.ui.ProjectManager;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.PropertyList;
 
 /**
  * 
@@ -32,8 +36,13 @@ public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin
     protected void handleErrors(Collection errors) {
         if (!errors.isEmpty()) {
             ProjectManager.getProjectManager().displayErrors("Create Project Errors", errors);
-            Object error = errors.iterator().next();
-            Log.getLogger().severe(error.toString());
+            for (Object error : errors) {
+              if (error instanceof Exception) {
+                Log.getLogger().log(Level.SEVERE, "Severe error (exception)", (Exception) error);
+              } else {
+                Log.getLogger().severe("Error found = " + error);
+              }
+            }
         }
     }
 
