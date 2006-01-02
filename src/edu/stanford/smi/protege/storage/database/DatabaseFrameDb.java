@@ -25,6 +25,7 @@ import edu.stanford.smi.protege.model.FrameFactory;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.ReferenceImpl;
@@ -38,7 +39,13 @@ import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 
 public class DatabaseFrameDb implements NarrowFrameStore {
-	private static Logger log = Log.getLogger(DatabaseFrameDb.class);
+  private static Logger log = Log.getLogger(DatabaseFrameDb.class);
+  
+  public enum Column {
+    frame, frame_type, slot, facet, is_template, value_index, value_type, short_value, long_value
+  }
+  
+  int projectId = FrameID.allocateMemoryProjectPart();
 	
     private static final String FRAME_COLUMN = "frame";
     private static final String FRAME_TYPE_COLUMN = "frame_type";
@@ -51,14 +58,12 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private static final String LONG_VALUE_COLUMN = "long_value";
 
     private final Map _connections = new HashMap();
-    private final String _table;
-    private final String _driver;
-    private final String _url;
-    private final String _user;
-    private final String _password;
+    private String _table;
+    private String _driver;
+    private String _url;
+    private String _user;
+    private String _password;
     private FrameFactory _frameFactory;
-    private static boolean _isTracingUpdate = false;
-    private static boolean _isTracingQuery = false;
     private static boolean _isModifiable = true;
 
     private static int lastReturnedFrameID = FrameID.INITIAL_USER_FRAME_ID - 1;
@@ -108,8 +113,14 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             throw createRuntimeException(e);
         }
     }
+    
+    public DatabaseFrameDb() {
+      
+    }
 
-    public DatabaseFrameDb(FrameFactory factory, String driver, String url, String user, String pass, String table) {
+    public void initialize(FrameFactory factory, 
+                           String driver, 
+                           String url, String user, String pass, String table) {
     	if (log.isLoggable(Level.FINE)) {
     		log.fine("Constructing database frame narrow frame store for " + driver + " " + url + " " + table);
     		log.fine("No delegates");
@@ -120,12 +131,19 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         _url = url;
         _user = user;
         _password = pass;
-        initializeTracing();
         try {
             createConnection();
         } catch (SQLException e) {
             throw createRuntimeException(e);
         }
+    }
+    
+    public FrameFactory getFrameFactory() {
+      return _frameFactory;
+    }
+    
+    public String getTable() {
+      return _table;
     }
 
     private void clearDeadConnections() throws SQLException {
@@ -153,11 +171,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         _connections.put(currentSession, connection);
         Log.getLogger().info("Created connection for " + currentSession);
         return connection;
-    }
-
-    private static void initializeTracing() {
-        _isTracingUpdate = ApplicationProperties.getBooleanProperty("database.tracing.update", _isTracingUpdate);
-        _isTracingQuery = ApplicationProperties.getBooleanProperty("database.tracing.query", _isTracingQuery);
     }
 
     public static void setModifiable(boolean modifiable) {
@@ -282,6 +295,21 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private void createIndices() throws SQLException {
         String indexString;
+        
+        /*
+         * MySQL hack - there is a bug in mysql where SELECT statements will fail to 
+         *              produce the correct result because of these index statements.  There is 
+         *              a bug report out to mysql for this problem on the page
+         *                  http://bugs.mysql.com/bug.php?id=16121
+         *              Right now we are working around this problem by disabling indexing.
+         *              Sometime I need to investigate exactly which mysql's are bad.
+         */
+        if (getCurrentConnection().isMySql() 
+            && getCurrentConnection().getDatabaseMajorVersion() == 5) {
+          Log.getLogger().warning("Disabling database indexing because of mysql bug 16121");
+          Log.getLogger().warning("There will be some performance penalty");
+          return;
+        }
 
         /*
          * VALUE_INDEX is included in this index solely for its value as a side effect. It keeps the values ordered by
@@ -333,15 +361,20 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private static void traceUpdate(PreparedStatement stmt, String append) {
-        trace(stmt, append, _isTracingUpdate);
+      if (log.isLoggable(Level.FINE)) {
+        trace(stmt, append, Level.FINE);
+      }
     }
 
     private static void traceQuery(PreparedStatement stmt) {
-        trace(stmt, "", _isTracingQuery);
+      if (log.isLoggable(Level.FINER)) {
+        trace(stmt, "", Level.FINER);
+      }
     }
-
-    private static void trace(PreparedStatement stmt, String append, boolean tracing) {
-        if (tracing) {
+    
+    private static int traceCount = 0;
+    private static void trace(PreparedStatement stmt, String append, Level level) {
+        if (log.isLoggable(level)) {
             String text = stmt.toString();
             if (text.indexOf("PreparedStatement") != -1) {
                 int index = text.indexOf(' ');
@@ -349,24 +382,24 @@ public class DatabaseFrameDb implements NarrowFrameStore {
                     text = text.substring(index);
                 }
             }
-            trace(text + append, true);
+            trace(text + append, level);
         }
     }
-
-    private static int traceCount = 0;
-
-    private static void trace(String text, boolean tracing) {
-        if (tracing) {
-            Log.getLogger().info(++traceCount + " SQL: " + text);
-        }
+    
+    private static void trace(String text, Level level) {
+      log.log(level, ++traceCount + " SQL: " + text);
     }
 
     private static void traceQuery(String text) {
-        trace(text, _isTracingQuery);
+      if (log.isLoggable(Level.FINER)) {
+        trace(text, Level.FINER);
+      }
     }
 
     private static void traceUpdate(String text) {
-        trace(text, _isTracingUpdate);
+      if (log.isLoggable(Level.FINE)) {
+        trace(text, Level.FINE);
+      }
     }
 
     private static ResultSet executeQuery(PreparedStatement stmt) throws SQLException {
@@ -435,7 +468,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     }
 
-    public Set getReferences(Object value) {
+    public Set<Reference> getReferences(Object value) {
         try {
             return getReferencesSQL(value);
         } catch (SQLException e) {
@@ -449,7 +482,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
      */
     private String _referencesText;
 
-    private Set getReferencesSQL(Object value) throws SQLException {
+    private Set<Reference> getReferencesSQL(Object value) throws SQLException {
         if (_referencesText == null) {
             _referencesText = "SELECT " + SHORT_VALUE_COLUMN + ", " + FRAME_COLUMN + ", " + FRAME_TYPE_COLUMN + ", "
                     + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN;
@@ -461,7 +494,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_referencesText);
         setShortValue(stmt, 1, 2, value);
 
-        Set references = new HashSet();
+        Set<Reference> references = new HashSet<Reference>();
         ResultSet rs = executeQuery(stmt);
         while (rs.next()) {
             boolean realMatch = true;
@@ -481,7 +514,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return references;
     }
 
-    public Set getMatchingReferences(String value, int maxMatches) {
+    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
         try {
             return getMatchingReferencesSQL(value, maxMatches);
         } catch (SQLException e) {
@@ -491,7 +524,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String _matchingReferencesText;
 
-    private Set getMatchingReferencesSQL(String value, int maxMatches) throws SQLException {
+    private Set<Reference> getMatchingReferencesSQL(String value, int maxMatches) throws SQLException {
         if (_matchingReferencesText == null) {
             _matchingReferencesText = "SELECT " + FRAME_COLUMN + ", " + FRAME_TYPE_COLUMN + ", " + SLOT_COLUMN + ", "
                     + FACET_COLUMN;
@@ -503,7 +536,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         String text = _matchingReferencesText + getMatchString(value) + "' " + getEscapeClause();
 
-        Set references = new HashSet();
+        Set<Reference> references = new HashSet<Reference>();
         ResultSet rs = executeQuery(text, maxMatches);
         while (rs.next()) {
             Frame frame = getFrame(rs, 1, 2);
@@ -1111,15 +1144,15 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private Frame getFrame(ResultSet rs, int frameIndex, int typeIndex) throws SQLException {
-        return DatabaseUtils.getFrame(rs, frameIndex, typeIndex, _frameFactory);
+        return DatabaseUtils.getFrame(rs, frameIndex, typeIndex, _frameFactory, projectId);
     }
 
     private Slot getSlot(ResultSet rs, int index) throws SQLException {
-        return DatabaseUtils.getSlot(rs, index, _frameFactory);
+        return DatabaseUtils.getSlot(rs, index, _frameFactory, projectId);
     }
 
     private Facet getFacet(ResultSet rs, int index) throws SQLException {
-        return DatabaseUtils.getFacet(rs, index, _frameFactory);
+        return DatabaseUtils.getFacet(rs, index, _frameFactory, projectId);
     }
 
     private static int getIndex(ResultSet rs, int index) throws SQLException {
@@ -1131,7 +1164,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private Object getShortValue(ResultSet rs, int index, int valueTypeIndex) throws SQLException {
-        return DatabaseUtils.getShortValue(rs, index, valueTypeIndex, _frameFactory);
+        return DatabaseUtils.getShortValue(rs, index, valueTypeIndex, _frameFactory, projectId);
     }
 
     private static Object getLongValue(ResultSet rs, int index) throws SQLException {
@@ -1562,7 +1595,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     public FrameID generateFrameID() {
-        return FrameID.createLocal(getNextFrameID());
+        return FrameID.createLocal(projectId, getNextFrameID());
     }
 
     private int getNextFrameID() {
@@ -1583,8 +1616,4 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     public NarrowFrameStore getDelegate() {
         throw new UnsupportedOperationException();
     }
-
-	public FrameFactory getFrameFactory() {
-		return _frameFactory;
-	}
 }
