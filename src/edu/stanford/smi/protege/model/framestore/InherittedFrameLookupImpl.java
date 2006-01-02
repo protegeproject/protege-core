@@ -53,6 +53,9 @@ public class InherittedFrameLookupImpl implements InherittedFrameLookup {
     }
     int projectId = frame.getFrameID().getMemoryProjectPart();
     NarrowFrameStore store = frameStoreMap.get(new Integer(projectId));
+    if (store == null) { 
+      return null;
+    }
     for (Object value : store.getValues(frame, getNameSlot(), null, false)) {
       if (value instanceof String) {
         return (String) value;
