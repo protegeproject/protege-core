@@ -8,6 +8,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameFactory;
+import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.IncludingKBAdapter;
 import edu.stanford.smi.protege.model.framestore.IncludingKBSupport;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
@@ -27,24 +29,29 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
   private String tableName;
   
   public IncludingDatabaseAdapter(DatabaseFrameDb nfs) {
-    super(nfs.getFrameFactory(), nfs);
+    super(nfs);
     delegate = nfs;
     frameDb  = nfs;
-    try {
-      initializeInheritanceTable();
-    } catch (SQLException e) {
-      Log.getLogger().severe("Exception found " + e);
-    }
   }
   
   public IncludingDatabaseAdapter(ValueCachingNarrowFrameStore vcnfs) {
-    super(vcnfs.getDelegate().getFrameFactory(), vcnfs);
+    super(vcnfs);
     delegate = vcnfs;
     frameDb  = vcnfs.getDelegate();
+  }
+  
+  public void initialize(FrameFactory factory, 
+                         String driver, 
+                         String url, String user, String pass, String table) {
+    frameDb.initialize(factory, driver, url, user, pass, table);
+    super.initialize(factory);
     try {
       initializeInheritanceTable();
     } catch (SQLException e) {
-      Log.getLogger().severe("Exception found " + e);
+      Log.getLogger().severe("Exception found " + e + " (use fine logging for more info)");
+      if (Log.getLogger().isLoggable(Level.FINE)) {
+        log.log(Level.FINE, "Exception found ", e);
+      }
     }
   }
   
@@ -75,6 +82,9 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
   }
   
   public Frame mapLocalFrame(Frame frame) {
+    if (log.isLoggable(Level.FINEST) && frame != null) {
+      log.finest("(" + memoryProjectId + ") Mapping local frame with id " + frame.getFrameID());
+    }
     try {
       if (frame == null  || frame.getFrameID().isSystem()) {
         return frame;
@@ -86,9 +96,16 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
       while (rs.next()) {
         name = rs.getString(select.rsIndex(Column.frame_name));
         rs.close();
-        return getInheritedFrames().getInheritedFrame(name);
+        Frame globalFrame = getInheritedFrames().getInheritedFrame(name);
+        if (log.isLoggable(Level.FINEST)) {
+          log.finest("returning global frame with id = " + globalFrame.getFrameID());
+        }
+        return globalFrame;
       }
       rs.close();
+      if (log.isLoggable(Level.FINEST)) {
+        log.finest("Global frame = local frame - no mapping found.");
+      }
       return frame;
     } catch (SQLException sqle) {
       throw new RuntimeException(sqle);
@@ -122,6 +139,12 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
     Statement statement = frameDb.getCurrentConnection().getStatement();
     ResultSet rs = statement.executeQuery(cmd);
     return rs;
+  }
+  
+  public void saveKnowledgeBase(KnowledgeBase kb) throws SQLException {
+    execute("DROP TABLE IF EXISTS " + tableName);
+    initializeInheritanceTable();
+    frameDb.saveKnowledgeBase(kb);
   }
   
 
