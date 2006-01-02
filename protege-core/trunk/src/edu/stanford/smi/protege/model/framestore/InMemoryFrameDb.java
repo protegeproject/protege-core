@@ -1,18 +1,40 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.query.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Reference;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SimpleStringMatcher;
+import edu.stanford.smi.protege.util.StringUtilities;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 //ESCA-JAVA0100 
 public class InMemoryFrameDb implements NarrowFrameStore {
     private static Logger log = Log.getLogger(InMemoryFrameDb.class);
     
     private static final int INITIAL_MAP_SIZE = 32771;
+    private Map<FrameID, Frame> idToFrameMap = new HashMap<FrameID, Frame>(INITIAL_MAP_SIZE);
     private Map referenceToRecordMap = new HashMap(INITIAL_MAP_SIZE);
     private Map frameToRecordsMap = new HashMap(INITIAL_MAP_SIZE);
     private Map slotToRecordsMap = new HashMap(INITIAL_MAP_SIZE);
@@ -21,6 +43,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
 
     private Record lookupRecord = new Record();
     private static int counter = FrameID.INITIAL_USER_FRAME_ID;
+    private int projectId = FrameID.allocateMemoryProjectPart();
 
     private String frameDBName;
 
@@ -45,7 +68,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     public FrameID generateFrameID() {
-        return FrameID.createLocal(counter++);
+        return FrameID.createLocal(projectId, counter++);
     }
 
     public void close() {
@@ -89,6 +112,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
 
     private void addRecord(Record record) {
         referenceToRecordMap.put(record, record);
+        idToFrameMap.put(record.getFrame().getFrameID(), record.getFrame());
         addRecord(frameToRecordsMap, record.getFrame(), record);
         addRecord(slotToRecordsMap, record.getSlot(), record);
         addRecord(facetToRecordsMap, record.getFacet(), record);
@@ -108,6 +132,10 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         while (i.hasNext()) {
             Object value = i.next();
             removeRecord(valueToRecordsMap, value, record);
+        }
+        Set<Record> records = lookupRecords(frameToRecordsMap, record.getFrame());
+        if (records == null || records.isEmpty()) {
+          idToFrameMap.remove(record.getFrame().getFrameID());
         }
 
     }
@@ -237,12 +265,12 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     public List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-        List values = Collections.EMPTY_LIST;
-        Record record = lookup(frame, slot, facet, isTemplate);
-        if (record != null) {
-            values = record.getValues();
-        }
-        return values;
+      List values = Collections.EMPTY_LIST;
+      Record record = lookup(frame, slot, facet, isTemplate);
+      if (record != null) {
+        values = record.getValues();
+      }
+      return values;
     }
 
     public int getValuesCount(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
@@ -454,7 +482,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     public Frame getFrame(FrameID id) {
-        throw new UnsupportedOperationException();
+      return idToFrameMap.get(id);
     }
 
     public String toString() {
