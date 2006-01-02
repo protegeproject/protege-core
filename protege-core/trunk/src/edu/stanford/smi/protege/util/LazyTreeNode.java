@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.util;
 
 import java.util.*;
+import java.util.logging.Level;
 
 import javax.swing.tree.*;
 
@@ -216,8 +217,13 @@ public abstract class LazyTreeNode implements TreeNode {
             try {
                 childNode = createNode(child);
             } catch (Exception e) {
-                Log.getLogger().warning(e.toString());
-                childNode = createErrorNode(child);
+              if (Log.getLogger().isLoggable(Level.FINE)) {
+                Log.getLogger().log(Level.FINE, "Exception caught ", e);
+              } else {
+                Log.getLogger().warning("Exception caught " + e.toString());
+                Log.getLogger().warning(" For more information use fine logging");
+              }
+              childNode = createErrorNode(child);
             }
             _childNodes.add(childNode);
         }
