@@ -82,7 +82,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return ServerFrameStore.getCurrentSession();
     }
 
-    private RobustConnection getCurrentConnection() throws SQLException {
+    protected RobustConnection getCurrentConnection() throws SQLException {
         Object currentSession = getCurrentSession();
         RobustConnection connection = (RobustConnection) _connections.get(currentSession);
         if (connection == null) {
@@ -1583,4 +1583,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     public NarrowFrameStore getDelegate() {
         throw new UnsupportedOperationException();
     }
+
+	public FrameFactory getFrameFactory() {
+		return _frameFactory;
+	}
 }
