@@ -1,13 +1,29 @@
 package edu.stanford.smi.protege.storage.database;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.model.query.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.IncludingKBSupport;
+import edu.stanford.smi.protege.model.framestore.InherittedFrameLookup;
+import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
+import edu.stanford.smi.protege.model.framestore.Sft;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.util.CacheMap;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * @author Ray Fergerson
@@ -15,7 +31,7 @@ import edu.stanford.smi.protege.util.*;
  * Description of this class
  */
 
-public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
+public class ValueCachingNarrowFrameStore implements NarrowFrameStore, IncludingKBSupport {
 	private Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private DatabaseFrameDb _delegate;
     private final Sft _lookupSft = new Sft();
@@ -24,11 +40,11 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     private String frameDbName;
 
     public String getName() {
-        return frameDbName;
+        return _delegate.getName();
     }
 
     public void setName(String name) {
-         frameDbName = name;
+         _delegate.setName(name);
     }
 
     public void close() {
@@ -48,7 +64,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         throw new UnsupportedOperationException();
     }
 
-    public NarrowFrameStore getDelegate() {
+    public DatabaseFrameDb getDelegate() {
         return _delegate;
     }
 
@@ -346,6 +362,12 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     }
     public int getSimpleInstanceCount() {
         return getDelegate().getSimpleInstanceCount();
+    }
+
+    public void setInheritedFrames(InherittedFrameLookup iframes) {
+      if (_delegate instanceof IncludingKBSupport) {
+        ((IncludingKBSupport) _delegate).setInheritedFrames(iframes);
+      }
     }
 
 }
