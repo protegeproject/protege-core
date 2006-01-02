@@ -2,10 +2,21 @@ package edu.stanford.smi.protege.storage.database;
 
 //ESCA*JAVA0100
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class RobustConnection {
     private static final int ALLOWANCE = 100;
@@ -199,6 +210,14 @@ public class RobustConnection {
 
     public String getDatabaseProductName() throws SQLException {
         return _connection.getMetaData().getDatabaseProductName();
+    }
+    
+    public int getDatabaseMajorVersion() throws SQLException {
+      return _connection.getMetaData().getDatabaseMajorVersion();
+    }
+    
+    public int getDatabaseMinorVersion() throws SQLException {
+      return _connection.getMetaData().getDatabaseMinorVersion();
     }
 
     public int getMaxVarcharSize() {
