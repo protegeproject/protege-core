@@ -1,6 +1,8 @@
 package edu.stanford.smi.protege.model.framestore.undo;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.event.*;
 
@@ -9,6 +11,8 @@ import edu.stanford.smi.protege.model.framestore.*;
 import edu.stanford.smi.protege.util.*;
 
 public class UndoFrameStore extends ModificationFrameStore implements CommandManager {
+    Logger log = Log.getLogger(UndoFrameStore.class);
+    
     private static final int NO_COMMAND = -1;
 
     private Collection _listeners = new ArrayList();
@@ -79,7 +83,9 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     public void undo() {
         if (canUndo()) {
             Command command = (Command) _commands.get(_lastExecutedCommand);
-            // Log.trace("undoing " + command.getDescription(), this, "undo");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("undoing " + command.getDescription());
+            }
             command.undoIt();
             --_lastExecutedCommand;
             notifyListeners();
@@ -100,7 +106,9 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         if (canRedo()) {
             ++_lastExecutedCommand;
             Command command = (Command) _commands.get(_lastExecutedCommand);
-            // Log.trace("redoing " + command.getDescription(), this, "redo");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("redoing " + command.getDescription());
+            }
             command.redoIt();
             notifyListeners();
         } else {
