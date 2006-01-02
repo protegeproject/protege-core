@@ -31,7 +31,13 @@ public class FrameID implements Externalizable {
     private int diskProjectPart;
     private int memoryProjectPart;
     private int hashCode;
+    
+    private static int lastMemoryProjectPart = LOCAL_PROJECT_ID;
 
+    public static synchronized int allocateMemoryProjectPart() {
+      return ++lastMemoryProjectPart;
+    }
+    
     public FrameID() {
 
     }
@@ -54,6 +60,11 @@ public class FrameID implements Externalizable {
         return create(SYSTEM_PROJECT_ID, SYSTEM_PROJECT_ID, value);
     }
 
+    public static FrameID createLocal(int memoryProjectPart, int localPart) {
+      assert(INITIAL_USER_FRAME_ID <= localPart);
+      return create(LOCAL_PROJECT_ID, memoryProjectPart, localPart);
+    }
+    
     public static FrameID createLocal(int value) {
         Assert.assertTrue("value=" + value, INITIAL_USER_FRAME_ID <= value);
         return create(LOCAL_PROJECT_ID, LOCAL_PROJECT_ID, value);
@@ -88,10 +99,10 @@ public class FrameID implements Externalizable {
     
 
     private FrameID(int diskProjectPart, int memoryProjectPart, int localPart) {
-        this.diskProjectPart = diskProjectPart;
-        this.memoryProjectPart = memoryProjectPart;
-        this.localPart = localPart;
-        cacheHashCode();
+      this.diskProjectPart = diskProjectPart;
+      this.memoryProjectPart = memoryProjectPart; 
+      this.localPart = localPart;
+      cacheHashCode();
     }
 
     private void cacheHashCode() {
