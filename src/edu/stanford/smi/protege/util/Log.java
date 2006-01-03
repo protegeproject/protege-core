@@ -59,7 +59,7 @@ public class Log {
           // already configured...
           configuredByFile = true;
         } else if (rootDir != null) {
-          File logconfig = new File(rootDir + File.separator + "logs" + File.separator + "logging.properties");
+          File logconfig = new File(rootDir + File.separator + "logging.properties");
           if (logconfig.canRead()) {
             System.setProperty(logProperty, logconfig.getAbsolutePath());
             LogManager.getLogManager().readConfiguration();
