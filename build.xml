@@ -13,6 +13,8 @@
 	<property name = "dist" value = "./dist"/>
 	<property name = "lib" value = "./lib"/>
 	<property name = "scripts" value = "./bin"/>
+        <property name = "logs" value = "./logs"/>
+        <property name = "plugins" value = "./plugins"/>
 	<!-- Compiler options. -->
 	<property name = "deprecation" value = "on"/>    
 	<property name = "debug" value = "off"/>  
@@ -72,6 +74,8 @@
 		<mkdir dir = "${classes}"/>    
 		<mkdir dir = "${dist}"/>
 		<mkdir dir = "${javadocs}"/>    
+                <mkdir dir = "${logs}"/>
+                <mkdir dir = "${plugins}"/>
 	</target>  
 	<!-- =================================================================== -->
 	
@@ -144,12 +148,13 @@
 	<!-- Zips up all source code, resources, and API documentation. -->
 	
 	<!-- =================================================================== -->
-	<target name = "dist" depends = "init">
+	<target name = "dist" depends = "jar, javadocs">
 		<zip zipfile = "${dist}/protege-src-${build.version}.zip" update = "no">
 			<zipfileset dir = "${src}" prefix = "${extended.name}/src"/>
 			<zipfileset dir = "${javadocs}" prefix = "${extended.name}/docs/apidocs"/>
 			<zipfileset dir = "${scripts}" includes = "Parser.jj" prefix = "${extended.name}/bin"/>
 			<zipfileset dir = "${lib}" includes = "*.jar" prefix = "${extended.name}/lib"/>
+                        <zipfileset dir = "." includes = "*.properties" prefix = "${extended.name}"/>
 		</zip>
 		<zip zipfile = "${dist}/protege-bin-${build.version}.zip" update = "no">
 			<zipfileset dir = "${lib}" includes = "*.jar"/>
@@ -179,17 +184,18 @@
 	<!-- =================================================================== -->
 
         <target name = "junit" description = "test the system" depends="jar">
-        <!-- depends="jar" -->
-          <junit  printsummary="withOutAndErr" haltonerror="on">
+          <junit  printsummary="withOutAndErr" haltonerror="on" fork="yes">
             <classpath refid="project.classpath"/>
             <classpath>
               <pathelement path="${dist}/protege.jar"/>
             </classpath>
+            <jvmarg value="-Djava.util.logging.config.file=junit-logging.properties"/>
             <batchtest>
               <fileset dir="${src}">
                 <include name="**/*Test.java"/>
                 <exclude name="**/Application_Test.java"/>
                 <exclude name="**/action/*.java"/>
+                <exclude name="**/database/*.java"/>
               </fileset>
             </batchtest>
           </junit>
