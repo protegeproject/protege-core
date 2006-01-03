@@ -2,12 +2,34 @@ package edu.stanford.smi.protege.model;
 
 //ESCA*JAVA0054
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.test.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.ClsAdapter;
+import edu.stanford.smi.protege.event.ClsEvent;
+import edu.stanford.smi.protege.event.ClsListener;
+import edu.stanford.smi.protege.event.FrameAdapter;
+import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.event.InstanceAdapter;
+import edu.stanford.smi.protege.event.InstanceEvent;
+import edu.stanford.smi.protege.event.InstanceListener;
+import edu.stanford.smi.protege.event.KnowledgeBaseAdapter;
+import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.SlotAdapter;
+import edu.stanford.smi.protege.event.SlotEvent;
+import edu.stanford.smi.protege.event.SlotListener;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.FrameStoreAdapter;
+import edu.stanford.smi.protege.test.APITestCase;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.StandardDateFormat;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * Unit tests for the DefaultKnowledgeBase implementation.
@@ -482,11 +504,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertTrue("b cardinality", b.getAllowsMultipleValues());
     }
 
-    public void testDBModficationSlots() throws java.text.ParseException {
-        setDatabaseProject();
-        testModificationSlots();
-    }
-
     public void testDeleteCls() {
         Cls cls = createCls();
         Cls subCls1 = createSubCls(cls);
@@ -617,93 +634,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
 
         assertEquals("string match", 3, getDomainKB().getFramesWithValue(s1, null, false, "abc").size());
         assertEquals("frame match", 1, getDomainKB().getFramesWithValue(s2, null, false, inst1).size());
-    }
-
-    public void testGetDBFramesWithValue() {
-        setDatabaseProject();
-        Slot s1 = createMultiValuedSlot(ValueType.STRING);
-        Slot s2 = createMultiValuedSlot(ValueType.INSTANCE);
-        Cls a = createCls();
-        a.addDirectTemplateSlot(s1);
-        a.addDirectTemplateSlot(s2);
-        Instance inst1 = createInstance(a);
-        Instance inst2 = createInstance(a);
-        Instance inst3 = createInstance(a);
-
-        inst1.addOwnSlotValue(s1, "abc");
-        inst2.addOwnSlotValue(s1, "abc");
-        inst3.addOwnSlotValue(s1, "abc");
-
-        inst2.addOwnSlotValue(s2, inst1);
-
-        assertEquals("string match", 3, getDomainKB().getFramesWithValue(s1, null, false, "abc").size());
-        assertEquals("frame match", 1, getDomainKB().getFramesWithValue(s2, null, false, inst1).size());
-    }
-
-    public void testGetMatchingDBReferences() {
-        setDatabaseProject();
-        Slot s = createMultiValuedSlot(ValueType.STRING);
-        Cls a = createCls();
-        a.addDirectTemplateSlot(s);
-        Instance inst1 = createInstance(a);
-        inst1.addOwnSlotValue(s, "zabcy");
-        Instance inst2 = createInstance(a);
-        inst2.addOwnSlotValue(s, "abcz");
-        Instance inst3 = createInstance(a);
-        inst3.addOwnSlotValue(s, "qqq");
-        assertEquals("exact", 0, getMatchCount("z"));
-        assertEquals("starts", 1, getMatchCount("z*"));
-        assertEquals("contains", 2, getMatchCount("*z*"));
-        assertEquals("contains insensitive", 2, getMatchCount("*Z*"));
-        assertEquals("contains 2", 2, getMatchCount("*abc*"));
-    }
-
-    private int getMatchCount(String s) {
-        return getDomainKB().getMatchingReferences(s, KnowledgeBase.UNLIMITED_MATCHES).size();
-    }
-
-    public void testMatchOnPercentInDB() {
-        setDatabaseProject();
-        String name1 = "foo %";
-        String name2 = "foo abc";
-        Slot nameSlot = getDomainKB().getSlot(Model.Slot.NAME);
-
-        createCls(name1);
-        createCls(name2);
-
-        Collection frames = getDomainKB().getMatchingFrames(nameSlot, null, false, name1, -1);
-        assertEquals("matching size", 1, frames.size());
-
-        frames = getDomainKB().getReferences(name1, -1);
-        assertEquals("references size", 1, frames.size());
-    }
-
-    public void testMatchOnQuoteInDB() {
-        setDatabaseProject();
-        String name1 = "foo's";
-        Slot nameSlot = getDomainKB().getSlot(Model.Slot.NAME);
-
-        createCls(name1);
-
-        Collection frames = getDomainKB().getMatchingFrames(nameSlot, null, false, name1, -1);
-        assertEquals("matching size", 1, frames.size());
-
-        frames = getDomainKB().getReferences(name1, -1);
-        assertEquals("references size", 1, frames.size());
-    }
-
-    public void testGetDBDirectInstances() {
-        setDatabaseProject();
-        Cls cls = createCls();
-        String name = cls.getName();
-        createInstance(cls);
-        createInstance(cls);
-        createInstance(cls);
-        assertEquals("direct instance count", 3, cls.getDirectInstanceCount());
-        saveAndReload();
-        cls = getCls(name);
-        createInstance(cls);
-        assertEquals("direct instance count after reload", 4, cls.getDirectInstanceCount());
     }
 
     public void testGetInstances() {
