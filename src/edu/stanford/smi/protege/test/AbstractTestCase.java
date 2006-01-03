@@ -1,11 +1,28 @@
 package edu.stanford.smi.protege.test;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import junit.framework.*;
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import junit.framework.TestCase;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.ValueType;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.FileUtilities;
+import edu.stanford.smi.protege.util.Log;
 
 /**
  * 

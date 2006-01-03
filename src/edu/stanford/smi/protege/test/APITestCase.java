@@ -1,11 +1,17 @@
 package edu.stanford.smi.protege.test;
 
-import java.net.*;
-import java.util.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.storage.database.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.storage.database.DatabaseKnowledgeBaseFactory;
+import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.PropertyList;
 
 /**
  * Base class for unit tests. This class provides some helper methods to project and kb access.
