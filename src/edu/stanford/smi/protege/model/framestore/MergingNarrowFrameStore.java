@@ -212,7 +212,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         }
         setActiveFrameStore(parent);
         if (parent instanceof IncludingKBSupport) { 
-          InherittedFrameLookup ifl = new InherittedFrameLookupImpl(getNameSlot(),
+          IncludedFrameLookup ifl = new IncludedFrameLookupImpl(getNameSlot(),
                                                                     parent, frameStoreTree);
           ((IncludingKBSupport) parent).setInheritedFrames(ifl);
         }
