@@ -24,16 +24,38 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.Log;
 
 /**
- * 
+ * This class represents a Narrow Frame Store that allows its delegate 
+ * Narrow Frame Store to include knowledge bases even if the delegate 
+ * has no knowledge of the included knowledge bases.  It must overcome
+ * the problem that the delegate frame store will use its own
+ * representation of frames from the included knowledge bases.  This
+ * representation will not correspond to the frames coming from the
+ * included knowledge bases.
+ *
+ * To overcome this problem, this class defines a new set of frames
+ * (the global frames) which represent the merge of the frames from
+ * the included and including knowledge bases (the local frames).  The
+ * details of the mapping are as follows:
+ * <ul>
+ * <li> the frames of the delegate that are not in any included
+ *      knowledge base are in both the set of local frames and the set
+ *      of global frames.
+ * <li> the frames of the  included knowledge bases are also in both
+ *      the set of local frames  and the set of  global frames.
+ * <li> the frames of the delegate that represent a frame from an
+ *      included knowledge base must be appropriately mapped to a
+ *      frame that occurs in some included knowledge base.
+ * </ul>
+ * ...
  * 
  * @author tredmond
  *
  */
 public abstract class IncludingKBAdapter 
-  implements NarrowFrameStore, IncludingKBSupport {
+  implements NarrowFrameStore, IncludingKBSupport, FrameMapping {
   private static Logger log = Log.getLogger(IncludingKBAdapter.class);
 
-  private InherittedFrameLookup iframes;
+  private IncludedFrameLookup iframes;
   
   private FrameFactory frameFactory;
   
@@ -65,11 +87,11 @@ public abstract class IncludingKBAdapter
     return delegate;
   }
   
-  public InherittedFrameLookup getInheritedFrames() {
+  public IncludedFrameLookup getInheritedFrames() {
     return iframes;
   }
   
-  public void setInheritedFrames(InherittedFrameLookup iframes) {
+  public void setInheritedFrames(IncludedFrameLookup iframes) {
     this.iframes = iframes;
   }
   
@@ -277,7 +299,7 @@ public abstract class IncludingKBAdapter
     return false;
   }
 
-  private Set<Frame> mapLocalFrameSet(Set<Frame> localFrames) {
+  public Set<Frame> mapLocalFrameSet(Set<Frame> localFrames) {
     Set<Frame> globalFrames = new HashSet<Frame>();
     for (Frame localFrame : localFrames) {
       Frame globalFrame = mapLocalFrame(localFrame);
