@@ -4,7 +4,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Slot;
 
-public interface InherittedFrameLookup {
+public interface IncludedFrameLookup {
   
   Slot getNameSlot();
   
