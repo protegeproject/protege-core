@@ -20,13 +20,13 @@ import edu.stanford.smi.protege.util.Tree;
  * 
  * @author tredmond
  */
-public class InherittedFrameLookupImpl implements InherittedFrameLookup {
+public class IncludedFrameLookupImpl implements IncludedFrameLookup {
   
   Slot nameSlot;
   Collection<NarrowFrameStore> stores;
   Map<Integer, NarrowFrameStore> frameStoreMap;
   
-  public InherittedFrameLookupImpl(Slot nameSlot,
+  public IncludedFrameLookupImpl(Slot nameSlot,
                                    NarrowFrameStore nfs,
                                    Tree<NarrowFrameStore> heirarchy) {
     this.nameSlot = nameSlot;
