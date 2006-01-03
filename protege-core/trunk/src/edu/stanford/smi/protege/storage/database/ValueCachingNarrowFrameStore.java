@@ -17,7 +17,7 @@ import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.IncludingKBSupport;
-import edu.stanford.smi.protege.model.framestore.InherittedFrameLookup;
+import edu.stanford.smi.protege.model.framestore.IncludedFrameLookup;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
@@ -364,7 +364,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         return getDelegate().getSimpleInstanceCount();
     }
 
-    public void setInheritedFrames(InherittedFrameLookup iframes) {
+    public void setInheritedFrames(IncludedFrameLookup iframes) {
       if (_delegate instanceof IncludingKBSupport) {
         ((IncludingKBSupport) _delegate).setInheritedFrames(iframes);
       }
