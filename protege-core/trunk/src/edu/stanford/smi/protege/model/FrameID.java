@@ -56,7 +56,7 @@ public class FrameID implements Externalizable {
     }
 
     public static FrameID createSystem(int value) {
-        Assert.assertTrue("value=" + value, 0 < value && value < INITIAL_USER_FRAME_ID);
+        assert(0 < value && value < INITIAL_USER_FRAME_ID);
         return create(SYSTEM_PROJECT_ID, SYSTEM_PROJECT_ID, value);
     }
 
@@ -106,7 +106,7 @@ public class FrameID implements Externalizable {
     }
 
     private void cacheHashCode() {
-        hashCode = HashUtils.getHash(String.valueOf(memoryProjectPart), String.valueOf(localPart));
+        hashCode = HashUtils.getHash(memoryProjectPart, localPart);
     }
 
     public boolean isSystem() {
