@@ -702,7 +702,7 @@ public class Project {
     /**
      * @return the absolute URI's of all directly included projects
      */
-    public Collection getDirectIncludedProjectURIs() {
+    public Collection<URI> getDirectIncludedProjectURIs() {
         Collection uris = new ArrayList();
         Iterator i = getProjectSlotValues(SLOT_INCLUDED_PROJECTS).iterator();
         while (i.hasNext()) {
@@ -818,6 +818,11 @@ public class Project {
         return (file == null) ? null : file.getPath();
     }
 
+
+    public Instance getProjectInstance() {
+        return _projectInstance;
+    }
+    
     protected static Instance getProjectInstance(KnowledgeBase kb) {
         Instance result = null;
         Cls cls = kb.getCls(CLASS_PROJECT);
