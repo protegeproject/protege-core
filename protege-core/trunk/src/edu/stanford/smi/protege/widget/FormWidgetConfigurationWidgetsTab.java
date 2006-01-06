@@ -1,15 +1,26 @@
 package edu.stanford.smi.protege.widget;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.JComponent;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.WidgetDescriptor;
+import edu.stanford.smi.protege.ui.FrameRenderer;
+import edu.stanford.smi.protege.ui.WidgetClassNameRenderer;
+import edu.stanford.smi.protege.util.AbstractValidatableComponent;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.PropertyList;
 
 /**
  * Tab for configuring which slots appear on a form widget.  This operation can also be done directly on the form itself
@@ -48,7 +59,6 @@ public class FormWidgetConfigurationWidgetsTab extends AbstractValidatableCompon
             Slot slot = (Slot) i.next();
             Rectangle bounds = null;
             WidgetDescriptor d = propertyList.getWidgetDescriptor(slot.getName());
-            Assert.assertNotNull("widget descriptor for " + slot, d);
             String widgetClassName = (d == null) ? (String) null : d.getWidgetClassName();
             if (widgetClassName == null) {
                 widgetClassName = WidgetClassNameRenderer.NONE;
