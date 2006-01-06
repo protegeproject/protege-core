@@ -30,30 +30,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
     static final String DRIVER_PROPERTY = "driver";
     static final String TABLENAME_PROPERTY = "table";
 
-    private void copyKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
-        String driver = getDriver(sources);
-        String url = getURL(sources);
-        String username = getUsername(sources);
-        String password = getPassword(sources);
-        String tablename = getTableName(sources);
-        copyKnowledgeBase(kb, driver, url, username, password, tablename, errors);
-    }
-
-    private void copyKnowledgeBase(KnowledgeBase inputKb, 
-                                   String driver, 
-                                   String url, 
-                                   String username, 
-                                   String password,
-                                   String tablename, 
-                                   Collection errors) {
-        try {
-            DefaultKnowledgeBase outputKb = new DefaultKnowledgeBase();
-            initialize(outputKb, driver, url, username, password, tablename);
-            getIncludingDatabaseAdapter(outputKb).saveKnowledgeBase(inputKb);
-        } catch (Exception e) {
-            errors.add(e);
-        }
-    }
+    
 
     public KnowledgeBase createKnowledgeBase(Collection errors) {
         DefaultKnowledgeBase kb = new DefaultKnowledgeBase(this);
@@ -133,7 +110,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
                                      String table,
                                      Collection errors) {
         try {
-            initialize(kb, driver, url, user, password, table);
+          initializeKB(kb, driver, url, user, password, table, true);
         } catch (Exception e) {
             Log.getLogger().log(Level.WARNING, "Unable to load included knowledgebase", e);
             errors.add(e);
@@ -152,9 +129,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
                                   String table,
                                   Collection errors) {
         try {
-          URI uri = kb.getProject().getProjectURI();
-          String name = (uri==null ? "<new>" : uri.toString());
-          initialize(kb, driver, url, user, password, table);
+          initializeKB(kb, driver, url, user, password, table, false);
         } catch (Exception e) {
             Log.getLogger().log(Level.WARNING, "Unable to load knowledgebase", e);
             errors.add(e);
@@ -240,21 +215,58 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
       return ida;
     }
     
-    protected void initialize(KnowledgeBase kb, 
+    protected void insertKB(KnowledgeBase kb, String name, Collection<URI> included) {
+      NarrowFrameStore nfs = createNarrowFrameStore(name);
+      MergingNarrowFrameStore mnfs = getMergingFrameStore((DefaultKnowledgeBase) kb);
+      mnfs.addActiveFrameStore(nfs, included);
+    }
+    
+    protected void initializeKB(KnowledgeBase kb, 
                               String driver, 
                               String url, 
                               String user, 
                               String password,
-                              String table) {
+                              String table,
+                              boolean isInclude) {
         DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
         FrameFactory factory = dkb.getFrameFactory();
         IncludingDatabaseAdapter ida = getIncludingDatabaseAdapter(dkb);
-        if (ida == null) {
-          ida = createNarrowFrameStore(" <new> ");
-          MergingNarrowFrameStore mnfs = getMergingFrameStore(dkb);
-          mnfs.addActiveFrameStore(ida);
-        }
-        ida.initialize(factory, driver, url, user, password, table);
+        ida.initialize(factory, driver, url, user, password, table, isInclude);
         kb.flushCache();
     }
+    
+    private void copyKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
+      String driver = getDriver(sources);
+      String url = getURL(sources);
+      String username = getUsername(sources);
+      String password = getPassword(sources);
+      String tablename = getTableName(sources);
+      copyKnowledgeBase(kb, driver, url, username, password, tablename, errors);
+  }
+
+  private void copyKnowledgeBase(KnowledgeBase inputKb, 
+                                 String driver, 
+                                 String url, 
+                                 String username, 
+                                 String password,
+                                 String tablename, 
+                                 Collection errors) {
+      try {
+        DatabaseWriter dbw = new DatabaseWriter(inputKb,
+                                                driver, url, username, password, tablename);
+        dbw.save();
+        /*
+          DefaultKnowledgeBase outputKb = new DefaultKnowledgeBase();
+          Collection<URI> uris = inputKb.getProject().getDirectIncludedProjectURIs();
+          for (URI uri : uris) {
+            outputKb.getProject().includeProject(uri, errors);
+          }
+          insertKB(outputKb, " <new> ", uris);
+          initializeKB(outputKb, driver, url, username, password, tablename, false);
+          getIncludingDatabaseAdapter(outputKb).overwriteKB(inputKb);
+          */
+      } catch (Exception e) {
+          errors.add(e);
+      }
+  }
 }
