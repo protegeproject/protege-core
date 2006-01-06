@@ -34,26 +34,6 @@ public class ClsesAndInstancesTab extends AbstractTabWidget {
         return pane;
     }
 
-    /*
-     private JComponent createClsDisplay() {
-     _clsList = ComponentFactory.createSingleItemList(null);
-     _clsList.setCellRenderer(FrameRenderer.createInstance());
-     _clsList.addSelectionListener(new SelectionListener() {
-     public void selectionChanged(SelectionEvent event) {
-     if (!_isUpdating) {
-     _isUpdating = true;
-     Collection selection = event.getSelectable().getSelection();
-     Instance firstSelection = (Instance) CollectionUtilities.getFirstItem(selection);
-     _directInstancesList.clearSelection();
-     _instanceDisplay.setInstance(firstSelection);
-     _isUpdating = false;
-     }
-     }
-     });
-     LabeledComponent c = new LabeledComponent("Class", _clsList);
-     return c;
-     }
-     */
 
     private JComponent createClsesPanel() {
         _clsesPanel = new ClsesPanel(getProject());
