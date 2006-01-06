@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -102,16 +103,20 @@ public class URLWidget extends TextComponentWidget {
     private void asyncLoadURL(final URL url) {
         Thread thread = new Thread() {
             public void run() {
+              try {
                 getText(url);
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         try {
                             urlDisplay.setPage(url);
                         } catch (IOException e) {
-                            // do nothing
+                          Log.getLogger().log(Level.INFO, "Exception caught", e);
                         }
                     }
                 });
+              } catch (Throwable t) {
+                Log.getLogger().log(Level.INFO, "Exception caught", t);
+              }
             }
         };
         thread.start();
