@@ -26,7 +26,7 @@ public class PluginUtilities {
     private static final String PROJECT_PLUGIN = "Project-Plugin";
     private static final String FACTORY_PLUGIN = "Storage-Factory";
 
-    private static Collection _manifestURLs = new HashSet();
+    private static Collection<URL> _manifestURLs = new HashSet<URL>();
     private static Map pluginToNameMap = new HashMap();
     private static Map _pluginClassNameToClassLoaderMap = new HashMap();
     private static List _factories;
@@ -541,6 +541,8 @@ public class PluginUtilities {
             try {
                 InputStream is = new FileInputStream(fileName);
                 manifest = new Manifest(is);
+                URL url = new File(fileName).toURL();
+                _manifestURLs.add(url);               
             } catch (IOException e) {
                 Log.getLogger().warning(e.getMessage());
             }
@@ -744,4 +746,26 @@ public class PluginUtilities {
         }
         return isOWLAvailable.booleanValue();
     }
+    
+    // Added by Holger ---------------------------------------------------------------
+
+    private static final String CREATE_PROJECT_FROM_FILE_PLUGIN = "Create-Project-From-File-Plugin";
+
+
+    public static Collection getAvailableCreateProjectFromFilePluginClassNames() {
+        return getClassesWithAttribute(CREATE_PROJECT_FROM_FILE_PLUGIN, "True");
+    }
+
+
+    public static boolean isSuitableCreateProjectFromFilePlugin(CreateProjectFromFilePlugin plugin, String suffix) {
+        String[] ss = plugin.getSuffixes();
+        for (int i = 0; i < ss.length; i++) {
+            String s = ss[i];
+            if(suffix.equals(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

@@ -77,6 +77,23 @@ public class ProjectPluginManager {
     private static boolean isSuitable(ProjectView projectView, ProjectPlugin projectPlugin) {
         return isSuitable(projectView.getProject(), projectPlugin);
     }
+    
+
+
+    public void afterSave(Project project) {
+        Iterator i = projectPlugins.iterator();
+        while (i.hasNext()) {
+            ProjectPlugin plugin = (ProjectPlugin) i.next();
+            if (isSuitable(project, plugin)) {
+              try {
+                plugin.afterSave(project);
+              } catch (AbstractMethodError ame) {
+                Log.getLogger().warning("Plugin " + plugin + " does not implement the afterSave method");
+              }
+            }
+        }
+    }
+
 
     public void afterShow(ProjectView projectView, ProjectToolBar toolBar, ProjectMenuBar menuBar) {
         Iterator i = projectPlugins.iterator();
