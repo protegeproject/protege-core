@@ -150,7 +150,7 @@ public class DatabaseWriter {
         if (frame.isIncluded() && !frame.isSystem() && !alreadySeen.contains(frame.getFrameID())) {
           execute("INSERT INTO " + tableName + 
               " (" + Column.local_frame_id + ", " + Column.frame_name + ") VALUES (" +
-              frame.getFrameID().getLocalPart() + ", \"" + frame.getName() + "\")");
+              frame.getFrameID().getLocalPart() + ", '" + frame.getName() + "')");
           alreadySeen.add(frame.getFrameID());
         }
       }
