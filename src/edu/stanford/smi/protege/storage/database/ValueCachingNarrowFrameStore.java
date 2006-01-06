@@ -32,7 +32,7 @@ import edu.stanford.smi.protege.util.SystemUtilities;
  */
 
 public class ValueCachingNarrowFrameStore implements NarrowFrameStore, IncludingKBSupport {
-	private Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
+    private Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private DatabaseFrameDb _delegate;
     private final Sft _lookupSft = new Sft();
     private CacheMap _frameToSftToValuesMap = new CacheMap();
@@ -364,9 +364,9 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         return getDelegate().getSimpleInstanceCount();
     }
 
-    public void setInheritedFrames(IncludedFrameLookup iframes) {
+    public void setIncludedFrames(IncludedFrameLookup iframes) {
       if (_delegate instanceof IncludingKBSupport) {
-        ((IncludingKBSupport) _delegate).setInheritedFrames(iframes);
+        ((IncludingKBSupport) _delegate).setIncludedFrames(iframes);
       }
     }
 
