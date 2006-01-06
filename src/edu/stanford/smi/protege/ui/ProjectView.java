@@ -157,7 +157,8 @@ public class ProjectView extends JComponent {
     public ProjectView(Project project) {
         _project = project;
         setLayout(new BorderLayout());
-        add(createTabbedPane(), BorderLayout.CENTER);
+        // add(createTabbedPane(), BorderLayout.CENTER); what does this change do? (bug fix?)
+        add(BorderLayout.CENTER, createTabbedPane());
         project.getKnowledgeBase().setUndoEnabled(true);
     }
 
