@@ -1,12 +1,22 @@
 package edu.stanford.smi.protege.server;
 
-import java.net.*;
-import java.rmi.*;
-import java.util.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Level;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class RemoteClientProject extends Project {
     private RemoteServerProject _serverProject;
@@ -122,7 +132,11 @@ public class RemoteClientProject extends Project {
     private void installShutdownHook() {
         shutdownHook = new Thread("Remote Project ShutdownHook") {
             public void run() {
+              try {
                 attemptClose();
+              } catch (Throwable t) {
+                Log.getLogger().log(Level.INFO, "Exception caught", t);
+              }
             }
         };
         Runtime.getRuntime().addShutdownHook(shutdownHook);

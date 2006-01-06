@@ -1,10 +1,14 @@
 package edu.stanford.smi.protege.server;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.logging.Level;
 
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.ui.ProjectView;
+import edu.stanford.smi.protege.ui.StatusBar;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.StringUtilities;
 
 /**
  * 
@@ -28,14 +32,18 @@ public class RemoteProjectUtil {
     private static void createUpdateThread(final RemoteClientProject project, final StatusBar bar) {
         thread = new Thread("Status Bar Updater") {
             public void run() {
+              try {
                 while (thread == this) {
                     try {
                         sleep(DELAY_MSEC);
                         updateStatus(project, bar);
                     } catch (InterruptedException e) {
-                        // do nothing
+                      Log.getLogger().log(Level.INFO, "Exception caught", e);
                     }
                 }
+              } catch (Throwable t) {
+                Log.getLogger().log(Level.INFO, "Exception caught",t);
+              }
             }
         };
         thread.setDaemon(true);
