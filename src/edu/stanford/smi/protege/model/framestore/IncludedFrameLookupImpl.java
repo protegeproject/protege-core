@@ -47,6 +47,10 @@ public class IncludedFrameLookupImpl implements IncludedFrameLookup {
     return nameSlot;
   }
   
+  public boolean isEmpty() {
+    return stores.isEmpty();
+  }
+  
   public String getInherittedFrameName(Frame frame) {
     if (frame == null) {
       return null;
