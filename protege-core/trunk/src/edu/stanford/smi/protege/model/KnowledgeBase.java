@@ -245,7 +245,7 @@ public interface KnowledgeBase extends Disposable {
 
     String getFrameNamePrefix();
 
-    Collection getFrames();
+    Collection<Frame> getFrames();
 
     /**
      * Gets frames with a particular own/template slot/facet value.

@@ -1,8 +1,8 @@
 package edu.stanford.smi.protege.model;
 
-import java.util.*;
+import java.util.Collection;
 
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.PropertyList;
 
 /**
  * A factory for creating a KnowledgeBase implementation. The KB implementation is typically DefaultKnowledgeBase with,
