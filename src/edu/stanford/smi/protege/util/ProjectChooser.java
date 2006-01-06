@@ -1,17 +1,47 @@
 package edu.stanford.smi.protege.util;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Level;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.server.*;
-import edu.stanford.smi.protege.ui.*;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.plugin.CreateProjectFromFilePlugin;
+import edu.stanford.smi.protege.plugin.PluginUtilities;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.server.RemoteProjectManager;
+import edu.stanford.smi.protege.server.RemoteServer;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.ServerPanel;
+import edu.stanford.smi.protege.ui.ProjectManager;
 
 /**
  * This is a really horrible hack of a class. The problem is that the JFileChooser is a 
@@ -43,7 +73,27 @@ public class ProjectChooser extends JFileChooser {
         setControlButtonsAreShown(false);
         setDialogTitle("Open Project");
         String text = Text.getProgramName() + " Project";
-        setFileFilter(new ExtensionFilter(".pprj", text));
+        ArrayList extensions = new ArrayList();
+        extensions.add(".pprj");
+        Iterator it = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames().iterator();
+        if(it.hasNext()) {
+            text = "Supported Files";
+        }
+        while (it.hasNext()) {
+            Class pluginClass = (Class) it.next();
+            try {
+                CreateProjectFromFilePlugin plugin = (CreateProjectFromFilePlugin) pluginClass.newInstance();
+                String[] es = plugin.getSuffixes();
+                for (int i = 0; i < es.length; i++) {
+                    String e = es[i];
+                    extensions.add(e);
+                }
+            }
+            catch(Exception ex) {
+                Log.getLogger().log(Level.INFO, "Exception caught", ex);
+            }
+        }
+        setFileFilter(new ExtensionFilter(extensions.iterator(), text));
         setCurrentDirectory(ApplicationProperties.getLastFileDirectory());
         setName(FILE_CARD);
     }
@@ -173,8 +223,26 @@ public class ProjectChooser extends JFileChooser {
         Project project = null;
         Component c = getActiveCard();
         if (c == this) {
-            URI uri = getSelectedFile().toURI();
-            project = loadProject(uri);
+            File selectedFile = getSelectedFile();
+            String fileName = selectedFile.toString();
+            int lastDotIndex = fileName.lastIndexOf('.');
+            if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
+                String suffix = fileName.substring(lastDotIndex + 1);
+                Iterator<Class> it = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames().iterator();
+                while (it.hasNext() && project == null) {
+                    Class pluginClass = (Class) it.next();
+                    project = useCreateProjectFromFilePlugin(pluginClass, suffix, fileName);
+                    if (project != null) {
+                        String projectFilePath = fileName.substring(0, lastDotIndex) + ".pprj";
+                        project.setProjectFilePath(projectFilePath);
+                        //ProjectManager.getProjectManager().setCurrentProject(project, false);
+                    }
+                }
+            }
+            if (project == null) {  
+                URI uri = getSelectedFile().toURI();
+                project = loadProject(uri);
+            }
             ApplicationProperties.setLastFileDirectory(getCurrentDirectory());
 
         } else if (c == urlPanel) {
@@ -212,6 +280,36 @@ public class ProjectChooser extends JFileChooser {
         ProjectManager.getProjectManager().displayErrors("Load Project Errors", errors);
         return project;
     }
+    
+    public Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String fileName) {
+        if (pluginClass != null) {
+            try {
+                Object plugin = pluginClass.newInstance();
+                if (plugin instanceof CreateProjectFromFilePlugin) {
+                    CreateProjectFromFilePlugin p = (CreateProjectFromFilePlugin) plugin;
+                    if (PluginUtilities.isSuitableCreateProjectFromFilePlugin(p, suffix)) {
+                        File file = new File(fileName);
+                        Collection errors = new ArrayList();
+                        Project project = p.createProject(file, errors);
+                        if (!errors.isEmpty()) {
+                            Iterator it = errors.iterator();
+                            while (it.hasNext()) {
+                                Object error = it.next();
+                                System.err.println("Error with file " + fileName + ": " + error);
+                            }
+                        }
+                        return project;
+                    }
+                }
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+                System.err.println("Warning: Failed handle argument with " + pluginClass + ": " + ex);
+            }
+        }
+        return null;
+    }
+    
 }
 
 class URLPanel extends JPanel implements Validatable {
