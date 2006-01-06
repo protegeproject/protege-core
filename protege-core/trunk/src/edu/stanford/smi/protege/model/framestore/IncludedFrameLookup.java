@@ -8,6 +8,8 @@ public interface IncludedFrameLookup {
   
   Slot getNameSlot();
   
+  boolean isEmpty();
+  
   String getInherittedFrameName(Frame frame);
   
   Frame getInheritedFrame(String name);
