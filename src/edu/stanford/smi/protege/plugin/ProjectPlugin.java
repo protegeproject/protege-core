@@ -1,7 +1,9 @@
 package edu.stanford.smi.protege.plugin;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.ui.*;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.ui.ProjectMenuBar;
+import edu.stanford.smi.protege.ui.ProjectToolBar;
+import edu.stanford.smi.protege.ui.ProjectView;
 
 /**
  * 
@@ -18,6 +20,12 @@ public interface ProjectPlugin extends Plugin {
      * Called after an existing project is loaded but before it is displayed
      */
     void afterLoad(Project p);
+    
+    /**
+     * Called after a project has been saved.
+     */
+    void afterSave(Project p);
+
 
     /**
      * Called after the view has been added to the screen

@@ -14,6 +14,10 @@ public class ProjectPluginAdapter extends AbstractProjectPlugin {
 
     public void afterLoad(Project p) {
     }
+    
+    public void afterSave(Project p) {
+    }
+
 
     public void afterShow(ProjectView view, ProjectToolBar toolBar, ProjectMenuBar menuBar) {
     }
