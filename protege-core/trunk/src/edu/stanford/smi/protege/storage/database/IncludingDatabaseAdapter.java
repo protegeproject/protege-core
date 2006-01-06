@@ -4,46 +4,56 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameFactory;
-import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.IncludingKBAdapter;
 import edu.stanford.smi.protege.model.framestore.IncludingKBSupport;
-import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.util.Log;
 
 public class IncludingDatabaseAdapter extends IncludingKBAdapter
                                       implements IncludingKBSupport {
-  private Logger log = Log.getLogger(IncludingDatabaseAdapter.class);
+  private static Logger log = Log.getLogger(IncludingDatabaseAdapter.class);
   
   public enum Column {
     local_frame_id, frame_name
   };
   
-  private NarrowFrameStore delegate;
+  private ValueCachingNarrowFrameStore delegate;
   private DatabaseFrameDb frameDb;
+  private Map<Integer, String> includedIdCache = new HashMap<Integer, String>();
   
   private String tableName;
   
-  public IncludingDatabaseAdapter(DatabaseFrameDb nfs) {
-    super(nfs);
-    delegate = nfs;
-    frameDb  = nfs;
-  }
   
+  /**
+   * This is the main constructor for the IncludingDatabaseAdapter.  Currently the Narrow 
+   * Frame Stores have the slightly odd configuration:
+   * 
+   *    IncludingDatabaseAdapter -> ValueCachingNarrowFrameStore -> DatabaseFrameDb
+   * 
+   * This is a little odd but it works for now.  A more natural arrangement would be
+   * 
+   *    ValueCachingNarrowFrameStore -> IncludingDatabaseAdapter -> DatabaseFrameDb
+   *    
+   * But this requires some mods to the ValueCachingNarrowFrameStore which haven't been implemented yet.
+   */
   public IncludingDatabaseAdapter(ValueCachingNarrowFrameStore vcnfs) {
-    super(vcnfs);
-    delegate = vcnfs;
-    frameDb  = vcnfs.getDelegate();
+      super(vcnfs);
+      delegate = vcnfs;
+      frameDb  = vcnfs.getDelegate();
   }
   
+
   public void initialize(FrameFactory factory, 
                          String driver, 
-                         String url, String user, String pass, String table) {
-    frameDb.initialize(factory, driver, url, user, pass, table);
+                         String url, String user, String pass, String table,
+                         boolean isInclude) {
+    frameDb.initialize(factory, driver, url, user, pass, table, isInclude);
     super.initialize(factory);
     try {
       initializeInheritanceTable();
@@ -55,26 +65,56 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
     }
   }
   
-  private void initializeInheritanceTable() throws SQLException {
-    tableName = frameDb.getTableName() + "_INHERITED";
-    String cmd = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
-                  Column.local_frame_id + " INT, " + Column.frame_name + " TEXT)";
-    execute(cmd);
+  
+  protected void initializeInheritanceTable() throws SQLException {
+    tableName = getTableName(frameDb.getTableName());
+    initializeInheritanceTable(tableName, frameDb.getCurrentConnection());
+  }
+  
+  protected static String getTableName(String frameTable) {
+    return frameTable + "_INCLUDES";
+  }
+  
+  protected static void initializeInheritanceTable(String tableName,
+                                                   RobustConnection connection)  {
+    String cmd = "CREATE TABLE " + tableName + " (" +
+                  Column.local_frame_id + " INT UNIQUE PRIMARY KEY, " 
+                  + Column.frame_name + " TEXT)";
+    try {
+      execute(cmd, connection);
+    } catch (SQLException sqle) {
+        Log.getLogger().config("Table " + tableName + "already exists");
+        if (log.isLoggable(Level.FINE)) {
+          log.log(Level.FINE, "Exception caught - probable cause - table already exists", sqle);
+        }
+    }
   }
 
   @Override
-  public boolean isLocalFrameInherited(Frame frame) {
+  public boolean isLocalFrameIncluded(Frame frame) {
+    return getLocalIncludedName(frame) != null;
+  }
+  
+  private String getLocalIncludedName(Frame frame) {
+    Integer localId = new Integer(frame.getFrameID().getLocalPart());
+    String name = includedIdCache.get(localId);
+    if (name != null) {
+      return name;
+    }
     try {
       Statement statement = frameDb.getCurrentConnection().getStatement();
-      String cmd = "SELECT * FROM " + tableName + " WHERE " 
-      + Column.local_frame_id + " = " + frame.getFrameID().getLocalPart();
+      SelectStatement<Column> s = new SelectStatement<Column>(EnumSet.of(Column.frame_name));
+      String cmd = s.toString() + " FROM " + tableName + " WHERE " 
+      + Column.local_frame_id + " = " + localId.intValue();
       ResultSet rs = executeQuery(cmd);
       while (rs.next()) {
+        name = rs.getString(s.rsIndex(Column.frame_name));
+        includedIdCache.put(localId, name);
         rs.close();
-        return true;
+        return name;
       }
       rs.close();
-      return false;
+      return null;
     } catch (SQLException sqle) { // TOOD - should throw IOException
                                   // requires interface change.
       throw new RuntimeException(sqle);
@@ -85,39 +125,37 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
     if (log.isLoggable(Level.FINEST) && frame != null) {
       log.finest("(" + memoryProjectId + ") Mapping local frame with id " + frame.getFrameID());
     }
-    try {
-      if (frame == null  || frame.getFrameID().isSystem()) {
-        return frame;
-      }
-      String name = null;
-      SelectStatement<Column> select = new SelectStatement<Column>(EnumSet.of(Column.frame_name));
-      ResultSet rs = executeQuery(select.toString() + " FROM " + tableName + " WHERE " + 
-          Column.local_frame_id + " = " + frame.getFrameID().getLocalPart());
-      while (rs.next()) {
-        name = rs.getString(select.rsIndex(Column.frame_name));
-        rs.close();
-        Frame globalFrame = getInheritedFrames().getInheritedFrame(name);
-        if (log.isLoggable(Level.FINEST)) {
-          log.finest("returning global frame with id = " + globalFrame.getFrameID());
-        }
-        return globalFrame;
-      }
-      rs.close();
-      if (log.isLoggable(Level.FINEST)) {
-        log.finest("Global frame = local frame - no mapping found.");
-      }
+    if (frame == null  || frame.getFrameID().isSystem()) {
       return frame;
-    } catch (SQLException sqle) {
-      throw new RuntimeException(sqle);
     }
+    String name = getLocalIncludedName(frame);
+    if (name != null) {
+      Frame globalFrame = getIncludedFrames().getInheritedFrame(name);
+      if (log.isLoggable(Level.FINEST)) {
+        log.finest("returning global frame with id = " + globalFrame.getFrameID());
+      }
+      return globalFrame;
+    }
+    if (log.isLoggable(Level.FINEST)) {
+      log.finest("Global frame = local frame - no mapping found.");
+    }
+    return frame;
   }
   
   protected Frame createLocalFrame(Frame global, String name) {
     try {
       Frame localFrame = super.createLocalFrame(global, name);
-      execute("INSERT INTO " + tableName + 
-              " (" + Column.local_frame_id + ", " + Column.frame_name + ") VALUES (" +
-              localFrame.getFrameID().getLocalPart() + ", \"" + name + "\")");
+      String oldName = getLocalIncludedName(localFrame);
+      int localId = localFrame.getFrameID().getLocalPart();
+
+      if (oldName == null) {
+        execute("INSERT INTO " + tableName + 
+                " (" + Column.local_frame_id + ", " + Column.frame_name + ") VALUES (" +
+                localId + ", \"" + name + "\")");
+        includedIdCache.put(new Integer(localId), name);
+      } else if (!oldName.equals(name)) {
+        Log.getLogger().severe("Name mismatch on included frames");
+      }    
       return localFrame;
     } catch (SQLException sqle) { // TODO - should be IOException - requires interface change.
       throw new RuntimeException(sqle);
@@ -125,10 +163,14 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
   }
   
   public boolean execute(String cmd) throws SQLException {
+    return execute(cmd, frameDb.getCurrentConnection());
+  }
+  
+  public static boolean execute(String cmd, RobustConnection connection) throws SQLException {
     if (log.isLoggable(Level.FINE)) {
       log.fine("Executing database command = " + cmd);
     }
-    Statement statement = frameDb.getCurrentConnection().getStatement();
+    Statement statement = connection.getStatement();
     return statement.execute(cmd);
   }
   
@@ -141,11 +183,31 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
     return rs;
   }
   
-  public void saveKnowledgeBase(KnowledgeBase kb) throws SQLException {
-    execute("DROP TABLE IF EXISTS " + tableName);
-    initializeInheritanceTable();
-    frameDb.saveKnowledgeBase(kb);
+  public int getFrameCount() {
+    try {
+      int delegateCount = frameDb.getFrameCount();
+      if (log.isLoggable(Level.FINE)) {
+        log.fine("found " + delegateCount + " total frames");
+      }
+      ResultSet rs = executeQuery("SELECT COUNT(" + Column.local_frame_id + ") FROM " + tableName
+          + " INNER JOIN " + frameDb.getTable() + " WHERE " +
+          Column.local_frame_id + " = " + DatabaseFrameDb.Column.frame);
+      int included = 0;
+      if (rs.next()) {
+        included = rs.getInt(1);
+      }
+      rs.close();
+      if (log.isLoggable(Level.FINE)) {
+        log.fine("found " + included + " included frames");
+      }
+      return delegateCount - included;
+    } catch (SQLException sqle) {
+      Log.getLogger().log(Level.WARNING, "Exception caught", sqle);
+      return 0;
+    }
   }
+  
+  
   
 
 }
