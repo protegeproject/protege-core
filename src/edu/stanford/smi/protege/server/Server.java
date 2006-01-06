@@ -425,8 +425,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                             sleep(_saveIntervalMsec);
                             saveAllProjects();
                         }
-                    } catch (InterruptedException e) {
-                        // do nothing
+                    } catch (Throwable e) {
+                      Log.getLogger().log(Level.INFO, "Exception caught", e);
                     }
                 }
             };
@@ -478,9 +478,13 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         saveAllProjects();
         Thread thread = new Thread() {
             public void run() {
+              try {
                 SystemUtilities.sleepMsec(100);
                 Log.getLogger().info("Server exiting.");
                 System.exit(0);
+              } catch (Exception e) {
+                Log.getLogger().log(Level.INFO, "Exception caught", e);
+              }
             }
         };
         thread.start();
