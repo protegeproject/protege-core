@@ -692,6 +692,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private void startEventThread() {
         _eventThread = new Thread("EventDispatchFrameStoreHandler.startEventThread") {
             public void run() {
+              try {
                 while (_eventThread == this) {
                     try {
                         pollForEvents();
@@ -701,6 +702,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                         Log.getLogger().warning(e.toString());
                     }
                 }
+              } catch (Throwable t) {
+                Log.getLogger().log(Level.INFO, "Exception caught", t);
+              }
             }
         };
         _eventThread.setPriority(Thread.MIN_PRIORITY);
