@@ -1,18 +1,31 @@
 package edu.stanford.smi.protege.test;
 
-import java.awt.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
+import java.awt.Component;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.util.Iterator;
+import java.util.logging.Level;
 
-import javax.swing.*;
+import javax.swing.AbstractButton;
 import javax.swing.FocusManager;
-import javax.swing.text.*;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 
-import edu.stanford.smi.protege.*;
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.Application;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.ui.ProjectManager;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.LabeledComponent;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * 
@@ -110,6 +123,7 @@ public abstract class UITestCase extends AbstractTestCase {
     protected static void executeOnNextModalDialog(final Runnable runnable) {
         Thread thread = new Thread() {
             public void run() {
+              try {
                 ModalDialog dialog = null;
                 while (dialog == null) {
                     dialog = ModalDialog.getCurrentDialog();
@@ -121,6 +135,9 @@ public abstract class UITestCase extends AbstractTestCase {
                     }
                     SystemUtilities.sleepMsec(250);
                 }
+              } catch (Throwable t) {
+                Log.getLogger().log(Level.INFO, "Exception caught", t);
+              }
             }
         };
         thread.setDaemon(true);
