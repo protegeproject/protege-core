@@ -184,11 +184,42 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
   }
   
   public int getFrameCount() {
+    int delegateCount = frameDb.getFrameCount();
+    if (log.isLoggable(Level.FINE)) {
+      log.fine("found " + delegateCount + " total frames");
+    }
+    int included = 0;
     try {
-      int delegateCount = frameDb.getFrameCount();
+      included = getIncludedFrameCount();
+    } catch (SQLException sqle) {
+      Log.getLogger().log(Level.WARNING, "Exception caught", sqle);
+    }
+    return delegateCount - included;
+  }
+    
+    public int getClsCount() {
+      int delegateCount = frameDb.getClsCount();
       if (log.isLoggable(Level.FINE)) {
         log.fine("found " + delegateCount + " total frames");
       }
+      int included = 0;
+      try {
+        included = getIncludedFrameCount();
+      } catch (SQLException sqle) {
+        Log.getLogger().log(Level.WARNING, "Exception caught", sqle);
+      }
+      return delegateCount - included;  
+    }
+    
+    public int getSlotCount() {
+      return frameDb.getSlotCount();
+    }
+    
+    public int getFacetCount() {
+      return frameDb.getFacetCount();
+    }
+    
+    public int getIncludedFrameCount() throws SQLException {
       ResultSet rs = executeQuery("SELECT COUNT(" + Column.local_frame_id + ") FROM " + tableName
           + " INNER JOIN " + frameDb.getTable() + " WHERE " +
           Column.local_frame_id + " = " + DatabaseFrameDb.Column.frame);
@@ -197,17 +228,9 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
         included = rs.getInt(1);
       }
       rs.close();
-      if (log.isLoggable(Level.FINE)) {
-        log.fine("found " + included + " included frames");
-      }
-      return delegateCount - included;
-    } catch (SQLException sqle) {
-      Log.getLogger().log(Level.WARNING, "Exception caught", sqle);
-      return 0;
-    }
-  }
-  
+      return included;
+    }    
+}
   
   
 
-}
