@@ -62,7 +62,8 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
         while (i.hasNext()) {
             Object o = i.next();
             if (!(o instanceof Cls)) {
-                Log.getLogger().severe("Invalid Class: " + o);
+                Log.getLogger().severe("Invalid Class: " + o 
+                                          + " with type = " + (o == null ? " null " : o.getClass().toString()));
                 clses.remove(o);
             }
         }
