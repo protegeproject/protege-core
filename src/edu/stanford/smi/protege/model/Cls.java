@@ -109,7 +109,7 @@ public interface Cls extends Instance {
      */
     Collection getSuperclasses();
 
-    Collection getTemplateFacets(Slot slot);
+    Collection<Facet> getTemplateFacets(Slot slot);
 
     /** see {@link Frame} for a description of the return type */
     Object getTemplateFacetValue(Slot slot, Facet facet);
@@ -157,7 +157,7 @@ public interface Cls extends Instance {
 
     Number getTemplateSlotMinimumValue(Slot slot);
 
-    Collection getTemplateSlots();
+    Collection<Slot> getTemplateSlots();
 
     /** see {@link Frame} for a description of the return type */
     Object getTemplateSlotValue(Slot slot);
