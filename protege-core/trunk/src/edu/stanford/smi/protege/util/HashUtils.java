@@ -13,6 +13,11 @@ public final class HashUtils {
         hash = combine(hash, hash(o2));
         return hash;
     }
+    
+    public static int getHash(int i1, int i2) {
+      int hash = combine(i1, i2);
+      return hash;
+    }
 
     public static int getHash(Object o1, Object[] oArray) {
         int hash = hash(o1);
