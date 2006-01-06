@@ -618,11 +618,15 @@ public class ProjectManager {
     }
 
     public void setCurrentProject(Project project) {
+        setCurrentProject(project, true);
+    }
+    
+    public void setCurrentProject(Project project, boolean remote) {
         if (closeProjectRequest()) {
             _currentProject = project;
             if (_currentProject != null) {
                 _projectPluginManager.afterLoad(_currentProject);
-                displayCurrentProject(true);
+                displayCurrentProject(remote);
             }
         }
     }
@@ -709,6 +713,7 @@ public class ProjectManager {
             } catch (Exception e) {
                 errors.add(e);
             } finally {
+                _projectPluginManager.afterSave(_currentProject);
                 waitCursor.hide();
             }
             displayErrors("Save Project Errors", errors);
