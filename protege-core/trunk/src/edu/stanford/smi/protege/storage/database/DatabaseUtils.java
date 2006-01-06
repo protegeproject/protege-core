@@ -219,14 +219,20 @@ class DatabaseUtils {
 
     public static Frame getFrame(ResultSet rs, 
                                  int frameIndex, int typeIndex, 
-                                 FrameFactory factory, int projectId) throws SQLException {
+                                 FrameFactory factory, int projectId,
+                                 boolean isInclude) throws SQLException {
         FrameID id = getFrameId(rs, frameIndex, projectId);
         int type = rs.getInt(typeIndex);
-        return getFrame(id, type, factory);
+        return getFrame(id, type, factory, isInclude);
     }
 
-    private static Frame getFrame(FrameID id, int type, FrameFactory factory) {
-        return factory.createFrameFromClassId(type, id);
+    private static Frame getFrame(FrameID id, int type, FrameFactory factory,
+                                  boolean isInclude) {
+        Frame frame = factory.createFrameFromClassId(type, id);
+        if (isInclude) {
+          frame.setIncluded(true);
+        }
+        return frame;
     }
 
     private static FrameID createFrameID(int value, int projectId) {
@@ -247,14 +253,20 @@ class DatabaseUtils {
     }
 
     public static Slot getSlot(ResultSet rs, int index, 
-                               FrameFactory factory, int projectId) throws SQLException {
+                               FrameFactory factory, int projectId,
+                               boolean isInclude) throws SQLException {
         Collection types = Collections.EMPTY_LIST;
         FrameID id = getFrameId(rs, index, projectId);
-        return factory.createSlot(id, types);
+        Slot slot = factory.createSlot(id, types);
+        if (isInclude) {
+          slot.setIncluded(isInclude);
+        }
+        return slot;
     }
 
     public static Facet getFacet(ResultSet rs, int index, 
-                                 FrameFactory factory, int projectId) throws SQLException {
+                                 FrameFactory factory, int projectId,
+                                 boolean isInclude) throws SQLException {
         Collection types = Collections.EMPTY_LIST;
         Facet facet;
         FrameID id = getFrameId(rs, index, projectId);
@@ -262,12 +274,17 @@ class DatabaseUtils {
             facet = null;
         } else {
             facet = factory.createFacet(id, types);
+            if (isInclude) {
+              facet.setIncluded(true);
+            }
         }
         return facet;
     }
 
-    public static Object getShortValue(ResultSet rs, int valueIndex, int valueTypeIndex, 
-                                       FrameFactory factory, int projectId)
+    public static Object getShortValue(ResultSet rs, 
+                                       int valueIndex, int valueTypeIndex, 
+                                       FrameFactory factory, int projectId,
+                                       boolean isInclude)
             throws SQLException {
         Object value;
         int type = rs.getByte(valueTypeIndex);
@@ -292,7 +309,7 @@ class DatabaseUtils {
             default:
                 int valueInt = Integer.parseInt(valueString);
                 FrameID id = createFrameID(valueInt, projectId);
-                value = getFrame(id, type, factory);
+                value = getFrame(id, type, factory, isInclude);
                 break;
         }
         return value;
