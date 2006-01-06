@@ -106,7 +106,7 @@ public interface Frame extends Comparable {
      * 
      * @return a collection of #Slot for this frame
      */
-    Collection getOwnSlots();
+    Collection<Slot> getOwnSlots();
 
     /** see {@link Frame} for a description of the return type */
     Object getDirectOwnSlotValue(Slot slot);
