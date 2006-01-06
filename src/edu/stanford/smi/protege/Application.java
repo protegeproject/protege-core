@@ -1,15 +1,35 @@
 package edu.stanford.smi.protege;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.net.*;
-import java.util.logging.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Level;
 
-import javax.swing.*;
+import javax.swing.JFrame;
 
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.plugin.CreateProjectFromFilePlugin;
+import edu.stanford.smi.protege.plugin.PluginUtilities;
+import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.ui.ProjectManager;
+import edu.stanford.smi.protege.ui.SplashScreen;
+import edu.stanford.smi.protege.ui.WelcomeDialog;
+import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.URIUtilities;
 
 /**
  * Main class for the Protege application (as opposed to an applet).
@@ -67,27 +87,87 @@ public class Application {
         restoreMainframeRectangle();
         ProjectManager.getProjectManager().setRootPane(_mainFrame.getRootPane());
 
-        // Find out if a filename was passed in on the command-line.
+        // Check for matching files among arguments
+        Project project = null;
+        if (args.length > 0) {
+            String arg = args[0];
+            int lastDotIndex = arg.lastIndexOf('.');
+            if (lastDotIndex > 0 && lastDotIndex < arg.length() - 1) {
+                String projectFilePath = arg.substring(0, lastDotIndex) + ".pprj";
+                if (new File(projectFilePath).exists()) {
+                    args[0] = projectFilePath;  // Reuse conventional "open-pprj" mechanism
+                }
+                else {
+                    String suffix = arg.substring(lastDotIndex + 1);
+                    Iterator it = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames().iterator();
+                    while (it.hasNext() && project == null) {
+                        Class pluginClass = (Class) it.next();
+                        project = useCreateProjectFromFilePlugin(pluginClass, suffix, arg);
+                        if (project != null) {
+                            project.setProjectFilePath(projectFilePath);
+                            ProjectManager.getProjectManager().setCurrentProject(project, false);
+                        }
+                    }
+                }
+            }
+        }
 
-        URI projectURI = getProjectURI(args);
+        if (project != null) {
+            showMainFrame();
+        }
+        else {
+            // Find out if a filename was passed in on the command-line.
+            URI projectURI = getProjectURI(args);
 
-        if (projectURI != null) {
-            // Load the project and show the main frame.
-            ProjectManager.getProjectManager().loadProject(projectURI);
-            showMainFrame();
-        } else {
-            showMainFrame();
-            // Check to see if the user wants to see the welcome dialog.
-            boolean show = ApplicationProperties.getWelcomeDialogShow();
-            if (show) {
-                // Load the main frame and show the welcome dialog.
-                _welcome = new WelcomeDialog(_mainFrame, "Welcome to " + Text.getProgramName(), true);
-                _welcome.setSize(new Dimension(600, 350));
-                _welcome.setLocationRelativeTo(_mainFrame);
-                _welcome.setVisible(true);
+            if (projectURI != null) {
+                // Load the project and show the main frame.
+                ProjectManager.getProjectManager().loadProject(projectURI);
+                showMainFrame();
+            }
+            else {
+                showMainFrame();
+                // Check to see if the user wants to see the welcome dialog.
+                boolean show = ApplicationProperties.getWelcomeDialogShow();
+                if (show) {
+                    // Load the main frame and show the welcome dialog.
+                    _welcome = new WelcomeDialog(_mainFrame, "Welcome to " + Text.getProgramName(), true);
+                    _welcome.setSize(new Dimension(600, 350));
+                    _welcome.setLocationRelativeTo(_mainFrame);
+                    _welcome.setVisible(true);
+                }
             }
         }
     }
+    
+    public static Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String arg) {
+        if (pluginClass != null) {
+            try {
+                Object plugin = pluginClass.newInstance();
+                if (plugin instanceof CreateProjectFromFilePlugin) {
+                    CreateProjectFromFilePlugin p = (CreateProjectFromFilePlugin) plugin;
+                    if (PluginUtilities.isSuitableCreateProjectFromFilePlugin(p, suffix)) {
+                        File file = new File(arg);
+                        Collection errors = new ArrayList();
+                        Project project = p.createProject(file, errors);
+                        if (!errors.isEmpty()) {
+                            Iterator it = errors.iterator();
+                            while (it.hasNext()) {
+                                Object error = it.next();
+                                System.err.println("Error with file " + arg + ": " + error);
+                            }
+                        }
+                        return project;
+                    }
+                }
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+                System.err.println("Warning: Failed handle argument with " + pluginClass + ": " + ex);
+            }
+        }
+        return null;
+    }
+
 
     public static WelcomeDialog getWelcomeDialog() {
         return _welcome;
@@ -124,7 +204,11 @@ public class Application {
         };
         Thread thread = new Thread(group, "Safe Main Thread") {
             public void run() {
+              try {
                 realmain(args);
+              } catch (Throwable t) {
+                Log.getLogger().log(Level.INFO, "Exception caught", t);
+              }
             }
         };
         thread.setDaemon(true);
