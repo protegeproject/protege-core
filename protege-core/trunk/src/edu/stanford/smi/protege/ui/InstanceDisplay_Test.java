@@ -1,14 +1,29 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.logging.Level;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JTextArea;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.test.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.test.APITestCase;
+import edu.stanford.smi.protege.test.TestUtilities;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * Unit tests for the InstanceDisplay class
@@ -44,6 +59,7 @@ public class InstanceDisplay_Test extends APITestCase {
     private static void pressMessageOK() {
         Thread t = new Thread() {
             public void run() {
+              try {
                 JDialog dialog = null;
                 while (dialog == null) {
                     dialog = ModalDialog.getCurrentDialog();
@@ -53,6 +69,9 @@ public class InstanceDisplay_Test extends APITestCase {
                     }
                     SystemUtilities.sleepMsec(100);
                 }
+              } catch (Throwable t) {
+                Log.getLogger().log(Level.INFO, "Exception caught", t);
+              }
             }
         };
         t.setDaemon(true);
