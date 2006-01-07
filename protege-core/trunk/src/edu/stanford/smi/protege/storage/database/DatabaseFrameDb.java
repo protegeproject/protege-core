@@ -285,7 +285,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private String getIsTemplateDataType() throws SQLException {
-        return getCurrentConnection().getBitTypeName();
+      return getCurrentConnection().getBitTypeName();
+      // return getCurrentConnection().getSmallIntTypeName();
     }
 
     private String getValueIndexDataType() throws SQLException {
@@ -1523,7 +1524,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         command.append("SELECT COUNT(*) FROM " + _table);
         command.append(" WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME));
         command.append(" AND " + FACET_COLUMN + " = " + FrameID.NULL_FRAME_ID_VALUE);
-        command.append(" AND " + IS_TEMPLATE_COLUMN + " = 0");
+        command.append(" AND " + IS_TEMPLATE_COLUMN + " = false");
         command.append(" AND (");
         boolean isFirst = true;
         Iterator i = types.iterator();
@@ -1564,7 +1565,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             _countFramesText = "SELECT COUNT(*) FROM " + _table;
             _countFramesText += " WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME);
             _countFramesText += " AND " + FACET_COLUMN + " = " + FrameID.NULL_FRAME_ID_VALUE;
-            _countFramesText += " AND " + IS_TEMPLATE_COLUMN + " = 0";
+            _countFramesText += " AND " + IS_TEMPLATE_COLUMN + " = false";
         }
         PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_countFramesText);
 
