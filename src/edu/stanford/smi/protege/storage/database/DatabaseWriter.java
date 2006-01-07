@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.logging.Level;
@@ -14,6 +15,7 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.storage.database.IncludingDatabaseAdapter.Column;
 import edu.stanford.smi.protege.util.Log;
@@ -29,6 +31,7 @@ public class DatabaseWriter {
   private DatabaseFrameDb frameDb;
   private Collection<Frame> frames;
   private Collection<FrameID> alreadySeen = new HashSet<FrameID>();
+  private Slot nameSlot;
   
   public DatabaseWriter(KnowledgeBase inputKb, 
                        String driver, 
@@ -43,6 +46,7 @@ public class DatabaseWriter {
     this.tableName = IncludingDatabaseAdapter.getTableName(tablename);
     this.inputKb = inputKb;
     frames = inputKb.getFrames();
+    nameSlot = (Slot) inputKb.getFrame(Model.Slot.NAME);
   }
   
   public void save() throws SQLException {
@@ -77,9 +81,6 @@ public class DatabaseWriter {
     }
     for (Frame frame : frames) {
       printTraceMessage(++loopcount, nFrames);
-      if (!frame.isSystem() && frame.isIncluded()) {
-        continue;
-      }
       if (log.isLoggable(Level.FINER)) {
         log.finer("Examining frame " + frame.getName());
       }
@@ -147,10 +148,12 @@ public class DatabaseWriter {
       }
       if (value instanceof Frame) {
         Frame frame = (Frame) value;
+        String name = frame.getName();
         if (frame.isIncluded() && !frame.isSystem() && !alreadySeen.contains(frame.getFrameID())) {
           execute("INSERT INTO " + tableName + 
               " (" + Column.local_frame_id + ", " + Column.frame_name + ") VALUES (" +
-              frame.getFrameID().getLocalPart() + ", '" + frame.getName() + "')");
+              frame.getFrameID().getLocalPart() + ", '" + name + "')");
+          frameDb.saveValues(frame, nameSlot, null, false, Collections.singleton(name));
           alreadySeen.add(frame.getFrameID());
         }
       }
