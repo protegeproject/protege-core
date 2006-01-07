@@ -78,7 +78,7 @@ public interface Cls extends Instance {
 
     Collection getDirectlyOverriddenTemplateFacets(Slot slot);
 
-    Collection getDirectTemplateSlots();
+    Collection<Slot> getDirectTemplateSlots();
 
     /** see {@link Frame} for a description of the returned objects */
     List getDirectTemplateSlotValues(Slot slot);
