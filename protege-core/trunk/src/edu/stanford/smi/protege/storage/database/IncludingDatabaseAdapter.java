@@ -221,7 +221,7 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
     
     public int getIncludedFrameCount() throws SQLException {
       ResultSet rs = executeQuery("SELECT COUNT(" + Column.local_frame_id + ") FROM " + tableName
-          + " INNER JOIN " + frameDb.getTable() + " WHERE " +
+          + " INNER JOIN " + frameDb.getTable() + " ON " +
           Column.local_frame_id + " = " + DatabaseFrameDb.Column.frame);
       int included = 0;
       if (rs.next()) {
