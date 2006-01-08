@@ -148,9 +148,9 @@ public abstract class IncludingKBAdapter
       log.finest("global frame has name = " + name);
     }
     if (name != null) {
-      for (Frame localFrame : delegate.getMatchingFrames(iframes.getNameSlot(), 
-                                                         (Facet) null, 
-                                                         false, name, 1)) {
+      for (Frame localFrame : delegate.getFrames(iframes.getNameSlot(), 
+                                                  (Facet) null, 
+                                                  false, name)) {
         if (log.isLoggable(Level.FINEST)) {
           log.finest("found local frame with appropriate name with id = " + localFrame.getFrameID());
         }
