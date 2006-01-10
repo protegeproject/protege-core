@@ -78,10 +78,14 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
   protected static void initializeInheritanceTable(String tableName,
                                                    RobustConnection connection)  {
     String cmd = "CREATE TABLE " + tableName + " (" +
-                  Column.local_frame_id + " INT UNIQUE PRIMARY KEY, " 
-                  + Column.frame_name + " TEXT)";
+                  Column.local_frame_id + " INT, " 
+                  + Column.frame_name + " " + connection.getVarcharTypeName() + 
+                  "(" + connection.getMaxVarcharSize() + "))";
+    String cmd2 = "CREATE UNIQUE INDEX " + tableName + "_I1 ON " + tableName 
+                    + "(" + Column.local_frame_id + ")";
     try {
       execute(cmd, connection);
+      execute(cmd2, connection);
     } catch (SQLException sqle) {
         Log.getLogger().config("Table " + tableName + "already exists");
         if (log.isLoggable(Level.FINE)) {
@@ -151,7 +155,7 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
       if (oldName == null) {
         execute("INSERT INTO " + tableName + 
                 " (" + Column.local_frame_id + ", " + Column.frame_name + ") VALUES (" +
-                localId + ", \"" + name + "\")");
+                localId + ", '" + name + "')");
         includedIdCache.put(new Integer(localId), name);
       } else if (!oldName.equals(name)) {
         Log.getLogger().severe("Name mismatch on included frames");
