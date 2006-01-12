@@ -101,6 +101,10 @@ public class DatabaseWriter {
       values = reduceValues(values, frame);
       frameDb.saveValues(frame, slot, null, false, values);
       updateIncludedTable(values);
+      if (!values.isEmpty()) {
+        updateIncludedTable(frame);
+        updateIncludedTable(slot);
+      }
     }
   }
   
@@ -113,6 +117,10 @@ public class DatabaseWriter {
       values = reduceValues(values, cls);
       frameDb.saveValues(cls, slot, null, true, values);
       updateIncludedTable(values);
+      if (!values.isEmpty()) {
+        updateIncludedTable(cls);
+        updateIncludedTable(slot);
+      }
       for (Facet facet : cls.getTemplateFacets(slot)) {
         if (log.isLoggable(Level.FINER)) {
           log.finer("Looking at facet " + facet);
@@ -121,6 +129,11 @@ public class DatabaseWriter {
         facetValues = reduceValues(facetValues, cls);
         frameDb.saveValues(cls, slot, facet, true, facetValues);
         updateIncludedTable(facetValues);
+        if (!values.isEmpty()) {
+          updateIncludedTable(cls);
+          updateIncludedTable(slot);
+          updateIncludedTable(facet);
+        }
       }
     }
   }
@@ -148,15 +161,19 @@ public class DatabaseWriter {
       }
       if (value instanceof Frame) {
         Frame frame = (Frame) value;
-        String name = frame.getName();
-        if (frame.isIncluded() && !frame.isSystem() && !alreadySeen.contains(frame.getFrameID())) {
-          execute("INSERT INTO " + tableName + 
-              " (" + Column.local_frame_id + ", " + Column.frame_name + ") VALUES (" +
-              frame.getFrameID().getLocalPart() + ", '" + name + "')");
-          frameDb.saveValues(frame, nameSlot, null, false, Collections.singleton(name));
-          alreadySeen.add(frame.getFrameID());
-        }
+        updateIncludedTable(frame);
       }
+    }
+  }
+  
+  private void updateIncludedTable(Frame frame) throws SQLException {
+    String name = frame.getName();
+    if (frame.isIncluded() && !frame.isSystem() && !alreadySeen.contains(frame.getFrameID())) {
+      execute("INSERT INTO " + tableName + 
+          " (" + Column.local_frame_id + ", " + Column.frame_name + ") VALUES (" +
+          frame.getFrameID().getLocalPart() + ", '" + name + "')");
+      frameDb.saveValues(frame, nameSlot, null, false, Collections.singleton(name));
+      alreadySeen.add(frame.getFrameID());
     }
   }
   
