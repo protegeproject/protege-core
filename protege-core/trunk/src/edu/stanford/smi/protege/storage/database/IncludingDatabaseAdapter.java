@@ -87,9 +87,14 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
       execute(cmd, connection);
       execute(cmd2, connection);
     } catch (SQLException sqle) {
-        Log.getLogger().config("Table " + tableName + "already exists");
-        if (log.isLoggable(Level.FINE)) {
-          log.log(Level.FINE, "Exception caught - probable cause - table already exists", sqle);
+        String message = sqle.getMessage();
+        if (message != null && !message.contains("already exists")) {
+          Log.getLogger().config("Exception caught - possible cause - table already exists (which is ok) " + sqle);
+          if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Exception caught - possible cause - table already exists", sqle);
+          }
+        } else {
+          Log.getLogger().config("Table " + tableName + " already exists");
         }
     }
   }
