@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameFactory;
 import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
@@ -425,6 +426,10 @@ public abstract class IncludingKBAdapter
                         Slot slot, 
                         Facet facet, 
                         boolean isTemplate) {
+    if (isGlobalFrameInherited(frame)
+          && slot.getFrameID().equals(Model.SlotID.NAME)) {
+      return new ArrayList();
+    }
     frame = mapGlobalFrame(frame, false);
     slot  = mapGlobalSlot(slot, false);
     facet = mapGlobalFacet(facet, false);
@@ -437,6 +442,10 @@ public abstract class IncludingKBAdapter
 
   public int getValuesCount(Frame frame, Slot slot, Facet facet,
                             boolean isTemplate) {
+    if (isGlobalFrameInherited(frame)
+        && slot.getFrameID().equals(Model.SlotID.NAME)) {
+      return 0;
+    }
     frame = mapGlobalFrame(frame, false);
     slot =  mapGlobalSlot(slot, false);
     facet = mapGlobalFacet(facet, false);
@@ -490,7 +499,9 @@ public abstract class IncludingKBAdapter
     if (slot == null || value == null) {
       return new HashSet<Frame>();
     }
-    return delegate.getFrames(slot, facet, isTemplate, value);
+    Set<Frame> frames = delegate.getFrames(slot, facet, isTemplate, value);
+    frames = mapLocalFrameSet(frames);
+    return frames;
   }
 
   public Set<Frame> getFramesWithAnyValue(Slot slot,  Facet facet, 
@@ -560,6 +571,4 @@ public abstract class IncludingKBAdapter
   public boolean rollbackTransaction() {
     return delegate.rollbackTransaction();
   }
-
-
 }
