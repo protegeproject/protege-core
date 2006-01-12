@@ -260,6 +260,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         createTableString += SHORT_VALUE_COLUMN + " " + getShortValueDataType() + ", ";
         createTableString += LONG_VALUE_COLUMN + " " + getLongValueDataType();
         createTableString += ")";
+        if (checkMySQLBug()) {
+          createTableString += " ENGINE = INNODB";
+        }
         try {
             executeUpdate(createTableString);
             Log.getLogger().info("Created table with command '" + createTableString + "'");
@@ -300,24 +303,34 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private String getLongValueDataType() throws SQLException {
         return getCurrentConnection().getLongvarcharTypeName();
     }
+   
+    /**
+     * This routine checks for a bug in mysql.
+     * 
+     * MySQL hack - there is a bug in mysql where SELECT statements will fail to 
+     *              produce the correct result because of these index statements.  There is 
+     *              a bug report out to mysql for this problem on the page
+     *                  http://bugs.mysql.com/bug.php?id=16121
+     *              Right now we are working around this problem by disabling indexing.
+     *              Sometime I need to investigate exactly which mysql's are bad.
+     */
+    public boolean checkMySQLBug() {
+      try {
+        if (getCurrentConnection().isMySql() 
+            && getCurrentConnection().getDatabaseMajorVersion() == 5) {
+          Log.getLogger().info("Found mysql 5.0 - correcting for mysql bug 16121.");
+          return true;
+        }
+      } catch (Exception e) {
+        Log.getLogger().log(Level.WARNING, "Exception caught checking database version", e);
+        Log.getLogger().warning("Unable to check database version with this jdbc driver");
+        Log.getLogger().warning("If this database is mysql 5 then protege will perform incorrectly");
+      }
+      return false;    
+    }
 
     private void createIndices() throws SQLException {
         String indexString;
-        
-        /*
-         * MySQL hack - there is a bug in mysql where SELECT statements will fail to 
-         *              produce the correct result because of these index statements.  There is 
-         *              a bug report out to mysql for this problem on the page
-         *                  http://bugs.mysql.com/bug.php?id=16121
-         *              Right now we are working around this problem by disabling indexing.
-         *              Sometime I need to investigate exactly which mysql's are bad.
-         */
-        if (getCurrentConnection().isMySql() 
-            && getCurrentConnection().getDatabaseMajorVersion() == 5) {
-          Log.getLogger().warning("Disabling database indexing because of mysql bug 16121");
-          Log.getLogger().warning("There will be some performance penalty");
-          return;
-        }
 
         /*
          * VALUE_INDEX is included in this index solely for its value as a side effect. It keeps the values ordered by
