@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.util;
 
 import java.io.*;
 import java.net.*;
+import java.util.logging.Level;
 
 /**
  * 
@@ -211,9 +212,9 @@ public class URIUtilities {
                     InputStream inputStream = url.openStream();
                     reader = FileUtilities.createBufferedReader(inputStream);
                 } catch (MalformedURLException urlException) {
-                    Log.getLogger().warning(urlException.toString());
+                    Log.getLogger().log(Level.WARNING, "Exception caught", urlException);
                 } catch (IOException ioException) {
-                    Log.getLogger().warning(ioException.toString());
+                    Log.getLogger().log(Level.WARNING, "Exception caught", ioException);
                 }
             }
         }
