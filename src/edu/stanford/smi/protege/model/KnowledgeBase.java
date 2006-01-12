@@ -282,7 +282,7 @@ public interface KnowledgeBase extends Disposable {
      * searches on "e" do you really want to return 1M frames?
      * @return Collection of frames.
      */
-    Collection getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String matchString, int maxMatches);
+    Collection<Frame> getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String matchString, int maxMatches);
 
     String getName();
 
