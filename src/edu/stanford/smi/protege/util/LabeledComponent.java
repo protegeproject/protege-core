@@ -30,6 +30,7 @@ import javax.swing.JToolBar;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  * @author Holger Knublauch <holger@smi.stanford.edu>(minor extensions)
+ * @author Tania Tudorache <tudorache@stanford.edu> (minor extensions)
  */
 public class LabeledComponent extends JComponent {
     private List<Action> actions = new ArrayList<Action>();
@@ -40,18 +41,26 @@ public class LabeledComponent extends JComponent {
     private JComponent _centerComponentHolder;
     private JComponent _footerComponentHolder;
     private boolean _isVerticallyStretchable;
+    private boolean _isSwapedHeader;
 
     public LabeledComponent(String label, Component c) {
-        this(label, c, c instanceof JScrollPane);
+        this(label, c, c instanceof JScrollPane);        
     }
 
     public LabeledComponent(String label, Component c, boolean verticallyStretchable) {
-        setLayout(new BorderLayout());
+    	this(label, c, verticallyStretchable, false); 
+    	//todo 
+    }
+   
+    public LabeledComponent(String label, Component c, boolean verticallyStretchable, boolean swapedHeader) {
+    	_isSwapedHeader = swapedHeader;
+    	_isVerticallyStretchable = verticallyStretchable || (c instanceof JScrollPane);
+    	
+    	setLayout(new BorderLayout());
         add(createHeader(), BorderLayout.NORTH);
         add(createCenterComponentHolder(), BorderLayout.CENTER);
         add(createFooterComponentHolder(), BorderLayout.SOUTH);
-
-        _isVerticallyStretchable = verticallyStretchable || (c instanceof JScrollPane);
+                
         setHeaderLabel(label);
         setCenterComponent(c);
     }
@@ -93,7 +102,7 @@ public class LabeledComponent extends JComponent {
         _footerComponentHolder.setLayout(new BorderLayout());
         return _footerComponentHolder;
     }
-
+       
     private JComponent createHeader() {
         _header = new JPanel() {
             public Dimension getPreferredSize() {
@@ -104,10 +113,11 @@ public class LabeledComponent extends JComponent {
         };
         _header.setLayout(new BorderLayout());
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(createHeaderLabel(), BorderLayout.WEST);
+        
+        panel.add(createHeaderLabel(),(_isSwapedHeader ? BorderLayout.EAST : BorderLayout.WEST));
         panel.add(createHeaderComponentHolder(), BorderLayout.CENTER);
         _header.add(panel, BorderLayout.CENTER);
-        _header.add(createHeaderToolbar(), BorderLayout.EAST);
+        _header.add(createHeaderToolbar(), (_isSwapedHeader ? BorderLayout.WEST : BorderLayout.EAST));
         return _header;
     }
 
@@ -194,6 +204,10 @@ public class LabeledComponent extends JComponent {
         return _isVerticallyStretchable;
     }
 
+	public boolean isSwapedHeader() {
+		return _isSwapedHeader;
+	}
+    
     public void removeHeaderButton(int index) {
         int buttonIndex = -1;
         for (int i = 0; i < _toolBar.getComponentCount(); ++i) {
