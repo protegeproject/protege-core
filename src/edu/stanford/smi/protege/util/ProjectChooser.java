@@ -44,16 +44,16 @@ import edu.stanford.smi.protege.server.ServerPanel;
 import edu.stanford.smi.protege.ui.ProjectManager;
 
 /**
- * This is a really horrible hack of a class. The problem is that the JFileChooser is a 
- * very strange combination of a panel and a dialog. It doesn't appear to be possible 
+ * This is a really horrible hack of a class. The problem is that the JFileChooser is a
+ * very strange combination of a panel and a dialog. It doesn't appear to be possible
  * to separate the two cleanly. Thus in order to reuse the
- * JFileChooser UI in another panel I have to subclass it, even though my subclass is 
- * not a strickly correct one. 
- * 
- * All of this depends upon undocumented internal behavior of JFileChooser in order to 
- * work. It appears to me that the only alternative is to write my own file chooser 
+ * JFileChooser UI in another panel I have to subclass it, even though my subclass is
+ * not a strickly correct one.
+ *
+ * All of this depends upon undocumented internal behavior of JFileChooser in order to
+ * work. It appears to me that the only alternative is to write my own file chooser
  * dialog. I have no intention of doing this. Thus we are left with this gruesome class.
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ProjectChooser extends JFileChooser {
@@ -75,12 +75,16 @@ public class ProjectChooser extends JFileChooser {
         String text = Text.getProgramName() + " Project";
         ArrayList extensions = new ArrayList();
         extensions.add(".pprj");
-        Iterator it = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames().iterator();
-        if(it.hasNext()) {
+
+        Collection classNames = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames();
+        Iterator iterator = classNames.iterator();
+
+        if(iterator.hasNext()) {
             text = "Supported Files";
         }
-        while (it.hasNext()) {
-            Class pluginClass = (Class) it.next();
+
+        while (iterator.hasNext()) {
+            Class pluginClass = (Class) iterator.next();
             try {
                 CreateProjectFromFilePlugin plugin = (CreateProjectFromFilePlugin) pluginClass.newInstance();
                 String[] es = plugin.getSuffixes();
@@ -239,7 +243,7 @@ public class ProjectChooser extends JFileChooser {
                     }
                 }
             }
-            if (project == null) {  
+            if (project == null) {
                 URI uri = getSelectedFile().toURI();
                 project = loadProject(uri);
             }
@@ -280,7 +284,7 @@ public class ProjectChooser extends JFileChooser {
         ProjectManager.getProjectManager().displayErrors("Load Project Errors", errors);
         return project;
     }
-    
+
     public Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String fileName) {
         if (pluginClass != null) {
             try {
@@ -309,7 +313,7 @@ public class ProjectChooser extends JFileChooser {
         }
         return null;
     }
-    
+
 }
 
 class URLPanel extends JPanel implements Validatable {
