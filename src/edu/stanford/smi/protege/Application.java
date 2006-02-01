@@ -35,12 +35,12 @@ import edu.stanford.smi.protege.util.URIUtilities;
  * Main class for the Protege application (as opposed to an applet).
  *
  * @author Ray Fergerson
- * @author Jennifer Vendetti
  */
 public class Application {
     private static JFrame _mainFrame;
     private static SplashScreen _splashScreen;
     private static WelcomeDialog _welcome;
+    private static final String projectFileExtension = ".pprj";
 
     private static void initialize() {
         try {
@@ -64,8 +64,8 @@ public class Application {
         URI uri = null;
         if (args.length > 0) {
             String projectString = args[0];
-            if (!projectString.endsWith(".pprj")) {
-                projectString += ".pprj";
+            if (!projectString.endsWith(projectFileExtension)) {
+                projectString += projectFileExtension;
             }
             uri = URIUtilities.createURI(projectString);
         }
@@ -90,20 +90,17 @@ public class Application {
         // Check for matching files among arguments
         Project project = null;
         if (args.length > 0) {
-            String arg = args[0];
-            int lastDotIndex = arg.lastIndexOf('.');
-            if (lastDotIndex > 0 && lastDotIndex < arg.length() - 1) {
-                String projectFilePath = arg.substring(0, lastDotIndex) + ".pprj";
-                if (new File(projectFilePath).exists()) {
-                    args[0] = projectFilePath;  // Reuse conventional "open-pprj" mechanism
-                }
-                else {
-                    String suffix = arg.substring(lastDotIndex + 1);
+            String possibleFilename = args[0];
+            int lastDotIndex = possibleFilename.lastIndexOf('.');
+            if (lastDotIndex > 0 && lastDotIndex < possibleFilename.length() - 1 && new File(possibleFilename).exists()) {
+                if (!possibleFilename.endsWith(projectFileExtension)){
+                    String suffix = possibleFilename.substring(lastDotIndex + 1);
                     Iterator it = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames().iterator();
                     while (it.hasNext() && project == null) {
                         Class pluginClass = (Class) it.next();
-                        project = useCreateProjectFromFilePlugin(pluginClass, suffix, arg);
+                        project = useCreateProjectFromFilePlugin(pluginClass, suffix, possibleFilename);
                         if (project != null) {
+                            String projectFilePath = possibleFilename.substring(0, lastDotIndex) + projectFileExtension;
                             project.setProjectFilePath(projectFilePath);
                             ProjectManager.getProjectManager().setCurrentProject(project, false);
                         }
@@ -138,7 +135,7 @@ public class Application {
             }
         }
     }
-    
+
     public static Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String arg) {
         if (pluginClass != null) {
             try {
