@@ -146,7 +146,7 @@ class MyJTabbedPane extends JTabbedPane implements TabbedPaneInterface {
 public class ProjectView extends JComponent {
     static private Logger log = Log.getLogger(ProjectView.class);
     
-	private ListenerCollection projectViewListeners = new ListenerList(new ProjectViewDispatcher());
+    private ListenerCollection projectViewListeners = new ListenerList(new ProjectViewDispatcher());
 	
     private Project _project;
     private TabbedPaneInterface _viewHolder;
@@ -155,6 +155,29 @@ public class ProjectView extends JComponent {
     private Collection _detachedTabs = new HashSet();
 
     public ProjectView(Project project) {
+        if (log.isLoggable(Level.FINE)) {
+          // Add a listener for debug purposes only... if debugging is turned on.
+          addProjectViewListener(new ProjectViewListener() {
+            {
+              if (log.isLoggable(Level.FINE)) {
+                log.fine("Constructing ProjectViewListener");
+              }
+            }
+
+            public void tabAdded(ProjectViewEvent event) {
+              if (log.isLoggable(Level.FINE)) {
+                log.fine("Tab added event found " + event + " with widget " + event.getWidget());
+              }
+            }
+
+            public void saved(ProjectViewEvent event) {
+            }
+
+            public void closed(ProjectViewEvent event) {
+            }
+            
+          });
+        }
         _project = project;
         setLayout(new BorderLayout());
         // add(createTabbedPane(), BorderLayout.CENTER); what does this change do? (bug fix?)
