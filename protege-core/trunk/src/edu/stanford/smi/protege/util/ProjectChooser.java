@@ -251,8 +251,10 @@ public class ProjectChooser extends JFileChooser {
 
         } else if (c == urlPanel) {
             URI uri = urlPanel.getURI();
-            ApplicationProperties.setLastLoadedURI(uri);
-            project = loadProject(uri);
+            if (uri != null) {
+	            ApplicationProperties.setLastLoadedURI(uri);
+	            project = loadProject(uri);
+	        }
 
         } else if (c == serverPanel) {
             project = getRemoteProject();
