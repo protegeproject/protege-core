@@ -1009,6 +1009,10 @@ public class Project {
     private void includeDomainKB(Instance projectInstance, String name, Collection uris, Collection errors) {
         String factoryName = getSources(projectInstance)
                 .getString(KnowledgeBaseFactory.FACTORY_CLASS_NAME);
+        if (factoryName == null){
+        	Log.getLogger().warning("Unable to load prj:" + name);
+        	return;
+        }
         KnowledgeBaseFactory factory = (KnowledgeBaseFactory) SystemUtilities.newInstance(factoryName);
         PropertyList sources = getSources(projectInstance);
         // TODO remove this fragment of code and include it in the 
@@ -1243,8 +1247,11 @@ public class Project {
             URI uri;
             if (_uri == null) {
                 uri = URIUtilities.createURI(name);
-            } else {
-                uri = URIUtilities.resolve(_uri, name);
+            } else {         
+            	if (URIUtilities.isURI(name))
+            		uri = URIUtilities.createURI(name);
+            	else 
+            		uri = URIUtilities.resolve(projectURI, name);            	
             }
             loadIncludedProject(projectURI, uri, errors);
             uris.add(uri);
