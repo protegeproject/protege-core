@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.model.framestore;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,7 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.util.SimpleStringMatcher;
 
 public class InMemoryFrameDbAlt implements NarrowFrameStore {
   private String name;
@@ -58,17 +60,42 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     return fv;
   }
   
-  private List<Value> getValues(FrameID frameId, 
-                                FrameID slotId, 
+  private List<Value> getValues(Frame frame, 
+                                Slot slot, 
+                                Facet facet, 
                                 boolean isTemplate, 
                                 boolean create) {
-    FrameSlotRequest request = new FrameSlotRequest(frameId, slotId, isTemplate);
+    return getValues(frame, slot, facet, isTemplate, create);
+  }
+  
+  private List<Value> getValues(FrameID frameId, 
+                                FrameID slotId, 
+                                FrameID facetId,
+                                boolean isTemplate, 
+                                boolean create) {
+    FrameSlotRequest request = new FrameSlotRequest(frameId, slotId, facetId, isTemplate);
     List<Value> values = valueMap.get(request);
     if (create && values == null) {
       values = new ArrayList<Value>();
       valueMap.put(request, values);
     }
     return values;
+  }
+  
+  private void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, List<Value> values) {
+    setValues(frame, slot, facet, isTemplate, values);
+  }
+  
+  private void setValues(FrameID frameId,
+                         FrameID slotId,
+                         FrameID facetId,
+                         boolean isTemplate,
+                         List<Value> values) {
+    if (values == null || values.isEmpty()) {
+      return;
+    }
+    FrameSlotRequest request = new FrameSlotRequest(frameId, slotId, facetId, isTemplate);
+    valueMap.put(request, values);
   }
   
   private List<Value> buildValues(Collection values) {
@@ -87,11 +114,13 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
   private class FrameSlotRequest {
     private FrameID frameId;
     private FrameID slotId;
+    private FrameID facetId;
     private boolean isTemplate;
 
-    public FrameSlotRequest(FrameID frameId, FrameID slotId, boolean isTemplate) {
+    public FrameSlotRequest(FrameID frameId, FrameID slotId, FrameID facetId, boolean isTemplate) {
       this.frameId = frameId;
       this.slotId = slotId;
+      this.facetId = facetId;
       this.isTemplate = isTemplate;
     }
 
@@ -101,6 +130,10 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
 
     public FrameID getSlotId() {
       return slotId;
+    }
+    
+    public FrameID getFacetId() {
+      return facetId;
     }
     
     public boolean isTemplate() {
@@ -150,6 +183,17 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     public Object getObject() {
       return o;
     }
+    
+    public boolean equals(Object x) {
+      if (x == null || !(x.getClass().equals(getClass()))) {
+        return false;
+      }
+      return getObject().equals(((Value) x).getObject());
+    }
+    
+    public int hashCode() {
+      return o.hashCode();
+    }
   }
   
   private class FrameValue extends Value {
@@ -165,20 +209,24 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
       super(f.getFrameID());
       localFlushCount = flushCount;
       frame = f;
-      
-      if (f instanceof Cls) {
-        javaType = DefaultFrameFactory.DEFAULT_CLS_JAVA_CLASS_ID;
-      } else if (f instanceof Slot) {
-        javaType = DefaultFrameFactory.DEFAULT_SLOT_JAVA_CLASS_ID;
-      } else if (f instanceof Facet) {
-        javaType = DefaultFrameFactory.DEFAULT_FACET_JAVA_CLASS_ID;
-      } else if (f instanceof SimpleInstance) {
-        javaType = DefaultFrameFactory.DEFAULT_SIMPLE_INSTANCE_JAVA_CLASS_ID;
-      }
+      javaType = determineJavaType(f);
     }
     
     FrameID getFrameID() {
       return (FrameID) getObject();
+    }
+     
+    private int determineJavaType(Frame f) {
+      if (f instanceof Cls) {
+        return DefaultFrameFactory.DEFAULT_CLS_JAVA_CLASS_ID;
+      } else if (f instanceof Slot) {
+        return DefaultFrameFactory.DEFAULT_SLOT_JAVA_CLASS_ID;
+      } else if (f instanceof Facet) {
+        return DefaultFrameFactory.DEFAULT_FACET_JAVA_CLASS_ID;
+      } else if (f instanceof SimpleInstance) {
+        return DefaultFrameFactory.DEFAULT_SIMPLE_INSTANCE_JAVA_CLASS_ID;
+      }
+      throw new RuntimeException("Shouldn't be here...");
     }
 
     public int getJavaType() {
@@ -199,11 +247,28 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
       return frame;
     }
     
+    public void setFrame(Frame f) {
+      javaType = determineJavaType(f);
+      frame = f;
+    }
+    
     public Frame getObject() {
       if (cached()) {
         return frame;
       }
       return updateCache();
+    }
+    
+    public boolean equals(Object o) {
+      if (!(o instanceof FrameValue)) {
+        return false;
+      }
+      FrameValue fv = (FrameValue) o;
+      return javaType == fv.javaType && getFrameID().equals(fv.getFrameID());
+    }
+    
+    public int hashCode() {
+      return o.hashCode() + 13 * javaType;
     }
   }
 
@@ -280,7 +345,7 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
   @SuppressWarnings("unchecked")
   public List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
     List results = new ArrayList();
-    List<Value> values = getValues(frame.getFrameID(), slot.getFrameID(), isTemplate, false);
+    List<Value> values = getValues(frame, slot, facet, isTemplate, false);
     if (values == null) {
       return results;
     }
@@ -290,9 +355,8 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     return results;
   }
 
-  public int getValuesCount(Frame frame, Slot slot, Facet facet,
-                            boolean isTemplate) {
-    List<Value> values = getValues(frame.getFrameID(), slot.getFrameID(), isTemplate, false);
+  public int getValuesCount(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+    List<Value> values = getValues(frame, slot, facet, isTemplate, false);
     if (values == null) {
       return 0;
     } else {
@@ -302,10 +366,9 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
 
   public void addValues(Frame frame, Slot slot, Facet facet,
                         boolean isTemplate, Collection values) {
-    List<Value> oldValues = getValues(frame.getFrameID(), slot.getFrameID(),isTemplate,true);
+    List<Value> oldValues = getValues(frame, slot, facet, isTemplate,true);
     oldValues.addAll(buildValues(values));
-    valueMap.put(new FrameSlotRequest(frame.getFrameID(), slot.getFrameID(), isTemplate),
-                 oldValues);
+    setValues(frame, slot, facet, isTemplate, oldValues);
   }
 
   public void moveValue(Frame frame, Slot slot, Facet facet,
@@ -313,55 +376,153 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     if (from == to || from < 0 || to < 0) {
       return;
     }
-    List<Value> oldValues = getValues(frame.getFrameID(), slot.getFrameID(),isTemplate,true);
+    List<Value> oldValues = getValues(frame, slot,facet, isTemplate,true);
     if (from >= oldValues.size() || to >= oldValues.size()) {
       return;
     }
     Value v = oldValues.remove(from);
     oldValues.add(to, v);
-    valueMap.put(new FrameSlotRequest(frame.getFrameID(), slot.getFrameID(), isTemplate),
-                 oldValues);
+    setValues(frame, slot, facet, isTemplate, oldValues);
   }
 
   public void removeValue(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate, Object value) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    int count = 0;
+    List<Integer> counts = new ArrayList<Integer>();
+    List<Value> values = getValues(frame, slot, facet, isTemplate, false);
+    if (values == null) {
+      return;
+    }
+    for (Value v : values) {
+      if (v.getObject().equals(value)) {
+        counts.add(count);
+      }
+      count++;
+    }
+    Collections.reverse(counts);
+    for (int pt : counts) {
+      values.remove(pt);
+    }
+    setValues(frame, slot, facet, isTemplate, values);
   }
 
   public void setValues(Frame frame, Slot slot, Facet facet,
                         boolean isTemplate, Collection values) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    setValues(frame, slot, facet, isTemplate, buildValues(values));
   }
 
+  /*
+   * Not too efficient...
+   */
   public Set<Frame> getFrames(Slot slot, Facet facet, boolean isTemplate,
                               Object value) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    Set<Frame> frameSet = new HashSet<Frame>();
+    FrameID slotId = slot.getFrameID();
+    FrameID facetId = facet.getFrameID();
+    for (FrameID frameId : frames.keySet()) {
+      boolean found = false;
+      List<Value> values = getValues(frameId, slotId, facetId, isTemplate, false);
+      if (values == null) {
+        continue;
+      }
+      for (Value v : values) {
+        if (v.getObject().equals(value)) {
+          found = true;
+          break;
+        }
+      }
+      if (found) {
+        frameSet.add(frames.get(frameId).getObject());
+      }
+    }
+    return frameSet;
   }
 
   public Set<Frame> getFramesWithAnyValue(Slot slot, Facet facet,
                                           boolean isTemplate) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    Set<Frame> frameSet = new HashSet<Frame>();
+    FrameID slotId = slot.getFrameID();
+    FrameID facetId = facet.getFrameID();
+    for (FrameID frameId : frames.keySet()) {
+      boolean found = false;
+      List<Value> values = getValues(frameId, slotId, facetId, isTemplate, false);
+      if (values != null || !values.isEmpty()) {
+        frameSet.add(frames.get(frameId).getObject());
+      }
+    }
+    return frameSet;
   }
 
   public Set<Frame> getMatchingFrames(Slot slot, Facet facet,
-                                      boolean isTemplate, String value,
+                                      boolean isTemplate, String regexp,
                                       int maxMatches) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    Set<Frame> frameSet = new HashSet<Frame>();
+    FrameID slotId = slot.getFrameID();
+    FrameID facetId = facet.getFrameID();
+    SimpleStringMatcher matcher = new SimpleStringMatcher(regexp);
+    for (FrameID frameId : frames.keySet()) {
+      boolean found = false;
+      List<Value> values = getValues(frameId, slotId, facetId, isTemplate, false);
+      if (values == null) {
+        continue;
+      }
+      for (Value v : values) {
+        if (v.getObject() instanceof String) {
+          String stringValue = (String) v.getObject();
+          if (matcher.isMatch(stringValue)) {
+            found = true;
+            break;
+          }
+        }
+      }
+      if (found) {
+        frameSet.add(frames.get(frameId).getObject());
+      }
+    }
+    return frameSet;
   }
 
   public Set<Reference> getReferences(Object value) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    Value v = new Value(value);
+    Set<Reference> references = new HashSet<Reference>();
+    
+    for (FrameSlotRequest req : valueMap.keySet()) {
+      if (valueMap.get(req).contains(value)) {
+        Reference r = new ReferenceImpl(getFrame(req.getFrameId()),
+                                        (Slot) getFrame(req.getSlotId()),
+                                        (Facet) getFrame(req.getFacetId()),
+                                        req.isTemplate());
+        references.add(r);
+      }
+    }
+    return references;
   }
 
-  public Set<Reference> getMatchingReferences(String value, int maxMatches) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+  public Set<Reference> getMatchingReferences(String regexp, int maxMatches) {
+    Set<Reference> references = new HashSet<Reference>();
+    SimpleStringMatcher matcher = new SimpleStringMatcher(regexp);
+    
+    for (FrameSlotRequest req : valueMap.keySet()) {
+      List<Value> values = valueMap.get(req);
+      boolean found = false;
+      for (Value v : values) {
+        if (v.getObject() instanceof String) {
+          String valueString = (String) v.getObject();
+          if (matcher.isMatch(valueString)) {
+            found = true;
+            break;
+          }
+        }
+      }
+      if (found) {
+        Reference r = new ReferenceImpl(getFrame(req.getFrameId()),
+                                        (Slot) getFrame(req.getSlotId()),
+                                        (Facet) getFrame(req.getFacetId()),
+                                        req.isTemplate());
+        references.add(r);
+      }
+    }
+    return references;
   }
 
   public Set executeQuery(Query query) {
@@ -370,37 +531,41 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
   }
 
   public void deleteFrame(Frame frame) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    frames.remove(frame.getFrameID());
+    FrameValue fv = new FrameValue(frame);
+    for (List<Value> values : valueMap.values()) {
+      values.remove(fv);
+    }
   }
 
   public void close() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    frames = new HashMap<FrameID, FrameValue>();
+    valueMap = new HashMap<FrameSlotRequest, List<Value>>();
   }
 
   public Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    return ClosureUtils.calculateClosure(this, frame, slot, facet, isTemplate);
   }
 
   public void replaceFrame(Frame frame) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    FrameValue fv = frames.get(frame.getFrameID());
+    if (fv == null) {
+      fv = new FrameValue(frame);
+      frames.put(frame.getFrameID(), fv);
+    } else {
+      fv.setFrame(frame);
+    }
   }
 
   public boolean beginTransaction(String name) {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Not implemented yet");
   }
 
   public boolean commitTransaction() {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Not implemented yet");
   }
 
   public boolean rollbackTransaction() {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Not implemented yet");
   }
  
