@@ -273,6 +273,16 @@ public interface KnowledgeBase extends Disposable {
 
     /**
      * Finds all occurances of a string in the knowledge base.
+     * 
+     * This function searches all slot/facet values for the given slot and facet and looks for string values that 
+     * match matchString.  A string value is said to match matchString if the string value is a match for the regular
+     * expression given by matchString.
+     * 
+     * In the interests of performance, there is some leeway in what exactly is meant by a match.  For the in
+     * memory backends, the match is calculated using the java.util.regex.Pattern algorithm except that any occurance
+     * "*" in the matchString is replaced with ".*" (e.g. "*" matches anything).  However, database backends
+     * use a variation of the database LIKE operator except that "*" (match everything in the getMatching frames
+     * sense) is mapped to "%" (match everything in the database sense).
      *
      * @param slot The slot to use.  Must not be null.
      * @param facet If null then the matchString parameter is a slot value.  Otherwise it is a facet value.
