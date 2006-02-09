@@ -97,6 +97,16 @@ public interface NarrowFrameStore {
 
     Set<Frame> getFramesWithAnyValue(Slot slot, Facet facet, boolean isTemplate);
 
+    /**
+     * @see KnowledgeBase.getMatchingFrames
+     * 
+     * @param slot the slot
+     * @param facet the facet
+     * @param isTemplate whether we are looking at template values
+     * @param value the regexp to use for matching
+     * @param maxMatches the max number of matches (-1 for get all)
+     * @return
+     */
     Set<Frame> getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches);
 
     Set<Reference> getReferences(Object value);
