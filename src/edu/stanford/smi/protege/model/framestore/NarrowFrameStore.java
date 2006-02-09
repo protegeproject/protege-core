@@ -54,12 +54,18 @@ public interface NarrowFrameStore {
     Frame getFrame(FrameID id);
 
     /**
-     * Obtains the values of a slot to a frame.  It consists of a list of Strings, Integers
+     * Obtains the values of a slot/facet to a frame.  It consists of a list of Strings, Integers
      * Floats and Frames.
+     * 
+     * This call does one of several things.  If facet == null then we are looking at a slot
+     * value.  In this case, if isTemplate is true, then the frame is a class, the slot is
+     * a template slot and the value is a default facet value.  If facet != null then we are 
+     * looking at a facet value.  In this case, if isTemplate is true then the frame is a 
+     * class, the slot is a template slot and the value is a default facet value.
      * 
      * @param frame - the frame
      * @param slot the slot 
-     * @param facet to be determined
+     * @param facet the facet.  If this is non-null then we are looking at a facet value.
      * @param isTemplate to be determined
      * @return a list of the values of the slot of the frame.
      */
@@ -69,6 +75,18 @@ public interface NarrowFrameStore {
 
     void addValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values);
 
+    /**
+     * Retrieves the list of values associated with the (frame, slot, facet, isTemplate)
+     * combination and moves the item at the position from to the position to.  Indexing is 
+     * done starting from 0.
+     * 
+     * @param frame the frame (as used in getValues)
+     * @param slot the slot (as used in getValues)
+     * @param facet the facet (as used in getValues)
+     * @param isTemplate whether it is a template (as used in getValues)
+     * @param from the starting position of a value
+     * @param to the position of the value after this call
+     */
     void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to);
 
     void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value);
