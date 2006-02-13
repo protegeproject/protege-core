@@ -23,6 +23,18 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SimpleStringMatcher;
 
+/**
+ * This is a version of the InMemoryFrameDb that helps support the OWL problem that frames
+ * may change their type in mid-parse.
+ * 
+ * The idea of this class is that all Frames kept in this class are simply viewed as a cache.  
+ * A call to flush() will efficiently invalidate all frames held in storage and cause them to be recalculated as 
+ * needed.  In addition, the type of a single frame can be updated and the cache for just that frame will be 
+ * invalidated.
+ * 
+ * @author tredmond
+ *
+ */
 public class InMemoryFrameDbAlt implements NarrowFrameStore {
   private static Logger log = Log.getLogger(InMemoryFrameDbAlt.class);
   
@@ -43,14 +55,39 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     this.name = name;
   }
   
+  /**
+   * This call sets the frame factory for this Narrow Frame Store so that it can create
+   * its own frames.
+   * 
+   * The usual process for creating this FrameStore for a KnowledgeBaseFactory2, is to first call 
+   * the constructor via createNarrowFrameStore and then initialize the frame factory during loadKnowledgeBase
+   * or includeKnowledgeBase.  A KnowledgeBaseFactory that is not a KnowledgeBaseFactory2 will have more
+   * trouble with this process because it will not have access to the name during the includeKnowledgeBase or 
+   * loadKnowledgeBase.
+   * 
+   * @param ff the frame factory that this frame store uses to create frames.
+   */
+  
   public void setFrameFactory(FrameFactory ff) {
     this.ff = ff;
   }
   
+  /**
+   * Flush all the cached frames in one quick operation.
+   *
+   */
   public void flush() {
     flushCount++;
   }
 
+  /**
+   * Set the javaType of the frame with frame id fid to javaType.
+   * 
+   * This will cause the existing cached frame of id fid (if any) to be flushed.
+   * 
+   * @param fid the frame id of the frame
+   * @param javaType the new java type of the frame
+   */
   public void setJavaType(FrameID fid, int javaType) {
     FrameValue fv = getFrameValue(fid, true);
     fv.setJavaType(javaType);
@@ -133,7 +170,12 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     return result;
   }
   
-  
+  /**
+   * A request for a (template) slot/facet value.
+   * 
+   * @author tredmond
+   *
+   */
   private class FrameSlotRequest {
     private FrameID frameId;
     private FrameID slotId;
@@ -209,6 +251,15 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     }
   };
   
+  /**
+   * A container of a value.
+   * 
+   * If the value being held is a Frame then one should use the FrameValue class
+   * which extends this class.
+   * 
+   * @author tredmond
+   *
+   */
   private class Value {
     Object o;
     
@@ -236,6 +287,14 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     }
   }
   
+  /**
+   * A container for a frame.
+   * 
+   * The actual frame being contained is cached and is generated as needed.
+   * 
+   * @author tredmond
+   *
+   */
   private class FrameValue extends Value {
     int javaType = DefaultFrameFactory.DEFAULT_SLOT_JAVA_CLASS_ID;
     int localFlushCount;
@@ -289,6 +348,9 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     }
     
     public void setFrame(Frame f) {
+      if (frame == f) {
+        return;
+      }
       javaType = determineJavaType(f);
       frame = f;
       localFlushCount = flushCount;
@@ -592,8 +654,10 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
       }
       if (found) {
         Reference r = new ReferenceImpl(getFrame(req.getFrameId()),
-                                        (Slot) getFrame(req.getSlotId()),
-                                        (Facet) getFrame(req.getFacetId()),
+                                        ff.createSlot(req.getSlotId(), Collections.EMPTY_LIST),
+                                        req.getFacetId() != null ?
+                                            ff.createFacet(req.getFacetId(), Collections.EMPTY_LIST) :
+                                              null,
                                         req.isTemplate());
         references.add(r);
       }
