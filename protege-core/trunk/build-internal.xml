@@ -150,7 +150,7 @@
 					${trademark}<br>
 					${copyright}
 					</small>]]></bottom>
-			<link href = "http://java.sun.com/j2se/1.4/docs/api/"/>
+			<link href = "${jdk.javadoc}"/>
 			<link href = "http://www.junit.org/junit/javadoc/3.8/"/>
 			<classpath>
 				<pathelement location = "${lib.dir}/junit.jar"/>
