@@ -2,12 +2,21 @@ package edu.stanford.smi.protege.model;
 
 //ESCA*JAVA0130
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.net.URI;
+import java.util.Collection;
 
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.framestore.InMemoryFrameDb;
+import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
+import edu.stanford.smi.protege.util.FileUtilities;
+import edu.stanford.smi.protege.util.PropertyList;
+import edu.stanford.smi.protege.util.StringUtilities;
+import edu.stanford.smi.protege.util.URIUtilities;
 
 /**
  * 
