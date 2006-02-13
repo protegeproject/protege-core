@@ -114,8 +114,8 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
                          FrameID facetId,
                          boolean isTemplate,
                          List<Value> values) {
-    if (values == null || values.isEmpty()) {
-      return;
+    if (values == null) {
+      values = new ArrayList<Value>();
     }
     FrameSlotRequest request = new FrameSlotRequest(frameId, slotId, facetId, isTemplate);
     valueMap.put(request, values);
