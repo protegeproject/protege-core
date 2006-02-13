@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.resource.*;
  * around the JDK 1.0 modal dialogs that didn't work at all.  It also predates the JOptionPane stuff that is similar.
  *
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * @author    Tania Tudorache <tudorache@stanford.edu>
  */
 public class ModalDialog extends JDialog implements Disposable {
     public static final int OPTION_OK = 1;
@@ -32,6 +33,7 @@ public class ModalDialog extends JDialog implements Disposable {
     private JPanel _buttonsPanel;
     private CloseCallback _closeCallback;
     private boolean _enableCloseButton;
+    private boolean _persistent = false;
 
     private static ModalDialog _currentDialog; // used for testing
 
@@ -54,15 +56,15 @@ public class ModalDialog extends JDialog implements Disposable {
     }
 
     private ModalDialog(Dialog parent, Component panel, String title, int mode, CloseCallback callback,
-            boolean enableClose) {
+            boolean enableClose, boolean isPersistent) {
         super(parent, title, true);
-        init(panel, mode, callback, enableClose);
+        init(panel, mode, callback, enableClose, isPersistent);
     }
 
     private ModalDialog(Frame parentFrame, Component panel, String title, int mode, CloseCallback callback,
-            boolean enableCloseButton) {
+            boolean enableCloseButton, boolean isPersistent) {
         super(parentFrame, title, true);
-        init(panel, mode, callback, enableCloseButton);
+        init(panel, mode, callback, enableCloseButton, isPersistent);
     }
 
     public static void attemptDialogClose(int result) {
@@ -88,13 +90,20 @@ public class ModalDialog extends JDialog implements Disposable {
         }
         if (canClose) {
             _result = result;
-            close();
+             close();
         }
     }
 
-    private void close() {
-        ComponentUtilities.dispose(this);
-        _currentDialog = null;
+    private void close() { 
+    	if (_persistent) {
+    		this.setVisible(false);
+    		_currentDialog.dispose();
+    		_currentDialog = null;
+    	}
+    	else {
+    		ComponentUtilities.dispose(this);
+    		_currentDialog = null;
+    	}
     }
 
     private JButton createButton(final int result, ResourceKey key) {
@@ -168,10 +177,11 @@ public class ModalDialog extends JDialog implements Disposable {
         });
     }
 
-    private void init(Component panel, int mode, CloseCallback callback, boolean enableCloseButton) {
+    private void init(Component panel, int mode, CloseCallback callback, boolean enableCloseButton, boolean isPersistent) {
         _currentDialog = this;
         _closeCallback = callback;
         _enableCloseButton = enableCloseButton;
+        _persistent = isPersistent;
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowCloseListener());
 
@@ -222,6 +232,11 @@ public class ModalDialog extends JDialog implements Disposable {
 
     public static int showDialog(Component parent, Component panel, String title, int mode, CloseCallback callback,
             boolean enableCloseButton) {
+    	return showDialog(parent, panel, title, mode, callback, enableCloseButton, false);
+    }
+    
+    public static int showDialog(Component parent, Component panel, String title, int mode, CloseCallback callback,
+            boolean enableCloseButton, boolean isPersistent) {
         ModalDialog dialog;
         Window window;
         if (parent == null || parent instanceof Window) {
@@ -230,9 +245,9 @@ public class ModalDialog extends JDialog implements Disposable {
             window = SwingUtilities.windowForComponent(parent);
         }
         if (window instanceof Frame || window == null) {
-            dialog = new ModalDialog((Frame) window, panel, title, mode, callback, enableCloseButton);
+            dialog = new ModalDialog((Frame) window, panel, title, mode, callback, enableCloseButton, isPersistent);
         } else {
-            dialog = new ModalDialog((Dialog) window, panel, title, mode, callback, enableCloseButton);
+            dialog = new ModalDialog((Dialog) window, panel, title, mode, callback, enableCloseButton, isPersistent);
         }
         int result;
         if (dialog == null) {
