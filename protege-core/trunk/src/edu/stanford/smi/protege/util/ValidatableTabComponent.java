@@ -32,7 +32,10 @@ public class ValidatableTabComponent extends AbstractValidatableComponent {
     }
 
     public Component getTab(String label) {
-        return _tabbedPane.getComponent(_tabbedPane.indexOfTab(label));
+    	int indexOfTab = _tabbedPane.indexOfTab(label);
+    	if (indexOfTab >= 0)
+    		return _tabbedPane.getComponent(indexOfTab);
+    	else return null;    	
     }
 
     public JTabbedPane getTabbedPane() {
