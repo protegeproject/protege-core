@@ -308,6 +308,12 @@ public class Project {
         if (factory == null) {
             factory = getKnowledgeBaseFactory();
         }
+        if (factory == null) {
+        	String errorMsg = "Cannot find knowledgebase factory: " + getSources().getString(KnowledgeBaseFactory.FACTORY_CLASS_NAME) + "\nPlease check that you have the required plug-in.";
+        	Log.getLogger().severe(errorMsg);
+        	errors.add(errorMsg);
+        	return;
+        }
         _domainKB = factory.createKnowledgeBase(errors);
         Iterator i = getProjectSlotValues(SLOT_JAVA_PACKAGES).iterator();
         while (i.hasNext()) {
@@ -326,7 +332,7 @@ public class Project {
     public void createDomainKnowledgeBase(KnowledgeBaseFactory factory, Collection errors,
             boolean load) {
         createDomainKB(factory, errors);
-        
+               
         if (load) {
             MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(_domainKB);
             if (mnfs != null) {
