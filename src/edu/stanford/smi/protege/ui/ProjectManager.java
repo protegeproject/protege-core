@@ -84,6 +84,7 @@ public class ProjectManager {
     private boolean _doExitVM = true;
     private JFrame _errorFrame;
     private JComponent _toolBarHolder;
+    private ConfigureProjectPanel _configProjectPanel;
 
     private static class FactoryPanel extends JPanel {
         private JList _list;
@@ -262,18 +263,28 @@ public class ProjectManager {
     public void configureProjectRequest() {
         Project p = getCurrentProject();
         boolean displayHidden = p.getDisplayHiddenClasses();
+        boolean displayTabbedInstanceForm = p.getTabbedInstanceFormLayout();
         if (p != null) {
-            ConfigureProjectPanel panel = new ConfigureProjectPanel(p);
-            String title = "Configure " + p.getProjectURI();
-            int result = ModalDialog.showDialog(_rootPane, panel, title, ModalDialog.MODE_OK_CANCEL);
-            if (result == ModalDialog.OPTION_OK) {
-                boolean needToRegenerate = displayHidden != p.getDisplayHiddenClasses();
+           _configProjectPanel = getConfigureProjectPanel(p);
+              
+           //_configProjectPanel = new ConfigureProjectPanel(p);
+           String title = "Configure " + p.getProjectURI();          
+           int result = ModalDialog.showDialog(_rootPane, _configProjectPanel, title, ModalDialog.MODE_OK_CANCEL, null, true, true);
+           if (result == ModalDialog.OPTION_OK) {
+                boolean needToRegenerate = (displayHidden != p.getDisplayHiddenClasses()) || (displayTabbedInstanceForm != p.getTabbedInstanceFormLayout());                
                 reloadUI(needToRegenerate);
-            }
+            }         
         }
     }
 
-    private boolean confirmSave() {
+    public ConfigureProjectPanel getConfigureProjectPanel(Project prj) {
+		if (_configProjectPanel == null)
+			_configProjectPanel = new ConfigureProjectPanel(prj); 
+
+		return _configProjectPanel;
+	}
+
+	private boolean confirmSave() {
         boolean succeeded;
         JComponent c = ComponentFactory.createLabel("Do you want to save changes to the current project?");
         int result = ModalDialog.showDialog(_rootPane, c, "Save?", ModalDialog.MODE_YES_NO_CANCEL);
