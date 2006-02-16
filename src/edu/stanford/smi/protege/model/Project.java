@@ -712,8 +712,13 @@ public class Project {
         Collection uris = new ArrayList();
         Iterator i = getProjectSlotValues(SLOT_INCLUDED_PROJECTS).iterator();
         while (i.hasNext()) {
-            String s = (String) i.next();
-            URI uri = URIUtilities.resolve(_uri, s);
+            String s = (String) i.next();            
+            URI uri = null;
+            if (URIUtilities.isURI(s))
+        		uri = URIUtilities.createURI(s);
+        	else 
+        		uri = URIUtilities.resolve(getProjectURI(), s);      
+            //URI uri = URIUtilities.resolve(_uri, s);
             uris.add(uri);
         }
         return uris;
