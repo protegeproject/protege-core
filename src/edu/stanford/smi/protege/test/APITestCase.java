@@ -1,16 +1,20 @@
 package edu.stanford.smi.protege.test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Properties;
 
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.storage.database.DatabaseKnowledgeBaseFactory;
 import edu.stanford.smi.protege.util.AbstractEvent;
-import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.PropertyList;
 
 /**
@@ -20,16 +24,14 @@ import edu.stanford.smi.protege.util.PropertyList;
  */
 public abstract class APITestCase extends AbstractTestCase {
     private Collection _firedEvents = new ArrayList();
+    private static Properties _dbProperties = null;
+    private static final String DB_PREFIX = "junit.db.";
 
-    public static final int ORACLE = 1;
-    public static final int MYSQL = 2;
-    public static final int MS_ACCESS = 3;
-    public static final int POSTGRES = 4;
-    public static final int SQLSERVER = 5;
+    public enum DBType {
+      Oracle, MySQL, MsAccess, PostGres, SQLServer
+    }
 
-    private static final int INITIAL_DB_TYPE = ORACLE;
-
-    private static int _dbType = INITIAL_DB_TYPE;
+    private static DBType _dbType = DBType.Oracle;
 
     private static ProjectFactory _factory = new ClipsProjectFactory();
     private static Project _scratchProject = _factory.createProject();
@@ -55,7 +57,7 @@ public abstract class APITestCase extends AbstractTestCase {
         super.setUp();
         _factory = new ClipsProjectFactory();
         _isFileProject = true;
-        _dbType = INITIAL_DB_TYPE;
+        _dbType = DBType.Oracle;
     }
 
     public final void tearDown() throws Exception {
@@ -77,46 +79,63 @@ public abstract class APITestCase extends AbstractTestCase {
     }
 
     private static void configureDBSources(PropertyList sources) {
-        switch (_dbType) {
-            case MS_ACCESS:
-                configureForAccess(sources);
-                break;
-            case ORACLE:
-                configureForOracle(sources);
-                break;
-            case MYSQL:
-                configureForMySQL(sources);
-                break;
-            default:
-                Log.getLogger().severe("Bad db type: " + _dbType);
-                break;
+      if (!dbConfigured()) {
+        return;
+      }
+      DatabaseKnowledgeBaseFactory.setDriver(sources, getDBProperty("driver"));
+      DatabaseKnowledgeBaseFactory.setTablename(sources, getDBProperty("table"));
+      DatabaseKnowledgeBaseFactory.setUsername(sources, getDBProperty("user"));
+      DatabaseKnowledgeBaseFactory.setPassword(sources, getDBProperty("password"));
+      DatabaseKnowledgeBaseFactory.setURL(sources, getDBProperty("url"));
+    }
+    
+    public static DBType chooseDBType() {
+      for (DBType dbt : DBType.values()) {
+        _dbType = dbt;
+        if (dbConfigured()) {
+          return _dbType;
         }
+      }
+      return null;
+    }
+
+    public static boolean dbConfigured() {
+      Properties dbp = getDBProperties();
+      if (dbp == null) {
+        return false;
+      }
+      String configured = getDBProperty("configured");
+      if (configured == null || !configured.toLowerCase().equals("true")) {
+        return false;
+      }
+      return true;
+    }
+    
+    private static String getDBProperty(String prop) {
+      Properties dbp = getDBProperties();
+      return dbp.getProperty(DB_PREFIX + _dbType + "." + prop);
+    }
+    
+    
+    private static Properties getDBProperties() {
+      if (_dbProperties != null) {
+        return _dbProperties;
+      }
+      try {
+        Properties dbp = new Properties();
+        String dbPropertyFile = ApplicationProperties.getApplicationDirectory().getPath()
+                                   +  File.separator
+                                   + "junit.properties";
+        InputStream is = new FileInputStream(dbPropertyFile);
+        dbp.load(is);
+        _dbProperties = dbp;
+        return _dbProperties;
+      } catch (Exception e) {
+        return null;
+      }
     }
 
     private static int callNumber = 0;
-
-    private static void configureForAccess(PropertyList sources) {
-        DatabaseKnowledgeBaseFactory.setDriver(sources, "sun.jdbc.odbc.JdbcOdbcDriver");
-        DatabaseKnowledgeBaseFactory.setTablename(sources, "scratch" + callNumber++);
-        DatabaseKnowledgeBaseFactory.setUsername(sources, "rwf");
-        DatabaseKnowledgeBaseFactory.setURL(sources, "jdbc:odbc:protege-access");
-    }
-
-    private static void configureForOracle(PropertyList sources) {
-        DatabaseKnowledgeBaseFactory.setDriver(sources, "oracle.jdbc.driver.OracleDriver");
-        DatabaseKnowledgeBaseFactory.setTablename(sources, "scratch");
-        DatabaseKnowledgeBaseFactory.setUsername(sources, "protege");
-        DatabaseKnowledgeBaseFactory.setPassword(sources, "sm1prot3ge");
-        DatabaseKnowledgeBaseFactory.setURL(sources, "jdbc:oracle:thin:@irt-dev-db.stanford.edu:1521:dev");
-    }
-
-    private static void configureForMySQL(PropertyList sources) {
-        DatabaseKnowledgeBaseFactory.setDriver(sources, "com.mysql.jdbc.Driver");
-        DatabaseKnowledgeBaseFactory.setTablename(sources, "scratch");
-        DatabaseKnowledgeBaseFactory.setUsername(sources, "myuser");
-        DatabaseKnowledgeBaseFactory.setPassword(sources, "");
-        DatabaseKnowledgeBaseFactory.setURL(sources, "jdbc:mysql://fergerson-li-smi/test");
-    }
 
     public Project getProject() {
         if (_scratchProject == null) {
@@ -180,11 +199,6 @@ public abstract class APITestCase extends AbstractTestCase {
         _isFileProject = false;
         closeProject();
         _scratchProject = createScratchDatabaseProject();
-    }
-
-    protected static void setDatabaseProject(int database) {
-        _dbType = database;
-        setDatabaseProject();
     }
 
     protected static void setFileProject() {
