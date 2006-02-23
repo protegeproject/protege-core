@@ -43,7 +43,19 @@ import java.util.logging.LogManager;
  */
 
 public class Log {
-    private static Logger loggerLogger = Logger.getLogger(Log.class.getName());
+  /*
+   * Generally speaking System.out.println is bad practice.  But debugging
+   * the Logger seems like a reasonable exception.  The debug flag controls
+   * whether the Log class generates System.out.println statements during its
+   * execution.
+   */
+    private static boolean debug = false;
+    static {
+      String debugLogProperty = ApplicationProperties.LOG_DEBUG_PROPERTY;
+      if (System.getProperty(debugLogProperty) != null) {
+          debug = true;
+      }
+    }
   
     private static Logger logger;
     private static LegacyLogger legacyLogger;
@@ -52,18 +64,30 @@ public class Log {
     private static boolean configuredByFile = false;
     
     static {
-      String logProperty = "java.util.logging.config.file";
+      String logProperty = ApplicationProperties.LOG_FILE_PROPERTY;
       String rootDir = System.getProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
       try {
         if (System.getProperty(logProperty) != null) {
+          if (debug) {
+            System.out.println("Already configured...");
+          }
           // already configured...
           configuredByFile = true;
         } else if (rootDir != null) {
           File logconfig = new File(rootDir + File.separator + "logging.properties");
+          if (debug) {
+            System.out.println("Logging file = " + logconfig);
+          }
           if (logconfig.canRead()) {
+            if  (debug) {
+              System.out.println("Logging file readable");
+            }
             System.setProperty(logProperty, logconfig.getAbsolutePath());
             LogManager.getLogManager().readConfiguration();
             configuredByFile = true;
+            if (debug) {
+              System.out.println("Configuration done by util.Log class ");
+            }
           } else {
             Log.getLogger().info("No log configuration file available");
           }
