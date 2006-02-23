@@ -11,7 +11,8 @@ public class Transaction_Test extends APITestCase {
 
     public void setUp() throws Exception {
         super.setUp();
-        setDatabaseProject(ORACLE);
+        chooseDBType();
+        setDatabaseProject();
     }
 
     public void testCommit() {
