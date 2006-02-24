@@ -22,7 +22,6 @@ public class SubclassPane extends SelectableContainer {
     private KnowledgeBase _knowledgeBase;
     private Action _createClsAction;
     private Action _deleteClsAction;
-    private JPopupMenu _popupMenu;
 
     private static final int MAX_EXPANSIONS = 1000;
 
@@ -93,14 +92,6 @@ public class SubclassPane extends SelectableContainer {
 
     private static void add(JPopupMenu menu, Action action) {
         menu.add(action);
-    }
-    
-    public void addPopupMenuItem(Action action) {
-    	if (_popupMenu == null)
-    		_popupMenu = createPopupMenu();
-    	
-    	add(_popupMenu, action);
-    	_popupMenu.repaint();
     }
 
     private static void addSeparator(JPopupMenu menu) {
@@ -258,9 +249,7 @@ public class SubclassPane extends SelectableContainer {
     }
 
     private JPopupMenu getPopupMenu() {
-    	if (_popupMenu == null)
-    		_popupMenu = createPopupMenu();
-        return _popupMenu;
+        return createPopupMenu();
     }
 
     private JTree getTree() {
