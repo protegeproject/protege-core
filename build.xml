@@ -27,6 +27,11 @@
 		<pathelement location = "${lib}/looks.jar"/>
 		<pathelement location = "${lib}/unicode_panel.jar"/>
 	</path>  
+        <path id = "database.drivers">
+          <fileset dir="dbdrivers">
+            <include name="*.jar"/>
+          </fileset>
+        </path>
 	<!-- =================================================================== -->
 	
 	<!-- USAGE -->
@@ -184,8 +189,9 @@
 	<!-- =================================================================== -->
 
         <target name = "junit" description = "test the system" depends="jar">
-          <junit  printsummary="withOutAndErr" haltonerror="on" fork="yes">
+          <junit  printsummary="withOutAndErr" haltonerror="off" fork="yes">
             <classpath refid="project.classpath"/>
+            <classpath refid="database.drivers"/>
             <classpath>
               <pathelement path="${dist}/protege.jar"/>
             </classpath>
@@ -193,9 +199,10 @@
             <batchtest>
               <fileset dir="${src}">
                 <include name="**/*Test.java"/>
+                <!-- Exclude the graphics tests -->
                 <exclude name="**/Application_Test.java"/>
                 <exclude name="**/action/*.java"/>
-                <exclude name="**/database/*.java"/>
+                <exclude name="**/widget/**.java"/>
               </fileset>
             </batchtest>
           </junit>
