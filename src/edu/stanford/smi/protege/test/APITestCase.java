@@ -57,7 +57,6 @@ public abstract class APITestCase extends AbstractTestCase {
         super.setUp();
         _factory = new ClipsProjectFactory();
         _isFileProject = true;
-        _dbType = DBType.Oracle;
     }
 
     public final void tearDown() throws Exception {
@@ -217,6 +216,14 @@ public abstract class APITestCase extends AbstractTestCase {
 
     public static void setProjectFactory(ProjectFactory factory) {
         _factory = factory;
+    }
+    
+    public static void setDBType(DBType dbt) {
+      _dbType = dbt;
+    }
+    
+    public static DBType getDBType() {
+      return _dbType;
     }
 
 }
