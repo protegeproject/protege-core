@@ -241,6 +241,16 @@ public class URIUtilities {
         return uri;
     }
 
+    /*
+     * TT: Method is implemenented in a simple manner. 
+	 * Other checks are needed to check if s is a valid URI
+     */
+    public static boolean isURI(String s) {
+    	if (hasSchemePart(s))
+    		return true;
+    	else return false;
+    }
+    
     private static boolean hasSchemePart(String s) {
         int index = s.indexOf(':');
         return index > 1;

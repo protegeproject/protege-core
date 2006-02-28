@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 import junit.framework.TestCase;
 import edu.stanford.smi.protege.model.Cls;
@@ -67,7 +68,11 @@ public abstract class AbstractTestCase extends TestCase {
             Iterator i = errors.iterator();
             while (i.hasNext()) {
                 Object o = i.next();
-                Log.getLogger().warning(o.toString());
+                if (o instanceof Throwable) {
+                  Log.getLogger().log(Level.WARNING, "Exception found", (Throwable) o);
+                } else {
+                  Log.getLogger().warning(o.toString());
+                }
             }
             fail();
         }

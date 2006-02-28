@@ -262,14 +262,15 @@ public class ProjectManager {
     public void configureProjectRequest() {
         Project p = getCurrentProject();
         boolean displayHidden = p.getDisplayHiddenClasses();
+        boolean displayTabbedInstanceForm = p.getTabbedInstanceFormLayout();
         if (p != null) {
-            ConfigureProjectPanel panel = new ConfigureProjectPanel(p);
-            String title = "Configure " + p.getProjectURI();
-            int result = ModalDialog.showDialog(_rootPane, panel, title, ModalDialog.MODE_OK_CANCEL);
-            if (result == ModalDialog.OPTION_OK) {
-                boolean needToRegenerate = displayHidden != p.getDisplayHiddenClasses();
+           ConfigureProjectPanel panel = new ConfigureProjectPanel(p);              
+           String title = "Configure " + p.getProjectURI();          
+           int result = ModalDialog.showDialog(_rootPane, panel, title, ModalDialog.MODE_OK_CANCEL);
+           if (result == ModalDialog.OPTION_OK) {
+                boolean needToRegenerate = (displayHidden != p.getDisplayHiddenClasses()) || (displayTabbedInstanceForm != p.getTabbedInstanceFormLayout());                
                 reloadUI(needToRegenerate);
-            }
+            }         
         }
     }
 

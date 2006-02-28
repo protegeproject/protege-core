@@ -34,7 +34,6 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerFrameStore;
 import edu.stanford.smi.protege.server.Session;
-import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 

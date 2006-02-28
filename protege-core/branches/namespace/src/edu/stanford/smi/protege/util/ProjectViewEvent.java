@@ -17,9 +17,9 @@ public class ProjectViewEvent extends AbstractEvent {
 		}
 	};
 	
-	ProjectView projectView;
-	Type type;
-	Widget widget;
+	private ProjectView projectView;
+	private Type type;
+	private Widget widget;
 	
 	public ProjectViewEvent(ProjectView projectView, Type type) {
 		super(projectView, type.ordinal());
@@ -48,7 +48,7 @@ public class ProjectViewEvent extends AbstractEvent {
 	}
 	
 	
-	
-	
-
+	public Widget getWidget() {
+	  return widget;
+	}
 }

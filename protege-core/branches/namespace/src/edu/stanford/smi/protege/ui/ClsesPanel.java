@@ -251,7 +251,7 @@ public class ClsesPanel extends SelectableContainer {
         return ((Selectable) getDisplayedComponent()).getSelection();
     }
 
-    protected SubclassPane getSubclassPane() {
+    public SubclassPane getSubclassPane() {
         return _subclassPane;
     }
 
