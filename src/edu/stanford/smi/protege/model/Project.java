@@ -69,7 +69,7 @@ import edu.stanford.smi.protege.widget.WidgetUtilities;
 
 /**
  * The aggregation of a domain knowledge base with its user interface.
- * 
+ *
  * Methods on this class that take an "errors" collection may insert any object
  * into this collection These objects can be strings or exceptions. All that is
  * guaranteed is that the toString() method on each object will produce a usable
@@ -80,12 +80,12 @@ import edu.stanford.smi.protege.widget.WidgetUtilities;
  * errors) and let the user know about them all at once rather than one at a
  * time. One downside of the current approach is that it leads to cascading
  * errors.
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class Project {
 	private static Logger log = Log.getLogger(Project.class);
-	
+
     private static final String CLASS_PROJECT = "Project";
     private static final String SLOT_DEFAULT_INSTANCE_WIDGET_CLASS_NAME = "default_instance_widget_class_name";
     private static final String SLOT_CUSTOMIZED_INSTANCE_WIDGETS = "customized_instance_widgets";
@@ -115,7 +115,7 @@ public class Project {
 
     private static final String CLASS_MAP = "Map";
     private static final String SLOT_PROPERTY_MAP = "property_map";
-    
+
     private static final int WINDOW_OFFSET_PIXELS = 25;
 
     private URI _uri;
@@ -130,11 +130,11 @@ public class Project {
     private Map _frames = new HashMap(); // <Instance or FrameSlotPair, JFrame>
     private Map _objects = new HashMap(); // <JFrame, Instance or FrameSlotPair>
     private WidgetMapper _widgetMapper;
-    
+
     // private Collection _cachedIncludedProjectURIs = new ArrayList();
     private Tree projectURITree = new Tree();
     private URI activeRootURI;
-    
+
     private Point _lastLocation;
     private ListenerCollection _listeners = new ListenerList(new ProjectEventDispatcher());
     private Boolean _displayHiddenClasses;
@@ -259,7 +259,7 @@ public class Project {
     /**
      * creates a project and loads the project kb from the project file and the
      * associated domain kb
-     * 
+     *
      * @param errors
      *            See class note for information about this argument.
      */
@@ -332,7 +332,7 @@ public class Project {
     public void createDomainKnowledgeBase(KnowledgeBaseFactory factory, Collection errors,
             boolean load) {
         createDomainKB(factory, errors);
-               
+
         if (load) {
             MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(_domainKB);
             if (mnfs != null) {
@@ -393,7 +393,7 @@ public class Project {
         try {
             Constructor constructor = clas.getConstructor(classes);
             instanceDisplay = (InstanceDisplay) constructor.newInstance(args);
-        //ESCA-JAVA0166 
+        //ESCA-JAVA0166
         } catch (Exception e) {
             Log.getLogger().warning(e.getMessage());
         }
@@ -446,7 +446,7 @@ public class Project {
     public ClsWidget createRuntimeClsWidget(Instance instance, Cls associatedCls) {
         return createRuntimeClsWidget(instance.getDirectType(), instance, associatedCls);
     }
-    
+
     public ClsWidget createRuntimeClsWidget(Cls type, Instance instance, Cls associatedCls) {
         ClsWidget widget;
         if (type == null) {
@@ -498,7 +498,7 @@ public class Project {
         _frames = null;
         _objects = null;
     }
-    
+
     private void clearWidgets() {
         if (_cachedDesignTimeClsWidgets != null) {
             Iterator i = _cachedDesignTimeClsWidgets.values().iterator();
@@ -509,7 +509,7 @@ public class Project {
             _cachedDesignTimeClsWidgets.clear();
         }
     }
-    
+
     private void flushProjectKBCache() {
         saveBrowserSlots();
         saveCustomizedWidgets();
@@ -671,7 +671,7 @@ public class Project {
     public Collection getIncludedProjects() {
         return projectURITree.getDescendents(projectURITree.getRoot());
     }
-    
+
     public Tree getProjectTree() {
         return (Tree) projectURITree.clone();
     }
@@ -712,12 +712,12 @@ public class Project {
         Collection uris = new ArrayList();
         Iterator i = getProjectSlotValues(SLOT_INCLUDED_PROJECTS).iterator();
         while (i.hasNext()) {
-            String s = (String) i.next();            
+            String s = (String) i.next();
             URI uri = null;
             if (URIUtilities.isURI(s))
         		uri = URIUtilities.createURI(s);
-        	else 
-        		uri = URIUtilities.resolve(getProjectURI(), s);      
+        	else
+        		uri = URIUtilities.resolve(getProjectURI(), s);
             //URI uri = URIUtilities.resolve(_uri, s);
             uris.add(uri);
         }
@@ -790,7 +790,7 @@ public class Project {
         return ModelUtilities.getDirectOwnSlotValue(frame, slotName);
     }
 
-    private static Reader getProjectClsesReader() {
+    protected static Reader getProjectClsesReader() {
         Reader reader = Files.getSystemClsesReader();
         if (reader == null) {
             Log.getLogger().severe("Unable to read system ontology");
@@ -833,7 +833,7 @@ public class Project {
     public Instance getProjectInstance() {
         return _projectInstance;
     }
-    
+
     protected static Instance getProjectInstance(KnowledgeBase kb) {
         Instance result = null;
         Cls cls = kb.getCls(CLASS_PROJECT);
@@ -850,7 +850,7 @@ public class Project {
         return result;
     }
 
-    private static Reader getProjectInstancesReader(URI uri, KnowledgeBaseFactory factory,
+    protected static Reader getProjectInstancesReader(URI uri, KnowledgeBaseFactory factory,
             Collection errors) {
         Reader reader = null;
         if (uri != null) {
@@ -938,7 +938,7 @@ public class Project {
         return descriptor;
     }
     */
-    
+
     public WidgetDescriptor getTabWidgetDescriptor(String widgetName) {
         WidgetDescriptor descriptor = null;
         Iterator i = getTabWidgetDescriptors().iterator();
@@ -981,7 +981,7 @@ public class Project {
             createNewTabWidgetDescriptors(availableTabNames);
             // saveTabWidgetInstances();
         }
-        //ESCA-JAVA0259 
+        //ESCA-JAVA0259
         return _tabWidgetDescriptors;
     }
 
@@ -1026,7 +1026,7 @@ public class Project {
         }
         KnowledgeBaseFactory factory = (KnowledgeBaseFactory) SystemUtilities.newInstance(factoryName);
         PropertyList sources = getSources(projectInstance);
-        // TODO remove this fragment of code and include it in the 
+        // TODO remove this fragment of code and include it in the
         if (factory instanceof KnowledgeBaseFactory2) {
             NarrowFrameStore nfs = ((KnowledgeBaseFactory2)factory).createNarrowFrameStore(name);
             MergingNarrowFrameStore mergingFrameStore = getMergingFrameStore();
@@ -1034,7 +1034,7 @@ public class Project {
         }
         factory.includeKnowledgeBase(_domainKB, sources, errors);
     }
-    
+
     public void includeProject(String path, Collection errors) {
         includeProject(URIUtilities.createURI(path), errors);
     }
@@ -1182,7 +1182,7 @@ public class Project {
         if (factory != null) {
             _frameCounts.updateIncludedFrameCounts(_domainKB);
             boolean enabled = _domainKB.setGenerateEventsEnabled(false);
-            
+
             // TODO - remove this fragment and include it in the factory
             if (factory instanceof KnowledgeBaseFactory2) {
                 URI uri = getProjectURI();
@@ -1221,7 +1221,7 @@ public class Project {
     public URI getLoadingURI() {
         return _loadingProjectURI == null ? getProjectURI() : _loadingProjectURI;
     }
-    
+
     private void loadIncludedProject(URI includingURI, URI includedURI, Collection errors) {
         includedURI = URIUtilities.normalize(includedURI);
         boolean alreadyIncluded = isAlreadyIncluded(includedURI);
@@ -1229,12 +1229,12 @@ public class Project {
         if (!alreadyIncluded) {
             // Log.enter(this, "loadIncludedProject", includedURI);
             KnowledgeBase kb = loadProjectKB(includedURI, null, errors);
-            if (kb != null) { 
+            if (kb != null) {
                 // This business allows included projects (and their domain kbs)
                 // to load from other subdirectories
                 URI oldLoadingProjectURI = _loadingProjectURI;
                 _loadingProjectURI = includedURI;
-                
+
                 kb.setName(URIUtilities.getName(includedURI));
                 Instance projectInstance = getProjectInstance(kb);
                 Collection includedProjectURIs = loadIncludedProjects(includedURI, projectInstance, errors);
@@ -1258,11 +1258,11 @@ public class Project {
             URI uri;
             if (_uri == null) {
                 uri = URIUtilities.createURI(name);
-            } else {         
+            } else {
             	if (URIUtilities.isURI(name))
             		uri = URIUtilities.createURI(name);
-            	else 
-            		uri = URIUtilities.resolve(projectURI, name);            	
+            	else
+            		uri = URIUtilities.resolve(projectURI, name);
             }
             loadIncludedProject(projectURI, uri, errors);
             uris.add(uri);
@@ -1350,7 +1350,7 @@ public class Project {
      * This means that not only must the information from multiple project be
      * merged there must be a way to separate it back out on save. I'm not
      * really sure how to do this.
-     * 
+     *
      * For the moment the client information is just the information from the
      * last loaded (outermost) project.
      */
@@ -1532,11 +1532,11 @@ public class Project {
         ModelUtilities.removeOwnSlotValue(_projectInstance, slotName, value);
     }
 
-    private static void removeUnreferencedInstances(KnowledgeBase kb) {
+    protected static void removeUnreferencedInstances(KnowledgeBase kb) {
         if (!isNewProject(kb)) {
 	        Instance projectInstance = getProjectInstance(kb);
 	        Collection roots = CollectionUtilities.createCollection(projectInstance);
-	
+
 	        Iterator i = kb.getUnreachableSimpleInstances(roots).iterator();
 	        while (i.hasNext()) {
 	            Instance instance = (Instance) i.next();
@@ -1548,7 +1548,7 @@ public class Project {
 	        }
         }
     }
-    
+
     public static boolean isNewProject(KnowledgeBase kb) {
         return kb.getBuildString() == null;
     }
@@ -1782,11 +1782,11 @@ public class Project {
         }
         activeRootURI = uri;
     }
-    
+
     private MergingNarrowFrameStore getMergingFrameStore() {
         return MergingNarrowFrameStore.get(_domainKB);
     }
-    
+
     private void setActiveFrameStoreName(URI uri) {
         if (uri != null) {
             MergingNarrowFrameStore nfs = getMergingFrameStore();
@@ -1795,7 +1795,7 @@ public class Project {
             }
         }
     }
-    
+
     private void setActiveFrameStore(URI uri) {
         if (uri != null) {
             MergingNarrowFrameStore nfs = getMergingFrameStore();
@@ -1804,11 +1804,11 @@ public class Project {
             }
         }
     }
-    
+
     public URI getActiveRootURI() {
         return activeRootURI;
     }
-    
+
     public void setActiveRootURI(URI uri) {
         uri = URIUtilities.normalize(uri);
         activeRootURI = uri;
@@ -1961,20 +1961,20 @@ public class Project {
      * (2) There class must has a constructor that takes a single string
      * argument. <br>
      * It must be the case that for any instance "a" of "MyClass"
-     * 
+     *
      * <pre><code>
-     * 
-     *  
+     *
+     *
      *        a.equals(new MyClass(a.toString());
-     *   
-     *  
+     *
+     *
      * </pre></code>
-     * 
+     *
      * <br>
      * <br>
-     * 
+     *
      * A typical use of "client information" is the following:
-     * 
+     *
      * <pre><code>
      * final String KEY = &quot;MyClass.frame_rectangles&quot;;
      * Map frameRectangleMap = (Map) getClientInformation(KEY);
@@ -1987,7 +1987,7 @@ public class Project {
      * frameRectangleMap.put(frameX, rectangleX);
      * frameRectangleMap.put(frameY, rectangleY);
      * // ..
-     * 
+     *
      * // elsewhere
      * // retrieve positions
      * Map map = (Map) getClientInformation(KEY);
@@ -2017,7 +2017,7 @@ public class Project {
         return _projectKB.getCurrentUsers();
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     public String getLocalUser() {
         return null;
     }
@@ -2036,7 +2036,7 @@ public class Project {
         return _frameCounts;
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     public boolean isMultiUserClient() {
         return false;
     }
@@ -2045,7 +2045,7 @@ public class Project {
         return isMultiUserServer;
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     public String getUserName() {
         return ApplicationProperties.getUserName();
     }
@@ -2061,11 +2061,11 @@ public class Project {
         }
         return prettyPrintSlotWidgetLabels.booleanValue();
     }
-    
+
     public boolean getTabbedInstanceFormLayout() {
         return getOption(SLOT_TABBED_INSTANCE_FORM_LAYOUT, false);
     }
-    
+
     public void setTabbedInstanceFormLayout(boolean b) {
         setOption(SLOT_TABBED_INSTANCE_FORM_LAYOUT, b);
     }
