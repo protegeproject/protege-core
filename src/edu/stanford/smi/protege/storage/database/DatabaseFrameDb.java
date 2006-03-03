@@ -1536,7 +1536,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         command.append("SELECT COUNT(*) FROM " + _table);
         command.append(" WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME));
         command.append(" AND " + FACET_COLUMN + " = " + FrameID.NULL_FRAME_ID_VALUE);
-        command.append(" AND " + IS_TEMPLATE_COLUMN + " = false");
+        command.append(" AND " + IS_TEMPLATE_COLUMN + " = ?");
         command.append(" AND (");
         boolean isFirst = true;
         Iterator i = types.iterator();
@@ -1551,8 +1551,10 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             command.append(intValue.intValue());
         }
         command.append(")");
+        PreparedStatement stmt = getCurrentConnection().getPreparedStatement(command.toString());
+        setIsTemplate(stmt, 1, false);
         int count = -1;
-        ResultSet rs = executeQuery(command.toString());
+        ResultSet rs = executeQuery(stmt);
         while (rs.next()) {
             count = rs.getInt(1);
         }
@@ -1577,9 +1579,10 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             _countFramesText = "SELECT COUNT(*) FROM " + _table;
             _countFramesText += " WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME);
             _countFramesText += " AND " + FACET_COLUMN + " = " + FrameID.NULL_FRAME_ID_VALUE;
-            _countFramesText += " AND " + IS_TEMPLATE_COLUMN + " = false";
+            _countFramesText += " AND " + IS_TEMPLATE_COLUMN + " = ?";
         }
         PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_countFramesText);
+        setIsTemplate(stmt, 1, false);
 
         int count = -1;
         ResultSet rs = executeQuery(stmt);
