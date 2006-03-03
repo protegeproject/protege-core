@@ -140,10 +140,16 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
     String name = getLocalIncludedName(frame);
     if (name != null) {
       Frame globalFrame = getIncludedFrames().getInheritedFrame(name);
-      if (log.isLoggable(Level.FINEST)) {
-        log.finest("returning global frame with id = " + globalFrame.getFrameID());
+      // Not clear that globalFrame should be able to be null at this point
+      // But OWL does this (imported projects are marked as included but there 
+      // is no including frame store)
+      // TODO -- fix OWL?
+      if (globalFrame != null) {
+        if (log.isLoggable(Level.FINEST)) {
+          log.finest("returning global frame with id = " + globalFrame.getFrameID());
+        }
+        return globalFrame;
       }
-      return globalFrame;
     }
     if (log.isLoggable(Level.FINEST)) {
       log.finest("Global frame = local frame - no mapping found.");
