@@ -1,12 +1,22 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.StringUtilities;
 
 public abstract class AbstractFrameStoreInvocationHandler implements InvocationHandler {
+    private static final Logger log = Log.getLogger(AbstractFrameStoreInvocationHandler.class);
+  
     private FrameStore _delegate;
     private static final Set specialMethods = new HashSet();
 
@@ -91,8 +101,10 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
 
     public Object invoke(Object proxy, Method method, Object[] args) {
         Object o = null;
-        // Log.getLogger().info("invoking " + StringUtilities.getClassName(this));
-
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("invoking " + StringUtilities.getClassName(this));
+        }
+        
         if (isSpecial(method)) {
             o = invokeSpecial(proxy, method, args);
         } else if (_delegate != null) {
