@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.server;
 
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore_Test;
 import junit.framework.*;
 
 /**
