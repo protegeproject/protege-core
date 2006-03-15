@@ -1,15 +1,45 @@
-package edu.stanford.smi.protege.server;
+package edu.stanford.smi.protege.server.framestore;
 
-import java.rmi.*;
-import java.util.*;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.model.query.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.SystemFrames;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.Sft;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.server.RemoteServer;
+import edu.stanford.smi.protege.server.RemoteServerProject;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.Server;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.LocalizeUtils;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class RemoteClientFrameStore implements FrameStore {
+    private static Logger log = Log.getLogger(RemoteClientFrameStore.class);
+    
     private KnowledgeBase kb;
     private RemoteSession session;
     private RemoteServer server;
@@ -28,7 +58,9 @@ public class RemoteClientFrameStore implements FrameStore {
         ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
         ClassLoader correctLoader = kb.getClass().getClassLoader();
         if (currentLoader != correctLoader) {
-            // Log.getLogger().info("Changing loader from " + currentLoader + " to " + correctLoader);
+            if (log.isLoggable(Level.FINE)) {
+              Log.getLogger().fine("Changing loader from " + currentLoader + " to " + correctLoader);
+            }
             Thread.currentThread().setContextClassLoader(correctLoader);
         }
     }
