@@ -4,6 +4,7 @@ import java.lang.reflect.*;
 import java.util.logging.*;
 
 import edu.stanford.smi.protege.server.*;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.*;
 
 /**
