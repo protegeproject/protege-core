@@ -1,10 +1,11 @@
-package edu.stanford.smi.protege.server;
+package edu.stanford.smi.protege.server.framestore;
 
 import java.rmi.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.query.*;
+import edu.stanford.smi.protege.server.RemoteSession;
 
 public interface RemoteServerFrameStore extends Remote {
 
