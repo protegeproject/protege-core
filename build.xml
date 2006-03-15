@@ -110,7 +110,8 @@
 		</javac>    
 		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.Server"/>    
 		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.ServerProject"/>    
-		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.ServerFrameStore"/>  
+		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>  
+		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore"/>  
 	</target>
 	<!-- =================================================================== -->
 	
