@@ -1,19 +1,48 @@
-package edu.stanford.smi.protege.server;
+package edu.stanford.smi.protege.server.framestore;
 
-import java.rmi.*;
-import java.rmi.server.*;
-import java.util.*;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.model.query.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.Sft;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.server.Registration;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.LocalizeUtils;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class ServerFrameStore extends UnicastRemoteObject implements RemoteServerFrameStore {
+    private static transient Logger log = Log.getLogger(ServerFrameStore.class);
+  
     private FrameStore _delegate;
     private KnowledgeBase _kb;
     private List _events = new ArrayList();
-    private Map _sessionToRegistrationMap = new HashMap();
+    private Map<RemoteSession, Registration> _sessionToRegistrationMap 
+      = new HashMap<RemoteSession, Registration>();
     private boolean _isDirty;
     private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
     private static final int MAX_VALUES = 20;
@@ -493,7 +522,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             events = newEvents;
         } else {
             _events.addAll(newEvents);
-            Registration reg = (Registration) _sessionToRegistrationMap.get(session);
+            Registration reg = _sessionToRegistrationMap.get(session);
             if (reg == null) {
                 throw new IllegalStateException("Not registered");
             }
@@ -504,7 +533,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                 events = Collections.EMPTY_LIST;
             } else {
                 events = new ArrayList(_events.subList(lastEvent, size));
-                // Log.trace(session + " events=" + events, this, "getEvents");
+                if (log.isLoggable(Level.FINE)) {
+                  log.fine("" + session + " events=" + events);
+                }
             }
         }
         // edu.stanford.smi.protege.util.Log.enter(this, "getEvents", session,
