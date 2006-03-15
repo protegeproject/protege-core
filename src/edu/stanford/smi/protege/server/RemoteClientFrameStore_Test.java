@@ -1,4 +1,4 @@
-package edu.stanford.smi.protege.server;
+package edu.stanford.smi.protege.server.framestore;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.framestore.*;
