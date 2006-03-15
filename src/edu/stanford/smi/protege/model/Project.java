@@ -171,7 +171,9 @@ public class Project {
 
     private KnowledgeBaseListener _knowledgeBaseListener = new KnowledgeBaseAdapter() {
         public void clsDeleted(KnowledgeBaseEvent event) {
-            // Log.enter(this, "clsDeleted", event);
+            if (log.isLoggable(Level.FINE)) {
+              log.fine("clsDeleted for project " + this + " event = " + event);
+            }
             Cls cls = event.getCls();
             _activeClsWidgetDescriptors.remove(cls);
             ClsWidget widget = (ClsWidget) _cachedDesignTimeClsWidgets.remove(cls);
@@ -236,7 +238,9 @@ public class Project {
     protected Project(URI uri, KnowledgeBaseFactory factory, Collection errors,
             boolean createDomainKB, boolean isMultiUserServer) {
         this.isMultiUserServer = isMultiUserServer;
-        // Log.enter(this, "Project", uri);
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("Creating Project " + uri + " multiserver = " + isMultiUserServer);
+        }
         setProjectURI(uri);
         _projectKB = loadProjectKB(uri, factory, errors);
         if (_projectKB != null) {
