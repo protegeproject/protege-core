@@ -20,6 +20,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class URLWidget extends TextComponentWidget {
+  
     private JEditorPane urlDisplay;
 
     public void initialize() {
@@ -108,9 +109,11 @@ public class URLWidget extends TextComponentWidget {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         try {
-                            urlDisplay.setPage(url);
+                          urlDisplay.setPage(url);
                         } catch (IOException e) {
-                          Log.getLogger().log(Level.INFO, "Exception caught", e);
+                          urlDisplay.setText("<HTML><BODY><H3>Cannot Find This Webpage</H3></HTML>");
+                        } catch (Throwable t) {
+                          Log.getLogger().log(Level.INFO, "Exception caught", t);
                         }
                     }
                 });
