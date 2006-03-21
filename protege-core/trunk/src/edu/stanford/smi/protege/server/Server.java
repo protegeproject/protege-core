@@ -80,7 +80,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     public static String getBoundName() {
-        return Text.getProgramName();
+        return Text.getProgramTextName();
     }
 
     protected static String getLocalBoundName() {
