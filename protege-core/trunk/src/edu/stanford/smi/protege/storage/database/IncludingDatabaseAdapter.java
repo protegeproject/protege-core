@@ -26,6 +26,7 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
   private ValueCachingNarrowFrameStore delegate;
   private DatabaseFrameDb frameDb;
   private Map<Integer, String> includedIdCache = new HashMap<Integer, String>();
+  private int dbCallCounter = 0;
   
   private String tableName;
   
@@ -101,10 +102,16 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
 
   @Override
   public boolean isLocalFrameIncluded(Frame frame) {
+    if (noIncludedFrames()) {
+      return false;
+    }
     return getLocalIncludedName(frame) != null;
   }
   
   private String getLocalIncludedName(Frame frame) {
+    if (noIncludedFrames()) {
+      return null;
+    }
     Integer localId = new Integer(frame.getFrameID().getLocalPart());
     String name = includedIdCache.get(localId);
     if (name != null) {
@@ -134,7 +141,7 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
     if (log.isLoggable(Level.FINEST) && frame != null) {
       log.finest("(" + memoryProjectId + ") Mapping local frame with id " + frame.getFrameID());
     }
-    if (frame == null  || frame.getFrameID().isSystem()) {
+    if (noIncludedFrames() || frame == null  || frame.getFrameID().isSystem()) {
       return frame;
     }
     String name = getLocalIncludedName(frame);
@@ -190,11 +197,16 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
   }
   
   public ResultSet executeQuery(String cmd) throws SQLException {
+    long startTime = 0;
     if (log.isLoggable(Level.FINER)) {
       log.finer("Executing database query = " + cmd);
+      startTime = System.currentTimeMillis();
     }
     Statement statement = frameDb.getCurrentConnection().getStatement();
     ResultSet rs = statement.executeQuery(cmd);
+    if (log.isLoggable(Level.FINER)) {
+      log.finer("Database query took " + (System.currentTimeMillis() - startTime) + " milliseconds");
+    }
     return rs;
   }
   
