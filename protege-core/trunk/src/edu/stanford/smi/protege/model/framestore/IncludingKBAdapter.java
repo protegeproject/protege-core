@@ -115,7 +115,9 @@ public abstract class IncludingKBAdapter
   }
   
   public Frame mapLocalFrame(Frame frame) {
-    if (frame == null  || frame.getFrameID().isSystem()|| !isLocalFrameIncluded(frame)) {
+    if (frame == null  || noIncludedFrames()
+                       || frame.getFrameID().isSystem() 
+                       || !isLocalFrameIncluded(frame)) {
       return frame;
     }
     String name = null;
@@ -138,7 +140,9 @@ public abstract class IncludingKBAdapter
       log.finest("(" + memoryProjectId + ") Mapping global frame with id = " + 
                  frame.getFrameID() + " create flag = " + create);
     }
-    if (frame == null || frame.getFrameID().isSystem() || !isGlobalFrameInherited(frame)) {
+    if (frame == null || noIncludedFrames() 
+                      || frame.getFrameID().isSystem() 
+                      || !isGlobalFrameInherited(frame)) {
       if (log.isLoggable(Level.FINEST)) {
         log.finest("no mapping needed");
       }
