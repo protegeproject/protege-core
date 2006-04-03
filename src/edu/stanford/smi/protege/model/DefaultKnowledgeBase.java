@@ -3,13 +3,36 @@ package edu.stanford.smi.protege.model;
 //ESCA*JAVA0136
 //ESCA*JAVA0100
 
-import java.net.*;
-import java.util.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.model.framestore.undo.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.ClsListener;
+import edu.stanford.smi.protege.event.FacetListener;
+import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.event.InstanceListener;
+import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.SlotListener;
+import edu.stanford.smi.protege.event.TransactionListener;
+import edu.stanford.smi.protege.model.framestore.DefaultFrameFactory;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
+import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.StringUtilities;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * Default implementation of the KnowledgeBase interface. Delegates almost everything to the FrameStore chain.
@@ -18,6 +41,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson (fergerson@smi.stanford.edu)
  */
 public class DefaultKnowledgeBase implements KnowledgeBase {
+    private static transient Logger log = Log.getLogger(DefaultKnowledgeBase.class);
     private static final int GENERATED_NAME_LENGTH = 8;
 
     private FrameStoreManager _frameStoreManager;
@@ -39,7 +63,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     private FrameNameValidator _frameNameValidator;
 
     {
-        // Log.enter(this, "<initializer>");
         initializeKBName();
         _systemFrames = createSystemFrames();
         _defaultClsMetaCls = _systemFrames.getStandardClsMetaCls();
@@ -79,7 +102,9 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public DefaultKnowledgeBase(KnowledgeBaseFactory factory) {
-        // Log.trace("created", this, "DefaultKnowledgeBase", factory);
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("Phase 1 Initialization of Model starts");
+        }
         _knowledgeBaseFactory = factory;
     }
 
