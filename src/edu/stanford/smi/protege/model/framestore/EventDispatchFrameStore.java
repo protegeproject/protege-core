@@ -94,7 +94,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
 
     private void dispatchEvents(boolean ignoreExceptions) {
-        Collection events = getDelegate().getEvents();
+        Collection<EventObject> events = getDelegate().getEvents();
         if (!events.isEmpty()) {
             dispatchEvents(events, ignoreExceptions);
         }
