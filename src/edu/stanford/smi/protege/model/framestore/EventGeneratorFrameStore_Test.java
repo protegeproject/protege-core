@@ -26,7 +26,7 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         Slot subclassesSlot = _kb.getSlot(Model.Slot.DIRECT_SUBCLASSES);
         Slot instancesSlot = _kb.getSlot(Model.Slot.DIRECT_INSTANCES);
         Cls cls = createCls();
-        List events = getTestFrameStore().getEvents();
+        List<EventObject> events = getTestFrameStore().getEvents();
         assertTrue(events.contains(new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_CREATED, cls)));
         assertTrue(events.contains(new ClsEvent(rootCls, ClsEvent.DIRECT_SUBCLASS_ADDED, cls)));
         assertTrue(events.contains(new FrameEvent(rootCls, FrameEvent.OWN_SLOT_VALUE_CHANGED, subclassesSlot)));
@@ -39,7 +39,7 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         Cls superclass = createCls();
         getTestFrameStore().getEvents();
         getTestFrameStore().addDirectSuperclass(cls, superclass);
-        List events = getTestFrameStore().getEvents();
+        List<EventObject> events = getTestFrameStore().getEvents();
         ClsEvent testEvent1 = new ClsEvent(cls, ClsEvent.DIRECT_SUPERCLASS_ADDED, superclass);
         ClsEvent testEvent2 = new ClsEvent(superclass, ClsEvent.DIRECT_SUBCLASS_ADDED, cls);
         assertEquals("kb event", testEvent1, events.get(0));
