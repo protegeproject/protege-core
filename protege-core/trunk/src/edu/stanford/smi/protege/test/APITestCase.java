@@ -24,7 +24,7 @@ import edu.stanford.smi.protege.util.PropertyList;
  */
 public abstract class APITestCase extends AbstractTestCase {
     private Collection _firedEvents = new ArrayList();
-    private static Properties _dbProperties = null;
+    private static Properties _junitProperties = null;
     private static final String DB_PREFIX = "junit.db.";
 
     public enum DBType {
@@ -99,7 +99,7 @@ public abstract class APITestCase extends AbstractTestCase {
     }
 
     public static boolean dbConfigured() {
-      Properties dbp = getDBProperties();
+      Properties dbp = getJunitProperties();
       if (dbp == null) {
         return false;
       }
@@ -111,14 +111,14 @@ public abstract class APITestCase extends AbstractTestCase {
     }
     
     private static String getDBProperty(String prop) {
-      Properties dbp = getDBProperties();
+      Properties dbp = getJunitProperties();
       return dbp.getProperty(DB_PREFIX + _dbType + "." + prop);
     }
     
     
-    private static Properties getDBProperties() {
-      if (_dbProperties != null) {
-        return _dbProperties;
+    public static Properties getJunitProperties() {
+      if (_junitProperties != null) {
+        return _junitProperties;
       }
       try {
         Properties dbp = new Properties();
@@ -127,8 +127,8 @@ public abstract class APITestCase extends AbstractTestCase {
                                    + "junit.properties";
         InputStream is = new FileInputStream(dbPropertyFile);
         dbp.load(is);
-        _dbProperties = dbp;
-        return _dbProperties;
+        _junitProperties = dbp;
+        return _junitProperties;
       } catch (Exception e) {
         return null;
       }
