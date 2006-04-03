@@ -248,7 +248,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().addDirectSuperslot(slot, superslot);
     }
 
-    public List getEvents() {
+    public List<EventObject> getEvents() {
         return getDelegate().getEvents();
     }
 
