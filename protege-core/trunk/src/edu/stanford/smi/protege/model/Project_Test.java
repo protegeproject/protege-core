@@ -2,12 +2,17 @@ package edu.stanford.smi.protege.model;
 
 //ESCA*JAVA0130
 
-import java.awt.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.awt.Rectangle;
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
-import edu.stanford.smi.protege.test.*;
+import edu.stanford.smi.protege.test.APITestCase;
 
 /**
  * Units tests for Project class.
@@ -15,7 +20,13 @@ import edu.stanford.smi.protege.test.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class Project_Test extends APITestCase {
+    private static boolean disableMissingWebPageTests = true;
     private static final String SUBDIR = "project_subdir";
+    
+    private static final String NewspaperFileProperty = "junit.project.file.newspaper";
+    private static final String NewspaperJarFileProperty = "junit.project.file.jar.newspaper";
+    private static final String IncludingFileProperty = "junit.project.file.including";
+    private static final String IncludedFileProperty = "junit.project.file.including";
 
     private static final String MAP_NAME = "Project_Test.test_map";
     private static final String HTTP_BASE = "http://protege.stanford.edu/";
@@ -95,7 +106,9 @@ public class Project_Test extends APITestCase {
     }
 
     public void testProjectLoadFromHttpJar() {
+      if (!disableMissingWebPageTests) {
         loadProjectFromURI(HTTP_JAR_PROJECT_STRING);
+      }
     }
 
     private Project loadProjectFromURI(String uriString) {
@@ -119,11 +132,22 @@ public class Project_Test extends APITestCase {
     }
 
     public void testProjectLoadFromHttp() {
+      if (!disableMissingWebPageTests) {
         loadProjectFromURI(HTTP_PROJECT_STRING);
+      }
     }
 
     public void testProjectLoadFromFileJar() {
-        loadProjectFromURI(FILE_JAR_PROJECT_STRING);
+      Properties jup = getJunitProperties();
+      String uri = jup.getProperty(NewspaperJarFileProperty);
+      if (uri == null) {
+        return;
+      }
+      try {
+        loadProjectFromURI(uri);
+      } catch (Exception e) {
+        fail("Exception caught loading jar file");
+      }
     }
 
     public void testIncludeFromSameDirectory() {
@@ -194,21 +218,33 @@ public class Project_Test extends APITestCase {
     }
 
     public void testIncludeFromHttp() {
-        Project p1 = loadProjectFromURI(HTTP_PROJECT_STRING);
-        Project p2 = createProjectOnDisk(getTempDirectory(), MAIN_PROJECT_NAME);
-        checkInclusion(p2, p1);
+      if (disableMissingWebPageTests) {
+        return;
+      }
+      Project p1 = loadProjectFromURI(HTTP_PROJECT_STRING);
+      Project p2 = createProjectOnDisk(getTempDirectory(), MAIN_PROJECT_NAME);
+      checkInclusion(p2, p1);
     }
 
     public void testIncludeFromFileJar() {
-        Project p1 = loadProjectFromURI(FILE_JAR_PROJECT_STRING);
-        Project p2 = createProjectOnDisk(getTempDirectory(), MAIN_PROJECT_NAME);
-        checkInclusion(p2, p1);
+      Properties jup = getJunitProperties();
+      String including = jup.getProperty(IncludingFileProperty);
+      String included = jup.getProperty(IncludedFileProperty);
+      if (including == null && included == null) {
+        return;
+      }
+      Project p1 = loadProjectFromURI(included);
+      Project p2 = createProjectOnDisk(getTempDirectory(), including);
+      checkInclusion(p2, p1);
     }
 
     public void testIncludeFromHttpJar() {
-        Project p1 = loadProjectFromURI(HTTP_JAR_PROJECT_STRING);
-        Project p2 = createProjectOnDisk(getTempDirectory(), MAIN_PROJECT_NAME);
-        checkInclusion(p2, p1);
+      if (disableMissingWebPageTests) {
+        return;
+      }
+      Project p1 = loadProjectFromURI(HTTP_JAR_PROJECT_STRING);
+      Project p2 = createProjectOnDisk(getTempDirectory(), MAIN_PROJECT_NAME);
+      checkInclusion(p2, p1);
     }
 
     public void testIsDirtyOnCreateInstance() {
