@@ -36,7 +36,7 @@ public class PluginUtilities {
     private static Map _pluginComponentNameToDocURLMap = new HashMap();
     private static Map _pluginPackageToClassLoaderMap = new HashMap();
     private static String defaultFactoryClassName;
-    private static Map cachedClsesWithAttributeMap = new HashMap();
+    private static Map<String, Collection<Class>> cachedClsesWithAttributeMap = new HashMap<String, Collection<Class>>();
 
     private static File pluginsDir;
 
@@ -677,9 +677,9 @@ public class PluginUtilities {
      * attribute value. If there is a match the associated java Class object is
      * loaded.
      */
-    public static Collection getClassesWithAttribute(String key, String value) {
+    public static Collection<Class> getClassesWithAttribute(String key, String value) {
         // Log.enter(SystemUtilities.class, "getManifestClasses", key, value);
-        Collection classes = getCachedClsesWithAttribute(key, value);
+        Collection<Class> classes = getCachedClsesWithAttribute(key, value);
         if (classes == null) {
             classes = new HashSet();
             Iterator i = _manifestURLs.iterator();
@@ -694,14 +694,14 @@ public class PluginUtilities {
             }
             saveCachedClsesWithAttribute(key, value, classes);
         }
-        return new ArrayList(classes);
+        return new ArrayList<Class>(classes);
     }
 
-    private static Collection getCachedClsesWithAttribute(String key, String value) {
-        return (Collection) cachedClsesWithAttributeMap.get(getKey(key, value));
+    private static Collection<Class> getCachedClsesWithAttribute(String key, String value) {
+        return cachedClsesWithAttributeMap.get(getKey(key, value));
     }
 
-    private static Object getKey(String key, String value) {
+    private static String getKey(String key, String value) {
         return key + "=" + value;
     }
 
@@ -709,9 +709,9 @@ public class PluginUtilities {
         cachedClsesWithAttributeMap.put(getKey(key, value), classes);
     }
 
-    private static Collection getManifestClasses(Manifest manifest, String key, String value) {
-        Collection classes = new HashSet();
-        Iterator i = manifest.getEntries().keySet().iterator();
+    private static Collection<Class> getManifestClasses(Manifest manifest, String key, String value) {
+        Collection<Class> classes = new HashSet<Class>();
+        Iterator<String> i = manifest.getEntries().keySet().iterator();
         while (i.hasNext()) {
             String attributeName = (String) i.next();
             Attributes attributes = manifest.getAttributes(attributeName);
