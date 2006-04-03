@@ -13,6 +13,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.LogManager;
 
+
 /**
  * A utility class that prints trace messages of various sorts to a log. By
  * default the "log" is the err console but it could be directed elsewhere.
@@ -95,8 +96,6 @@ public class Log {
       } catch (Exception e) {
         Log.getLogger().log(Level.WARNING, "Could not set up class specific logging", e);
       }
-      Logger rootlog = Logger.getLogger("");
-      rootlog.setLevel(Level.WARNING);
       // Example of programatic level setting
       // Logger.getLogger("edu.stanford.smi.protege.model.framestore").setLevel(Level.FINEST);
     }
