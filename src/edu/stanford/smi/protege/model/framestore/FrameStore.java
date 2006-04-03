@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.Collection;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Set;
 
@@ -187,7 +188,7 @@ public interface FrameStore {
     void moveDirectType(Instance instance, Cls type, int index);
 
     // events
-    List getEvents();
+    List<EventObject> getEvents();
 
     // arbitrary queries
     Set executeQuery(Query query);
