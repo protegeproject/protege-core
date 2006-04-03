@@ -167,7 +167,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getMatchingReferences(value, maxMatches);
     }
 
-    public List getEvents() {
+    public List<EventObject> getEvents() {
         return getDelegate().getEvents();
     }
 
