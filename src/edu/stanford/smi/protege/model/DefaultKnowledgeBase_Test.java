@@ -70,7 +70,10 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
          team.addOwnSlotValue(hasLeaderSlot, person);
          assertEquals(1, team.getOwnSlotValues(hasMemberSlot).size());
          team.addOwnSlotValue(hasMemberSlot, person);
-         assertEquals(1, team.getOwnSlotValues(hasMemberSlot).size());
+         assertEquals(1, team.getDirectOwnSlotValues(hasMemberSlot).size());
+         assertEquals(1, team.getDirectOwnSlotValues(hasLeaderSlot).size());
+         assertEquals(2, team.getOwnSlotValues(hasMemberSlot).size());
+         assertEquals(1, team.getOwnSlotValues(hasLeaderSlot).size());
     }
 
     public void testInferredInverseSlotValues() {
