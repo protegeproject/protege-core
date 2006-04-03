@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,6 +33,7 @@ import edu.stanford.smi.protege.server.RemoteServer;
 import edu.stanford.smi.protege.server.RemoteServerProject;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
@@ -44,6 +46,30 @@ public class RemoteClientFrameStore implements FrameStore {
     private RemoteSession session;
     private RemoteServer server;
     private RemoteServerFrameStore remoteDelegate;
+    
+    private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
+    /*
+     * A Cache of the direct own slot values.
+     */
+    private Map<Frame, Map<Sft, List>> cache = new HashMap<Frame, Map<Sft, List>>();
+    /*
+     * A temporary variable for convenience/performance (is this really such a good idea?)
+     */
+    private Sft lookupSft = new Sft();
+
+    private static boolean preloadRemoteClient;
+    static {
+      boolean defaultValue = true;
+      String property = System.getProperty(ApplicationProperties.REMOTE_CLIENT_PRELOAD);
+      if (property != null) {
+        try {
+          preloadRemoteClient = Boolean.getBoolean(property);
+        } catch (Exception e) {
+          // style to avoid empty catch block  and emphasize motivation
+          preloadRemoteClient = defaultValue;
+        }
+      }
+    }
 
     public String getName() {
         return getClass().getName();
@@ -331,25 +357,6 @@ public class RemoteClientFrameStore implements FrameStore {
             throw convertException(e);
         }
     }
-
-    //  public int getDirectOwnSlotValuesCount(Frame frame, Slot slot) {
-    //  int count;
-    //  try {
-    //      if (isCached(frame)) {
-    //          count = getCacheDirectOwnSlotValues(frame, slot).size();
-    //      } else {
-    //          count = delegate.getDirectOwnSlotValuesCount(frame, slot, session);
-    //      }
-    //  } catch (RemoteException e) {
-    //      throw convertException(e);
-    //  }
-    //  return count;
-    //}
-
-    //    private boolean isCached(Frame frame) {
-    //        return cache.get(frame) != null;
-    //    }
-    //
 
     public int getDirectOwnSlotValuesCount(Frame frame, Slot slot) {
         try {
@@ -766,7 +773,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public List getEvents() {
+    public List<EventObject> getEvents() {
         try {
             List events = getRemoteDelegate().getEvents(session);
             localize(events);
@@ -949,14 +956,13 @@ public class RemoteClientFrameStore implements FrameStore {
 
     //------------------------------
     public void preload(boolean preloadAll) throws RemoteException {
-        Map fsftValues = getRemoteDelegate().preload(preloadAll, session);
-        Log.getLogger().info("Preloaded with " + fsftValues.size() + " frames");
-        insertValues(fsftValues);
+      if (!preloadRemoteClient) {
+        return;
+      }
+      Map fsftValues = getRemoteDelegate().preload(preloadAll, session);
+      Log.getLogger().info("Preloaded with " + fsftValues.size() + " frames");
+      insertValues(fsftValues);
     }
-
-    private Map frameNameToFrameMap = new HashMap();
-    private Map cache = new HashMap();
-    private Sft lookupSft = new Sft();
 
     private Set getCacheOwnSlotValueClosure(Frame frame, Slot slot) throws RemoteException {
         return getCacheClosure(frame, slot, null, false);
@@ -970,7 +976,9 @@ public class RemoteClientFrameStore implements FrameStore {
         Set closure = new HashSet();
         boolean succeeded = calculateClosureFromCacheOnly(frame, slot, facet, isTemplate, closure);
         if (!succeeded) {
-            // Log.trace("not in cache: " + frame, this, "getCacheClosure");
+            if (log.isLoggable(Level.FINE)) {
+              log.fine("not in cache: " + frame);
+            }
             closure = getRemoteDelegate().getDirectOwnSlotValuesClosure(frame, slot, session);
             localize(closure);
             loadReturnedValues(closure);
@@ -1018,16 +1026,32 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     private List getCacheValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) throws RemoteException {
-        Map sftValues = (Map) cache.get(frame);
+        Map<Sft, List> sftValues = cache.get(frame);
+        List values;
         if (sftValues == null) {
-            sftValues = loadValues(frame);
+          sftValues = loadValues(frame);
         }
         lookupSft.set(slot, facet, isTemplate);
-        List values = (List) sftValues.get(lookupSft);
+        values = sftValues.get(lookupSft);
         if (values == null && sftValues.containsKey(lookupSft)) {
-            // Log.trace("getting missing values for: " + frame, this,
-            // "getCacheValues");
-            values = getRemoteDelegate().getDirectOwnSlotValues(frame, slot, session);
+            if (log.isLoggable(Level.FINE)) {
+              log.fine("getting missing values for:  " + frame);
+            }
+            if (facet != null) {
+              if (isTemplate) {
+                values = getRemoteDelegate().getDirectTemplateFacetValues((Cls) frame, slot, facet, session);
+              } else {
+                Collection collectedValues = getRemoteDelegate().getOwnFacetValues(frame, slot, facet, session);
+                values = new ArrayList();
+                values.addAll(collectedValues);
+              }
+            } else {
+              if (isTemplate) {
+                values = getRemoteDelegate().getDirectTemplateSlotValues((Cls) frame, slot, session);
+              } else {
+                values = getRemoteDelegate().getDirectOwnSlotValues(frame, slot, session);
+              }
+            }
             localize(values);
             sftValues.put(new Sft(slot, facet, isTemplate), new ArrayList(values));
         }
@@ -1037,28 +1061,37 @@ public class RemoteClientFrameStore implements FrameStore {
         return values;
     }
 
-    private Map loadValues(Frame frame) throws RemoteException {
+    private Map<Sft, List> loadValues(Frame frame) throws RemoteException {
         loadValues(Collections.singleton(frame));
-        return (Map) cache.get(frame);
+        return cache.get(frame);
     }
 
-    private void loadValues(Collection frames) throws RemoteException {
+    private void loadValues(Collection<Frame> frames) throws RemoteException {
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("loading values for " + frames.size() + " frames");
+          for (Frame frame : frames) {
+            log.finer("\tFrame id =  " + frame.getFrameID());
+          }
+          
+        }
         Map fsftValues = getRemoteDelegate().getFrameValues(frames, session);
         insertValues(fsftValues);
     }
 
-    private void insertValues(Map fsftValues) {
+    private void insertValues(Map<Frame, Map<Sft, List>> fsftValues) {
         localize(fsftValues);
-        Iterator i = fsftValues.entrySet().iterator();
+        Iterator<Map.Entry<Frame, Map<Sft,List>>> i = fsftValues.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry entry = (Map.Entry) i.next();
+            Map.Entry<Frame, Map<Sft,List>> entry = i.next();
             Frame frame = (Frame) entry.getKey();
-            Map sftValues = (Map) entry.getValue();
+            Map<Sft, List> sftValues =  entry.getValue();
             cache.put(frame, sftValues);
             String name = getFrameName(frame);
             frameNameToFrameMap.put(name, frame);
-            // System.out.println(fsftValues.size() + " " + name + " -
-            // insertValues size: " + sftValues.size());
+            if (log.isLoggable(Level.FINE)) {
+              log.fine("Inserted values (count = " + sftValues.size() + ") for frame ("
+                                                   + frame.getFrameID() + ") named " + name);
+            }
         }
     }
 
@@ -1083,7 +1116,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     private void addCacheValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
-        Map sftValues = (Map) cache.get(frame);
+        Map<Sft, List> sftValues = cache.get(frame);
         if (sftValues != null) {
             lookupSft.set(slot, facet, isTemplate);
             boolean containsKey = sftValues.containsKey(lookupSft);
@@ -1103,7 +1136,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     private void moveCacheValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value, int index) {
-        Map sftValues = (Map) cache.get(frame);
+        Map<Sft, List> sftValues =  cache.get(frame);
         if (sftValues != null) {
             lookupSft.set(slot, facet, isTemplate);
             List values = (List) sftValues.get(lookupSft);
@@ -1115,7 +1148,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     private void moveCacheValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to) {
-        Map sftValues = (Map) cache.get(frame);
+        Map<Sft, List> sftValues =cache.get(frame);
         if (sftValues != null) {
             lookupSft.set(slot, facet, isTemplate);
             List values = (List) sftValues.get(lookupSft);
@@ -1138,7 +1171,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     private void removeCacheValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
-        Map sftValues = (Map) cache.get(frame);
+        Map<Sft, List> sftValues =  cache.get(frame);
         if (sftValues != null) {
             lookupSft.set(slot, facet, isTemplate);
             List values = (List) sftValues.get(lookupSft);
@@ -1151,7 +1184,7 @@ public class RemoteClientFrameStore implements FrameStore {
     // we handle the case where the user looks up names that don't correspond to
     // a frame
     private Frame getCacheFrame(String name) throws RemoteException {
-        Frame frame = (Frame) frameNameToFrameMap.get(name);
+        Frame frame = frameNameToFrameMap.get(name);
         if (frame == null) {
             if (!frameNameToFrameMap.containsKey(name)) {
                 frame = getRemoteDelegate().getFrame(name, session);
@@ -1354,7 +1387,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     private boolean isOwnSlotValueCached(Frame frame, Slot slot) {
         boolean isCached = false;
-        Map map = (Map) cache.get(frame);
+        Map<Sft, List> map = cache.get(frame);
         if (map != null) {
             lookupSft.set(slot, null, false);
             if (map.containsKey(lookupSft)) {
@@ -1367,7 +1400,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     private void loadReturnedValues(Collection values) throws RemoteException {
-        List frames = new ArrayList();
+        List frames = new ArrayList<Frame>();
         Iterator i = values.iterator();
         while (i.hasNext()) {
             Object o = i.next();
@@ -1379,8 +1412,8 @@ public class RemoteClientFrameStore implements FrameStore {
             }
         }
         if (!frames.isEmpty()) {
-            loadValues(frames);
-            checkFrames(frames);
+            // loadValues(frames);
+            // checkFrames(frames);
         }
     }
 
