@@ -164,7 +164,7 @@ public interface RemoteServerFrameStore extends Remote {
     void moveDirectType(Instance instance, Cls type, int index, RemoteSession session) throws RemoteException;
 
     // events
-    List getEvents(RemoteSession session) throws RemoteException;
+    List<EventObject> getEvents(RemoteSession session) throws RemoteException;
 
     // arbitrary queries
     Set getReferences(Object object, RemoteSession session) throws RemoteException;
