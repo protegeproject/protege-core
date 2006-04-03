@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.server.framestore;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.framestore.*;
+import edu.stanford.smi.protege.server.Server_Test;
 
 public class RemoteClientFrameStore_Test extends FrameStore_Test {
 
@@ -10,6 +11,12 @@ public class RemoteClientFrameStore_Test extends FrameStore_Test {
         String password = "claudia";
         String host = "localhost";
         String projectName = "Newspaper";
+        
+        try {
+          Server_Test.startServer();
+        } catch (Exception e) {
+          return null;
+        }
 
         return new RemoteClientFrameStore(host, user, password, projectName, kb, false);
     }
