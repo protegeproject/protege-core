@@ -36,6 +36,8 @@ public class ApplicationProperties {
     public static final String LOG_FILE_PROPERTY = "java.util.logging.config.file";
     public static final String LOG_DEBUG_PROPERTY = "log.config.debug";
 
+    public static final String REMOTE_CLIENT_PRELOAD = "remote.client.preload";
+
     private static final Properties PROPERTIES = new Properties();
     private static File _propertyFile;
 
