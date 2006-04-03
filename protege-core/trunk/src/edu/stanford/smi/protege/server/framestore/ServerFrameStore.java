@@ -5,6 +5,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -39,6 +40,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private static transient Logger log = Log.getLogger(ServerFrameStore.class);
   
     private FrameStore _delegate;
+    private FrameStore _wrappedDelegate;
     private KnowledgeBase _kb;
     private List _events = new ArrayList();
     private Map<RemoteSession, Registration> _sessionToRegistrationMap 
@@ -47,7 +49,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
     private static final int MAX_VALUES = 20;
     private static final int MIN_PRELOAD_FRAMES = Integer.getInteger("preload.frame.limit", 5000).intValue();
+    /*
+     * A performance hack Indentical copies of the same sft are reduced to the same object so that only a single copy
+     * needs to be sent over the wire.
+     */
+    private Map<Sft,Sft> sftMap = new HashMap<Sft,Sft>();
 
+    
     //ESCA-JAVA0160 
     public ServerFrameStore(FrameStore delegate, KnowledgeBase kb) throws RemoteException {
         _delegate = delegate;
@@ -252,6 +260,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public synchronized List getDirectOwnSlotValues(Frame frame, Slot slot, RemoteSession session) {
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("getDirectOwnSlotValues for frame " + frame.getFrameID() + " slot " + slot.getFrameID());
+        }
         recordCall(session);
         return getDelegate().getDirectOwnSlotValues(frame, slot);
     }
@@ -514,7 +525,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return "ServerFrameStoreImpl";
     }
 
-    public synchronized List getEvents(RemoteSession session) {
+    public synchronized List<EventObject> getEvents(RemoteSession session) {
         recordCall(session);
         List events;
         List newEvents = getDelegate().getEvents();
@@ -627,8 +638,20 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public synchronized Map getFrameValues(Collection frames, RemoteSession session) {
+        long start = 0;
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("calling getFrameValues");
+          start = System.currentTimeMillis();
+        }
+        
         recordCall(session);
-        return getFrameValues(frames, false);
+        Map result =  getFrameValues(frames, false);
+        
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("getFrameValues took " + (System.currentTimeMillis() - start) + " milliseconds");
+        }
+        
+        return result;
     }
 
     private void localize(Collection frames) {
@@ -638,12 +661,18 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private Map getFrameValues(Collection frames, boolean includeAllSlots) {
         localize(frames);
         frames = supplementFrames(frames);
-        // Log.getLogger().info(_kb.getName() + " getFrameValues: " +
-        // CollectionUtilities.toString(frames));
+        if (log.isLoggable(Level.FINER)) {
+          log.fine(_kb.getName() + " getFrameValues: " + CollectionUtilities.toString(frames));
+        }
         HashMap map = new LinkedHashMap();
         Iterator i = frames.iterator();
         while (i.hasNext()) {
             Frame frame = (Frame) i.next();
+            long startTime = 0;
+            if (log.isLoggable(Level.FINE)) {
+              startTime = System.currentTimeMillis();
+              log.fine("Started getting values for frame (" + frame.getFrameID() + ")");
+            }
             Map sftValues = (Map) map.get(frame);
             if (sftValues == null) {
                 sftValues = new LinkedHashMap();
@@ -652,6 +681,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             insertOwnSlots(sftValues, frame, includeAllSlots);
             if (frame instanceof Cls) {
                 insertTemplateValues(sftValues, (Cls) frame);
+            }
+            if (log.isLoggable(Level.FINE)) {
+              log.fine("Got frame value in " + (System.currentTimeMillis() - startTime) + " milliseconds");
             }
         }
         return map;
@@ -704,11 +736,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
     }
 
-    /*
-     * A performance hack Indentical copies of the same sft are reduced to the same object so that only a single copy
-     * needs to be sent over the wire.
-     */
-    private Map sftMap = new HashMap();
 
     private Sft getSft(Slot slot, Facet facet, boolean isTemplate) {
         Sft sft = new Sft(slot, facet, isTemplate);
