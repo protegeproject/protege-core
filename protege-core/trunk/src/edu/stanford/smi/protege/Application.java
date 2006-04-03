@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 
@@ -37,6 +38,8 @@ import edu.stanford.smi.protege.util.URIUtilities;
  * @author Ray Fergerson
  */
 public class Application {
+    private static transient Logger log = Log.getLogger(Application.class);
+    
     private static JFrame _mainFrame;
     private static SplashScreen _splashScreen;
     private static WelcomeDialog _welcome;
@@ -158,8 +161,9 @@ public class Application {
                 }
             }
             catch (Exception ex) {
-                ex.printStackTrace();
-                System.err.println("Warning: Failed handle argument with " + pluginClass + ": " + ex);
+              log.log(Level.SEVERE, 
+                      "Warning: Failed handle argument with " + pluginClass,
+                      ex);
             }
         }
         return null;
