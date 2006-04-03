@@ -22,6 +22,7 @@ import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class ServerNarrowFrameStore 
   extends UnicastRemoteObject implements RemoteServerNarrowFrameStore {
@@ -29,6 +30,8 @@ public class ServerNarrowFrameStore
   NarrowFrameStore delegate;
   NarrowFrameStore fixedDelegate;
   KnowledgeBase kb;
+  
+  private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
   
   public ServerNarrowFrameStore(NarrowFrameStore delegate, KnowledgeBase kb) throws RemoteException {
     this.delegate = delegate;
@@ -42,6 +45,18 @@ public class ServerNarrowFrameStore
 
   
   private class ServerInvocationHandler implements InvocationHandler {
+
+    private int nDelayedCalls = 0;
+
+    private void delay() {
+        if (DELAY_MSEC != 0) {
+            SystemUtilities.sleepMsec(DELAY_MSEC);
+            if (++nDelayedCalls % 10 == 0) {
+                Log.getLogger().info(nDelayedCalls + " delayed calls");
+            }
+        }
+    }
+
 
     public Object invoke(Object object, Method method, Object[] args) throws Throwable {
       if (log.isLoggable(Level.FINE)) {
