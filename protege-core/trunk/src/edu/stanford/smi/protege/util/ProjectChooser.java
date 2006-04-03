@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -57,6 +58,8 @@ import edu.stanford.smi.protege.ui.ProjectManager;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ProjectChooser extends JFileChooser {
+    private static Logger log = Log.getLogger(ProjectChooser.class);
+  
     private JPanel pane;
     private CardLayout layout = new CardLayout();
     public static final String FILE_CARD = "File";
@@ -73,7 +76,7 @@ public class ProjectChooser extends JFileChooser {
         setControlButtonsAreShown(false);
         setDialogTitle("Open Project");
         String text = Text.getProgramName() + " Project";
-        ArrayList extensions = new ArrayList();
+        ArrayList<String> extensions = new ArrayList<String>();
         extensions.add(".pprj");
 
         Collection classNames = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames();
@@ -309,8 +312,9 @@ public class ProjectChooser extends JFileChooser {
                 }
             }
             catch (Exception ex) {
-                ex.printStackTrace();
-                System.err.println("Warning: Failed handle argument with " + pluginClass + ": " + ex);
+              log.log(Level.WARNING, 
+                      "Warning: Failed handle argument with " + pluginClass,
+                      ex);
             }
         }
         return null;
