@@ -204,6 +204,7 @@
                 <exclude name="**/Application_Test.java"/>
                 <exclude name="**/action/*.java"/>
                 <exclude name="**/widget/**.java"/>
+                <exclude name="**/framestore/FrameStore_Test.java"/>
               </fileset>
             </batchtest>
           </junit>
