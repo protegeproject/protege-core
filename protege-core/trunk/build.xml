@@ -7,6 +7,7 @@
 	<!-- Set global properties for this build. -->
 	<property name = "extended.name" value = "${name} ${build.version} ${build.status}"/>
 	<property name = "src" value = "./src"/>  
+        <property name = "junit" value = "./junit"/>
 	<property name = "classes" value = "./classes"/>  
 	<property name = "docs" value = "./docs"/> 
 	<property name = "javadocs" value = "${docs}/apidocs"/>
@@ -113,6 +114,21 @@
 		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>  
 		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore"/>  
 	</target>
+
+
+	<target name = "compile-junit" depends = "compile">    
+		<javac srcdir = "${junit}" 
+                       destdir = "${classes}" 
+                       deprecation = "{deprecation}" 
+                       debug = "${debug}" 
+                       optimize = "${optimize}" 
+                       includeAntRuntime = "${includeAntRuntime}" 
+                       source = "${source}">      
+			<classpath refid = "project.classpath"/>    
+		</javac>    
+	</target>
+
+
 	<!-- =================================================================== -->
 	
 	<!-- JAR -->
@@ -189,8 +205,10 @@
 	
 	<!-- =================================================================== -->
 
-        <target name = "junit" description = "test the system" depends="jar">
-          <junit  printsummary="withOutAndErr" haltonerror="off" fork="yes">
+        <target name = "junit" 
+                description = "test the system"
+                depends="compile-junit, jar">
+          <junit  printsummary="on" haltonerror="on" fork="yes">
             <classpath refid="project.classpath"/>
             <classpath refid="database.drivers"/>
             <classpath>
@@ -198,7 +216,7 @@
             </classpath>
             <jvmarg value="-Djava.util.logging.config.file=junit-logging.properties"/>
             <batchtest>
-              <fileset dir="${src}">
+              <fileset dir="${junit}">
                 <include name="**/*Test.java"/>
                 <!-- Exclude the graphics tests -->
                 <exclude name="**/Application_Test.java"/>
