@@ -1,20 +1,23 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
-<project name = "protege" default = "usage" basedir = ".">
+<project name = "protege" default = "init" basedir = ".">
 	<property file = "../global.properties"/>
 	<property name = "project.name" value = "protege-core"/>
 	<property name = "build.dir" value = "./build"/>
 	<property name = "build.dest" value = "${build.dir}/classes"/>
 	<property name = "build.src" value = "${build.dir}/src"/>
+	<property name = "build.junit" value = "${build.dir}/junit"/>
 	<property name = "docs.dir" value = "./docs"/>
 	<property name = "build.javadoc" value = "${docs.dir}/apidocs"/>
 	<property name = "build.scripts" value = "./bin"/>
 	<property name = "dist.dir" value = "./dist"/>
 	<property name = "lib.dir" value = "./lib"/>
+	<property name = "examples.dir" value = "./examples"/>
 	<property name = "deprecation" value = "on"/>    
 	<property name = "debug" value = "off"/>
 	<property name = "includeAntRuntime" value = "no"/>
 	<property name = "optimize" value = "on"/>
 	<property name = "packages" value = "edu.*"/>
+	<property name = "source" value = "1.5"/>
 	<!-- =================================================================== -->
 	  
 	<!-- INIT -->
@@ -35,6 +38,9 @@
 		<!-- get source code from subversion repository -->
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
 			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/src ../${project.name}/build/src"/>
+		</exec>
+		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
+			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/junit ../${project.name}/build/junit"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
 			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/lib ../${project.name}/lib"/>
@@ -106,7 +112,7 @@
 	
 	<!-- =================================================================== -->
 	<target name = "compile" depends = "javacc">
-		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "${debug}" optimize = "${optimize}" includeAntRuntime = "${includeAntRuntime}" source = "1.5">
+		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "${debug}" optimize = "${optimize}" includeAntRuntime = "${includeAntRuntime}" source = "${source}">
 			<classpath>
 				<fileset dir = "${lib.dir}">
 					<include name = "**/*.jar"/>
@@ -118,6 +124,14 @@
 		<rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>  
 		<rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore"/>  
 	</target>
+	<target name = "compile-junit" depends = "init">    
+		<javac srcdir = "${build.junit}" destdir = "${build.dest}" deprecation = "{deprecation}" debug = "${debug}" optimize = "${optimize}" includeAntRuntime = "${includeAntRuntime}" source = "${source}">      
+			<classpath>
+				<pathelement location = "${lib.dir}/junit.jar"/>
+				<pathelement path = "${build.dest}"/>
+			</classpath>
+		</javac>    
+	</target>
 	<!-- =================================================================== -->
 	
 	<!-- JAR -->
@@ -125,7 +139,7 @@
 	<!-- Create the class package. -->
 	
 	<!-- =================================================================== -->
-	<target name = "jar" depends = "compile">
+	<target name = "jar" depends = "compile, compile-junit">
 		<copy todir = "${build.dest}/edu/stanford/smi/protege/resource/files">
 			<fileset dir = "${build.src}/edu/stanford/smi/protege/resource/files"/>
 		</copy>
@@ -170,13 +184,15 @@
 	<target name = "dist" depends = "init">
 		<zip zipfile = "${dist.dir}/protege-src-${version}.zip" update = "no">
 			<zipfileset dir = "${build.src}" prefix = "${Name}/src"/>
+			<zipfileset dir = "${build.junit}" prefix = "${Name}/junit"/>
 			<zipfileset dir = "${build.javadoc}" prefix = "${Name}/docs/apidocs"/>
-			<zipfileset dir = "." includes = "build.xml,local.properties.template,readme.html" prefix = "${Name}"/>
+			<zipfileset dir = "." includes = "build.xml,local.properties.template,readme.html,junit-logging.properties,junit.properties.template,logging.properties" prefix = "${Name}"/>
 			<zipfileset dir = "${build.scripts}" includes = "Parser.jj" prefix = "${Name}/bin"/>
 			<zipfileset dir = "${lib.dir}" includes = "*.jar" prefix = "${Name}/lib"/>
 		</zip>
 		<zip zipfile = "${dist.dir}/protege-bin-${version}.zip" update = "no">
 			<zipfileset dir = "${dist.dir}" includes = "protege.jar"/>
+			<zipfileset dir = "${lib.dir}" includes = "looks.jar,unicode_panel.jar"/>
 		</zip>
 	</target>
 	<!-- =================================================================== -->
@@ -188,8 +204,11 @@
 	<!-- =================================================================== -->
 	<target name = "clean" depends = "init">
 		<delete dir = "${build.dir}"/>
-		<delete dir = "${build.javadoc}"/>
+		<delete dir = "${docs.dir}"/>
 		<delete dir = "${dist.dir}"/>
+		<delete dir = "${examples.dir}"/>
+		<delete dir = "${lib.dir}"/>
+		<delete dir = "${build.scripts}"/>
 	</target>
 	<!-- =================================================================== -->
 	
