@@ -143,6 +143,10 @@
 		</copy>    
 		<jar jarfile = "${dist}/protege.jar" basedir = "${classes}" manifest = "${src}/META-INF/MANIFEST.MF"/>  
 	</target>
+
+
+        <target name = "jar-junit" depends="compile, compile-junit, jar"/>
+
 	<!-- =================================================================== -->
 	
 	<!-- JAVADOCS -->
@@ -208,7 +212,7 @@
         <target name = "junit" 
                 description = "test the system"
                 depends="compile-junit, jar">
-          <junit  printsummary="on" haltonerror="on" fork="yes">
+          <junit  printsummary="withOutAndErr" haltonerror="on" fork="yes">
             <classpath refid="project.classpath"/>
             <classpath refid="database.drivers"/>
             <classpath>
