@@ -927,21 +927,6 @@ public class Project {
         return _widgetMapper.getSuitableWidgetClassNames(cls, slot, facet);
     }
 
-    /*
-    public WidgetDescriptor getTabWidgetDescriptor(String widgetName) {
-        WidgetDescriptor descriptor = null;
-        Iterator i = getProjectSlotValues(SLOT_TABS).iterator();
-        while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
-            WidgetDescriptor d = WidgetDescriptor.create(instance);
-            if (widgetName.equals(d.getWidgetClassName())) {
-                descriptor = d;
-                break;
-            }
-        }
-        return descriptor;
-    }
-    */
 
     public WidgetDescriptor getTabWidgetDescriptor(String widgetName) {
         WidgetDescriptor descriptor = null;
