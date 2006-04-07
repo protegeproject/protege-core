@@ -175,7 +175,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         Object currentSession = getCurrentSession();
         RobustConnection connection = new RobustConnection(_driver, _url, _user, _password);
         _connections.put(currentSession, connection);
-        Log.getLogger().info("Created connection for " + currentSession);
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("Created connection for " + currentSession);  
+        }
         return connection;
     }
 
@@ -264,7 +266,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         try {
             executeUpdate(createTableString);
-            Log.getLogger().info("Created table with command '" + createTableString + "'");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Created table with command '" + createTableString + "'");
+            }
         } catch (SQLException e) {
             StringBuffer buffer = new StringBuffer();
             buffer.append("Failed to create table on database ");
@@ -317,7 +321,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
       try {
         if (getCurrentConnection().isMySql() 
             && getCurrentConnection().getDatabaseMajorVersion() == 5) {
-          Log.getLogger().info("Found mysql 5.0 - correcting for mysql bug 16121.");
+          if (log.isLoggable(Level.FINE)) {
+            log.fine("Found mysql 5.0 - correcting for mysql bug 16121.");
+          }
           return true;
         }
       } catch (Exception e) {
