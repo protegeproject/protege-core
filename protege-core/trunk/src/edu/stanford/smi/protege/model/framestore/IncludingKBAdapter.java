@@ -263,6 +263,9 @@ public abstract class IncludingKBAdapter
   }
   
   public List mapLocalList(List c) {
+    if (noIncludedFrames()) {
+      return c;
+    }
     if (!containsFrames(c)) {
       return c;
     }
@@ -274,6 +277,9 @@ public abstract class IncludingKBAdapter
   }
   
   public List mapGlobalList(List c, boolean create) {
+    if (noIncludedFrames()) {
+      return c;
+    }
     if (!containsFrames(c)) {
       return c;
     }
