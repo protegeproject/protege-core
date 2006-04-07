@@ -956,14 +956,10 @@ public class Project {
                 }
                 if (PluginUtilities.isLoadableClass(name)) {
                     _tabWidgetDescriptors.add(d);
-                } else {
-                	if (log.isLoggable(Level.INFO)) {
-                		log.info("Could not find slot tab classname " + name);
-                	}
                 }
                 boolean removed = availableTabNames.remove(name);
-                if (!removed && log.isLoggable(Level.INFO)) {
-                	log.info("tab " + name + " not in manifest");
+                if (!removed && log.isLoggable(Level.FINE)) {
+                  log.fine("tab " + name + " not in manifest");
                 }
             }
 
