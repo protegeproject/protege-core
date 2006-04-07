@@ -91,6 +91,7 @@ public class Log {
             }
           } else {
             Log.getLogger().info("No log configuration file available");
+            Log.getLogger().setLevel(Level.CONFIG);
           }
         }
       } catch (Exception e) {
@@ -568,6 +569,12 @@ public class Log {
             }
         }
         return logger;
+    }
+    
+    public static void emptyCatchBlock(Throwable t) {
+    	if (getLogger().isLoggable(Level.FINE)) {
+    		getLogger().log(Level.FINE, "Exception Caught", t);
+    	}
     }
     
     public static Logger getLogger(Class c) {
