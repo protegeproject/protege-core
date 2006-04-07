@@ -90,7 +90,9 @@ public class Log {
               System.out.println("Configuration done by util.Log class ");
             }
           } else {
-            Log.getLogger().info("No log configuration file available");
+            if (Log.getLogger().isLoggable(Level.FINE)) {
+              Log.getLogger().fine("No log configuration file available");
+            }
             Log.getLogger().setLevel(Level.CONFIG);
           }
         }
