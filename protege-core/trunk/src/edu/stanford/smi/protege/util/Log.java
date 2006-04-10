@@ -65,8 +65,10 @@ public class Log {
     private static boolean configuredByFile = false;
     
     static {
+      boolean configured = false;
       String logProperty = ApplicationProperties.LOG_FILE_PROPERTY;
-      String rootDir = System.getProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
+      //String rootDir = System.getProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
+      String rootDir = ApplicationProperties.getApplicationDirectory().getAbsolutePath();
       try {
         if (System.getProperty(logProperty) != null) {
           if (debug) {
@@ -74,6 +76,7 @@ public class Log {
           }
           // already configured...
           configuredByFile = true;
+          configured = true;
         } else if (rootDir != null) {
           File logconfig = new File(rootDir + File.separator + "logging.properties");
           if (debug) {
@@ -86,18 +89,20 @@ public class Log {
             System.setProperty(logProperty, logconfig.getAbsolutePath());
             LogManager.getLogManager().readConfiguration();
             configuredByFile = true;
+            configured = true;
             if (debug) {
               System.out.println("Configuration done by util.Log class ");
             }
-          } else {
-            if (Log.getLogger().isLoggable(Level.FINE)) {
-              Log.getLogger().fine("No log configuration file available");
-            }
-            Log.getLogger().setLevel(Level.CONFIG);
           }
         }
       } catch (Exception e) {
         Log.getLogger().log(Level.WARNING, "Could not set up class specific logging", e);
+      }
+      if (!configured) {
+    	  if (debug) {
+    		  System.out.println("using default configuration.");
+    	  }
+          Log.getLogger().setLevel(Level.CONFIG);
       }
       // Example of programatic level setting
       // Logger.getLogger("edu.stanford.smi.protege.model.framestore").setLevel(Level.FINEST);
