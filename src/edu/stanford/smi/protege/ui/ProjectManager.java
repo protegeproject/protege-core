@@ -21,7 +21,6 @@ import java.util.logging.Level;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -422,7 +421,7 @@ public class ProjectManager {
 
     //TODO: check if condition is correct
     private boolean hasLoadedProject() {
-        return (_currentProject != null && _currentProject.getProjectInstance() != null && _currentProject.getKnowledgeBaseFactory() != null);
+        return (_currentProject != null && _currentProject.getProjectInstance() != null && _currentProject.getKnowledgeBase() != null);
     }
 
     public void changeIncludedProjectURIsRequest(Collection includedProjectURIs) {
@@ -525,7 +524,7 @@ public class ProjectManager {
         }
         
         displayErrors("Load Project Errors", errors);
-        if (_currentProject != null && _currentProject.getProjectInstance() != null && _currentProject.getKnowledgeBaseFactory() != null) {
+        if (_currentProject != null && _currentProject.getProjectInstance() != null  && _currentProject.getKnowledgeBase() != null) {
             displayCurrentProject();
             printLoadTimes(t1, t2);
         }
@@ -629,7 +628,7 @@ public class ProjectManager {
         if (closeProjectRequest()) {
             _currentProject = getRequestedProject(parent);
             //check condition
-            if (_currentProject != null && _currentProject.getProjectInstance() != null && _currentProject.getKnowledgeBaseFactory() != null) {
+            if (_currentProject != null && _currentProject.getProjectInstance() != null && _currentProject.getKnowledgeBase() != null) {
                 ApplicationProperties.addProjectToMRUList(_currentProject.getProjectURI());
                 long t1 = System.currentTimeMillis();
                 _projectPluginManager.afterLoad(_currentProject);
