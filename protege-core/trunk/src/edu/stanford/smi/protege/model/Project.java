@@ -308,7 +308,7 @@ public class Project {
         return p;
     }
 
-    private void createDomainKB(KnowledgeBaseFactory factory, Collection errors) {
+    private boolean createDomainKB(KnowledgeBaseFactory factory, Collection errors) {
         if (factory == null) {
             factory = getKnowledgeBaseFactory();
         }
@@ -316,7 +316,7 @@ public class Project {
         	String errorMsg = "Cannot find knowledgebase factory: " + getSources().getString(KnowledgeBaseFactory.FACTORY_CLASS_NAME) + "\nPlease check that you have the required plug-in.";
         	Log.getLogger().severe(errorMsg);
         	errors.add(errorMsg);
-        	return;
+        	return false;
         }
         _domainKB = factory.createKnowledgeBase(errors);
         Iterator i = getProjectSlotValues(SLOT_JAVA_PACKAGES).iterator();
@@ -327,6 +327,7 @@ public class Project {
         _domainKB.setProject(this);
         _frameCounts.updateSystemFrameCounts(_domainKB);
         setKnowledgeBaseFactory(factory);
+        return true;
     }
 
     /**
@@ -335,8 +336,9 @@ public class Project {
      */
     public void createDomainKnowledgeBase(KnowledgeBaseFactory factory, Collection errors,
             boolean load) {
-        createDomainKB(factory, errors);
-
+        if (!createDomainKB(factory, errors))
+        	return;
+        
         if (load) {
             MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(_domainKB);
             if (mnfs != null) {
@@ -348,11 +350,13 @@ public class Project {
                 mnfs.setQueryAllFrameStores(false);
             }
         }
-        _domainKB.addKnowledgeBaseListener(_knowledgeBaseListener);
-        loadCachedKnowledgeBaseObjects(_projectInstance);
-        _domainKB.setGenerateEventsEnabled(true);
-        _domainKB.setChanged(false);
-        _projectKB.setChanged(false);
+        
+       	_domainKB.addKnowledgeBaseListener(_knowledgeBaseListener);
+       	loadCachedKnowledgeBaseObjects(_projectInstance);
+       	_domainKB.setGenerateEventsEnabled(true);
+       	_domainKB.setChanged(false);
+       	_projectKB.setChanged(false);
+        
     }
 
     /*
