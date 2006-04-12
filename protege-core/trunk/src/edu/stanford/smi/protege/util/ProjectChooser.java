@@ -29,6 +29,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
@@ -274,18 +275,32 @@ public class ProjectChooser extends JFileChooser {
         return RemoteProjectManager.getInstance().getServerProject(this, server, session);
     }
 
+    //this method should be unified with the same method in ProjectManager
     private Project loadProject(URI uri) {
-        Project project;
+        Project project = null;
         Collection errors = new ArrayList();
         long t1 = System.currentTimeMillis();
         WaitCursor waitCursor = new WaitCursor(this);
         try {
             project = Project.loadProjectFromURI(uri, errors);
-        } finally {
+        } catch (Exception e) {
+            Log.getLogger().log(Level.SEVERE, "Error loading project kb", e);
+            errors.add(e);
+        }  finally {
             waitCursor.hide();
         }
         long t2 = System.currentTimeMillis();
         Log.getLogger().info("Project load time for " + uri + ": " + (t2 - t1) / 1000 + " sec");
+        
+        //TODO: reimplement this when exception handling is improved. Handle here invalid project files 
+        if (project != null && project.getProjectInstance() == null) {
+        	String errorMsg = "Unable to load file: " + uri
+					+ "\nPossible reasons:\n- The file has an unsupported file format\n- The file is not well-formed\n- The project file is corrupt";
+        	Log.getLogger().severe(errorMsg);
+        	errors.add(errorMsg);
+        	JOptionPane.showMessageDialog(ProjectManager.getProjectManager().getMainPanel(), errorMsg, "Invalid project file", JOptionPane.WARNING_MESSAGE);
+        }
+        
         ProjectManager.getProjectManager().displayErrors("Load Project Errors", errors);
         return project;
     }
