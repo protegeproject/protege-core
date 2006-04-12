@@ -16,15 +16,18 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JToolBar;
@@ -237,7 +240,13 @@ public class ProjectManager {
     }
 
     private boolean closeCurrentProject() {
-        boolean succeeded = getCurrentProjectView().canClose();
+    	ProjectView prjView = getCurrentProjectView();
+    	
+    	//this should not be the case    	
+    	if (prjView == null)
+    		return true;
+    	
+        boolean succeeded = prjView.canClose();
         if (succeeded) {
             _projectPluginManager.beforeHide(_projectView, _mainToolBar, _menuBar);
             _projectView.setVisible(false);
@@ -411,8 +420,9 @@ public class ProjectManager {
         return project;
     }
 
+    //TODO: check if condition is correct
     private boolean hasLoadedProject() {
-        return _currentProject != null;
+        return (_currentProject != null && _currentProject.getProjectInstance() != null && _currentProject.getKnowledgeBaseFactory() != null);
     }
 
     public void changeIncludedProjectURIsRequest(Collection includedProjectURIs) {
@@ -504,13 +514,24 @@ public class ProjectManager {
             waitCursor.hide();
         }
         long t2 = System.currentTimeMillis();
-
+        
+        //TODO: reimplement this when exception handling is improved. Handle here invalid project files 
+        if (_currentProject.getProjectInstance() == null) {
+        	String errorMsg = "Unable to load file: " + uri 
+        			+ "\nPossible reasons:\n- The file has an unsupported file format\n- The file is not well-formed\n- The project file is corrupt";
+        	Log.getLogger().severe(errorMsg);
+        	errors.add(errorMsg);
+        	JOptionPane.showMessageDialog(getMainPanel(), errorMsg, "Invalid file", JOptionPane.WARNING_MESSAGE);
+        }
+        
         displayErrors("Load Project Errors", errors);
-        if (_currentProject != null) {
+        if (_currentProject != null && _currentProject.getProjectInstance() != null && _currentProject.getKnowledgeBaseFactory() != null) {
             displayCurrentProject();
             printLoadTimes(t1, t2);
         }
-        bringErrorFrameToFront();
+        
+        //it is not clear that this is needed
+        //bringErrorFrameToFront();
     }
 
     private Project createNewProject(KnowledgeBaseFactory factory, Collection errors) {
@@ -524,7 +545,8 @@ public class ProjectManager {
         try {
             project = Project.loadProjectFromURI(uri, errors);
             _projectPluginManager.afterLoad(project);
-        } catch (Exception e) {
+        } catch (Exception e) {        	 
+            Log.getLogger().log(Level.FINE, "Error loading project", e);
             errors.add(e);
         }
         return project;
@@ -606,7 +628,8 @@ public class ProjectManager {
     public boolean openProjectRequest(Component parent) {
         if (closeProjectRequest()) {
             _currentProject = getRequestedProject(parent);
-            if (_currentProject != null) {
+            //check condition
+            if (_currentProject != null && _currentProject.getProjectInstance() != null && _currentProject.getKnowledgeBaseFactory() != null) {
                 ApplicationProperties.addProjectToMRUList(_currentProject.getProjectURI());
                 long t1 = System.currentTimeMillis();
                 _projectPluginManager.afterLoad(_currentProject);
