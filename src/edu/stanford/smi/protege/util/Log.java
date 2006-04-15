@@ -68,7 +68,10 @@ public class Log {
       boolean configured = false;
       String logProperty = ApplicationProperties.LOG_FILE_PROPERTY;
       //String rootDir = System.getProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
-      String rootDir = ApplicationProperties.getApplicationDirectory().getAbsolutePath();
+      //String rootDir = ApplicationProperties.getApplicationDirectory().getAbsolutePath();
+      //this call avoids premature initialization of ApplicationProperties and SystemUtilities which caused other initializatino problems (look and feel)
+      //TODO: find a better way to do the initialization
+      String rootDir = getApplicationDirectory().getAbsolutePath();
       try {
         if (System.getProperty(logProperty) != null) {
           if (debug) {
@@ -645,5 +648,25 @@ public class Log {
             fileHandler.setLevel(Level.ALL);
         }
         return fileHandler;
+    }
+    
+   
+    private static File getApplicationDirectory() {
+        String dir = getSystemProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
+        if (dir == null) {
+            dir = getSystemProperty(ApplicationProperties.CURRENT_WORKING_DIRECTORY);
+        }
+        return dir == null ? null : new File(dir);
+    }
+    
+    
+    private static String getSystemProperty(String property) {
+        String value;
+        try {
+            value = System.getProperty(property);
+        } catch (SecurityException e) {
+            value = null;
+        }
+        return value;
     }
 }
