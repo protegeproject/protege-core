@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +28,11 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
-import edu.stanford.smi.protege.server.Registration;
 import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
+import edu.stanford.smi.protege.server.framestore.background.FrameEvaluationEvent;
+import edu.stanford.smi.protege.server.util.FifoReader;
+import edu.stanford.smi.protege.server.util.FifoWriter;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
@@ -40,27 +41,39 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private static transient Logger log = Log.getLogger(ServerFrameStore.class);
   
     private FrameStore _delegate;
-    private FrameStore _wrappedDelegate;
     private KnowledgeBase _kb;
-    private List _events = new ArrayList();
+    private FifoWriter<ServerEventWrapper> _eventWriter = new FifoWriter<ServerEventWrapper>();
     private Map<RemoteSession, Registration> _sessionToRegistrationMap 
       = new HashMap<RemoteSession, Registration>();
     private boolean _isDirty;
+    private Object _kbLock;
+
+    private static Map<Thread,RemoteSession> sessionMap = new HashMap<Thread, RemoteSession>();
+    
+    private FrameCalculator frameCalculator;
+
     private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
-    private static final int MAX_VALUES = 20;
     private static final int MIN_PRELOAD_FRAMES = Integer.getInteger("preload.frame.limit", 5000).intValue();
     /*
-     * A performance hack Indentical copies of the same sft are reduced to the same object so that only a single copy
+     * A performance hack Identical copies of the same sft are reduced to the same object so that only a single copy
      * needs to be sent over the wire.
      */
     private Map<Sft,Sft> sftMap = new HashMap<Sft,Sft>();
 
     
     //ESCA-JAVA0160 
-    public ServerFrameStore(FrameStore delegate, KnowledgeBase kb) throws RemoteException {
+    public ServerFrameStore(FrameStore delegate, 
+                            KnowledgeBase kb,
+                            Object kbLock) throws RemoteException {
         _delegate = delegate;
         _kb = kb;
+        _kbLock = kbLock;
         kb.setDispatchEventsEnabled(false);
+        frameCalculator = new FrameCalculator(_delegate, 
+                                              _kbLock, 
+                                              _eventWriter, 
+                                              _sessionToRegistrationMap);
+        frameCalculator.start();
         // kb.setJournalingEnabled(true);
         if (DELAY_MSEC != 0) {
             //used for simulating slow network response time
@@ -72,9 +85,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return _delegate;
     }
 
-    private int nDelayedCalls = 0;
+    private static int nDelayedCalls = 0;
 
-    private void delay() {
+    private static void delay() {
         if (DELAY_MSEC != 0) {
             SystemUtilities.sleepMsec(DELAY_MSEC);
             if (++nDelayedCalls % 10 == 0) {
@@ -83,490 +96,715 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
     }
 
-    private static RemoteSession currentSession;
-
-    private void recordCall(RemoteSession session) {
+    public static void recordCall(RemoteSession session) {
         delay();
-        currentSession = session;
+        synchronized(sessionMap) {
+          sessionMap.put(Thread.currentThread(), session);
+        }
     }
 
     public static RemoteSession getCurrentSession() {
-        return currentSession;
+      synchronized(sessionMap) {
+        return sessionMap.get(Thread.currentThread());
+      }
     }
 
-    public synchronized int getClsCount(RemoteSession session) {
-        recordCall(session);
+    public int getClsCount(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getClsCount();
+      }
     }
 
-    public synchronized int getSlotCount(RemoteSession session) {
-        recordCall(session);
+    public int getSlotCount(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getSlotCount();
+      }
     }
 
-    public synchronized int getFacetCount(RemoteSession session) {
-        recordCall(session);
+    public int getFacetCount(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getFacetCount();
+      }
     }
 
-    public synchronized int getSimpleInstanceCount(RemoteSession session) {
-        recordCall(session);
+    public int getSimpleInstanceCount(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getSimpleInstanceCount();
+      }
     }
 
-    public synchronized int getFrameCount(RemoteSession session) {
-        recordCall(session);
+    public int getFrameCount(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getFrameCount();
+      }
     }
 
-    public synchronized List getDirectTemplateSlots(Cls cls, RemoteSession session) {
-        recordCall(session);
+    public List getDirectTemplateSlots(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getDirectTemplateSlots(cls);
+      }
     }
 
-    public synchronized void removeDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate removeDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().removeDirectTemplateSlot(cls, slot);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void moveDirectTemplateSlot(Cls cls, Slot slot, int index, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate moveDirectTemplateSlot(Cls cls, Slot slot, int index, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().moveDirectTemplateSlot(cls, slot, index);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void addDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate addDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().addDirectSuperclass(cls, superclass);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void removeDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate removeDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().removeDirectSuperslot(slot, superslot);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void removeDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate removeDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().removeDirectSuperclass(cls, superclass);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void moveDirectSubclass(Cls cls, Cls subclass, int index, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate moveDirectSubclass(Cls cls, Cls subclass, int index, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().moveDirectSubclass(cls, subclass, index);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized List getDirectTemplateSlotValues(Cls cls, Slot slot, RemoteSession session) {
-        recordCall(session);
-        return getDelegate().getDirectTemplateSlotValues(cls, slot);
+    public RemoteResponse<List> getDirectTemplateSlotValues(Cls cls, Slot slot, RemoteSession session) {
+      recordCall(session);
+      frameCalculator.addRequest(cls, session);
+      synchronized(_kbLock) {
+        List values = getDelegate().getDirectTemplateSlotValues(cls, slot);
+        return new RemoteResponse<List>(values, getEvents(session));
+      }
     }
 
-    public synchronized Set getSuperslots(Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Set getSuperslots(Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getSuperslots(slot);
+      }
     }
 
-    public synchronized Set getOwnSlots(Frame frame, RemoteSession session) {
-        recordCall(session);
+    public Set<Slot> getOwnSlots(Frame frame, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getOwnSlots(frame);
+      }
     }
 
-    public synchronized Set getInstances(Cls cls, RemoteSession session) {
-        recordCall(session);
+    public Set getInstances(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getInstances(cls);
+      }
     }
 
-    public synchronized Set getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) {
-        recordCall(session);
+    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
+      }
     }
 
-    public synchronized Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value, RemoteSession session) {
-        recordCall(session);
+    public Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getClsesWithDirectTemplateSlotValue(slot, value);
+      }
     }
 
-    public synchronized Set getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value,
+    public Set getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value,
             RemoteSession session) {
-        recordCall(session);
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getClsesWithDirectTemplateFacetValue(slot, facet, value);
+      }
     }
 
-    public synchronized Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches,
+    public Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches,
             RemoteSession session) {
-        recordCall(session);
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches);
+      }
     }
 
-    public synchronized Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value,
+    public Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value,
             int maxMatches, RemoteSession session) {
-        recordCall(session);
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getClsesWithMatchingDirectTemplateFacetValue(slot, facet, value, maxMatches);
+      }
     }
 
-    public synchronized Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches,
+    public Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches,
             RemoteSession session) {
-        recordCall(session);
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getClsesWithMatchingDirectTemplateSlotValue(slot, value, maxMatches);
+      }
     }
 
-    public synchronized List getDirectSuperclasses(Cls cls, RemoteSession session) {
-        recordCall(session);
+    public List getDirectSuperclasses(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getDirectSuperclasses(cls);
+      }
     }
 
-    public synchronized Collection getTemplateSlotValues(Cls cls, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Collection getTemplateSlotValues(Cls cls, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getTemplateSlotValues(cls, slot);
+      }
     }
 
-    public synchronized List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) {
-        recordCall(session);
-        return getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
+    public RemoteResponse<List> getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) {
+      recordCall(session);
+      frameCalculator.addRequest(cls, session);
+      synchronized(_kbLock) {
+        List values = getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
+        return new RemoteResponse<List>(values, getEvents(session));
+      }
     }
 
-    public synchronized Set getClses(RemoteSession session) {
-        recordCall(session);
+    public Set<Cls> getClses(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getClses();
+      }
     }
 
-    public synchronized Set getTemplateFacets(Cls cls, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Set<Facet> getTemplateFacets(Cls cls, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getTemplateFacets(cls, slot);
+      }
     }
 
-    public synchronized Frame getFrame(String name, RemoteSession session) {
-        recordCall(session);
-        return getDelegate().getFrame(name);
+    public RemoteResponse<Frame> getFrame(String name, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
+        Frame frame = getDelegate().getFrame(name);
+        return new RemoteResponse(frame, getEvents(session));
+      }
     }
 
-    public synchronized Frame getFrame(FrameID id, RemoteSession session) {
-        recordCall(session);
+    public Frame getFrame(FrameID id, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getFrame(id);
+      }
     }
 
-    public synchronized Collection getOwnSlotValues(Frame frame, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Collection getOwnSlotValues(Frame frame, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getOwnSlotValues(frame, slot);
+      }
     }
 
-    public synchronized int getDirectOwnSlotValuesCount(Frame frame, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public int getDirectOwnSlotValuesCount(Frame frame, Slot slot, RemoteSession session) {
+      recordCall(session);
+      frameCalculator.addRequest(frame, session);
+      synchronized(_kbLock) {
         return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
+      }
     }
 
-    public synchronized List getDirectOwnSlotValues(Frame frame, Slot slot, RemoteSession session) {
+    public RemoteResponse<List> getDirectOwnSlotValues(Frame frame, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         if (log.isLoggable(Level.FINE)) {
           log.fine("getDirectOwnSlotValues for frame " + frame.getFrameID() + " slot " + slot.getFrameID());
         }
-        recordCall(session);
-        return getDelegate().getDirectOwnSlotValues(frame, slot);
+        LocalizeUtils.localize(frame, _kb);
+        List values = getDelegate().getDirectOwnSlotValues(frame, slot);
+        frameCalculator.addRequest(frame, session);
+        if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES)) {
+          for (Object o : values) {
+            if (o instanceof Frame) {
+              frameCalculator.addRequest((Frame) o, session);
+            }
+          }
+        }
+        return new RemoteResponse<List>(values, getEvents(session));
+      }
     }
 
-    public synchronized List getDirectInstances(Cls cls, RemoteSession session) {
-        recordCall(session);
+    public List getDirectInstances(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getDirectInstances(cls);
+      }
     }
 
-    public synchronized Set getSubclasses(Cls cls, RemoteSession session) {
-        recordCall(session);
-        return getDelegate().getSubclasses(cls);
+    public Set<Cls> getSubclasses(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
+        Set<Cls> subclasses = getDelegate().getSubclasses(cls);
+        for (Cls subclass : subclasses) {
+          frameCalculator.addRequest(subclass, session);
+        }
+        return subclasses;
+      }
     }
 
-    public synchronized Set getSlots(RemoteSession session) {
-        recordCall(session);
+    public Set<Slot> getSlots(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getSlots();
+      }
     }
 
-    public synchronized Set getSuperclasses(Cls cls, RemoteSession session) {
-        recordCall(session);
+    public Set getSuperclasses(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getSuperclasses(cls);
+      }
     }
 
-    public synchronized Set getSubslots(Slot slot, RemoteSession session) {
+    public Set getSubslots(Slot slot, RemoteSession session) {
+      synchronized(_kbLock) {
         return getDelegate().getSubslots(slot);
+      }
     }
 
-    public synchronized void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values,
+    public ValueUpdate setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values,
             RemoteSession session) {
-        recordCall(session);
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaults,
+    public RemoteResponse<Facet> createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaults,
             RemoteSession session) {
-        recordCall(session);
+      recordCall(session);
+      synchronized(_kbLock) {
         markDirty();
-        return getDelegate().createFacet(id, name, directTypes, loadDefaults);
+        Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaults);
+        return new RemoteResponse<Facet>(facet, getEvents(session));
+      }
     }
 
-    public synchronized List getDirectSubclasses(Cls cls, RemoteSession session) {
-        recordCall(session);
-        return getDelegate().getDirectSubclasses(cls);
+    public List<Cls> getDirectSubclasses(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
+        List<Cls> subclasses = getDelegate().getDirectSubclasses(cls);
+        for (Cls subclass : subclasses) {
+          frameCalculator.addRequest(subclass, session);
+        }
+        return subclasses;
+      }
     }
 
-    public synchronized Set getFrames(RemoteSession session) {
-        recordCall(session);
+    public Set<Frame> getFrames(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getFrames();
+      }
     }
 
-    public synchronized void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         markDirty();
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized Set getTypes(Instance instance, RemoteSession session) {
-        recordCall(session);
+    public Set getTypes(Instance instance, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getTypes(instance);
+      }
     }
 
-    public synchronized Set getTemplateSlots(Cls cls, RemoteSession session) {
-        recordCall(session);
+    public Set getTemplateSlots(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getTemplateSlots(cls);
+      }
     }
 
-    public synchronized Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) {
-        recordCall(session);
+    public Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getTemplateFacetValues(cls, slot, facet);
+      }
     }
 
-    public synchronized void deleteCls(Cls cls, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate deleteCls(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().deleteCls(cls);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void deleteSlot(Slot slot, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate deleteSlot(Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().deleteSlot(slot);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void deleteFacet(Facet facet, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate deleteFacet(Facet facet, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().deleteFacet(facet);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void deleteSimpleInstance(SimpleInstance simpleInstance, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate deleteSimpleInstance(SimpleInstance simpleInstance, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().deleteSimpleInstance(simpleInstance);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
-            boolean loadDefaults, RemoteSession session) {
-        recordCall(session);
+  public RemoteResponse<Slot> createSlot(FrameID id, String name, Collection directTypes,
+                                 Collection directSuperslots,
+                                 boolean loadDefaults, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         markDirty();
-        return getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
+        Slot slot =  getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
+        return new RemoteResponse<Slot>(slot, getEvents(session));
+      }
     }
 
-    public synchronized List getDirectTypes(Instance instance, RemoteSession session) {
-        recordCall(session);
+    public List getDirectTypes(Instance instance, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getDirectTypes(instance);
+      }
     }
 
-    public synchronized List getDirectSubslots(Slot slot, RemoteSession session) {
-        recordCall(session);
+    public List getDirectSubslots(Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getDirectSubslots(slot);
+      }
     }
 
-    public synchronized void addDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate addDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().addDirectSuperslot(slot, superslot);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void addDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate addDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().addDirectTemplateSlot(cls, slot);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().moveDirectOwnSlotValue(frame, slot, from, to);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate setDirectOwnSlotValues(Frame frame, Slot slot, Collection values, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+    public RemoteResponse<Cls> createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaults, RemoteSession session) {
-        recordCall(session);
+      recordCall(session);
+      synchronized(_kbLock) {
         markDirty();
-        return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
+        Cls cls = getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
+        return new RemoteResponse(cls, getEvents(session));
+      }
     }
 
-    public synchronized Set getFacets(RemoteSession session) {
-        recordCall(session);
+    public Set<Facet> getFacets(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getFacets();
+      }
     }
 
-    public synchronized Set executeQuery(Query query, RemoteSession session) {
-        recordCall(session);
+    public Set executeQuery(Query query, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().executeQuery(query);
+      }
     }
 
-    public synchronized void removeDirectType(Instance instance, Cls directType, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate removeDirectType(Instance instance, Cls directType, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().removeDirectType(instance, directType);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized Set getReferences(Object value, RemoteSession session) {
-        recordCall(session);
+    public Set getReferences(Object value, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getReferences(value);
+      }
     }
 
-    public synchronized Set getMatchingReferences(String value, int maxMatches, RemoteSession session) {
-        recordCall(session);
+    public Set getMatchingReferences(String value, int maxMatches, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getMatchingReferences(value, maxMatches);
+      }
     }
 
-    public synchronized Set getClsesWithMatchingBrowserText(String value, Collection superclasses, int maxMatches,
+    public Set getClsesWithMatchingBrowserText(String value, Collection superclasses, int maxMatches,
             RemoteSession session) {
-        recordCall(session);
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getClsesWithMatchingBrowserText(value, superclasses, maxMatches);
+      }
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
+    public RemoteResponse<SimpleInstance> createSimpleInstance(FrameID id, String name, Collection directTypes,
             boolean loadDefaults, RemoteSession session) {
-        recordCall(session);
+      recordCall(session);
+      synchronized(_kbLock) {
         markDirty();
-        return getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
+        SimpleInstance si = getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
+        return new RemoteResponse(si, getEvents(session));
+      }
     }
 
-    public synchronized void addDirectType(Instance instance, Cls type, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate addDirectType(Instance instance, Cls type, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().addDirectType(instance, type);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void moveDirectType(Instance instance, Cls cls, int index, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate moveDirectType(Instance instance, Cls cls, int index, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().moveDirectType(instance, cls, index);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized List getDirectSuperslots(Slot slot, RemoteSession session) {
-        recordCall(session);
+    public List getDirectSuperslots(Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getDirectSuperslots(slot);
+      }
     }
 
-    public synchronized String getFrameName(Frame frame, RemoteSession session) {
-        recordCall(session);
+    public String getFrameName(Frame frame, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getFrameName(frame);
+      }
     }
 
-    public synchronized void setFrameName(Frame frame, String name, RemoteSession session) {
-        recordCall(session);
-        getDelegate().setFrameName(frame, name);
-        markDirty();
+    public ValueUpdate setFrameName(Frame frame, String name, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
+          getDelegate().setFrameName(frame, name);
+          markDirty();
+          return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized Set getOwnFacets(Frame frame, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Set getOwnFacets(Frame frame, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getOwnFacets(frame, slot);
+      }
     }
 
-    public synchronized Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet, RemoteSession session) {
-        recordCall(session);
+    public Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getOwnFacetValues(frame, slot, facet);
+      }
     }
 
-    public synchronized Set getOverriddenTemplateSlots(Cls cls, RemoteSession session) {
-        recordCall(session);
+    public Set getOverriddenTemplateSlots(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getOverriddenTemplateSlots(cls);
+      }
     }
 
-    public synchronized Set getDirectlyOverriddenTemplateSlots(Cls cls, RemoteSession session) {
-        recordCall(session);
+    public Set getDirectlyOverriddenTemplateSlots(Cls cls, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getDirectlyOverriddenTemplateSlots(cls);
+      }
     }
 
-    public synchronized Set getOverriddenTemplateFacets(Cls cls, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Set getOverriddenTemplateFacets(Cls cls, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getOverriddenTemplateFacets(cls, slot);
+      }
     }
 
-    public synchronized Set getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Set getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getOverriddenTemplateFacets(cls, slot);
+      }
     }
 
-    public synchronized void removeDirectTemplateFacetOverrides(Cls cls, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate removeDirectTemplateFacetOverrides(Cls cls, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().removeDirectTemplateFacetOverrides(cls, slot);
         markDirty();
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized void close(RemoteSession session) {
-        recordCall(session);
+    public void close(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         // do nothing
+      }
     }
 
-    public synchronized void register(RemoteSession session) {
-        Registration registration = new Registration(_events.size());
+    public void register(RemoteSession session) {
+      synchronized(_kbLock) {
+        Registration registration = new Registration(_eventWriter);
         _sessionToRegistrationMap.put(session, registration);
+      }
+    }
+    
+    public void deregister(RemoteSession session) {
+      synchronized(_kbLock) {
+        _sessionToRegistrationMap.remove(session);
+        if (_sessionToRegistrationMap.isEmpty()) {
+          frameCalculator.dispose();
+        }
+      }
     }
 
     public String toString() {
         return "ServerFrameStoreImpl";
     }
 
-    public synchronized List<EventObject> getEvents(RemoteSession session) {
-        recordCall(session);
-        List events;
-        List newEvents = getDelegate().getEvents();
-        if (session == null) {
-            events = newEvents;
-        } else {
-            _events.addAll(newEvents);
-            Registration reg = _sessionToRegistrationMap.get(session);
-            if (reg == null) {
-                throw new IllegalStateException("Not registered");
-            }
-            int lastEvent = reg.getLastEvent();
-            int size = _events.size();
-            reg.setLastEvent(size);
-            if (lastEvent == size) {
-                events = Collections.EMPTY_LIST;
-            } else {
-                events = new ArrayList(_events.subList(lastEvent, size));
-                if (log.isLoggable(Level.FINE)) {
-                  log.fine("" + session + " events=" + events);
-                }
-            }
+    public List<EventObject> getEvents(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
+        for (EventObject eo : getDelegate().getEvents()) {
+          _eventWriter.write(new ServerEventWrapper(eo));
         }
-        // edu.stanford.smi.protege.util.Log.enter(this, "getEvents", session,
-        // events);
+        List<EventObject> events = new ArrayList<EventObject>();
+        Registration reg = _sessionToRegistrationMap.get(session);
+        if (reg == null) {
+          throw new IllegalStateException("Not registered");
+        }
+        FifoReader<ServerEventWrapper> clientEvents = reg.getEvents();
+        ServerEventWrapper eventWrapper;
+        while ((eventWrapper = clientEvents.read()) != null) {
+          EventObject event = eventWrapper.getEvent();
+          if (log.isLoggable(Level.FINEST)) {
+            log.finest("Found event " + event);
+          }
+          if (event instanceof FrameEvaluationEvent) {
+            FrameEvaluationEvent frameValue = (FrameEvaluationEvent) event;
+            if (frameCalculator.checkInterest(frameValue, session)) {
+              events.add(frameValue);
+            }
+          } else {
+            events.add(eventWrapper.getEvent());
+          }
+        }
         return events;
+      }
     }
     
-    public synchronized boolean beginTransaction(String name, RemoteSession session) {
-        recordCall(session);
+    public boolean beginTransaction(String name, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().beginTransaction(name);
+      }
     }
 
-    public synchronized boolean commitTransaction(RemoteSession session) {
-        recordCall(session);
+    public boolean commitTransaction(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().commitTransaction();
+      }
     }
 
-    public synchronized boolean rollbackTransaction(RemoteSession session) {
-        recordCall(session);
+    public boolean rollbackTransaction(RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().rollbackTransaction();
+      }
     }
 
     public boolean isDirty() {
@@ -581,147 +819,47 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         _isDirty = false;
     }
 
-    public synchronized List getDirectDomain(Slot slot, RemoteSession session) {
-        recordCall(session);
+    public List getDirectDomain(Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getDirectDomain(slot);
+      }
     }
 
-    public synchronized Set getDomain(Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Set getDomain(Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getDomain(slot);
+      }
     }
 
-    public synchronized void moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session) {
-        recordCall(session);
+    public ValueUpdate moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         getDelegate().moveDirectSubslot(slot, subslot, index);
+        return new ValueUpdate(getEvents(session));
+      }
     }
 
-    public synchronized Set getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
+      }
     }
 
-    public synchronized Set getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
+      }
     }
 
-    public synchronized Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot, RemoteSession session) {
-        recordCall(session);
+    public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot, RemoteSession session) {
+      recordCall(session);
+      synchronized(_kbLock) {
         return getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
-    }
-
-    private static final int LIMIT = 100;
-
-    // add siblings
-    private Collection supplementFrames(Collection frames) {
-        Collection allFrames = frames;
-        if (frames.size() == 1) {
-            Object frame = CollectionUtilities.getFirstItem(frames);
-            if (frame instanceof Cls) {
-                Cls cls = (Cls) frame;
-                Cls superclass = (Cls) CollectionUtilities.getFirstItem(getDelegate().getDirectSuperclasses(cls));
-                if (superclass != null) {
-                    Slot directSubclassesSlot = (Slot) getDelegate().getFrame(Model.Slot.DIRECT_SUBCLASSES);
-                    allFrames = new LinkedHashSet(frames);
-                    if (getDelegate().getDirectOwnSlotValuesCount(superclass, directSubclassesSlot) < LIMIT) {
-                        Collection subclasses = getDelegate().getDirectSubclasses(superclass);
-                        allFrames.addAll(subclasses);
-                    }
-                }
-            }
-            if (allFrames.size() != 1) {
-                // Log.trace("Supplemented " + frame + " with " + allFrames, this, "allFrames");
-            }
-        }
-        return allFrames;
-    }
-
-    public synchronized Map getFrameValues(Collection frames, RemoteSession session) {
-        long start = 0;
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("calling getFrameValues");
-          start = System.currentTimeMillis();
-        }
-        
-        recordCall(session);
-        Map result =  getFrameValues(frames, false);
-        
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("getFrameValues took " + (System.currentTimeMillis() - start) + " milliseconds");
-        }
-        
-        return result;
-    }
-
-    private void localize(Collection frames) {
-        LocalizeUtils.localize(frames, _kb);
-    }
-
-    private Map getFrameValues(Collection frames, boolean includeAllSlots) {
-        localize(frames);
-        frames = supplementFrames(frames);
-        if (log.isLoggable(Level.FINER)) {
-          log.fine(_kb.getName() + " getFrameValues: " + CollectionUtilities.toString(frames));
-        }
-        HashMap map = new LinkedHashMap();
-        Iterator i = frames.iterator();
-        while (i.hasNext()) {
-            Frame frame = (Frame) i.next();
-            long startTime = 0;
-            if (log.isLoggable(Level.FINE)) {
-              startTime = System.currentTimeMillis();
-              log.fine("Started getting values for frame (" + frame.getFrameID() + ")");
-            }
-            Map sftValues = (Map) map.get(frame);
-            if (sftValues == null) {
-                sftValues = new LinkedHashMap();
-                map.put(frame, sftValues);
-            }
-            insertOwnSlots(sftValues, frame, includeAllSlots);
-            if (frame instanceof Cls) {
-                insertTemplateValues(sftValues, (Cls) frame);
-            }
-            if (log.isLoggable(Level.FINE)) {
-              log.fine("Got frame value in " + (System.currentTimeMillis() - startTime) + " milliseconds");
-            }
-        }
-        return map;
-    }
-
-    private void insertOwnSlots(Map sftValues, Frame frame, boolean includeAllSlots) {
-        Iterator i = getDelegate().getOwnSlots(frame).iterator();
-        while (i.hasNext()) {
-            Slot slot = (Slot) i.next();
-            int count = getDelegate().getDirectOwnSlotValuesCount(frame, slot);
-            if (includeAllSlots || count < MAX_VALUES) {
-                Collection values = getDelegate().getDirectOwnSlotValues(frame, slot);
-                insertValues(sftValues, slot, null, false, values);
-            } else {
-                insertNullValues(sftValues, slot, null, false);
-                // Log.trace("excluded values for " + slot, this,
-                // "insertOwnSlots", frame);
-            }
-        }
-    }
-
-    private void insertTemplateValues(Map sftValues, Cls cls) {
-        Iterator i = getDelegate().getTemplateSlots(cls).iterator();
-        while (i.hasNext()) {
-            Slot slot = (Slot) i.next();
-            Collection values = getDelegate().getDirectTemplateSlotValues(cls, slot);
-            insertValues(sftValues, slot, null, true, values);
-            insertFacets(sftValues, cls, slot);
-        }
-    }
-
-    private void insertFacets(Map sftValues, Cls cls, Slot slot) {
-        Iterator i = getDelegate().getTemplateFacets(cls, slot).iterator();
-        while (i.hasNext()) {
-            Facet facet = (Facet) i.next();
-            Collection values = getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
-            insertValues(sftValues, slot, facet, true, values);
-        }
+      }
     }
 
     /*
@@ -751,52 +889,82 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         insertValues(map, slot, facet, isTemplate, null);
     }
 
-    public synchronized Map preload(boolean all, RemoteSession session) {
-        recordCall(session);
-        Collection frames;
-        if (all || getDelegate().getFrameCount() < MIN_PRELOAD_FRAMES) {
-            frames = getDelegate().getFrames();
-        } else {
-            frames = new LinkedHashSet();
-            frames.addAll(getDelegate().getSlots());
-            frames.addAll(getDelegate().getFacets());
-            addHierarchy(frames, Model.Cls.ROOT_META_CLASS);
-            addHierarchy(frames, Model.Cls.CONSTRAINT);
-            addHierarchy(frames, Model.Cls.ANNOTATION);
-            addHierarchy(frames, Model.Cls.RELATION);
-            addFrame(frames, Model.Cls.SYSTEM_CLASS);
-            addRootHierarchy(frames, _kb.getRootCls());
-
-            Project p = _kb.getProject();
-            if (p != null) {
-                frames.addAll(p.getClsesWithCustomizedForms());
-                frames.addAll(p.getClsesWithDirectBrowserSlots());
-                frames.addAll(p.getHiddenFrames());
-            }
+    public RemoteResponse<List> preload(boolean all, RemoteSession session) {
+      recordCall(session);
+      Collection<Frame> frames;
+      int frameCount = 0;
+      synchronized (_kbLock) {
+        frameCount = getDelegate().getFrameCount();
+      }
+      if (all ||  frameCount < MIN_PRELOAD_FRAMES) {
+        synchronized (_kbLock) {
+          frames = getDelegate().getFrames();
         }
-        return getFrameValues(frames, all);
+      } else {
+        frames = new LinkedHashSet<Frame>();
+        synchronized (_kbLock) {
+          frames.addAll(getDelegate().getSlots());
+        }
+        synchronized (_kbLock) {
+          frames.addAll(getDelegate().getFacets());
+        }
+        addHierarchy(frames, Model.Cls.ROOT_META_CLASS);
+        addHierarchy(frames, Model.Cls.CONSTRAINT);
+        addHierarchy(frames, Model.Cls.ANNOTATION);
+        addHierarchy(frames, Model.Cls.RELATION);
+        addFrame(frames, Model.Cls.SYSTEM_CLASS);
+        addRootHierarchy(frames, _kb.getRootCls());
+        
+        Project p = _kb.getProject();
+        if (p != null) {
+          synchronized (_kbLock) {
+            frames.addAll(p.getClsesWithCustomizedForms());
+          }
+          synchronized (_kbLock) {
+            frames.addAll(p.getClsesWithDirectBrowserSlots());
+          }
+          synchronized (_kbLock) {
+            frames.addAll(p.getHiddenFrames());
+          }
+        }
+      }
+      frameCalculator.preLoadFrames(frames, session);
+      return new RemoteResponse<List>(null, getEvents(session));
     }
 
-    private void addFrame(Collection frames, String className) {
-        Cls cls = (Cls) getDelegate().getFrame(className);
-        frames.add(cls);
+    private void addFrame(Collection<Frame> frames, String className) {
+      Cls cls;
+      synchronized (_kbLock) {
+        cls = (Cls) getDelegate().getFrame(className);
+      }
+      frames.add(cls);
     }
 
-    private void addHierarchy(Collection frames, String className) {
-        Cls cls = (Cls) getDelegate().getFrame(className);
-        frames.add(cls);
+    private void addHierarchy(Collection<Frame> frames, String className) {
+      Cls cls;
+      synchronized (_kbLock) {
+        cls= (Cls) getDelegate().getFrame(className);
+      }
+      frames.add(cls);
+      synchronized (_kbLock) {
         frames.addAll(getDelegate().getSubclasses(cls));
+      }
     }
 
-    private void addRootHierarchy(Collection frames, Cls rootCls) {
-        frames.add(rootCls);
-        Iterator i = getDelegate().getDirectSubclasses(rootCls).iterator();
-        while (i.hasNext()) {
-            Cls subclass = (Cls) i.next();
-            if (!subclass.isSystem()) {
-                frames.add(subclass);
-                frames.addAll(getDelegate().getDirectSubclasses(subclass));
-            }
+    private void addRootHierarchy(Collection<Frame> frames, Cls rootCls) {
+      frames.add(rootCls);
+      Iterator<Cls> i;
+      synchronized (_kbLock) {
+        i = getDelegate().getDirectSubclasses(rootCls).iterator();
+      }
+      while (i.hasNext()) {
+        Cls subclass = i.next();
+        if (!subclass.isSystem()) {
+          frames.add(subclass);
+          synchronized (_kbLock) {
+            frames.addAll(getDelegate().getDirectSubclasses(subclass));
+          }
         }
+      }
     }
 }

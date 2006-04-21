@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 
@@ -44,6 +45,7 @@ import edu.stanford.smi.protege.util.Log;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class EventDispatchFrameStore extends ModificationFrameStore {
+    private static transient Logger log = Log.getLogger(EventDispatchFrameStore.class);
     //ESCA-JAVA0077 
     private static final int DELAY_MSEC = 5 * 1000;
     private Map _listeners = new HashMap();
@@ -700,6 +702,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                         Thread.sleep(DELAY_MSEC);
                     } catch (Exception e) {
                         Log.getLogger().warning(e.toString());
+                        log.log(Level.FINE, "Exception caught", e);
                     }
                 }
               } catch (Throwable t) {

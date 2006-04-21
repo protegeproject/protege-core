@@ -167,16 +167,6 @@ public class ProjectMenuBar extends JMenuBar {
         createItem(menu, new ExitApplication());
     }
 
-    private static void createItem(JMenu menu, String className) {
-        Action action = null;
-        Class clas = SystemUtilities.forName(className, true);
-        if (clas != null) {
-            action = (Action) SystemUtilities.newInstance(clas);
-        }
-        if (action != null) {
-            createItem(menu, action);
-        }
-    }
 
     private static void loadProjectMenu(JMenu menu) {
         createItem(menu, new ArchiveProject(false));

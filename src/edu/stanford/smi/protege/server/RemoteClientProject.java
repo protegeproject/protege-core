@@ -91,7 +91,7 @@ public class RemoteClientProject extends Project {
         FrameStore clientFrameStore
                = new RemoteClientFrameStore(serverFrameStore, session, kb, preloadAll);
         RemoteClientInvocationHandler rcif
-               = new RemoteClientInvocationHandler(kb, snfs);
+               = new RemoteClientInvocationHandler(kb, snfs, session);
         NarrowFrameStore clientNarrowFrameStore = rcif.getNarrowFrameStore();
 
         kb.setTerminalFrameStore(clientFrameStore);
@@ -190,12 +190,6 @@ public class RemoteClientProject extends Project {
     public boolean isDirty() {
         // changes are committed automatically so we are never dirty.
         return false;
-    }
-    
-    public NarrowFrameStore getRemoteNarrowFrameStore() throws RemoteException {
-      RemoteServerNarrowFrameStore rnfs = _serverProject.getDomainKbNarrowFrameStore();
-      RemoteClientInvocationHandler rcih = new RemoteClientInvocationHandler(getKnowledgeBase(), rnfs);
-      return rcih.getNarrowFrameStore();
     }
 
 }

@@ -26,7 +26,6 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
   private ValueCachingNarrowFrameStore delegate;
   private DatabaseFrameDb frameDb;
   private Map<Integer, String> includedIdCache = new HashMap<Integer, String>();
-  private int dbCallCounter = 0;
   
   private String tableName;
   
@@ -111,7 +110,6 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
       return name;
     }
     try {
-      Statement statement = frameDb.getCurrentConnection().getStatement();
       SelectStatement<Column> s = new SelectStatement<Column>(EnumSet.of(Column.frame_name));
       String cmd = s.toString() + " FROM " + tableName + " WHERE " 
       + Column.local_frame_id + " = " + localId.intValue();

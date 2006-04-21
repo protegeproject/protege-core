@@ -23,6 +23,7 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     private ServerFrameStore _domainKbFrameStore;
     private ServerFrameStore _projectKbFrameStore;
     private ServerNarrowFrameStore _domainKbNarrowFrameStore;
+    private Object _kbLock = new Object();
 
     public URI getURI(RemoteSession session) {
         return _uri;
@@ -40,22 +41,21 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         _server = server;
         _uri = uri;
         _project = project;
-        _domainKbFrameStore = createServerFrameStore(_project.getKnowledgeBase());
-        _projectKbFrameStore = createServerFrameStore(_project.getInternalProjectKnowledgeBase());
+        _domainKbFrameStore = createServerFrameStore(_project.getKnowledgeBase(), _kbLock);
+        _projectKbFrameStore = createServerFrameStore(_project.getInternalProjectKnowledgeBase(), _kbLock);
         _domainKbNarrowFrameStore = createServerNarrowFrameStore();
     }
 
-    private static ServerFrameStore createServerFrameStore(KnowledgeBase kb) throws RemoteException {
+    private static ServerFrameStore createServerFrameStore(KnowledgeBase kb, Object kbLock) throws RemoteException {
         FrameStore fs = ((DefaultKnowledgeBase) kb).getHeadFrameStore();
-        ServerFrameStore sfs = new ServerFrameStore(fs, kb);
-
+        ServerFrameStore sfs = new ServerFrameStore(fs, kb, kbLock);
         return sfs;
     }
     
     private ServerNarrowFrameStore createServerNarrowFrameStore() throws RemoteException {
       KnowledgeBase kb = _project.getKnowledgeBase();
       NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb);
-      return new ServerNarrowFrameStore(nfs, kb);
+      return new ServerNarrowFrameStore(nfs, kb, _kbLock);
     }
 
     public RemoteServerFrameStore getDomainKbFrameStore(RemoteSession session) {

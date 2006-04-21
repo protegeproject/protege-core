@@ -1,4 +1,4 @@
-; Thu Apr 13 09:29:26 PDT 2006
+; Thu Apr 13 09:37:48 PDT 2006
 ; 
 ;+ (version "3.2")
 ;+ (build "Build 316")
@@ -12,7 +12,28 @@
 ;+		(allowed-classes Group User)
 ;+		(inverse-slot groups)
 		(create-accessor read-write))
+	(single-slot KB_6760_00007
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(multislot readers
+		(type INSTANCE)
+;+		(allowed-classes Group User)
+		(create-accessor read-write))
 	(single-slot password
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(multislot writers
+		(type INSTANCE)
+;+		(allowed-classes Group User)
+		(create-accessor read-write))
+	(single-slot owner
+		(type INSTANCE)
+;+		(allowed-classes User)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot description
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
@@ -21,52 +42,28 @@
 ;+		(allowed-classes Group)
 ;+		(inverse-slot members)
 		(create-accessor read-write))
-	(multislot readers
-		(type INSTANCE)
-;+		(allowed-classes Group User)
-		(create-accessor read-write))
 	(single-slot KB_6760_00010
 		(type STRING)
-;+		(cardinality 0 1)
-		(create-accessor read-write))
-	(single-slot KB_6760_00007
-		(type STRING)
-;+		(cardinality 0 1)
-		(create-accessor read-write))
-	(single-slot description
-		(type STRING)
-;+		(cardinality 0 1)
-		(create-accessor read-write))
-	(single-slot location
-		(type STRING)
-;+		(cardinality 0 1)
-		(create-accessor read-write))
-	(single-slot owner
-		(type INSTANCE)
-;+		(allowed-classes User)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot name_
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
-	(multislot writers
-		(type INSTANCE)
-;+		(allowed-classes Group User)
+	(single-slot location
+		(type STRING)
+;+		(cardinality 0 1)
 		(create-accessor read-write)))
 
 (defclass Project
 	(is-a USER)
 	(role concrete)
+	(single-slot owner
+		(type INSTANCE)
+;+		(allowed-classes User)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
 	(single-slot description
-		(type STRING)
-;+		(cardinality 0 1)
-		(create-accessor read-write))
-	(single-slot location
-		(type STRING)
-;+		(cardinality 0 1)
-		(create-accessor read-write))
-	(single-slot name_
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
@@ -74,9 +71,12 @@
 		(type INSTANCE)
 ;+		(allowed-classes Group User)
 		(create-accessor read-write))
-	(single-slot owner
-		(type INSTANCE)
-;+		(allowed-classes User)
+	(single-slot name_
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot location
+		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(multislot writers
@@ -87,6 +87,10 @@
 (defclass User
 	(is-a USER)
 	(role concrete)
+	(multislot groups
+		(type INSTANCE)
+;+		(allowed-classes Group)
+		(create-accessor read-write))
 	(single-slot description
 		(type STRING)
 ;+		(cardinality 0 1)
@@ -94,10 +98,6 @@
 	(single-slot name_
 		(type STRING)
 ;+		(cardinality 0 1)
-		(create-accessor read-write))
-	(multislot groups
-		(type INSTANCE)
-;+		(allowed-classes Group)
 		(create-accessor read-write))
 	(single-slot password
 		(type STRING)

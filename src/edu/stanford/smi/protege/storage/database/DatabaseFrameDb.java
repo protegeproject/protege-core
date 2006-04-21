@@ -1435,30 +1435,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
     }
 
-    private String queryFrameTypeIdCommand;
 
-    private int getFrameTypeIdSQL(Frame frame) {
-        try {
-            if (queryFrameTypeIdCommand == null) {
-                queryFrameTypeIdCommand = "SELECT " + FRAME_TYPE_COLUMN;
-                queryFrameTypeIdCommand += " FROM " + _table;
-                queryFrameTypeIdCommand += " WHERE " + FRAME_COLUMN + " = ?"; // Fixed by Holger
-            }
-            int id = -1;
-            PreparedStatement stmt = getCurrentConnection().getPreparedStatement(queryFrameTypeIdCommand);
-            setFrame(stmt, 1, frame);
-            stmt.setMaxRows(1);
-            ResultSet rs = executeQuery(stmt);
-            while (rs.next()) {
-                id = rs.getInt(1);
-                break;
-            }
-            rs.close();
-            return id;
-        } catch (SQLException e) {
-            throw createRuntimeException(e);
-        }
-    }
 
     private String replaceFrameTypeCommand;
 

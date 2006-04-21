@@ -336,17 +336,6 @@ public abstract class IncludingKBAdapter
     }
     return globalFrames;
   }
-  
-  private Set<Reference> mapLocalReferences(Set<Reference> localRefs) {
-    Set<Reference> globalRefs = new HashSet<Reference>();
-    for (Reference localRef : localRefs) {
-      globalRefs.add(new ReferenceImpl(mapLocalFrame(localRef.getFrame()),
-                                       mapLocalSlot(localRef.getSlot()),
-                                       mapLocalFacet(localRef.getFacet()),
-                                       localRef.isTemplate()));
-    }
-    return globalRefs;
-  }
 
   /*
    * ---------------------------------------------------------------------------

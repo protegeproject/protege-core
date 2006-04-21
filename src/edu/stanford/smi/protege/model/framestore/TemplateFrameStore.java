@@ -59,7 +59,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         return getDelegate().getOwnSlots(frame);
     }
 
@@ -139,7 +139,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
     }
 
-    public Set getTemplateFacets(Cls cls, Slot slot) {
+    public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
         return getDelegate().getTemplateFacets(cls, slot);
     }
 
@@ -175,11 +175,11 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getSuperclasses(cls);
     }
 
-    public List getDirectSubclasses(Cls cls) {
+    public List<Cls> getDirectSubclasses(Cls cls) {
         return getDelegate().getDirectSubclasses(cls);
     }
 
-    public Set getSubclasses(Cls cls) {
+    public Set<Cls> getSubclasses(Cls cls) {
         return getDelegate().getSubclasses(cls);
     }
 
@@ -338,19 +338,19 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getFrameCount();
     }
 
-    public Set getClses() {
+    public Set<Cls> getClses() {
         return getDelegate().getClses();
     }
 
-    public Set getSlots() {
+    public Set<Slot> getSlots() {
         return getDelegate().getSlots();
     }
 
-    public Set getFacets() {
+    public Set<Facet> getFacets() {
         return getDelegate().getFacets();
     }
 
-    public Set getFrames() {
+    public Set<Frame> getFrames() {
         return getDelegate().getFrames();
     }
 

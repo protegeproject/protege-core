@@ -39,13 +39,13 @@ public interface FrameStore {
     int getFrameCount();
 
     // frame access
-    Set getClses();
+    Set<Cls> getClses();
 
-    Set getSlots();
+    Set<Slot> getSlots();
 
-    Set getFacets();
+    Set<Facet> getFacets();
 
-    Set getFrames();
+    Set<Frame> getFrames();
 
     Frame getFrame(FrameID id);
 
@@ -83,7 +83,7 @@ public interface FrameStore {
     void deleteSimpleInstance(SimpleInstance simpleInstance);
 
     // own slots
-    Set getOwnSlots(Frame frame);
+    Set<Slot> getOwnSlots(Frame frame);
 
     Collection getOwnSlotValues(Frame frame, Slot slot);
 
@@ -128,7 +128,7 @@ public interface FrameStore {
     void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values);
 
     // template facets
-    Set getTemplateFacets(Cls cls, Slot slot);
+    Set<Facet> getTemplateFacets(Cls cls, Slot slot);
 
     Set getOverriddenTemplateFacets(Cls cls, Slot slot);
 
@@ -147,9 +147,9 @@ public interface FrameStore {
 
     Set getSuperclasses(Cls cls);
 
-    List getDirectSubclasses(Cls cls);
+    List<Cls> getDirectSubclasses(Cls cls);
 
-    Set getSubclasses(Cls cls);
+    Set<Cls> getSubclasses(Cls cls);
 
     void addDirectSuperclass(Cls cls, Cls superclass);
 

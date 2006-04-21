@@ -10,7 +10,7 @@ import edu.stanford.smi.protege.model.*;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public abstract class AbstractEvent extends EventObject implements Localizable {
+public abstract class AbstractEvent extends SessionEvent implements Localizable {
     private int _eventType;
     private Object _source;
     private Object _argument1;

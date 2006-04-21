@@ -63,7 +63,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getSuperslots(slot);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         return getDelegate().getOwnSlots(frame);
     }
 
@@ -135,11 +135,11 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getSimpleInstanceCount();
     }
 
-    public Set getClses() {
+    public Set<Cls> getClses() {
         return getDelegate().getClses();
     }
 
-    public Set getTemplateFacets(Cls cls, Slot slot) {
+    public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
         return getDelegate().getTemplateFacets(cls, slot);
     }
 
@@ -167,11 +167,11 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getDirectInstances(cls);
     }
 
-    public Set getSubclasses(Cls cls) {
+    public Set<Cls> getSubclasses(Cls cls) {
         return getDelegate().getSubclasses(cls);
     }
 
-    public Set getSlots() {
+    public Set<Slot> getSlots() {
         return getDelegate().getSlots();
     }
 
@@ -191,11 +191,11 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().createFacet(id, name, directTypes, loadDefaults);
     }
 
-    public List getDirectSubclasses(Cls cls) {
+    public List<Cls> getDirectSubclasses(Cls cls) {
         return getDelegate().getDirectSubclasses(cls);
     }
 
-    public Set getFrames() {
+    public Set<Frame> getFrames() {
         return getDelegate().getFrames();
     }
 
@@ -265,7 +265,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
     }
 
-    public Set getFacets() {
+    public Set<Facet> getFacets() {
         return getDelegate().getFacets();
     }
 

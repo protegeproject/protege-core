@@ -157,8 +157,8 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     }
 
     private Map lookup(Slot slot, Facet facet, boolean isTemplate) {
-        _lookupSft.set(slot, facet, isTemplate);
-        return (Map) _sftToFrameToClosureMap.get(_lookupSft);
+        Sft lookupSft = new Sft(slot, facet, isTemplate);
+        return (Map) _sftToFrameToClosureMap.get(lookupSft);
     }
 
     private Set lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
@@ -180,8 +180,8 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     }
 
     private void updateClosureCache(Slot slot, Facet facet, boolean isTemplate) {
-        _lookupSft.set(slot, facet, isTemplate);
-        _sftToFrameToClosureMap.remove(_lookupSft);
+        Sft lookupSft = new Sft(slot, facet, isTemplate);
+        _sftToFrameToClosureMap.remove(lookupSft);
     }
 
     private void deleteFrameFromCache(Frame frame) {

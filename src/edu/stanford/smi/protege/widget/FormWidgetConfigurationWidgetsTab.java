@@ -17,7 +17,6 @@ import edu.stanford.smi.protege.model.WidgetDescriptor;
 import edu.stanford.smi.protege.ui.FrameRenderer;
 import edu.stanford.smi.protege.ui.WidgetClassNameRenderer;
 import edu.stanford.smi.protege.util.AbstractValidatableComponent;
-import edu.stanford.smi.protege.util.Assert;
 import edu.stanford.smi.protege.util.ComponentFactory;
 import edu.stanford.smi.protege.util.ComponentUtilities;
 import edu.stanford.smi.protege.util.PropertyList;

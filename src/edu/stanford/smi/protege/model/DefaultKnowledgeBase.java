@@ -565,7 +565,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getSimpleInstanceCount();
     }
 
-    public synchronized Collection getClses() {
+    public synchronized Collection<Cls> getClses() {
         return getHeadFrameStore().getClses();
     }
 
@@ -813,7 +813,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getSlotCount();
     }
 
-    public synchronized Collection getSlots() {
+    public synchronized Collection<Slot> getSlots() {
         return getHeadFrameStore().getSlots();
     }
 

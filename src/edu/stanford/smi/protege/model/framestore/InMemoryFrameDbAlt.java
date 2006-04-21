@@ -228,7 +228,7 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
       } else {
         equalFacet = (facetId.equals(other.facetId));
       }
-      return equalFrame && equalSlot && (isTemplate == other.isTemplate);
+      return equalFrame && equalSlot && equalFacet && (isTemplate == other.isTemplate);
     }
     
     public int hashCode() {
@@ -621,7 +621,6 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
   }
 
   public Set<Reference> getReferences(Object value) {
-    Value v = new Value(value);
     Set<Reference> references = new HashSet<Reference>();
     
     for (FrameSlotRequest req : valueMap.keySet()) {

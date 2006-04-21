@@ -34,10 +34,7 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 public class ValueCachingNarrowFrameStore implements NarrowFrameStore, IncludingKBSupport {
     private Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private DatabaseFrameDb _delegate;
-    private final Sft _lookupSft = new Sft();
     private CacheMap _frameToSftToValuesMap = new CacheMap();
-
-    private String frameDbName;
 
     public String getName() {
         return _delegate.getName();
@@ -80,8 +77,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
     }
 
     private List lookup(Map map, Slot slot, Facet facet, boolean isTemplate) {
-        _lookupSft.set(slot, facet, isTemplate);
-        return (List) map.get(_lookupSft);
+        Sft lookupSft = new Sft(slot, facet, isTemplate);
+        return (List) map.get(lookupSft);
     }
 
     private List lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
@@ -226,8 +223,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
     }
 
     private void remove(Map map, Slot slot, Facet facet, boolean isTemplate) {
-        _lookupSft.set(slot, facet, isTemplate);
-        map.remove(_lookupSft);
+        Sft lookupSft = new Sft(slot, facet, isTemplate);
+        map.remove(lookupSft);
     }
 
     private void addCacheValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {

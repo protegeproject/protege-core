@@ -2,21 +2,38 @@ package edu.stanford.smi.protege.server;
 
 //ESCA*JAVA0100
 
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
-import java.rmi.*;
-import java.rmi.registry.*;
-import java.rmi.server.*;
-import java.util.*;
-import java.util.logging.*;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMISocketFactory;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.plugin.*;
-import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.plugin.ProjectPluginManager;
+import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.FileUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.URIUtilities;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
     private static Server serverInstance;
@@ -30,7 +47,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private Cls _projectCls;
     private List _sessions = new ArrayList();
     private URI _baseURI;
-    private Map _sessionToProjectsMap = new HashMap();
+    private Map<RemoteSession, Collection<ServerProject>> _sessionToProjectsMap 
+        = new HashMap<RemoteSession, Collection<ServerProject>>();
     private Thread _updateThread;
     private URI metaprojectURI;
     private static final int NO_SAVE = -1;
@@ -248,9 +266,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private void recordConnection(RemoteSession session, ServerProject project) {
         // Log.enter(this, "recordConnection", session, project);
-        Collection projects = (Collection) _sessionToProjectsMap.get(session);
+        Collection<ServerProject> projects = _sessionToProjectsMap.get(session);
         if (projects == null) {
-            projects = new ArrayList();
+            projects = new ArrayList<ServerProject>();
             _sessionToProjectsMap.put(session, projects);
         }
         projects.add(project);
@@ -259,7 +277,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private void recordDisconnection(RemoteSession session, RemoteServerProject project) {
         // Log.enter(this, "recordDisconnection", session, project);
-        Collection projects = (Collection) _sessionToProjectsMap.get(session);
+        Collection<ServerProject> projects =  _sessionToProjectsMap.get(session);
         projects.remove(project);
         _sessions.remove(session);
         Log.getLogger().info("removing session: " + session);

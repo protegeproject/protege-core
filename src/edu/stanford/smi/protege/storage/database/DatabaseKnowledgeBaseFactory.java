@@ -2,7 +2,6 @@ package edu.stanford.smi.protege.storage.database;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;

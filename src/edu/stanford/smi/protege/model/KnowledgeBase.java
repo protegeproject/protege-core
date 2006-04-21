@@ -1,11 +1,19 @@
 package edu.stanford.smi.protege.model;
 
-import java.net.*;
-import java.util.*;
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.ClsListener;
+import edu.stanford.smi.protege.event.FacetListener;
+import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.event.InstanceListener;
+import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.SlotListener;
+import edu.stanford.smi.protege.event.TransactionListener;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.util.Disposable;
 
 /**
  *  A container for frames.  Frame creation is funneled through here.
