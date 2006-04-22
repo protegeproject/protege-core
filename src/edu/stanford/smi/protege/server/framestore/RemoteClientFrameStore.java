@@ -128,6 +128,7 @@ public class RemoteClientFrameStore implements FrameStore {
             this.session = session;
             this.kb = kb;
             this.remoteDelegate = delegate;
+            nameSlot = getSystemFrames().getNameSlot();
             preload(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
@@ -1402,12 +1403,18 @@ public class RemoteClientFrameStore implements FrameStore {
   }
 
   private void handleCacheStarted(FrameEvaluationStarted event) {
+    if (log.isLoggable(Level.FINE)) {
+      log.fine("started caching for frame " + event.getFrame().getFrameID());
+    }
     cacheStatus.put(event.getFrame(), CacheStatus.STARTED_CACHING);
   }
 
   private void handleCacheCompleted(FrameEvaluationCompleted event) {
     CacheStatus status = cacheStatus.get(event.getFrame());
     if (status != null && status == CacheStatus.STARTED_CACHING) {
+      if (log.isLoggable(Level.FINE)) {
+        log.fine("finished caching for frame " + event.getFrame().getFrameID());
+      }
       cacheStatus.put(event.getFrame(), CacheStatus.COMPLETED_CACHING);
     }
   }
@@ -1418,12 +1425,6 @@ public class RemoteClientFrameStore implements FrameStore {
     Facet facet = event.getFacet();
     List  values = new ArrayList(event.getValues());
     boolean isTemplate = event.isTemplate();
-    if (log.isLoggable(Level.FINER)) {
-      log.finer("Client Received value for frame " + frame.getFrameID() + 
-               " slot " + slot.getFrameID() + " facet " + 
-               (facet == null ? "null" : "" + facet.getFrameID()) + 
-               " is template " + isTemplate);
-    }
     addCachedEntry(frame, slot, facet, isTemplate, values);
   }
 
@@ -1434,6 +1435,12 @@ public class RemoteClientFrameStore implements FrameStore {
                                 Facet facet,
                                 boolean isTemplate,
                                 List values) {
+      if (log.isLoggable(Level.FINER)) {
+        log.finer("Client Received value for frame " + frame.getFrameID() + 
+                  " slot " + slot.getFrameID() + " facet " + 
+                  (facet == null ? "null" : "" + facet.getFrameID()) + 
+                  " is template " + isTemplate);
+      }
       Map<Sft, List> slotValueMap = cache.get(frame);
       if (slotValueMap == null) {
         slotValueMap = new HashMap<Sft, List>();
@@ -1445,6 +1452,9 @@ public class RemoteClientFrameStore implements FrameStore {
           !isTemplate &&
           slot.equals(nameSlot)) {
         if (values != null && !values.isEmpty()) {
+          if (log.isLoggable(Level.FINE)) {
+            log.fine("frame " + frame.getFrameID() + " has name " + values.get(0));
+          }
           frameNameToFrameMap.put((String) values.get(0), frame);
         }
       }
