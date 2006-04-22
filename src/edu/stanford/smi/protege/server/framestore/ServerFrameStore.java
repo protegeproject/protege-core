@@ -4,7 +4,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -205,8 +204,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public RemoteResponse<List> getDirectTemplateSlotValues(Cls cls, Slot slot, RemoteSession session) {
+    public RemoteResponse<List> getDirectTemplateSlotValues(Cls cls, 
+                                                            Slot slot, 
+                                                            RemoteSession session) {
       recordCall(session);
+      LocalizeUtils.localize(cls, _kb);
       frameCalculator.addRequest(cls, session);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateSlotValues(cls, slot);
@@ -322,6 +324,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         Frame frame = getDelegate().getFrame(name);
+        if (frame != null) {
+          frameCalculator.addRequest(frame, session);
+        }
         return new RemoteResponse(frame, getEvents(session));
       }
     }
@@ -350,11 +355,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public RemoteResponse<List> getDirectOwnSlotValues(Frame frame, Slot slot, RemoteSession session) {
       recordCall(session);
+      if (log.isLoggable(Level.FINE)) {
+        log.fine("getDirectOwnSlotValues for frame " + frame.getFrameID() + " slot " + slot.getFrameID());
+      }
+      LocalizeUtils.localize(frame, _kb);
+      LocalizeUtils.localize(slot, _kb);
       synchronized(_kbLock) {
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("getDirectOwnSlotValues for frame " + frame.getFrameID() + " slot " + slot.getFrameID());
-        }
-        LocalizeUtils.localize(frame, _kb);
         List values = getDelegate().getDirectOwnSlotValues(frame, slot);
         frameCalculator.addRequest(frame, session);
         if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES)) {
@@ -902,34 +908,36 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
       } else {
         frames = new LinkedHashSet<Frame>();
+        Cls rootClass = null;
         synchronized (_kbLock) {
-          frames.addAll(getDelegate().getSlots());
+          rootClass = _kb.getRootCls();
         }
+        addSystemClasses(frames, rootClass);
+        List<Cls> subClasses = null;
         synchronized (_kbLock) {
-          frames.addAll(getDelegate().getFacets());
+          subClasses = _delegate.getDirectSubclasses(rootClass);
         }
-        addHierarchy(frames, Model.Cls.ROOT_META_CLASS);
-        addHierarchy(frames, Model.Cls.CONSTRAINT);
-        addHierarchy(frames, Model.Cls.ANNOTATION);
-        addHierarchy(frames, Model.Cls.RELATION);
-        addFrame(frames, Model.Cls.SYSTEM_CLASS);
-        addRootHierarchy(frames, _kb.getRootCls());
-        
-        Project p = _kb.getProject();
-        if (p != null) {
-          synchronized (_kbLock) {
-            frames.addAll(p.getClsesWithCustomizedForms());
-          }
-          synchronized (_kbLock) {
-            frames.addAll(p.getClsesWithDirectBrowserSlots());
-          }
-          synchronized (_kbLock) {
-            frames.addAll(p.getHiddenFrames());
+        for (Cls subClass : subClasses) {
+          if (!frames.contains(subClass)) {
+            frames.add(subClass);
           }
         }
       }
       frameCalculator.preLoadFrames(frames, session);
       return new RemoteResponse<List>(null, getEvents(session));
+    }
+    
+    private void addSystemClasses(Collection<Frame> classes, Cls cls)  {
+      if (!cls.getFrameID().isSystem() || classes.contains(cls)) {
+        return;
+      }
+      List<Cls> subClasses = null;
+      synchronized (_kbLock) {
+        subClasses = _delegate.getDirectSubclasses(cls);
+      }
+      for (Cls subclass : subClasses) {
+        addSystemClasses(classes, subclass);
+      }
     }
 
     private void addFrame(Collection<Frame> frames, String className) {
