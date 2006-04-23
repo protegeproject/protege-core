@@ -1,7 +1,8 @@
 package edu.stanford.smi.protege.server.framestore;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.FrameStore_Test;
 import edu.stanford.smi.protege.server.Server_Test;
 
 public class RemoteClientFrameStore_Test extends FrameStore_Test {
