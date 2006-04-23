@@ -21,7 +21,6 @@ import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
-import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
@@ -895,9 +894,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         insertValues(map, slot, facet, isTemplate, null);
     }
 
-    public RemoteResponse<List> preload(boolean all, RemoteSession session) {
+    public RemoteResponse<List> preload(Set<String> userFrames, boolean all, RemoteSession session) {
       recordCall(session);
-      Collection<Frame> frames;
+      Set<Frame> frames;
       int frameCount = 0;
       synchronized (_kbLock) {
         frameCount = getDelegate().getFrameCount();
@@ -918,9 +917,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           subClasses = _delegate.getDirectSubclasses(rootClass);
         }
         for (Cls subClass : subClasses) {
-          if (!frames.contains(subClass)) {
-            frames.add(subClass);
+          frames.add(subClass);
+        }
+        for (String frameName : userFrames) {
+          Frame frame = null;
+          synchronized(_kbLock) {
+            frame = _delegate.getFrame(frameName);
           }
+          frames.add(frame);
         }
       }
       frameCalculator.preLoadFrames(frames, session);
