@@ -220,5 +220,5 @@ public interface RemoteServerFrameStore extends Remote {
 
     Frame getFrame(FrameID id, RemoteSession session) throws RemoteException;
 
-    ValueUpdate preload(boolean all, RemoteSession session) throws RemoteException;
+    ValueUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) throws RemoteException;
 }
