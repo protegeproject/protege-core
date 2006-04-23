@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.event.ClsEvent;
 import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
@@ -50,6 +51,7 @@ public class RemoteClientFrameStore implements FrameStore {
     private RemoteServerFrameStore remoteDelegate;
     
     private Slot nameSlot;
+    private Facet valuesFacet;
 
     /*
      * Deadlock Warning... You can't do knowledge base like calls inside an
@@ -113,6 +115,7 @@ public class RemoteClientFrameStore implements FrameStore {
             remoteDelegate = project.getDomainKbFrameStore(session);
             this.kb = kb;
             nameSlot = getSystemFrames().getNameSlot();
+            valuesFacet = getSystemFrames().getValuesFacet();
             preload(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
@@ -1036,14 +1039,29 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
+    public static final String userPreload = "server.client.preload";
     //------------------------------
     public void preload(boolean preloadAll) throws RemoteException {
       Log.getLogger().config("Preloading frame values");
+      long startTime = System.currentTimeMillis();
+      int startCount = cache.size();
+      Set<String> frames = new HashSet<String>();
+      boolean noMoreUserFrames = false;
+      for (int i = 0; !noMoreUserFrames; i++) {
+        String userFrame = System.getProperty(userPreload + i);
+        if (userFrame == null) {
+          noMoreUserFrames = true;
+        } else {
+          frames.add(userFrame);
+        }
+      }
       synchronized (eventLock) {
-        ValueUpdate vu = getRemoteDelegate().preload(preloadAll, session);
+        ValueUpdate vu = getRemoteDelegate().preload(frames, preloadAll, session);
         localize(vu);
         processValueUpdate(vu);
       }
+      Log.getLogger().config("Preload took " + ((System.currentTimeMillis()-startTime)/1000)
+          + " seconds for " + (cache.size() -startCount) + " frames");
     }
 
     private Set getCacheOwnSlotValueClosure(Frame frame, Slot slot) throws RemoteException {
@@ -1333,6 +1351,8 @@ public class RemoteClientFrameStore implements FrameStore {
               handleFrameEvent((FrameEvent) event);
             } else if (event instanceof ClsEvent) {
               handleClsEvent((ClsEvent) event);
+            } if (event instanceof KnowledgeBaseEvent) {
+              handleKnowledgeBaseEvent((KnowledgeBaseEvent) event);
             } else if (event instanceof FrameEvaluationStarted) {
               included = false;
               handleCacheStarted((FrameEvaluationStarted) event);
@@ -1368,6 +1388,9 @@ public class RemoteClientFrameStore implements FrameStore {
     } else if (type == FrameEvent.OWN_SLOT_VALUE_CHANGED) {
       Slot slot = frameEvent.getSlot();
       invalidateCachedEntry(frame, slot, (Facet) null, false, false);
+    } else if (type == FrameEvent.DELETED) {
+      invalidateCachedEntry(frame, nameSlot, (Facet) null, false, true);
+      cache.remove(frame);
     }
   }
 
@@ -1386,7 +1409,7 @@ public class RemoteClientFrameStore implements FrameStore {
       invalidateCachedEntry(frame, slot, (Facet) null, true, true);
     } else if (type == ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED) {
       Slot slot = clsEvent.getSlot();
-      invalidateCachedEntry(frame, slot, (Facet) null, true, false);
+      invalidateCachedEntry(frame, slot, valuesFacet, true, false);
     } else if (type == ClsEvent.TEMPLATE_FACET_ADDED) {
       Slot slot = clsEvent.getSlot();
       Facet facet = clsEvent.getFacet();
@@ -1399,6 +1422,16 @@ public class RemoteClientFrameStore implements FrameStore {
       Slot slot = clsEvent.getSlot();
       Facet facet  = clsEvent.getFacet();
       invalidateCachedEntry(frame, slot, facet, true, false);
+    }
+  }
+  
+  private void handleKnowledgeBaseEvent(KnowledgeBaseEvent event) {
+    int type = event.getEventType();
+    if (type == KnowledgeBaseEvent.CLS_DELETED || type == KnowledgeBaseEvent.SLOT_DELETED
+        || type == KnowledgeBaseEvent.FACET_DELETED || type == KnowledgeBaseEvent.INSTANCE_DELETED) {
+      Frame deletedFrame = event.getFrame();
+      invalidateCachedEntry(deletedFrame, nameSlot, (Facet) null, false, true);
+      cache.remove(deletedFrame);
     }
   }
 
