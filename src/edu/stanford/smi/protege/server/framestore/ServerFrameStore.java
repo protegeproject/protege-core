@@ -23,6 +23,7 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.EventGeneratorFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
@@ -67,11 +68,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         _kb = kb;
         _kbLock = kbLock;
         kb.setDispatchEventsEnabled(false);
+        serverMode();
         frameCalculator = new FrameCalculator(_delegate, 
                                               _kbLock, 
                                               _eventWriter, 
                                               _sessionToRegistrationMap);
-        frameCalculator.start();
         // kb.setJournalingEnabled(true);
         if (DELAY_MSEC != 0) {
             //used for simulating slow network response time
@@ -81,6 +82,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     private FrameStore getDelegate() {
         return _delegate;
+    }
+    
+    private void serverMode() {
+      for (FrameStore fs = _delegate; fs != null; fs = fs.getDelegate()) {
+        if (fs instanceof EventGeneratorFrameStore) {
+          ((EventGeneratorFrameStore) fs).serverMode();
+        }
+      }
     }
 
     private static int nDelayedCalls = 0;
