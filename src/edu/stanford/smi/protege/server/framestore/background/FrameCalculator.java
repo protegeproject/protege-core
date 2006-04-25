@@ -29,15 +29,20 @@ import edu.stanford.smi.protege.util.Log;
  *
  */
 
-public class FrameCalculator extends Thread {
+public class FrameCalculator {
   private static transient Logger log = Log.getLogger(FrameCalculator.class);
   
-  private boolean shuttingDown = false;
+  private enum RunStatus {
+    IDLE, RUNNING, SHUTDOWN
+  }
   
+  private boolean shuttingDown = false;
   private FrameStore fs;
   private Object kbLock;
   private FifoWriter<ServerEventWrapper> events;
   private Map<RemoteSession, Registration> sessionToRegistrationMap;
+  
+  FrameCalculatorThread innerThread;
   
   /*
    * The kb lock is never taken while the request Lock is held.
@@ -51,47 +56,13 @@ public class FrameCalculator extends Thread {
                          Object kbLock,
                          FifoWriter<ServerEventWrapper> events,
                          Map<RemoteSession, Registration> sessionToRegistrationMap) {
-    super("Frame Pre-Calculation Thread");
     this.fs = fs;
     this.kbLock = kbLock;
     this.events = events;
     this.sessionToRegistrationMap = sessionToRegistrationMap;
   }
   
-  public void run() {
-    Frame work;
-    try {
-      while (true) {
-        synchronized (requestLock) {
-          while (requests.isEmpty()) {
-            try {
-              if (shuttingDown) {
-                return;
-              }
-              requestLock.wait();
-            } catch (InterruptedException e) {
-              Log.getLogger().severe("Frame calculator thread caught signal - exiting...");
-              Log.getLogger().severe("Frame cache disabled.");
-              return;
-            }
-          }
-          work = requests.get(0);
-        }
-        doWork(work);
-        if (shuttingDown) {
-          return;
-        }
-        synchronized (requestLock) {
-          requests.remove(work);
-          requestMap.remove(work);
-        }
-      }
-    } catch (Throwable  t) {
-      Log.getLogger().log(Level.SEVERE, "Exception caught in background frame value evaluator", t);
-      Log.getLogger().severe("Pre-caching of frames will fail.");
-    }
-  }
-  
+
   private void doWork(Frame frame) {
     if (log.isLoggable(Level.FINE)) {
       log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
@@ -215,6 +186,8 @@ public class FrameCalculator extends Thread {
     }
     synchronized (requestLock) {
       // put the request at the front of the queue.
+      // the status of the frame calculator thread will not change
+      // for the duration of this lock
       if (requests.contains(frame)) {
         requests.remove(frame);
       }
@@ -225,7 +198,11 @@ public class FrameCalculator extends Thread {
         requestMap.put(frame, clients);
       }
       clients.add(session);
-      requestLock.notifyAll();
+      if (innerThread == null || 
+          innerThread.getStatus() == RunStatus.SHUTDOWN) {
+        innerThread = new FrameCalculatorThread();
+        innerThread.start();
+      }
     }
   }
 
@@ -282,6 +259,46 @@ public class FrameCalculator extends Thread {
     synchronized (requestLock) {
       return event.getClients().contains(session);
     }
+  }
+  
+  private class FrameCalculatorThread extends Thread {
+    private RunStatus status = RunStatus.IDLE;
+    
+    public FrameCalculatorThread() {
+      super("Frame Pre-Calculation Thread");
+    }
+    
+    public void run() {
+      Frame work;
+      synchronized(requestLock) {
+        status = RunStatus.RUNNING;
+      }
+      try {
+        while (true) {
+          synchronized (requestLock) {
+            if (requests.isEmpty() || shuttingDown) {
+              status = RunStatus.SHUTDOWN;
+              return;
+            }
+            work = requests.get(0);
+          }
+          doWork(work);
+          synchronized (requestLock) {
+            requests.remove(work);
+            requestMap.remove(work);
+          }
+        }
+      } catch (Throwable  t) {
+        Log.getLogger().log(Level.SEVERE, "Exception caught in background frame value evaluator", t);
+        Log.getLogger().severe("Pre-caching of frames will fail.");
+      }
+    }
+    
+    public RunStatus getStatus() {
+      return status;
+    }
+    
+    
   }
   
 }
