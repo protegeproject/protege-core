@@ -1122,9 +1122,6 @@ public class RemoteClientFrameStore implements FrameStore {
         return getCacheValues(frame, slot, null, false);
     }
 
-    private Object getCacheDirectOwnSlotValue(Frame frame, Slot slot) throws RemoteException {
-        return CollectionUtilities.getFirstItem(getCacheValues(frame, slot, null, false));
-    }   
     /*
      * This is the main routine for checking the cached data before going to the
      * server.
