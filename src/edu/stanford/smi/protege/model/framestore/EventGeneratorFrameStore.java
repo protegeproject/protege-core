@@ -34,10 +34,15 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     private DefaultKnowledgeBase _kb;
     private SystemFrames _systemFrames;
     private boolean generateEventsOnDeletingFrames = false;
+    private boolean serverMode = false;
 
     public EventGeneratorFrameStore(KnowledgeBase kb) {
         _kb = (DefaultKnowledgeBase) kb;
         _systemFrames = _kb.getSystemFrames();
+    }
+    
+    public void serverMode() {
+      serverMode = true;
     }
 
     public void reinitialize() {
@@ -339,7 +344,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
 
     public List<EventObject> getEvents() {
         List events;
-        if (isInTransaction()) {
+        if (!serverMode && isInTransaction()) {
             events = Collections.EMPTY_LIST;
         } else {
             events = _events;
