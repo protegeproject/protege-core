@@ -1390,6 +1390,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     public boolean beginTransaction(String name) {
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("begin transaction " + name);
+        }
         checkModifiability();
         try {
             return getCurrentConnection().beginTransaction();
@@ -1400,6 +1403,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     public boolean commitTransaction() {
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("commit transaction");
+        }
         checkModifiability();
         try {
             return getCurrentConnection().commitTransaction();
@@ -1410,6 +1416,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     public boolean rollbackTransaction() {
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("roll back transaction");
+        }
         checkModifiability();
         try {
             return getCurrentConnection().rollbackTransaction();
