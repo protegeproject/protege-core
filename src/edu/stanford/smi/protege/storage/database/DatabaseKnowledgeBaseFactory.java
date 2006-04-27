@@ -2,7 +2,6 @@ package edu.stanford.smi.protege.storage.database;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
@@ -30,7 +29,24 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
     static final String DRIVER_PROPERTY = "driver";
     static final String TABLENAME_PROPERTY = "table";
 
-    
+    /*
+     * This variable indicates tells the routines that handle the 
+     * inclusion of projects to ignore the isIncluded flag on frames.
+     * In particular, this occurs for OWL databases projects, which
+     * currently never include other projects.  When a file project
+     * has imports, these imports are reflected in includes of the OWL
+     * projects.  However when such a file project is converted to
+     * database mode, all the included projects are put in a single
+     * database project.
+     *
+     * TODO - We probably should fix the database inclusion mechanism
+     *        so that it is implemented in terms of included frames
+     *        projects.  One thing that would need to be figured out
+     *        to do this to determine what triples are provided by the
+     *        included projects and what triples are provided in the
+     *        including projects.
+     */
+    private boolean owlMode = false;
 
     public KnowledgeBase createKnowledgeBase(Collection errors) {
         DefaultKnowledgeBase kb = new DefaultKnowledgeBase(this);
@@ -253,7 +269,10 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
                                  Collection errors) {
       try {
         DatabaseWriter dbw = new DatabaseWriter(inputKb,
-                                                driver, url, username, password, tablename);
+                                                driver, url, 
+                                                username, password, 
+                                                tablename);
+        dbw.setOwlMode(owlMode);
         dbw.save();
         /*
           DefaultKnowledgeBase outputKb = new DefaultKnowledgeBase();
@@ -268,5 +287,13 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
       } catch (Exception e) {
           errors.add(e);
       }
+  }
+
+  protected void setOwlMode(boolean owlMode) {
+      this.owlMode = owlMode;
+  }
+
+  public boolean owlMode() {
+      return owlMode;
   }
 }
