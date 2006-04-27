@@ -144,9 +144,15 @@ public class PluginUtilities {
             setContextClassLoader(loader);
             clas = Class.forName(className, true, loader);
         } catch (ClassNotFoundException e) {
-          if (promiscuous) {
-            clas = promiscuousForName(className);
-          }
+          // use the default logger because this is an empty catch 
+          // block situation
+            if (Log.getLogger().isLoggable(Level.FINE)) {
+              Log.getLogger().fine("class not found " + e);
+              Log.getLogger().fine("probably just a probe for the class...");
+            }
+            if (promiscuous) {
+                clas = promiscuousForName(className);
+            }
             //ESCA-JAVA0170 
         } catch (Throwable e) {
             Log.getLogger().warning(e.getMessage());
@@ -164,9 +170,8 @@ public class PluginUtilities {
             try {
                 clas = Class.forName(className, true, loader);
             } catch (ClassNotFoundException e) {
-            	if (log.isLoggable(Level.FINE)) {
-            		log.log(Level.FINE, "Exception caught", e);
-            	}
+              Log.getLogger().fine("Class not found " + e);
+              Log.getLogger().fine("probably just a probe for the class...");
             } catch (NoClassDefFoundError error) {
             	Log.emptyCatchBlock(error);
             }
