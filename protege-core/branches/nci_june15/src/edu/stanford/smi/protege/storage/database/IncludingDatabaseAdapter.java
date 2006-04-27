@@ -88,7 +88,10 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
       execute(cmd2, connection);
     } catch (SQLException sqle) {
       // TODO - this should be fixed - check if the table is present first.
-      Log.emptyCatchBlock(sqle);
+      if (Log.getLogger().isLoggable(Level.FINE)) {
+        Log.getLogger().fine("Exception caught creating database" + sqle);
+        Log.getLogger().fine(" ... but expecting an already created exception");
+      }
     }
   }
 
