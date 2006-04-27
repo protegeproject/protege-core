@@ -1,11 +1,17 @@
 package edu.stanford.smi.protege.plugin;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Level;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.ui.ProjectMenuBar;
+import edu.stanford.smi.protege.ui.ProjectToolBar;
+import edu.stanford.smi.protege.ui.ProjectView;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * 
@@ -104,6 +110,7 @@ public class ProjectPluginManager {
                     plugin.afterShow(projectView, toolBar, menuBar);
                 } catch (Exception e) {
                     Log.getLogger().warning(e.toString());
+                    Log.getLogger().log(Level.FINE, "Exception caught", e);
                 }
             }
         }
