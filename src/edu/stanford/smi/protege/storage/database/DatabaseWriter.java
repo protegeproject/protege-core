@@ -32,6 +32,8 @@ public class DatabaseWriter {
   private Collection<Frame> frames;
   private Collection<FrameID> alreadySeen = new HashSet<FrameID>();
   private Slot nameSlot;
+  private boolean owlMode = false;
+
   
   public DatabaseWriter(KnowledgeBase inputKb, 
                        String driver, 
@@ -48,20 +50,31 @@ public class DatabaseWriter {
     frames = inputKb.getFrames();
     nameSlot = (Slot) inputKb.getFrame(Model.Slot.NAME);
   }
-  
+
+  public void setOwlMode(boolean owlMode) {
+      this.owlMode = owlMode;
+  }
+
+  public boolean owlMode() {
+      return owlMode;
+  }
+
   public void save() throws SQLException {
     try {
       execute("DROP TABLE " + tableName);
     } catch (SQLException sqle) {
-      Log.getLogger().config("Table " + tableName + " does not exist - initializing...");
+      Log.getLogger().config("Table " + tableName + 
+                             " does not exist - initializing...");
     }
     IncludingDatabaseAdapter.initializeInheritanceTable(tableName, frameDb.getCurrentConnection());
     boolean noIncluded = true;
-    for (Frame frame : frames) {
-      if (frame.isIncluded()) {
-        noIncluded = false;
-        break;
-      }
+    if (!owlMode) {
+        for (Frame frame : frames) {
+            if (frame.isIncluded()) {
+                noIncluded = false;
+                break;
+            }
+        }
     }
     frameDb.overwriteKB(inputKb, noIncluded);
     if (!noIncluded) {
