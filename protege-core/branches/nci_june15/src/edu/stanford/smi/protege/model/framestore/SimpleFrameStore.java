@@ -3,7 +3,6 @@ package edu.stanford.smi.protege.model.framestore;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -22,6 +21,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
@@ -1197,7 +1197,7 @@ public class SimpleFrameStore implements FrameStore {
         return _helper.rollbackTransaction();
     }
 
-    public List<EventObject> getEvents() {
+    public List<AbstractEvent> getEvents() {
         return Collections.EMPTY_LIST;
     }
 
