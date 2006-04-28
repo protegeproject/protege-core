@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.Collection;
-import java.util.EventObject;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +13,7 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.util.AbstractEvent;
 
 public class ArgumentCheckingFrameStore extends AbstractFrameStore {
 
@@ -563,7 +563,7 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         return getDelegate().getFrames();
     }
 
-    public List<EventObject> getEvents() {
+    public List<AbstractEvent> getEvents() {
         return getDelegate().getEvents();
     }
 }
