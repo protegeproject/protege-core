@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +36,7 @@ import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.Assert;
 import edu.stanford.smi.protege.util.Log;
 
@@ -79,7 +79,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         // Log.trace("found events: " + events, this, "dispatchEvents");
         Iterator i = events.iterator();
         while (i.hasNext()) {
-            EventObject event = (EventObject) i.next();
+            AbstractEvent event = (AbstractEvent) i.next();
             try {
                 dispatchEvent(event);
             } catch (Exception e) {
@@ -96,13 +96,13 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
 
     private void dispatchEvents(boolean ignoreExceptions) {
-        Collection<EventObject> events = getDelegate().getEvents();
+        Collection<AbstractEvent> events = getDelegate().getEvents();
         if (!events.isEmpty()) {
             dispatchEvents(events, ignoreExceptions);
         }
     }
 
-    private void dispatchEvent(EventObject event) {
+    private void dispatchEvent(AbstractEvent event) {
         if (event instanceof KnowledgeBaseEvent) {
             dispatchKbEvent((KnowledgeBaseEvent) event);
         } else if (event instanceof ClsEvent) {
