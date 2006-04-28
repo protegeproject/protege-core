@@ -4,9 +4,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EventObject;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +12,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.event.ClsEvent;
+import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
@@ -29,33 +30,50 @@ import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
-import edu.stanford.smi.protege.server.framestore.background.FrameEvaluationEvent;
+import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
+import edu.stanford.smi.protege.server.update.OntologyUpdate;
+import edu.stanford.smi.protege.server.update.RemoteResponse;
+import edu.stanford.smi.protege.server.update.RemoveCacheUpdate;
+import edu.stanford.smi.protege.server.update.RemoveFrameCache;
+import edu.stanford.smi.protege.server.update.ValueUpdate;
 import edu.stanford.smi.protege.server.util.FifoReader;
 import edu.stanford.smi.protege.server.util.FifoWriter;
+import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 public class ServerFrameStore extends UnicastRemoteObject implements RemoteServerFrameStore {
     private static transient Logger log = Log.getLogger(ServerFrameStore.class);
   
     private FrameStore _delegate;
     private KnowledgeBase _kb;
-    private FifoWriter<ServerEventWrapper> _eventWriter = new FifoWriter<ServerEventWrapper>();
+    
+    private FifoWriter<AbstractEvent> _eventWriter = new FifoWriter<AbstractEvent>();
+    private FifoWriter<ValueUpdate> _updateWriter = new FifoWriter<ValueUpdate>();
+    private List<AbstractEvent> transactionEvents = new ArrayList<AbstractEvent>();
+    
     private Map<RemoteSession, Registration> _sessionToRegistrationMap 
       = new HashMap<RemoteSession, Registration>();
     private boolean _isDirty;
     private Object _kbLock;
 
+    private Slot nameSlot;
+    private Facet valuesFacet;
+
+
     private static Map<Thread,RemoteSession> sessionMap = new HashMap<Thread, RemoteSession>();
+    private TransactionMonitor transactionMonitor;
     
     private FrameCalculator frameCalculator;
 
     private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
     private static final int MIN_PRELOAD_FRAMES = Integer.getInteger("preload.frame.limit", 5000).intValue();
     /*
-     * A performance hack Identical copies of the same sft are reduced to the same object so that only a single copy
-     * needs to be sent over the wire.
+     * A performance hack Identical copies of the same sft are reduced
+     * to the same object so that only a single copy needs to be sent
+     * over the wire.
      */
     private Map<Sft,Sft> sftMap = new HashMap<Sft,Sft>();
 
@@ -67,12 +85,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         _delegate = delegate;
         _kb = kb;
         _kbLock = kbLock;
+        transactionMonitor = new TransactionMonitor(kbLock);
         kb.setDispatchEventsEnabled(false);
         serverMode();
+        nameSlot = _kb.getSystemFrames().getNameSlot();
+        valuesFacet = _kb.getSystemFrames().getValuesFacet();
         frameCalculator = new FrameCalculator(_delegate, 
                                               _kbLock, 
-                                              _eventWriter, 
-                                              _sessionToRegistrationMap);
+                                              _updateWriter, 
+                                              this);
         // kb.setJournalingEnabled(true);
         if (DELAY_MSEC != 0) {
             //used for simulating slow network response time
@@ -158,57 +179,57 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public ValueUpdate removeDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) {
+    public OntologyUpdate removeDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().removeDirectTemplateSlot(cls, slot);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate moveDirectTemplateSlot(Cls cls, Slot slot, int index, RemoteSession session) {
+    public OntologyUpdate moveDirectTemplateSlot(Cls cls, Slot slot, int index, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().moveDirectTemplateSlot(cls, slot, index);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate addDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) {
+    public OntologyUpdate addDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().addDirectSuperclass(cls, superclass);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate removeDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) {
+    public OntologyUpdate removeDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().removeDirectSuperslot(slot, superslot);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate removeDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) {
+    public OntologyUpdate removeDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().removeDirectSuperclass(cls, superclass);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate moveDirectSubclass(Cls cls, Cls subclass, int index, RemoteSession session) {
+    public OntologyUpdate moveDirectSubclass(Cls cls, Cls subclass, int index, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().moveDirectSubclass(cls, subclass, index);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
@@ -220,7 +241,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       frameCalculator.addRequest(cls, session);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateSlotValues(cls, slot);
-        return new RemoteResponse<List>(values, getEvents(session));
+        return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
 
@@ -231,17 +252,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set<Slot> getOwnSlots(Frame frame, RemoteSession session) {
+    public RemoteResponse<Set> getInstances(Cls cls, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
-        return getDelegate().getOwnSlots(frame);
-      }
-    }
-
-    public Set getInstances(Cls cls, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getInstances(cls);
+        return new  RemoteResponse<Set>(
+                            getDelegate().getInstances(cls),
+                            getValueUpdates(session));
       }
     }
 
@@ -310,7 +326,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       frameCalculator.addRequest(cls, session);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
-        return new RemoteResponse<List>(values, getEvents(session));
+        return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
 
@@ -335,7 +351,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         if (frame != null) {
           frameCalculator.addRequest(frame, session);
         }
-        return new RemoteResponse(frame, getEvents(session));
+        return new RemoteResponse(frame, getValueUpdates(session));
       }
     }
 
@@ -343,13 +359,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getFrame(id);
-      }
-    }
-
-    public Collection getOwnSlotValues(Frame frame, Slot slot, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getOwnSlotValues(frame, slot);
       }
     }
 
@@ -378,7 +387,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             }
           }
         }
-        return new RemoteResponse<List>(values, getEvents(session));
+        return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
 
@@ -420,13 +429,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public ValueUpdate setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values,
+    public OntologyUpdate setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values,
             RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
@@ -436,7 +445,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         markDirty();
         Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaults);
-        return new RemoteResponse<Facet>(facet, getEvents(session));
+        return new RemoteResponse<Facet>(facet, getValueUpdates(session));
       }
     }
 
@@ -458,12 +467,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public ValueUpdate setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values, RemoteSession session) {
+    public OntologyUpdate setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         markDirty();
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
@@ -474,12 +483,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set getTemplateSlots(Cls cls, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getTemplateSlots(cls);
-      }
-    }
 
     public Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) {
       recordCall(session);
@@ -488,39 +491,39 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public ValueUpdate deleteCls(Cls cls, RemoteSession session) {
+    public OntologyUpdate deleteCls(Cls cls, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().deleteCls(cls);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate deleteSlot(Slot slot, RemoteSession session) {
+    public OntologyUpdate deleteSlot(Slot slot, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().deleteSlot(slot);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate deleteFacet(Facet facet, RemoteSession session) {
+    public OntologyUpdate deleteFacet(Facet facet, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().deleteFacet(facet);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate deleteSimpleInstance(SimpleInstance simpleInstance, RemoteSession session) {
+    public OntologyUpdate deleteSimpleInstance(SimpleInstance simpleInstance, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().deleteSimpleInstance(simpleInstance);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
@@ -531,7 +534,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         markDirty();
         Slot slot =  getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
-        return new RemoteResponse<Slot>(slot, getEvents(session));
+        return new RemoteResponse<Slot>(slot, getValueUpdates(session));
       }
     }
 
@@ -549,39 +552,39 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public ValueUpdate addDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) {
+    public OntologyUpdate addDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().addDirectSuperslot(slot, superslot);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate addDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) {
+    public OntologyUpdate addDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().addDirectTemplateSlot(cls, slot);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to, RemoteSession session) {
+    public OntologyUpdate moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().moveDirectOwnSlotValue(frame, slot, from, to);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate setDirectOwnSlotValues(Frame frame, Slot slot, Collection values, RemoteSession session) {
+    public OntologyUpdate setDirectOwnSlotValues(Frame frame, Slot slot, Collection values, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
@@ -591,7 +594,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         markDirty();
         Cls cls = getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
-        return new RemoteResponse(cls, getEvents(session));
+        return new RemoteResponse(cls, getValueUpdates(session));
       }
     }
 
@@ -609,12 +612,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public ValueUpdate removeDirectType(Instance instance, Cls directType, RemoteSession session) {
+    public OntologyUpdate removeDirectType(Instance instance, Cls directType, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().removeDirectType(instance, directType);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
@@ -646,25 +649,25 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         markDirty();
         SimpleInstance si = getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
-        return new RemoteResponse(si, getEvents(session));
+        return new RemoteResponse(si, getValueUpdates(session));
       }
     }
 
-    public ValueUpdate addDirectType(Instance instance, Cls type, RemoteSession session) {
+    public OntologyUpdate addDirectType(Instance instance, Cls type, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().addDirectType(instance, type);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public ValueUpdate moveDirectType(Instance instance, Cls cls, int index, RemoteSession session) {
+    public OntologyUpdate moveDirectType(Instance instance, Cls cls, int index, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().moveDirectType(instance, cls, index);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
@@ -682,28 +685,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public ValueUpdate setFrameName(Frame frame, String name, RemoteSession session) {
+    public OntologyUpdate setFrameName(Frame frame, String name, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
           getDelegate().setFrameName(frame, name);
           markDirty();
-          return new ValueUpdate(getEvents(session));
+          return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
-    public Set getOwnFacets(Frame frame, Slot slot, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getOwnFacets(frame, slot);
-      }
-    }
-
-    public Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getOwnFacetValues(frame, slot, facet);
-      }
-    }
 
     public Set getOverriddenTemplateSlots(Cls cls, RemoteSession session) {
       recordCall(session);
@@ -733,12 +723,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public ValueUpdate removeDirectTemplateFacetOverrides(Cls cls, Slot slot, RemoteSession session) {
+    public OntologyUpdate removeDirectTemplateFacetOverrides(Cls cls, Slot slot, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().removeDirectTemplateFacetOverrides(cls, slot);
         markDirty();
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
@@ -751,7 +741,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public void register(RemoteSession session) {
       synchronized(_kbLock) {
-        Registration registration = new Registration(_eventWriter);
+        Registration registration = new Registration(_eventWriter, _updateWriter);
         _sessionToRegistrationMap.put(session, registration);
       }
     }
@@ -769,56 +759,189 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return "ServerFrameStoreImpl";
     }
 
-    public List<EventObject> getEvents(RemoteSession session) {
+    public List<AbstractEvent> getEvents(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
-        for (EventObject eo : getDelegate().getEvents()) {
-          _eventWriter.write(new ServerEventWrapper(eo));
-        }
-        List<EventObject> events = new ArrayList<EventObject>();
+        updateEvents();
+        List<AbstractEvent> events = new ArrayList<AbstractEvent>();
         Registration reg = _sessionToRegistrationMap.get(session);
         if (reg == null) {
           throw new IllegalStateException("Not registered");
         }
-        FifoReader<ServerEventWrapper> clientEvents = reg.getEvents();
-        ServerEventWrapper eventWrapper;
-        while ((eventWrapper = clientEvents.read()) != null) {
-          EventObject event = eventWrapper.getEvent();
-          if (log.isLoggable(Level.FINEST)) {
-            log.finest("Found event " + event);
-          }
-          if (event instanceof FrameEvaluationEvent) {
-            FrameEvaluationEvent frameValue = (FrameEvaluationEvent) event;
-            if (frameCalculator.checkInterest(frameValue, session)) {
-              events.add(frameValue);
-            }
-          } else {
-            events.add(eventWrapper.getEvent());
-          }
+        FifoReader<AbstractEvent> clientEvents = reg.getEvents();
+        AbstractEvent eo = null;
+        while ((eo = clientEvents.read()) != null) {
+          events.add(eo);
         }
         return events;
       }
     }
+
+    public void updateEvents() {
+      if (!existsTransaction() && !transactionEvents.isEmpty()) {
+        for (AbstractEvent eo : transactionEvents) {
+          _eventWriter.write(eo);
+        }
+        transactionEvents = new ArrayList<AbstractEvent>();
+      }
+      for (AbstractEvent eo : getDelegate().getEvents()) {
+        addEvent(eo);
+      }
+    }
+
+    private void addEvent(AbstractEvent eo) {
+      if (log.isLoggable(Level.FINER)) {
+        log.finer("Server Processing event " + eo);
+      }
+      processEvent(eo);
+      if (existsTransaction()) {
+        transactionEvents.add(eo);
+      } else {
+        _eventWriter.write(eo);
+      }
+    }
+  
+    private List<ValueUpdate> getValueUpdates(RemoteSession session) {
+      updateEvents();
+      FifoReader<ValueUpdate> valueUpdates = _sessionToRegistrationMap.get(session).getUpdates();
+      ValueUpdate vu = null;
+      List<ValueUpdate> ret = new ArrayList<ValueUpdate>();
+      while ((vu = valueUpdates.read()) != null) {
+        Set<RemoteSession> interestedParties = vu.getClients();
+        if (interestedParties == null || interestedParties.contains(session)) {
+          ret.add(vu);
+        }
+      }
+      return ret;
+    }
+    
+    private void processEvent(AbstractEvent event)  {
+      /* ---------------> Look for other relevant event types!!! and fix for nullness--- */
+      if (event instanceof FrameEvent) {
+        handleFrameEvent((FrameEvent) event);
+      } else if (event instanceof ClsEvent) {
+        handleClsEvent((ClsEvent) event);
+      } if (event instanceof KnowledgeBaseEvent) {
+        handleKnowledgeBaseEvent((KnowledgeBaseEvent) event);
+      }
+    }
+  
+
+    /*
+     * Warning... calling getSlot for the wrong event type can cause a 
+     *            ClassCastException.
+     */
+  private void handleFrameEvent(FrameEvent frameEvent) {
+    Frame frame = frameEvent.getFrame();
+    int type = frameEvent.getEventType();
+    if (type == FrameEvent.OWN_SLOT_ADDED) {
+      Slot slot = frameEvent.getSlot();
+      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
+    } else if (type == FrameEvent.OWN_SLOT_REMOVED) {
+      Slot slot = frameEvent.getSlot();
+      if (existsTransaction()) {
+        _updateWriter.write(new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
+      } else {
+        _updateWriter.write(new RemoveCacheUpdate(frame, slot, (Facet) null, false));
+      }
+    } else if (type == FrameEvent.OWN_SLOT_VALUE_CHANGED) {
+      Slot slot = frameEvent.getSlot();
+      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
+    } else if (type == FrameEvent.DELETED) {
+      _updateWriter.write(new InvalidateCacheUpdate(frame, nameSlot, (Facet) null, false));
+      _updateWriter.write(new RemoveFrameCache(frame));
+    }
+  }
+
+  /*
+   * Warning... calling getSlot/getFacet for the wrong event type can cause a 
+   *            ClassCastException.
+   */
+  private void handleClsEvent(ClsEvent clsEvent) {
+    Frame frame = clsEvent.getCls();
+    int type = clsEvent.getEventType();
+    if (type == ClsEvent.TEMPLATE_SLOT_ADDED) {
+      Slot slot = clsEvent.getSlot();
+      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, (Facet) null, true));
+    } else if (type == ClsEvent.TEMPLATE_SLOT_REMOVED) {
+      Slot slot = clsEvent.getSlot();
+      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, (Facet) null, true));
+    } else if (type == ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED) {
+      Slot slot = clsEvent.getSlot();
+      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, valuesFacet, true));
+    } else if (type == ClsEvent.TEMPLATE_FACET_ADDED) {
+      Slot slot = clsEvent.getSlot();
+      Facet facet = clsEvent.getFacet();
+      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, facet, true));
+    } else if (type == ClsEvent.TEMPLATE_FACET_REMOVED) {
+      Slot slot = clsEvent.getSlot();
+      Facet facet = clsEvent.getFacet();
+      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, facet, true));
+    } else if (type == ClsEvent.TEMPLATE_FACET_VALUE_CHANGED) {
+      Slot slot = clsEvent.getSlot();
+      Facet facet  = clsEvent.getFacet();
+      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, facet, true));
+    }
+  }
+  
+  private void handleKnowledgeBaseEvent(KnowledgeBaseEvent event) {
+    int type = event.getEventType();
+    if (type == KnowledgeBaseEvent.CLS_DELETED || type == KnowledgeBaseEvent.SLOT_DELETED
+        || type == KnowledgeBaseEvent.FACET_DELETED || type == KnowledgeBaseEvent.INSTANCE_DELETED) {
+      Frame deletedFrame = event.getFrame();
+      _updateWriter.write(new InvalidateCacheUpdate(deletedFrame, nameSlot, (Facet) null, false));
+      _updateWriter.write(new RemoveFrameCache(deletedFrame));
+    }
+  }
+
     
     public boolean beginTransaction(String name, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
-        return getDelegate().beginTransaction(name);
+        boolean success = getDelegate().beginTransaction(name);
+        transactionMonitor.beginTransaction(name);
+        return success;
       }
     }
 
     public boolean commitTransaction(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
-        return getDelegate().commitTransaction();
+        boolean success = getDelegate().commitTransaction();
+        updateEvents();
+        transactionMonitor.commitTransaction();
+        return success;
       }
     }
 
     public boolean rollbackTransaction(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
-        return getDelegate().rollbackTransaction();
+        boolean success = getDelegate().rollbackTransaction();
+        updateEvents();
+        List<AbstractEvent> newEvents = new ArrayList<AbstractEvent>();
+        for (AbstractEvent eo : transactionEvents) {
+          if (!eo.getSession().equals(session)) {
+            newEvents.add(eo);
+          }
+        }
+        transactionMonitor.rollbackTransaction();
+        transactionEvents = newEvents;
+
+        return success;
       }
+    }
+    
+    public boolean inTransaction() {
+      return transactionMonitor.inTransaction();
+    }
+    
+    public  boolean existsTransaction()  {
+      return transactionMonitor.existsTransaction();
+    }
+    
+    public void waitForTransactionsToComplete() {
+      transactionMonitor.waitForTransactionsToComplete();
     }
 
     public boolean isDirty() {
@@ -847,11 +970,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public ValueUpdate moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session) {
+    public OntologyUpdate moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         getDelegate().moveDirectSubslot(slot, subslot, index);
-        return new ValueUpdate(getEvents(session));
+        return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
@@ -937,7 +1060,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
       }
       frameCalculator.preLoadFrames(frames, session);
-      return new RemoteResponse<List>(null, getEvents(session));
+      return new RemoteResponse<List>(null, getValueUpdates(session));
     }
     
     private void addSystemClasses(Collection<Frame> classes, Cls cls)  {
@@ -959,33 +1082,5 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         cls = (Cls) getDelegate().getFrame(className);
       }
       frames.add(cls);
-    }
-
-    private void addHierarchy(Collection<Frame> frames, String className) {
-      Cls cls;
-      synchronized (_kbLock) {
-        cls= (Cls) getDelegate().getFrame(className);
-      }
-      frames.add(cls);
-      synchronized (_kbLock) {
-        frames.addAll(getDelegate().getSubclasses(cls));
-      }
-    }
-
-    private void addRootHierarchy(Collection<Frame> frames, Cls rootCls) {
-      frames.add(rootCls);
-      Iterator<Cls> i;
-      synchronized (_kbLock) {
-        i = getDelegate().getDirectSubclasses(rootCls).iterator();
-      }
-      while (i.hasNext()) {
-        Cls subclass = i.next();
-        if (!subclass.isSystem()) {
-          frames.add(subclass);
-          synchronized (_kbLock) {
-            frames.addAll(getDelegate().getDirectSubclasses(subclass));
-          }
-        }
-      }
     }
 }
