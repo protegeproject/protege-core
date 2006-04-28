@@ -3,7 +3,6 @@ package edu.stanford.smi.protege.server.framestore;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.EventObject;
 import java.util.List;
 import java.util.Set;
 
@@ -16,6 +15,9 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.update.OntologyUpdate;
+import edu.stanford.smi.protege.server.update.RemoteResponse;
+import edu.stanford.smi.protege.util.AbstractEvent;
 
 public interface RemoteServerFrameStore extends Remote {
 
@@ -42,7 +44,7 @@ public interface RemoteServerFrameStore extends Remote {
 
     String getFrameName(Frame frame, RemoteSession session) throws RemoteException;
 
-    ValueUpdate setFrameName(Frame frame, String name, RemoteSession session) throws RemoteException;
+    OntologyUpdate setFrameName(Frame frame, String name, RemoteSession session) throws RemoteException;
 
     // frame creation/deletion
     RemoteResponse<Cls> createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
@@ -57,35 +59,23 @@ public interface RemoteServerFrameStore extends Remote {
     RemoteResponse<SimpleInstance> createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaultValues,
             RemoteSession session) throws RemoteException;
 
-    ValueUpdate deleteCls(Cls cls, RemoteSession session) throws RemoteException;
+    OntologyUpdate deleteCls(Cls cls, RemoteSession session) throws RemoteException;
 
-    ValueUpdate deleteSlot(Slot slot, RemoteSession session) throws RemoteException;
+    OntologyUpdate deleteSlot(Slot slot, RemoteSession session) throws RemoteException;
 
-    ValueUpdate deleteFacet(Facet facet, RemoteSession session) throws RemoteException;
+    OntologyUpdate deleteFacet(Facet facet, RemoteSession session) throws RemoteException;
 
-    ValueUpdate deleteSimpleInstance(SimpleInstance simpleInstance, RemoteSession session) throws RemoteException;
+    OntologyUpdate deleteSimpleInstance(SimpleInstance simpleInstance, RemoteSession session) throws RemoteException;
 
-    // own slots
-    Set<Slot> getOwnSlots(Frame frame, RemoteSession session) throws RemoteException;
-
-    Collection getOwnSlotValues(Frame frame, Slot slot, RemoteSession session) throws RemoteException;
 
     RemoteResponse<List> getDirectOwnSlotValues(Frame frame, Slot slot, RemoteSession session) throws RemoteException;
 
     int getDirectOwnSlotValuesCount(Frame frame, Slot slot, RemoteSession session) throws RemoteException;
 
-    ValueUpdate moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to, RemoteSession session) throws RemoteException;
+    OntologyUpdate moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to, RemoteSession session) throws RemoteException;
 
-    ValueUpdate setDirectOwnSlotValues(Frame frame, Slot slot, Collection values, RemoteSession session)
+    OntologyUpdate setDirectOwnSlotValues(Frame frame, Slot slot, Collection values, RemoteSession session)
             throws RemoteException;
-
-    // own facets
-    Set getOwnFacets(Frame frame, Slot slot, RemoteSession session) throws RemoteException;
-
-    Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet, RemoteSession session) throws RemoteException;
-
-    // template slots
-    Set getTemplateSlots(Cls cls, RemoteSession session) throws RemoteException;
 
     List getDirectTemplateSlots(Cls cls, RemoteSession session) throws RemoteException;
 
@@ -98,18 +88,18 @@ public interface RemoteServerFrameStore extends Remote {
 
     Set getDirectlyOverriddenTemplateSlots(Cls cls, RemoteSession session) throws RemoteException;
 
-    ValueUpdate addDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) throws RemoteException;
+    OntologyUpdate addDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) throws RemoteException;
 
-    ValueUpdate removeDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) throws RemoteException;
+    OntologyUpdate removeDirectTemplateSlot(Cls cls, Slot slot, RemoteSession session) throws RemoteException;
 
-    ValueUpdate moveDirectTemplateSlot(Cls cls, Slot slot, int index, RemoteSession session) throws RemoteException;
+    OntologyUpdate moveDirectTemplateSlot(Cls cls, Slot slot, int index, RemoteSession session) throws RemoteException;
 
     // template slot values
     Collection getTemplateSlotValues(Cls cls, Slot slot, RemoteSession session) throws RemoteException;
 
     RemoteResponse<List> getDirectTemplateSlotValues(Cls cls, Slot slot, RemoteSession session) throws RemoteException;
 
-    ValueUpdate setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values, RemoteSession session)
+    OntologyUpdate setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values, RemoteSession session)
             throws RemoteException;
 
     // template facets
@@ -120,13 +110,13 @@ public interface RemoteServerFrameStore extends Remote {
 
     Set getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot, RemoteSession session) throws RemoteException;
 
-    ValueUpdate removeDirectTemplateFacetOverrides(Cls cls, Slot slot, RemoteSession session) throws RemoteException;
+    OntologyUpdate removeDirectTemplateFacetOverrides(Cls cls, Slot slot, RemoteSession session) throws RemoteException;
 
     Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) throws RemoteException;
 
     RemoteResponse<List> getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) throws RemoteException;
 
-    ValueUpdate setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values, RemoteSession session)
+    OntologyUpdate setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values, RemoteSession session)
             throws RemoteException;
 
     // class hierarchy
@@ -138,11 +128,11 @@ public interface RemoteServerFrameStore extends Remote {
 
     Set<Cls> getSubclasses(Cls cls, RemoteSession session) throws RemoteException;
 
-    ValueUpdate addDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) throws RemoteException;
+    OntologyUpdate addDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) throws RemoteException;
 
-    ValueUpdate removeDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) throws RemoteException;
+    OntologyUpdate removeDirectSuperclass(Cls cls, Cls superclass, RemoteSession session) throws RemoteException;
 
-    ValueUpdate moveDirectSubclass(Cls cls, Cls subclass, int index, RemoteSession session) throws RemoteException;
+    OntologyUpdate moveDirectSubclass(Cls cls, Cls subclass, int index, RemoteSession session) throws RemoteException;
 
     // slot hierarchy
     List getDirectSuperslots(Slot slot, RemoteSession session) throws RemoteException;
@@ -153,11 +143,11 @@ public interface RemoteServerFrameStore extends Remote {
 
     Set getSubslots(Slot slot, RemoteSession session) throws RemoteException;
 
-    ValueUpdate addDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) throws RemoteException;
+    OntologyUpdate addDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) throws RemoteException;
 
-    ValueUpdate removeDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) throws RemoteException;
+    OntologyUpdate removeDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) throws RemoteException;
 
-    ValueUpdate moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session) throws RemoteException;
+    OntologyUpdate moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session) throws RemoteException;
 
     // type hierarchy
     List getDirectTypes(Instance instance, RemoteSession session) throws RemoteException;
@@ -166,16 +156,16 @@ public interface RemoteServerFrameStore extends Remote {
 
     List getDirectInstances(Cls cls, RemoteSession session) throws RemoteException;
 
-    Set getInstances(Cls cls, RemoteSession session) throws RemoteException;
+    RemoteResponse<Set> getInstances(Cls cls, RemoteSession session) throws RemoteException;
 
-    ValueUpdate addDirectType(Instance instance, Cls type, RemoteSession session) throws RemoteException;
+    OntologyUpdate addDirectType(Instance instance, Cls type, RemoteSession session) throws RemoteException;
 
-    ValueUpdate removeDirectType(Instance instance, Cls type, RemoteSession session) throws RemoteException;
+    OntologyUpdate removeDirectType(Instance instance, Cls type, RemoteSession session) throws RemoteException;
 
-    ValueUpdate moveDirectType(Instance instance, Cls type, int index, RemoteSession session) throws RemoteException;
+    OntologyUpdate moveDirectType(Instance instance, Cls type, int index, RemoteSession session) throws RemoteException;
 
     // events
-    List<EventObject> getEvents(RemoteSession session) throws RemoteException;
+    List<AbstractEvent> getEvents(RemoteSession session) throws RemoteException;
 
     // arbitrary queries
     Set getReferences(Object object, RemoteSession session) throws RemoteException;
@@ -220,5 +210,5 @@ public interface RemoteServerFrameStore extends Remote {
 
     Frame getFrame(FrameID id, RemoteSession session) throws RemoteException;
 
-    ValueUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) throws RemoteException;
+    OntologyUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) throws RemoteException;
 }
