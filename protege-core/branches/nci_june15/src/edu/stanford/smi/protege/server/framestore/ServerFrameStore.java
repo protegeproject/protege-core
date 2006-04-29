@@ -899,6 +899,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         boolean success = getDelegate().beginTransaction(name);
+        updateEvents();
         transactionMonitor.beginTransaction(name);
         return success;
       }
