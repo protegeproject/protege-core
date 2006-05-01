@@ -29,6 +29,7 @@ import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
@@ -68,8 +69,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     
     private FrameCalculator frameCalculator;
 
-    private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
-    private static final int MIN_PRELOAD_FRAMES = Integer.getInteger("preload.frame.limit", 5000).intValue();
     /*
      * A performance hack Identical copies of the same sft are reduced
      * to the same object so that only a single copy needs to be sent
@@ -95,9 +94,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                               _updateWriter, 
                                               this);
         // kb.setJournalingEnabled(true);
-        if (DELAY_MSEC != 0) {
+        if (ServerProperties.delayInMilliseconds() != 0) {
             //used for simulating slow network response time
-            Log.getLogger().config("Simulated delay of " + DELAY_MSEC + " msec/call");
+            Log.getLogger().config("Simulated delay of " + ServerProperties.delayInMilliseconds() + " msec/call");
         }
     }
 
@@ -116,8 +115,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private static int nDelayedCalls = 0;
 
     private static void delay() {
-        if (DELAY_MSEC != 0) {
-            SystemUtilities.sleepMsec(DELAY_MSEC);
+        if (ServerProperties.delayInMilliseconds() != 0) {
+            SystemUtilities.sleepMsec(ServerProperties.delayInMilliseconds());
             if (++nDelayedCalls % 10 == 0) {
                 Log.getLogger().info(nDelayedCalls + " delayed calls");
             }
@@ -169,13 +168,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getFrameCount();
-      }
-    }
-
-    public List getDirectTemplateSlots(Cls cls, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getDirectTemplateSlots(cls);
       }
     }
 
@@ -245,12 +237,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set getSuperslots(Slot slot, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getSuperslots(slot);
-      }
-    }
 
     public RemoteResponse<Set> getInstances(Cls cls, RemoteSession session) {
       recordCall(session);
@@ -307,19 +293,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public List getDirectSuperclasses(Cls cls, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getDirectSuperclasses(cls);
-      }
-    }
-
-    public Collection getTemplateSlotValues(Cls cls, Slot slot, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getTemplateSlotValues(cls, slot);
-      }
-    }
 
     public RemoteResponse<List> getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) {
       recordCall(session);
@@ -391,23 +364,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public List getDirectInstances(Cls cls, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getDirectInstances(cls);
-      }
-    }
-
-    public Set<Cls> getSubclasses(Cls cls, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        Set<Cls> subclasses = getDelegate().getSubclasses(cls);
-        for (Cls subclass : subclasses) {
-          frameCalculator.addRequest(subclass, session);
-        }
-        return subclasses;
-      }
-    }
 
     public Set<Slot> getSlots(RemoteSession session) {
       recordCall(session);
@@ -416,18 +372,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set getSuperclasses(Cls cls, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getSuperclasses(cls);
-      }
-    }
-
-    public Set getSubslots(Slot slot, RemoteSession session) {
-      synchronized(_kbLock) {
-        return getDelegate().getSubslots(slot);
-      }
-    }
 
     public OntologyUpdate setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values,
             RemoteSession session) {
@@ -449,17 +393,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public List<Cls> getDirectSubclasses(Cls cls, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        List<Cls> subclasses = getDelegate().getDirectSubclasses(cls);
-        for (Cls subclass : subclasses) {
-          frameCalculator.addRequest(subclass, session);
-        }
-        return subclasses;
-      }
-    }
-
     public Set<Frame> getFrames(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
@@ -473,13 +406,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         markDirty();
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
         return new OntologyUpdate(getValueUpdates(session));
-      }
-    }
-
-    public Set getTypes(Instance instance, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getTypes(instance);
       }
     }
 
@@ -538,19 +464,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public List getDirectTypes(Instance instance, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getDirectTypes(instance);
-      }
-    }
-
-    public List getDirectSubslots(Slot slot, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getDirectSubslots(slot);
-      }
-    }
 
     public OntologyUpdate addDirectSuperslot(Slot slot, Slot superslot, RemoteSession session) {
       recordCall(session);
@@ -671,13 +584,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public List getDirectSuperslots(Slot slot, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getDirectSuperslots(slot);
-      }
-    }
-
     public String getFrameName(Frame frame, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
@@ -778,12 +684,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public void updateEvents() {
-      if (!existsTransaction() && !transactionEvents.isEmpty()) {
-        for (AbstractEvent eo : transactionEvents) {
-          _eventWriter.write(eo);
-        }
-        transactionEvents = new ArrayList<AbstractEvent>();
-      }
       for (AbstractEvent eo : getDelegate().getEvents()) {
         addEvent(eo);
       }
@@ -894,42 +794,103 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
   }
 
-    
+    /*
+     * These begin/rollback/commit transaction calls have to take care of four things:
+     *    Updating Events
+     *       -> I need to remember where I am in the transaction events queue so that I 
+     *          can roll these events back later
+     *       -> before I can do this I need to flush the events
+     *    Calling the delegate
+     *    Updating info about the transaction nesting (using the transaction monitor)
+     *    Updating value updates
+     *       -> Nothing to do
+     */
     public boolean beginTransaction(String name, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
-        boolean success = getDelegate().beginTransaction(name);
         updateEvents();
+        _sessionToRegistrationMap.get(session).setTransactionLocation(transactionEvents.size());
+        boolean success = getDelegate().beginTransaction(name);
         transactionMonitor.beginTransaction(name);
         return success;
       }
     }
-
+    
+    /*
+     * These begin/rollback/commit transaction calls have to take care of four things:
+     *    Updating Events
+     *       -> after the commit, flush the events and write them out if possible
+     *    Calling the delegate
+     *    Updating info about the transaction nesting (using the transaction monitor)
+     *    Updating value updates
+     *       -> Throw away the value update rollbacks.
+     *       
+     *  Flushing the event queue must happen before we update the transaction nesting so
+     *  that the events end up on the transactio queue.  These events get moved to the clients
+     *  later in the closeTransactionEvents() call.
+     */
     public boolean commitTransaction(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         boolean success = getDelegate().commitTransaction();
         updateEvents();
         transactionMonitor.commitTransaction();
+        closeTransactionEvents();
+        if (!inTransaction()) {
+          _sessionToRegistrationMap.get(session).endTransaction();
+        }
         return success;
       }
     }
 
+    /*
+     * These begin/rollback/commit transaction calls have to take care of four things:
+     *    Updating Events
+     *       -> flush the events
+     *       -> find the location in the transaction queue since the last transaction and delete the 
+     *          events that belong to  this session.
+     *       -> write the events out to the clients if possible
+     *    Calling the delegate
+     *    Updating info about the transaction nesting (using the transaction monitor)
+     *    Updating value updates
+     *       -> send the value update rollbacks (for this session) to the clients
+     *       -> reset the value update rollbacks (for this session)
+     *
+     *  Flushing the event queue must happen before we update the transaction nesting so
+     *  that the events end up on the transactio queue. These events get moved to the clients
+     *  later in the closeTransactionEvents() call.
+     */
     public boolean rollbackTransaction(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         boolean success = getDelegate().rollbackTransaction();
         updateEvents();
+        transactionMonitor.rollbackTransaction();
         List<AbstractEvent> newEvents = new ArrayList<AbstractEvent>();
-        for (AbstractEvent eo : transactionEvents) {
-          if (!eo.getSession().equals(session)) {
-            newEvents.add(eo);
+        int transactionStart = _sessionToRegistrationMap.get(session).getTransactionLocation();
+        for (int index = 0; index < transactionEvents.size(); index++) {
+          AbstractEvent event = transactionEvents.get(index);
+          if (index < transactionStart || !event.getSession().equals(session)) {
+            newEvents.add(event);
           }
         }
-        transactionMonitor.rollbackTransaction();
         transactionEvents = newEvents;
-
+        closeTransactionEvents();
+        if (!inTransaction()) {
+          for (ValueUpdate vu : _sessionToRegistrationMap.get(session).endTransaction()) {
+            _updateWriter.write(vu);
+          }
+        }
         return success;
+      }
+    }
+    
+    public void closeTransactionEvents() {
+      if (!existsTransaction() && !transactionEvents.isEmpty()) {
+        for (AbstractEvent eo : transactionEvents) {
+          _eventWriter.write(eo);
+        }
+        transactionEvents = new ArrayList<AbstractEvent>();
       }
     }
     
@@ -957,19 +918,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         _isDirty = false;
     }
 
-    public List getDirectDomain(Slot slot, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getDirectDomain(slot);
-      }
-    }
-
-    public Set getDomain(Slot slot, RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getDomain(slot);
-      }
-    }
 
     public OntologyUpdate moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session) {
       recordCall(session);
@@ -1034,7 +982,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized (_kbLock) {
         frameCount = getDelegate().getFrameCount();
       }
-      if (all ||  frameCount < MIN_PRELOAD_FRAMES) {
+      if (all ||  frameCount < ServerProperties.minimumPreloadedFrames()) {
         synchronized (_kbLock) {
           frames = getDelegate().getFrames();
         }
@@ -1064,24 +1012,32 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       return new RemoteResponse<List>(null, getValueUpdates(session));
     }
     
-    private void addSystemClasses(Collection<Frame> classes, Cls cls)  {
-      if (!cls.getFrameID().isSystem() || classes.contains(cls)) {
+    private void addSystemClasses(Set<Frame> frames, Cls cls)  {
+      if (!cls.getFrameID().isSystem() || frames.contains(cls)) {
         return;
       }
       List<Cls> subClasses = null;
       synchronized (_kbLock) {
         subClasses = _delegate.getDirectSubclasses(cls);
       }
+      Set<Slot> slots = null;
+      synchronized (_kbLock) {
+        slots = _delegate.getOwnSlots(cls);
+        slots.addAll(_delegate.getTemplateSlots(cls));
+      }
+      for (Slot slot : slots) {
+        if (slot.isSystem()) {
+          frames.add(slot);
+        }
+      }
       for (Cls subclass : subClasses) {
-        addSystemClasses(classes, subclass);
+        addSystemClasses(frames, subclass);
       }
     }
-
-    private void addFrame(Collection<Frame> frames, String className) {
-      Cls cls;
-      synchronized (_kbLock) {
-        cls = (Cls) getDelegate().getFrame(className);
+    
+    public void requestValueCache(Set<Frame> frames, RemoteSession session) {
+      for  (Frame frame : frames) {
+        frameCalculator.addRequest(frame, session);
       }
-      frames.add(cls);
     }
 }
