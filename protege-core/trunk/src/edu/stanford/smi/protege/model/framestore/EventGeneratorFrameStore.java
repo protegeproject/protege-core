@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import com.sun.java_cup.internal.internal_error;
+
 import edu.stanford.smi.protege.event.ClsEvent;
 import edu.stanford.smi.protege.event.FrameEvent;
 import edu.stanford.smi.protege.event.InstanceEvent;
@@ -42,7 +44,8 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
 
     public void reinitialize() {
         _events.clear();
-        _transactionStartSize = NO_VALUE;
+        //_transactionStartSize = NO_VALUE;
+        resetTransactionStartSize();
     }
 
     public void close() {
@@ -352,6 +355,10 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     private boolean isInTransaction() {
         return _transactionStartSize != NO_VALUE;
     }
+    
+    private void resetTransactionStartSize() {
+    	_transactionStartSize = NO_VALUE;
+    }
 
     public void addDirectSuperclass(Cls cls, Cls superclass) {
         Collection addedSlots = getSlotsToBeAdded(cls, superclass);
@@ -511,9 +518,10 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     public boolean beginTransaction(String name) {
         boolean allowsTransactions = getDelegate().beginTransaction(name);
         generateTransactionEvent(TransactionEvent.TRANSACTION_BEGIN, name);
-        if (allowsTransactions) {
+        //TT: remember only the start index of the outer transaction
+        if (allowsTransactions && !isInTransaction()) {
             _transactionStartSize = _events.size();
-        }
+        }        
         return allowsTransactions;
     }
     
@@ -522,22 +530,22 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     }
 
     public boolean commitTransaction() {
-        boolean commitTransaction = getDelegate().commitTransaction();
-        if (!commitTransaction && _transactionStartSize != NO_VALUE) {
+        boolean commitTransaction = getDelegate().commitTransaction();     
+        if (!commitTransaction && isInTransaction()) {
             _events.subList(_transactionStartSize + 1, _events.size()).clear();
         }
-        generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);
-        _transactionStartSize = NO_VALUE;
+        generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);       
+        resetTransactionStartSize();        
         return commitTransaction;
     }
 
     public boolean rollbackTransaction() {
-        boolean rollbackTransaction = getDelegate().rollbackTransaction();
-        if (rollbackTransaction && _transactionStartSize != NO_VALUE) {
+        boolean rollbackTransaction = getDelegate().rollbackTransaction();        
+        if (rollbackTransaction && isInTransaction()) {
             _events.subList(_transactionStartSize + 1, _events.size()).clear();
         }
         generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);
-        _transactionStartSize = NO_VALUE;
+        resetTransactionStartSize();        
         return rollbackTransaction;
     }
 
