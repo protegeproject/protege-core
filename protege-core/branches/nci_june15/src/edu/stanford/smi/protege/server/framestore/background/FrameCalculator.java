@@ -17,13 +17,13 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
 import edu.stanford.smi.protege.server.update.FrameEvaluationEvent;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
 import edu.stanford.smi.protege.server.util.FifoWriter;
-import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.Log;
 
 /*
@@ -64,13 +64,15 @@ public class FrameCalculator {
   
   FrameCalculatorThread innerThread;
   
+  Set<Slot> followedSlots = new HashSet<Slot>();
+  
   /*
    * The kb lock is never taken while the request Lock is held.
    */
   
   private Object requestLock = new Object();
   private List<Frame> requests = new ArrayList<Frame>();
-  private Map<Frame, Set<RemoteSession>> requestMap = new HashMap<Frame, Set<RemoteSession>>();
+  private Map<Frame, WorkInfo> requestMap = new HashMap<Frame, WorkInfo>();
   
   public FrameCalculator(FrameStore fs,
                          Object kbLock,
@@ -80,6 +82,12 @@ public class FrameCalculator {
     this.kbLock = kbLock;
     this.updates = updates;
     this.server = server;
+    for (String slotName : ServerProperties.exprSlots()) {
+      Frame frame = fs.getFrame(slotName);
+      if (frame != null && frame instanceof Slot) {
+        followedSlots.add((Slot) frame);
+      }
+    }
   }
   
 
@@ -103,6 +111,7 @@ public class FrameCalculator {
           values = fs.getDirectOwnSlotValues(frame, slot);
           insertValueEvent(frame, slot, (Facet) null, false, values);
         }
+        addFollowedExprs(frame, slot, values);
       }
       if (frame instanceof Cls) {
         Cls cls = (Cls) frame;
@@ -137,6 +146,44 @@ public class FrameCalculator {
       Log.getLogger().log(Level.SEVERE, 
                           "Exception caught caching frame values", 
                           t);
+    }
+  }
+  
+  public void addFollowedExprs(Frame frame, Slot slot, List values) {
+    if (followedSlots.contains(slot) && !values.isEmpty()) {
+      if (log.isLoggable(Level.FINE)) {
+        log.fine("expanding expression for frame " + frame + " following slot " + slot);
+      }
+      synchronized (requestMap) {
+        WorkInfo wi = requestMap.get(frame);
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("\tOriginal frame = " + wi.getOrginalFrame());
+        }
+        for (Object o : values) {
+          if (o instanceof Frame) {
+            Frame v = (Frame) o;
+            if (wi.getEvaluationPath().contains(v)) {
+              break;
+            } else {
+              wi.getEvaluationPath().add(v);
+            }
+            if (!requests.contains(v)) {
+              if (log.isLoggable(Level.FINE)) {
+                log.fine("\tadded frame " + v);
+              }
+              requests.add(0, v);
+              wi.addEvaluatedFrame(v);
+              requestMap.put(v, wi);
+            } else {
+              if (log.isLoggable(Level.FINE)) {
+                log.fine("\tFrame " + v + " alread being worked on");
+              }
+              // somebody else is working on this but we are also interested
+              requestMap.get(v).getClients().addAll(wi.getClients());
+            }
+          }
+        }
+      }
     }
   }
   
@@ -223,12 +270,14 @@ public class FrameCalculator {
         requests.remove(frame);
       }
       requests.add(0, frame);
-      Set<RemoteSession> clients = requestMap.get(frame);
-      if (clients == null) {
-        clients = new HashSet<RemoteSession>();
-        requestMap.put(frame, clients);
+      WorkInfo wi = requestMap.get(frame);
+      if (wi == null) {
+        wi = new WorkInfo();
+        wi.setOrginalFrame(frame);
+        wi.addEvaluatedFrame(frame);
+        requestMap.put(frame, wi);
       }
-      clients.add(session);
+      wi.getClients().add(session);
       if (innerThread == null || 
           innerThread.getStatus() == RunStatus.SHUTDOWN) {
         innerThread = new FrameCalculatorThread();
@@ -272,7 +321,7 @@ public class FrameCalculator {
     Frame frame = event.getFrame();
     Set<RemoteSession> clients = null;
     synchronized(requestLock) {
-      clients= requestMap.get(frame);
+      clients= requestMap.get(frame).getClients();
     }
     insertEvent(event, clients);
   }
@@ -328,6 +377,37 @@ public class FrameCalculator {
     }
     
     
+  }
+  
+  private class WorkInfo {
+    private Set<RemoteSession> clients = new HashSet<RemoteSession>();
+    private Set<Frame> evaluationPath = new HashSet<Frame>();
+    private Frame orginalFrame;
+    
+    public Frame getOrginalFrame() {
+      return orginalFrame;
+    }
+
+    public void setOrginalFrame(Frame orginalFrame) {
+      this.orginalFrame = orginalFrame;
+    }
+
+    public Set<Frame> getEvaluationPath() {
+      return evaluationPath;
+    }
+    
+    public void setEvaluationPath(Set<Frame> evaluationPath) {
+      this.evaluationPath = evaluationPath;
+    }
+    
+    public void addEvaluatedFrame(Frame frame) {
+      evaluationPath.add(frame);
+    }
+    
+    public Set<RemoteSession> getClients() {
+      return clients;
+    }
+
   }
   
 }
