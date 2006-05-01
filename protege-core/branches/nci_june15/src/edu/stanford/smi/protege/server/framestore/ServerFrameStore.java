@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -809,7 +810,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         updateEvents();
-        _sessionToRegistrationMap.get(session).setTransactionLocation(transactionEvents.size());
+        if (!inTransaction()) {
+          _sessionToRegistrationMap.get(session).setTransactionLocation(transactionEvents.size());
+        }
         boolean success = getDelegate().beginTransaction(name);
         transactionMonitor.beginTransaction(name);
         return success;
@@ -866,15 +869,17 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         boolean success = getDelegate().rollbackTransaction();
         updateEvents();
         transactionMonitor.rollbackTransaction();
-        List<AbstractEvent> newEvents = new ArrayList<AbstractEvent>();
-        int transactionStart = _sessionToRegistrationMap.get(session).getTransactionLocation();
-        for (int index = 0; index < transactionEvents.size(); index++) {
-          AbstractEvent event = transactionEvents.get(index);
-          if (index < transactionStart || !event.getSession().equals(session)) {
-            newEvents.add(event);
+        if (!inTransaction()) {
+          List<AbstractEvent> newEvents = new ArrayList<AbstractEvent>();
+          int transactionStart = _sessionToRegistrationMap.get(session).getTransactionLocation();
+          for (int index = 0; index < transactionEvents.size(); index++) {
+            AbstractEvent event = transactionEvents.get(index);
+            if (index < transactionStart || !event.getSession().equals(session)) {
+              newEvents.add(event);
+            }
           }
+          transactionEvents = newEvents;
         }
-        transactionEvents = newEvents;
         closeTransactionEvents();
         if (!inTransaction()) {
           for (ValueUpdate vu : _sessionToRegistrationMap.get(session).endTransaction()) {
@@ -901,6 +906,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     public  boolean existsTransaction()  {
       return transactionMonitor.existsTransaction();
     }
+    
+
     
     public void waitForTransactionsToComplete() {
       transactionMonitor.waitForTransactionsToComplete();
