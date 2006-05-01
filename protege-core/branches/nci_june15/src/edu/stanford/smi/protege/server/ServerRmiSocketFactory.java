@@ -1,10 +1,12 @@
 package edu.stanford.smi.protege.server;
 
-import java.io.*;
-import java.net.*;
-import java.rmi.server.*;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.rmi.server.RMISocketFactory;
 
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.StringUtilities;
 
 /* This code is based on an idea from here:
  * http://www.javacoding.net/articles/technical/rmi-firewall.html
@@ -17,7 +19,7 @@ public class ServerRmiSocketFactory extends RMISocketFactory {
     private int fixedPort;
 
     public ServerRmiSocketFactory() {
-        fixedPort = Integer.getInteger("protege.rmi.server.port", 0).intValue();
+        fixedPort = Integer.getInteger(ServerProperties.SERVER_PORT, 0).intValue();
         if (fixedPort != 0) {
             Log.getLogger().config("fixed port=" + fixedPort);
         }
