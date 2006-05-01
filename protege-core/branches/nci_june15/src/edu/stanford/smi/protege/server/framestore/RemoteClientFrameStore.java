@@ -30,6 +30,8 @@ import edu.stanford.smi.protege.server.RemoteServer;
 import edu.stanford.smi.protege.server.RemoteServerProject;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
+import edu.stanford.smi.protege.server.ServerProperties;
+import edu.stanford.smi.protege.server.framestore.background.ClientCacheRequestor;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
 import edu.stanford.smi.protege.server.update.FrameEvaluationEvent;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
@@ -49,47 +51,30 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 public class RemoteClientFrameStore implements FrameStore {
     private static Logger log = Log.getLogger(RemoteClientFrameStore.class);
     
-    public static final String userPreload = "server.client.preload";
-    public static final String userSkipsPreload = "server.client.preload.skip";
-
     private KnowledgeBase kb;
     private RemoteSession session;
     private RemoteServer server;
     private RemoteServerFrameStore remoteDelegate;
+
+    private Slot nameSlot;
+    private Slot directSubclassesSlot;
+
+    private Object clientLock = new Object();
+   
+    private enum CacheStatus {
+      STARTED_CACHING, COMPLETED_CACHING
+    }
+    
+    private Map<Frame, CacheStatus> cacheStatus = new HashMap<Frame, CacheStatus>();
+    private Map<Frame, Map<Sft, List>> cache = new HashMap<Frame, Map<Sft, List>>();
+    private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
     
     private int cacheMiss = 0;
     private int cacheHit = 0;
     private static final int cachePollInt = 100;
     
-    private Slot nameSlot;
+    private ClientCacheRequestor cacheRequestor;
 
-    /*
-     * Deadlock Warning... You can't do knowledge base like calls inside an
-     *                     event lock.  The knolwedge base is synchronized and
-     *                     knowledge base calls will lock the eventLock when 
-     *                     interpreting event data from the remote server to update 
-     *                     the cache.  In particular this is why the nameSlot is 
-     *                     handled specially. 
-     */
-    private Object eventLock = new Object();
-    private List<AbstractEvent> events = new ArrayList<AbstractEvent>();
-    
-    private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
-    /*
-     * A Cache of the direct own slot values.
-     * 
-     * There are two threads that I know of that compete for the cache
-     * variable.  The EventDispatcher thread which is run periodically
-     * or when notified by this code and the main knowledge base thread.
-     *
-     */
-    private Map<Frame, Map<Sft, List>> cache = new HashMap<Frame, Map<Sft, List>>();
-
-    
-    private enum CacheStatus {
-      STARTED_CACHING, COMPLETED_CACHING
-    }
-    private Map<Frame, CacheStatus> cacheStatus = new HashMap<Frame, CacheStatus>();
     
     public String getName() {
         return getClass().getName();
@@ -125,6 +110,8 @@ public class RemoteClientFrameStore implements FrameStore {
             remoteDelegate = project.getDomainKbFrameStore(session);
             this.kb = kb;
             nameSlot = getSystemFrames().getNameSlot();
+            directSubclassesSlot = getSystemFrames().getDirectSubclassesSlot();
+            cacheRequestor = new ClientCacheRequestor(remoteDelegate, session);
             preload(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
@@ -263,7 +250,7 @@ public class RemoteClientFrameStore implements FrameStore {
         Frame frame = frameNameToFrameMap.get(name);
         if (frame == null) {
           if (!frameNameToFrameMap.containsKey(name)) {
-            synchronized(eventLock) {
+            synchronized(clientLock) {
               RemoteResponse<Frame> response = getRemoteDelegate().getFrame(name, session);
               localize(response);
               processValueUpdate(response);
@@ -288,7 +275,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void setFrameName(Frame frame, String name) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().setFrameName(frame, name, session);
             localize(vu);
             processValueUpdate(vu);
@@ -304,7 +291,7 @@ public class RemoteClientFrameStore implements FrameStore {
                          Collection directSuperclasses,
                          boolean loadDefaultValues) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             RemoteResponse<Cls> wrappedCls = getRemoteDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaultValues,
                     session);
             localize(wrappedCls);
@@ -322,7 +309,7 @@ public class RemoteClientFrameStore implements FrameStore {
                            Collection directSuperslots,
                            boolean loadDefaultValues) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             RemoteResponse<Slot> wrappedSlot 
               = getRemoteDelegate().createSlot(id, name, 
                                                directTypes, directSuperslots, 
@@ -339,7 +326,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             RemoteResponse<Facet> wrappedFacet 
               = getRemoteDelegate().createFacet(id, name, 
                                                 directTypes, 
@@ -358,7 +345,7 @@ public class RemoteClientFrameStore implements FrameStore {
                                                Collection directTypes,
                                                boolean loadDefaultValues) {
         try {
-          synchronized (eventLock) {
+          synchronized (clientLock) {
             RemoteResponse<SimpleInstance> wrappedSimpleInstance 
               = getRemoteDelegate().createSimpleInstance(id, name, directTypes,
                                                          loadDefaultValues, 
@@ -374,7 +361,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void deleteCls(Cls cls) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().deleteCls(cls, session);
             localize(vu);
             processValueUpdate(vu);
@@ -386,7 +373,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void deleteSlot(Slot slot) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().deleteSlot(slot, session);
             localize(vu);
             processValueUpdate(vu);
@@ -398,7 +385,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void deleteFacet(Facet facet) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().deleteFacet(facet, session);
             localize(vu);
             processValueUpdate(vu);
@@ -410,7 +397,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void deleteSimpleInstance(SimpleInstance simpleInstance) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().deleteSimpleInstance(simpleInstance, session);
             localize(vu);
             processValueUpdate(vu);
@@ -446,7 +433,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().moveDirectOwnSlotValue(frame, slot, from, to, session);
             localize(vu);
             processValueUpdate(vu);
@@ -458,7 +445,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().setDirectOwnSlotValues(frame, slot, values, session);
             localize(vu);
             processValueUpdate(vu);
@@ -526,7 +513,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void addDirectTemplateSlot(Cls cls, Slot slot) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().addDirectTemplateSlot(cls, slot, session);
             localize(vu);
             processValueUpdate(vu);
@@ -538,7 +525,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void removeDirectTemplateSlot(Cls cls, Slot slot) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().removeDirectTemplateSlot(cls, slot, session);
             localize(vu);
             processValueUpdate(vu);
@@ -550,7 +537,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void moveDirectTemplateSlot(Cls cls, Slot slot, int index) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().moveDirectTemplateSlot(cls, slot, index, session);
             localize(vu);
             processValueUpdate(vu);
@@ -574,7 +561,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().setDirectTemplateSlotValues(cls, slot, values, session);
             localize(vu);
             processValueUpdate(vu);
@@ -616,7 +603,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().removeDirectTemplateFacetOverrides(cls, slot, session);
             localize(vu);
             processValueUpdate(vu);
@@ -640,7 +627,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().setDirectTemplateFacetValues(cls, slot, facet, values, session);
             localize(vu);
             processValueUpdate(vu);
@@ -688,7 +675,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void addDirectSuperclass(Cls cls, Cls superclass) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().addDirectSuperclass(cls, superclass, session);
             localize(vu);
             processValueUpdate(vu);
@@ -700,7 +687,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void removeDirectSuperclass(Cls cls, Cls superclass) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().removeDirectSuperclass(cls, superclass, session);
             localize(vu);
             processValueUpdate(vu);
@@ -712,7 +699,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().moveDirectSubclass(cls, subclass, index, session);
             localize(vu);
             processValueUpdate(vu);
@@ -756,7 +743,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void addDirectSuperslot(Slot slot, Slot superslot) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().addDirectSuperslot(slot, superslot, session);
             localize(vu);
             processValueUpdate(vu);
@@ -768,7 +755,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void removeDirectSuperslot(Slot slot, Slot superslot) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().removeDirectSuperslot(slot, superslot, session);
             localize(vu);
             processValueUpdate(vu);
@@ -780,7 +767,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void moveDirectSubslot(Slot slot, Slot subslot, int index) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().moveDirectSubslot(slot, subslot, index, session);
             localize(vu);
             processValueUpdate(vu);
@@ -827,7 +814,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void addDirectType(Instance instance, Cls type) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().addDirectType(instance, type, session);
             localize(vu);
             processValueUpdate(vu);
@@ -839,7 +826,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void removeDirectType(Instance instance, Cls type) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().removeDirectType(instance, type, session);
             localize(vu);
             processValueUpdate(vu);
@@ -851,7 +838,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void moveDirectType(Instance instance, Cls type, int index) {
         try {
-          synchronized(eventLock) {
+          synchronized(clientLock) {
             OntologyUpdate vu = getRemoteDelegate().moveDirectType(instance, type, index, session);
             localize(vu);
             processValueUpdate(vu);
@@ -862,7 +849,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
     
     public List<AbstractEvent> getEvents() {
-      synchronized (eventLock) {
+      synchronized (clientLock) {
         List<AbstractEvent> receivedEvents = null;
         try {
           receivedEvents = getRemoteDelegate().getEvents(session);
@@ -1047,24 +1034,15 @@ public class RemoteClientFrameStore implements FrameStore {
 
     //------------------------------
     public void preload(boolean preloadAll) throws RemoteException {
-      boolean skip = Boolean.getBoolean(userSkipsPreload);
+      boolean skip = Boolean.getBoolean(ServerProperties.SKIP_PRELOAD);
       if (skip) {
         return;
       }
       Log.getLogger().config("Preloading frame values");
       long startTime = System.currentTimeMillis();
       int startCount = cache.size();
-      Set<String> frames = new HashSet<String>();
-      boolean noMoreUserFrames = false;
-      for (int i = 0; !noMoreUserFrames; i++) {
-        String userFrame = System.getProperty(userPreload + i);
-        if (userFrame == null) {
-          noMoreUserFrames = true;
-        } else {
-          frames.add(userFrame);
-        }
-      }
-      synchronized (eventLock) {
+      Set<String> frames = ServerProperties.preloadUserFrames();
+      synchronized (clientLock) {
         OntologyUpdate vu = getRemoteDelegate().preload(frames, preloadAll, session);
         localize(vu);
         processValueUpdate(vu);
@@ -1162,7 +1140,7 @@ public class RemoteClientFrameStore implements FrameStore {
             cacheMiss++;
             reportCacheResults();
           }
-          synchronized (eventLock) {
+          synchronized (clientLock) {
             RemoteResponse<List> vu = null;
             if (facet != null) {
               if (isTemplate) {
@@ -1196,6 +1174,15 @@ public class RemoteClientFrameStore implements FrameStore {
           log.fine("Cache Hit - Non-null value");
           cacheHit++;
           reportCacheResults();
+        }
+        if (slot.equals(directSubclassesSlot) && facet == null && !isTemplate) {
+          Set<Frame> frames = new HashSet<Frame>();
+          for (Object o : values) {
+            if (o instanceof Cls) {
+              frames.add((Cls) o);
+            }
+          }
+          cacheRequestor.requestFrameValues(frames);
         }
       }
       return values;
