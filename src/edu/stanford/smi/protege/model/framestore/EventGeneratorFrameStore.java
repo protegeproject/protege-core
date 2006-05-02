@@ -532,7 +532,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     public boolean commitTransaction() {
         boolean commitTransaction = getDelegate().commitTransaction();     
         if (!commitTransaction && isInTransaction()) {
-            _events.subList(_transactionStartSize + 1, _events.size()).clear();
+      		_events.subList(_transactionStartSize, _events.size()).clear();
         }
         generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);       
         resetTransactionStartSize();        
@@ -541,8 +541,8 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
 
     public boolean rollbackTransaction() {
         boolean rollbackTransaction = getDelegate().rollbackTransaction();        
-        if (rollbackTransaction && isInTransaction()) {
-            _events.subList(_transactionStartSize + 1, _events.size()).clear();
+        if (rollbackTransaction && isInTransaction()) {            		
+        	_events.subList(_transactionStartSize, _events.size()).clear();
         }
         generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);
         resetTransactionStartSize();        
