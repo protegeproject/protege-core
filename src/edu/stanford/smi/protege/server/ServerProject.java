@@ -23,7 +23,7 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     private ServerFrameStore _domainKbFrameStore;
     private ServerFrameStore _projectKbFrameStore;
     private ServerNarrowFrameStore _domainKbNarrowFrameStore;
-    private Object _kbLock = new Object();
+    private final Object _kbLock = new Object();
 
     public URI getURI(RemoteSession session) {
         return _uri;
