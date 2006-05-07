@@ -10,9 +10,6 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
 public class FrameEvaluationEvent extends SftUpdate implements Localizable {
-  private Slot slot;
-  private Facet facet;
-  private boolean isTemplate;
   private List values;
   
   public FrameEvaluationEvent(Frame frame, 
