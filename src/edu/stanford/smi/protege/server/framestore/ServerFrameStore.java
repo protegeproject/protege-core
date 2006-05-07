@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,6 +31,7 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
+import edu.stanford.smi.protege.server.update.FrameEvaluationEvent;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
@@ -59,7 +59,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private Map<RemoteSession, Registration> _sessionToRegistrationMap 
       = new HashMap<RemoteSession, Registration>();
     private boolean _isDirty;
-    private Object _kbLock;
+    private final Object _kbLock;
 
     private Slot nameSlot;
     private Facet valuesFacet;
@@ -338,7 +338,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public int getDirectOwnSlotValuesCount(Frame frame, Slot slot, RemoteSession session) {
       recordCall(session);
-      frameCalculator.addRequest(frame, session);
+      if (!slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
+        frameCalculator.addRequest(frame, session);
+      }
       synchronized(_kbLock) {
         return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
       }
@@ -353,7 +355,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       LocalizeUtils.localize(slot, _kb);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectOwnSlotValues(frame, slot);
-        frameCalculator.addRequest(frame, session);
+        if (!slot.equals(Model.SlotID.DIRECT_INSTANCES)) {
+          frameCalculator.addRequest(frame, session);
+        }
         if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES)) {
           for (Object o : values) {
             if (o instanceof Frame) {
@@ -361,6 +365,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             }
           }
         }
+        _updateWriter.write(new FrameEvaluationEvent(frame, slot, (Facet) null, false, values));
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
@@ -950,9 +955,16 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot, RemoteSession session) {
       recordCall(session);
+      Set values = null;
       synchronized(_kbLock) {
-        return getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
+        values = getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
       }
+      for (Object value : values) {
+        if (value instanceof Frame) {
+          frameCalculator.addRequest((Frame) value, session);
+        }
+      }
+      return values;
     }
 
     /*
@@ -982,7 +994,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         insertValues(map, slot, facet, isTemplate, null);
     }
 
-    public RemoteResponse<List> preload(Set<String> userFrames, boolean all, RemoteSession session) {
+    public OntologyUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) {
       recordCall(session);
       Set<Frame> frames;
       int frameCount = 0;
@@ -1015,8 +1027,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           frames.add(frame);
         }
       }
-      frameCalculator.preLoadFrames(frames, session);
-      return new RemoteResponse<List>(null, getValueUpdates(session));
+      for (Frame frame : frames) {
+        frameCalculator.addRequest(frame, session);
+      }
+      return new OntologyUpdate(getValueUpdates(session));
     }
     
     private void addSystemClasses(Set<Frame> frames, Cls cls)  {
