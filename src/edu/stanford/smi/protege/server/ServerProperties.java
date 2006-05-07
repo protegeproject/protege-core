@@ -32,7 +32,6 @@ public class ServerProperties {
   public static final String SKIP_PRELOAD = "server.client.preload.skip";
   public static final String DELAY_MSEC = "server.delay";
   public static final String MIN_PRELOAD_FRAMES = "preload.frame.limit";
-  public static final String FOLLOW_EXPR_SLOTS = "protege.server.expr.slots";
   
   public static final String SERVER_PROPERTIES_FILE="server.properties";
   
@@ -59,9 +58,6 @@ public class ServerProperties {
     return getStringSet(ServerProperties.USER_PRELOAD);
   }
   
-  public static Set<String> exprSlots() {
-    return getStringSet(ServerProperties.FOLLOW_EXPR_SLOTS);
-  }
   
   private static Set<String> getStringSet(String property) {
     Set<String> values = new HashSet<String>();
