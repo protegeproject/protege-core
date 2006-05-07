@@ -30,9 +30,6 @@ public class ClientCacheRequestor {
     synchronized (lock) {
       this.frames.addAll(frames);
       switch (th.getStatus()) {
-      case IDLE:
-        th.start();
-        break;
       case RUNNING:
         break;
       case SHUTDOWN:
