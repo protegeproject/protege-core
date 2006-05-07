@@ -1,5 +1,5 @@
 Original Checkout Revision: 1730
 Merged With Trunk:          1776  To install temporary fix which includes 
-								frames from included projects in the 
-								database.
+                                  frames from included projects in the 
+                                  database.
 
