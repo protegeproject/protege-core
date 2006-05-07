@@ -34,7 +34,8 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 public class ValueCachingNarrowFrameStore implements NarrowFrameStore, IncludingKBSupport {
     private Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private DatabaseFrameDb _delegate;
-    private CacheMap _frameToSftToValuesMap = new CacheMap();
+    private CacheMap<Frame, Map<Sft, List>> _frameToSftToValuesMap 
+        = new CacheMap<Frame, Map<Sft, List>>();
 
     public String getName() {
         return _delegate.getName();
@@ -72,18 +73,18 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         return _delegate.getFrame(id);
     }
 
-    private Map lookup(Frame frame) {
-        return (Map) _frameToSftToValuesMap.get(frame);
+    private Map<Sft, List> lookup(Frame frame) {
+        return _frameToSftToValuesMap.get(frame);
     }
 
-    private List lookup(Map map, Slot slot, Facet facet, boolean isTemplate) {
+    private List lookup(Map<Sft, List> map, Slot slot, Facet facet, boolean isTemplate) {
         Sft lookupSft = new Sft(slot, facet, isTemplate);
-        return (List) map.get(lookupSft);
+        return map.get(lookupSft);
     }
 
     private List lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         List values = null;
-        Map sftToValuesMap = lookup(frame);
+        Map<Sft, List> sftToValuesMap = lookup(frame);
         if (sftToValuesMap != null) {
             values = lookup(sftToValuesMap, slot, facet, isTemplate);
         }
@@ -128,12 +129,11 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
     private static final int LOAD_THRESHOLD = 10;
     public int getValuesCount(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         int count;
-        Map sftToValuesMap = lookup(frame);
+        Map<Sft, List> sftToValuesMap = lookup(frame);
         if (sftToValuesMap == null) {
             count = getDelegate().getValuesCount(frame, slot, facet, isTemplate);
             if (count < LOAD_THRESHOLD) {
                 sftToValuesMap = loadFrameIntoCache(frame);
-                _frameToSftToValuesMap.put(frame, sftToValuesMap);
             }
         } else {
             List values = lookup(sftToValuesMap, slot, facet, isTemplate);
@@ -256,15 +256,15 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
     }
     private void deleteCacheFrame(Frame frame) {
         _frameToSftToValuesMap.remove(frame);
-        Iterator i = _frameToSftToValuesMap.getKeys().iterator();
+        Iterator<Frame> i = _frameToSftToValuesMap.getKeys().iterator();
         while (i.hasNext()) {
-            Frame frameKey = (Frame) i.next();
-            Map sftToValuesMap = (Map) _frameToSftToValuesMap.get(frameKey);
+            Frame frameKey =  i.next();
+            Map<Sft, List> sftToValuesMap =  _frameToSftToValuesMap.get(frameKey);
             if (sftToValuesMap != null) {
-                Iterator j = sftToValuesMap.entrySet().iterator();
+                Iterator<Map.Entry<Sft, List>> j = sftToValuesMap.entrySet().iterator();
                 while (j.hasNext()) {
-                    Map.Entry entry = (Map.Entry) j.next();
-                    Sft sft = (Sft) entry.getKey();
+                    Map.Entry<Sft,List> entry = (Map.Entry) j.next();
+                    Sft sft = entry.getKey();
                     if (contains(sft, frame)) {
                         _frameToSftToValuesMap.remove(frameKey);
                     } else {
@@ -287,8 +287,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         _frameToSftToValuesMap = _delegate.getFrameValues();
     }
     
-    private Map loadFrameIntoCache(Frame frame) {
-        Map sftToValuesMap = _delegate.getFrameValues(frame);
+    private Map<Sft,List> loadFrameIntoCache(Frame frame) {
+        Map<Sft, List> sftToValuesMap = _delegate.getFrameValues(frame);
         _frameToSftToValuesMap.put(frame, sftToValuesMap);
         return sftToValuesMap;
     }
