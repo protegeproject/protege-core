@@ -1,18 +1,26 @@
 package edu.stanford.smi.protege.util;
 
-import java.lang.ref.*;
-import java.util.*;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Ray Fergerson
  *
  * Description of this class
  */
-public class CacheMap {
+public class CacheMap<X,Y> {
     private static final int INIT_SIZE = 10007;
-    private Map keyToReferenceMap = new HashMap(INIT_SIZE);
-    private Map referenceToKeyMap = new HashMap(INIT_SIZE);
-    private ReferenceQueue referenceQueue = new ReferenceQueue();
+    private Map<X,Reference<? extends Y>> keyToReferenceMap 
+      = new HashMap<X,Reference<? extends Y>>(INIT_SIZE);
+    private Map<Reference<? extends Y>,X> referenceToKeyMap 
+      = new HashMap<Reference<? extends Y>,X>(INIT_SIZE);
+    private ReferenceQueue<Y> referenceQueue = new ReferenceQueue<Y>();
     private int maxSize;
 
     public CacheMap(int maxSize) {
@@ -24,26 +32,27 @@ public class CacheMap {
     }
 
     private void pollQueue() {
-        Reference ref;
+        Reference<? extends Y> ref;
         while ((ref = referenceQueue.poll()) != null) {
-            Object key = referenceToKeyMap.remove(ref);
+            X key = referenceToKeyMap.remove(ref);
             keyToReferenceMap.remove(key);
         }
     }
 
-    public Object get(Object key) {
+    public Y get(X key) {
         pollQueue();
-        SoftReference ref = (SoftReference) keyToReferenceMap.get(key);
-        Object value = (ref == null) ? null : ref.get();
+        SoftReference<? extends Y> ref = (SoftReference<? extends Y>) keyToReferenceMap.get(key);
+        Y value = (ref == null) ? null : ref.get();
         return value;
     }
 
-    public void put(Object key, Object value) {
+    public void put(X key, Y value) {
         pollQueue();
         if (value == null) {
-            keyToReferenceMap.put(key, value);
+            keyToReferenceMap.put(key, (Reference<Y>) null);
         } else {
-            Reference reference = new SoftReference(value, referenceQueue);
+            Reference<Y> reference 
+              = new SoftReference<Y>(value, referenceQueue);
             keyToReferenceMap.put(key, reference);
             referenceToKeyMap.put(reference, key);
         }
@@ -55,19 +64,19 @@ public class CacheMap {
             Log.getLogger().info("removing elements from call cache");
             int count = 0;
             int nremove = maxSize/5;
-            Iterator i = keyToReferenceMap.entrySet().iterator();
+            Iterator<X> i = keyToReferenceMap.keySet().iterator();
             while (i.hasNext() && count++ < nremove) {
-                Object key = i.next();
-                Object value = keyToReferenceMap.get(key);
+                X key = i.next();
+                Reference<? extends Y> value = keyToReferenceMap.get(key);
                 referenceToKeyMap.remove(value);
                 i.remove();
             }
         }
     }
 
-    public void remove(Object key) {
+    public void remove(X key) {
         pollQueue();
-        Object reference = keyToReferenceMap.remove(key);
+        Reference<? extends Y> reference = keyToReferenceMap.remove(key);
         referenceToKeyMap.remove(reference);
     }
 
@@ -79,7 +88,7 @@ public class CacheMap {
 
     public Collection getKeys() {
         pollQueue();
-        return new ArrayList(keyToReferenceMap.keySet());
+        return new ArrayList<X>(keyToReferenceMap.keySet());
     }
 
     public String toString() {
