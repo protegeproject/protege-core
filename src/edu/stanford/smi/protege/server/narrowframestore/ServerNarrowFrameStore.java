@@ -31,7 +31,7 @@ public class ServerNarrowFrameStore
   NarrowFrameStore delegate;
   NarrowFrameStore fixedDelegate;
   KnowledgeBase kb;
-  Object kbLock;
+  private final Object kbLock;
 
   
   public ServerNarrowFrameStore(NarrowFrameStore delegate, 
