@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -48,7 +47,6 @@ import edu.stanford.smi.protege.widget.TabWidget;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class PluginUtilities {
-	private static transient Logger log = Log.getLogger(PluginUtilities.class);
 	
     private static final String TAB_WIDGET = "Tab-Widget";
     private static final String SLOT_WIDGET = "Slot-Widget";
