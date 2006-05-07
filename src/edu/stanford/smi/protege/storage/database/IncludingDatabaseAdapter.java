@@ -23,7 +23,6 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
     local_frame_id, frame_name
   };
   
-  private ValueCachingNarrowFrameStore delegate;
   private DatabaseFrameDb frameDb;
   private Map<Integer, String> includedIdCache = new HashMap<Integer, String>();
   
@@ -44,7 +43,6 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
    */
   public IncludingDatabaseAdapter(ValueCachingNarrowFrameStore vcnfs) {
       super(vcnfs);
-      delegate = vcnfs;
       frameDb  = vcnfs.getDelegate();
   }
   
