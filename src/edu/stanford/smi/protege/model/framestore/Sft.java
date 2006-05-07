@@ -15,7 +15,6 @@ public class Sft implements Externalizable, Localizable {
     private Slot _slot;
     private Facet _facet;
     private boolean _isTemplate;
-    private int _hashCode;
 
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(_slot);
@@ -65,7 +64,6 @@ public class Sft implements Externalizable, Localizable {
         return HashUtils.getHash(_slot, _facet, _isTemplate);
     }
     public boolean equals(Object o) {
-        boolean result = false;
         if (o instanceof Sft) {
             Sft rhs = (Sft) o;
             return equals(_slot, rhs._slot) && 
