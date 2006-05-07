@@ -1,12 +1,12 @@
 package edu.stanford.smi.protege.server.framestore.background;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,14 +14,16 @@ import java.util.logging.Logger;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
 import edu.stanford.smi.protege.server.update.FrameEvaluationEvent;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
+import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
 import edu.stanford.smi.protege.server.util.FifoWriter;
 import edu.stanford.smi.protege.util.Log;
@@ -52,19 +54,20 @@ import edu.stanford.smi.protege.util.Log;
 public class FrameCalculator {
   private static transient Logger log = Log.getLogger(FrameCalculator.class);
   
+  private static float priorityAdjust = (float) .5;
+  private Random dice = new Random();
+  
   private enum RunStatus {
     IDLE, RUNNING, SHUTDOWN
   }
   
   private boolean shuttingDown = false;
   private FrameStore fs;
-  private Object kbLock;
+  private final Object kbLock;
   private FifoWriter<ValueUpdate> updates;
   private ServerFrameStore server;
   
   FrameCalculatorThread innerThread;
-  
-  Set<Slot> followedSlots = new HashSet<Slot>();
   
   /*
    * The kb lock is never taken while the request Lock is held.
@@ -73,6 +76,7 @@ public class FrameCalculator {
   private Object requestLock = new Object();
   private List<Frame> requests = new ArrayList<Frame>();
   private Map<Frame, WorkInfo> requestMap = new HashMap<Frame, WorkInfo>();
+  private StateMachine machine = null;
   
   public FrameCalculator(FrameStore fs,
                          Object kbLock,
@@ -82,12 +86,6 @@ public class FrameCalculator {
     this.kbLock = kbLock;
     this.updates = updates;
     this.server = server;
-    for (String slotName : ServerProperties.exprSlots()) {
-      Frame frame = fs.getFrame(slotName);
-      if (frame != null && frame instanceof Slot) {
-        followedSlots.add((Slot) frame);
-      }
-    }
   }
   
 
@@ -96,41 +94,53 @@ public class FrameCalculator {
       log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
     }
     try {
+      priorityAdjust();
       synchronized(kbLock) {
         insertEvent(new FrameEvaluationStarted(frame));
       }
       Set<Slot> slots = null;
-      List values;
+      List values = null;
+      priorityAdjust();
       synchronized (kbLock) {
         server.waitForTransactionsToComplete();
         slots = fs.getOwnSlots(frame);
       }
       for (Slot slot : slots) {
+        priorityAdjust();
         synchronized (kbLock) {
-          server.waitForTransactionsToComplete();
-          values = fs.getDirectOwnSlotValues(frame, slot);
-          insertValueEvent(frame, slot, (Facet) null, false, values);
-        }
-        addFollowedExprs(frame, slot, values);
+          if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
+            insertEvent(
+                new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
+          } else {
+            server.waitForTransactionsToComplete();
+            values = fs.getDirectOwnSlotValues(frame, slot);
+            insertValueEvent(frame, slot, (Facet) null, false, values);
+          }
+          addFollowedExprs(frame, slot, values);
+        }  
       }
       if (frame instanceof Cls) {
         Cls cls = (Cls) frame;
+        priorityAdjust();
         synchronized (kbLock) {
           server.waitForTransactionsToComplete();
           slots = fs.getTemplateSlots(cls);
         }
         for (Slot slot : slots) {
+          priorityAdjust();
           synchronized (kbLock) {
             server.waitForTransactionsToComplete();
             values = fs.getDirectTemplateSlotValues(cls, slot);
           }
           insertValueEvent(cls, slot, (Facet) null, true, values);
           Set<Facet> facets;
+          priorityAdjust();
           synchronized (kbLock) {
             server.waitForTransactionsToComplete();
             facets = fs.getTemplateFacets(cls, slot);
           }
           for (Facet facet : facets) {
+            priorityAdjust();
             synchronized (kbLock) {
               server.waitForTransactionsToComplete();
               values = fs.getDirectTemplateFacetValues(cls, slot,facet);
@@ -139,6 +149,7 @@ public class FrameCalculator {
           }
         }
       }
+      priorityAdjust();
       synchronized(kbLock) {
         insertEvent(new FrameEvaluationCompleted(frame));
       }
@@ -150,114 +161,43 @@ public class FrameCalculator {
   }
   
   public void addFollowedExprs(Frame frame, Slot slot, List values) {
-    if (followedSlots.contains(slot) && !values.isEmpty()) {
-      if (log.isLoggable(Level.FINE)) {
-        log.fine("expanding expression for frame " + frame + " following slot " + slot);
+    synchronized (requestLock) {
+      if (machine == null) {
+        machine = new StateMachine(fs);
       }
-      synchronized (requestMap) {
-        WorkInfo wi = requestMap.get(frame);
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("\tOriginal frame = " + wi.getOrginalFrame());
+      WorkInfo wi = requestMap.get(frame);
+      if (wi == null) {
+        return;
+      }
+      for (State state : wi.getStates()) {
+        if (log.isLoggable(Level.FINER)) {
+          log.finer("Following expr " + frame + " with slot " + slot + " in state " + state);
+        }
+        State newState = machine.nextState(state, slot);
+        if (newState == null) {
+          break;
         }
         for (Object o : values) {
           if (o instanceof Frame) {
-            Frame v = (Frame) o;
-            if (wi.getEvaluationPath().contains(v)) {
-              break;
-            } else {
-              wi.getEvaluationPath().add(v);
-            }
-            if (!requests.contains(v)) {
-              if (log.isLoggable(Level.FINE)) {
-                log.fine("\tadded frame " + v);
-              }
-              requests.add(0, v);
-              wi.addEvaluatedFrame(v);
-              requestMap.put(v, wi);
-            } else {
-              if (log.isLoggable(Level.FINE)) {
-                log.fine("\tFrame " + v + " alread being worked on");
-              }
-              // somebody else is working on this but we are also interested
-              requestMap.get(v).getClients().addAll(wi.getClients());
+            Frame inner = (Frame) o;
+            WorkInfo iwi = addRequest(inner, newState);
+            iwi.getClients().addAll(wi.getClients());
+            if (log.isLoggable(Level.FINE)) {
+              log.fine("Added cache request frame for state transition " + 
+                  frame + " x " + state + " -> " + inner + " x " + newState);
             }
           }
         }
-      }
-    }
-  }
-  
-  /**
-   * This call preloads data for the frames on behalf of a given client.
-   * It gives other clients several opporunities to take the kbLock
-   *
-   * @param frames The frames to be preloaded.
-   # @param client The client on whose behalf the frames are being loaded. 
-   */
-  public void preLoadFrames(Collection<Frame> frames, RemoteSession client) {
-    /*
-     * An alternative to the following code is to simply send this to the 
-     * frame calculator - it will have a head start - is this enough?
-     */
-    Set<RemoteSession> clients = Collections.singleton(client);
-    List values;
-    for (Frame frame : frames) {
-      synchronized (kbLock) {
-        insertEvent(new FrameEvaluationStarted(frame), clients);
-      }
-      
-      Set<Slot> slots;
-      synchronized (kbLock) {
-        slots = fs.getOwnSlots(frame);
-      }
-      for (Slot slot : slots) {
-        synchronized (kbLock) {
-          server.waitForTransactionsToComplete();
-          values = fs.getDirectOwnSlotValues(frame, slot);
-          insertEvent(
-              new FrameEvaluationEvent(frame, slot, (Facet) null, false, values), 
-              clients);
-        }
-        
-      }
-      if (frame instanceof Cls) {
-        Cls cls = (Cls) frame;
-          
-        synchronized (kbLock)  {
-          server.waitForTransactionsToComplete();
-          slots = fs.getTemplateSlots(cls);
-        }
-        for (Slot slot : slots) {
-          synchronized (kbLock) {
-            server.waitForTransactionsToComplete();
-            values = fs.getDirectTemplateSlotValues(cls, slot);
-            insertEvent(
-                new FrameEvaluationEvent(cls, slot, (Facet) null,  true, values), 
-                clients);
-          }
-          Set<Facet> facets;
-          synchronized (kbLock) {
-            server.waitForTransactionsToComplete();
-            facets = fs.getTemplateFacets(cls, slot);
-          }
-          for (Facet facet : facets) {
-            synchronized (kbLock) {
-              server.waitForTransactionsToComplete();
-              values = fs.getDirectTemplateFacetValues(cls, slot, facet);
-              insertEvent(
-                  new FrameEvaluationEvent(cls, slot, facet, true, values),
-                  clients);
-            }
-          }
-        }
-      }
-      synchronized (kbLock) {
-        insertEvent(new FrameEvaluationCompleted(frame), clients);
       }
     }
   }
 
   public void addRequest(Frame frame, RemoteSession session) {
+    WorkInfo wi = addRequest(frame, State.Start);
+    wi.getClients().add(session);
+  }
+  
+  public WorkInfo addRequest(Frame frame , State state) {
     if (log.isLoggable(Level.FINE)) {
       log.fine("Added " + fs.getFrameName(frame) + 
                " to head of frames to precalculate");
@@ -273,16 +213,15 @@ public class FrameCalculator {
       WorkInfo wi = requestMap.get(frame);
       if (wi == null) {
         wi = new WorkInfo();
-        wi.setOrginalFrame(frame);
-        wi.addEvaluatedFrame(frame);
         requestMap.put(frame, wi);
       }
-      wi.getClients().add(session);
+      wi.addState(state);
       if (innerThread == null || 
           innerThread.getStatus() == RunStatus.SHUTDOWN) {
         innerThread = new FrameCalculatorThread();
         innerThread.start();
       }
+      return wi;
     }
   }
 
@@ -339,11 +278,20 @@ public class FrameCalculator {
     }
   }
   
+  public void priorityAdjust() {
+    while (dice.nextFloat() < priorityAdjust) {
+      synchronized (kbLock) {
+        ;
+      }
+    }
+  }
+  
   private class FrameCalculatorThread extends Thread {
     private RunStatus status = RunStatus.IDLE;
     
     public FrameCalculatorThread() {
       super("Frame Pre-Calculation Thread");
+      setPriority(Thread.NORM_PRIORITY - 1);
     }
     
     public void run() {
@@ -375,37 +323,22 @@ public class FrameCalculator {
     public RunStatus getStatus() {
       return status;
     }
-    
-    
   }
   
   private class WorkInfo {
     private Set<RemoteSession> clients = new HashSet<RemoteSession>();
-    private Set<Frame> evaluationPath = new HashSet<Frame>();
-    private Frame orginalFrame;
-    
-    public Frame getOrginalFrame() {
-      return orginalFrame;
-    }
+    private EnumSet<State> states = EnumSet.noneOf(State.class);
 
-    public void setOrginalFrame(Frame orginalFrame) {
-      this.orginalFrame = orginalFrame;
-    }
-
-    public Set<Frame> getEvaluationPath() {
-      return evaluationPath;
-    }
-    
-    public void setEvaluationPath(Set<Frame> evaluationPath) {
-      this.evaluationPath = evaluationPath;
-    }
-    
-    public void addEvaluatedFrame(Frame frame) {
-      evaluationPath.add(frame);
-    }
-    
     public Set<RemoteSession> getClients() {
       return clients;
+    }
+    
+    public void addState(State state) {
+      states.add(state);
+    }
+    
+    public EnumSet<State> getStates() {
+      return states;
     }
 
   }
