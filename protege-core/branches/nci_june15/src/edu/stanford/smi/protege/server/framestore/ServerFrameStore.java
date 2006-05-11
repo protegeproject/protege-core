@@ -234,6 +234,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       frameCalculator.addRequest(cls, session);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateSlotValues(cls, slot);
+        if (!existsTransaction()) {
+          _updateWriter.write(new FrameEvaluationEvent(cls, slot, (Facet) null, true, values));
+        }
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
@@ -300,6 +303,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       frameCalculator.addRequest(cls, session);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
+        if (!existsTransaction()) {
+          _updateWriter.write(new FrameEvaluationEvent(cls, slot, facet, true, values));
+        }
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
@@ -365,7 +371,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             }
           }
         }
-        _updateWriter.write(new FrameEvaluationEvent(frame, slot, (Facet) null, false, values));
+        if (!existsTransaction()) {
+          _updateWriter.write(new FrameEvaluationEvent(frame, slot, (Facet) null, false, values));
+        }
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
@@ -383,8 +391,18 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
+        if (!(values instanceof List)) {
+          values = new ArrayList(values);
+        }
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
         markDirty();
+        if (!existsTransaction() || inTransaction()) {
+          _updateWriter.write(new FrameEvaluationEvent(cls, slot, facet, true, (List) values));
+        }
+        if (inTransaction()) {
+          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
+                                       new InvalidateCacheUpdate(cls, slot, facet, true));
+        }
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
@@ -408,9 +426,20 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public OntologyUpdate setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values, RemoteSession session) {
       recordCall(session);
+      if (!(values instanceof  List)) {
+        values = new ArrayList(values);
+      }
       synchronized(_kbLock) {
         markDirty();
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
+        if (!existsTransaction() || inTransaction()) {
+          _updateWriter.write(new FrameEvaluationEvent(cls, slot, (Facet) null, true, (List) values));
+        }
+        if (inTransaction()) {
+          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
+                                     new InvalidateCacheUpdate(cls, slot, (Facet) null, true));
+        }
+
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
@@ -500,9 +529,20 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public OntologyUpdate setDirectOwnSlotValues(Frame frame, Slot slot, Collection values, RemoteSession session) {
       recordCall(session);
+      if (!(values instanceof List)) {
+        values = new ArrayList(values);
+      }
       synchronized(_kbLock) {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
         markDirty();
+        if (!existsTransaction() || inTransaction()) {
+          _updateWriter.write(new FrameEvaluationEvent(frame, slot, (Facet) null, false, (List) values));
+        }
+        if (inTransaction()) {
+          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
+                                           new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
+        }
+
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
