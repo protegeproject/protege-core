@@ -58,7 +58,6 @@ public class RemoteClientFrameStore implements FrameStore {
     private RemoteServerFrameStore remoteDelegate;
 
     private Slot nameSlot;
-    private Slot directSubclassesSlot;
 
     private enum CacheStatus {
       STARTED_CACHING, COMPLETED_CACHING
@@ -67,12 +66,6 @@ public class RemoteClientFrameStore implements FrameStore {
     private Map<Frame, CacheStatus> cacheStatus = new HashMap<Frame, CacheStatus>();
     private Map<Frame, Map<Sft, List>> cache = new HashMap<Frame, Map<Sft, List>>();
     private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
-    
-    private int cacheMiss = 0;
-    private int cacheHit = 0;
-    private static final int cachePollInt = 100;
-    
-    private ClientCacheRequestor cacheRequestor;
 
     
     public String getName() {
@@ -109,8 +102,7 @@ public class RemoteClientFrameStore implements FrameStore {
             remoteDelegate = project.getDomainKbFrameStore(session);
             this.kb = kb;
             nameSlot = getSystemFrames().getNameSlot();
-            directSubclassesSlot = getSystemFrames().getDirectSubclassesSlot();
-            cacheRequestor = new ClientCacheRequestor(remoteDelegate, session);
+            // directSubclassesSlot = getSystemFrames().getDirectSubclassesSlot();
             preload(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
@@ -1099,8 +1091,8 @@ public class RemoteClientFrameStore implements FrameStore {
         if (facet != null) {
           if (isTemplate) {
             vu = getRemoteDelegate().getDirectTemplateFacetValues((Cls) frame, 
-                slot, facet, 
-                session);
+                                                                  slot, facet, 
+                                                                  session);
           } else {
             throw new UnsupportedOperationException(
             "We don't cache this information...");
@@ -1108,7 +1100,7 @@ public class RemoteClientFrameStore implements FrameStore {
         } else {
           if (isTemplate) {
             vu = getRemoteDelegate().getDirectTemplateSlotValues((Cls) frame, 
-                slot, session);
+                                                                 slot, session);
           } else {
             vu = getRemoteDelegate().getDirectOwnSlotValues(frame, slot, session);
           }
