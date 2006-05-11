@@ -30,7 +30,7 @@ public class StateMachine {
       
       addTransition(State.OwlExpr, "owl:intersectionOf", State.RDFList);
       addTransition(State.OwlExpr, ":DIRECT-SUPERCLASSES", State.End);
-      
+      addTransition(State.OwlExpr, "owl:someValuesFrom", State.End);
       
       addTransition(State.RDFList, "rdf:rest", State.RDFList);
       addTransition(State.RDFList, "rdf:first", State.OwlExpr);
