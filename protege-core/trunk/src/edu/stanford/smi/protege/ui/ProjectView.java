@@ -296,7 +296,8 @@ public class ProjectView extends JComponent {
                 addTab(d);
             }
         }
-        _viewHolder.setSelectedIndex(0);
+        if (_viewHolder.getComponentCount() > 0)
+        	_viewHolder.setSelectedIndex(0);
         setBorder(BorderFactory.createLoweredBevelBorder());
         return (JComponent) _viewHolder;
     }
