@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
@@ -54,9 +53,6 @@ import edu.stanford.smi.protege.util.Log;
 public class FrameCalculator {
   private static transient Logger log = Log.getLogger(FrameCalculator.class);
   
-  private static float priorityAdjust = (float) .5;
-  private Random dice = new Random();
-  
   private enum RunStatus {
     IDLE, RUNNING, SHUTDOWN
   }
@@ -94,19 +90,16 @@ public class FrameCalculator {
       log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
     }
     try {
-      priorityAdjust();
       synchronized(kbLock) {
         insertEvent(new FrameEvaluationStarted(frame));
       }
       Set<Slot> slots = null;
       List values = null;
-      priorityAdjust();
       synchronized (kbLock) {
         server.waitForTransactionsToComplete();
         slots = fs.getOwnSlots(frame);
       }
       for (Slot slot : slots) {
-        priorityAdjust();
         synchronized (kbLock) {
           if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
             insertEvent(
@@ -121,26 +114,22 @@ public class FrameCalculator {
       }
       if (frame instanceof Cls) {
         Cls cls = (Cls) frame;
-        priorityAdjust();
         synchronized (kbLock) {
           server.waitForTransactionsToComplete();
           slots = fs.getTemplateSlots(cls);
         }
         for (Slot slot : slots) {
-          priorityAdjust();
           synchronized (kbLock) {
             server.waitForTransactionsToComplete();
             values = fs.getDirectTemplateSlotValues(cls, slot);
           }
           insertValueEvent(cls, slot, (Facet) null, true, values);
           Set<Facet> facets;
-          priorityAdjust();
           synchronized (kbLock) {
             server.waitForTransactionsToComplete();
             facets = fs.getTemplateFacets(cls, slot);
           }
           for (Facet facet : facets) {
-            priorityAdjust();
             synchronized (kbLock) {
               server.waitForTransactionsToComplete();
               values = fs.getDirectTemplateFacetValues(cls, slot,facet);
@@ -149,7 +138,6 @@ public class FrameCalculator {
           }
         }
       }
-      priorityAdjust();
       synchronized(kbLock) {
         insertEvent(new FrameEvaluationCompleted(frame));
       }
@@ -163,7 +151,7 @@ public class FrameCalculator {
   public void addFollowedExprs(Frame frame, Slot slot, List values) {
     synchronized (requestLock) {
       if (machine == null) {
-        machine = new StateMachine(fs);
+        machine = new StateMachine(fs, kbLock);
       }
       WorkInfo wi = requestMap.get(frame);
       if (wi == null) {
@@ -173,13 +161,14 @@ public class FrameCalculator {
         if (log.isLoggable(Level.FINER)) {
           log.finer("Following expr " + frame + " with slot " + slot + " in state " + state);
         }
-        State newState = machine.nextState(state, slot);
-        if (newState == null) {
-          break;
-        }
+
         for (Object o : values) {
           if (o instanceof Frame) {
             Frame inner = (Frame) o;
+            State newState = machine.nextState(state, slot, inner);
+            if (newState == null) {
+              break;
+            }
             WorkInfo iwi = addRequest(inner, newState);
             iwi.getClients().addAll(wi.getClients());
             if (log.isLoggable(Level.FINE)) {
@@ -278,20 +267,12 @@ public class FrameCalculator {
     }
   }
   
-  public void priorityAdjust() {
-    while (dice.nextFloat() < priorityAdjust) {
-      synchronized (kbLock) {
-        ;
-      }
-    }
-  }
-  
+
   private class FrameCalculatorThread extends Thread {
     private RunStatus status = RunStatus.IDLE;
     
     public FrameCalculatorThread() {
       super("Frame Pre-Calculation Thread");
-      setPriority(Thread.NORM_PRIORITY - 1);
     }
     
     public void run() {
