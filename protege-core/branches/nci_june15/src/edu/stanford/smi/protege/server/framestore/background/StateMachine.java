@@ -13,27 +13,32 @@ import edu.stanford.smi.protege.util.Log;
 public class StateMachine {
   private static transient Logger log = Log.getLogger(StateMachine.class);
   
+  private FrameStore fs;
+  private final Object kbLock;
+  
   private Map<StateAndSlot, State> transitionMap
     = new HashMap<StateAndSlot, State>();
   
-  public StateMachine(FrameStore fs) {
-    addTransition(fs, State.Start, ":DIRECT-SUPERCLASSES", State.OwlExpr);
-    /*
-    addTransition(fs, State.Start, "owl:equivalentClass", State.OwlExpr);
+  public StateMachine(FrameStore fs, Object kbLock) {
+    this.fs = fs;
+    this.kbLock = kbLock;
+    synchronized (kbLock) {
+      addTransition(State.Start, ":DIRECT-SUPERCLASSES", State.OwlExpr);
+      
+      addTransition(State.Start, "owl:equivalentClass", State.OwlExpr);
+      
+      
+      addTransition(State.OwlExpr, "owl:intersectionOf", State.RDFList);
+      addTransition(State.OwlExpr, ":DIRECT-SUPERCLASSES", State.End);
+      
+      
+      addTransition(State.RDFList, "rdf:rest", State.RDFList);
+      addTransition(State.RDFList, "rdf:first", State.OwlExpr);
 
-
-    addTransition(fs, State.OwlExpr, "owl:intersectionOf", State.RDFList);
-    addTransition(fs, State.OwlExpr, ":DIRECT-SUPERCLASSES", State.End);
-
-
-    addTransition(fs, State.RDFList, "rdf:rest", State.RDFList);
-    addTransition(fs, State.RDFList, "rdf:first", State.OwlExpr);
-
-    */
+    }
   }
   
-  private void addTransition(FrameStore fs, 
-                             State start, String slotName, State end) {
+  private void addTransition(State start, String slotName, State end) {
     Slot slot = null;
     try {
       Frame sframe = fs.getFrame(slotName);
@@ -54,9 +59,15 @@ public class StateMachine {
       }
     }
   }
-
-  public State nextState(State state, Slot slot) {
-    return transitionMap.get(new StateAndSlot(state, slot));
+  
+  public State nextState(State state, Slot slot, Frame endingFrame) {
+    State endState = transitionMap.get(new StateAndSlot(state, slot));
+    synchronized (kbLock) {
+      if (endState != null && endState.entryCondition(fs, endingFrame)) {
+        return endState;
+      }
+    }
+    return null;
   }
 
   private class StateAndSlot {
