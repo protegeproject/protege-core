@@ -29,6 +29,7 @@ public class FrameStoreManager {
     private UndoFrameStore undoFrameStore;
     private ChangeMonitorFrameStore changeMonitorFrameStore;
     private FrameStore traceFrameStore;
+    private FrameStore busyFrameStore;
 
     private FrameStore terminalFrameStore;
     private FrameStore headFrameStore;
@@ -94,6 +95,7 @@ public class FrameStoreManager {
         add(changeMonitorFrameStore, true);
         add(cleanDispatchFrameStore, true);
         add(deleteSimplificationFrameStore, true);
+        add(busyFrameStore, false);
 
         // for testing
         add(traceFrameStore, false);
@@ -176,6 +178,7 @@ public class FrameStoreManager {
         traceFrameStore = null;
         terminalFrameStore = null;
         headFrameStore = null;
+        busyFrameStore = null;
     }
 
     private void closeFrameStores() {
@@ -248,6 +251,10 @@ public class FrameStoreManager {
     public boolean isCallCachingEnabled() {
         return isEnabled(cachingFrameStore);
     }
+    
+    public boolean isBusyFlagEnabled() {
+      return isEnabled(busyFrameStore);
+    }
 
     public boolean setEnabled(FrameStore fs, boolean b) {
         return b ? enable(fs) : disable(fs);
@@ -259,6 +266,10 @@ public class FrameStoreManager {
 
     public boolean setCallCachingEnabled(boolean b) {
         return setEnabled(cachingFrameStore, b);
+    }
+    
+    public boolean setBusyFlagEnabled(boolean b) {
+      return setEnabled(busyFrameStore, b);
     }
 
     public boolean setCleanDispatchEnabled(boolean b) {
@@ -321,6 +332,7 @@ public class FrameStoreManager {
         deleteSimplificationFrameStore = create(DeleteSimplificationFrameStore.class);
         argumentCheckingFrameStore = create(ArgumentCheckingFrameStore.class);
         cachingFrameStore = create(CallCachingFrameStore.class);
+        busyFrameStore = create(BusyFlagFrameStore.class);
         cleanDispatchFrameStore = create(CleanDispatchFrameStore.class);
         eventDispatchFrameStore = (EventDispatchFrameStore) create(EventDispatchFrameStore.class);
         eventGeneratorFrameStore = (EventGeneratorFrameStore) create(EventGeneratorFrameStore.class);
