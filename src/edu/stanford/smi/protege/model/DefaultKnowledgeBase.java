@@ -138,6 +138,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     public synchronized boolean isCallCachingEnabled() {
         return _frameStoreManager.isCallCachingEnabled();
     }
+    
+    public synchronized boolean isBusyFlagEnabled() {
+      return _frameStoreManager.isBusyFlagEnabled();
+    }
 
     public synchronized boolean setJournalingEnabled(boolean b) {
         return _frameStoreManager.setJournalingEnabled(b);
@@ -153,6 +157,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized boolean setCallCachingEnabled(boolean b) {
         return _frameStoreManager.setCallCachingEnabled(b);
+    }
+    
+    public synchronized boolean setBusyFlagEnabled(boolean b) {
+      return _frameStoreManager.setBusyFlagEnabled(b);
     }
 
     public synchronized boolean setGenerateEventsEnabled(boolean b) {
