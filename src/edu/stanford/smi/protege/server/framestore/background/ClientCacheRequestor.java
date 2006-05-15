@@ -16,9 +16,10 @@ public class ClientCacheRequestor {
   public enum ThreadStatus {
     IDLE, RUNNING, SHUTDOWN
   }
-  private Set<Frame> frames = new HashSet<Frame>();
+  private Set<Frame> frames  = new HashSet<Frame>();
+  private Set<Frame> framesWithDirectInstances = new HashSet<Frame>();
   private Object lock = new Object();
-  private RequestorThread th = new RequestorThread();
+  private RequestorThread th = null;
   private RemoteServerFrameStore delegate;
   private RemoteSession session;
   
@@ -26,18 +27,16 @@ public class ClientCacheRequestor {
     this.delegate = delegate;
   }
   
-  public void requestFrameValues(Set<Frame> frames) {
+  public void requestFrameValues(Set<Frame> frames, boolean skipDirectInstances) {
     synchronized (lock) {
-      this.frames.addAll(frames);
-      switch (th.getStatus()) {
-      case RUNNING:
-        break;
-      case SHUTDOWN:
+      if (skipDirectInstances)  {
+        this.frames.addAll(frames);
+      } else {
+        framesWithDirectInstances.addAll(frames);
+      }
+      if (th == null || th.getStatus() == ThreadStatus.SHUTDOWN) {
         th = new RequestorThread();
         th.start();
-        break;
-      default:
-        Log.getLogger().severe("Programmer error in ClientCacheRequestor - behavior is still correct but degraded");
       }
     }
   }
@@ -46,23 +45,37 @@ public class ClientCacheRequestor {
     private ThreadStatus status = ThreadStatus.IDLE;
     
     public void run() {
-      status = ThreadStatus.RUNNING;
+      synchronized (lock) {
+        status = ThreadStatus.RUNNING;
+      }
       while (true) {
         Set<Frame> workingFrames = null;
+        Set<Frame> workingFramesWithDirectInstances = null;
         synchronized(lock) {
-          if (frames.isEmpty()) {
+          if (frames.isEmpty() && framesWithDirectInstances.isEmpty()) {
             status = ThreadStatus.SHUTDOWN;
             return;
-          } else {
+          } 
+          if (!frames.isEmpty()) {
             workingFrames = frames;
-            frames = new HashSet();
+            frames = new HashSet<Frame>();
+          }
+          if (!framesWithDirectInstances.isEmpty()) {
+            workingFramesWithDirectInstances = framesWithDirectInstances;
+            framesWithDirectInstances = new HashSet<Frame>();
           }
         }
         try {
           if (log.isLoggable(Level.FINE)) {
-            log.fine("Sending frames " + workingFrames);
+            log.fine("Sending frames " + workingFrames + " / " + workingFramesWithDirectInstances);
           }
-          delegate.requestValueCache(workingFrames, session);
+          if (workingFrames != null) {
+            delegate.requestValueCache(workingFrames, true, session);
+          }
+          if (workingFramesWithDirectInstances != null) {
+            delegate.requestValueCache(workingFramesWithDirectInstances, false, session);
+          }
+          
         } catch (Exception e) {
           Log.emptyCatchBlock(e);
         }
@@ -70,7 +83,9 @@ public class ClientCacheRequestor {
     }
     
     public ThreadStatus getStatus() {
-      return status;
+      synchronized (lock) {
+        return status;
+      }
     }
   }
 
