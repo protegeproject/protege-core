@@ -15,79 +15,67 @@ import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 public class TransactionMonitor {
   
   private Map<RemoteSession,Integer> transactionsInProgress = new HashMap<RemoteSession, Integer>();
-  /*
-   * Using an internal lock like this is simpler but using the knowledge base lock might be more efficient?
-   */
-  private Object lock;
-  
-  public TransactionMonitor() {
-    lock = new Object();
-  }
-  
-  public TransactionMonitor(Object lock) {
-    this.lock = lock;
-  }
 
-  public void beginTransaction(String name) {
-    synchronized (lock) {
-      RemoteSession session = ServerFrameStore.getCurrentSession();
-      Integer nesting = transactionsInProgress.get(session);
-      if (nesting == null) {
-        transactionsInProgress.put(session, 1);
-      } else {
-        transactionsInProgress.put(session, nesting + 1);
-      }
+  public synchronized void beginTransaction(String name) {
+    RemoteSession session = ServerFrameStore.getCurrentSession();
+    Integer nesting = transactionsInProgress.get(session);
+    if (nesting == null) {
+      transactionsInProgress.put(session, 1);
+    } else {
+      transactionsInProgress.put(session, nesting + 1);
     }
   }
 
-  public void rollbackTransaction() {
+  public synchronized void rollbackTransaction() {
     decrementTransaction();
   }
   
-  public void commitTransaction() {
+  public synchronized void commitTransaction() {
     decrementTransaction();
   }
   
   private void decrementTransaction() {
-    synchronized (lock) {
-      RemoteSession session = ServerFrameStore.getCurrentSession();
-      Integer nesting = transactionsInProgress.get(session);
-      if (nesting <= 0) {
-        throw new RuntimeException("Programming error...");
-      } else if (nesting == 1) {
-        transactionsInProgress.remove(session);
-        if (!existsTransaction()) {
-          lock.notifyAll();
-        }
-      } else {
-        transactionsInProgress.put(session, nesting - 1);
-      }   
-    }
+    RemoteSession session = ServerFrameStore.getCurrentSession();
+    Integer nesting = transactionsInProgress.get(session);
+    if (nesting <= 0) {
+      throw new RuntimeException("Programming error...");
+    } else if (nesting == 1) {
+      transactionsInProgress.remove(session);
+    } else {
+      transactionsInProgress.put(session, nesting - 1);
+    }   
   }
   
-  public boolean inTransaction() {
-    synchronized (lock) {
-      RemoteSession session = ServerFrameStore.getCurrentSession();
-      Integer nesting = transactionsInProgress.get(session);
-      return nesting != null;
-    }
+  public synchronized boolean inTransaction() {
+    RemoteSession session = ServerFrameStore.getCurrentSession();
+    Integer nesting = transactionsInProgress.get(session);
+    return nesting != null;
   }
   
-  public boolean existsTransaction() {
-    synchronized (lock) {
-      return !transactionsInProgress.isEmpty();
-    }
+  public synchronized boolean existsTransaction() {
+    return !transactionsInProgress.isEmpty();
   }
   
-  public void waitForTransactionsToComplete() {
-    synchronized (lock) {
-      while (existsTransaction()) {
-        try {
-          lock.wait();
-        } catch (InterruptedException e) {
-          Log.getLogger().severe("Error waiting for kbLock");
-        }
+  public synchronized boolean exclusiveTransaction() {
+    RemoteSession mySession = ServerFrameStore.getCurrentSession();
+    for (RemoteSession session : transactionsInProgress.keySet()) {
+      int nesting = transactionsInProgress.get(session);
+      if (session.equals(mySession) && nesting <= 0) {
+        return false;
+      }
+      if (!session.equals(mySession) && nesting > 0) {
+        return false;
       }
     }
+    return true;
   }
+
+  public synchronized int getNesting() {
+    return transactionsInProgress.get(ServerFrameStore.getCurrentSession());
+  }
+  
+  /* If I add the interface to the frame stores.
+  public abstract TransactionIsolationLevel getTransationIsolationLevel() throws IOException();
+  public abstract void setTransactionIsolationLevel(TransactionIsolationLevel level);
+  */
 }
