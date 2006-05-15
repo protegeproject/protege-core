@@ -21,6 +21,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
@@ -56,6 +57,8 @@ public class RemoteClientFrameStore implements FrameStore {
     private RemoteSession session;
     private RemoteServer server;
     private RemoteServerFrameStore remoteDelegate;
+    
+    private ClientCacheRequestor cacheRequestor;
 
     private Slot nameSlot;
 
@@ -103,6 +106,7 @@ public class RemoteClientFrameStore implements FrameStore {
             this.kb = kb;
             nameSlot = getSystemFrames().getNameSlot();
             // directSubclassesSlot = getSystemFrames().getDirectSubclassesSlot();
+            cacheRequestor = new ClientCacheRequestor(remoteDelegate, session);
             preload(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
@@ -119,6 +123,7 @@ public class RemoteClientFrameStore implements FrameStore {
             this.kb = kb;
             this.remoteDelegate = delegate;
             nameSlot = getSystemFrames().getNameSlot();
+            cacheRequestor = new ClientCacheRequestor(remoteDelegate, session);
             preload(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
@@ -197,18 +202,13 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public Set<Slot> getSlots() {
-        try {
-            Set slots = getRemoteDelegate().getSlots(session);
-            localize(slots);
-            return slots;
-        } catch (RemoteException e) {
-            throw convertException(e);
-        }
+        Cls rootSlotClass = kb.getSystemFrames().getRootSlotMetaCls();
+        return getInstances(rootSlotClass);
     }
 
     public Set<Facet> getFacets() {
         try {
-            Set facets = getRemoteDelegate().getFacets(session);
+            Set<Facet> facets = getRemoteDelegate().getFacets(session);
             localize(facets);
             return facets;
         } catch (RemoteException e) {
@@ -748,6 +748,27 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public Set getInstances(Cls cls) {
+      Set<Cls> subClasses = new HashSet<Cls>();
+      subClasses.addAll(getSubclasses(cls));
+      subClasses.add(cls);
+      Set values = new HashSet();
+      Set<Frame> missingClasses = new HashSet<Frame>();
+      for (Cls subClass : subClasses) {
+        if (isCached(subClass, getSystemFrames().getDirectInstancesSlot(), (Facet) null, false)) {
+          values.addAll(getDirectInstances(subClass));
+        } else {
+          missingClasses.add(subClass);
+        }
+      }
+      if (missingClasses.isEmpty()) {
+        return values;
+      } else if (missingClasses.size() == 1) {
+        cacheRequestor.requestFrameValues(missingClasses, false);
+        Cls subClass = (Cls) missingClasses.iterator().next();
+        values.addAll(getDirectInstances(subClass));
+        return values;
+      } else {
+        cacheRequestor.requestFrameValues(missingClasses, false);
         try {
             RemoteResponse<Set> instances = getRemoteDelegate().getInstances(cls, session);
             localize(instances);
@@ -756,6 +777,7 @@ public class RemoteClientFrameStore implements FrameStore {
         } catch (RemoteException e) {
             throw convertException(e);
         }
+      }
     }
 
     synchronized public void addDirectType(Instance instance, Cls type) {
@@ -977,16 +999,13 @@ public class RemoteClientFrameStore implements FrameStore {
         return;
       }
       Log.getLogger().config("Preloading frame values");
-      long startTime = System.currentTimeMillis();
       int startCount = cache.size();
       Set<String> frames = ServerProperties.preloadUserFrames();
       OntologyUpdate vu = getRemoteDelegate().preload(frames, preloadAll, session);
       localize(vu);
       processValueUpdate(vu);
-      Log.getLogger().config("Preload took " + ((System.currentTimeMillis()-startTime)/1000)
-          + " seconds for " + (cache.size() -startCount) + " frames");
     }
-
+      
     private Set getCacheOwnSlotValueClosure(Frame frame, Slot slot) throws RemoteException {
         return getCacheClosure(frame, slot);
     }
@@ -1080,6 +1099,21 @@ public class RemoteClientFrameStore implements FrameStore {
       List values = null;
       if (isCached(frame, slot, facet, isTemplate)) {
         values = cache.get(frame).get(new Sft(slot, facet, isTemplate));
+        /* not clear that this code actually helps?  Do some measurements.
+        if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES) && 
+            facet == null && !isTemplate) {
+          Set<Frame> subClasses = new HashSet<Frame>();
+          for (Object o : values) {
+            if (o instanceof Cls) {
+              Cls subCls = (Cls) o;
+              if (!isCached(subCls, slot, (Facet) null, false)) {
+                subClasses.add(subCls);
+              }
+            }
+          }
+          cacheRequestor.requestFrameValues(subClasses, true);
+        }
+        */
       } else {
         if (log.isLoggable(Level.FINE)) {
           log.fine("cache miss for frame " + 
@@ -1095,7 +1129,7 @@ public class RemoteClientFrameStore implements FrameStore {
                                                                   session);
           } else {
             throw new UnsupportedOperationException(
-            "We don't cache this information...");
+                                   "We don't cache this information...");
           }
         } else {
           if (isTemplate) {
