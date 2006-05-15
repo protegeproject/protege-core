@@ -46,8 +46,8 @@ public class StateMachine {
         if (log.isLoggable(Level.FINE)) {
           log.fine("frame found for transition " + 
               start + ", " + slotName + "/" + sframe + " -> " + end + " but not a slot");
-          return;
         }
+        return;
       }
       slot = (Slot) sframe;
       transitionMap.put(new StateAndSlot(start, slot), end);
