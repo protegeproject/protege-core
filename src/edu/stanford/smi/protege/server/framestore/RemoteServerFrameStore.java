@@ -34,8 +34,6 @@ public interface RemoteServerFrameStore extends Remote {
     // frame access
     Set<Cls> getClses(RemoteSession session) throws RemoteException;
 
-    Set<Slot> getSlots(RemoteSession session) throws RemoteException;
-
     Set<Facet> getFacets(RemoteSession session) throws RemoteException;
 
     Set<Frame> getFrames(RemoteSession session) throws RemoteException;
@@ -178,5 +176,5 @@ public interface RemoteServerFrameStore extends Remote {
 
     OntologyUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) throws RemoteException;
     
-    void requestValueCache(Set<Frame> frames, RemoteSession session) throws RemoteException;
+    void requestValueCache(Set<Frame> frames, boolean skipDirectInstances, RemoteSession session) throws RemoteException;
 }
