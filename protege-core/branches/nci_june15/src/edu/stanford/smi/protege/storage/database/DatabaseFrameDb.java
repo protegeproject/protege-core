@@ -31,6 +31,7 @@ import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.ReferenceImpl;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.Session;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
@@ -56,7 +57,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private static final String SHORT_VALUE_COLUMN = "short_value";
     private static final String LONG_VALUE_COLUMN = "long_value";
 
-    private final Map _connections = new HashMap();
+    private final Map<RemoteSession, RobustConnection> _connections 
+                              = new HashMap<RemoteSession, RobustConnection>();
     private String _table;
     private String _driver;
     private String _url;
@@ -83,12 +85,12 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     // Returns the current remote session.  In standalone mode it returns null.
-    private Object getCurrentSession() {
+    private RemoteSession getCurrentSession() {
         return ServerFrameStore.getCurrentSession();
     }
 
     protected RobustConnection getCurrentConnection() throws SQLException {
-        Object currentSession = getCurrentSession();
+        RemoteSession currentSession = getCurrentSession();
         RobustConnection connection = (RobustConnection) _connections.get(currentSession);
         if (connection == null) {
             connection = createConnection();
@@ -172,7 +174,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private RobustConnection createConnection() throws SQLException {
         clearDeadConnections();
-        Object currentSession = getCurrentSession();
+        RemoteSession currentSession = getCurrentSession();
         RobustConnection connection = new RobustConnection(_driver, _url, _user, _password);
         _connections.put(currentSession, connection);
         if (log.isLoggable(Level.FINE)) {
