@@ -1,9 +1,9 @@
 package edu.stanford.smi.protege.server.framestore.background;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +84,7 @@ public class FrameCalculator {
   }
   
 
-  private void doWork(Frame frame) {
+  private void doWork(Frame frame, WorkInfo wi) {
     if (log.isLoggable(Level.FINE)) {
       log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
     }
@@ -100,7 +100,8 @@ public class FrameCalculator {
       }
       for (Slot slot : slots) {
         synchronized (kbLock) {
-          if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
+          if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES) &&
+              wi.skipDirectInstances()) {
             insertEvent(
                 new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
           } else {
@@ -166,9 +167,9 @@ public class FrameCalculator {
             Frame inner = (Frame) o;
             State newState = machine.nextState(state, slot, inner);
             if (newState == null) {
-              break;
+              continue;
             }
-            WorkInfo iwi = addRequest(inner, newState);
+            WorkInfo iwi = addRequest(inner, newState, CacheRequestReason.STATE_MACHINE);
             iwi.getClients().addAll(wi.getClients());
             if (log.isLoggable(Level.FINE)) {
               log.fine("Added cache request frame for state transition " + 
@@ -180,30 +181,43 @@ public class FrameCalculator {
     }
   }
 
-  public void addRequest(Frame frame, RemoteSession session) {
-    WorkInfo wi = addRequest(frame, State.Start);
-    wi.getClients().add(session);
+  public WorkInfo addRequest(Frame frame, RemoteSession session, CacheRequestReason reason) {
+    synchronized (requestLock) {
+      WorkInfo wi = addRequest(frame, State.Start, reason);
+      wi.getClients().add(session);
+      return wi;
+    }
   }
   
-  public WorkInfo addRequest(Frame frame , State state) {
+  public WorkInfo addRequest(Frame frame , State state, CacheRequestReason reason) {
     if (log.isLoggable(Level.FINE)) {
-      log.fine("Added " + fs.getFrameName(frame) + 
+      log.fine("Added " + fs.getFrameName(frame) + " in state " + state + 
                " to head of frames to precalculate");
     }
+    if (frame.getKnowledgeBase() == null) {
+      log.log(Level.WARNING, "Non-localized frame being added to the FrameCalculator", new Exception());
+    }
     synchronized (requestLock) {
-      // put the request at the front of the queue.
-      // the status of the frame calculator thread will not change
-      // for the duration of this lock
-      if (requests.contains(frame)) {
-        requests.remove(frame);
-      }
-      requests.add(0, frame);
       WorkInfo wi = requestMap.get(frame);
       if (wi == null) {
         wi = new WorkInfo();
         requestMap.put(frame, wi);
+      } else {
+        requests.remove(frame);
       }
       wi.addState(state);
+      wi.addReason(reason);
+      wi.setNewest();
+      requests.add(frame);
+      // A tree set would have been cheaper here but it is tricky and
+      // I decided not to debug it.
+      Collections.sort(requests, new Comparator<Frame>() {
+        
+        public int compare(Frame f1, Frame f2) {
+          return requestMap.get(f1).compareTo(requestMap.get(f2));
+        }
+        
+      });
       if (innerThread == null || 
           innerThread.getStatus() == RunStatus.SHUTDOWN) {
         innerThread = new FrameCalculatorThread();
@@ -266,7 +280,27 @@ public class FrameCalculator {
     }
   }
   
-
+  public void logRequests() {
+    if (log.isLoggable(Level.FINE)) {
+      synchronized (requestLock) {
+        log.fine("Request queue has length " + requests.size());
+        for (Frame frame : requests) {
+          WorkInfo wi = requestMap.get(frame);
+          log.fine("Request for frame" + frame);
+          for (RemoteSession session : wi.getClients()) {
+            log.fine("\tClient " + session);
+          }
+          log.fine("\tStates = " + wi.getStates());
+          log.fine("\tReasons = " + wi.getReasons());
+        }
+      }
+    }
+  }
+  
+  public Object getRequestLock() {
+    return requestLock;
+  }
+  
   private class FrameCalculatorThread extends Thread {
     private RunStatus status = RunStatus.IDLE;
     
@@ -276,6 +310,7 @@ public class FrameCalculator {
     
     public void run() {
       Frame work;
+      WorkInfo workInfo;
       synchronized(requestLock) {
         status = RunStatus.RUNNING;
       }
@@ -287,8 +322,9 @@ public class FrameCalculator {
               return;
             }
             work = requests.get(0);
+            workInfo = requestMap.get(work);
           }
-          doWork(work);
+          doWork(work, workInfo);
           synchronized (requestLock) {
             requests.remove(work);
             requestMap.remove(work);
@@ -303,24 +339,6 @@ public class FrameCalculator {
     public RunStatus getStatus() {
       return status;
     }
-  }
-  
-  private class WorkInfo {
-    private Set<RemoteSession> clients = new HashSet<RemoteSession>();
-    private EnumSet<State> states = EnumSet.noneOf(State.class);
-
-    public Set<RemoteSession> getClients() {
-      return clients;
-    }
-    
-    public void addState(State state) {
-      states.add(state);
-    }
-    
-    public EnumSet<State> getStates() {
-      return states;
-    }
-
   }
   
 }
