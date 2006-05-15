@@ -30,7 +30,9 @@ import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.ServerProperties;
+import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
+import edu.stanford.smi.protege.server.framestore.background.WorkInfo;
 import edu.stanford.smi.protege.server.update.FrameEvaluationEvent;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
@@ -64,7 +66,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private Slot nameSlot;
     private Facet valuesFacet;
 
-
     private static Map<Thread,RemoteSession> sessionMap = new HashMap<Thread, RemoteSession>();
     private TransactionMonitor transactionMonitor;
     
@@ -85,7 +86,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         _delegate = delegate;
         _kb = kb;
         _kbLock = kbLock;
-        transactionMonitor = new TransactionMonitor(kbLock);
+        transactionMonitor = new TransactionMonitor();
         kb.setDispatchEventsEnabled(false);
         serverMode();
         nameSlot = _kb.getSystemFrames().getNameSlot();
@@ -231,11 +232,16 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                                             RemoteSession session) {
       recordCall(session);
       LocalizeUtils.localize(cls, _kb);
-      frameCalculator.addRequest(cls, session);
+      frameCalculator.addRequest(cls, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateSlotValues(cls, slot);
-        if (!existsTransaction()) {
+        if (!existsTransaction() || exclusiveTransaction()) {
           _updateWriter.write(new FrameEvaluationEvent(cls, slot, (Facet) null, true, values));
+        }
+        if (exclusiveTransaction()) {
+          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
+                       new InvalidateCacheUpdate(cls, slot, (Facet) null, true)
+                  );
         }
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
@@ -245,8 +251,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     public RemoteResponse<Set> getInstances(Cls cls, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
+        Set instances = getDelegate().getInstances(cls);
         return new  RemoteResponse<Set>(
-                            getDelegate().getInstances(cls),
+                            instances,
                             getValueUpdates(session));
       }
     }
@@ -300,11 +307,17 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public RemoteResponse<List> getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, RemoteSession session) {
       recordCall(session);
-      frameCalculator.addRequest(cls, session);
+      LocalizeUtils.localize(cls, _kb);
+      frameCalculator.addRequest(cls, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
-        if (!existsTransaction()) {
+        if (!existsTransaction() || exclusiveTransaction()) {
           _updateWriter.write(new FrameEvaluationEvent(cls, slot, facet, true, values));
+        }
+        if (exclusiveTransaction()) {
+          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
+                       new InvalidateCacheUpdate(cls, slot, facet, true)
+                 );
         }
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
@@ -329,7 +342,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         Frame frame = getDelegate().getFrame(name);
         if (frame != null) {
-          frameCalculator.addRequest(frame, session);
+          frameCalculator.addRequest(frame, session, CacheRequestReason.USER_NAME_REQUEST);
         }
         return new RemoteResponse(frame, getValueUpdates(session));
       }
@@ -344,8 +357,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public int getDirectOwnSlotValuesCount(Frame frame, Slot slot, RemoteSession session) {
       recordCall(session);
+      LocalizeUtils.localize(frame, _kb);
       if (!slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
-        frameCalculator.addRequest(frame, session);
+        frameCalculator.addRequest(frame, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
       }
       synchronized(_kbLock) {
         return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
@@ -362,30 +376,26 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         List values = getDelegate().getDirectOwnSlotValues(frame, slot);
         if (!slot.equals(Model.SlotID.DIRECT_INSTANCES)) {
-          frameCalculator.addRequest(frame, session);
+          frameCalculator.addRequest(frame, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
         }
         if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES)) {
           for (Object o : values) {
             if (o instanceof Frame) {
-              frameCalculator.addRequest((Frame) o, session);
+              frameCalculator.addRequest((Frame) o, session, CacheRequestReason.SUBCLASS);
             }
           }
-        }
-        if (!existsTransaction()) {
+        }                
+        if (!existsTransaction() || exclusiveTransaction()) {
           _updateWriter.write(new FrameEvaluationEvent(frame, slot, (Facet) null, false, values));
         }
+        if (exclusiveTransaction()) {
+          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
+                         new InvalidateCacheUpdate(frame, slot, (Facet) null, false)
+                  );
+        }        
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
-
-
-    public Set<Slot> getSlots(RemoteSession session) {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getSlots();
-      }
-    }
-
 
     public OntologyUpdate setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values,
             RemoteSession session) {
@@ -413,6 +423,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         markDirty();
         Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaults);
+        frameCalculator.addRequest(facet, session,  CacheRequestReason.NEW_FRAME);
         return new RemoteResponse<Facet>(facet, getValueUpdates(session));
       }
     }
@@ -495,6 +506,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         markDirty();
         Slot slot =  getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
+        frameCalculator.addRequest(slot,  session, CacheRequestReason.NEW_FRAME);
         return new RemoteResponse<Slot>(slot, getValueUpdates(session));
       }
     }
@@ -553,6 +565,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         markDirty();
         Cls cls = getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
+        frameCalculator.addRequest(cls,  session, CacheRequestReason.NEW_FRAME);
         return new RemoteResponse(cls, getValueUpdates(session));
       }
     }
@@ -608,6 +621,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         markDirty();
         SimpleInstance si = getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
+        frameCalculator.addRequest(si,  session, CacheRequestReason.NEW_FRAME);
         return new RemoteResponse(si, getValueUpdates(session));
       }
     }
@@ -887,6 +901,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         if (!inTransaction()) {
           _sessionToRegistrationMap.get(session).endTransaction();
         }
+        if (!existsTransaction()) {
+          _kbLock.notifyAll();
+        }
         return success;
       }
     }
@@ -931,6 +948,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             _updateWriter.write(vu);
           }
         }
+        if (!existsTransaction()) {
+          _kbLock.notifyAll();
+        }
         return success;
       }
     }
@@ -952,10 +972,22 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       return transactionMonitor.existsTransaction();
     }
     
+    public boolean exclusiveTransaction() {
+      return transactionMonitor.exclusiveTransaction();
+    }
+    
 
     
     public void waitForTransactionsToComplete() {
-      transactionMonitor.waitForTransactionsToComplete();
+      synchronized (_kbLock) {
+        while (existsTransaction()) {
+          try {
+            _kbLock.wait();
+          } catch (InterruptedException e) {
+            log.log(Level.WARNING, "Interrupted waiting for transactions to complete", e);
+          }
+        }
+      }
     }
 
     public boolean isDirty() {
@@ -1001,7 +1033,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       for (Object value : values) {
         if (value instanceof Frame) {
-          frameCalculator.addRequest((Frame) value, session);
+          frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
         }
       }
       return values;
@@ -1068,7 +1100,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
       }
       for (Frame frame : frames) {
-        frameCalculator.addRequest(frame, session);
+        frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
       }
       return new OntologyUpdate(getValueUpdates(session));
     }
@@ -1096,9 +1128,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
     
-    public void requestValueCache(Set<Frame> frames, RemoteSession session) {
-      for  (Frame frame : frames) {
-        frameCalculator.addRequest(frame, session);
+    public void requestValueCache(Set<Frame> frames, boolean skipDirectInstances, RemoteSession session) {
+      synchronized (frameCalculator.getRequestLock()) {
+        for  (Frame frame : frames) {
+          LocalizeUtils.localize(frame, _kb);
+          WorkInfo wi = frameCalculator.addRequest(frame, session, CacheRequestReason.USER_SPECIFIC_FRAMES);
+          wi.setSkipDirectInstances(skipDirectInstances);
+        }
       }
     }
 }
