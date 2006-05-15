@@ -449,4 +449,12 @@ public class RobustConnection {
         }
         return rolledBack;
     }
+    
+    public void setTransactionIsolationLevel(int level) throws SQLException {
+      _connection.setTransactionIsolation(level);
+    }
+    
+    public int getTransactionIsolationLevel() throws SQLException {
+      return _connection.getTransactionIsolation();
+    }
 }
