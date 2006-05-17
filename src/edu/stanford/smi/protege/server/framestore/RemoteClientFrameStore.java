@@ -1,4 +1,3 @@
-
 package edu.stanford.smi.protege.server.framestore;
 
 import java.rmi.Naming;
@@ -21,7 +20,6 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
-import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
@@ -57,20 +55,24 @@ public class RemoteClientFrameStore implements FrameStore {
     private RemoteSession session;
     private RemoteServer server;
     private RemoteServerFrameStore remoteDelegate;
-    
-    private ClientCacheRequestor cacheRequestor;
 
     private Slot nameSlot;
+    
+    private ClientCacheRequestor cacheRequestor;
 
     private enum CacheStatus {
       STARTED_CACHING, COMPLETED_CACHING
     }
-    
+
+
+  /*
+   * These three variables (involving caching are synchronized using the cache object.
+   * The purpose of this synchronization is to protect updates from the getEvents thread.
+   */
     private Map<Frame, CacheStatus> cacheStatus = new HashMap<Frame, CacheStatus>();
     private Map<Frame, Map<Sft, List>> cache = new HashMap<Frame, Map<Sft, List>>();
     private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
 
-    
     public String getName() {
         return getClass().getName();
     }
@@ -105,7 +107,6 @@ public class RemoteClientFrameStore implements FrameStore {
             remoteDelegate = project.getDomainKbFrameStore(session);
             this.kb = kb;
             nameSlot = getSystemFrames().getNameSlot();
-            // directSubclassesSlot = getSystemFrames().getDirectSubclassesSlot();
             cacheRequestor = new ClientCacheRequestor(remoteDelegate, session);
             preload(preloadAll);
         } catch (Exception e) {
@@ -202,7 +203,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public Set<Slot> getSlots() {
-        Cls rootSlotClass = kb.getSystemFrames().getRootSlotMetaCls();
+        Cls rootSlotClass = getSystemFrames().getRootSlotMetaCls();
         return getInstances(rootSlotClass);
     }
 
@@ -236,11 +237,18 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public Frame getFrame(String name) {
+    public Frame getFrame(String name) {
       try {
-        Frame frame = frameNameToFrameMap.get(name);
+        Frame frame;
+        boolean containsFrame = true;
+        synchronized (cache) {
+          frame = frameNameToFrameMap.get(name);
+          if (frame == null) {
+            containsFrame = frameNameToFrameMap.containsKey(name);
+          }
+        }
         if (frame == null) {
-          if (!frameNameToFrameMap.containsKey(name)) {
+          if (!containsFrame) {
             if (log.isLoggable(Level.FINE)) {
               log.fine("Cache miss for frame named " + name);
             }
@@ -256,7 +264,7 @@ public class RemoteClientFrameStore implements FrameStore {
       }
     }
 
-    synchronized public String getFrameName(Frame frame) {
+    public String getFrameName(Frame frame) {
         try {
             Collection values = getCacheDirectOwnSlotValues(frame, getSystemFrames().getNameSlot());
             return (String) CollectionUtilities.getFirstItem(values);
@@ -381,15 +389,15 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public Set<Slot> getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         return getCacheOwnSlots(frame);
     }
 
-    synchronized public Collection getOwnSlotValues(Frame frame, Slot slot) {
+    public Collection getOwnSlotValues(Frame frame, Slot slot) {
         return getCacheOwnSlotValues(frame, slot);
     }
 
-    synchronized public List getDirectOwnSlotValues(Frame frame, Slot slot) {
+    public List getDirectOwnSlotValues(Frame frame, Slot slot) {
         try {
             return getCacheDirectOwnSlotValues(frame, slot);
         } catch (RemoteException e) {
@@ -397,7 +405,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public int getDirectOwnSlotValuesCount(Frame frame, Slot slot) {
+    public int getDirectOwnSlotValuesCount(Frame frame, Slot slot) {
         try {
             return getCacheDirectOwnSlotValues(frame, slot).size();
         } catch (RemoteException e) {
@@ -405,7 +413,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
+    public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
         try {
             OntologyUpdate vu = getRemoteDelegate().moveDirectOwnSlotValue(frame, slot, from, to, session);
             localize(vu);
@@ -425,19 +433,19 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public Set getOwnFacets(Frame frame, Slot slot) {
+    public Set getOwnFacets(Frame frame, Slot slot) {
         return getCacheOwnFacets(frame, slot);
     }
 
-    synchronized public Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet) {
+    public Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet) {
         return getCacheOwnFacetValues(frame, slot, facet);
     }
 
-    synchronized public Set getTemplateSlots(Cls cls) {
+    public Set getTemplateSlots(Cls cls) {
         return getCacheTemplateSlots(cls);
     }
 
-    synchronized public List getDirectTemplateSlots(Cls cls) {
+    public List getDirectTemplateSlots(Cls cls) {
         try {
             return getCacheDirectOwnSlotValues(cls, getSystemFrames().getDirectTemplateSlotsSlot());
         } catch (RemoteException e) {
@@ -445,7 +453,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public List getDirectDomain(Slot slot) {
+    public List getDirectDomain(Slot slot) {
         try {
             return getCacheDirectOwnSlotValues(slot, getSystemFrames().getDirectDomainSlot());
         } catch (RemoteException e) {
@@ -453,7 +461,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public Set getDomain(Slot slot) {
+    public Set getDomain(Slot slot) {
         try {
             return getCacheDomain(slot);
         } catch (RemoteException e) {
@@ -511,11 +519,11 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public Collection getTemplateSlotValues(Cls cls, Slot slot) {
+    public Collection getTemplateSlotValues(Cls cls, Slot slot) {
         return getCacheTemplateSlotValues(cls, slot);
     }
 
-    synchronized public List getDirectTemplateSlotValues(Cls cls, Slot slot) {
+    public List getDirectTemplateSlotValues(Cls cls, Slot slot) {
         try {
             return getCacheValues(cls, slot, getSystemFrames().getValuesFacet(), true);
         } catch (RemoteException e) {
@@ -573,11 +581,11 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
+    public Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
         return getCacheTemplateFacetValues(cls, slot, facet);
     }
 
-    synchronized public List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
+    public List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
         try {
             return getCacheValues(cls, slot, facet, true);
         } catch (RemoteException e) {
@@ -603,7 +611,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public Set getSuperclasses(Cls cls) {
+    public Set getSuperclasses(Cls cls) {
         try {
             return getCacheOwnSlotValueClosure(cls, getSystemFrames().getDirectSuperclassesSlot());
         } catch (RemoteException e) {
@@ -615,7 +623,7 @@ public class RemoteClientFrameStore implements FrameStore {
         return kb.getSystemFrames();
     }
 
-    synchronized public List<Cls> getDirectSubclasses(Cls cls) {
+    public List<Cls> getDirectSubclasses(Cls cls) {
         try {
             return getCacheDirectOwnSlotValues(cls, getSystemFrames().getDirectSubclassesSlot());
         } catch (RemoteException e) {
@@ -623,7 +631,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public Set<Cls> getSubclasses(Cls cls) {
+    public Set<Cls> getSubclasses(Cls cls) {
         try {
             return getCacheOwnSlotValueClosure(cls, getSystemFrames().getDirectSubclassesSlot());
         } catch (RemoteException e) {
@@ -641,7 +649,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public void removeDirectSuperclass(Cls cls, Cls superclass) {
+    public void removeDirectSuperclass(Cls cls, Cls superclass) {
         try {
             OntologyUpdate vu = getRemoteDelegate().removeDirectSuperclass(cls, superclass, session);
             localize(vu);
@@ -651,7 +659,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
+    public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
         try {
             OntologyUpdate vu = getRemoteDelegate().moveDirectSubclass(cls, subclass, index, session);
             localize(vu);
@@ -669,7 +677,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public Set getSuperslots(Slot slot) {
+    public Set getSuperslots(Slot slot) {
         try {
             return getCacheOwnSlotValueClosure(slot, getSystemFrames().getDirectSuperslotsSlot());
         } catch (RemoteException e) {
@@ -677,7 +685,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public List getDirectSubslots(Slot slot) {
+    public List getDirectSubslots(Slot slot) {
         try {
             return getCacheDirectOwnSlotValues(slot, getSystemFrames().getDirectSubslotsSlot());
         } catch (RemoteException e) {
@@ -685,7 +693,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public Set getSubslots(Slot slot) {
+    public Set getSubslots(Slot slot) {
         try {
             return getCacheOwnSlotValueClosure(slot, getSystemFrames().getDirectSubslotsSlot());
         } catch (RemoteException e) {
@@ -723,7 +731,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public List getDirectTypes(Instance instance) {
+    public List getDirectTypes(Instance instance) {
         try {
             return getCacheDirectOwnSlotValues(instance, getSystemFrames().getDirectTypesSlot());
         } catch (RemoteException e) {
@@ -731,7 +739,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-  synchronized public Set getTypes(Instance instance) {
+  public Set getTypes(Instance instance) {
         try {
             return getCacheOwnSlotValueClosure(getDirectTypes(instance), getSystemFrames().getDirectSuperclassesSlot());
         } catch (RemoteException e) {
@@ -739,7 +747,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public List getDirectInstances(Cls cls) {
+    public List getDirectInstances(Cls cls) {
         try {
             return getCacheDirectOwnSlotValues(cls, getSystemFrames().getDirectInstancesSlot());
         } catch (RemoteException e) {
@@ -780,7 +788,7 @@ public class RemoteClientFrameStore implements FrameStore {
       }
     }
 
-    synchronized public void addDirectType(Instance instance, Cls type) {
+    public void addDirectType(Instance instance, Cls type) {
         try {
             OntologyUpdate vu = getRemoteDelegate().addDirectType(instance, type, session);
             localize(vu);
@@ -810,11 +818,13 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
     
-    synchronized public List<AbstractEvent> getEvents() {
+    public List<AbstractEvent> getEvents() {
         List<AbstractEvent> receivedEvents = null;
         try {
-          receivedEvents = getRemoteDelegate().getEvents(session);
-          localize(receivedEvents);
+          RemoteResponse<List<AbstractEvent>> response = getRemoteDelegate().getEvents(session);
+          localize(response);
+          processValueUpdate(response);
+          receivedEvents = response.getResponse();
           return receivedEvents;
         } catch (RemoteException e) {
           Log.getLogger().log(Level.SEVERE, 
@@ -980,7 +990,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    synchronized public void close() {
+    public void close() {
         try {
             if (server != null) {
                 server.closeSession(session);
@@ -993,13 +1003,12 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     //------------------------------
-    synchronized public void preload(boolean preloadAll) throws RemoteException {
+    public void preload(boolean preloadAll) throws RemoteException {
       boolean skip = Boolean.getBoolean(ServerProperties.SKIP_PRELOAD);
       if (skip) {
         return;
       }
       Log.getLogger().config("Preloading frame values");
-      int startCount = cache.size();
       Set<String> frames = ServerProperties.preloadUserFrames();
       OntologyUpdate vu = getRemoteDelegate().preload(frames, preloadAll, session);
       localize(vu);
@@ -1069,17 +1078,19 @@ public class RemoteClientFrameStore implements FrameStore {
      * This routine assumes that the caller is holding the cache lock
      */
     private boolean isCached(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-      Map<Sft, List> m = cache.get(frame);
-      if (m == null) {
-        return false;
-      }
-      Sft lookup = new Sft(slot, facet, isTemplate);
-      List values = m.get(lookup);
-      if (values != null) {
-        return  true;
-      } else {
-        return cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING 
-                     && !m.containsKey(lookup);
+      synchronized (cache) {
+        Map<Sft, List> m = cache.get(frame);
+        if (m == null) {
+          return false;
+        }
+        Sft lookup = new Sft(slot, facet, isTemplate);
+        List values = m.get(lookup);
+        if (values != null) {
+          return  true;
+        } else {
+          return cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING 
+            && !m.containsKey(lookup);
+        }
       }
     }
 
@@ -1098,22 +1109,24 @@ public class RemoteClientFrameStore implements FrameStore {
                                 boolean isTemplate) throws RemoteException {
       List values = null;
       if (isCached(frame, slot, facet, isTemplate)) {
-        values = cache.get(frame).get(new Sft(slot, facet, isTemplate));
-        /* not clear that this code actually helps?  Do some measurements.
-        if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES) && 
-            facet == null && !isTemplate) {
-          Set<Frame> subClasses = new HashSet<Frame>();
-          for (Object o : values) {
-            if (o instanceof Cls) {
-              Cls subCls = (Cls) o;
-              if (!isCached(subCls, slot, (Facet) null, false)) {
-                subClasses.add(subCls);
+        synchronized (cache) {
+          values = cache.get(frame).get(new Sft(slot, facet, isTemplate));
+          /* not clear that this code actually helps?  Do some measurements.
+          if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES) && 
+              facet == null && !isTemplate) {
+            Set<Frame> subClasses = new HashSet<Frame>();
+            for (Object o : values) {
+              if (o instanceof Cls) {
+                Cls subCls = (Cls) o;
+                if (!isCached(subCls, slot, (Facet) null, false)) {
+                  subClasses.add(subCls);
+                }
               }
             }
+            cacheRequestor.requestFrameValues(subClasses, true);
           }
-          cacheRequestor.requestFrameValues(subClasses, true);
+          */
         }
-        */
       } else {
         if (log.isLoggable(Level.FINE)) {
           log.fine("cache miss for frame " + 
@@ -1197,7 +1210,7 @@ public class RemoteClientFrameStore implements FrameStore {
         return values;
     }
 
-  synchronized public Collection getCacheOwnSlotValues(Frame frame, Slot slot) {
+  public Collection getCacheOwnSlotValues(Frame frame, Slot slot) {
         Collection values = new ArrayList();
         addOwnSlotValues(frame, slot, values);
         return values;
@@ -1317,21 +1330,23 @@ public class RemoteClientFrameStore implements FrameStore {
                   (facet == null ? "null" : "" + facet.getFrameID()) + 
                   " is template " + isTemplate);
       }
-      Map<Sft, List> slotValueMap = cache.get(frame);
-      if (slotValueMap == null) {
-        slotValueMap = new HashMap<Sft, List>();
-        cache.put(frame, slotValueMap);
-      }
-      Sft lookupSft = new Sft(slot, facet, isTemplate);
-      slotValueMap.put(lookupSft, values);
-      if (facet == null &&
-          !isTemplate &&
-          slot.equals(nameSlot)) {
-        if (values != null && !values.isEmpty()) {
-          if (log.isLoggable(Level.FINE)) {
-            log.fine("frame " + frame.getFrameID() + " has name " + values.get(0));
+      synchronized (cache) {
+        Map<Sft, List> slotValueMap = cache.get(frame);
+        if (slotValueMap == null) {
+          slotValueMap = new HashMap<Sft, List>();
+          cache.put(frame, slotValueMap);
+        }
+        Sft lookupSft = new Sft(slot, facet, isTemplate);
+        slotValueMap.put(lookupSft, values);
+        if (facet == null &&
+            !isTemplate &&
+            slot.equals(nameSlot)) {
+          if (values != null && !values.isEmpty()) {
+            if (log.isLoggable(Level.FINE)) {
+              log.fine("frame " + frame.getFrameID() + " has name " + values.get(0));
+            }
+            frameNameToFrameMap.put((String) values.get(0), frame);
           }
-          frameNameToFrameMap.put((String) values.get(0), frame);
         }
       }
     }
@@ -1348,27 +1363,29 @@ public class RemoteClientFrameStore implements FrameStore {
                  " facet " + (facet == null ? "null" : facet.toString()) +
                  " isTemplate " + isTemplate + " remove flag " + remove);
       }
-      Map<Sft, List> slotValueMap = cache.get(frame);
-      CacheStatus status = cacheStatus.get(frame);
-      if (slotValueMap != null) {
-        Sft lookupSft = new Sft(slot, facet, isTemplate);
+      synchronized (cache) {
+        Map<Sft, List> slotValueMap = cache.get(frame);
+        CacheStatus status = cacheStatus.get(frame);
+        if (slotValueMap != null) {
+          Sft lookupSft = new Sft(slot, facet, isTemplate);
         
-        if (facet == null && 
-            !isTemplate && 
-            slot.equals(getSystemFrames().getNameSlot())) {
-          List values = slotValueMap.get(lookupSft);
-          if (values != null && !values.isEmpty()) {
-            String name = (String) values.get(0);
-            frameNameToFrameMap.remove(name);
+          if (facet == null && 
+              !isTemplate && 
+              slot.equals(nameSlot)) {
+            List values = slotValueMap.get(lookupSft);
+            if (values != null && !values.isEmpty()) {
+              String name = (String) values.get(0);
+              frameNameToFrameMap.remove(name);
+            }
           }
-        }
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("Status = " + status);
-        }
-        if (!remove && status != null) {
-          slotValueMap.put(lookupSft, null);
-        } else {
-          slotValueMap.remove(lookupSft);
+          if (log.isLoggable(Level.FINE)) {
+            log.fine("Status = " + status);
+          }
+          if (!remove && status != null) {
+            slotValueMap.put(lookupSft, null);
+          } else {
+            slotValueMap.remove(lookupSft);
+          }
         }
       }
     }
@@ -1381,43 +1398,50 @@ public class RemoteClientFrameStore implements FrameStore {
     processValueUpdate(vu.getValueUpdates());
   }
   
-  synchronized private void processValueUpdate(List<ValueUpdate> updates) {
-    for (ValueUpdate vu : updates) {
-      Frame frame = vu.getFrame();
-      if (vu instanceof FrameEvaluationStarted) {
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("Started caching for frame" + frame.getFrameID());  
-        }
-        cacheStatus.put(frame, CacheStatus.STARTED_CACHING);
-      } else if (vu instanceof FrameEvaluationCompleted) {
-        CacheStatus status = cacheStatus.get(frame);
-        if (status != null && status == CacheStatus.STARTED_CACHING) {
+  private void processValueUpdate(List<ValueUpdate> updates) {
+    if (log.isLoggable(Level.FINE)) {
+      log.fine("received " + updates.size() + " value updates");
+    }
+    synchronized (cache) {
+      for (ValueUpdate vu : updates) {
+        Frame frame = vu.getFrame();
+        if (vu instanceof FrameEvaluationStarted) {
           if (log.isLoggable(Level.FINE)) {
-            log.fine("Completed caching for " + frame.getFrameID());
+            log.fine("Started caching for frame" + frame.getFrameID());  
           }
-          cacheStatus.put(frame, CacheStatus.COMPLETED_CACHING);
-        }
-      } else if (vu instanceof RemoveFrameCache) {
-        cache.remove(frame);
-      } else if (vu instanceof SftUpdate) {
-        SftUpdate sftu = (SftUpdate) vu;
-        Slot slot = sftu.getSlot();
-        Facet facet = sftu.getFacet();
-        boolean isTemplate = sftu.isTemplate();
-        if (vu instanceof FrameEvaluationEvent) {
-          addCachedEntry(frame, slot, facet, isTemplate, ((FrameEvaluationEvent) vu).getValues());
-        } else if (vu instanceof RemoveCacheUpdate) {
-          invalidateCachedEntry(frame, slot, facet, isTemplate, true);
-        } else if (vu instanceof InvalidateCacheUpdate) {
-          invalidateCachedEntry(frame, slot, facet, isTemplate, false);
+          cacheStatus.put(frame, CacheStatus.STARTED_CACHING);
+        } else if (vu instanceof FrameEvaluationCompleted) {
+          CacheStatus status = cacheStatus.get(frame);
+          if (status != null && status == CacheStatus.STARTED_CACHING) {
+            if (log.isLoggable(Level.FINE)) {
+              log.fine("Completed caching for " + frame.getFrameID());
+            }
+            cacheStatus.put(frame, CacheStatus.COMPLETED_CACHING);
+          }
+        } else if (vu instanceof RemoveFrameCache) {
+          cache.remove(frame);
+        } else if (vu instanceof SftUpdate) {
+          SftUpdate sftu = (SftUpdate) vu;
+          Slot slot = sftu.getSlot();
+          Facet facet = sftu.getFacet();
+          boolean isTemplate = sftu.isTemplate();
+          if (vu instanceof FrameEvaluationEvent) {
+            addCachedEntry(frame, slot, facet, isTemplate, ((FrameEvaluationEvent) vu).getValues());
+          } else if (vu instanceof RemoveCacheUpdate) {
+            invalidateCachedEntry(frame, slot, facet, isTemplate, true);
+          } else if (vu instanceof InvalidateCacheUpdate) {
+            invalidateCachedEntry(frame, slot, facet, isTemplate, false);
+          }
         }
       }
     }
   }
   
-  synchronized public void flushCache() {
-    cacheStatus.clear();
-    cache.clear();
-    frameNameToFrameMap.clear();
+  public void flushCache() {
+    synchronized (cache) {
+      cacheStatus.clear();
+      cache.clear();
+      frameNameToFrameMap.clear();
+    }
   }
 }
