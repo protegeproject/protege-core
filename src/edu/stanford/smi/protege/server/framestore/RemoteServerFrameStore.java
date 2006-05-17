@@ -129,7 +129,7 @@ public interface RemoteServerFrameStore extends Remote {
     OntologyUpdate moveDirectType(Instance instance, Cls type, int index, RemoteSession session) throws RemoteException;
 
     // events
-    List<AbstractEvent> getEvents(RemoteSession session) throws RemoteException;
+    RemoteResponse<List<AbstractEvent>> getEvents(RemoteSession session) throws RemoteException;
 
     // arbitrary queries
     Set getReferences(Object object, RemoteSession session) throws RemoteException;
