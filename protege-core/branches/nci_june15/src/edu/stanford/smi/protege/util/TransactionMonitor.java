@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.util;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,9 +74,11 @@ public class TransactionMonitor {
   public synchronized int getNesting() {
     return transactionsInProgress.get(ServerFrameStore.getCurrentSession());
   }
-  
-  /* If I add the interface to the frame stores.
-  public abstract TransactionIsolationLevel getTransationIsolationLevel() throws IOException();
-  public abstract void setTransactionIsolationLevel(TransactionIsolationLevel level);
+
+  /*
+  public abstract TransactionIsolationLevel getTransationIsolationLevel() 
+  throws IOException;
+  public abstract void setTransactionIsolationLevel(TransactionIsolationLevel level)
+  throws IOException;
   */
 }
