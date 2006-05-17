@@ -28,4 +28,8 @@ public class FifoWriter<X> {
   protected LinkedList<X> getQueue() {
     return queue;
   }
+  
+  public int getCounter() {
+    return queue.getCounter();
+  }
 }

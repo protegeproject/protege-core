@@ -9,6 +9,11 @@ public class FifoReader<X> {
     queue = writer.getQueue();
   }
   
+  public FifoReader(FifoReader fr) {
+    queue = fr.queue;
+    writer = fr.writer;
+  }
+  
   public X read() {
     synchronized (writer) {
       if (queue.next() == null) {
@@ -18,5 +23,9 @@ public class FifoReader<X> {
       queue = queue.next();
       return x;
     }
+  }
+  
+  public int getCounter() {
+    return queue.getCounter();
   }
 }
