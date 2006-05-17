@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.framestore.Registration;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
 import edu.stanford.smi.protege.server.update.FrameEvaluationEvent;
@@ -61,6 +62,7 @@ public class FrameCalculator {
   private final Object kbLock;
   private FifoWriter<ValueUpdate> updates;
   private ServerFrameStore server;
+  private Map<RemoteSession, Registration> sessionToRegistrationMap;
   
   FrameCalculatorThread innerThread;
   
@@ -76,11 +78,13 @@ public class FrameCalculator {
   public FrameCalculator(FrameStore fs,
                          Object kbLock,
                          FifoWriter<ValueUpdate> updates,
-                         ServerFrameStore server) {
+                         ServerFrameStore server,
+                         Map<RemoteSession, Registration> sessionMap) {
     this.fs = fs;
     this.kbLock = kbLock;
     this.updates = updates;
     this.server = server;
+    sessionToRegistrationMap = sessionMap;
   }
   
 
@@ -107,7 +111,9 @@ public class FrameCalculator {
           } else {
             server.waitForTransactionsToComplete();
             values = fs.getDirectOwnSlotValues(frame, slot);
-            insertValueEvent(frame, slot, (Facet) null, false, values);
+            if (values != null && !values.isEmpty()) {
+              insertValueEvent(frame, slot, (Facet) null, false, values);
+            }
           }
           addFollowedExprs(frame, slot, values);
         }  
@@ -122,8 +128,10 @@ public class FrameCalculator {
           synchronized (kbLock) {
             server.waitForTransactionsToComplete();
             values = fs.getDirectTemplateSlotValues(cls, slot);
+            if (values != null && !values.isEmpty()) {
+              insertValueEvent(cls, slot, (Facet) null, true, values);
+            }
           }
-          insertValueEvent(cls, slot, (Facet) null, true, values);
           Set<Facet> facets;
           synchronized (kbLock) {
             server.waitForTransactionsToComplete();
@@ -133,7 +141,9 @@ public class FrameCalculator {
             synchronized (kbLock) {
               server.waitForTransactionsToComplete();
               values = fs.getDirectTemplateFacetValues(cls, slot,facet);
-              insertValueEvent(cls, slot,  facet, true, values);
+              if (values != null && !values.isEmpty()) {
+                insertValueEvent(cls, slot,  facet, true, values);
+              }
             }
           }
         }
