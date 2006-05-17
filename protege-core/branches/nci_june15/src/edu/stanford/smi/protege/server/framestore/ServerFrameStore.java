@@ -94,7 +94,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         frameCalculator = new FrameCalculator(_delegate, 
                                               _kbLock, 
                                               _updateWriter, 
-                                              this);
+                                              this,
+                                              _sessionToRegistrationMap);
         // kb.setJournalingEnabled(true);
         if (ServerProperties.delayInMilliseconds() != 0) {
             //used for simulating slow network response time
@@ -725,7 +726,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return "ServerFrameStoreImpl";
     }
 
-    public List<AbstractEvent> getEvents(RemoteSession session) {
+    public RemoteResponse<List<AbstractEvent>> getEvents(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         updateEvents();
@@ -739,7 +740,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         while ((eo = clientEvents.read()) != null) {
           events.add(eo);
         }
-        return events;
+        return new RemoteResponse<List<AbstractEvent>>(events, getValueUpdates(session));
       }
     }
 
