@@ -22,7 +22,7 @@ public class BusyFlagFrameStore extends AbstractFrameStoreInvocationHandler {
     if (busy) {
       return true;
     }
-    return System.currentTimeMillis() > quiescenceStarted + QUIESCENCE_INTERVAL;
+    return System.currentTimeMillis() <= quiescenceStarted + QUIESCENCE_INTERVAL;
   }
   
   
