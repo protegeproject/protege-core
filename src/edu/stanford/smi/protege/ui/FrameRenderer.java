@@ -2,9 +2,13 @@ package edu.stanford.smi.protege.ui;
 
 //ESCA*JAVA0100
 
+import java.awt.Color;
+import java.awt.Cursor;
+
 import javax.swing.*;
 
 import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.framestore.BusyFlagFrameStore;
 import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
 
@@ -92,6 +96,8 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
 
     public void load(Object value) {
         ensureIconFlagsLoaded();
+        
+        setBusyFlagButton();
 
         if (value instanceof Frame) {
             Frame frameValue = (Frame) value;
@@ -116,6 +122,15 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
         }
     }
 
+    protected void setBusyFlagButton() {   		
+    	if (BusyFlagFrameStore.isBusy()) {
+    		ProjectManager.getProjectManager().getServerActivityMonitorButton().setBackground(Color.RED);    		
+    	}
+    	else {
+    		ProjectManager.getProjectManager().getServerActivityMonitorButton().setBackground(Color.WHITE);    		
+    	}
+    }
+    
     //ESCA-JAVA0130 
     protected Icon getIcon(Cls cls) {
         return cls.getIcon();

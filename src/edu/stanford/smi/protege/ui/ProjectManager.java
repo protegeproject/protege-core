@@ -20,6 +20,7 @@ import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -86,6 +87,7 @@ public class ProjectManager {
     private boolean _doExitVM = true;
     private JFrame _errorFrame;
     private JComponent _toolBarHolder;
+	private JButton _serverActivityMonitorButton;
 
     private static class FactoryPanel extends JPanel {
         private JList _list;
@@ -821,15 +823,28 @@ public class ProjectManager {
         _headerPanel = new JPanel(new BorderLayout());
         _headerPanel.setBackground(Color.WHITE);
         _mainToolBar = new ProjectToolBar();
+        
         JComponent panel = Box.createHorizontalBox();
         panel.setOpaque(false);
-        panel.add(_mainToolBar);
-
+        panel.add(_mainToolBar);      
         _headerPanel.add(panel, BorderLayout.WEST);
+        
         _menuBar = new ProjectMenuBar();
+        JComponent panel2 = Box.createHorizontalBox();
+        panel2.setOpaque(false);
+        
         JLabel icon = ComponentFactory.createLabel(Icons.getLogo());
-        icon.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-        _headerPanel.add(icon, BorderLayout.EAST);
+        icon.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
+        
+        _serverActivityMonitorButton = new JButton();
+		_serverActivityMonitorButton.setMaximumSize(new Dimension(7,7));
+        _serverActivityMonitorButton.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        _serverActivityMonitorButton.setEnabled(false);
+        _serverActivityMonitorButton.setBackground(Color.WHITE);
+        
+        panel2.add(icon);
+        panel2.add(_serverActivityMonitorButton);        
+        _headerPanel.add(panel2, BorderLayout.EAST);
 
         _toolBarHolder = Box.createHorizontalBox();
         _toolBarHolder.setOpaque(false);
@@ -956,4 +971,8 @@ public class ProjectManager {
         ArchiveManager manager = ArchiveManager.getArchiveManager();
         manager.archive(_currentProject, comment);
     }
+
+	public JButton getServerActivityMonitorButton() {
+		return _serverActivityMonitorButton;
+	}
 }
