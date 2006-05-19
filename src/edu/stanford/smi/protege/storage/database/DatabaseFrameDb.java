@@ -200,7 +200,10 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             // do nothing
         }
         Log.getLogger().info(Log.toString(e));
-        return new RuntimeException(e.getMessage());
+        
+        RuntimeException runtimeEx = new RuntimeException(e.getMessage());
+        runtimeEx.initCause(e);        
+        return runtimeEx;
     }
 
     /*
