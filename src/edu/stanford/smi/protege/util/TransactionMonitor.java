@@ -6,6 +6,7 @@ import java.util.Map;
 
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 
 /**
@@ -13,11 +14,11 @@ import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
  * @author tredmond
  *
  */
-public class TransactionMonitor {
+public abstract class TransactionMonitor {
   
   private Map<RemoteSession,Integer> transactionsInProgress = new HashMap<RemoteSession, Integer>();
 
-  public synchronized void beginTransaction(String name) {
+  public synchronized void beginTransaction() {
     RemoteSession session = ServerFrameStore.getCurrentSession();
     Integer nesting = transactionsInProgress.get(session);
     if (nesting == null) {
@@ -75,10 +76,9 @@ public class TransactionMonitor {
     return transactionsInProgress.get(ServerFrameStore.getCurrentSession());
   }
 
-  /*
+
   public abstract TransactionIsolationLevel getTransationIsolationLevel() 
-  throws IOException;
+  throws TransactionException;
   public abstract void setTransactionIsolationLevel(TransactionIsolationLevel level)
-  throws IOException;
-  */
+  throws TransactionException;
 }
