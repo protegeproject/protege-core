@@ -450,6 +450,10 @@ public class RobustConnection {
         return rolledBack;
     }
     
+    public boolean supportsTransactions() {
+      return _supportsTransactions;
+    }
+    
     public void setTransactionIsolationLevel(int level) throws SQLException {
       _connection.setTransactionIsolation(level);
     }
