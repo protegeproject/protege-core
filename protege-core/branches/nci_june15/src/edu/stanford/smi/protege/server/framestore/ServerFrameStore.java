@@ -54,6 +54,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private FrameStore _delegate;
     private KnowledgeBase _kb;
     
+    private TransactionMonitor transactionMonitor;
+    
     private FifoWriter<AbstractEvent> _eventWriter = new FifoWriter<AbstractEvent>();
     private FifoWriter<ValueUpdate> _updateWriter = new FifoWriter<ValueUpdate>();
     private List<AbstractEvent> transactionEvents = new ArrayList<AbstractEvent>();
@@ -67,7 +69,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private Facet valuesFacet;
 
     private static Map<Thread,RemoteSession> sessionMap = new HashMap<Thread, RemoteSession>();
-    private TransactionMonitor transactionMonitor;
     
     private FrameCalculator frameCalculator;
 
@@ -86,7 +87,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         _delegate = delegate;
         _kb = kb;
         _kbLock = kbLock;
-        transactionMonitor = new TransactionMonitor();
+        transactionMonitor = delegate.getTransactionStatusMonitor();
         kb.setDispatchEventsEnabled(false);
         serverMode();
         nameSlot = _kb.getSystemFrames().getNameSlot();
@@ -874,7 +875,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           _sessionToRegistrationMap.get(session).setTransactionLocation(transactionEvents.size());
         }
         boolean success = getDelegate().beginTransaction(name);
-        transactionMonitor.beginTransaction(name);
         return success;
       }
     }
@@ -897,7 +897,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         boolean success = getDelegate().commitTransaction();
         updateEvents();
-        transactionMonitor.commitTransaction();
         closeTransactionEvents();
         if (!inTransaction()) {
           _sessionToRegistrationMap.get(session).endTransaction();
@@ -931,7 +930,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         boolean success = getDelegate().rollbackTransaction();
         updateEvents();
-        transactionMonitor.rollbackTransaction();
         if (!inTransaction()) {
           List<AbstractEvent> newEvents = new ArrayList<AbstractEvent>();
           int transactionStart = _sessionToRegistrationMap.get(session).getTransactionLocation();
@@ -966,15 +964,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
     
     public boolean inTransaction() {
-      return transactionMonitor.inTransaction();
+      return transactionMonitor != null && transactionMonitor.inTransaction();
     }
     
     public  boolean existsTransaction()  {
-      return transactionMonitor.existsTransaction();
+      return transactionMonitor != null && transactionMonitor.existsTransaction();
     }
     
     public boolean exclusiveTransaction() {
-      return transactionMonitor.exclusiveTransaction();
+      return transactionMonitor != null && transactionMonitor.exclusiveTransaction();
     }
     
 
