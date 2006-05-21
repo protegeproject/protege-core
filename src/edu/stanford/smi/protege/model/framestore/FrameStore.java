@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 public interface FrameStore {
 
@@ -224,6 +225,14 @@ public interface FrameStore {
     boolean commitTransaction();
 
     boolean rollbackTransaction();
+
+    /**
+     * Retrieves a transaction status monitor for transactions.  If this call returns null
+     * then it means that transactions are not supported.
+     * 
+     * @return A TransactionMonitor object that tracks the status of transactions.
+     */
+    public TransactionMonitor getTransactionStatusMonitor();
 
     void close();
 }

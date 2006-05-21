@@ -29,6 +29,7 @@ import edu.stanford.smi.protege.util.SimpleStringMatcher;
 import edu.stanford.smi.protege.util.StringMatcher;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 public class SimpleFrameStore implements FrameStore {
     private KnowledgeBase _kb;
@@ -1195,6 +1196,10 @@ public class SimpleFrameStore implements FrameStore {
 
     public boolean rollbackTransaction() {
         return _helper.rollbackTransaction();
+    }
+
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return _helper.getTransactionStatusMonitor();
     }
 
     public List<AbstractEvent> getEvents() {

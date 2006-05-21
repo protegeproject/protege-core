@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 public class FrameStoreAdapter extends AbstractFrameStore {
 
@@ -364,5 +365,9 @@ public class FrameStoreAdapter extends AbstractFrameStore {
 
     public boolean rollbackTransaction() {
         return getDelegate().rollbackTransaction();
+    }
+
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return getDelegate().getTransactionStatusMonitor();
     }
 }

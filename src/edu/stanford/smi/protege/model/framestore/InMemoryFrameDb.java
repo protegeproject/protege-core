@@ -28,6 +28,7 @@ import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SimpleStringMatcher;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 //ESCA-JAVA0100 
 public class InMemoryFrameDb implements NarrowFrameStore {
@@ -386,7 +387,11 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return false;
     }
 
-    private static void replaceFrameKey(Map map, Frame frame) {
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return null;
+    }
+
+  private static void replaceFrameKey(Map map, Frame frame) {
         Collection records = (Collection) map.remove(frame);
         if (records != null) {
             map.put(frame, records);

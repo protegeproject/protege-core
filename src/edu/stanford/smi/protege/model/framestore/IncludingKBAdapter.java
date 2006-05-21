@@ -20,6 +20,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 /**
  * This class represents a Narrow Frame Store that allows its delegate 
@@ -570,4 +571,9 @@ public abstract class IncludingKBAdapter
   public boolean rollbackTransaction() {
     return delegate.rollbackTransaction();
   }
+
+  public TransactionMonitor getTransactionStatusMonitor() {
+    return delegate.getTransactionStatusMonitor();
+  }
+
 }
