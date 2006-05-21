@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 public abstract class ModificationFrameStore extends AbstractFrameStore {
 
@@ -241,5 +242,9 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
 
     public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot) {
         return getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
+    }
+
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return getDelegate().getTransactionStatusMonitor();
     }
 }

@@ -22,6 +22,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SimpleStringMatcher;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 /**
  * This is a version of the InMemoryFrameDb that helps support the OWL problem that frames
@@ -710,4 +711,9 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     throw new UnsupportedOperationException("Not implemented yet");
   }
  
+  public TransactionMonitor getTransactionStatusMonitor() {
+    return null;
+  }
+
+
 }

@@ -10,6 +10,7 @@ import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 public interface NarrowFrameStore {
 
@@ -131,4 +132,12 @@ public interface NarrowFrameStore {
     boolean commitTransaction();
 
     boolean rollbackTransaction();
+
+    /**
+     * Retrieves a transaction status monitor for transactions.  If this call returns null
+     * then it means that transactions are not supported.
+     * 
+     * @return A TransactionMonitor object that tracks the status of transactions.
+     */
+    TransactionMonitor getTransactionStatusMonitor();
 }
