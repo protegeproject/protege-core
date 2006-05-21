@@ -47,6 +47,7 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 public class RemoteClientFrameStore implements FrameStore {
     private static Logger log = Log.getLogger(RemoteClientFrameStore.class);
@@ -988,6 +989,10 @@ public class RemoteClientFrameStore implements FrameStore {
         } catch (RemoteException e) {
             throw convertException(e);
         }
+    }
+
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      throw new UnsupportedOperationException("Shouldn't be doing this on the client side");
     }
 
     public void close() {
