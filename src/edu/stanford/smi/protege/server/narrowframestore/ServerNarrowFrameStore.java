@@ -24,6 +24,8 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public class ServerNarrowFrameStore 
   extends UnicastRemoteObject implements RemoteServerNarrowFrameStore {
@@ -301,5 +303,9 @@ public class ServerNarrowFrameStore
   public boolean rollbackTransaction(RemoteSession session) throws RemoteException {
     ServerFrameStore.recordCall(session);
     return fixedDelegate.rollbackTransaction();
+  }
+
+  public TransactionMonitor getTransactionStatusMonitor() throws TransactionException {
+    throw new UnsupportedOperationException();
   }
 }
