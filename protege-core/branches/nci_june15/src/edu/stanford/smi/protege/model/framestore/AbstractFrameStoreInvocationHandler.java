@@ -57,6 +57,13 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
         return _delegate;
     }
 
+    /**
+     * This methods sets the delegate for this InvocationHandler and for
+     * the associated frame store.  It is only called by the InvocationHandler but
+     * it is overridden by classes such as the CallCachingFrameStore.
+     * 
+     * @param delegate the delegate FrameStore.
+     */
     protected void setDelegate(FrameStore delegate) {
         _delegate = delegate;
     }
@@ -123,7 +130,7 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
         } else if (methodName.equals("getDelegate")) {
             o = _delegate;
         } else if (methodName.equals("setDelegate")) {
-            _delegate = (FrameStore) args[0];
+            setDelegate((FrameStore) args[0]);
         } else if (methodName.equals("close")) {
             handleClose();
             _delegate = null;
