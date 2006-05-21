@@ -16,14 +16,15 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.model.framestore.IncludingKBSupport;
 import edu.stanford.smi.protege.model.framestore.IncludedFrameLookup;
+import edu.stanford.smi.protege.model.framestore.IncludingKBSupport;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 
 /**
  * @author Ray Fergerson
@@ -92,6 +93,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
     }
 
     public List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+        TransactionMonitor transactionMonitor = getTransactionStatusMonitor();
+        if (transactionMonitor != null && transactionMonitor.existsTransaction()) {
+          return getDelegate().getValues(frame, slot, facet, isTemplate);
+        }
         Map sftToValuesMap = lookup(frame);
         if (sftToValuesMap == null) {
             sftToValuesMap = loadFrameIntoCache(frame);
@@ -131,8 +136,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         int count;
         Map<Sft, List> sftToValuesMap = lookup(frame);
         if (sftToValuesMap == null) {
+            TransactionMonitor transactionMonitor = getTransactionStatusMonitor();
             count = getDelegate().getValuesCount(frame, slot, facet, isTemplate);
-            if (count < LOAD_THRESHOLD) {
+            if (count < LOAD_THRESHOLD && (transactionMonitor == null ||
+                                           !transactionMonitor.existsTransaction())) {
                 sftToValuesMap = loadFrameIntoCache(frame);
             }
         } else {
@@ -202,8 +209,13 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
 
     private void setCacheValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
         Map sftToValuesMap = lookup(frame);
+        TransactionMonitor transactionMonitor = getTransactionStatusMonitor();
         if (sftToValuesMap != null) {
+          if (transactionMonitor == null || !transactionMonitor.existsTransaction()) {
             insert(sftToValuesMap, slot, facet, isTemplate, values);
+          } else {
+            _frameToSftToValuesMap.remove(frame);
+          }
         }
     }
 
@@ -228,8 +240,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
     }
 
     private void addCacheValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
+        TransactionMonitor transactionMonitor = getTransactionStatusMonitor();
         Map sftToValuesMap = lookup(frame);
         if (sftToValuesMap != null) {
+          if (transactionMonitor == null || !transactionMonitor.existsTransaction()) {
             List list = lookup(sftToValuesMap, slot, facet, isTemplate);
             if (list == null) {
                 if (!isSpecial(slot, facet, isTemplate)) {
@@ -238,6 +252,9 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
             } else {
                 list.addAll(values);
             }
+          } else {
+            _frameToSftToValuesMap.remove(frame);
+          }
         }
     }
 
@@ -312,6 +329,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         }
         return rolledback;
     }
+    
+    public TransactionMonitor getTransactionStatusMonitor() {
+      return getDelegate().getTransactionStatusMonitor();
+    }
 
     public void clearCache() {
         _frameToSftToValuesMap.clear();
@@ -330,17 +351,22 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         Set frames;
         int count = getFrameCount();
         Set cachedFrames = getCachedFrames();
+        TransactionMonitor transactionMonitor = getTransactionStatusMonitor();
         if (cachedFrames.size() == count) {
             frames = cachedFrames;
-        } else {
+        } else if (transactionMonitor == null || !transactionMonitor.existsTransaction()) {
             loadFramesIntoCache();
             cachedFrames = getCachedFrames();
             if (cachedFrames.size() == count) {
                 frames = cachedFrames;
             } else {
-                // Log.getLogger().info("Not enough memory to cache all frames");
+                if (log.isLoggable(Level.FINE)) {
+                  log.fine("Not enough memory to cache all frames");
+                }
                 frames = getDelegate().getFrames();
             }
+        } else {
+          frames = getDelegate().getFrames();
         }
         return frames;
     }
