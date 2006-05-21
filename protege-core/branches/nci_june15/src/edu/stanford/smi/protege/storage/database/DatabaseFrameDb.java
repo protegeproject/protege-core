@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.storage.database;
 
 //ESCA*JAVA0100
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,6 +38,9 @@ import edu.stanford.smi.protege.server.Session;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public class DatabaseFrameDb implements NarrowFrameStore {
   private static Logger log = Log.getLogger(DatabaseFrameDb.class);
@@ -71,6 +75,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private static int lastReturnedFrameID = FrameID.INITIAL_USER_FRAME_ID - 1;
 
     private String frameDbName;
+
+    private TransactionMonitor transactionMonitor;
 
     public String getName() {
         return frameDbName;
@@ -1401,7 +1407,20 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         checkModifiability();
         try {
-            return getCurrentConnection().beginTransaction();
+           boolean success = getCurrentConnection().beginTransaction();
+           /*
+            * The following if statement follows the logic  in
+            * RobustConnection.commitTransaction to ensure that the 
+            * TransactionMonitor's nesting count is the same as the one in
+            * RobustConnection.
+            */
+             if (getCurrentConnection().supportsTransactions()) {
+               getTransactionStatusMonitor().commitTransaction();
+             }
+           if (success) {
+             getTransactionStatusMonitor().beginTransaction();
+           }
+           return success;
         } catch (SQLException e) {
             throw createRuntimeException(e);
         }
@@ -1414,6 +1433,15 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         checkModifiability();
         try {
+          /*
+           * The following if statement follows the logic  in
+           * RobustConnection.commitTransaction to ensure that the 
+           * TransactionMonitor's nesting count is the same as the one in
+           * RobustConnection.
+           */
+            if (getCurrentConnection().supportsTransactions()) {
+              getTransactionStatusMonitor().commitTransaction();
+            }
             return getCurrentConnection().commitTransaction();
         } catch (SQLException e) {
             throw createRuntimeException(e);
@@ -1427,11 +1455,56 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         checkModifiability();
         try {
+          /*
+           * The following if statement follows the logic  in
+           * RobustConnection.rollbackTransaction to ensure that the 
+           * TransactionMonitor's nesting count is the same as the one in
+           * RobustConnection.
+           */
+            if (getCurrentConnection().supportsTransactions()) {
+              getTransactionStatusMonitor().rollbackTransaction();
+            }
             return getCurrentConnection().rollbackTransaction();
         } catch (SQLException e) {
             throw createRuntimeException(e);
         }
 
+    }
+
+    public TransactionMonitor getTransactionStatusMonitor() {
+      if (transactionMonitor == null) {
+        transactionMonitor = new TransactionMonitor() {
+
+            
+            public TransactionIsolationLevel getTransationIsolationLevel() 
+              throws TransactionException {
+              RemoteSession session = ServerFrameStore.getCurrentSession();
+              RobustConnection connection = _connections.get(session);
+              int jdbcLevel;
+              try {
+                jdbcLevel = connection.getTransactionIsolationLevel();
+              } catch (SQLException sqle) {
+                throw new TransactionException(sqle);
+              }
+              return TransactionIsolationLevel.getTransactionLevel(jdbcLevel);
+            }
+            
+            @Override
+            public void setTransactionIsolationLevel(TransactionIsolationLevel level) 
+              throws TransactionException {
+              RemoteSession session = ServerFrameStore.getCurrentSession();
+              RobustConnection connection = _connections.get(session);
+              int jdbcLevel = level.getJdbcLevel();
+              try {
+                connection.setTransactionIsolationLevel(jdbcLevel);
+              } catch (SQLException e) {
+                throw new TransactionException(e);
+              }
+            }
+            
+          };
+      }
+      return transactionMonitor;
     }
 
     private static void checkModifiability() {
