@@ -1,14 +1,30 @@
 package edu.stanford.smi.protege.model.framestore.undo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.CommandManager;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.ModificationFrameStore;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public class UndoFrameStore extends ModificationFrameStore implements CommandManager {
     Logger log = Log.getLogger(UndoFrameStore.class);
@@ -260,6 +276,13 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
             _commands.remove(_lastExecutedCommand + 1);
         }
         return succeeded;
+    }
+    
+    public TransactionMonitor getTransactionStatusMonitor() {
+      /*
+       * If the delegate doesn't support transactions then  this guy won't either.
+       */
+      return getDelegate().getTransactionStatusMonitor();
     }
 
     private void notifyListeners() {
