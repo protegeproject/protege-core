@@ -46,7 +46,9 @@ import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public class ServerFrameStore extends UnicastRemoteObject implements RemoteServerFrameStore {
     private static transient Logger log = Log.getLogger(ServerFrameStore.class);
@@ -962,6 +964,21 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         transactionEvents = new ArrayList<AbstractEvent>();
       }
     }
+    
+    public TransactionIsolationLevel getTransactionIsolationLevel() throws TransactionException {
+      if (transactionMonitor == null) {
+        return TransactionIsolationLevel.NONE;
+      }
+      return transactionMonitor.getTransationIsolationLevel();
+    }
+    
+    public boolean setTransactionIsolationLevel(TransactionIsolationLevel level) throws TransactionException {
+      if (transactionMonitor == null) {
+        return false;
+      }
+      transactionMonitor.setTransactionIsolationLevel(level);
+      return true;
+    } 
     
     public boolean inTransaction() {
       return transactionMonitor != null && transactionMonitor.inTransaction();
