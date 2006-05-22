@@ -44,7 +44,9 @@ public class Server_Test extends SimpleTestCase {
     public void setUp() throws Exception {
       super.setUp();
       try {
-        startServer();
+        if (!startServer()) {
+          return;
+        }
         _server = (RemoteServer) Naming.lookup(NAME);
         _server.reinitialize();
       } catch (NotBoundException e) {
@@ -52,7 +54,9 @@ public class Server_Test extends SimpleTestCase {
       }
     }
     
-    public static void startServer() throws Exception {
+    private static boolean informedServerNotConfigured = false;
+    
+    public static boolean startServer() throws Exception {
       startServer("examples/server/metaproject.pprj");
     }
     
@@ -60,7 +64,11 @@ public class Server_Test extends SimpleTestCase {
       Properties jup = APITestCase.getJunitProperties();
       String jar_uri = jup.getProperty(JAR_PROPERTY);
       if (jar_uri == null) {
-        return;
+        if (!informedServerNotConfigured) {
+          System.out.println("Server Tests Not Configured");
+          informedServerNotConfigured = true;
+        }
+        return false;
       }
       System.setProperty("java.rmi.server.codebase", jar_uri);
       String [] serverArgs = {"", projectFile};
@@ -71,6 +79,7 @@ public class Server_Test extends SimpleTestCase {
         Server.startServer(serverArgs);
         serverRunning = true;
       }
+      return true;
     }
       
     public static boolean isServerRunning() {
