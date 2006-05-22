@@ -6,8 +6,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.Project;
@@ -98,6 +101,8 @@ public abstract class APITestCase extends AbstractTestCase {
       return null;
     }
 
+    private static Set<DBType> informedDBConfigured = EnumSet.noneOf(DBType.class);
+ 
     public static boolean dbConfigured() {
       Properties dbp = getJunitProperties();
       if (dbp == null) {
@@ -105,7 +110,15 @@ public abstract class APITestCase extends AbstractTestCase {
       }
       String configured = getDBProperty("configured");
       if (configured == null || !configured.toLowerCase().equals("true")) {
+        if (!informedDBConfigured.contains(_dbType)) {
+          System.out.println("Database Tests for " + _dbType + " not configured");
+          informedDBConfigured.add(_dbType);
+        }
         return false;
+      }
+      if (!informedDBConfigured.contains(_dbType)) {
+        System.out.println("Database Tests for " + _dbType + " configured");
+        informedDBConfigured.add(_dbType);
       }
       return true;
     }
@@ -115,6 +128,7 @@ public abstract class APITestCase extends AbstractTestCase {
       return dbp.getProperty(DB_PREFIX + _dbType + "." + prop);
     }
     
+    private static boolean informedNoConfigurationFile = false;
     
     public static Properties getJunitProperties() {
       if (_junitProperties != null) {
@@ -130,6 +144,10 @@ public abstract class APITestCase extends AbstractTestCase {
         _junitProperties = dbp;
         return _junitProperties;
       } catch (Exception e) {
+        if (!informedNoConfigurationFile) {
+          System.out.println("No configuration file for tests");
+          informedNoConfigurationFile = true;
+        }
         return null;
       }
     }
