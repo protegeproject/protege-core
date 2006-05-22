@@ -1415,7 +1415,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             * RobustConnection.
             */
              if (getCurrentConnection().supportsTransactions()) {
-               getTransactionStatusMonitor().commitTransaction();
+               getTransactionStatusMonitor().beginTransaction();
              }
            if (success) {
              getTransactionStatusMonitor().beginTransaction();
