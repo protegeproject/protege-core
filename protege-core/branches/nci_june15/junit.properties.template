@@ -12,12 +12,27 @@
 #--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==
 # The server test depends on the rmi_registry to be running.  The
 # server tests are disabled if there is no pointer to the location of
-# the jar file. 
+# the jar file. These tests use the metaproject from examples/server/metaproject.pprj.
 #
 
-#junit.server.protege.jar=file:///Users/tredmond/dev/workspace/protege-head/dist/protege.jar
+junit.server.protege.jar=file:///Users/tredmond/dev/workspace/protege-head/dist/protege.jar
 
 
+#--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==
+# Configuration settings for the database server-client tests.  We need to configure 
+# the database project and the meta-project that uses the database.
+# These tests also depend on the server jar file property and the rmiregistry.
+# 
+# This setting points to one of the configured database projects defined below in
+# the database configuration section.  Currently valid options are
+# Oracle, MySQL, MsAccess, PostGres and SQLServer.  If this setting is
+# set then we will assume that the database server-client test is configured.
+#
+
+#junit.server.db.dbtype=MySQL
+#junit.server.db.file.dbproject=junit/pprj/scratch.pprj
+#junit.server.db.file.metaproject=junit/pprj/metaproject.pprj
+#junit.server.db.client_project=scratch
 
 #--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==
 #  Configuration of file locations.  Should eventually include web locations 
