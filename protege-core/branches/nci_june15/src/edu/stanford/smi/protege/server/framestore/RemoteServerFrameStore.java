@@ -18,6 +18,8 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public interface RemoteServerFrameStore extends Remote {
 
@@ -177,4 +179,16 @@ public interface RemoteServerFrameStore extends Remote {
     OntologyUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) throws RemoteException;
     
     void requestValueCache(Set<Frame> frames, boolean skipDirectInstances, RemoteSession session) throws RemoteException;
+    
+    TransactionIsolationLevel getTransactionIsolationLevel() throws TransactionException, RemoteException;
+    
+   /**
+   * Sets the transaction isolation level for the current connection.  Returns false if 
+   * transactions are not supported.
+   * 
+   * @param level The desired TransactionIsolationLevel
+   * @throws TransactionException 
+   * @return true if transactions are supported
+   */
+    boolean setTransactionIsolationLevel(TransactionIsolationLevel level) throws TransactionException, RemoteException;
 }
