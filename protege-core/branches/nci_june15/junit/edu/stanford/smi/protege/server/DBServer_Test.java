@@ -12,9 +12,12 @@ import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.test.APITestCase;
 import edu.stanford.smi.protege.util.LockStepper;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public class DBServer_Test extends APITestCase {
   
@@ -100,47 +103,6 @@ public class DBServer_Test extends APITestCase {
     }
   }
   
-  public enum Test01Stages {
-    testStarted, mainThreadStarted, transactionOpenWithWrite, testComplete
-  }
-  
-  public void testTransaction01() {
-    if (!configured) {
-      return;
-    }
-    try {
-      final LockStepper<Test01Stages> ls = new LockStepper<Test01Stages>(Test01Stages.testStarted);
-      new Thread() {
-        public void run() {
-          try {
-            String transactionName = "My transaction";
-            KnowledgeBase kb = getKb();
-            Cls top = (Cls) ls.waitForStage(Test01Stages.mainThreadStarted);
-            kb.beginTransaction(transactionName);
-            Cls bottom = kb.createCls(newClassName(), Collections.singleton(top));
-            ls.stageAchieved(Test01Stages.transactionOpenWithWrite, bottom);
-            ls.waitForStage(Test01Stages.testComplete);
-            kb.endTransaction(true);
-          } catch (Exception e) {
-            Log.getLogger().log(Level.SEVERE, "Exception caught in second thread", e);
-          }
-        }
-      }.start();
-      KnowledgeBase kb = getKb();
-      final Cls top = kb.createCls(newClassName(), Collections.EMPTY_LIST);
-      ls.stageAchieved(Test01Stages.mainThreadStarted, top);
-      ls.waitForStage(Test01Stages.transactionOpenWithWrite);
-      Collection subClasses = top.getSubclasses();
-      if (subClasses != null && !subClasses.isEmpty()) {
-        fail("Should not see subclasses being created by other thread.");
-      }
-      ls.stageAchieved(Test01Stages.testComplete, null);
-    } catch (Throwable t) {
-      Log.getLogger().log(Level.SEVERE, "Exception caught in main thread", t);
-    }
-  }
-  
-  
   private String newClassName() {
     return "A" + (counter++);
   }
@@ -157,4 +119,88 @@ public class DBServer_Test extends APITestCase {
     dbst.createDatabaseProject();
   }
 
+  /*
+   *************************************** Tests ***************************************
+   */
+  
+  public enum Test01Stages {
+    testStarted, mainThreadStarted, transactionOpenWithWrite, testComplete
+  }
+  
+  public void testTransaction01() {
+    if (!configured) {
+      return;
+    }
+    try {
+      final LockStepper<Test01Stages> ls = new LockStepper<Test01Stages>(Test01Stages.testStarted);
+      new Thread() {
+        public void run() {
+          try {
+            String transactionName = "My transaction";
+            KnowledgeBase kb = getKb();
+            RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.READ_COMMITTED);
+            Cls top = (Cls) ls.waitForStage(Test01Stages.mainThreadStarted);
+            kb.beginTransaction(transactionName);
+            Cls bottom = kb.createCls(newClassName(), Collections.singleton(top));
+            ls.stageAchieved(Test01Stages.transactionOpenWithWrite, bottom);
+            ls.waitForStage(Test01Stages.testComplete);
+            kb.endTransaction(true);
+          } catch (Exception e) {
+            Log.getLogger().log(Level.SEVERE, "Exception caught in second thread", e);
+            fail("Excception caught in alternative thread");
+          }
+        }
+      }.start();
+      KnowledgeBase kb = getKb();
+      final Cls top = kb.createCls(newClassName(), 
+                                   Collections.singleton(kb.getSystemFrames().getRootCls()));
+      ls.stageAchieved(Test01Stages.mainThreadStarted, top);
+      ls.waitForStage(Test01Stages.transactionOpenWithWrite);
+      Collection subClasses = top.getSubclasses();
+      if (subClasses != null && !subClasses.isEmpty()) {
+        fail("Should not see subclasses being created by other thread.");
+      }
+      ls.stageAchieved(Test01Stages.testComplete, null);
+    } catch (Throwable t) {
+      Log.getLogger().log(Level.SEVERE, "Exception caught in main thread", t);
+    }
+  }
+  
+  public enum Test02Stages {
+    testStarted, firstReadComplete, writeComplete, testComplete
+  }
+  
+  /*
+   * Testing repeatable read
+   */
+  public void testTransaction02() throws TransactionException {
+    KnowledgeBase kb = getKb();
+    RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
+    final LockStepper<Test02Stages> ls = new LockStepper(Test02Stages.testStarted);
+    final Cls testCls = kb.createCls(newClassName(), 
+                                     Collections.singleton(kb.getSystemFrames().getRootCls()));
+    new Thread() {
+      public void run() {
+        try {
+          KnowledgeBase kb = getKb();
+          kb.beginTransaction("transaction will modify testCls after other transaction reads testCls");
+          ls.waitForStage(Test02Stages.firstReadComplete);
+          kb.createCls(newClassName(), Collections.singleton(testCls));
+          ls.stageAchieved(Test02Stages.writeComplete, null);
+          ls.waitForStage(Test02Stages.testComplete);
+          kb.endTransaction(true);
+        } catch (Exception e) {
+          Log.getLogger().log(Level.SEVERE, "Exception caught", e);
+          fail("Exception in second thread - see logs.");
+        }
+      }
+    }.start();
+    kb.beginTransaction("Repeatable Read");
+    assertTrue(kb.getSubclasses(testCls).isEmpty());
+    ls.stageAchieved(Test02Stages.firstReadComplete, null);
+    ls.waitForStage(Test02Stages.writeComplete);
+    assertTrue(kb.getSubclasses(testCls).isEmpty());
+    ls.stageAchieved(Test02Stages.testComplete, null);
+    kb.endTransaction(true);
+  }
 }
