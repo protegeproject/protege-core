@@ -39,9 +39,9 @@ public abstract class TransactionMonitor {
   private void decrementTransaction() {
     RemoteSession session = ServerFrameStore.getCurrentSession();
     Integer nesting = transactionsInProgress.get(session);
-    if (nesting <= 0) {
+    if (nesting != null && nesting <= 0) {
       throw new RuntimeException("Programming error...");
-    } else if (nesting == 1) {
+    } else if (nesting != null && nesting == 1) {
       transactionsInProgress.remove(session);
     } else {
       transactionsInProgress.put(session, nesting - 1);
