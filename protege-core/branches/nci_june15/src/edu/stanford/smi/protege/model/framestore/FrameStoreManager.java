@@ -45,18 +45,17 @@ public class FrameStoreManager {
         addSystemFrameStores();
     }
 
-    /*
-     * private void dumpFrameStoreChain(String text) { Assert.assertNotNull("head frame store", headFrameStore);
-     * Assert.assertNotNull("terminal frame store", terminalFrameStore);
-     * 
-     * System.out.println("Frame Store Chain at " + text); Set visitedFrameStores = new HashSet(); for (FrameStore fs =
-     * headFrameStore; !fs.equals(terminalFrameStore); fs = fs.getDelegate()) { boolean changed =
-     * visitedFrameStores.add(fs); Assert.true("loop in framestores", changed); System.out.println("\t" + fs); }
-     * System.out.println("\t* End of chain"); }
-     */
-
     public FrameStore getHeadFrameStore() {
         return headFrameStore;
+    }
+    
+    public FrameStore getFrameStoreFromClass(Class clazz) {
+      for (FrameStore fs = headFrameStore;  fs != null ; fs = fs.getDelegate()) {
+        if (clazz.isAssignableFrom(fs.getClass())) {
+          return fs;
+        }
+      }
+      return null;
     }
 
     public boolean isEventGeneratorFrameStoreEnabled() {
