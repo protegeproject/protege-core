@@ -20,13 +20,18 @@ junit.server.protege.jar=file:///Users/tredmond/dev/workspace/protege-head/dist/
 
 #--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==
 # Configuration settings for the database server-client tests.  We need to configure 
-# the database project and the meta-project that uses the database.
+# the database project and the meta-project that uses the database.  A useful technique 
+# for creating the database project is to configure the settings below and then run 
+# DBServer_Test as a java application (not a junit test).  The metaproject is preconfigured
+# to look for the database project in junit/pprj/scratch.pprj.
+
 # These tests also depend on the server jar file property and the rmiregistry.
 # 
 # This setting points to one of the configured database projects defined below in
 # the database configuration section.  Currently valid options are
 # Oracle, MySQL, MsAccess, PostGres and SQLServer.  If this setting is
 # set then we will assume that the database server-client test is configured.
+#
 #
 
 #junit.server.db.dbtype=MySQL
