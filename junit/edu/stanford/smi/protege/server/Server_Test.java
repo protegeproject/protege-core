@@ -57,10 +57,10 @@ public class Server_Test extends SimpleTestCase {
     private static boolean informedServerNotConfigured = false;
     
     public static boolean startServer() throws Exception {
-      startServer("examples/server/metaproject.pprj");
+      return startServer("examples/server/metaproject.pprj");
     }
     
-    public static void startServer(String projectFile) throws Exception {
+    public static boolean startServer(String projectFile) throws Exception {
       Properties jup = APITestCase.getJunitProperties();
       String jar_uri = jup.getProperty(JAR_PROPERTY);
       if (jar_uri == null) {
