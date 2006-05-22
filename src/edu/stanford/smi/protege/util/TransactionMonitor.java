@@ -79,6 +79,13 @@ public abstract class TransactionMonitor {
 
   public abstract TransactionIsolationLevel getTransationIsolationLevel() 
   throws TransactionException;
+
+  /**
+   * Sets the transaction isolation level for the current connection.
+   * 
+   * @param level The desired TransactionIsolationLevel
+   * @throws TransactionException 
+   */
   public abstract void setTransactionIsolationLevel(TransactionIsolationLevel level)
-  throws TransactionException;
+    throws TransactionException;
 }
