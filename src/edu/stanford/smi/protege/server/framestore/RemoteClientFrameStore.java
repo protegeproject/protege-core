@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
@@ -24,6 +25,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteServer;
@@ -47,7 +49,9 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public class RemoteClientFrameStore implements FrameStore {
     private static Logger log = Log.getLogger(RemoteClientFrameStore.class);
@@ -993,6 +997,45 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public TransactionMonitor getTransactionStatusMonitor()  {
       throw new UnsupportedOperationException("Shouldn't be doing this on the client side");
+    }
+    
+    private static RemoteClientFrameStore getMeFromKb(KnowledgeBase kb) {
+      if (!(kb instanceof DefaultKnowledgeBase)) {
+        return null;
+      }
+      DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
+      for (FrameStore fs = dkb.getHeadFrameStore(); fs != null;  fs = fs.getDelegate()) {
+        if (fs instanceof RemoteClientFrameStore) {
+          return (RemoteClientFrameStore) fs;
+        }
+      }
+      return null;
+    }
+    
+    public static TransactionIsolationLevel getTransactionIsolationLevel(KnowledgeBase kb) 
+    throws TransactionException {
+      RemoteClientFrameStore frameStore = getMeFromKb(kb);
+      if (frameStore == null) {
+        return TransactionIsolationLevel.NONE;
+      }
+      try {
+        return frameStore.getRemoteDelegate().getTransactionIsolationLevel();
+      } catch (RemoteException re) {
+        throw new TransactionException(re);
+      }
+    }
+    
+    public static boolean setTransactionIsolationLevel(KnowledgeBase kb, TransactionIsolationLevel level) 
+    throws TransactionException {
+      RemoteClientFrameStore frameStore = getMeFromKb(kb);
+      if (frameStore == null) {
+        return false;
+      }
+      try {
+        return frameStore.getRemoteDelegate().setTransactionIsolationLevel(level);
+      } catch (RemoteException re) {
+        throw new TransactionException(re);
+      }
     }
 
     public void close() {
