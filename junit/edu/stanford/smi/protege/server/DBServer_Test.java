@@ -152,6 +152,7 @@ public class DBServer_Test extends APITestCase {
         }
       }.start();
       KnowledgeBase kb = getKb();
+      RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.READ_COMMITTED);
       final Cls top = kb.createCls(newClassName(), 
                                    Collections.singleton(kb.getSystemFrames().getRootCls()));
       ls.stageAchieved(Test01Stages.mainThreadStarted, top);
@@ -167,7 +168,7 @@ public class DBServer_Test extends APITestCase {
   }
   
   public enum Test02Stages {
-    testStarted, firstReadComplete, writeComplete, testComplete
+    testStarted, firstReadComplete, writeComplete, secondReadComplete, otherTransactionClosed, testComplete
   }
   
   /*
@@ -186,9 +187,13 @@ public class DBServer_Test extends APITestCase {
           kb.beginTransaction("transaction will modify testCls after other transaction reads testCls");
           ls.waitForStage(Test02Stages.firstReadComplete);
           kb.createCls(newClassName(), Collections.singleton(testCls));
+          assertTrue(kb.getSubclasses(testCls).size() == 1);
           ls.stageAchieved(Test02Stages.writeComplete, null);
-          ls.waitForStage(Test02Stages.testComplete);
+          ls.waitForStage(Test02Stages.secondReadComplete);
           kb.endTransaction(true);
+          assertTrue(kb.getSubclasses(testCls).size() == 1);
+          ls.stageAchieved(Test02Stages.otherTransactionClosed, null);
+          ls.waitForStage(Test02Stages.testComplete);
         } catch (Exception e) {
           Log.getLogger().log(Level.SEVERE, "Exception caught", e);
           fail("Exception in second thread - see logs.");
@@ -200,7 +205,11 @@ public class DBServer_Test extends APITestCase {
     ls.stageAchieved(Test02Stages.firstReadComplete, null);
     ls.waitForStage(Test02Stages.writeComplete);
     assertTrue(kb.getSubclasses(testCls).isEmpty());
-    ls.stageAchieved(Test02Stages.testComplete, null);
+    ls.stageAchieved(Test02Stages.secondReadComplete, null);
+    ls.waitForStage(Test02Stages.otherTransactionClosed);
+    assertTrue(kb.getSubclasses(testCls).isEmpty());
     kb.endTransaction(true);
+    assertTrue(kb.getSubclasses(testCls).size() == 1);
+    ls.stageAchieved(Test02Stages.testComplete, null);
   }
 }
