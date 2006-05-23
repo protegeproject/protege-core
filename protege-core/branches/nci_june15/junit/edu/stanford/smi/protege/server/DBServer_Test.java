@@ -174,7 +174,24 @@ public class DBServer_Test extends APITestCase {
   /*
    * Testing repeatable read
    */
-  public void testTransaction02() throws TransactionException {
+  
+  public void testTransaction02_1() throws TransactionException {
+    doTest02(true, true);
+  }
+  
+  public void testTransaction02_2() throws TransactionException {
+    doTest02(true, false);
+  }
+ 
+  public void testTransaction02_3() throws TransactionException {
+    doTest02(false, true);
+  }
+  
+  public void testTransaction02_4() throws TransactionException {
+    doTest02(false, false);
+  }
+  
+  public void doTest02(boolean commit, final boolean commitOther) throws TransactionException {
     KnowledgeBase kb = getKb();
     RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
     final LockStepper<Test02Stages> ls = new LockStepper(Test02Stages.testStarted);
@@ -190,10 +207,15 @@ public class DBServer_Test extends APITestCase {
           assertTrue(kb.getSubclasses(testCls).size() == 1);
           ls.stageAchieved(Test02Stages.writeComplete, null);
           ls.waitForStage(Test02Stages.secondReadComplete);
-          kb.endTransaction(true);
-          assertTrue(kb.getSubclasses(testCls).size() == 1);
+          kb.endTransaction(commitOther);
+          if (commitOther) {
+            assertTrue(kb.getSubclasses(testCls).size() == 1);
+          } else {
+            assertTrue(kb.getSubclasses(testCls).isEmpty());
+          }
           ls.stageAchieved(Test02Stages.otherTransactionClosed, null);
           ls.waitForStage(Test02Stages.testComplete);
+          kb.dispose();
         } catch (Exception e) {
           Log.getLogger().log(Level.SEVERE, "Exception caught", e);
           fail("Exception in second thread - see logs.");
@@ -209,7 +231,12 @@ public class DBServer_Test extends APITestCase {
     ls.waitForStage(Test02Stages.otherTransactionClosed);
     assertTrue(kb.getSubclasses(testCls).isEmpty());
     kb.endTransaction(true);
-    assertTrue(kb.getSubclasses(testCls).size() == 1);
+    if (commitOther) {
+      assertTrue(kb.getSubclasses(testCls).size() == 1);
+    } else {
+      assertTrue(kb.getSubclasses(testCls).isEmpty());
+    }
     ls.stageAchieved(Test02Stages.testComplete, null);
+    kb.dispose();
   }
 }
