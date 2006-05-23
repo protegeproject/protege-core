@@ -1414,12 +1414,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             * TransactionMonitor's nesting count is the same as the one in
             * RobustConnection.
             */
-             if (getCurrentConnection().supportsTransactions()) {
+             if (success) {
                getTransactionStatusMonitor().beginTransaction();
              }
-           if (success) {
-             getTransactionStatusMonitor().beginTransaction();
-           }
            return success;
         } catch (SQLException e) {
             throw createRuntimeException(e);
