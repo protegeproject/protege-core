@@ -631,6 +631,8 @@ public interface KnowledgeBase extends Disposable {
 
     boolean beginTransaction(String name);
     boolean endTransaction(boolean doCommit);
+    boolean commitTransaction();
+    boolean rollbackTransaction();
 
     //
     void addDirectType(Instance instance, Cls directType);
