@@ -1,8 +1,8 @@
 package edu.stanford.smi.protege.util;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
@@ -20,12 +20,8 @@ public abstract class TransactionMonitor {
 
   public synchronized void beginTransaction() {
     RemoteSession session = ServerFrameStore.getCurrentSession();
-    Integer nesting = transactionsInProgress.get(session);
-    if (nesting == null) {
-      transactionsInProgress.put(session, 1);
-    } else {
-      transactionsInProgress.put(session, nesting + 1);
-    }
+    int nesting = getNesting();
+    transactionsInProgress.put(session, nesting + 1);
   }
 
   public synchronized void rollbackTransaction() {
@@ -38,14 +34,14 @@ public abstract class TransactionMonitor {
   
   private void decrementTransaction() {
     RemoteSession session = ServerFrameStore.getCurrentSession();
-    Integer nesting = transactionsInProgress.get(session);
-    if (nesting != null && nesting <= 0) {
-      throw new RuntimeException("Programming error...");
-    } else if (nesting != null && nesting == 1) {
+    int nesting = getNesting();
+    if (nesting <= 0) {
+      Log.getLogger().warning("Exiting a transaction when no transaction is in progress");
+    } else if (nesting == 1) {
       transactionsInProgress.remove(session);
     } else {
       transactionsInProgress.put(session, nesting - 1);
-    }   
+    }
   }
   
   public synchronized boolean inTransaction() {
@@ -73,9 +69,22 @@ public abstract class TransactionMonitor {
   }
 
   public synchronized int getNesting() {
-    return transactionsInProgress.get(ServerFrameStore.getCurrentSession());
+    RemoteSession session = ServerFrameStore.getCurrentSession();
+    return getNesting(session);
+  }
+  
+  public synchronized int getNesting(RemoteSession session) {
+    Integer nesting = transactionsInProgress.get(session);
+    if (nesting == null) {
+      return 0;
+    } else {
+      return nesting;
+    }
   }
 
+  public synchronized Set<RemoteSession> getSessions() {
+    return transactionsInProgress.keySet();
+  }
 
   public abstract TransactionIsolationLevel getTransationIsolationLevel() 
   throws TransactionException;
