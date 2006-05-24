@@ -52,7 +52,13 @@ public abstract class Transaction {
                 boolean inTransaction = _knowledgeBase.beginTransaction("transaction");
                 boolean doCommit = doOperations();
                 if (inTransaction) {
+                  if (doCommit) {
                     commited = _knowledgeBase.commitTransaction();
+                  } else {
+                    /* how to handle an error here? */
+                    _knowledgeBase.rollbackTransaction();
+                    commited = false;
+                  }
                 } else if (!doCommit) {
                     Log.getLogger().warning("Unable to rollback, transaction committed");
                     commited = true;
