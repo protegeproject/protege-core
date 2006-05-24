@@ -37,8 +37,8 @@ import edu.stanford.smi.protege.util.URIUtilities;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
     private static Server serverInstance;
-    private Map _nameToOpenProjectMap = new HashMap();
-    private Map _projectToServerProjectMap = new HashMap();
+    private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
+    private Map<Project, ServerProject> _projectToServerProjectMap = new HashMap<Project, ServerProject>();
     private KnowledgeBase _systemKb;
     private Slot _nameSlot;
     private Slot _passwordSlot;
@@ -283,7 +283,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Log.getLogger().info("removing session: " + session);
     }
 
-    private ServerProject getServerProject(String projectName) {
+    public ServerProject getServerProject(String projectName) {
         Project p = getProject(projectName);
         return (p == null) ? null : getServerProject(p);
     }
@@ -308,15 +308,15 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private ServerProject getServerProject(Project p) {
-        return (ServerProject) _projectToServerProjectMap.get(p);
+        return _projectToServerProjectMap.get(p);
     }
 
-    private void addServerProject(Project p, RemoteServerProject sp) {
+    private void addServerProject(Project p, ServerProject sp) {
         _projectToServerProjectMap.put(p, sp);
     }
 
-    private Project getProject(String name) {
-        return (Project) _nameToOpenProjectMap.get(name);
+    public Project getProject(String name) {
+        return _nameToOpenProjectMap.get(name);
     }
 
     private Project getOrCreateProject(String name) {
@@ -457,11 +457,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private void saveAllProjects() {
         // Log.enter(this, "update");
         ///CLOVER:FLUSH
-        Iterator i = _projectToServerProjectMap.entrySet().iterator();
+        Iterator<Map.Entry<Project, ServerProject>> i = _projectToServerProjectMap.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry entry = (Map.Entry) i.next();
-            Project project = (Project) entry.getKey();
-            ServerProject serverProject = (ServerProject) entry.getValue();
+            Map.Entry<Project, ServerProject> entry =  i.next();
+            Project project = entry.getKey();
+            ServerProject serverProject = entry.getValue();
             // Log.trace("checking " + project, this, "update");
             if (serverProject.isDirty()) {
                 save(serverProject, project);
