@@ -42,7 +42,7 @@ public class LockStepper<X extends Enum> {
         }
       }
       if (passedObject instanceof AssertionFailedError) {
-        throw (AssertionFailedError) passedObject;
+        Assert.fail("Exception in alternate thread - see logs...");
       }
       return passedObject;
     }
@@ -56,7 +56,7 @@ public class LockStepper<X extends Enum> {
     }
   }
   
-  public void fail(X stage, Throwable failure) {
+  public void exceptionOffMainThread(X stage, Throwable failure) {
     Log.getLogger().log(Level.SEVERE, "Exception in other thread", failure);
     AssertionFailedError fail = new AssertionFailedError("Exception in other thread");
     fail.initCause(failure);
