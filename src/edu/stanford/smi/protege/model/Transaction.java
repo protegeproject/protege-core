@@ -52,7 +52,7 @@ public abstract class Transaction {
                 boolean inTransaction = _knowledgeBase.beginTransaction("transaction");
                 boolean doCommit = doOperations();
                 if (inTransaction) {
-                    commited = _knowledgeBase.endTransaction(doCommit);
+                    commited = _knowledgeBase.commitTransaction();
                 } else if (!doCommit) {
                     Log.getLogger().warning("Unable to rollback, transaction committed");
                     commited = true;
@@ -60,7 +60,7 @@ public abstract class Transaction {
                 transactionComplete = true;
             } finally {
                 if (!transactionComplete) {
-                    _knowledgeBase.endTransaction(false);
+                    _knowledgeBase.rollbackTransaction();
                 }
             }
         }

@@ -629,12 +629,61 @@ public interface KnowledgeBase extends Disposable {
 
     Collection getCurrentUsers();
 
+    /**
+     * Tells the system that one or more edit actions will follow which should
+     * be handled as a unit for undo.  Editing components should wrap set/add/remove
+     * calls to any resource in a 
+     * <CODE>beginTransaction() - commitTransaction() or rollbackTransaction()</CODE>
+     * block.
+     *
+     * @param name the human-readable name of the following transaction
+     * @return true
+     * @see #endTransaction()
+     */
     boolean beginTransaction(String name);
+    
+    
+    /**
+     * @deprecated Use #commitTransaction()
+     * Ends the recently opened transaction and commits the state.
+     *  
+     * @return 	true - if commit succeeds
+     * 			false - otherwise
+     * @see #beginTransaction
+     */
+    boolean endTransaction();
+    
+    
+    /**
+     * @deprecated Use #commitTransaction or #rollbackTransaction()
+     * Ends the recently opened transaction and commits or rollback based on
+     * doCommit value
+     *  
+     * @param doCommit 	true: commits transaction
+     * 					false: rolls back transaction
+     * @return true - if operation succeeded
+     * 		   false - if operation failed
+     */
     boolean endTransaction(boolean doCommit);
+    
+    /**
+     * Commits the recently opened transaction
+     * @return 	true - if commit suceeded
+     * 			false - otherwise
+     * @see #beginTransaction
+     */
     boolean commitTransaction();
+    
+    
+    /**
+     * Rolls back the recently opened transaction
+     * @return	true - if rollback succeeded
+     * 			false - otherwise
+     * @see #beginTransaction
+     */
     boolean rollbackTransaction();
 
-    //
+    
     void addDirectType(Instance instance, Cls directType);
     void removeDirectType(Instance instance, Cls directType);
     void moveDirectType(Instance instance, Cls directType, int index);

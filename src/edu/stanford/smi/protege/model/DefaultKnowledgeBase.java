@@ -464,11 +464,16 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
             markAsDeleted(cls);
         } else {
             Collection parents = getDirectSuperclasses(cls);
-            beginTransaction("delete class " + cls.getBrowserText());
-            moveInstancesToParents(cls, parents);
-            moveSubclassesToParents(cls, parents);
-            getHeadFrameStore().deleteCls(cls);
-            endTransaction(true);
+            try {
+                beginTransaction("delete class " + cls.getBrowserText());
+                moveInstancesToParents(cls, parents);
+                moveSubclassesToParents(cls, parents);
+                getHeadFrameStore().deleteCls(cls);
+                commitTransaction();				
+			} catch (Exception e) {
+				rollbackTransaction();
+				Log.getLogger().warning("Error at deleting cls: " + cls);
+			}
         }
     }
 
@@ -2118,6 +2123,13 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return committed;
     }
 
+    /**
+     * @deprecated Use #commitTransaction
+     */
+    public synchronized boolean endTransaction() {
+    	return commitTransaction();
+    }
+    
     public synchronized void setFrameFactory(FrameFactory factory) {
         _frameFactory = factory;
     }

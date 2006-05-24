@@ -190,12 +190,17 @@ public class SubslotPane extends SelectableContainer {
                 Collection superslots = SubslotPane.this.getSelection();
                 Slot firstSuperslot = (Slot) CollectionUtilities.getFirstItem(superslots);
                 if (firstSuperslot != null) {
-                    _knowledgeBase.beginTransaction("Create subslot of " + superslots);
-                    Cls metaCls = firstSuperslot.getDirectType();
-                    Slot slot = _knowledgeBase.createSlot(null, metaCls, superslots, true);
-                    createInverseSlot(slot, superslots);
-                    _knowledgeBase.endTransaction(true);
-                    extendSelection(slot);
+                	try {
+                        _knowledgeBase.beginTransaction("Create subslot of " + superslots);
+                        Cls metaCls = firstSuperslot.getDirectType();
+                        Slot slot = _knowledgeBase.createSlot(null, metaCls, superslots, true);
+                        createInverseSlot(slot, superslots);
+                        _knowledgeBase.commitTransaction();
+                        extendSelection(slot);
+					} catch (Exception e) {
+						_knowledgeBase.rollbackTransaction();					
+						Log.getLogger().warning("Error at creating subslot of " + firstSuperslot);
+					}                    
                 }
             }
         };
@@ -245,9 +250,11 @@ public class SubslotPane extends SelectableContainer {
                 Slot slot = (Slot) i.next();
                 _knowledgeBase.deleteSlot(slot);
             }
-        } finally {
-            _knowledgeBase.endTransaction(true);
-        }
+            _knowledgeBase.commitTransaction();
+        } catch (Exception e) {
+        	_knowledgeBase.rollbackTransaction();
+        	Log.getLogger().warning("Error at deleting slots " + slots);
+		}
     }
 
     public Slot getDisplayParent() {
