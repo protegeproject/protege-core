@@ -408,7 +408,7 @@ public class RobustConnection {
     }
 
     public boolean beginTransaction() {
-        if (!ServerFrameStore.getCurrentSession().equals(session)) {
+        if (!sessionOk()) {
           return false;
         }
         boolean begun = false;
@@ -430,7 +430,7 @@ public class RobustConnection {
     }
 
     public boolean commitTransaction() {
-        if (!ServerFrameStore.getCurrentSession().equals(session)) {
+        if (!sessionOk()) {
           return false;
         }
         boolean committed = false;
@@ -450,7 +450,7 @@ public class RobustConnection {
     }
 
     public boolean rollbackTransaction() {
-        if (!ServerFrameStore.getCurrentSession().equals(session)) {
+        if (!sessionOk()) {
           return false;
         }
         boolean rolledBack = false;
@@ -467,6 +467,14 @@ public class RobustConnection {
             Log.getLogger().warning(e.toString());
         }
         return rolledBack;
+    }
+    
+    private boolean sessionOk() {
+      if (ServerFrameStore.getCurrentSession() == null) {
+        return session == null;
+      } else {
+        return ServerFrameStore.getCurrentSession().equals(session);
+      }
     }
     
     public boolean supportsTransactions() {
