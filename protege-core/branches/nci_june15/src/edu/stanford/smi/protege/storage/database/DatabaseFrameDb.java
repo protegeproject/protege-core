@@ -2,7 +2,6 @@ package edu.stanford.smi.protege.storage.database;
 
 //ESCA*JAVA0100
 
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -181,7 +180,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private RobustConnection createConnection() throws SQLException {
         clearDeadConnections();
         RemoteSession currentSession = getCurrentSession();
-        RobustConnection connection = new RobustConnection(_driver, _url, _user, _password);
+        RobustConnection connection = new RobustConnection(_driver, _url, _user, _password, 
+                                                           getTransactionStatusMonitor(), currentSession);
         _connections.put(currentSession, connection);
         if (log.isLoggable(Level.FINE)) {
           log.fine("Created connection for " + currentSession);  
@@ -1408,15 +1408,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         checkModifiability();
         try {
            boolean success = getCurrentConnection().beginTransaction();
-           /*
-            * The following if statement follows the logic  in
-            * RobustConnection.commitTransaction to ensure that the 
-            * TransactionMonitor's nesting count is the same as the one in
-            * RobustConnection.
-            */
-             if (success) {
-               getTransactionStatusMonitor().beginTransaction();
-             }
            return success;
         } catch (SQLException e) {
             throw createRuntimeException(e);
@@ -1430,15 +1421,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         checkModifiability();
         try {
-          /*
-           * The following if statement follows the logic  in
-           * RobustConnection.commitTransaction to ensure that the 
-           * TransactionMonitor's nesting count is the same as the one in
-           * RobustConnection.
-           */
-            if (getCurrentConnection().supportsTransactions()) {
-              getTransactionStatusMonitor().commitTransaction();
-            }
             return getCurrentConnection().commitTransaction();
         } catch (SQLException e) {
             throw createRuntimeException(e);
@@ -1452,15 +1434,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         checkModifiability();
         try {
-          /*
-           * The following if statement follows the logic  in
-           * RobustConnection.rollbackTransaction to ensure that the 
-           * TransactionMonitor's nesting count is the same as the one in
-           * RobustConnection.
-           */
-            if (getCurrentConnection().supportsTransactions()) {
-              getTransactionStatusMonitor().rollbackTransaction();
-            }
             return getCurrentConnection().rollbackTransaction();
         } catch (SQLException e) {
             throw createRuntimeException(e);
