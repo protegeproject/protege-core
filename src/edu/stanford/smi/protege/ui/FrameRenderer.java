@@ -3,14 +3,20 @@ package edu.stanford.smi.protege.ui;
 //ESCA*JAVA0100
 
 import java.awt.Color;
-import java.awt.Cursor;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.BusyFlagFrameStore;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.resource.Colors;
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.DefaultRenderer;
 
 /**
  * Renderer for frames. This class has logic to render all type of frames: classes, slots, facet, simple instances.
@@ -123,7 +129,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     }
 
     protected void setBusyFlagButton() {   		
-    	if (BusyFlagFrameStore.isBusy()) {
+    	if (RemoteClientFrameStore.isBusy()) {
     		ProjectManager.getProjectManager().getServerActivityMonitorButton().setBackground(Color.RED);    		
     	}
     	else {
