@@ -102,7 +102,6 @@ public class RemoteClientProject extends Project {
                                                    clientNarrowFrameStore, 
                                                    kb);
         }
-        kb.setBusyFlagEnabled(true);
         kb.setGenerateEventsEnabled(false);
         kb.setCallCachingEnabled(false);
 
