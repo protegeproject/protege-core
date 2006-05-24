@@ -13,10 +13,12 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.test.APITestCase;
 import edu.stanford.smi.protege.util.LockStepper;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.TransactionMonitor;
 import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public class DBServer_Test extends APITestCase {
@@ -171,7 +173,7 @@ public class DBServer_Test extends APITestCase {
     testStarted, firstReadComplete, writeComplete, secondReadComplete, otherTransactionClosed, testComplete
   }
   
-  /*
+  /* ******************************************************************************
    * Testing repeatable read
    */
   
@@ -201,13 +203,16 @@ public class DBServer_Test extends APITestCase {
       public void run() {
         try {
           KnowledgeBase kb = getKb();
-          kb.beginTransaction("transaction will modify testCls after other transaction reads testCls");
-          ls.waitForStage(Test02Stages.firstReadComplete);
-          kb.createCls(newClassName(), Collections.singleton(testCls));
-          assertTrue(kb.getSubclasses(testCls).size() == 1);
-          ls.stageAchieved(Test02Stages.writeComplete, null);
-          ls.waitForStage(Test02Stages.secondReadComplete);
-          kb.endTransaction(commitOther);
+          try {
+            kb.beginTransaction("transaction will modify testCls after other transaction reads testCls");
+            ls.waitForStage(Test02Stages.firstReadComplete);
+            kb.createCls(newClassName(), Collections.singleton(testCls));
+            assertTrue(kb.getSubclasses(testCls).size() == 1);
+            ls.stageAchieved(Test02Stages.writeComplete, null);
+            ls.waitForStage(Test02Stages.secondReadComplete);
+          } finally {
+            kb.endTransaction(commitOther);
+          }
           if (commitOther) {
             assertTrue(kb.getSubclasses(testCls).size() == 1);
           } else {
@@ -222,15 +227,18 @@ public class DBServer_Test extends APITestCase {
         }
       }
     }.start();
-    kb.beginTransaction("Repeatable Read");
-    assertTrue(kb.getSubclasses(testCls).isEmpty());
-    ls.stageAchieved(Test02Stages.firstReadComplete, null);
-    ls.waitForStage(Test02Stages.writeComplete);
-    assertTrue(kb.getSubclasses(testCls).isEmpty());
-    ls.stageAchieved(Test02Stages.secondReadComplete, null);
-    ls.waitForStage(Test02Stages.otherTransactionClosed);
-    assertTrue(kb.getSubclasses(testCls).isEmpty());
-    kb.endTransaction(true);
+    try {
+      kb.beginTransaction("Repeatable Read");
+      assertTrue(kb.getSubclasses(testCls).isEmpty());
+      ls.stageAchieved(Test02Stages.firstReadComplete, null);
+      ls.waitForStage(Test02Stages.writeComplete);
+      assertTrue(kb.getSubclasses(testCls).isEmpty());
+      ls.stageAchieved(Test02Stages.secondReadComplete, null);
+      ls.waitForStage(Test02Stages.otherTransactionClosed);
+      assertTrue(kb.getSubclasses(testCls).isEmpty());
+    } finally {
+      kb.endTransaction(true);
+    }
     if (commitOther) {
       assertTrue(kb.getSubclasses(testCls).size() == 1);
     } else {
@@ -239,4 +247,41 @@ public class DBServer_Test extends APITestCase {
     ls.stageAchieved(Test02Stages.testComplete, null);
     kb.dispose();
   }
+  
+  /* ******************************************************************
+   * Checking the transaction nesting...
+   *
+   */
+  
+  public void testTransaction03() {
+    TransactionMonitor tm = getTransactionMonitor();
+    KnowledgeBase kb = getKb();
+    assertTrue(tm.getSessions().isEmpty());
+    kb.beginTransaction("Outer");
+    assertTrue(tm.getSessions().size() == 1);
+    RemoteSession mySession = tm.getSessions().iterator().next();
+    
+    kb.beginTransaction("First Inner");
+    assertTrue(tm.getNesting(mySession) == 2);
+    kb.rollbackTransaction();
+    assertTrue(tm.getNesting(mySession) == 1);
+    
+    kb.beginTransaction("Second Inner");
+    assertTrue(tm.getNesting(mySession) == 2);
+    kb.commitTransaction();
+    assertTrue(tm.getNesting(mySession) == 1);
+    
+    kb.commitTransaction();
+    assertTrue(tm.getNesting(mySession) == 0);
+    kb.dispose();
+    
+  }
+  
+  public TransactionMonitor getTransactionMonitor() {
+    Server server = Server.getInstance();
+    ServerProject project = server.getServerProject(clientProject);
+    ServerFrameStore fs = (ServerFrameStore) project.getDomainKbFrameStore(null);
+    return fs.getTransactionStatusMonitor();
+  }
+  
 }
