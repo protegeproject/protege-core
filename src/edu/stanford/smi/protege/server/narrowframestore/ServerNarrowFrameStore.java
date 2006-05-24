@@ -305,7 +305,8 @@ public class ServerNarrowFrameStore
     return fixedDelegate.rollbackTransaction();
   }
 
-  public TransactionMonitor getTransactionStatusMonitor() throws TransactionException {
-    throw new UnsupportedOperationException();
+  public TransactionMonitor getTransactionStatusMonitor(RemoteSession session) throws TransactionException {
+    ServerFrameStore.recordCall(session);
+    return fixedDelegate.getTransactionStatusMonitor();
   }
 }

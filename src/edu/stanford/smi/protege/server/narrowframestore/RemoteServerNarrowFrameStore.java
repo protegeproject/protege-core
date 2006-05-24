@@ -14,6 +14,8 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 /**
  * A variation of the NarrowFrameStore interface that throws the RemoteException.
@@ -97,5 +99,5 @@ public interface RemoteServerNarrowFrameStore extends Remote {
 
   boolean rollbackTransaction(RemoteSession session) throws RemoteException;
 
-
+  TransactionMonitor getTransactionStatusMonitor(RemoteSession session) throws RemoteException, TransactionException;
 }
