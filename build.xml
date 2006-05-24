@@ -18,7 +18,7 @@
         <property name = "plugins" value = "./plugins"/>
 	<!-- Compiler options. -->
 	<property name = "deprecation" value = "on"/>    
-	<property name = "debug" value = "off"/>  
+	<property name = "debug" value = "on"/>  
 	<property name = "optimize" value = "on"/>  
 	<property name = "packages" value = "edu.*"/>  
 	<property name = "includeAntRuntime" value = "no"/>
@@ -222,11 +222,13 @@
             <jvmarg value="-Djava.util.logging.config.file=junit-logging.properties"/>
             <batchtest>
               <fileset dir="${junit}">
+                <!--
                 <include name="**/*Test.java"/>
+                -->
+                <include name="**/DBServer_Test.java"/>
                 <!-- Exclude the graphics tests -->
-                <exclude name="**/Application_Test.java"/>
-                <exclude name="**/action/*.java"/>
-                <exclude name="**/widget/**.java"/>
+                <exclude name="**/*Package_Test.java"/>
+                <!-- what's the story with this one? -->
                 <exclude name="**/framestore/FrameStore_Test.java"/>
               </fileset>
             </batchtest>
