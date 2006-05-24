@@ -1,5 +1,9 @@
 package edu.stanford.smi.protege.util;
 
+import java.util.logging.Level;
+
+import junit.framework.AssertionFailedError;
+
 
 /**
  * This is a class to be used for testing the execution of multiple threads.
@@ -24,7 +28,7 @@ public class LockStepper<X extends Enum> {
     return waitForStage(stage, 0);
   }
   
-  public Object waitForStage(X stage, int timeout) {
+  public Object waitForStage(X stage, int timeout) throws AssertionFailedError {
     synchronized (lock) {
       while (!stageReached(stage)) {
         try {
@@ -37,6 +41,9 @@ public class LockStepper<X extends Enum> {
           Assert.fail("Execution interrupted");
         }
       }
+      if (passedObject instanceof AssertionFailedError) {
+        throw (AssertionFailedError) passedObject;
+      }
       return passedObject;
     }
   }
@@ -47,6 +54,13 @@ public class LockStepper<X extends Enum> {
       passedObject = o;
       lock.notifyAll();
     }
+  }
+  
+  public void fail(X stage, Throwable failure) {
+    Log.getLogger().log(Level.SEVERE, "Exception in other thread", failure);
+    AssertionFailedError fail = new AssertionFailedError("Exception in other thread");
+    fail.initCause(failure);
+    stageAchieved(stage, fail);
   }
   
   private boolean stageReached(X stage) {
