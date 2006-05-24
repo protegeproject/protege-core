@@ -992,7 +992,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       return transactionMonitor != null && transactionMonitor.exclusiveTransaction();
     }
     
-
+    public TransactionMonitor getTransactionStatusMonitor() {
+      return transactionMonitor;
+    }
     
     public void waitForTransactionsToComplete() {
       synchronized (_kbLock) {
