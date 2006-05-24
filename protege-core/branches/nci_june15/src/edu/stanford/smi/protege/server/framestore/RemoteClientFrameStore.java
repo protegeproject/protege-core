@@ -1,5 +1,8 @@
 package edu.stanford.smi.protege.server.framestore;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -25,7 +28,6 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
-import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteServer;
@@ -56,9 +58,21 @@ import edu.stanford.smi.protege.util.exceptions.TransactionException;
 public class RemoteClientFrameStore implements FrameStore {
     private static Logger log = Log.getLogger(RemoteClientFrameStore.class);
     
+    private static Method getEventsMethod;
+    static {
+      try {
+        getEventsMethod = RemoteServerFrameStore.class.getDeclaredMethod("getEvents", 
+                                                                         new Class[] { RemoteSession.class });
+      } catch (NoSuchMethodException nsme) {
+        Log.getLogger().log(Level.SEVERE, "No such method ", nsme);
+      }
+    }
+
+    
     private KnowledgeBase kb;
     private RemoteSession session;
     private RemoteServer server;
+    private RemoteServerFrameStore proxiedDelegate;
     private RemoteServerFrameStore remoteDelegate;
 
     private Slot nameSlot;
@@ -69,6 +83,10 @@ public class RemoteClientFrameStore implements FrameStore {
       STARTED_CACHING, COMPLETED_CACHING
     }
 
+    private static boolean busyFlag = false;
+    private static long quiescenceStarted = System.currentTimeMillis();
+    private final static long quiescenceInterval = 100;
+    
 
   /*
    * These three variables (involving caching are synchronized using the cache object.
@@ -83,8 +101,37 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public RemoteServerFrameStore getRemoteDelegate() {
-        fixLoader();
-        return remoteDelegate;
+        if (proxiedDelegate == null) {
+          fixLoader();
+          InvocationHandler invoker = new InvocationHandler() {
+
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+              fixLoader();
+              if (!method.equals(getEventsMethod)) {
+                busyFlag = true;
+              }
+              try {
+                return method.invoke(remoteDelegate, args);
+              } finally {
+                busyFlag = false;
+                quiescenceStarted = System.currentTimeMillis();
+              }
+            }
+            
+          };
+          proxiedDelegate = (RemoteServerFrameStore) Proxy.newProxyInstance(kb.getClass().getClassLoader(), 
+                                                                            new Class[] {RemoteServerFrameStore.class}, 
+                                                                            invoker);
+        }
+        return proxiedDelegate;
+    }
+
+    public static boolean isBusy() {
+      boolean busy = (busyFlag || System.currentTimeMillis() <= quiescenceStarted + quiescenceInterval);
+      if (log.isLoggable(Level.FINEST)) {
+        log.finest("Checking busy flag = " + busy);
+      }
+      return busy;
     }
 
     private void fixLoader() {
@@ -174,7 +221,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return getRemoteDelegate().getFacetCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
-        }
+        } 
     }
 
     public int getSimpleInstanceCount() {
@@ -182,7 +229,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return getRemoteDelegate().getSimpleInstanceCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
-        }
+        } 
     }
 
     public int getFrameCount() {
@@ -190,7 +237,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return getRemoteDelegate().getFrameCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
-        }
+        } 
     }
 
     private void localize(Object o) {
@@ -204,7 +251,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return clses;
         } catch (RemoteException e) {
             throw convertException(e);
-        }
+        } 
     }
 
     public Set<Slot> getSlots() {
@@ -219,7 +266,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return facets;
         } catch (RemoteException e) {
             throw convertException(e);
-        }
+        } 
     }
 
     public Set<Frame> getFrames() {
@@ -229,7 +276,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return frames;
         } catch (RemoteException e) {
             throw convertException(e);
-        }
+        } 
     }
 
     public Frame getFrame(FrameID id) {
@@ -239,7 +286,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return frame;
         } catch (RemoteException e) {
             throw convertException(e);
-        }
+        } 
     }
 
     public Frame getFrame(String name) {
