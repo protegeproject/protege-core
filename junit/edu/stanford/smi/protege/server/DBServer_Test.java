@@ -47,8 +47,17 @@ public class DBServer_Test extends APITestCase {
   
   private static int counter = 0;
 
+  private boolean informedNotConfigured = false;
+  
   public void setUp() throws Exception {
     super.setUp();
+    if (clientProject == null) {
+      if (!informedNotConfigured) {
+        System.out.println("Server/Database tests not configured");
+        informedNotConfigured = true;
+      }
+      configured = false;
+    }
     Properties props = getJunitProperties();
     String serverProjectFile = props.getProperty(DB_SERVER_METAPROJECT_PROPERTY);
     try {
@@ -62,19 +71,13 @@ public class DBServer_Test extends APITestCase {
       projectCleaned = true;
     }
   }
-  
-  private static boolean informNotConfigured = false;
-  
+
   public void createDatabaseProject() {
     Properties props = getJunitProperties();
     String dbType = props.getProperty(DBTYPE_PROPERTY);
     String dbProjectFile = props.getProperty(DBPROJECT_PROPERTY);
     if (dbType == null) {
-      configured = false;
-      if (!informNotConfigured) {
-        System.out.println("Server+Database Test not configured");
-        informNotConfigured = true;
-      }
+      System.out.println("Server+Database Test not configured");
       return;
     }
     for (DBType dbt : DBType.values()) {
@@ -134,12 +137,11 @@ public class DBServer_Test extends APITestCase {
       return;
     }
     final LockStepper<Test01Stages> ls = new LockStepper<Test01Stages>(Test01Stages.testStarted);
-    new Thread() {
+    new Thread("Second Transaction With Writes Thread") {
       public void run() {
         try {
           String transactionName = "My transaction";
           KnowledgeBase kb = getKb();
-          assertTrue(false);
           RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.READ_COMMITTED);
           Cls top = (Cls) ls.waitForStage(Test01Stages.mainThreadStarted);
           kb.beginTransaction(transactionName);
@@ -150,7 +152,7 @@ public class DBServer_Test extends APITestCase {
           kb.getProject().dispose();
           ls.stageAchieved(Test01Stages.testComplete, null);
         } catch (Throwable e) {
-          ls.fail(Test01Stages.testComplete, e);
+          ls.exceptionOffMainThread(Test01Stages.testComplete, e);
         }
       }
     }.start();
@@ -196,12 +198,15 @@ public class DBServer_Test extends APITestCase {
   }
   
   public void doTest02(boolean commit, final boolean commitOther) throws TransactionException {
+    if (!configured) {
+      return;
+    }
     KnowledgeBase kb = getKb();
     RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
     final LockStepper<Test02Stages> ls = new LockStepper(Test02Stages.testStarted);
     final Cls testCls = kb.createCls(newClassName(), 
                                      Collections.singleton(kb.getSystemFrames().getRootCls()));
-    new Thread() {
+    new Thread("Second Transaction with Writes Thread doTest02(" + commit + "," + commitOther + ")") {
       public void run() {
         try {
           KnowledgeBase kb = getKb();
@@ -229,7 +234,7 @@ public class DBServer_Test extends APITestCase {
           kb.getProject().dispose();
           ls.stageAchieved(Test02Stages.testComplete, null);
         } catch (Throwable e) {
-          ls.fail(Test02Stages.testComplete, e);
+          ls.exceptionOffMainThread(Test02Stages.testComplete, e);
         }
       }
     }.start();
@@ -265,6 +270,9 @@ public class DBServer_Test extends APITestCase {
    */
   
   public void testTransaction03() {
+    if (!configured) {
+      return;
+    }
     TransactionMonitor tm = getTransactionMonitor();
     KnowledgeBase kb = getKb();
     assertTrue(tm.getSessions().isEmpty());
