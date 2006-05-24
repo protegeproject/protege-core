@@ -2,14 +2,21 @@ package edu.stanford.smi.protege.model.framestore;
 
 //ESCA*JAVA0100
 
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
+import java.lang.reflect.InvocationHandler;
+import java.net.URI;
+import java.util.Collections;
+import java.util.EventListener;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.cleandispatch.*;
-import edu.stanford.smi.protege.model.framestore.undo.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.framestore.cleandispatch.CleanDispatchFrameStore;
+import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.Log;
 
 /**
  * 
@@ -29,12 +36,11 @@ public class FrameStoreManager {
     private UndoFrameStore undoFrameStore;
     private ChangeMonitorFrameStore changeMonitorFrameStore;
     private FrameStore traceFrameStore;
-    private FrameStore busyFrameStore;
 
     private FrameStore terminalFrameStore;
     private FrameStore headFrameStore;
 
-    private List frameStores = new LinkedList();
+    private List<FrameStore> frameStores = new LinkedList<FrameStore>();
     private KnowledgeBase kb;
 
     public FrameStoreManager(KnowledgeBase kb) {
@@ -94,7 +100,6 @@ public class FrameStoreManager {
         add(changeMonitorFrameStore, true);
         add(cleanDispatchFrameStore, true);
         add(deleteSimplificationFrameStore, true);
-        add(busyFrameStore, false);
 
         // for testing
         add(traceFrameStore, false);
@@ -177,7 +182,6 @@ public class FrameStoreManager {
         traceFrameStore = null;
         terminalFrameStore = null;
         headFrameStore = null;
-        busyFrameStore = null;
     }
 
     private void closeFrameStores() {
@@ -251,9 +255,6 @@ public class FrameStoreManager {
         return isEnabled(cachingFrameStore);
     }
     
-    public boolean isBusyFlagEnabled() {
-      return isEnabled(busyFrameStore);
-    }
 
     public boolean setEnabled(FrameStore fs, boolean b) {
         return b ? enable(fs) : disable(fs);
@@ -267,9 +268,6 @@ public class FrameStoreManager {
         return setEnabled(cachingFrameStore, b);
     }
     
-    public boolean setBusyFlagEnabled(boolean b) {
-      return setEnabled(busyFrameStore, b);
-    }
 
     public boolean setCleanDispatchEnabled(boolean b) {
         return setEnabled(cleanDispatchFrameStore, b);
@@ -323,7 +321,7 @@ public class FrameStoreManager {
         eventDispatchFrameStore.addListener(c, o, listener);
     }
 
-    public List getFrameStores() {
+    public List<FrameStore> getFrameStores() {
         return Collections.unmodifiableList(frameStores);
     }
 
@@ -331,7 +329,6 @@ public class FrameStoreManager {
         deleteSimplificationFrameStore = create(DeleteSimplificationFrameStore.class);
         argumentCheckingFrameStore = create(ArgumentCheckingFrameStore.class);
         cachingFrameStore = create(CallCachingFrameStore.class);
-        busyFrameStore = create(BusyFlagFrameStore.class);
         cleanDispatchFrameStore = create(CleanDispatchFrameStore.class);
         eventDispatchFrameStore = (EventDispatchFrameStore) create(EventDispatchFrameStore.class);
         eventGeneratorFrameStore = (EventGeneratorFrameStore) create(EventGeneratorFrameStore.class);
