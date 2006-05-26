@@ -222,10 +222,7 @@
             <jvmarg value="-Djava.util.logging.config.file=junit-logging.properties"/>
             <batchtest>
               <fileset dir="${junit}">
-                <!--
                 <include name="**/*Test.java"/>
-                -->
-                <include name="**/DBServer_Test.java"/>
                 <!-- Exclude the graphics tests -->
                 <exclude name="**/*Package_Test.java"/>
                 <!-- what's the story with this one? -->
