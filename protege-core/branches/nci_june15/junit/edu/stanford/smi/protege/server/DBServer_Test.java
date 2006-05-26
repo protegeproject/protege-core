@@ -19,7 +19,6 @@ import edu.stanford.smi.protege.util.LockStepper;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.TransactionMonitor;
-import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public class DBServer_Test extends APITestCase {
   
@@ -99,11 +98,25 @@ public class DBServer_Test extends APITestCase {
     return p.getKnowledgeBase();
   }
   
+  // moderately hacky way to clean out all the frames...
   public void cleanProject() {
+    boolean progress = true;
     KnowledgeBase kb = getKb();
-    for (Frame frame : kb.getFrames()) {
-      if (!frame.isSystem()) {
-        frame.delete();
+    while (progress) {
+      progress = false;
+      for (Frame frame : kb.getFrames()) {
+        if (frame.isSystem()) {
+          continue;
+        } else if (frame instanceof Cls) {
+          Cls cls = (Cls) frame;
+          if (cls.getInstanceCount() == 0) {
+            cls.delete();
+            progress = true;
+          }
+        } else {
+          frame.delete();
+          progress = true;
+        }
       }
     }
   }
@@ -132,44 +145,48 @@ public class DBServer_Test extends APITestCase {
     testStarted, mainThreadStarted, transactionOpenWithWrite, readComplete, testComplete
   }
   
-  public void testTransaction01() throws TransactionException {
+  public void testTransaction01() throws Exception {
     if (!configured) {
       return;
     }
-    final LockStepper<Test01Stages> ls = new LockStepper<Test01Stages>(Test01Stages.testStarted);
-    new Thread("Second Transaction With Writes Thread") {
-      public void run() {
-        try {
-          String transactionName = "My transaction";
-          KnowledgeBase kb = getKb();
-          RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.READ_COMMITTED);
-          Cls top = (Cls) ls.waitForStage(Test01Stages.mainThreadStarted);
-          kb.beginTransaction(transactionName);
-          Cls bottom = kb.createCls(newClassName(), Collections.singleton(top));
-          ls.stageAchieved(Test01Stages.transactionOpenWithWrite, bottom);
-          ls.waitForStage(Test01Stages.readComplete);
-          kb.commitTransaction();
-          kb.getProject().dispose();
-          ls.stageAchieved(Test01Stages.testComplete, null);
-        } catch (Throwable e) {
-          ls.exceptionOffMainThread(Test01Stages.testComplete, e);
+    try {
+      final LockStepper<Test01Stages> ls = new LockStepper<Test01Stages>(Test01Stages.testStarted);
+      new Thread("Second Transaction With Writes Thread") {
+        public void run() {
+          try {
+            String transactionName = "My transaction";
+            KnowledgeBase kb = getKb();
+            RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.READ_COMMITTED);
+            Cls top = (Cls) ls.waitForStage(Test01Stages.mainThreadStarted);
+            kb.beginTransaction(transactionName);
+            Cls bottom = kb.createCls(newClassName(), Collections.singleton(top));
+            ls.stageAchieved(Test01Stages.transactionOpenWithWrite, bottom);
+            ls.waitForStage(Test01Stages.readComplete);
+            kb.commitTransaction();
+            kb.getProject().dispose();
+            ls.stageAchieved(Test01Stages.testComplete, null);
+          } catch (Throwable e) {
+            ls.exceptionOffMainThread(Test01Stages.testComplete, e);
+          }
         }
+      }.start();
+      KnowledgeBase kb = getKb();
+      RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.READ_COMMITTED);
+      final Cls top = kb.createCls(newClassName(), 
+          Collections.singleton(kb.getSystemFrames().getRootCls()));
+      ls.stageAchieved(Test01Stages.mainThreadStarted, top);
+      ls.waitForStage(Test01Stages.transactionOpenWithWrite);
+      Collection subClasses = top.getSubclasses();
+      if (subClasses != null && !subClasses.isEmpty()) {
+        fail("Should not see subclasses being created by other thread.");
       }
-    }.start();
-    KnowledgeBase kb = getKb();
-    RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.READ_COMMITTED);
-    final Cls top = kb.createCls(newClassName(), 
-        Collections.singleton(kb.getSystemFrames().getRootCls()));
-    ls.stageAchieved(Test01Stages.mainThreadStarted, top);
-    ls.waitForStage(Test01Stages.transactionOpenWithWrite);
-    Collection subClasses = top.getSubclasses();
-    if (subClasses != null && !subClasses.isEmpty()) {
-      fail("Should not see subclasses being created by other thread.");
+      ls.stageAchieved(Test01Stages.readComplete, null);
+      ls.waitForStage(Test01Stages.testComplete);
+      kb.getProject().dispose();
+    } catch (Exception e) {
+      Log.getLogger().log(Level.WARNING, "Test failed, e");
+      throw e;
     }
-    ls.stageAchieved(Test01Stages.readComplete, null);
-    ls.waitForStage(Test01Stages.testComplete);
-    kb.getProject().dispose();
-    
   }
   
 
@@ -177,19 +194,19 @@ public class DBServer_Test extends APITestCase {
    * Testing repeatable read
    */
   
-  public void testTransaction02_1() throws TransactionException {
+  public void testTransaction02_1() throws Exception {
     doTest02(true, true);
   }
   
-  public void testTransaction02_2() throws TransactionException {
+  public void testTransaction02_2() throws Exception {
     doTest02(true, false);
   }
  
-  public void testTransaction02_3() throws TransactionException {
+  public void testTransaction02_3() throws Exception {
     doTest02(false, true);
   }
   
-  public void testTransaction02_4() throws TransactionException {
+  public void testTransaction02_4() throws Exception {
     doTest02(false, false);
   }
   
@@ -197,71 +214,76 @@ public class DBServer_Test extends APITestCase {
     testStarted, firstReadComplete, writeComplete, secondReadComplete, otherTransactionClosed, thirdReadComplete, testComplete
   }
   
-  public void doTest02(boolean commit, final boolean commitOther) throws TransactionException {
+  public void doTest02(boolean commit, final boolean commitOther) throws Exception {
     if (!configured) {
       return;
     }
-    KnowledgeBase kb = getKb();
-    RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
-    final LockStepper<Test02Stages> ls = new LockStepper(Test02Stages.testStarted);
-    final Cls testCls = kb.createCls(newClassName(), 
-                                     Collections.singleton(kb.getSystemFrames().getRootCls()));
-    new Thread("Second Transaction with Writes Thread doTest02(" + commit + "," + commitOther + ")") {
-      public void run() {
-        try {
-          KnowledgeBase kb = getKb();
+    try{
+      KnowledgeBase kb = getKb();
+      RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
+      final LockStepper<Test02Stages> ls = new LockStepper<Test02Stages>(Test02Stages.testStarted);
+      final Cls testCls = kb.createCls(newClassName(), 
+          Collections.singleton(kb.getSystemFrames().getRootCls()));
+      new Thread("Second Transaction with Writes Thread doTest02(" + commit + "," + commitOther + ")") {
+        public void run() {
           try {
-            kb.beginTransaction("transaction will modify testCls after other transaction reads testCls");
-            ls.waitForStage(Test02Stages.firstReadComplete);
-            kb.createCls(newClassName(), Collections.singleton(testCls));
-            assertTrue(kb.getSubclasses(testCls).size() == 1);
-            ls.stageAchieved(Test02Stages.writeComplete, null);
-            ls.waitForStage(Test02Stages.secondReadComplete);
-          } finally {
-            if (commitOther) {
-              kb.commitTransaction();
-            } else {
-              kb.rollbackTransaction();
+            KnowledgeBase kb = getKb();
+            try {
+              kb.beginTransaction("transaction will modify testCls after other transaction reads testCls");
+              ls.waitForStage(Test02Stages.firstReadComplete);
+              kb.createCls(newClassName(), Collections.singleton(testCls));
+              assertTrue(kb.getSubclasses(testCls).size() == 1);
+              ls.stageAchieved(Test02Stages.writeComplete, null);
+              ls.waitForStage(Test02Stages.secondReadComplete);
+            } finally {
+              if (commitOther) {
+                kb.commitTransaction();
+              } else {
+                kb.rollbackTransaction();
+              }
             }
+            if (commitOther) {
+              assertTrue(kb.getSubclasses(testCls).size() == 1);
+            } else {
+              assertTrue(kb.getSubclasses(testCls).isEmpty());
+            }
+            ls.stageAchieved(Test02Stages.otherTransactionClosed, null);
+            ls.waitForStage(Test02Stages.thirdReadComplete);
+            kb.getProject().dispose();
+            ls.stageAchieved(Test02Stages.testComplete, null);
+          } catch (Throwable e) {
+            ls.exceptionOffMainThread(Test02Stages.testComplete, e);
           }
-          if (commitOther) {
-            assertTrue(kb.getSubclasses(testCls).size() == 1);
-          } else {
-            assertTrue(kb.getSubclasses(testCls).isEmpty());
-          }
-          ls.stageAchieved(Test02Stages.otherTransactionClosed, null);
-          ls.waitForStage(Test02Stages.thirdReadComplete);
-          kb.getProject().dispose();
-          ls.stageAchieved(Test02Stages.testComplete, null);
-        } catch (Throwable e) {
-          ls.exceptionOffMainThread(Test02Stages.testComplete, e);
+        }
+      }.start();
+      try {
+        kb.beginTransaction("Repeatable Read");
+        assertTrue(kb.getSubclasses(testCls).isEmpty());
+        ls.stageAchieved(Test02Stages.firstReadComplete, null);
+        ls.waitForStage(Test02Stages.writeComplete);
+        assertTrue(kb.getSubclasses(testCls).isEmpty());
+        ls.stageAchieved(Test02Stages.secondReadComplete, null);
+        ls.waitForStage(Test02Stages.otherTransactionClosed);
+        assertTrue(kb.getSubclasses(testCls).isEmpty());
+      } finally {
+        if (commit) {
+          kb.commitTransaction();
+        } else {
+          kb.rollbackTransaction();
         }
       }
-    }.start();
-    try {
-      kb.beginTransaction("Repeatable Read");
-      assertTrue(kb.getSubclasses(testCls).isEmpty());
-      ls.stageAchieved(Test02Stages.firstReadComplete, null);
-      ls.waitForStage(Test02Stages.writeComplete);
-      assertTrue(kb.getSubclasses(testCls).isEmpty());
-      ls.stageAchieved(Test02Stages.secondReadComplete, null);
-      ls.waitForStage(Test02Stages.otherTransactionClosed);
-      assertTrue(kb.getSubclasses(testCls).isEmpty());
-    } finally {
-      if (commit) {
-        kb.commitTransaction();
+      if (commitOther) {
+        assertTrue(kb.getSubclasses(testCls).size() == 1);
       } else {
-        kb.rollbackTransaction();
+        assertTrue(kb.getSubclasses(testCls).isEmpty());
       }
+      ls.stageAchieved(Test02Stages.thirdReadComplete, null);
+      kb.getProject().dispose();
+      ls.waitForStage(Test02Stages.testComplete);
+    } catch (Exception e) {
+      Log.getLogger().log(Level.WARNING, "Test faiiled", e);
+      throw e;
     }
-    if (commitOther) {
-      assertTrue(kb.getSubclasses(testCls).size() == 1);
-    } else {
-      assertTrue(kb.getSubclasses(testCls).isEmpty());
-    }
-    ls.stageAchieved(Test02Stages.thirdReadComplete, null);
-    kb.getProject().dispose();
-    ls.waitForStage(Test02Stages.testComplete);
   }
   
   /* ******************************************************************
