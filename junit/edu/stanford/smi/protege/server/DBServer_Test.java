@@ -127,8 +127,10 @@ public class DBServer_Test extends APITestCase {
   
 
   /**
-   * A main method that configures  
-   * @param args
+   * A main method that builds the database project based on junit
+   * configuration parameters.
+   *   
+   * @param args The arguments are ignored.
    * @throws Exception 
    */
   public static void main(String[] args) throws Exception {
