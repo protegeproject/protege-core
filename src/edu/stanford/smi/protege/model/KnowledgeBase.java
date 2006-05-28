@@ -508,7 +508,7 @@ public interface KnowledgeBase extends Disposable {
     int getDirectSubclassCount(Cls cls);
     Collection getDirectSubclasses(Cls cls);
     int getDirectSuperclassCount(Cls cls);
-    Collection getDirectSuperclasses(Cls cls);
+    Collection<Cls> getDirectSuperclasses(Cls cls);
     List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet);
     Collection getDirectTemplateSlots(Cls cls);
     List getDirectTemplateSlotValues(Cls cls, Slot slot);
