@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.server.framestore;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.rmi.Naming;
@@ -86,6 +87,9 @@ public class RemoteClientFrameStore implements FrameStore {
     private static boolean busyFlag = false;
     private static long quiescenceStarted = System.currentTimeMillis();
     private final static long quiescenceInterval = 100;
+
+    private TransactionIsolationLevel transactionLevel;
+    private int transactionNesting = 0;
     
 
   /*
@@ -112,6 +116,8 @@ public class RemoteClientFrameStore implements FrameStore {
               }
               try {
                 return method.invoke(remoteDelegate, args);
+              } catch (InvocationTargetException ite) { 
+                throw ite.getCause();
               } finally {
                 busyFlag = false;
                 quiescenceStarted = System.currentTimeMillis();
@@ -655,7 +661,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public List getDirectSuperclasses(Cls cls) {
+    public List<Cls> getDirectSuperclasses(Cls cls) {
         try {
             return getCacheDirectOwnSlotValues(cls, getSystemFrames().getDirectSuperclassesSlot());
         } catch (RemoteException e) {
@@ -1020,6 +1026,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public boolean beginTransaction(String name) {
         try {
+            transactionNesting++;
             return getRemoteDelegate().beginTransaction(name, session);
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1028,6 +1035,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public boolean commitTransaction() {
         try {
+            transactionNesting--;
             return getRemoteDelegate().commitTransaction(session);
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1036,6 +1044,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public boolean rollbackTransaction() {
         try {
+            transactionNesting--;
             return getRemoteDelegate().rollbackTransaction(session);
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1065,8 +1074,15 @@ public class RemoteClientFrameStore implements FrameStore {
       if (frameStore == null) {
         return TransactionIsolationLevel.NONE;
       }
+      return frameStore.getTransactionIsolationLevel();
+    }
+    
+    public TransactionIsolationLevel getTransactionIsolationLevel() throws TransactionException {
+      if (transactionLevel != null) {
+        return transactionLevel;
+      }     
       try {
-        return frameStore.getRemoteDelegate().getTransactionIsolationLevel();
+        return transactionLevel = getRemoteDelegate().getTransactionIsolationLevel();
       } catch (RemoteException re) {
         throw new TransactionException(re);
       }
@@ -1078,8 +1094,17 @@ public class RemoteClientFrameStore implements FrameStore {
       if (frameStore == null) {
         return false;
       }
+      return frameStore.setTransactionIsolationLevel(level);
+    }
+    
+    public boolean setTransactionIsolationLevel(TransactionIsolationLevel level) throws TransactionException {
       try {
-        return frameStore.getRemoteDelegate().setTransactionIsolationLevel(level);
+        transactionLevel = null;
+        boolean ret = getRemoteDelegate().setTransactionIsolationLevel(level);
+        if (ret) {
+          transactionLevel = level;
+        }
+        return ret;
       } catch (RemoteException re) {
         throw new TransactionException(re);
       }
@@ -1173,6 +1198,21 @@ public class RemoteClientFrameStore implements FrameStore {
      * This routine assumes that the caller is holding the cache lock
      */
     private boolean isCached(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+      /*
+       * if the transaction isolation level is serializable, then we need to let the database know
+       * about all read operations.  A more complicated and optimized solution is possible if I start
+       * new cache's when the transaction starts.  Then the database will know about the first read but
+       * later reads will come from the cache.
+       */
+      try {
+        if (transactionNesting > 0 && 
+            getTransactionIsolationLevel() == TransactionIsolationLevel.SERIALIZABLE) {
+          return false;
+        }
+      } catch (TransactionException e) {
+        Log.getLogger().log(Level.WARNING, "Could not get transaction isolation level - caching disabled", e);
+        return false;
+      }
       synchronized (cache) {
         Map<Sft, List> m = cache.get(frame);
         if (m == null) {
