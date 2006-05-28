@@ -24,7 +24,9 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 /**
  * @author Ray Fergerson
@@ -311,7 +313,16 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
     }
 
     public boolean beginTransaction(String name) {
-        return getDelegate().beginTransaction(name);
+      TransactionMonitor monitor = getTransactionStatusMonitor();
+      try {
+        if (monitor != null && !monitor.inTransaction() &&
+            monitor.getTransationIsolationLevel() == TransactionIsolationLevel.SERIALIZABLE) {
+          clearCache();
+        }
+      } catch (TransactionException te) {
+        clearCache();
+      }
+      return getDelegate().beginTransaction(name);
     }
 
     public boolean commitTransaction() {
