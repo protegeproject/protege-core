@@ -324,7 +324,7 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
     }
 
-    public List getDirectSuperclasses(Cls cls) {
+    public List<Cls> getDirectSuperclasses(Cls cls) {
         checkCls(cls);
         return getDelegate().getDirectSuperclasses(cls);
     }

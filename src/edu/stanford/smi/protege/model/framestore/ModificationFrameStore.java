@@ -64,7 +64,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getFacets();
     }
 
-    public List getDirectSuperclasses(Cls cls) {
+    public List<Cls> getDirectSuperclasses(Cls cls) {
         return getDelegate().getDirectSuperclasses(cls);
     }
 

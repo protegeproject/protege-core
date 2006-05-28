@@ -177,7 +177,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
     }
 
-    public List getDirectSuperclasses(Cls cls) {
+    public List<Cls> getDirectSuperclasses(Cls cls) {
         return getDelegate().getDirectSuperclasses(cls);
     }
 

@@ -144,7 +144,7 @@ public interface FrameStore {
     void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values);
 
     // class hierarchy
-    List getDirectSuperclasses(Cls cls);
+    List<Cls> getDirectSuperclasses(Cls cls);
 
     Set getSuperclasses(Cls cls);
 

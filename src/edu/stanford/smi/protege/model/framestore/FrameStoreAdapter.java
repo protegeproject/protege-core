@@ -113,7 +113,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getClsesWithMatchingDirectTemplateSlotValue(slot, value, maxMatches);
     }
 
-    public List getDirectSuperclasses(Cls cls) {
+    public List<Cls> getDirectSuperclasses(Cls cls) {
         return getDelegate().getDirectSuperclasses(cls);
     }
 
