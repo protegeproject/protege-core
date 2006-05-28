@@ -901,7 +901,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         updateEvents();
         closeTransactionEvents();
         if (!inTransaction()) {
-          _sessionToRegistrationMap.get(session).endTransaction();
+          Collection<ValueUpdate> rollbacks = _sessionToRegistrationMap.get(session).endTransaction();
+          if (!success) {
+            for (ValueUpdate vu : rollbacks) {
+              _updateWriter.write(vu);
+            }
+          }
         }
         if (!existsTransaction()) {
           _kbLock.notifyAll();
