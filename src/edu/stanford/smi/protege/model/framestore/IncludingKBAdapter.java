@@ -63,8 +63,6 @@ public abstract class IncludingKBAdapter
   
   protected int memoryProjectId;
   
-  private Set<Frame> frameSetCache;
-  
   public IncludingKBAdapter(NarrowFrameStore delegate) {
     this.delegate = delegate;
   }
@@ -402,16 +400,13 @@ public abstract class IncludingKBAdapter
   }
 
   public Set<Frame> getFrames() {
-    if (frameSetCache != null) {
-      return frameSetCache;
-    }
-    frameSetCache = new HashSet<Frame>();
+    Set<Frame> frames = new HashSet<Frame>();
     for (Frame frame : delegate.getFrames()) {
       if (!isLocalFrameIncluded(frame)) {
-        frameSetCache.add(frame);
+        frames.add(frame);
       }
     }
-    return frameSetCache;
+    return frames;
   }
 
   public Frame getFrame(FrameID id) {
