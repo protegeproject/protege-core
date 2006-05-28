@@ -102,7 +102,7 @@ public class ClsStorer extends ClipsFileWriter {
         return (cls == null) ? Collections.EMPTY_LIST : cls.getDirectSubclasses();
     }
 
-    private Collection getDirectSuperclasses(Cls cls) {
+    private Collection<Cls> getDirectSuperclasses(Cls cls) {
         return (cls == null) ? _kb.getRootClses() : cls.getDirectSuperclasses();
     }
     
