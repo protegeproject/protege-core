@@ -18,7 +18,9 @@ import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 /**
  * @author Ray Fergerson
@@ -231,11 +233,28 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     }
 
     public boolean beginTransaction(String name) {
-        return _delegate.beginTransaction(name);
+      TransactionMonitor monitor = getTransactionStatusMonitor();
+      /*
+       * Ensure that if the transaction isolation level is serializable then the database
+       * is aware of all reads.
+       */
+      try {
+        if (monitor != null && !monitor.existsTransaction() && 
+            monitor.getTransationIsolationLevel() == TransactionIsolationLevel.SERIALIZABLE) {
+          clearCache();
+        }
+      } catch (TransactionException te) {
+        clearCache();
+      }
+      return _delegate.beginTransaction(name);
     }
 
     public boolean commitTransaction() {
-        return _delegate.commitTransaction();
+        boolean ret = _delegate.commitTransaction();
+        if (!ret) {
+          clearCache();
+        }
+        return ret;
     }
 
     public boolean rollbackTransaction() {
