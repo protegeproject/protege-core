@@ -69,7 +69,7 @@ public interface Cls extends Instance {
 
     int getDirectSuperclassCount();
 
-    Collection getDirectSuperclasses();
+    Collection<Cls> getDirectSuperclasses();
 
     /** see {@link Frame} for a description of the returned objects */
     List getDirectTemplateFacetValues(Slot slot, Facet facet);
