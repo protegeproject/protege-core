@@ -4,7 +4,9 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 import edu.stanford.smi.protege.util.CacheMap;
+import edu.stanford.smi.protege.util.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public class CallCachingFrameStore extends AbstractFrameStoreInvocationHandler {
     private static final int MAX_SIZE = 100 * 1000;
@@ -42,9 +44,21 @@ public class CallCachingFrameStore extends AbstractFrameStoreInvocationHandler {
     private int miss = 0;
 
     private Object query(Method method, Object[] args) {
+        /*
+         * If the transaction isolation level is serializable then we must go to the database
+         * to do the read to let it know how to the locking.
+         */
+        boolean mustRead = false;
+        try {
+          mustRead = transactionMonitor != null &&
+                     transactionMonitor.inTransaction() && 
+                     transactionMonitor.getTransationIsolationLevel() == TransactionIsolationLevel.SERIALIZABLE;
+        } catch (TransactionException te) {
+          mustRead = true;
+        }
         _lookupMethodCall.set(method, args);
         Object o = _cache.get(_lookupMethodCall);
-        if (o == null) {
+        if (o == null || mustRead) {
             ++miss;
             o = invoke(method, args);
             /*
