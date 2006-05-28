@@ -229,7 +229,7 @@ public class SimpleFrameStore implements FrameStore {
         return getDirectOwnSlotValues(cls, _systemFrames.getDirectTemplateSlotsSlot());
     }
 
-    public List getDirectSuperclasses(Cls cls) {
+    public List<Cls> getDirectSuperclasses(Cls cls) {
         return getDirectOwnSlotValues(cls, _systemFrames.getDirectSuperclassesSlot());
     }
 
