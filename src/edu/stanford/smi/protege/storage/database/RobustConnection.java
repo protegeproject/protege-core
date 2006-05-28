@@ -59,6 +59,8 @@ public class RobustConnection {
     // "Database.typename.tiny_integer";
     private static final String PROPERTY_BIT_TYPE_NAME = "Database.typename.bit";
     private static final String PROPERTY_CHAR_TYPE_NAME = "Database.typename.char";
+    
+    private Integer transactionIsolationLevel = null;
 
     public RobustConnection(String driver, String url, String username, String password,
                             TransactionMonitor transactionMonitor, RemoteSession session) throws SQLException {
@@ -482,10 +484,19 @@ public class RobustConnection {
     }
     
     public void setTransactionIsolationLevel(int level) throws SQLException {
-      _connection.setTransactionIsolation(level);
+      transactionIsolationLevel = level;
+      try {
+        _connection.setTransactionIsolation(level);
+      } catch (SQLException sqle) {
+        transactionIsolationLevel = null;
+        throw sqle;
+      }
     }
     
     public int getTransactionIsolationLevel() throws SQLException {
-      return _connection.getTransactionIsolation();
+      if (transactionIsolationLevel != null) {
+        return transactionIsolationLevel;
+      }
+      return transactionIsolationLevel = _connection.getTransactionIsolation();
     }
 }
