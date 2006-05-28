@@ -1466,7 +1466,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
               RobustConnection connection = _connections.get(session);
               int jdbcLevel = level.getJdbcLevel();
               try {
-                connection.setTransactionIsolationLevel(jdbcLevel);
+                if (connection != null) {
+                  connection.setTransactionIsolationLevel(jdbcLevel);
+                }
               } catch (SQLException e) {
                 throw new TransactionException(e);
               }
