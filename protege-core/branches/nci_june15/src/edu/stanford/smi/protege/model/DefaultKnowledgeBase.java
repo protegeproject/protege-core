@@ -306,7 +306,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return (Cls) CollectionUtilities.getFirstItem(types);
     }
 
-    public synchronized Collection getDirectSuperclasses(Cls cls) {
+    public synchronized Collection<Cls> getDirectSuperclasses(Cls cls) {
         return getHeadFrameStore().getDirectSuperclasses(cls);
     }
 

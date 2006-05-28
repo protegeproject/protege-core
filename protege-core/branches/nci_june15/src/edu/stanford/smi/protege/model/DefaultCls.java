@@ -120,7 +120,7 @@ public class DefaultCls extends DefaultInstance implements Cls {
         return getDefaultKnowledgeBase().getDirectSuperclassCount(this);
     }
 
-    public Collection getDirectSuperclasses() {
+    public Collection<Cls> getDirectSuperclasses() {
         return getDefaultKnowledgeBase().getDirectSuperclasses(this);
     }
 
