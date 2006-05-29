@@ -154,4 +154,15 @@ public abstract class Finder extends JComponent {
     public String toString() {
         return StringUtilities.getClassName(this);
     }
+    
+    /**
+     * Sets the enabled state of the Finder control.
+     * Setting enabled to false will disable the finder combobox and button.
+     */
+    public void setEnabled(boolean enabled) {
+    	super.setEnabled(enabled);
+    	_comboBox.setEnabled(enabled);
+    	_findButtonAction.setEnabled(enabled);
+    }
+    
 }
