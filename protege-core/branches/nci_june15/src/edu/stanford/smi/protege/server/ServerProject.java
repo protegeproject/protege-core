@@ -23,6 +23,7 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     private ServerFrameStore _domainKbFrameStore;
     private ServerFrameStore _projectKbFrameStore;
     private ServerNarrowFrameStore _domainKbNarrowFrameStore;
+    private ServerNarrowFrameStore _systemNarrowFrameStore;
     private final Object _kbLock = new Object();
 
     public URI getURI(RemoteSession session) {
@@ -44,6 +45,7 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         _domainKbFrameStore = createServerFrameStore(_project.getKnowledgeBase(), _kbLock);
         _projectKbFrameStore = createServerFrameStore(_project.getInternalProjectKnowledgeBase(), _kbLock);
         _domainKbNarrowFrameStore = createServerNarrowFrameStore();
+        _systemNarrowFrameStore = createServerSystemNarrowFrameStore();
     }
 
     private static ServerFrameStore createServerFrameStore(KnowledgeBase kb, Object kbLock) throws RemoteException {
@@ -54,13 +56,22 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     
     private ServerNarrowFrameStore createServerNarrowFrameStore() throws RemoteException {
       KnowledgeBase kb = _project.getKnowledgeBase();
-      NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb);
+      MergingNarrowFrameStore merging = MergingNarrowFrameStore.get(kb);
+      NarrowFrameStore nfs = merging.getActiveFrameStore();
       return new ServerNarrowFrameStore(nfs, kb, _kbLock);
+    }
+    
+    private ServerNarrowFrameStore createServerSystemNarrowFrameStore() throws RemoteException {
+      KnowledgeBase kb = _project.getKnowledgeBase();
+      MergingNarrowFrameStore merging = MergingNarrowFrameStore.get(kb);
+      NarrowFrameStore nfs = merging.getSystemFrameStore();
+      return new ServerNarrowFrameStore(nfs, kb, _kbLock); 
     }
 
     public RemoteServerFrameStore getDomainKbFrameStore(RemoteSession session) {
         return _domainKbFrameStore;
     }
+    
 
     public RemoteServerFrameStore getProjectKbFrameStore(RemoteSession session) {
         return _projectKbFrameStore;
@@ -68,6 +79,10 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     
     public RemoteServerNarrowFrameStore getDomainKbNarrowFrameStore() {
         return _domainKbNarrowFrameStore;
+    }
+    
+    public RemoteServerNarrowFrameStore getSystemNarrowFrameStore()  {
+      return _systemNarrowFrameStore;
     }
 
     public void register(RemoteSession session) {
