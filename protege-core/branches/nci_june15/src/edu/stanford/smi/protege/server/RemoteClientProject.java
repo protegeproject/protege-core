@@ -45,10 +45,12 @@ public class RemoteClientProject extends Project {
         _session = session;
         serverProject.getDomainKbFrameStore(session);
         KnowledgeBase domainKb = createKnowledgeBase(serverProject.getDomainKbFrameStore(session), 
+                                                     serverProject.getSystemNarrowFrameStore(),
                                                      serverProject.getDomainKbNarrowFrameStore(),
                                                      serverProject.getDomainKbFactoryClassName(), 
                                                      session, false);
         KnowledgeBase projectKb = createKnowledgeBase(serverProject.getProjectKbFrameStore(session),
+                                                      serverProject.getSystemNarrowFrameStore(),
                                                       serverProject.getDomainKbNarrowFrameStore(),
                                                       serverProject.getProjectKbFactoryClassName(), 
                                                       session, true);
@@ -70,7 +72,8 @@ public class RemoteClientProject extends Project {
     }
 
     private static KnowledgeBase createKnowledgeBase(RemoteServerFrameStore serverFrameStore, 
-                                                     RemoteServerNarrowFrameStore snfs,
+                                                     RemoteServerNarrowFrameStore systemNfs,
+                                                     RemoteServerNarrowFrameStore userNfs,
                                                      String factoryClassName,
                                                      RemoteSession session, 
                                                      boolean preloadAll) {
@@ -91,15 +94,18 @@ public class RemoteClientProject extends Project {
         FrameStore clientFrameStore
                = new RemoteClientFrameStore(serverFrameStore, session, kb, preloadAll);
         RemoteClientInvocationHandler rcif
-               = new RemoteClientInvocationHandler(kb, snfs, session);
-        NarrowFrameStore clientNarrowFrameStore = rcif.getNarrowFrameStore();
+             = new RemoteClientInvocationHandler(kb, systemNfs, session);
+        NarrowFrameStore systemNarrowFrameStore = rcif.getNarrowFrameStore();
+        rcif = new RemoteClientInvocationHandler(kb, userNfs, session);
+        NarrowFrameStore userNarrowFrameStore = rcif.getNarrowFrameStore();
 
         kb.setTerminalFrameStore(clientFrameStore);
         if (factory instanceof ClientInitializerKnowledgeBaseFactory) {
           ClientInitializerKnowledgeBaseFactory clientInit;
           clientInit = (ClientInitializerKnowledgeBaseFactory) factory;
           clientInit.initializeClientKnowledgeBase(clientFrameStore, 
-                                                   clientNarrowFrameStore, 
+                                                   systemNarrowFrameStore,
+                                                   userNarrowFrameStore, 
                                                    kb);
         }
         kb.setGenerateEventsEnabled(false);
