@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.model.framestore;
 //ESCA*JAVA0100
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.util.Collections;
 import java.util.EventListener;
@@ -10,6 +11,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -23,6 +26,8 @@ import edu.stanford.smi.protege.util.Log;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameStoreManager {
+  private static transient Logger log = Log.getLogger(FrameStoreManager.class);
+  
     private FrameStore deleteSimplificationFrameStore;
     private FrameStore argumentCheckingFrameStore;
     private FrameStore cachingFrameStore;
@@ -224,6 +229,11 @@ public class FrameStoreManager {
             frameStore2.setDelegate(frameStore1.getDelegate());
             frameStore1.setDelegate(frameStore2);
         }
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("connected " + frameStore2);
+          dumpFrameStores();
+        }
+            
     }
 
     private void disconnect(FrameStore frameStore1, FrameStore frameStore2) {
@@ -233,6 +243,10 @@ public class FrameStoreManager {
             frameStore1.setDelegate(frameStore2.getDelegate());
         }
         frameStore2.setDelegate(null);
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("disconnected " + frameStore2);
+          dumpFrameStores();
+        }
     }
 
     public void removeFrameStore(FrameStore frameStore) {
@@ -396,6 +410,25 @@ public class FrameStoreManager {
 
     public boolean setGenerateDeletingFrameEventsEnabled(boolean b) {
         return eventGeneratorFrameStore.setDeletingFrameEventsEnabled(b);
+    }
+    
+    public void dumpFrameStores() {
+      if (log.isLoggable(Level.FINE)) {
+        log.fine("+-+-+-+-+-+-+-+-+-+-+-+-Dumping Frame Stores+-+-+-+-+-+-+-+-+-+-+-+-");
+        log.fine("Knowledge base = " + kb);
+      }
+      if (log.isLoggable(Level.FINE)) {
+        for (FrameStore fs = headFrameStore; fs != null; fs = fs.getDelegate()) {
+          Class clazz = fs.getClass();
+          if (Proxy.isProxyClass(clazz)) {
+            clazz = Proxy.getInvocationHandler(fs).getClass();
+          }
+          log.fine("Frame store: " + clazz);
+        }
+      }
+      if (log.isLoggable(Level.FINE)) {
+        log.fine("+-+-+-+-+-+-+-+-+-+-+-+-End Frame Store Dump+-+-+-+-+-+-+-+-+-+-+-+-");
+      }
     }
 
 }
