@@ -21,6 +21,7 @@ import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 public interface ClientInitializerKnowledgeBaseFactory {
 
   void initializeClientKnowledgeBase(FrameStore fs,
+                                     NarrowFrameStore systemNfs,
                                      NarrowFrameStore nfs, 
                                      KnowledgeBase kb);
 
