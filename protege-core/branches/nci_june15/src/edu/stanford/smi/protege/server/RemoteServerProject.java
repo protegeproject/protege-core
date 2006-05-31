@@ -20,6 +20,8 @@ public interface RemoteServerProject extends Remote {
     String getProjectKbFactoryClassName() throws RemoteException;
     
     RemoteServerNarrowFrameStore getDomainKbNarrowFrameStore() throws RemoteException;
+    
+    RemoteServerNarrowFrameStore getSystemNarrowFrameStore() throws  RemoteException;
 
     Collection getCurrentSessions(RemoteSession session) throws RemoteException;
 
