@@ -1,0 +1,31 @@
+<?xml version = "1.0" encoding = "ISO-8859-1"?>
+<project name = "doap-protege" default = "all" basedir = ".">
+	<description>Generate a Protege DOAP (Description of a Project) file.  For more info, see: http://usefulinc.com/doap</description>
+	<property file = "../global.properties"/>
+	<property file = "${protege_web_drive}/doap/protege-info.properties"/>  
+	<property name = "doap.dir" value = "${protege_web_drive}/doap"/>
+	<property name = "stableBranchRevisionNumber" value = "${stableBranchVersionNumber}"/>  
+	<property name = "betaBranchRevisionNumber" value = "${betaBranchVersionNumber}-b${betaBranchBuildNumber}"/>
+	<target name = "init">
+		<tstamp>      
+			<format property = "touch.time" pattern = "EEE MMM dd HH:mm:ss zz yyyy" locale = "en"/>   
+		</tstamp>    
+	</target>  
+	<target name = "all" depends = "init, clean, doap">  
+	</target>  
+	<target name = "doap" depends = "init">    
+		<copy file = "${doap.dir}/template-doap.rdf" tofile = "${doap.dir}/doap.rdf" overwrite = "true"/>    
+		<replace file = "${doap.dir}/doap.rdf" token = "$stableBranchCreationDate$" value = "${stableBranchCreationDate}"/>    
+		<replace file = "${doap.dir}/doap.rdf" token = "$stableBranchRevisionNumber$" value = "${stableBranchRevisionNumber}"/>    
+		<replace file = "${doap.dir}/doap.rdf" token = "$stableBranchVersionNumber$" value = "${stableBranchVersionNumber}"/>    
+		<replace file = "${doap.dir}/doap.rdf" token = "$stableBranchBuildNumber$" value = "${stableBranchBuildNumber}"/>    
+		<replace file = "${doap.dir}/doap.rdf" token = "$betaBranchCreationDate$" value = "${betaBranchCreationDate}"/>    
+		<replace file = "${doap.dir}/doap.rdf" token = "$betaBranchRevisionNumber$" value = "${betaBranchRevisionNumber}"/>    
+		<replace file = "${doap.dir}/doap.rdf" token = "$betaBranchVersionNumber$" value = "${betaBranchVersionNumber}"/>    
+		<replace file = "${doap.dir}/doap.rdf" token = "$betaBranchBuildNumber$" value = "${betaBranchBuildNumber}"/>    
+		<replace file = "${doap.dir}/doap.rdf" token = "$creationDate$" value = "${touch.time}"/>    
+	</target>
+	<target name = "clean">
+		<delete file = "${doap.dir}/doap.rdf"/>
+	</target>
+</project>
