@@ -24,8 +24,8 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.TransactionMonitor;
 import edu.stanford.smi.protege.util.exceptions.TransactionException;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class ServerNarrowFrameStore 
   extends UnicastRemoteObject implements RemoteServerNarrowFrameStore {
