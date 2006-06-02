@@ -6,7 +6,7 @@ import java.util.Map;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.CacheMap;
 
-public class BasicCacheStorage<V, R> extends TransactionCacheStorage<V, R> {
+public class BasicCacheStorage<V, R> implements TransactionCacheStorage<V, R> {
   CacheMap<V, R> mainCache = new CacheMap<V,R>();
   Map<RemoteSession, Map<V,R>> sessionCache = new HashMap<RemoteSession, Map<V, R>>();
   
