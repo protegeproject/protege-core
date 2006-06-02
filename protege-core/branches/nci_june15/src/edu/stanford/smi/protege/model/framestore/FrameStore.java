@@ -14,7 +14,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.AbstractEvent;
-import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public interface FrameStore {
 

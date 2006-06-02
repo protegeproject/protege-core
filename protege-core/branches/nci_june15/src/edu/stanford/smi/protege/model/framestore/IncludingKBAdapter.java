@@ -20,7 +20,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * This class represents a Narrow Frame Store that allows its delegate 

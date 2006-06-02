@@ -22,7 +22,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SimpleStringMatcher;
-import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * This is a version of the InMemoryFrameDb that helps support the OWL problem that frames

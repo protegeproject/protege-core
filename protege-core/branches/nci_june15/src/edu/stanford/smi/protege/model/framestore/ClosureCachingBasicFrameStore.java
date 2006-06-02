@@ -18,9 +18,9 @@ import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.SystemUtilities;
-import edu.stanford.smi.protege.util.TransactionIsolationLevel;
-import edu.stanford.smi.protege.util.TransactionMonitor;
 import edu.stanford.smi.protege.util.exceptions.TransactionException;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * @author Ray Fergerson
