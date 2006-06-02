@@ -19,7 +19,7 @@ import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
-import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class RobustConnection {
     private static final int ALLOWANCE = 100;

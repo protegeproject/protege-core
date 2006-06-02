@@ -37,9 +37,9 @@ import edu.stanford.smi.protege.server.Session;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.TransactionIsolationLevel;
-import edu.stanford.smi.protege.util.TransactionMonitor;
 import edu.stanford.smi.protege.util.exceptions.TransactionException;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class DatabaseFrameDb implements NarrowFrameStore {
   private static Logger log = Log.getLogger(DatabaseFrameDb.class);
