@@ -17,8 +17,8 @@ import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.test.APITestCase;
 import edu.stanford.smi.protege.util.LockStepper;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.TransactionIsolationLevel;
-import edu.stanford.smi.protege.util.TransactionMonitor;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class DBServer_Test extends APITestCase {
   
