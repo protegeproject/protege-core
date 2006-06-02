@@ -52,9 +52,9 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
-import edu.stanford.smi.protege.util.TransactionIsolationLevel;
-import edu.stanford.smi.protege.util.TransactionMonitor;
 import edu.stanford.smi.protege.util.exceptions.TransactionException;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class RemoteClientFrameStore implements FrameStore {
     private static Logger log = Log.getLogger(RemoteClientFrameStore.class);
@@ -1206,7 +1206,8 @@ public class RemoteClientFrameStore implements FrameStore {
        */
       try {
         if (transactionNesting > 0 && 
-            getTransactionIsolationLevel() == TransactionIsolationLevel.SERIALIZABLE) {
+            getTransactionIsolationLevel() != null &&
+            getTransactionIsolationLevel().compareTo(TransactionIsolationLevel.REPEATABLE_READ) >= 0) {
           return false;
         }
       } catch (TransactionException e) {
