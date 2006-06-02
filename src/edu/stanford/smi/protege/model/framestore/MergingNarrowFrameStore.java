@@ -22,8 +22,8 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
-import edu.stanford.smi.protege.util.TransactionMonitor;
 import edu.stanford.smi.protege.util.Tree;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * All queries go to all frame stores. Writes go to the primary (delegate) frame store.

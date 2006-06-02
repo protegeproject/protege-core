@@ -4,9 +4,9 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 import edu.stanford.smi.protege.util.CacheMap;
-import edu.stanford.smi.protege.util.TransactionIsolationLevel;
-import edu.stanford.smi.protege.util.TransactionMonitor;
 import edu.stanford.smi.protege.util.exceptions.TransactionException;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class CallCachingFrameStore extends AbstractFrameStoreInvocationHandler {
     private static final int MAX_SIZE = 100 * 1000;
