@@ -18,8 +18,8 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.util.AbstractEvent;
-import edu.stanford.smi.protege.util.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.exceptions.TransactionException;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 
 public interface RemoteServerFrameStore extends Remote {
 
