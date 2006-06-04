@@ -20,7 +20,7 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.Registration;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
-import edu.stanford.smi.protege.server.update.FrameEvaluationEvent;
+import edu.stanford.smi.protege.server.update.FrameEvaluation;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
@@ -63,6 +63,7 @@ public class FrameCalculator {
   private FifoWriter<ValueUpdate> updates;
   private ServerFrameStore server;
   private Map<RemoteSession, Registration> sessionToRegistrationMap;
+  private RemoteSession effectiveSession;
   
   FrameCalculatorThread innerThread;
   
@@ -96,6 +97,8 @@ public class FrameCalculator {
       synchronized(kbLock) {
         insertEvent(new FrameEvaluationStarted(frame));
       }
+      effectiveSession = wi.getClients().iterator().next();
+      ServerFrameStore.setCurrentSession(effectiveSession);
       Set<Slot> slots = null;
       List values = null;
       synchronized (kbLock) {
@@ -255,7 +258,7 @@ public class FrameCalculator {
                                 List values) {
 
     insertEvent( 
-        new FrameEvaluationEvent(frame, slot, facet, isTemplate, values));
+        new FrameEvaluation(frame, slot, facet, isTemplate, values));
     if (log.isLoggable(Level.FINER)) {
       log.finer("Added frame eval event for frame " + fs.getFrameName(frame)
           + "/" + frame.getFrameID() + " and " + (isTemplate ? "template" : " own ")
@@ -279,7 +282,7 @@ public class FrameCalculator {
   
   private void insertEvent(ValueUpdate update, Set<RemoteSession> clients) {
     update.setClients(clients);
-    server.updateEvents();
+    server.updateEvents(effectiveSession);
     updates.write(update);
   }
 
