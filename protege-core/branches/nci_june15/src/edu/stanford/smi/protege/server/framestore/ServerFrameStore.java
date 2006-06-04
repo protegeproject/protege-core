@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,12 +34,12 @@ import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 import edu.stanford.smi.protege.server.framestore.background.WorkInfo;
-import edu.stanford.smi.protege.server.update.FrameEvaluationEvent;
+import edu.stanford.smi.protege.server.update.FrameEvaluation;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
-import edu.stanford.smi.protege.server.update.RemoveCacheUpdate;
 import edu.stanford.smi.protege.server.update.RemoveFrameCache;
+import edu.stanford.smi.protege.server.update.SftUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
 import edu.stanford.smi.protege.server.util.FifoReader;
 import edu.stanford.smi.protege.server.util.FifoWriter;
@@ -60,7 +61,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     
     private FifoWriter<AbstractEvent> _eventWriter = new FifoWriter<AbstractEvent>();
     private FifoWriter<ValueUpdate> _updateWriter = new FifoWriter<ValueUpdate>();
-    private List<AbstractEvent> transactionEvents = new ArrayList<AbstractEvent>();
     
     private Map<RemoteSession, Registration> _sessionToRegistrationMap 
       = new HashMap<RemoteSession, Registration>();
@@ -131,9 +131,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public static void recordCall(RemoteSession session) {
         delay();
-        synchronized(sessionMap) {
-          sessionMap.put(Thread.currentThread(), session);
-        }
+        setCurrentSession(session);
+    }
+    
+    public static void setCurrentSession(RemoteSession session) {
+      synchronized(sessionMap) {
+        sessionMap.put(Thread.currentThread(), session);
+      }
     }
 
     public static RemoteSession getCurrentSession() {
@@ -239,18 +243,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       frameCalculator.addRequest(cls, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateSlotValues(cls, slot);
-        if (!existsTransaction() || exclusiveTransaction()) {
-          _updateWriter.write(new FrameEvaluationEvent(cls, slot, (Facet) null, true, values));
-        }
-        if (exclusiveTransaction()) {
-          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
-                       new InvalidateCacheUpdate(cls, slot, (Facet) null, true)
-                  );
-        }
+        cacheValuesReadFromStore(session, cls, slot, (Facet) null, true, values);
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
-
 
     public RemoteResponse<Set> getInstances(Cls cls, RemoteSession session) {
       recordCall(session);
@@ -315,14 +311,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       frameCalculator.addRequest(cls, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
-        if (!existsTransaction() || exclusiveTransaction()) {
-          _updateWriter.write(new FrameEvaluationEvent(cls, slot, facet, true, values));
-        }
-        if (exclusiveTransaction()) {
-          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
-                       new InvalidateCacheUpdate(cls, slot, facet, true)
-                 );
-        }
+        cacheValuesReadFromStore(session, cls, slot, facet, true, values);
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
@@ -388,15 +377,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
               frameCalculator.addRequest((Frame) o, session, CacheRequestReason.SUBCLASS);
             }
           }
-        }                
-        if (!existsTransaction() || exclusiveTransaction()) {
-          _updateWriter.write(new FrameEvaluationEvent(frame, slot, (Facet) null, false, values));
-        }
-        if (exclusiveTransaction()) {
-          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
-                         new InvalidateCacheUpdate(frame, slot, (Facet) null, false)
-                  );
-        }        
+        }              
+        cacheValuesReadFromStore(session, frame, slot, (Facet) null, false, values);
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
@@ -410,13 +392,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
         markDirty();
-        if (!existsTransaction() || inTransaction()) {
-          _updateWriter.write(new FrameEvaluationEvent(cls, slot, facet, true, (List) values));
-        }
-        if (inTransaction()) {
-          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
-                                       new InvalidateCacheUpdate(cls, slot, facet, true));
-        }
+        updateCacheForWriteToStore(session, cls, slot, facet, true, (List) values);
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
@@ -447,14 +423,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         markDirty();
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
-        if (!existsTransaction() || inTransaction()) {
-          _updateWriter.write(new FrameEvaluationEvent(cls, slot, (Facet) null, true, (List) values));
-        }
-        if (inTransaction()) {
-          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
-                                     new InvalidateCacheUpdate(cls, slot, (Facet) null, true));
-        }
-
+        updateCacheForWriteToStore(session, cls, slot, null, true, (List) values);
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
@@ -551,14 +520,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
         markDirty();
-        if (!existsTransaction() || inTransaction()) {
-          _updateWriter.write(new FrameEvaluationEvent(frame, slot, (Facet) null, false, (List) values));
-        }
-        if (inTransaction()) {
-          _sessionToRegistrationMap.get(session).addRollbackableUpdate(
-                                           new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
-        }
-
+        updateCacheForWriteToStore(session, frame, slot, null, false, (List) values);
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
@@ -732,7 +694,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     public RemoteResponse<List<AbstractEvent>> getEvents(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
-        updateEvents();
+        updateEvents(session);
         List<AbstractEvent> events = new ArrayList<AbstractEvent>();
         Registration reg = _sessionToRegistrationMap.get(session);
         if (reg == null) {
@@ -747,26 +709,37 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public void updateEvents() {
+    public void updateEvents(RemoteSession session) {
+      Registration registration = _sessionToRegistrationMap.get(session);
+      TransactionIsolationLevel level;
+      try {
+        level = getTransactionIsolationLevel();
+      } catch (TransactionException te) {
+        Log.getLogger().log(Level.WARNING, "exception caught during cache handling", te);
+        level = null;
+      }
       for (AbstractEvent eo : getDelegate().getEvents()) {
-        addEvent(eo);
+        addEvent(session, registration, level, eo);
       }
     }
 
-    private void addEvent(AbstractEvent eo) {
+    private void addEvent(RemoteSession session, 
+                          Registration registration,
+                          TransactionIsolationLevel level, 
+                          AbstractEvent eo) {
       if (log.isLoggable(Level.FINER)) {
         log.finer("Server Processing event " + eo);
       }
-      processEvent(eo);
-      if (existsTransaction()) {
-        transactionEvents.add(eo);
-      } else {
+      processEvent(session, registration, level, eo);
+      if (updatesSeenByUntransactedClients(level)) {
         _eventWriter.write(eo);
+      } else {
+        registration.addTransactionEvent(eo);
       }
     }
   
     private List<ValueUpdate> getValueUpdates(RemoteSession session) {
-      updateEvents();
+      updateEvents(session);
       FifoReader<ValueUpdate> valueUpdates = _sessionToRegistrationMap.get(session).getUpdates();
       ValueUpdate vu = null;
       List<ValueUpdate> ret = new ArrayList<ValueUpdate>();
@@ -779,14 +752,17 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       return ret;
     }
     
-    private void processEvent(AbstractEvent event)  {
+    private void processEvent(RemoteSession session, 
+                              Registration registration, 
+                              TransactionIsolationLevel level, 
+                              AbstractEvent event)  {
       /* ---------------> Look for other relevant event types!!! and fix for nullness--- */
       if (event instanceof FrameEvent) {
-        handleFrameEvent((FrameEvent) event);
+        handleFrameEvent(session, registration, level, (FrameEvent) event);
       } else if (event instanceof ClsEvent) {
-        handleClsEvent((ClsEvent) event);
+        handleClsEvent(session, registration, level, (ClsEvent) event);
       } if (event instanceof KnowledgeBaseEvent) {
-        handleKnowledgeBaseEvent((KnowledgeBaseEvent) event);
+        handleKnowledgeBaseEvent(session, registration, level, (KnowledgeBaseEvent) event);
       }
     }
   
@@ -795,25 +771,32 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      * Warning... calling getSlot for the wrong event type can cause a 
      *            ClassCastException.
      */
-  private void handleFrameEvent(FrameEvent frameEvent) {
+  private void handleFrameEvent(RemoteSession session,
+                                Registration registration, 
+                                TransactionIsolationLevel level,
+                                FrameEvent frameEvent) {
     Frame frame = frameEvent.getFrame();
     int type = frameEvent.getEventType();
+
     if (type == FrameEvent.OWN_SLOT_ADDED) {
       Slot slot = frameEvent.getSlot();
-      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
-    } else if (type == FrameEvent.OWN_SLOT_REMOVED) {
-      Slot slot = frameEvent.getSlot();
-      if (existsTransaction()) {
-        _updateWriter.write(new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
-      } else {
-        _updateWriter.write(new RemoveCacheUpdate(frame, slot, (Facet) null, false));
-      }
+      invalidateCacheForWriteToStore(frame, slot, null, false);
     } else if (type == FrameEvent.OWN_SLOT_VALUE_CHANGED) {
       Slot slot = frameEvent.getSlot();
-      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
+      invalidateCacheForWriteToStore(frame, slot, null, false);
+    } else if (type == FrameEvent.OWN_SLOT_REMOVED) {
+      Slot slot = frameEvent.getSlot();
+      updateCacheForWriteToStore(session, frame, slot, (Facet) null, false, null);
     } else if (type == FrameEvent.DELETED) {
-      _updateWriter.write(new InvalidateCacheUpdate(frame, nameSlot, (Facet) null, false));
-      _updateWriter.write(new RemoveFrameCache(frame));
+      RemoveFrameCache remove = new RemoveFrameCache(frame);
+      if (!updatesSeenByUntransactedClients(level)) {
+        remove.setClients(Collections.singleton(session));
+        remove.setTransactionScope(true);
+      }
+      _updateWriter.write(remove);
+      if (!updatesSeenByUntransactedClients(level)) {
+        registration.addCommittableUpdate(new RemoveFrameCache(frame));
+      }
     }
   }
 
@@ -821,40 +804,53 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
    * Warning... calling getSlot/getFacet for the wrong event type can cause a 
    *            ClassCastException.
    */
-  private void handleClsEvent(ClsEvent clsEvent) {
+  private void handleClsEvent(RemoteSession session, 
+                              Registration registration,
+                              TransactionIsolationLevel level,
+                              ClsEvent clsEvent) {
     Frame frame = clsEvent.getCls();
     int type = clsEvent.getEventType();
-    if (type == ClsEvent.TEMPLATE_SLOT_ADDED) {
+    if (type == ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED) {
       Slot slot = clsEvent.getSlot();
-      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, (Facet) null, true));
-    } else if (type == ClsEvent.TEMPLATE_SLOT_REMOVED) {
-      Slot slot = clsEvent.getSlot();
-      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, (Facet) null, true));
-    } else if (type == ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED) {
-      Slot slot = clsEvent.getSlot();
-      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, valuesFacet, true));
+      invalidateCacheForWriteToStore(frame, slot, valuesFacet, true);
     } else if (type == ClsEvent.TEMPLATE_FACET_ADDED) {
       Slot slot = clsEvent.getSlot();
       Facet facet = clsEvent.getFacet();
-      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, facet, true));
-    } else if (type == ClsEvent.TEMPLATE_FACET_REMOVED) {
-      Slot slot = clsEvent.getSlot();
-      Facet facet = clsEvent.getFacet();
-      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, facet, true));
+      invalidateCacheForWriteToStore(frame, slot, facet, true);
     } else if (type == ClsEvent.TEMPLATE_FACET_VALUE_CHANGED) {
       Slot slot = clsEvent.getSlot();
       Facet facet  = clsEvent.getFacet();
-      _updateWriter.write(new InvalidateCacheUpdate(frame, slot, facet, true));
+      invalidateCacheForWriteToStore(frame, slot, facet, true);
     }
   }
   
-  private void handleKnowledgeBaseEvent(KnowledgeBaseEvent event) {
+  private void handleKnowledgeBaseEvent(RemoteSession session, 
+                                        Registration registration,
+                                        TransactionIsolationLevel level,
+                                        KnowledgeBaseEvent event) {
     int type = event.getEventType();
     if (type == KnowledgeBaseEvent.CLS_DELETED || type == KnowledgeBaseEvent.SLOT_DELETED
         || type == KnowledgeBaseEvent.FACET_DELETED || type == KnowledgeBaseEvent.INSTANCE_DELETED) {
       Frame deletedFrame = event.getFrame();
-      _updateWriter.write(new InvalidateCacheUpdate(deletedFrame, nameSlot, (Facet) null, false));
-      _updateWriter.write(new RemoveFrameCache(deletedFrame));
+      if (level == null) {
+        InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(deletedFrame, nameSlot, (Facet) null, false);
+        _updateWriter.write(invalid);
+        registration.addCommittableUpdate(invalid);
+      }
+      InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(deletedFrame, nameSlot, (Facet) null, false);
+      RemoveFrameCache remove = new RemoveFrameCache(deletedFrame);
+      if (!updatesSeenByUntransactedClients(level)) {
+        invalid.setClients(Collections.singleton(session));
+        remove.setClients(Collections.singleton(session));
+        invalid.setTransactionScope(true);
+        remove.setTransactionScope(true);
+      }
+      _updateWriter.write(invalid);
+      _updateWriter.write(remove);
+      if (!updatesSeenByUntransactedClients(level)) {
+        registration.addCommittableUpdate(new InvalidateCacheUpdate(deletedFrame, nameSlot, (Facet) null, false));
+        registration.addCommittableUpdate(new RemoveFrameCache(deletedFrame));
+      }
     }
   }
 
@@ -872,10 +868,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     public boolean beginTransaction(String name, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
-        updateEvents();
-        if (!inTransaction()) {
-          _sessionToRegistrationMap.get(session).setTransactionLocation(transactionEvents.size());
-        }
+        updateEvents(session);
         boolean success = getDelegate().beginTransaction(name);
         return success;
       }
@@ -898,15 +891,27 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         boolean success = getDelegate().commitTransaction();
-        updateEvents();
-        closeTransactionEvents();
+        updateEvents(session);
         if (!inTransaction()) {
-          Collection<ValueUpdate> rollbacks = _sessionToRegistrationMap.get(session).endTransaction();
-          if (!success) {
-            for (ValueUpdate vu : rollbacks) {
+          Registration registration = _sessionToRegistrationMap.get(session);
+          TransactionIsolationLevel level;
+          try {
+            level = getTransactionIsolationLevel();
+          } catch (TransactionException te) {
+            Log.getLogger().log(Level.WARNING, "Exception caught handling cache and event updates", te);
+            Log.getLogger().warning("Caches will be incorrect");
+            level = null;
+          }
+          Collection<ValueUpdate> updates;
+          if (success && level != null) {
+            for (ValueUpdate vu : registration.getCommits()) {
               _updateWriter.write(vu);
             }
+            for (AbstractEvent eo : registration.getTransactionEvents()) {
+              addEvent(session, registration, level, eo);
+            }
           }
+          registration.endTransaction();
         }
         if (!existsTransaction()) {
           _kbLock.notifyAll();
@@ -936,23 +941,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         boolean success = getDelegate().rollbackTransaction();
-        updateEvents();
+        updateEvents(session);
         if (!inTransaction()) {
           List<AbstractEvent> newEvents = new ArrayList<AbstractEvent>();
-          int transactionStart = _sessionToRegistrationMap.get(session).getTransactionLocation();
-          for (int index = 0; index < transactionEvents.size(); index++) {
-            AbstractEvent event = transactionEvents.get(index);
-            if (index < transactionStart || !event.getSession().equals(session)) {
-              newEvents.add(event);
-            }
-          }
-          transactionEvents = newEvents;
-        }
-        closeTransactionEvents();
-        if (!inTransaction()) {
-          for (ValueUpdate vu : _sessionToRegistrationMap.get(session).endTransaction()) {
-            _updateWriter.write(vu);
-          }
+          Registration registration = _sessionToRegistrationMap.get(session);
+          registration.endTransaction();
         }
         if (!existsTransaction()) {
           _kbLock.notifyAll();
@@ -960,14 +953,85 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return success;
       }
     }
-    
-    public void closeTransactionEvents() {
-      if (!existsTransaction() && !transactionEvents.isEmpty()) {
-        for (AbstractEvent eo : transactionEvents) {
-          _eventWriter.write(eo);
-        }
-        transactionEvents = new ArrayList<AbstractEvent>();
+
+    private void cacheValuesReadFromStore(RemoteSession session, 
+                                          Frame frame, 
+                                          Slot slot, 
+                                          Facet facet, 
+                                          boolean isTemplate, 
+                                          List values) {
+      TransactionIsolationLevel level;
+      try {
+        level = getTransactionIsolationLevel();
+      } catch (TransactionException te) {
+        Log.getLogger().log(Level.WARNING, "excption caught handling caches", te);
+        return; // no caching can be done
       }
+      SftUpdate vu = new FrameEvaluation(frame, slot, facet, isTemplate, values);
+      if (!updatesSeenByUntransactedClients(level)) {
+        vu.setClients(Collections.singleton(session));
+        vu.setTransactionScope(true);
+      }
+      _updateWriter.write(vu);
+    }
+
+    private void updateCacheForWriteToStore(RemoteSession session,
+                                            Frame frame,
+                                            Slot slot, 
+                                            Facet facet,
+                                            boolean isTemplate,
+                                            List values) {
+      TransactionIsolationLevel level;
+      Registration registration = _sessionToRegistrationMap.get(session);
+      try {
+        level = getTransactionIsolationLevel();
+      } catch (TransactionException te) {
+        Log.getLogger().log(Level.WARNING, "exception caught handling caches", te);
+        InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
+        _updateWriter.write(invalid);
+        registration.addCommittableUpdate(invalid);
+        return;
+      }
+      SftUpdate vu = new FrameEvaluation(frame, slot, facet, isTemplate, values);
+      if (!updatesSeenByUntransactedClients(level)) {
+        vu.setClients(Collections.singleton(session));
+        vu.setTransactionScope(true);
+      }
+      _updateWriter.write(vu);
+      if (!updatesSeenByUntransactedClients(level)) {
+        registration.addCommittableUpdate(new FrameEvaluation(frame, slot, facet, isTemplate, values));
+      }
+    }
+
+    private void invalidateCacheForWriteToStore(Frame frame,
+                                                Slot slot, 
+                                                Facet facet,
+                                                boolean isTemplate) {
+      RemoteSession session = getCurrentSession();
+      TransactionIsolationLevel level;
+      Registration registration = _sessionToRegistrationMap.get(session);
+      try {
+        level = getTransactionIsolationLevel();
+      } catch (TransactionException te) {
+        Log.getLogger().log(Level.WARNING, "exception caught handling caches", te);
+        InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
+        _updateWriter.write(invalid);
+        registration.addCommittableUpdate(invalid);
+        return;
+      }
+      SftUpdate vu = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
+      if (!updatesSeenByUntransactedClients(level)) {
+        vu.setClients(Collections.singleton(session));
+        vu.setTransactionScope(true);
+      }
+      _updateWriter.write(vu);
+      if (!updatesSeenByUntransactedClients(level)) {
+        registration.addCommittableUpdate(new InvalidateCacheUpdate(frame,slot, facet, isTemplate));
+      }
+    }
+
+    public boolean updatesSeenByUntransactedClients(TransactionIsolationLevel level) {
+      return !inTransaction() || (level != null && level.compareTo(TransactionIsolationLevel.READ_UNCOMMITTED) <= 0);
     }
     
     public TransactionIsolationLevel getTransactionIsolationLevel() throws TransactionException {
