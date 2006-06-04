@@ -11,9 +11,7 @@ public class SftUpdate extends ValueUpdate implements Localizable {
   private Slot slot;
   private Facet facet;
   private boolean isTemplate;
-  
-  
-  
+
   public SftUpdate(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
     super(frame);
     this.slot = slot;
@@ -38,5 +36,6 @@ public class SftUpdate extends ValueUpdate implements Localizable {
     LocalizeUtils.localize(slot, kb);
     LocalizeUtils.localize(facet, kb);
   }
+  
 
 }
