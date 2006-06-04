@@ -12,5 +12,9 @@ public class RemoveFrameCache extends ValueUpdate {
   public RemoveFrameCache(Frame frame) {
     super(frame);
   }
+  
+  public ValueUpdate getInvalidatingVariant() {
+    return new RemoveFrameCache(getFrame());
+  }
 
 }

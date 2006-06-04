@@ -36,6 +36,11 @@ public class SftUpdate extends ValueUpdate implements Localizable {
     LocalizeUtils.localize(slot, kb);
     LocalizeUtils.localize(facet, kb);
   }
+
+  @Override
+  public ValueUpdate getInvalidatingVariant() {
+    return new InvalidateCacheUpdate(getFrame(), slot, facet, isTemplate);
+  }
   
 
 }

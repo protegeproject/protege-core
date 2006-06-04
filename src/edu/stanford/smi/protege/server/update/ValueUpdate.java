@@ -9,7 +9,7 @@ import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
-public class ValueUpdate implements Localizable, Serializable {
+public abstract class ValueUpdate implements Localizable, Serializable {
   private Frame frame;
   private transient Set<RemoteSession> clients;
   private boolean transactionScope = false;
@@ -45,6 +45,8 @@ public class ValueUpdate implements Localizable, Serializable {
   public void setTransactionScope(boolean transactionScope) {
     this.transactionScope = transactionScope;
   }
+  
+  public abstract ValueUpdate getInvalidatingVariant();
 
 
 }

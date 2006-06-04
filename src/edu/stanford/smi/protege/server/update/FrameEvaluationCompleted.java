@@ -13,5 +13,10 @@ public class FrameEvaluationCompleted extends ValueUpdate implements Localizable
   public void localize(KnowledgeBase kb) {
     super.localize(kb);
   }
+
+  @Override
+  public ValueUpdate getInvalidatingVariant() {
+    return null;
+  }
   
 }
