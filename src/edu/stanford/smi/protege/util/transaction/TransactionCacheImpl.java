@@ -3,7 +3,6 @@ package edu.stanford.smi.protege.util.transaction;
 import java.util.logging.Level;
 
 import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
@@ -13,7 +12,7 @@ public class TransactionCacheImpl<V, R> extends TransactionCache<V, R> {
   private boolean disabled = false;     
   
   public TransactionCacheImpl(TransactionMonitor transactionMonitor) {
-    super(new BasicCacheStorage());
+    super(new CacheImpl<V,R>());
     this.transactionMonitor = transactionMonitor;
   }
   
@@ -43,6 +42,11 @@ public class TransactionCacheImpl<V, R> extends TransactionCache<V, R> {
   
   public boolean isDisabled() {
     return disabled;
+  }
+
+  @Override
+  public LosslessCache createSessionCache(RemoteSession session) {
+    return new LosslessCacheImpl();
   }
   
 }
