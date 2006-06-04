@@ -1232,7 +1232,8 @@ public class RemoteClientFrameStore implements FrameStore {
               (sessionCachedValues == null || sessionCachedValues.get(lookup) == null)) {
             return false;
           }
-          if (sessionCachedValues != null && sessionCachedValues.containsKey(lookup)) {
+          if (level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0 &&
+              sessionCachedValues != null && sessionCachedValues.containsKey(lookup)) {
             if (sessionCachedValues.get(lookup) == null) {
               return false;
             } else {
@@ -1258,7 +1259,16 @@ public class RemoteClientFrameStore implements FrameStore {
       List result = null;
       Sft lookup = new Sft(slot, facet, isTemplate);
       if (transactionNesting > 0 && sessionCache.get(frame) != null) {
-        result = sessionCache.get(frame).get(lookup);
+        TransactionIsolationLevel level;
+        try {
+          level = getTransactionIsolationLevel();
+        } catch (TransactionException e) {
+          Log.getLogger().log(Level.WARNING, "Could not get transaction isolation level - caching disabled", e);
+          level = null;
+        }
+        if (level != null && level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0) {
+          result = sessionCache.get(frame).get(lookup);
+        }
       }
       if (result == null) {
         result = cache.get(frame).get(lookup);
@@ -1587,6 +1597,23 @@ public class RemoteClientFrameStore implements FrameStore {
         boolean isTransactionScope = vu.isTransactionScope();
         Map<Frame, Map<Sft, List>> workingCache = isTransactionScope ? sessionCache : cache;
         Frame frame = vu.getFrame();
+        if (transactionNesting > 0 && !vu.isTransactionScope()) {
+          TransactionIsolationLevel level;
+          try {
+            level = getTransactionIsolationLevel();
+          } catch (TransactionException te) {
+            level = null;
+          }
+          ValueUpdate invalidating = vu.getInvalidatingVariant();
+          if ((level == null || level == TransactionIsolationLevel.READ_COMMITTED) &&
+              invalidating != null) {
+            invalidating.setTransactionScope(true);
+            List<ValueUpdate> vus = new ArrayList<ValueUpdate>();
+            vus.add(invalidating);
+            processValueUpdate(vus);
+          }
+          
+        }
         if (vu instanceof FrameEvaluationStarted) {
           if (log.isLoggable(Level.FINE)) {
             log.fine("Started caching for frame" + frame.getFrameID());  
