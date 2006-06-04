@@ -15,7 +15,7 @@ import edu.stanford.smi.protege.server.RemoteSession;
  * @param <V> the variable type
  * @param <R> the result set type
  */
-public interface TransactionCacheStorage<V, R> {
+public interface Cache<V, R> {
  
   /**
    * determines if the variable var is cached in the global cache.
@@ -50,16 +50,4 @@ public interface TransactionCacheStorage<V, R> {
    * @param var a variable
    */
   void removeCacheEntry(V var);
-  
-  
-  boolean isSessionCached(RemoteSession session, V var);
-  
-  R readSessionCache(RemoteSession session, V var);
-  
-  void clearSessionCache(RemoteSession session);
-  
-  void removeSessionCacheEntry(RemoteSession session, V var);
-  
-  void writeSessionCache(RemoteSession session, V var, R result);
-
 }
