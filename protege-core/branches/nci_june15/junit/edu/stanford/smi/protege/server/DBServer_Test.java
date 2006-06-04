@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.test.APITestCase;
+import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.LockStepper;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
@@ -318,6 +319,60 @@ public class DBServer_Test extends APITestCase {
     assertTrue(tm.getNesting(mySession) == 0);
     kb.getProject().dispose();
     
+  }
+  
+  public enum Test04Stages {
+    testStarted, firstRead, write, secondRead, firstCommit, preComplete, testCompleted
+  }
+
+  public void testTransaction04() {
+    if (!configured) {
+      return;
+    }
+    KnowledgeBase kb = getKb();
+    final LockStepper<Test04Stages> ls = new LockStepper<Test04Stages>(Test04Stages.testStarted);
+    final Cls top = kb.createCls(newClassName(), 
+                                 Collections.singleton(kb.getSystemFrames().getRootCls()));
+    final Cls middle = kb.createCls(newClassName(), Collections.singleton(top));
+    final Cls firstBottom = kb.createCls(newClassName(), Collections.singleton(middle));
+    new Thread("Second knowledge base which writes a sub-subclass") {
+      public void run() {
+        try {
+          KnowledgeBase kb = getKb();
+          kb.beginTransaction("Transaction in other thread");
+          ls.waitForStage(Test04Stages.firstRead);
+          Cls secondBottom = kb.createCls(newClassName(), Collections.singleton(middle));
+          ls.stageAchieved(Test04Stages.write, secondBottom);
+          ls.waitForStage(Test04Stages.secondRead);
+          kb.commitTransaction();
+          ls.stageAchieved(Test04Stages.firstCommit, null);
+          ls.waitForStage(Test04Stages.preComplete);
+          ls.stageAchieved(Test04Stages.testCompleted, null);
+        } catch (Exception e) {
+          ls.exceptionOffMainThread(Test04Stages.testCompleted, e);
+        }
+      }
+    }.start();
+    kb.beginTransaction("First knowledge base which does some reading");
+    Collection subclasses = kb.getSubclasses(top);
+    assertTrue(subclasses.contains(firstBottom));
+    ls.stageAchieved(Test04Stages.firstRead, null);
+    Cls secondBottom = (Cls) ls.waitForStage(Test04Stages.write);
+    LocalizeUtils.localize(secondBottom, kb);
+    subclasses = kb.getDirectSubclasses(middle);
+    assertTrue(subclasses.size() == 1);
+    assertTrue(!subclasses.contains(secondBottom));
+    ls.stageAchieved(Test04Stages.secondRead, null);
+    ls.waitForStage(Test04Stages.firstCommit);
+    subclasses = kb.getDirectSubclasses(middle);
+    assertTrue(subclasses.size() == 1);
+    assertTrue(!subclasses.contains(secondBottom));
+    kb.commitTransaction();
+    subclasses = kb.getDirectSubclasses(middle);
+    assertTrue(subclasses.size() == 2);
+    assertTrue(subclasses.contains(secondBottom));
+    ls.stageAchieved(Test04Stages.preComplete, null);
+    ls.waitForStage(Test04Stages.testCompleted);
   }
   
   public TransactionMonitor getTransactionMonitor() {
