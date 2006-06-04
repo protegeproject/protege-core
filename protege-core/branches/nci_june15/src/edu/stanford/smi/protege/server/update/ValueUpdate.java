@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.util.LocalizeUtils;
 public class ValueUpdate implements Localizable, Serializable {
   private Frame frame;
   private transient Set<RemoteSession> clients;
+  private boolean transactionScope = false;
   
   public ValueUpdate(Frame frame) {
     this.frame = frame;
@@ -36,5 +37,14 @@ public class ValueUpdate implements Localizable, Serializable {
   public void localize(KnowledgeBase kb) {
     LocalizeUtils.localize(frame, kb);
   }
+  
+  public boolean isTransactionScope() {
+    return transactionScope;
+  }
+
+  public void setTransactionScope(boolean transactionScope) {
+    this.transactionScope = transactionScope;
+  }
+
 
 }
