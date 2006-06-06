@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.test.APITestCase;
@@ -95,10 +96,10 @@ public class DBServer_Test extends APITestCase {
     closeProject();
   }
   
-  public KnowledgeBase getKb() {
+  public DefaultKnowledgeBase getKb() {
     RemoteProjectManager rpm = RemoteProjectManager.getInstance();
     Project p = rpm.getProject(HOST, USER, PASSWORD, clientProject, true);
-    return p.getKnowledgeBase();
+    return (DefaultKnowledgeBase) p.getKnowledgeBase();
   }
   
   // moderately hacky way to clean out all the frames...
@@ -124,11 +125,21 @@ public class DBServer_Test extends APITestCase {
     }
   }
   
-  private String newClassName() {
+  private String newName() {
     return "A" + (counter++);
   }
   
-
+  public TransactionMonitor getTransactionMonitor() {
+    Server server = Server.getInstance();
+    ServerProject project = server.getServerProject(clientProject);
+    ServerFrameStore fs = (ServerFrameStore) project.getDomainKbFrameStore(null);
+    return fs.getTransactionStatusMonitor();
+  }
+  
+  public void getUpdatesFromOtherThread(KnowledgeBase kb) {
+    kb.createCls(newName(), Collections.singleton(kb.getRootCls()));
+  }
+  
   /**
    * A main method that builds the database project based on junit
    * configuration parameters.
@@ -141,18 +152,6 @@ public class DBServer_Test extends APITestCase {
     
     dbst.createDatabaseProject();
   }
-  
-  public TransactionMonitor getTransactionMonitor() {
-    Server server = Server.getInstance();
-    ServerProject project = server.getServerProject(clientProject);
-    ServerFrameStore fs = (ServerFrameStore) project.getDomainKbFrameStore(null);
-    return fs.getTransactionStatusMonitor();
-  }
-  
-  public void getUpdatesFromOtherThread(KnowledgeBase kb) {
-    kb.createCls(newClassName(), Collections.singleton(kb.getRootCls()));
-  }
-  
 
   /*
    *************************************** Tests ***************************************
@@ -181,7 +180,7 @@ public class DBServer_Test extends APITestCase {
             
             Cls top = (Cls) ls.waitForStage(Test01Stages.mainThreadStarted);
             kb.beginTransaction(transactionName);
-            Cls bottom = kb.createCls(newClassName(), Collections.singleton(top));
+            Cls bottom = kb.createCls(newName(), Collections.singleton(top));
             ls.stageAchieved(Test01Stages.transactionOpenWithWrite, bottom);
             
             ls.waitForStage(Test01Stages.readComplete);
@@ -193,7 +192,7 @@ public class DBServer_Test extends APITestCase {
           }
         }
       }.start();
-      final Cls top = kb.createCls(newClassName(), 
+      final Cls top = kb.createCls(newName(), 
           Collections.singleton(kb.getSystemFrames().getRootCls()));
       ls.stageAchieved(Test01Stages.mainThreadStarted, top);
       
@@ -212,7 +211,6 @@ public class DBServer_Test extends APITestCase {
       throw e;
     }
   }
-  
 
   /* ******************************************************************************
    * Testing repeatable read
@@ -247,7 +245,7 @@ public class DBServer_Test extends APITestCase {
       KnowledgeBase kb = getKb();
       RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
       final LockStepper<Test02Stages> ls = new LockStepper<Test02Stages>(Test02Stages.testStarted);
-      final Cls testCls = kb.createCls(newClassName(), Collections.singleton(kb.getSystemFrames().getRootCls()));
+      final Cls testCls = kb.createCls(newName(), Collections.singleton(kb.getSystemFrames().getRootCls()));
       new Thread("Second Transaction with Writes Thread doTest02(" + commit + "," + commitOther + ")") {
         public void run() {
           try {
@@ -256,7 +254,7 @@ public class DBServer_Test extends APITestCase {
               kb.beginTransaction("transaction will modify testCls after other transaction reads testCls");
               
               ls.waitForStage(Test02Stages.firstReadComplete);
-              kb.createCls(newClassName(), Collections.singleton(testCls));
+              kb.createCls(newName(), Collections.singleton(testCls));
               assertTrue(kb.getSubclasses(testCls).size() == 1);
               ls.stageAchieved(Test02Stages.writeComplete, null);
               
@@ -361,10 +359,10 @@ public class DBServer_Test extends APITestCase {
     KnowledgeBase kb = getKb();
     RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
     final LockStepper<Test04Stages> ls = new LockStepper<Test04Stages>(Test04Stages.testStarted);
-    final Cls top = kb.createCls(newClassName(), 
+    final Cls top = kb.createCls(newName(), 
                                  Collections.singleton(kb.getSystemFrames().getRootCls()));
-    final Cls middle = kb.createCls(newClassName(), Collections.singleton(top));
-    final Cls firstBottom = kb.createCls(newClassName(), Collections.singleton(middle));
+    final Cls middle = kb.createCls(newName(), Collections.singleton(top));
+    final Cls firstBottom = kb.createCls(newName(), Collections.singleton(middle));
     new Thread("Second knowledge base which writes a sub-subclass") {
       public void run() {
         try {
@@ -373,7 +371,7 @@ public class DBServer_Test extends APITestCase {
           kb.beginTransaction("Transaction in other thread");
           
           ls.waitForStage(Test04Stages.firstRead);
-          Cls secondBottom = kb.createCls(newClassName(), Collections.singleton(middle));
+          Cls secondBottom = kb.createCls(newName(), Collections.singleton(middle));
           ls.stageAchieved(Test04Stages.write, secondBottom);
           
           ls.waitForStage(Test04Stages.secondRead);
@@ -424,10 +422,10 @@ public class DBServer_Test extends APITestCase {
     KnowledgeBase kb = getKb();
     RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.READ_COMMITTED);
     final LockStepper<Test04Stages> ls = new LockStepper<Test04Stages>(Test04Stages.testStarted);
-    final Cls top = kb.createCls(newClassName(), 
+    final Cls top = kb.createCls(newName(), 
                                  Collections.singleton(kb.getSystemFrames().getRootCls()));
-    final Cls middle = kb.createCls(newClassName(), Collections.singleton(top));
-    final Cls firstBottom = kb.createCls(newClassName(), Collections.singleton(middle));
+    final Cls middle = kb.createCls(newName(), Collections.singleton(top));
+    final Cls firstBottom = kb.createCls(newName(), Collections.singleton(middle));
     new Thread("Second knowledge base which writes a sub-subclass") {
       public void run() {
         try {
@@ -436,7 +434,7 @@ public class DBServer_Test extends APITestCase {
           kb.beginTransaction("Transaction in other thread");
           
           ls.waitForStage(Test04Stages.firstRead);
-          Cls secondBottom = kb.createCls(newClassName(), Collections.singleton(middle));
+          Cls secondBottom = kb.createCls(newName(), Collections.singleton(middle));
           ls.stageAchieved(Test04Stages.write, secondBottom);
           
           ls.waitForStage(Test04Stages.secondRead);
@@ -479,4 +477,70 @@ public class DBServer_Test extends APITestCase {
     ls.waitForStage(Test04Stages.testCompleted);
     kb.getProject().dispose();
   }
+  
+  public enum Test06Stages {
+    start, inTransaction, write, preComplete, completed;
+  }
+
+  public void testTransaction06() throws TransactionException {
+    if (!configured) {
+      return;
+    }
+    final LockStepper<Test06Stages> ls = new LockStepper<Test06Stages>(Test06Stages.start);
+    KnowledgeBase kb = getKb();
+    RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
+    final Cls domainCls = kb.createCls(newName(), Collections.singleton(kb.getRootCls()));
+    final Cls val1 = kb.createCls(newName(), Collections.singleton(domainCls));
+    final Cls val2 = kb.createCls(newName(), Collections.singleton(domainCls));
+    final Slot slot = kb.createSlot(newName(), kb.getSystemFrames().getStandardSlotMetaCls());
+    kb.setDirectOwnSlotValues(domainCls, slot, Collections.singleton(val1));
+    Collection values = kb.getDirectOwnSlotValues(domainCls, slot);
+    assertTrue(values.contains(val1));
+    assertTrue(!values.contains(val2));
+    new Thread("Non-transaction write thread") {
+      public void run() {
+        try {
+          KnowledgeBase kb = getKb();
+          RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
+          
+          ls.waitForStage(Test06Stages.inTransaction);
+          kb.setDirectOwnSlotValues(domainCls, slot, Collections.singleton(val2));
+          Collection values = kb.getDirectOwnSlotValues(domainCls, slot);
+          LocalizeUtils.localize(val1, kb);
+          LocalizeUtils.localize(val2, kb);
+          assertTrue(!values.contains(val1));
+          assertTrue(values.contains(val2));
+          ls.stageAchieved(Test06Stages.write, null);
+          
+          ls.waitForStage(Test06Stages.preComplete);
+          ls.stageAchieved(Test06Stages.completed, null);
+        } catch (Exception e) {
+          ls.exceptionOffMainThread(Test06Stages.completed, e);
+        }
+      }
+    }.start();
+    kb.beginTransaction("A lone transaction");
+    values = kb.getDirectOwnSlotValues(domainCls, slot);
+    LocalizeUtils.localize(val1, kb);
+    LocalizeUtils.localize(val2, kb);
+    assertTrue(values.contains(val1));
+    assertTrue(!values.contains(val2));
+    ls.stageAchieved(Test06Stages.inTransaction, null);
+
+    ls.waitForStage(Test06Stages.write);
+    getUpdatesFromOtherThread(kb);
+    values = kb.getDirectOwnSlotValues(domainCls, slot);
+    LocalizeUtils.localize(val1, kb);
+    LocalizeUtils.localize(val2, kb);
+    assertTrue(values.contains(val1));
+    assertTrue(!values.contains(val2));
+    kb.commitTransaction();
+    values = kb.getDirectOwnSlotValues(domainCls, slot);
+    assertTrue(!values.contains(val1));
+    assertTrue(values.contains(val2));    
+    ls.stageAchieved(Test06Stages.preComplete, null);
+    
+    ls.waitForStage(Test06Stages.completed);
+  }    
+  
 }
