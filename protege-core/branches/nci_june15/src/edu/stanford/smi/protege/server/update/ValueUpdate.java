@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.server.update;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -11,7 +10,7 @@ import edu.stanford.smi.protege.util.LocalizeUtils;
 
 public abstract class ValueUpdate implements Localizable, Serializable {
   private Frame frame;
-  private transient Set<RemoteSession> clients;
+  private transient RemoteSession client;
   private boolean transactionScope = false;
   
   public ValueUpdate(Frame frame) {
@@ -22,16 +21,12 @@ public abstract class ValueUpdate implements Localizable, Serializable {
     return frame;
   }
 
-  public Set<RemoteSession> getClients() {
-    return clients;
+  public RemoteSession getClient() {
+    return client;
   }
 
-  public void setClients(Set<RemoteSession> clients) {
-    this.clients = clients;
-  }
-  
-  public void addClient(RemoteSession client) {
-    clients.add(client);
+  public void setClient(RemoteSession client) {
+    this.client = client;
   }
 
   public void localize(KnowledgeBase kb) {
