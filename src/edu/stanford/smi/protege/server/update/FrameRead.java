@@ -9,14 +9,14 @@ import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
-public class FrameEvaluation extends SftUpdate implements Localizable {
+public class FrameRead extends SftUpdate implements Localizable {
   private List values;
   
-  public FrameEvaluation(Frame frame, 
-                              Slot slot, 
-                              Facet facet, 
-                              boolean isTemplate, 
-                              List values) {
+  public FrameRead(Frame frame, 
+                   Slot slot, 
+                   Facet facet, 
+                   boolean isTemplate, 
+                   List values) {
     super(frame, slot, facet, isTemplate);
     this.values = values;
   }
