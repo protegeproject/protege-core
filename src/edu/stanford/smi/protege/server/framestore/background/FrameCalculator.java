@@ -1,12 +1,13 @@
 package edu.stanford.smi.protege.server.framestore.background;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,7 +21,7 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.Registration;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
-import edu.stanford.smi.protege.server.update.FrameEvaluation;
+import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
@@ -62,8 +63,7 @@ public class FrameCalculator {
   private final Object kbLock;
   private FifoWriter<ValueUpdate> updates;
   private ServerFrameStore server;
-  private Map<RemoteSession, Registration> sessionToRegistrationMap;
-  private RemoteSession effectiveSession;
+  private RemoteSession effectiveClient;
   
   FrameCalculatorThread innerThread;
   
@@ -72,8 +72,8 @@ public class FrameCalculator {
    */
   
   private Object requestLock = new Object();
-  private List<Frame> requests = new ArrayList<Frame>();
-  private Map<Frame, WorkInfo> requestMap = new HashMap<Frame, WorkInfo>();
+  private SortedSet<WorkInfo> requests = new TreeSet<WorkInfo>();
+  private Map<ClientAndFrame, WorkInfo> requestMap = new HashMap<ClientAndFrame, WorkInfo>();
   private StateMachine machine = null;
   
   public FrameCalculator(FrameStore fs,
@@ -85,37 +85,44 @@ public class FrameCalculator {
     this.kbLock = kbLock;
     this.updates = updates;
     this.server = server;
-    sessionToRegistrationMap = sessionMap;
   }
   
 
-  private void doWork(Frame frame, WorkInfo wi) {
+  private void doWork(WorkInfo wi) {
+    Frame frame = wi.getFrame();
+    effectiveClient = wi.getClient();
+    ServerFrameStore.setCurrentSession(effectiveClient);
     if (log.isLoggable(Level.FINE)) {
       log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
     }
     try {
       synchronized(kbLock) {
-        insertEvent(new FrameEvaluationStarted(frame));
+        if (server.inTransaction()) {
+          if (log.isLoggable(Level.FINE)) {
+            log.fine("\tbut transaction in progress");
+          }
+          wi.setTargetFullCache(false);
+        } else {
+          insertEvent(new FrameEvaluationStarted(frame));
+        }
       }
-      effectiveSession = wi.getClients().iterator().next();
-      ServerFrameStore.setCurrentSession(effectiveSession);
       Set<Slot> slots = null;
       List values = null;
       synchronized (kbLock) {
-        server.waitForTransactionsToComplete();
+        checkAbilityToGenerateFullCache(wi);
         slots = fs.getOwnSlots(frame);
       }
       for (Slot slot : slots) {
         synchronized (kbLock) {
+          checkAbilityToGenerateFullCache(wi);
           if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES) &&
               wi.skipDirectInstances()) {
             insertEvent(
                 new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
           } else {
-            server.waitForTransactionsToComplete();
             values = fs.getDirectOwnSlotValues(frame, slot);
             if (values != null && !values.isEmpty()) {
-              insertValueEvent(frame, slot, (Facet) null, false, values);
+              server.cacheValuesReadFromStore(effectiveClient, frame, slot, null, false, values);
             }
           }
           addFollowedExprs(frame, slot, values);
@@ -124,35 +131,37 @@ public class FrameCalculator {
       if (frame instanceof Cls) {
         Cls cls = (Cls) frame;
         synchronized (kbLock) {
-          server.waitForTransactionsToComplete();
+          checkAbilityToGenerateFullCache(wi);
           slots = fs.getTemplateSlots(cls);
         }
         for (Slot slot : slots) {
           synchronized (kbLock) {
-            server.waitForTransactionsToComplete();
+            checkAbilityToGenerateFullCache(wi);
             values = fs.getDirectTemplateSlotValues(cls, slot);
             if (values != null && !values.isEmpty()) {
-              insertValueEvent(cls, slot, (Facet) null, true, values);
+              server.cacheValuesReadFromStore(effectiveClient, cls, slot, null, true, values);
             }
           }
           Set<Facet> facets;
           synchronized (kbLock) {
-            server.waitForTransactionsToComplete();
+            checkAbilityToGenerateFullCache(wi);
             facets = fs.getTemplateFacets(cls, slot);
           }
           for (Facet facet : facets) {
             synchronized (kbLock) {
-              server.waitForTransactionsToComplete();
+              checkAbilityToGenerateFullCache(wi);
               values = fs.getDirectTemplateFacetValues(cls, slot,facet);
               if (values != null && !values.isEmpty()) {
-                insertValueEvent(cls, slot,  facet, true, values);
+                server.cacheValuesReadFromStore(effectiveClient, cls, slot, facet, true, values);
               }
             }
           }
         }
       }
       synchronized(kbLock) {
-        insertEvent(new FrameEvaluationCompleted(frame));
+        if (wi.isTargetFullCache()) {
+          insertEvent(new FrameEvaluationCompleted(frame));
+        }
       }
     } catch (Throwable t) {
       Log.getLogger().log(Level.SEVERE, 
@@ -161,12 +170,22 @@ public class FrameCalculator {
     }
   }
   
+  private void checkAbilityToGenerateFullCache(WorkInfo wi) {
+    if (server.inTransaction() && wi.isTargetFullCache()) {
+      if (log.isLoggable(Level.FINE)) {
+        log.fine("Found transaction in progress - can't complete cache for frame " + wi.getFrame());
+      }
+      wi.setTargetFullCache(false);
+      insertEvent(new FrameEvaluationPartial(wi.getFrame()));
+    }
+  }
+  
   public void addFollowedExprs(Frame frame, Slot slot, List values) {
     synchronized (requestLock) {
       if (machine == null) {
         machine = new StateMachine(fs, kbLock);
       }
-      WorkInfo wi = requestMap.get(frame);
+      WorkInfo wi = requestMap.get(new ClientAndFrame(effectiveClient, frame));
       if (wi == null) {
         return;
       }
@@ -183,7 +202,9 @@ public class FrameCalculator {
               continue;
             }
             WorkInfo iwi = addRequest(inner, newState, CacheRequestReason.STATE_MACHINE);
-            iwi.getClients().addAll(wi.getClients());
+            if (iwi != null) {
+              iwi.setClient(wi.getClient());
+            }
             if (log.isLoggable(Level.FINE)) {
               log.fine("Added cache request frame for state transition " + 
                   frame + " x " + state + " -> " + inner + " x " + newState);
@@ -196,47 +217,70 @@ public class FrameCalculator {
 
   public WorkInfo addRequest(Frame frame, RemoteSession session, CacheRequestReason reason) {
     synchronized (requestLock) {
-      WorkInfo wi = addRequest(frame, State.Start, reason);
-      wi.getClients().add(session);
-      return wi;
+      return addRequest(frame, session, State.Start, reason);
     }
   }
   
-  public WorkInfo addRequest(Frame frame , State state, CacheRequestReason reason) {
-    if (log.isLoggable(Level.FINE)) {
-      log.fine("Added " + fs.getFrameName(frame) + " in state " + state + 
-               " to head of frames to precalculate");
+  public WorkInfo addRequest(Frame frame, State state, CacheRequestReason  reason) {
+    synchronized (requestLock) {
+      return addRequest(frame, effectiveClient, state, reason);
+    }
+  }
+  
+  public WorkInfo addRequest(Frame frame, RemoteSession session, State state, CacheRequestReason reason) {
+    if (ignoreAddRequest(frame, session, state, reason)) {
+      return null;
     }
     if (frame.getKnowledgeBase() == null) {
       log.log(Level.WARNING, "Non-localized frame being added to the FrameCalculator", new Exception());
     }
     synchronized (requestLock) {
-      WorkInfo wi = requestMap.get(frame);
+      ClientAndFrame cwf = new ClientAndFrame(session, frame);
+      WorkInfo wi = requestMap.get(cwf);
       if (wi == null) {
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("Added " + fs.getFrameName(frame) + " in state " + state + 
+                   " with reason " + reason + " to head of frames to precalculate");
+        }
         wi = new WorkInfo();
-        requestMap.put(frame, wi);
+        wi.setClient(session);
+        wi.setFrame(frame);
+        requestMap.put(cwf, wi);
       } else {
-        requests.remove(frame);
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("Updating state for " + fs.getFrameName(frame) + " to include " + state);
+        }
+        requests.remove(wi);
       }
       wi.addState(state);
       wi.addReason(reason);
       wi.setNewest();
-      requests.add(frame);
-      // A tree set would have been cheaper here but it is tricky and
-      // I decided not to debug it.
-      Collections.sort(requests, new Comparator<Frame>() {
-        
-        public int compare(Frame f1, Frame f2) {
-          return requestMap.get(f1).compareTo(requestMap.get(f2));
-        }
-        
-      });
+      requests.add(wi);
       if (innerThread == null || 
           innerThread.getStatus() == RunStatus.SHUTDOWN) {
         innerThread = new FrameCalculatorThread();
         innerThread.start();
       }
       return wi;
+    }
+  }
+  
+  private Set<ClientAndFrame> recentRequests = new HashSet<ClientAndFrame>();
+  private static final int REDUNDANT_REQUEST_THRESHOLD = 300;
+  
+  public boolean ignoreAddRequest(Frame frame, RemoteSession session, State state, CacheRequestReason reason) {
+    if (reason != CacheRequestReason.STATE_MACHINE) {
+      return false;
+    }
+    ClientAndFrame cf = new ClientAndFrame(session, frame);
+    if (recentRequests.contains(cf)) {
+      return true;
+    } else {
+      if (recentRequests.size() > REDUNDANT_REQUEST_THRESHOLD) {
+        recentRequests = new HashSet<ClientAndFrame>();
+      }
+      recentRequests.add(cf);
+      return false;
     }
   }
 
@@ -246,66 +290,61 @@ public class FrameCalculator {
       requestLock.notifyAll();
     }
   }
-
-
-  /*
-   * This call assumes that the kbLock is held on entry.
-   */
-  private void insertValueEvent(Frame frame, 
-                                Slot slot, 
-                                Facet facet, 
-                                boolean isTemplate, 
-                                List values) {
-
-    insertEvent( 
-        new FrameEvaluation(frame, slot, facet, isTemplate, values));
-    if (log.isLoggable(Level.FINER)) {
-      log.finer("Added frame eval event for frame " + fs.getFrameName(frame)
-          + "/" + frame.getFrameID() + " and " + (isTemplate ? "template" : " own ")
-          + "slot " + fs.getFrameName(slot) 
-          + "/" + slot.getFrameID());
-    }
-  }
   
   
   /*
    * This call assumes that the kbLock is held on entry.
    */
   private void insertEvent(ValueUpdate event) {
-    Frame frame = event.getFrame();
-    Set<RemoteSession> clients = null;
-    synchronized(requestLock) {
-      clients= requestMap.get(frame).getClients();
-    }
-    insertEvent(event, clients);
-  }
-  
-  private void insertEvent(ValueUpdate update, Set<RemoteSession> clients) {
-    update.setClients(clients);
-    server.updateEvents(effectiveSession);
-    updates.write(update);
-  }
-
-  public boolean checkInterest(ValueUpdate event,
-                               RemoteSession session) {
-    synchronized (requestLock) {
-      return event.getClients().contains(session);
-    }
+    event.setClient(effectiveClient);
+    server.updateEvents(effectiveClient);
+    updates.write(event);
   }
   
   public void logRequests() {
     if (log.isLoggable(Level.FINE)) {
       synchronized (requestLock) {
         log.fine("Request queue has length " + requests.size());
-        for (Frame frame : requests) {
-          WorkInfo wi = requestMap.get(frame);
-          log.fine("Request for frame" + frame);
-          for (RemoteSession session : wi.getClients()) {
-            log.fine("\tClient " + session);
+        if (log.isLoggable(Level.FINER)) {
+          for (WorkInfo wi : requests) {
+            log.fine("Request for frame" + wi.getFrame());
+            log.fine("\tClient = " + wi.getClient());
+            log.fine("\tStates = " + wi.getStates());
+            log.fine("\tReasons = " + wi.getReasons());
           }
-          log.fine("\tStates = " + wi.getStates());
-          log.fine("\tReasons = " + wi.getReasons());
+        } else {
+          EnumMap<CacheRequestReason, Integer> reasonCounts
+              = new EnumMap<CacheRequestReason, Integer>(CacheRequestReason.class);
+          EnumMap<State, Integer> stateCounts
+              = new EnumMap<State, Integer>(State.class);
+          for (State state : State.values()) {
+            stateCounts.put(state, 0);
+          }
+          for (CacheRequestReason reason : CacheRequestReason.values()) {
+            reasonCounts.put(reason, 0);
+          }
+          for (WorkInfo wi : requests) {
+            for (State state : wi.getStates()) {
+              stateCounts.put(state, stateCounts.get(state) + 1);
+            }
+          }
+          for (WorkInfo wi : requests) {
+            for (CacheRequestReason reason : wi.getReasons()) {
+              reasonCounts.put(reason, reasonCounts.get(reason) + 1);
+            }
+          }
+          for (State state : State.values()) {
+            if (stateCounts.get(state) != 0) {
+              log.fine("\tCount for state " + state + " = " + stateCounts.get(state));
+            }
+          }
+          for (CacheRequestReason reason : CacheRequestReason.values()) {
+            if (reasonCounts.get(reason) != 0) {
+              log.fine("\tCount for reason " + reason + " = " + reasonCounts.get(reason));
+            }
+          }
         }
+        
       }
     }
   }
@@ -322,7 +361,6 @@ public class FrameCalculator {
     }
     
     public void run() {
-      Frame work;
       WorkInfo workInfo;
       synchronized(requestLock) {
         status = RunStatus.RUNNING;
@@ -334,13 +372,18 @@ public class FrameCalculator {
               status = RunStatus.SHUTDOWN;
               return;
             }
-            work = requests.get(0);
-            workInfo = requestMap.get(work);
+            workInfo = requests.first();
           }
-          doWork(work, workInfo);
+          long startTime = System.currentTimeMillis();
+          doWork(workInfo);
           synchronized (requestLock) {
-            requests.remove(work);
-            requestMap.remove(work);
+            requests.remove(workInfo);
+            requestMap.remove(new ClientAndFrame(workInfo.getClient(), 
+                                                 workInfo.getFrame()));
+          }
+          if (log.isLoggable(Level.FINE)) {
+            log.fine("work on frame " + workInfo.getFrame() + " took " + (System.currentTimeMillis() - startTime));
+            logRequests();
           }
         }
       } catch (Throwable  t) {
