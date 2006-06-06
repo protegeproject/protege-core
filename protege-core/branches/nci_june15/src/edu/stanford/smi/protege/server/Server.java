@@ -201,7 +201,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             String name = (String) i.next();
             if (preload) {
                 Log.getLogger().info("Loading project " + name);
-                createProject(name);
+                try {
+                	createProject(name);
+                } catch (Exception e) {
+                	Log.getLogger().warning("Error at loading project: " + name + "Error message: "+ e.getMessage());					
+				}
             } else {
                 Log.getLogger().info("Found project " + name);
             }
