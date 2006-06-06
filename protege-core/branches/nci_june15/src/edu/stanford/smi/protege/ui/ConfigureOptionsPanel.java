@@ -23,6 +23,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     private JCheckBox journalingEnabledCheckBox;
     private JCheckBox prettyPrintSlotWidgetLabelsCheckBox;
     private JCheckBox tabbedInstanceFormCheckBox;
+    private JCheckBox enableUndoCheckBox;
 
     ConfigureOptionsPanel(Project project) {
         _project = project;
@@ -35,11 +36,19 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         c.add(createJournalingEnabledCheckBox());
         c.add(createPrettyPrintSlotWidgetLabelsCheckBox());
         c.add(createTabbedInstanceFormComponent());
+        c.add(createEnableUndoCheckBox());
         add(c);
 
     }
 
-    private JComponent createJournalingEnabledCheckBox() {
+    private JComponent createEnableUndoCheckBox() {
+    	enableUndoCheckBox = ComponentFactory.createCheckBox();
+    	enableUndoCheckBox.setText("Enable Undo/Redo of operations");
+    	enableUndoCheckBox.setSelected(_project.isUndoOptionEnabled());
+        return enableUndoCheckBox;
+	}
+
+	private JComponent createJournalingEnabledCheckBox() {
         journalingEnabledCheckBox = ComponentFactory.createCheckBox();
         journalingEnabledCheckBox.setText("Enable Journaling");
         journalingEnabledCheckBox.setSelected(_project.isJournalingEnabled());
@@ -97,6 +106,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         _project.setJournalingEnabled(getValue(journalingEnabledCheckBox));
         _project.setPrettyPrintSlotWidgetLabels(getValue(prettyPrintSlotWidgetLabelsCheckBox));
         _project.setTabbedInstanceFormLayout(getValue(tabbedInstanceFormCheckBox));
+        _project.setUndoOption(getValue(enableUndoCheckBox));
     }
 
     private static void setValue(JCheckBox box, boolean value) {
