@@ -38,9 +38,10 @@ import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.ClientCacheRequestor;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
-import edu.stanford.smi.protege.server.update.FrameEvaluation;
 import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
+import edu.stanford.smi.protege.server.update.FrameRead;
+import edu.stanford.smi.protege.server.update.FrameWrite;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
@@ -1596,23 +1597,6 @@ public class RemoteClientFrameStore implements FrameStore {
         boolean isTransactionScope = vu.isTransactionScope();
         Map<Frame, Map<Sft, List>> workingCache = isTransactionScope ? sessionCache : cache;
         Frame frame = vu.getFrame();
-        if (transactionNesting > 0 && !vu.isTransactionScope()) {
-          TransactionIsolationLevel level;
-          try {
-            level = getTransactionIsolationLevel();
-          } catch (TransactionException te) {
-            level = null;
-          }
-          ValueUpdate invalidating = vu.getInvalidatingVariant();
-          if ((level == null || level == TransactionIsolationLevel.READ_COMMITTED) &&
-              invalidating != null) {
-            invalidating.setTransactionScope(true);
-            List<ValueUpdate> vus = new ArrayList<ValueUpdate>();
-            vus.add(invalidating);
-            processValueUpdate(vus);
-          }
-          
-        }
         if (vu instanceof FrameEvaluationStarted) {
           if (log.isLoggable(Level.FINE)) {
             log.fine("Started caching for frame" + frame.getFrameID());  
@@ -1638,8 +1622,24 @@ public class RemoteClientFrameStore implements FrameStore {
           Slot slot = sftu.getSlot();
           Facet facet = sftu.getFacet();
           boolean isTemplate = sftu.isTemplate();
-          if (vu instanceof FrameEvaluation) {
-            addCachedEntry(isTransactionScope, frame, slot, facet, isTemplate, ((FrameEvaluation) vu).getValues());
+          TransactionIsolationLevel level;
+          try {
+            level = getTransactionIsolationLevel();
+          } catch (TransactionException te) {
+            Log.getLogger().log(Level.WARNING, "Error handling cache update", te);
+            level = null;
+          }
+          if (level == null && vu instanceof FrameRead) {
+            invalidateCachedEntry(false, frame, slot, facet, isTemplate, false);
+            invalidateCachedEntry(true, frame, slot, facet, isTemplate, false);
+          } else if (vu instanceof FrameRead && level == TransactionIsolationLevel.READ_COMMITTED) {
+            if (sessionCache.get(frame) == null || sessionCache.get(frame).get(new Sft(slot, facet, isTemplate)) == null) {
+              addCachedEntry(false, frame, slot, facet, isTemplate, ((FrameRead) vu).getValues());
+            }
+          } else if (vu instanceof FrameRead) {
+            addCachedEntry(isTransactionScope, frame, slot, facet, isTemplate, ((FrameRead) vu).getValues());
+          } else if (vu instanceof FrameWrite) {
+            addCachedEntry(isTransactionScope, frame, slot, facet, isTemplate, ((FrameWrite) vu).getValues());
           } else if (vu instanceof RemoveCacheUpdate) {
             invalidateCachedEntry(isTransactionScope, frame, slot, facet, isTemplate, true);
           } else if (vu instanceof InvalidateCacheUpdate) {
