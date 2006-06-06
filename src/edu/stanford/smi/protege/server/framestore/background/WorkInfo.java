@@ -1,23 +1,28 @@
 package edu.stanford.smi.protege.server.framestore.background;
 
 import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
 
+import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.server.RemoteSession;
 
 public class WorkInfo implements Comparable<WorkInfo> {
   private static int counter = 0;
   
-  private Set<RemoteSession> clients = new HashSet<RemoteSession>();
+  private RemoteSession client;
+  private Frame frame;
   private EnumSet<State> states = EnumSet.noneOf(State.class);
   private EnumSet<CacheRequestReason> reasons = EnumSet.noneOf(CacheRequestReason.class);
   private boolean skipDirectInstances = true;
+  private boolean targetFullCache = true;
   
   private int sequence = counter++;
   
-  public Set<RemoteSession> getClients() {
-    return clients;
+  public RemoteSession getClient() {
+    return client;
+  }
+  
+  public void setClient(RemoteSession client) {
+    this.client = client;
   }
   
   public void addState(State state) {
@@ -61,7 +66,23 @@ public class WorkInfo implements Comparable<WorkInfo> {
     return other.sequence - sequence;
   }
 
+  public Frame getFrame() {
+    return frame;
+  }
 
+  public void setFrame(Frame frame) {
+    this.frame = frame;
+  }
 
+  public boolean isTargetFullCache() {
+    return targetFullCache;
+  }
 
+  public void setTargetFullCache(boolean targetFullCache) {
+    this.targetFullCache = targetFullCache;
+  }
+  
+  public ClientAndFrame getClientAndFrame() {
+    return new ClientAndFrame(client, frame);
+  }
 }
