@@ -4,7 +4,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,7 +33,8 @@ import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 import edu.stanford.smi.protege.server.framestore.background.WorkInfo;
-import edu.stanford.smi.protege.server.update.FrameEvaluation;
+import edu.stanford.smi.protege.server.update.FrameRead;
+import edu.stanford.smi.protege.server.update.FrameWrite;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
@@ -941,11 +941,30 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     public boolean rollbackTransaction(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
-        boolean success = getDelegate().rollbackTransaction();
         updateEvents(session);
+        boolean success = getDelegate().rollbackTransaction();
         if (!inTransaction()) {
-          List<AbstractEvent> newEvents = new ArrayList<AbstractEvent>();
           Registration registration = _sessionToRegistrationMap.get(session);
+          TransactionIsolationLevel level;
+          try {
+            level = getTransactionIsolationLevel();
+          } catch (TransactionException te) {
+            Log.getLogger().log(Level.WARNING, "Exception caught handling cache and event updates", te);
+            Log.getLogger().warning("Caches will be incorrect");
+            level = null;
+          }
+          if (success && (level != null ||
+                          level.compareTo(TransactionIsolationLevel.READ_COMMITTED) < 0)) {
+            for (AbstractEvent eo : registration.getTransactionEvents()) {
+              addEvent(session, registration, level, eo);
+            }
+            for (ValueUpdate vu : registration.getCommits()) {
+              ValueUpdate invalid = vu.getInvalidatingVariant();
+              if (invalid != null) {
+                _updateWriter.write(vu);
+              }
+            }
+          }
           registration.endTransaction();
         }
         if (!existsTransaction()) {
@@ -968,7 +987,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         Log.getLogger().log(Level.WARNING, "excption caught handling caches", te);
         return; // no caching can be done
       }
-      SftUpdate vu = new FrameEvaluation(frame, slot, facet, isTemplate, values);
+      SftUpdate vu = new FrameRead(frame, slot, facet, isTemplate, values);
       if (!updatesSeenByUntransactedClients(level)) {
         vu.setClient(session);
         vu.setTransactionScope(true);
@@ -997,14 +1016,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         registration.addCommittableUpdate(invalid);
         return;
       }
-      SftUpdate vu = new FrameEvaluation(frame, slot, facet, isTemplate, values);
+      SftUpdate vu = new FrameWrite(frame, slot, facet, isTemplate, values);
       if (!updatesSeenByUntransactedClients(level)) {
         vu.setClient(session);
         vu.setTransactionScope(true);
       }
       _updateWriter.write(vu);
       if (!updatesSeenByUntransactedClients(level)) {
-        registration.addCommittableUpdate(new FrameEvaluation(frame, slot, facet, isTemplate, values));
+        registration.addCommittableUpdate(new FrameWrite(frame, slot, facet, isTemplate, values));
       }
     }
 
@@ -1020,6 +1039,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       } catch (TransactionException te) {
         Log.getLogger().log(Level.WARNING, "exception caught handling caches", te);
         InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
+        _updateWriter.write(invalid);
+        registration.addCommittableUpdate(invalid);
+        invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
+        invalid.setTransactionScope(true);
         _updateWriter.write(invalid);
         registration.addCommittableUpdate(invalid);
         return;
