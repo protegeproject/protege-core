@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -27,6 +28,7 @@ import javax.swing.event.ChangeListener;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.WidgetDescriptor;
 import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ComponentFactory;
 import edu.stanford.smi.protege.util.ComponentUtilities;
@@ -153,6 +155,7 @@ public class ProjectView extends JComponent {
     private Collection _currentClsPath;
     private Collection _currentInstances;
     private Collection _detachedTabs = new HashSet();
+    private Thread busyFlagThread = null;
 
     public ProjectView(Project project) {
         if (log.isLoggable(Level.FINE)) {
@@ -183,6 +186,33 @@ public class ProjectView extends JComponent {
         // add(createTabbedPane(), BorderLayout.CENTER); what does this change do? (bug fix?)
         add(BorderLayout.CENTER, createTabbedPane());
         project.getKnowledgeBase().setUndoEnabled(project.isUndoOptionEnabled());
+        if (project.isMultiUserClient()) {
+          startBusyFlagThread();
+        }
+    }
+    
+    public void startBusyFlagThread() {
+      if (busyFlagThread == null) {
+        busyFlagThread = 
+          new Thread("Thread for checking how busy the client is") {
+          public void run() {
+            while (true) {
+              if (RemoteClientFrameStore.isBusy()) {
+                ProjectManager.getProjectManager().getServerActivityMonitorButton().setBackground(Color.RED);                   
+              }
+              else {
+                ProjectManager.getProjectManager().getServerActivityMonitorButton().setBackground(Color.WHITE);                 
+              }
+              try {
+                Thread.sleep(300);
+              } catch (InterruptedException e) {
+                Log.emptyCatchBlock(e);
+              }
+            }
+          }
+        };
+        busyFlagThread.start();
+      }
     }
 
     public TabWidget addTab(WidgetDescriptor widgetDescriptor) {
