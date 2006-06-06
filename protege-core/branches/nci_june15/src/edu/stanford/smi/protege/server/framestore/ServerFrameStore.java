@@ -744,8 +744,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       ValueUpdate vu = null;
       List<ValueUpdate> ret = new ArrayList<ValueUpdate>();
       while ((vu = valueUpdates.read()) != null) {
-        Set<RemoteSession> interestedParties = vu.getClients();
-        if (interestedParties == null || interestedParties.contains(session)) {
+        RemoteSession targettedClient = vu.getClient();
+        if (targettedClient == null || targettedClient.equals(session)) {
           ret.add(vu);
         }
       }
@@ -790,7 +790,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     } else if (type == FrameEvent.DELETED) {
       RemoveFrameCache remove = new RemoveFrameCache(frame);
       if (!updatesSeenByUntransactedClients(level)) {
-        remove.setClients(Collections.singleton(session));
+        remove.setClient(session);
         remove.setTransactionScope(true);
       }
       _updateWriter.write(remove);
@@ -840,8 +840,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(deletedFrame, nameSlot, (Facet) null, false);
       RemoveFrameCache remove = new RemoveFrameCache(deletedFrame);
       if (!updatesSeenByUntransactedClients(level)) {
-        invalid.setClients(Collections.singleton(session));
-        remove.setClients(Collections.singleton(session));
+        invalid.setClient(session);
+        remove.setClient(session);
         invalid.setTransactionScope(true);
         remove.setTransactionScope(true);
       }
@@ -903,12 +903,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             level = null;
           }
           Collection<ValueUpdate> updates;
-          if (success && level != null) {
-            for (ValueUpdate vu : registration.getCommits()) {
-              _updateWriter.write(vu);
-            }
+          if (success && level != null && 
+              level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0) {
             for (AbstractEvent eo : registration.getTransactionEvents()) {
               addEvent(session, registration, level, eo);
+            }
+            for (ValueUpdate vu : registration.getCommits()) {
+              _updateWriter.write(vu);
             }
           }
           registration.endTransaction();
@@ -954,12 +955,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    private void cacheValuesReadFromStore(RemoteSession session, 
-                                          Frame frame, 
-                                          Slot slot, 
-                                          Facet facet, 
-                                          boolean isTemplate, 
-                                          List values) {
+    public void cacheValuesReadFromStore(RemoteSession session, 
+                                         Frame frame, 
+                                         Slot slot, 
+                                         Facet facet, 
+                                         boolean isTemplate, 
+                                         List values) {
       TransactionIsolationLevel level;
       try {
         level = getTransactionIsolationLevel();
@@ -969,7 +970,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       SftUpdate vu = new FrameEvaluation(frame, slot, facet, isTemplate, values);
       if (!updatesSeenByUntransactedClients(level)) {
-        vu.setClients(Collections.singleton(session));
+        vu.setClient(session);
         vu.setTransactionScope(true);
       }
       _updateWriter.write(vu);
@@ -990,11 +991,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
         _updateWriter.write(invalid);
         registration.addCommittableUpdate(invalid);
+        invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
+        invalid.setTransactionScope(true);
+        _updateWriter.write(invalid);
+        registration.addCommittableUpdate(invalid);
         return;
       }
       SftUpdate vu = new FrameEvaluation(frame, slot, facet, isTemplate, values);
       if (!updatesSeenByUntransactedClients(level)) {
-        vu.setClients(Collections.singleton(session));
+        vu.setClient(session);
         vu.setTransactionScope(true);
       }
       _updateWriter.write(vu);
@@ -1021,7 +1026,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       SftUpdate vu = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
       if (!updatesSeenByUntransactedClients(level)) {
-        vu.setClients(Collections.singleton(session));
+        vu.setClient(session);
         vu.setTransactionScope(true);
       }
       _updateWriter.write(vu);
@@ -1220,7 +1225,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         for  (Frame frame : frames) {
           LocalizeUtils.localize(frame, _kb);
           WorkInfo wi = frameCalculator.addRequest(frame, session, CacheRequestReason.USER_SPECIFIC_FRAMES);
-          wi.setSkipDirectInstances(skipDirectInstances);
+          if (wi != null) {
+            wi.setSkipDirectInstances(skipDirectInstances);
+          }
         }
       }
     }
