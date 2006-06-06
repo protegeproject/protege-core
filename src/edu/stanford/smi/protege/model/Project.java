@@ -112,6 +112,7 @@ public class Project {
     private static final String SLOT_DISPLAY_REMOVE_CONFIRMATION_DIALOG = "confirm_on_remove";
     private static final String SLOT_UPDATE_MODIFICATION_SLOTS = "update_modification_slots";
     private static final String SLOT_TABBED_INSTANCE_FORM_LAYOUT = "tabbed_instance_form_layout";
+    private static final String SLOT_IS_UNDO_ENABLED = "undo_enabled";
 
     private static final String CLASS_MAP = "Map";
     private static final String SLOT_PROPERTY_MAP = "property_map";
@@ -144,6 +145,7 @@ public class Project {
     private Boolean _isReadonly;
     private Boolean _updateModificationSlots;
     private Boolean prettyPrintSlotWidgetLabels;
+    private Boolean _isUndoEnabled;
     private Map _includedBrowserSlotPatterns = new HashMap(); // <Cls,
     // BrowserSlotPattern>
     private Map _directBrowserSlotPatterns = new HashMap(); // <Cls,
@@ -156,6 +158,7 @@ public class Project {
     private FrameCountsImpl _frameCounts = new FrameCountsImpl();
     private boolean isMultiUserServer;
     private Class _instanceDisplayClass;
+
 
     private WindowListener _closeListener = new WindowAdapter() {
         public void windowClosing(WindowEvent event) {
@@ -222,6 +225,7 @@ public class Project {
         }
     };
 
+	
     static {
         SystemUtilities.initialize();
     }
@@ -780,8 +784,12 @@ public class Project {
     }
 
     private boolean getOption(String slotName, boolean defaultValue) {
-        Boolean b = (Boolean) getOwnSlotValue(getOptionsInstance(), slotName);
-        return (b == null) ? defaultValue : b.booleanValue();
+        Object b = getOwnSlotValue(getOptionsInstance(), slotName);
+        
+        if (b != null && b instanceof Boolean)
+        	return ((Boolean)b).booleanValue();
+        
+        return defaultValue;
     }
 
     private Instance getOptionsInstance() {
@@ -1747,7 +1755,8 @@ public class Project {
     }
 
     private void setOption(String slotName, boolean value) {
-        setOwnSlotValue(getOptionsInstance(), slotName, Boolean.valueOf(value));
+        //setOwnSlotValue(getOptionsInstance(), slotName, Boolean.valueOf(value));
+        ModelUtilities.setOwnSlotValue(getOptionsInstance(), slotName, Boolean.valueOf(value));
     }
 
     private static void setOwnSlotValue(Frame frame, String slotName, Object value) {
@@ -2058,4 +2067,17 @@ public class Project {
     public void setTabbedInstanceFormLayout(boolean b) {
         setOption(SLOT_TABBED_INSTANCE_FORM_LAYOUT, b);
     }
+    
+	public boolean isUndoOptionEnabled() {	
+		if (_isUndoEnabled == null) {
+			_isUndoEnabled = loadOption(SLOT_IS_UNDO_ENABLED, !isMultiUserClient());			
+		}
+		return _isUndoEnabled.booleanValue();
+	}
+
+	public void setUndoOption(boolean enabled) {
+		_isUndoEnabled = Boolean.valueOf(enabled);
+		setOption(SLOT_IS_UNDO_ENABLED, enabled);		
+	}
+
 }
