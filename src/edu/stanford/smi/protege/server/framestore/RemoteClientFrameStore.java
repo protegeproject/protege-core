@@ -39,6 +39,7 @@ import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.ClientCacheRequestor;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
 import edu.stanford.smi.protege.server.update.FrameEvaluation;
+import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
@@ -1020,9 +1021,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot) {
         try {
-            Set values = getRemoteDelegate().getDirectOwnSlotValuesClosure(frame, slot, session);
-            localize(values);
-            return values;
+            return getCacheClosure(frame, slot);
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -1627,6 +1626,11 @@ public class RemoteClientFrameStore implements FrameStore {
             }
             cacheStatus.put(frame, CacheStatus.COMPLETED_CACHING);
           }
+        } else if (vu instanceof FrameEvaluationPartial) {
+          if (log.isLoggable(Level.FINE)) {
+            log.fine("Aborted full cache for " + frame.getFrameID());
+          }
+          cacheStatus.remove(frame);
         } else if (vu instanceof RemoveFrameCache) {
           workingCache.remove(frame);
         } else if (vu instanceof SftUpdate) {
