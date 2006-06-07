@@ -227,10 +227,15 @@ public class FrameCalculator {
     }
   }
   
-  public WorkInfo addRequest(Frame frame, RemoteSession session, State state, CacheRequestReason reason) {
+  public WorkInfo addRequest(Frame frame, 
+                             RemoteSession session, 
+                             State state, 
+                             CacheRequestReason reason) {
+    /*
     if (ignoreAddRequest(frame, session, state, reason)) {
       return null;
     }
+    */
     if (frame.getKnowledgeBase() == null) {
       log.log(Level.WARNING, "Non-localized frame being added to the FrameCalculator", new Exception());
     }
