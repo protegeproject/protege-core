@@ -164,7 +164,9 @@ public interface RemoteServerFrameStore extends Remote {
     Set executeQuery(Query query, RemoteSession session) throws RemoteException;
 
     // closures
-    Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot, RemoteSession session) throws RemoteException;
+    RemoteResponse<Set> getDirectOwnSlotValuesClosure(Frame frame, Slot slot, Set<Frame> missing, RemoteSession session) throws RemoteException;
+    
+    RemoteResponse<Set> getDirectOwnSlotValuesClosure(Collection<Frame> frame, Slot slot, Set<Frame> missing, RemoteSession session) throws RemoteException;
 
     void close(RemoteSession session) throws RemoteException;
 
