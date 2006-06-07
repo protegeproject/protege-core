@@ -1064,17 +1064,21 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
     
     public TransactionIsolationLevel getTransactionIsolationLevel() throws TransactionException {
-      if (transactionMonitor == null) {
-        return TransactionIsolationLevel.NONE;
+      synchronized (_kbLock) {
+        if (transactionMonitor == null) {
+          return TransactionIsolationLevel.NONE;
+        }
+        return transactionMonitor.getTransationIsolationLevel();
       }
-      return transactionMonitor.getTransationIsolationLevel();
     }
     
     public boolean setTransactionIsolationLevel(TransactionIsolationLevel level) throws TransactionException {
-      if (transactionMonitor == null) {
-        return false;
+      synchronized (_kbLock) {
+        if (transactionMonitor == null) {
+          return false;
+        }
+        transactionMonitor.setTransactionIsolationLevel(level);
       }
-      transactionMonitor.setTransactionIsolationLevel(level);
       return true;
     } 
     
