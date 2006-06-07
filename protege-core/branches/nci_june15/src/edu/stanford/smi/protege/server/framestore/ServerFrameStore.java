@@ -5,6 +5,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -1140,18 +1141,41 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot, RemoteSession session) {
+    public RemoteResponse<Set> getDirectOwnSlotValuesClosure(Frame frame, 
+                                                             Slot slot, 
+                                                             Set<Frame> missing, 
+                                                             RemoteSession session) {
       recordCall(session);
       Set values = null;
       synchronized(_kbLock) {
         values = getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
       }
-      for (Object value : values) {
-        if (value instanceof Frame) {
-          frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+      LocalizeUtils.localize(missing, _kb);
+      for (Frame value : missing) {
+        frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+      }
+      return new RemoteResponse<Set>(values, getValueUpdates(session));
+    }
+    
+    public RemoteResponse<Set> getDirectOwnSlotValuesClosure(Collection<Frame> frames, 
+                                                             Slot slot, 
+                                                             Set<Frame> missing, 
+                                                             RemoteSession session) {
+      recordCall(session);
+      Set values = new HashSet();
+      synchronized(_kbLock) {
+        for (Frame frame : frames) {
+          Set newValues = getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
+          if (newValues != null)  {
+            values.addAll(newValues);
+          }
         }
       }
-      return values;
+      LocalizeUtils.localize(missing,  _kb);
+      for (Frame value : missing) {
+        frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+      }
+      return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
 
     /*

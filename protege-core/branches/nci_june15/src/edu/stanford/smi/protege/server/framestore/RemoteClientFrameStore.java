@@ -1149,19 +1149,23 @@ public class RemoteClientFrameStore implements FrameStore {
         return getCacheClosure(frame, slot);
     }
 
-    private Set getCacheOwnSlotValueClosure(Collection frames, Slot slot) throws RemoteException {
+    private Set getCacheOwnSlotValueClosure(Collection<Frame> frames, Slot slot) throws RemoteException {
         return getCacheClosure(frames, slot);
     }
 
     private Set getCacheClosure(Frame frame, Slot slot) throws RemoteException {
       Set closure = new HashSet();
-      boolean succeeded = calculateClosureFromCacheOnly(frame, slot, closure);
-      if (!succeeded) {
+      Set<Frame> missing = new HashSet<Frame>();
+      calculateClosureFromCacheOnly(frame, slot, closure, missing);
+      if (!missing.isEmpty()) {
         if (log.isLoggable(Level.FINE)) {
           log.fine("not in closure cache: " + frame.getFrameID() + ", " + slot.getFrameID());
         }
-        closure = getRemoteDelegate().getDirectOwnSlotValuesClosure(frame, slot, session);
-        localize(closure);
+        RemoteResponse<Set> wrappedClosure = 
+          getRemoteDelegate().getDirectOwnSlotValuesClosure(frame, slot, missing, session);
+        localize(wrappedClosure);
+        processValueUpdate(wrappedClosure);
+        closure = wrappedClosure.getResponse();
         if (log.isLoggable(Level.FINE)) {
           for (Object o : closure) {
             if  (o instanceof Frame) {
@@ -1175,32 +1179,43 @@ public class RemoteClientFrameStore implements FrameStore {
       return closure;    
     }
 
-    private boolean calculateClosureFromCacheOnly(Frame frame, Slot slot, Set closure)
+    /*
+     * There is a fair bit of inefficiency here but taking the hit on the client side is much better
+     * than making extra calls to the server.  Also the server could be more aggressive about calculating 
+     * values that the client might need, but I am finding that the server  is spending a lot of time
+     * recalculating the same values over and over.  This is the start of an experiment where the server
+     * needs a little more reason to believe that values need to be calculated for the client.
+     */
+    private void calculateClosureFromCacheOnly(Frame frame, Slot slot, Set closure, Set<Frame> missing)
             throws RemoteException {
       if (isCached(frame, slot, (Facet) null, false)) {
         Collection values = getCacheValues(frame, slot, (Facet) null, false);
         for (Object value : values) {
           boolean changed = closure.add(value);
           if (changed && value instanceof Frame) {
-            if (!calculateClosureFromCacheOnly((Frame) value, slot, closure)) {
-              return false;
-            }
+            calculateClosureFromCacheOnly((Frame) value, slot, closure, missing);
           }
         }
-        return true;
       } else {
-        return false;
+        missing.add(frame);
       }
     }
 
-    private Set getCacheClosure(Collection frames, Slot slot) throws RemoteException {
+    private Set getCacheClosure(Collection<Frame> frames, Slot slot) throws RemoteException {
         Set closure = new HashSet(frames);
-        Iterator i = frames.iterator();
-        while (i.hasNext()) {
-            Frame frame = (Frame) i.next();
-            closure.addAll(getCacheClosure(frame, slot));
+        Set<Frame> missing = new HashSet<Frame>();
+        for (Frame frame : frames) {
+          calculateClosureFromCacheOnly(frame, slot, closure, missing);
         }
-        return closure;
+        if (!missing.isEmpty()) {
+          RemoteResponse<Set> wrappedClosure = 
+            getRemoteDelegate().getDirectOwnSlotValuesClosure(frames, slot, missing, session);
+          localize(wrappedClosure);
+          processValueUpdate(wrappedClosure);
+          return wrappedClosure.getResponse();
+        } else {
+          return closure;
+        }
     }
 
 
