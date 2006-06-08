@@ -190,6 +190,52 @@ public abstract class FrameStore_Test extends SimpleTestCase {
     }
 
     // ------------------------ test cases -------------------------------------------
+    
+    public void testClosure() {
+      if (!_initialized) {
+        return;
+      }
+      Cls a = createCls();
+      Slot slot = createSlotOnCls(a, ValueType.INSTANCE, true);
+      Cls b = createCls();
+      Cls c = createCls();
+      Set<Frame> values = new HashSet<Frame>();
+      values.add(b);
+      values.add(c);
+      a.setDirectOwnSlotValues(slot, values);
+      
+      Cls d = createCls();
+      Cls e = createCls();
+      Instance f = createSimpleInstance(b);
+      values = new HashSet<Frame>();
+      values.add(d);
+      values.add(e);
+      values.add(e);
+      _modifiableFrameStore.setDirectOwnSlotValues(b, slot, values);
+      
+      Instance g = createSimpleInstance(a);
+      values = new HashSet<Frame>();
+      values.add(g);
+      c.setDirectOwnSlotValues(slot, values);
+      
+      Set expected = new HashSet();
+      expected.add(b);
+      expected.add(c);
+      expected.add(d);
+      expected.add(e);
+      expected.add(f);
+      expected.add(g);
+      
+      Set result = _kb.getDirectOwnSlotValuesClosure(a, slot);
+      assertTrue(result.equals(expected));
+      
+      
+      result = _kb.getDirectOwnSlotValuesClosure(a, slot);
+      assertTrue(result.equals(expected));
+      
+    }
+    
+    
     public void testCreateCls() {
         if (!_initialized) {
           return;
@@ -1031,5 +1077,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEqualsList("3", makeList(instance3), _testFrameStore.getDirectOwnSlotValues(instance2, slotb));
         assertEquals(0, _testFrameStore.getDirectOwnSlotValues(instance3, slota).size());
     }
+    
+
 
 }
