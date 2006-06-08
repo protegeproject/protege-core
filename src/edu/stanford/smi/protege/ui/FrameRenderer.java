@@ -103,8 +103,6 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     public void load(Object value) {
         ensureIconFlagsLoaded();
         
-        setBusyFlagButton();
-
         if (value instanceof Frame) {
             Frame frameValue = (Frame) value;
             if (!(frameValue.isEditable())) {
@@ -128,14 +126,6 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
         }
     }
 
-    protected void setBusyFlagButton() {   		
-    	if (RemoteClientFrameStore.isBusy()) {
-    		ProjectManager.getProjectManager().getServerActivityMonitorButton().setBackground(Color.RED);    		
-    	}
-    	else {
-    		ProjectManager.getProjectManager().getServerActivityMonitorButton().setBackground(Color.WHITE);    		
-    	}
-    }
     
     //ESCA-JAVA0130 
     protected Icon getIcon(Cls cls) {
