@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.storage.database;
 
 //ESCA*JAVA0100
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -1448,10 +1449,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             
             public TransactionIsolationLevel getTransationIsolationLevel() 
               throws TransactionException {
-              RemoteSession session = ServerFrameStore.getCurrentSession();
-              RobustConnection connection = _connections.get(session);
-              int jdbcLevel;
+              int jdbcLevel = Connection.TRANSACTION_NONE;
               try {
+                RobustConnection connection = getCurrentConnection();
                 jdbcLevel = connection.getTransactionIsolationLevel();
               } catch (SQLException sqle) {
                 throw new TransactionException(sqle);
@@ -1462,10 +1462,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             @Override
             public void setTransactionIsolationLevel(TransactionIsolationLevel level) 
               throws TransactionException {
-              RemoteSession session = ServerFrameStore.getCurrentSession();
-              RobustConnection connection = _connections.get(session);
               int jdbcLevel = level.getJdbcLevel();
               try {
+                RobustConnection connection = getCurrentConnection();
                 if (connection != null) {
                   connection.setTransactionIsolationLevel(jdbcLevel);
                 }
