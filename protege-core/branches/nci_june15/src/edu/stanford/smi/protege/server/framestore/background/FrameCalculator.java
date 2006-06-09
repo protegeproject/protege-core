@@ -75,6 +75,7 @@ public class FrameCalculator {
   private SortedSet<WorkInfo> requests = new TreeSet<WorkInfo>();
   private Map<ClientAndFrame, WorkInfo> requestMap = new HashMap<ClientAndFrame, WorkInfo>();
   private StateMachine machine = null;
+  private static boolean disabled = false;
   
   public FrameCalculator(FrameStore fs,
                          Object kbLock,
@@ -103,7 +104,7 @@ public class FrameCalculator {
           }
           wi.setTargetFullCache(false);
         } else {
-          insertEvent(new FrameEvaluationStarted(frame));
+          insertValueUpdate(new FrameEvaluationStarted(frame));
         }
       }
       Set<Slot> slots = null;
@@ -117,7 +118,7 @@ public class FrameCalculator {
           checkAbilityToGenerateFullCache(wi);
           if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES) &&
               wi.skipDirectInstances()) {
-            insertEvent(
+            insertValueUpdate(
                 new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
           } else {
             values = fs.getDirectOwnSlotValues(frame, slot);
@@ -160,7 +161,7 @@ public class FrameCalculator {
       }
       synchronized(kbLock) {
         if (wi.isTargetFullCache()) {
-          insertEvent(new FrameEvaluationCompleted(frame));
+          insertValueUpdate(new FrameEvaluationCompleted(frame));
         }
       }
     } catch (Throwable t) {
@@ -176,7 +177,7 @@ public class FrameCalculator {
         log.fine("Found transaction in progress - can't complete cache for frame " + wi.getFrame());
       }
       wi.setTargetFullCache(false);
-      insertEvent(new FrameEvaluationPartial(wi.getFrame()));
+      insertValueUpdate(new FrameEvaluationPartial(wi.getFrame()));
     }
   }
   
@@ -231,11 +232,9 @@ public class FrameCalculator {
                              RemoteSession session, 
                              State state, 
                              CacheRequestReason reason) {
-    /*
-    if (ignoreAddRequest(frame, session, state, reason)) {
+    if (disabled) {
       return null;
     }
-    */
     if (frame.getKnowledgeBase() == null) {
       log.log(Level.WARNING, "Non-localized frame being added to the FrameCalculator", new Exception());
     }
@@ -269,26 +268,19 @@ public class FrameCalculator {
       return wi;
     }
   }
-  
-  private Set<ClientAndFrame> recentRequests = new HashSet<ClientAndFrame>();
-  private static final int REDUNDANT_REQUEST_THRESHOLD = 300;
-  
-  public boolean ignoreAddRequest(Frame frame, RemoteSession session, State state, CacheRequestReason reason) {
-    if (reason != CacheRequestReason.STATE_MACHINE) {
-      return false;
-    }
-    ClientAndFrame cf = new ClientAndFrame(session, frame);
-    if (recentRequests.contains(cf)) {
-      return true;
-    } else {
-      if (recentRequests.size() > REDUNDANT_REQUEST_THRESHOLD) {
-        recentRequests = new HashSet<ClientAndFrame>();
-      }
-      recentRequests.add(cf);
-      return false;
-    }
-  }
 
+  
+  
+  /*
+   * This call assumes that the kbLock is held on entry.
+   */
+  private void insertValueUpdate(ValueUpdate vu) {
+    vu.setClient(effectiveClient);
+    server.updateEvents(effectiveClient);
+    updates.write(vu);
+  }
+  
+  
   public void dispose() {
     shuttingDown = true;
     synchronized (requestLock) {
@@ -296,15 +288,10 @@ public class FrameCalculator {
     }
   }
   
-  
-  /*
-   * This call assumes that the kbLock is held on entry.
-   */
-  private void insertEvent(ValueUpdate event) {
-    event.setClient(effectiveClient);
-    server.updateEvents(effectiveClient);
-    updates.write(event);
+  public static void setDisabled(boolean disabled) {
+    FrameCalculator.disabled = disabled;
   }
+
   
   public void logRequests() {
     if (log.isLoggable(Level.FINE)) {
