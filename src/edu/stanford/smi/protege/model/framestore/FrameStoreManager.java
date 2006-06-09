@@ -160,6 +160,7 @@ public class FrameStoreManager {
             FrameStore preceeding = getPreceedingEnabledFrameStore(frameStore);
             if (preceeding == null) {
                 headFrameStore = frameStore.getDelegate();
+                frameStore.setDelegate(null);
             } else {
                 disconnect(preceeding, frameStore);
             }
