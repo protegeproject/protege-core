@@ -1,15 +1,9 @@
 package edu.stanford.smi.protege.server;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 
 import edu.stanford.smi.protege.util.ApplicationProperties;
-import edu.stanford.smi.protege.util.Log;
 
 /**
  * This class is a central repository of the server properties.
@@ -32,27 +26,6 @@ public class ServerProperties {
   public static final String SKIP_PRELOAD = "server.client.preload.skip";
   public static final String DELAY_MSEC = "server.delay";
   public static final String MIN_PRELOAD_FRAMES = "preload.frame.limit";
-  
-  public static final String SERVER_PROPERTIES_FILE="server.properties";
-  
-  private static final Properties properties = new Properties();
-  static {
-    try {
-      File propertyFile = new File(ApplicationProperties.getApplicationDirectory(), SERVER_PROPERTIES_FILE);
-      InputStream is = new FileInputStream(propertyFile);
-      properties.load(is);
-      is.close();
-      for (Object property : System.getProperties().keySet()) {
-        if (property instanceof String) {
-          properties.put(property, System.getProperty((String) property));
-        }
-      }
-    } catch (IOException e) {
-      Log.emptyCatchBlock(e);
-    } catch (SecurityException e) {
-      Log.emptyCatchBlock(e);
-    }
-  }
 
   public static Set<String> preloadUserFrames() {
     return getStringSet(ServerProperties.USER_PRELOAD);
@@ -63,7 +36,7 @@ public class ServerProperties {
     Set<String> values = new HashSet<String>();
     boolean noMoreValues = false;
     for (int i = 0; !noMoreValues; i++) {
-      String value = properties.getProperty(property + i);
+      String value = ApplicationProperties.getString(property + i);
       if (value == null) {
         noMoreValues = true;
       } else {
