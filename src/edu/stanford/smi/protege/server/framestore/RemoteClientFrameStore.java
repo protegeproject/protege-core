@@ -58,6 +58,12 @@ import edu.stanford.smi.protege.util.exceptions.TransactionException;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
+/*
+ * Transactions:
+ * 
+ * This class gets updates to its caches from the ServerFrameStore.  
+ */
+
 public class RemoteClientFrameStore implements FrameStore {
     private static Logger log = Log.getLogger(RemoteClientFrameStore.class);
     
@@ -1212,7 +1218,9 @@ public class RemoteClientFrameStore implements FrameStore {
             getRemoteDelegate().getDirectOwnSlotValuesClosure(frames, slot, missing, session);
           localize(wrappedClosure);
           processValueUpdate(wrappedClosure);
-          return wrappedClosure.getResponse();
+          closure = wrappedClosure.getResponse();
+          closure.addAll(frames);
+          return closure;
         } else {
           return closure;
         }
@@ -1595,6 +1603,16 @@ public class RemoteClientFrameStore implements FrameStore {
       }
     }
 
+  private void removeCachedUpdate(boolean isTransactionScope, Frame frame) {
+    Sft lookup = new Sft(nameSlot, null, false);
+    if (cache.get(frame) != null && cache.get(frame).get(lookup) != null) {
+      String name = (String) cache.get(frame).get(lookup).get(0);
+      frameNameToFrameMap.remove(name);
+    }
+    Map<Frame, Map<Sft, List>> workingCache = isTransactionScope ? sessionCache : cache;
+    workingCache.remove(frame);
+  }
+
   /*
    * This call assumes that the eventLock is held by the
    * caller.
@@ -1631,7 +1649,7 @@ public class RemoteClientFrameStore implements FrameStore {
           }
           cacheStatus.remove(frame);
         } else if (vu instanceof RemoveFrameCache) {
-          workingCache.remove(frame);
+          removeCachedUpdate(isTransactionScope, frame);
         } else if (vu instanceof SftUpdate) {
           SftUpdate sftu = (SftUpdate) vu;
           Slot slot = sftu.getSlot();
