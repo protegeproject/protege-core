@@ -1037,7 +1037,10 @@ public class RemoteClientFrameStore implements FrameStore {
     public boolean beginTransaction(String name) {
         try {
             transactionNesting++;
-            return getRemoteDelegate().beginTransaction(name, session);
+            RemoteResponse<Boolean> ret = getRemoteDelegate().beginTransaction(name, session);
+            localize(ret);
+            processValueUpdate(ret);
+            return ret.getResponse();
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -1049,7 +1052,10 @@ public class RemoteClientFrameStore implements FrameStore {
             if (transactionNesting == 0) {
               sessionCache = new HashMap<Frame, Map<Sft, List>>();
             }
-            return getRemoteDelegate().commitTransaction(session);
+            RemoteResponse<Boolean> ret =  getRemoteDelegate().commitTransaction(session);
+            localize(ret);
+            processValueUpdate(ret);
+            return ret.getResponse();
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -1061,7 +1067,10 @@ public class RemoteClientFrameStore implements FrameStore {
             if (transactionNesting == 0) {
               sessionCache = new HashMap<Frame, Map<Sft, List>>();
             }
-            return getRemoteDelegate().rollbackTransaction(session);
+            RemoteResponse<Boolean> ret = getRemoteDelegate().rollbackTransaction(session);
+            localize(ret);
+            processValueUpdate(ret);
+            return ret.getResponse();
         } catch (RemoteException e) {
             throw convertException(e);
         }

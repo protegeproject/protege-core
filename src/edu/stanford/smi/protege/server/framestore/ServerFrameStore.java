@@ -873,12 +873,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      *    Updating value updates
      *       -> Nothing to do
      */
-    public boolean beginTransaction(String name, RemoteSession session) {
+    public RemoteResponse<Boolean> beginTransaction(String name, RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         updateEvents(session);
         boolean success = getDelegate().beginTransaction(name);
-        return success;
+        return new RemoteResponse<Boolean>(success, getValueUpdates(session));
       }
     }
     
@@ -895,7 +895,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      *  that the events end up on the transactio queue.  These events get moved to the clients
      *  later in the closeTransactionEvents() call.
      */
-    public boolean commitTransaction(RemoteSession session) {
+    public RemoteResponse<Boolean> commitTransaction(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         boolean success = getDelegate().commitTransaction();
@@ -918,7 +918,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         if (!existsTransaction()) {
           _kbLock.notifyAll();
         }
-        return success;
+        return new RemoteResponse<Boolean>(success, getValueUpdates(session));
       }
     }
 
@@ -939,7 +939,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      *  that the events end up on the transactio queue. These events get moved to the clients
      *  later in the closeTransactionEvents() call.
      */
-    public boolean rollbackTransaction(RemoteSession session) {
+    public RemoteResponse<Boolean> rollbackTransaction(RemoteSession session) {
       recordCall(session);
       synchronized(_kbLock) {
         updateEvents(session);
@@ -964,7 +964,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         if (!existsTransaction()) {
           _kbLock.notifyAll();
         }
-        return success;
+        return new RemoteResponse<Boolean>(success, getValueUpdates(session));
       }
     }
 
