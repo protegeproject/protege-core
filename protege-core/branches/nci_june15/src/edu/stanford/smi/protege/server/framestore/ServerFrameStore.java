@@ -1251,16 +1251,27 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         for (Cls subClass : subClasses) {
           frames.add(subClass);
         }
-        for (String frameName : userFrames) {
-          Frame frame = null;
-          synchronized(_kbLock) {
-            frame = _delegate.getFrame(frameName);
-          }
-          frames.add(frame);
-        }
       }
       for (Frame frame : frames) {
         frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
+      }
+      frames = new HashSet<Frame>();
+      for (String frameName : userFrames) {
+        Frame frame = null;
+        synchronized(_kbLock) {
+          frame = _delegate.getFrame(frameName);
+        }
+        if (frame == null) {
+          continue;
+        }
+        frames.add(frame);
+        if (frame instanceof Cls) {
+          frames.addAll(_kb.getSuperclasses((Cls) frame));
+          frames.addAll(_kb.getDirectSubclasses((Cls) frame));
+        }
+      }
+      for (Frame frame : frames) {
+        frameCalculator.addRequest(frame, session, CacheRequestReason.IMMEDIATE_PRELOAD);
       }
       return new OntologyUpdate(getValueUpdates(session));
     }
