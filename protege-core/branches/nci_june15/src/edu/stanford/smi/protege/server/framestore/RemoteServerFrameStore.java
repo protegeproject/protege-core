@@ -170,11 +170,11 @@ public interface RemoteServerFrameStore extends Remote {
 
     void close(RemoteSession session) throws RemoteException;
 
-    boolean beginTransaction(String name, RemoteSession session) throws RemoteException;
+    RemoteResponse<Boolean> beginTransaction(String name, RemoteSession session) throws RemoteException;
 
-    boolean commitTransaction(RemoteSession session) throws RemoteException;
+    RemoteResponse<Boolean> commitTransaction(RemoteSession session) throws RemoteException;
 
-    boolean rollbackTransaction(RemoteSession session) throws RemoteException;
+    RemoteResponse<Boolean> rollbackTransaction(RemoteSession session) throws RemoteException;
 
     Frame getFrame(FrameID id, RemoteSession session) throws RemoteException;
 
