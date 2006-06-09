@@ -39,6 +39,7 @@ import edu.stanford.smi.protege.server.update.FrameWrite;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
+import edu.stanford.smi.protege.server.update.RemoveCacheUpdate;
 import edu.stanford.smi.protege.server.update.RemoveFrameCache;
 import edu.stanford.smi.protege.server.update.SftUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
@@ -51,6 +52,44 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.exceptions.TransactionException;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
+
+/*
+ * Transactions:
+ *
+ *    One of the responsibilities of this class is to maintain the
+ *    caches on the clients. Each client has two main caches.  The
+ *    first cache (the main cache) holds values that will be seen by
+ *    any client executing outside of a transaction.  The second cache
+ *    (the transaction cache) contains values that are only seen by
+ *    the one session for the duration of a transaction.  This cache
+ *    breaks down as follows:
+ *     - READ UNCOMMITTED or less: there is no transaction cache.
+ *     - READ COMMITTED: the transaction cache contains data that has
+ *       been written by the client during the transaction.  Other
+ *       clients do not see these values unless this client commits.
+ *     - REPEATABLE READ and higher: the transaction includes the
+ *       values that have been read or written during a transaction.
+ *       Other clients will not not see the values written until the
+ *       client commits and will not necessarily see the same values
+ *       as the the values read by the this client.
+ *    The updates are handled with a pipeline of ValueUpdate objects
+ *    which are transferred from the server to the client.  For the
+ *    most part, these updates are sent by four main routines 
+ * 
+ *      cacheValuesReadFromStore
+ *      updateCacheForWriteToStore
+ *      invalidateCacheForWriteToStore
+ *      removeFrameCache
+ *
+ *    In addition, these routines will store updates that need to be
+ *    committed or rolled back.  These updates are stored in the
+ *    registration for the session.  The rules for rollback and commit
+ *    are:
+ *      READ_UNCOMMITTED and below: Updates that have occurred during
+ *      the tranaction need to be taken back during the rollback.
+ *      READ_COMMITTED and above:  Updates that have occurred during
+ *      the transaction need to be committed during the commit.
+ */
 
 public class ServerFrameStore extends UnicastRemoteObject implements RemoteServerFrameStore {
     private static transient Logger log = Log.getLogger(ServerFrameStore.class);
@@ -712,13 +751,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public void updateEvents(RemoteSession session) {
       Registration registration = _sessionToRegistrationMap.get(session);
-      TransactionIsolationLevel level;
-      try {
-        level = getTransactionIsolationLevel();
-      } catch (TransactionException te) {
-        Log.getLogger().log(Level.WARNING, "exception caught during cache handling", te);
-        level = null;
-      }
+      TransactionIsolationLevel level = getTransactionIsolationLevel();
       for (AbstractEvent eo : getDelegate().getEvents()) {
         addEvent(session, registration, level, eo);
       }
@@ -789,15 +822,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       Slot slot = frameEvent.getSlot();
       updateCacheForWriteToStore(session, frame, slot, (Facet) null, false, null);
     } else if (type == FrameEvent.DELETED) {
-      RemoveFrameCache remove = new RemoveFrameCache(frame);
-      if (!updatesSeenByUntransactedClients(level)) {
-        remove.setClient(session);
-        remove.setTransactionScope(true);
-      }
-      _updateWriter.write(remove);
-      if (!updatesSeenByUntransactedClients(level)) {
-        registration.addCommittableUpdate(new RemoveFrameCache(frame));
-      }
+      removeFrameCache(frame);
     }
   }
 
@@ -833,25 +858,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     if (type == KnowledgeBaseEvent.CLS_DELETED || type == KnowledgeBaseEvent.SLOT_DELETED
         || type == KnowledgeBaseEvent.FACET_DELETED || type == KnowledgeBaseEvent.INSTANCE_DELETED) {
       Frame deletedFrame = event.getFrame();
-      if (level == null) {
-        InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(deletedFrame, nameSlot, (Facet) null, false);
-        _updateWriter.write(invalid);
-        registration.addCommittableUpdate(invalid);
-      }
-      InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(deletedFrame, nameSlot, (Facet) null, false);
-      RemoveFrameCache remove = new RemoveFrameCache(deletedFrame);
-      if (!updatesSeenByUntransactedClients(level)) {
-        invalid.setClient(session);
-        remove.setClient(session);
-        invalid.setTransactionScope(true);
-        remove.setTransactionScope(true);
-      }
-      _updateWriter.write(invalid);
-      _updateWriter.write(remove);
-      if (!updatesSeenByUntransactedClients(level)) {
-        registration.addCommittableUpdate(new InvalidateCacheUpdate(deletedFrame, nameSlot, (Facet) null, false));
-        registration.addCommittableUpdate(new RemoveFrameCache(deletedFrame));
-      }
+      removeFrameCache(deletedFrame);
     }
   }
 
@@ -895,14 +902,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         updateEvents(session);
         if (!inTransaction()) {
           Registration registration = _sessionToRegistrationMap.get(session);
-          TransactionIsolationLevel level;
-          try {
-            level = getTransactionIsolationLevel();
-          } catch (TransactionException te) {
-            Log.getLogger().log(Level.WARNING, "Exception caught handling cache and event updates", te);
-            Log.getLogger().warning("Caches will be incorrect");
-            level = null;
-          }
+          TransactionIsolationLevel level = getTransactionIsolationLevel();
           Collection<ValueUpdate> updates;
           if (success && level != null && 
               level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0) {
@@ -946,14 +946,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         boolean success = getDelegate().rollbackTransaction();
         if (!inTransaction()) {
           Registration registration = _sessionToRegistrationMap.get(session);
-          TransactionIsolationLevel level;
-          try {
-            level = getTransactionIsolationLevel();
-          } catch (TransactionException te) {
-            Log.getLogger().log(Level.WARNING, "Exception caught handling cache and event updates", te);
-            Log.getLogger().warning("Caches will be incorrect");
-            level = null;
-          }
+          TransactionIsolationLevel level = getTransactionIsolationLevel();
           if (success && (level != null ||
                           level.compareTo(TransactionIsolationLevel.READ_COMMITTED) < 0)) {
             for (AbstractEvent eo : registration.getTransactionEvents()) {
@@ -981,15 +974,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                          Facet facet, 
                                          boolean isTemplate, 
                                          List values) {
-      TransactionIsolationLevel level;
-      try {
-        level = getTransactionIsolationLevel();
-      } catch (TransactionException te) {
-        Log.getLogger().log(Level.WARNING, "excption caught handling caches", te);
-        return; // no caching can be done
+      TransactionIsolationLevel level  = getTransactionIsolationLevel();
+      if (level == null) {
+        return;  // no caching can be done
       }
       SftUpdate vu = new FrameRead(frame, slot, facet, isTemplate, values);
-      if (!updatesSeenByUntransactedClients(level)) {
+      if (inTransaction() && level.compareTo(TransactionIsolationLevel.REPEATABLE_READ) >= 0) {
         vu.setClient(session);
         vu.setTransactionScope(true);
       }
@@ -1002,19 +992,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                             Facet facet,
                                             boolean isTemplate,
                                             List values) {
-      TransactionIsolationLevel level;
+      TransactionIsolationLevel level = getTransactionIsolationLevel();
       Registration registration = _sessionToRegistrationMap.get(session);
-      try {
-        level = getTransactionIsolationLevel();
-      } catch (TransactionException te) {
-        Log.getLogger().log(Level.WARNING, "exception caught handling caches", te);
+      if (level  == null) {
         InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
         _updateWriter.write(invalid);
         registration.addCommittableUpdate(invalid);
         invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
         invalid.setTransactionScope(true);
         _updateWriter.write(invalid);
-        registration.addCommittableUpdate(invalid);
         return;
       }
       SftUpdate vu = new FrameWrite(frame, slot, facet, isTemplate, values);
@@ -1033,19 +1019,16 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                                 Facet facet,
                                                 boolean isTemplate) {
       RemoteSession session = getCurrentSession();
-      TransactionIsolationLevel level;
+      TransactionIsolationLevel level = getTransactionIsolationLevel();
       Registration registration = _sessionToRegistrationMap.get(session);
-      try {
-        level = getTransactionIsolationLevel();
-      } catch (TransactionException te) {
-        Log.getLogger().log(Level.WARNING, "exception caught handling caches", te);
+      if (level == null) {
+        _updateWriter.write(new InvalidateCacheUpdate(frame, slot, facet, isTemplate));
+        if (inTransaction()) {
+          registration.addCommittableUpdate(new InvalidateCacheUpdate(frame, slot, facet, isTemplate));
+        }
         InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
-        _updateWriter.write(invalid);
-        registration.addCommittableUpdate(invalid);
-        invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
         invalid.setTransactionScope(true);
         _updateWriter.write(invalid);
-        registration.addCommittableUpdate(invalid);
         return;
       }
       SftUpdate vu = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
@@ -1059,16 +1042,50 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
+    public void removeFrameCache(Frame frame) {
+      TransactionIsolationLevel level = getTransactionIsolationLevel();
+      RemoteSession session = getCurrentSession();
+      Registration registration = _sessionToRegistrationMap.get(session);
+      if (level == null) {
+        _updateWriter.write(new RemoveFrameCache(frame));
+        if (inTransaction()) {
+          registration.addCommittableUpdate(new RemoveFrameCache(frame));
+        }
+        RemoveFrameCache remove  = new RemoveFrameCache(frame);
+        remove.setTransactionScope(true);
+        _updateWriter.write(remove);
+      }
+      RemoveFrameCache remove = new RemoveFrameCache(frame);
+      if (!updatesSeenByUntransactedClients(level)) {
+        remove.setClient(session);
+        remove.setTransactionScope(true);
+      }
+      _updateWriter.write(remove);
+      if (!updatesSeenByUntransactedClients(level)) {
+        registration.addCommittableUpdate(new RemoveFrameCache(frame));
+      }
+    }
+
     public boolean updatesSeenByUntransactedClients(TransactionIsolationLevel level) {
-      return !inTransaction() || (level != null && level.compareTo(TransactionIsolationLevel.READ_UNCOMMITTED) <= 0);
+      return !inTransaction() || 
+        (level != null && level.compareTo(TransactionIsolationLevel.READ_UNCOMMITTED) <= 0);
     }
     
-    public TransactionIsolationLevel getTransactionIsolationLevel() throws TransactionException {
-      synchronized (_kbLock) {
-        if (transactionMonitor == null) {
-          return TransactionIsolationLevel.NONE;
+  /**
+   * Calculates the transaction isolation level.  If it returns null
+   * it indicates that an error has occured.
+   */
+    public TransactionIsolationLevel getTransactionIsolationLevel() {
+      try {
+        synchronized (_kbLock) {
+          if (transactionMonitor == null) {
+            return TransactionIsolationLevel.NONE;
+          }
+          return transactionMonitor.getTransationIsolationLevel();
         }
-        return transactionMonitor.getTransationIsolationLevel();
+      } catch (TransactionException te) {
+        Log.getLogger().log(Level.WARNING,  "Exception caught finding transaction isolation level", te);
+        return null;
       }
     }
     
