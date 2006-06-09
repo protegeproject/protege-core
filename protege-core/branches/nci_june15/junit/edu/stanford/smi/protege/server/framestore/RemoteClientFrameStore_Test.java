@@ -18,7 +18,9 @@ public class RemoteClientFrameStore_Test extends FrameStore_Test {
         } catch (Exception e) {
           return null;
         }
-
+        // Tests are a litle more deterministic if the disabled flag is turned on
+        // Is there a way to make this happen without using a static? (problem = junit and fork)
+        // FrameCalculator.setDisabled(true); 
         return new RemoteClientFrameStore(host, user, password, projectName, kb, false);
     }
     
