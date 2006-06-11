@@ -31,6 +31,8 @@ public enum CacheRequestReason {
       return 1;
     case SUBCLASS:
       return -1;
+    case PRELOAD:
+      return -1;
     default:
       return 0;
     }
