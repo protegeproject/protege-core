@@ -1,8 +1,8 @@
 package edu.stanford.smi.protege.server.framestore.background;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -288,6 +288,21 @@ public class FrameCalculator {
     }
   }
   
+  public void deregister(RemoteSession session) {
+    synchronized (requestLock) {
+      List<WorkInfo> remove = new ArrayList<WorkInfo>();
+      for (WorkInfo wi : requests) {
+        if (wi.getClient().equals(session)) {
+          remove.add(wi);
+        }
+      }
+      for (WorkInfo wi : remove) {
+        requests.remove(wi);
+        requestMap.remove(wi.getClientAndFrame());
+      }
+    }
+  }
+  
   public static void setDisabled(boolean disabled) {
     FrameCalculator.disabled = disabled;
   }
@@ -349,7 +364,7 @@ public class FrameCalculator {
     private RunStatus status = RunStatus.IDLE;
     
     public FrameCalculatorThread() {
-      super("Frame Pre-Calculation Thread");
+      super("Frame Pre-Calculation Thread [" + server + "]");
     }
     
     public void run() {
