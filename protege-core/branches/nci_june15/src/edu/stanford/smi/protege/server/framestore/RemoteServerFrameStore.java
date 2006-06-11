@@ -4,6 +4,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import edu.stanford.smi.protege.model.Cls;
@@ -22,6 +23,8 @@ import edu.stanford.smi.protege.util.exceptions.TransactionException;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 
 public interface RemoteServerFrameStore extends Remote {
+  
+    Map<RemoteSession, Boolean> getUserInfo() throws RemoteException;
 
     int getClsCount(RemoteSession session) throws RemoteException;
 
