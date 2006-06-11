@@ -39,7 +39,6 @@ import edu.stanford.smi.protege.server.update.FrameWrite;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
-import edu.stanford.smi.protege.server.update.RemoveCacheUpdate;
 import edu.stanford.smi.protege.server.update.RemoveFrameCache;
 import edu.stanford.smi.protege.server.update.SftUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
@@ -144,6 +143,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             //used for simulating slow network response time
             Log.getLogger().config("Simulated delay of " + ServerProperties.delayInMilliseconds() + " msec/call");
         }
+    }
+    
+    public Map<RemoteSession, Boolean> getUserInfo() {
+      Map<RemoteSession, Boolean> results = new HashMap<RemoteSession, Boolean>();
+      for (RemoteSession session : _sessionToRegistrationMap.keySet()) {
+        results.put(session, transactionMonitor.getNesting(session) > 0);
+      }
+      return results;
     }
 
     private FrameStore getDelegate() {
@@ -721,6 +728,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     public void deregister(RemoteSession session) {
       synchronized(_kbLock) {
         _sessionToRegistrationMap.remove(session);
+        frameCalculator.deregister(session);
         if (_sessionToRegistrationMap.isEmpty()) {
           frameCalculator.dispose();
         }
@@ -728,7 +736,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public String toString() {
-        return "ServerFrameStoreImpl";
+        return "ServerFrameStore[" + _kb + "]";
     }
 
     public RemoteResponse<List<AbstractEvent>> getEvents(RemoteSession session) {
@@ -1199,18 +1207,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
 
-    /*
-     * Avoid sending the very common "empty list" over the wire.
-     */
-    private void insertValues(Map map, Slot slot, Facet facet, boolean isTemplate, Collection values) {
-        if (values == null || !values.isEmpty()) {
-            if (values != null) {
-                values = new ArrayList(values);
-            }
-            map.put(getSft(slot, facet, isTemplate), values);
-        }
-    }
-
 
     private Sft getSft(Slot slot, Facet facet, boolean isTemplate) {
         Sft sft = new Sft(slot, facet, isTemplate);
@@ -1221,11 +1217,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
         return mapSft;
     }
-
-    private void insertNullValues(Map map, Slot slot, Facet facet, boolean isTemplate) {
-        insertValues(map, slot, facet, isTemplate, null);
-    }
-
+    
     public OntologyUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) {
       recordCall(session);
       Set<Frame> frames;
@@ -1238,6 +1230,32 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           frames = getDelegate().getFrames();
         }
       } else {
+        frames = new HashSet<Frame>();
+        for (String frameName : userFrames) {
+          Frame frame = null;
+          synchronized(_kbLock) {
+            frame = _delegate.getFrame(frameName);
+          }
+          if (frame == null) {
+            continue;
+          }
+          frames.add(frame);
+          if (frame instanceof Cls) {
+            Cls cls = (Cls) frame;
+            for (Object o : _kb.getSuperclasses(cls)) {
+              Cls superCls = (Cls)  o;
+              frames.add(superCls);
+              frames.addAll(superCls.getDirectSubclasses());
+            }
+            synchronized (_kbLock) {
+              frames.addAll(_kb.getSuperclasses((Cls) frame));
+              frames.addAll(_kb.getDirectSubclasses((Cls) frame));
+            }
+          }
+        }
+        for (Frame frame : frames) {
+          frameCalculator.addRequest(frame, session, CacheRequestReason.IMMEDIATE_PRELOAD);
+        }
         frames = new LinkedHashSet<Frame>();
         Cls rootClass = null;
         synchronized (_kbLock) {
@@ -1254,24 +1272,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       for (Frame frame : frames) {
         frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
-      }
-      frames = new HashSet<Frame>();
-      for (String frameName : userFrames) {
-        Frame frame = null;
-        synchronized(_kbLock) {
-          frame = _delegate.getFrame(frameName);
-        }
-        if (frame == null) {
-          continue;
-        }
-        frames.add(frame);
-        if (frame instanceof Cls) {
-          frames.addAll(_kb.getSuperclasses((Cls) frame));
-          frames.addAll(_kb.getDirectSubclasses((Cls) frame));
-        }
-      }
-      for (Frame frame : frames) {
-        frameCalculator.addRequest(frame, session, CacheRequestReason.IMMEDIATE_PRELOAD);
       }
       return new OntologyUpdate(getValueUpdates(session));
     }
