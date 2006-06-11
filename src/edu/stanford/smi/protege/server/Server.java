@@ -284,6 +284,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Collection<ServerProject> projects =  _sessionToProjectsMap.get(session);
         projects.remove(project);
         _sessions.remove(session);
+        if (project instanceof ServerProject) {
+          ((ServerProject) project).deregister(session);
+        }
         Log.getLogger().info("removing session: " + session);
     }
 

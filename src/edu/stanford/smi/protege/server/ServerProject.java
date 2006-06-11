@@ -89,6 +89,11 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         _domainKbFrameStore.register(session);
         _projectKbFrameStore.register(session);
     }
+    
+    public void deregister(RemoteSession session) {
+      _domainKbFrameStore.deregister(session);
+      _projectKbFrameStore.deregister(session);
+  }
 
     public void close(RemoteSession session) {
         _server.disconnectFromProject(this, session);
