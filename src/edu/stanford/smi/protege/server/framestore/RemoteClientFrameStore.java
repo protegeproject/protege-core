@@ -108,6 +108,8 @@ public class RemoteClientFrameStore implements FrameStore {
     private Map<Frame, Map<Sft, List>> cache = new HashMap<Frame, Map<Sft, List>>();
     private Map<Frame, Map<Sft, List>> sessionCache = new HashMap<Frame, Map<Sft, List>>();
     private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
+    
+    private RemoteClientStatsImpl stats = new RemoteClientStatsImpl();
 
     public String getName() {
         return getClass().getName();
@@ -139,6 +141,15 @@ public class RemoteClientFrameStore implements FrameStore {
                                                                             invoker);
         }
         return proxiedDelegate;
+    }
+    
+    public Map<RemoteSession, Boolean> getUserInfo() {
+      try {
+        return getRemoteDelegate().getUserInfo();
+      } catch (RemoteException re) {
+        Log.getLogger().log(Level.WARNING, "Exception caught retrieving user data from remote server", re);
+        return new HashMap<RemoteSession, Boolean>();
+      }
     }
 
     public static boolean isBusy() {
@@ -1176,6 +1187,7 @@ public class RemoteClientFrameStore implements FrameStore {
         if (log.isLoggable(Level.FINE)) {
           log.fine("not in closure cache: " + frame.getFrameID() + ", " + slot.getFrameID());
         }
+        stats.closureMiss++;
         RemoteResponse<Set> wrappedClosure = 
           getRemoteDelegate().getDirectOwnSlotValuesClosure(frame, slot, missing, session);
         localize(wrappedClosure);
@@ -1190,8 +1202,10 @@ public class RemoteClientFrameStore implements FrameStore {
             }
           }
         }
+      } else {
+        stats.closureHit++;
       }
-      return closure;    
+      return closure;
     }
 
     /*
@@ -1223,6 +1237,7 @@ public class RemoteClientFrameStore implements FrameStore {
           calculateClosureFromCacheOnly(frame, slot, closure, missing);
         }
         if (!missing.isEmpty()) {
+          stats.closureMiss++;
           RemoteResponse<Set> wrappedClosure = 
             getRemoteDelegate().getDirectOwnSlotValuesClosure(frames, slot, missing, session);
           localize(wrappedClosure);
@@ -1231,6 +1246,7 @@ public class RemoteClientFrameStore implements FrameStore {
           closure.addAll(frames);
           return closure;
         } else {
+          stats.closureHit++;
           return closure;
         }
     }
@@ -1253,36 +1269,49 @@ public class RemoteClientFrameStore implements FrameStore {
           try {
             level = getTransactionIsolationLevel();
             if (level == null) {
+              stats.miss++;
               return false;
             }
           } catch (TransactionException e) {
             Log.getLogger().log(Level.WARNING, "Could not get transaction isolation level - caching disabled", e);
+            stats.miss++;
             return false;
           }
           Map<Sft, List> sessionCachedValues = sessionCache.get(frame);
           if (level.compareTo(TransactionIsolationLevel.REPEATABLE_READ) >= 0 &&
               (sessionCachedValues == null || sessionCachedValues.get(lookup) == null)) {
+            stats.miss++;
             return false;
           }
           if (level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0 &&
               sessionCachedValues != null && sessionCachedValues.containsKey(lookup)) {
             if (sessionCachedValues.get(lookup) == null) {
+              stats.miss++;
               return false;
             } else {
+              stats.hit++;
               return true;
             }
           }
         }
         Map<Sft, List> m = cache.get(frame);
         if (m == null) {
+          stats.miss++;
           return false;
         }
         List values = m.get(lookup);
         if (values != null) {
+          stats.hit++;
           return  true;
         } else {
-          return cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING 
-            && !m.containsKey(lookup);
+          boolean ret =  cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING 
+                            && !m.containsKey(lookup);
+          if  (ret) {
+            stats.hit++;
+          } else {
+            stats.miss++;
+          }
+          return ret;
         }
       }
     }
@@ -1698,6 +1727,35 @@ public class RemoteClientFrameStore implements FrameStore {
       cache.clear();
       sessionCache.clear();
       frameNameToFrameMap.clear();
+      stats = new RemoteClientStatsImpl();
     }
+  }
+  
+  public RemoteClientStats getStats() {
+    return stats;
+  }
+  
+  public class RemoteClientStatsImpl implements RemoteClientStats {
+    int miss = 0;
+    int hit = 0;
+    int closureMiss = 0;
+    int closureHit = 0;
+    
+    public int getCacheHits() {
+      return hit;
+    }
+    
+    public int getCacheMisses() {
+      return miss;
+    }
+
+    public int getClosureCacheHits() {
+      return closureHit;
+    }
+
+    public int getClosureCacheMisses() {
+      return closureMiss;
+    }
+    
   }
 }
