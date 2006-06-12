@@ -37,6 +37,7 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.ClientCacheRequestor;
+import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
 import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
@@ -150,6 +151,18 @@ public class RemoteClientFrameStore implements FrameStore {
         Log.getLogger().log(Level.WARNING, "Exception caught retrieving user data from remote server", re);
         return new HashMap<RemoteSession, Boolean>();
       }
+    }
+    
+    public FrameCalculatorStats getServerStats() {
+      try {
+        return getRemoteDelegate().getStats();
+      } catch (RemoteException re) {
+        return null;
+      }
+    }
+    
+    public RemoteClientStats getClientStats() {
+      return stats;
     }
 
     public static boolean isBusy() {
@@ -1731,9 +1744,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
   }
   
-  public RemoteClientStats getStats() {
-    return stats;
-  }
+
   
   public class RemoteClientStatsImpl implements RemoteClientStats {
     int miss = 0;
