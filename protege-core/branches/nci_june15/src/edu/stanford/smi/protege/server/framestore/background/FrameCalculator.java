@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.server.framestore.background;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -77,6 +78,8 @@ public class FrameCalculator {
   private StateMachine machine = null;
   private static boolean disabled = false;
   
+  FrameCalculatorStatsImpl stats = new FrameCalculatorStatsImpl();
+  
   public FrameCalculator(FrameStore fs,
                          Object kbLock,
                          FifoWriter<ValueUpdate> updates,
@@ -97,6 +100,7 @@ public class FrameCalculator {
       log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
     }
     try {
+      stats.startWork();
       synchronized(kbLock) {
         if (server.inTransaction()) {
           if (log.isLoggable(Level.FINE)) {
@@ -168,8 +172,13 @@ public class FrameCalculator {
       Log.getLogger().log(Level.SEVERE, 
                           "Exception caught caching frame values", 
                           t);
+      wi.setTargetFullCache(false);
+      insertValueUpdate(new FrameEvaluationPartial(wi.getFrame()));
+    } finally {
+      stats.completeWork();
     }
   }
+  
   
   private void checkAbilityToGenerateFullCache(WorkInfo wi) {
     if (server.inTransaction() && wi.isTargetFullCache()) {
@@ -306,6 +315,23 @@ public class FrameCalculator {
   public static void setDisabled(boolean disabled) {
     FrameCalculator.disabled = disabled;
   }
+  
+  public FrameCalculatorStats getStats() {
+    Map<RemoteSession, Integer> backlogs = new HashMap<RemoteSession, Integer>();
+    synchronized (requestLock) {
+      for (WorkInfo wi : requests) {
+        RemoteSession session = wi.getClient();
+        Integer count = backlogs.get(session);
+        if (count == null) {
+          backlogs.put(session, 1);
+        } else {
+          backlogs.put(session, count+1);
+        }
+      }
+    }
+    stats.setPreCacheBackLog(backlogs);
+    return stats;
+  }
 
   
   public void logRequests() {
@@ -402,6 +428,35 @@ public class FrameCalculator {
     public RunStatus getStatus() {
       return status;
     }
+  }
+  
+  public static class FrameCalculatorStatsImpl implements FrameCalculatorStats, Serializable {
+    private long startWorkTime;
+    private long workUnits = 0;
+    private long totalWorkTime  = 0;
+    private Map<RemoteSession, Integer> preCacheBacklog;
+    
+    private void startWork() {
+      startWorkTime = System.currentTimeMillis();
+    }
+    
+    private void completeWork() {
+      totalWorkTime = totalWorkTime + System.currentTimeMillis() - startWorkTime;
+      workUnits++;
+    }
+
+    public Map<RemoteSession, Integer> getPreCacheBacklog() {
+      return preCacheBacklog;
+    }
+    
+    public void setPreCacheBackLog(Map<RemoteSession, Integer> backlog) {
+      preCacheBacklog = backlog;
+    }
+
+    public long getPrecalculateTime() {
+      return totalWorkTime / workUnits;
+    }
+    
   }
   
 }
