@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.util.AbstractEvent;
@@ -25,6 +26,8 @@ import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 public interface RemoteServerFrameStore extends Remote {
   
     Map<RemoteSession, Boolean> getUserInfo() throws RemoteException;
+    
+    FrameCalculatorStats getStats() throws RemoteException;
 
     int getClsCount(RemoteSession session) throws RemoteException;
 
