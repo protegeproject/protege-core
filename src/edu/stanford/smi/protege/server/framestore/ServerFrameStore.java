@@ -33,6 +33,7 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
+import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.framestore.background.WorkInfo;
 import edu.stanford.smi.protege.server.update.FrameRead;
 import edu.stanford.smi.protege.server.update.FrameWrite;
@@ -148,9 +149,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     public Map<RemoteSession, Boolean> getUserInfo() {
       Map<RemoteSession, Boolean> results = new HashMap<RemoteSession, Boolean>();
       for (RemoteSession session : _sessionToRegistrationMap.keySet()) {
-        results.put(session, transactionMonitor.getNesting(session) > 0);
+        if (transactionMonitor != null) {
+          results.put(session, transactionMonitor.getNesting(session) > 0);
+        }
       }
       return results;
+    }
+    
+    public FrameCalculatorStats getStats() {
+      return frameCalculator.getStats();
     }
 
     private FrameStore getDelegate() {
