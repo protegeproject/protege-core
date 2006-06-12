@@ -240,5 +240,3 @@ Export-Project-Plugin: True
 Name: edu/stanford/smi/protege/storage/database/DatabaseCreateProjectPlugin.class
 Create-Project-Plugin: True
 
-Name: edu/stanford/smi/protege/server/plugin/ServerStatsPlugin.class
-Tab-Widget: True
