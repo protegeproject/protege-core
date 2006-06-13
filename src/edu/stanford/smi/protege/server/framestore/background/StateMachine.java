@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.util.Log;
@@ -23,13 +24,13 @@ public class StateMachine {
     this.fs = fs;
     this.kbLock = kbLock;
     synchronized (kbLock) {
-      addTransition(State.Start, ":DIRECT-SUPERCLASSES", State.OwlExpr);
+      addTransition(State.Start, Model.Slot.DIRECT_SUPERCLASSES, State.OwlExpr);
       
       addTransition(State.Start, "owl:equivalentClass", State.OwlExpr);
       
       
       addTransition(State.OwlExpr, "owl:intersectionOf", State.RDFList);
-      addTransition(State.OwlExpr, ":DIRECT-SUPERCLASSES", State.End);
+      addTransition(State.OwlExpr, Model.Slot.DIRECT_SUPERCLASSES, State.End);
       addTransition(State.OwlExpr, "owl:someValuesFrom", State.End);
       
       addTransition(State.RDFList, "rdf:rest", State.RDFList);
