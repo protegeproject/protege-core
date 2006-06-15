@@ -795,9 +795,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public void close(RemoteSession session) throws ServerSessionLost {
       recordCall(session);
-      synchronized(_kbLock) {
-        // do nothing
-      }
     }
 
     public void register(RemoteSession session) throws ServerSessionLost {
