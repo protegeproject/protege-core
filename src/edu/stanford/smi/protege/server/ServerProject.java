@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.narrowframestore.RemoteServerNarrowFrameStore;
 import edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore;
 
@@ -85,17 +86,17 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
       return _systemNarrowFrameStore;
     }
 
-    public void register(RemoteSession session) {
+    public void register(RemoteSession session) throws ServerSessionLost {
         _domainKbFrameStore.register(session);
         _projectKbFrameStore.register(session);
     }
     
-    public void deregister(RemoteSession session) {
+    public void deregister(RemoteSession session) throws ServerSessionLost {
       _domainKbFrameStore.deregister(session);
       _projectKbFrameStore.deregister(session);
   }
 
-    public void close(RemoteSession session) {
+    public void close(RemoteSession session) throws ServerSessionLost{
         _server.disconnectFromProject(this, session);
     }
 
@@ -110,5 +111,9 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     public void setClean() {
         _domainKbFrameStore.markClean();
         _projectKbFrameStore.markClean();
+    }
+    
+    public void setFrameCalculatorDisabled(boolean disabled) {
+      _domainKbFrameStore.setFrameCalculatorDisabled(disabled);
     }
 }
