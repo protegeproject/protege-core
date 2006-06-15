@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -28,7 +29,6 @@ import javax.swing.event.ChangeListener;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.WidgetDescriptor;
 import edu.stanford.smi.protege.resource.Text;
-import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ComponentFactory;
 import edu.stanford.smi.protege.util.ComponentUtilities;
@@ -145,6 +145,67 @@ class MyCardPanel extends JPanel implements TabbedPaneInterface {
 class MyJTabbedPane extends JTabbedPane implements TabbedPaneInterface {
 }
 
+
+/**
+ * Creates a new thread which sets the Server Activity Monitor button to have a red background.
+ * Everytime there is server activity, a request is made to start the thread.  If it is already running
+ * nothing happens, otherwise it is started and continues to run until no more server activity occurs in 300 milliseconds.  
+ * This way the button stays red while there is continuous server activity.
+ * @author Chris Callendar
+ */
+class BusyFlagThread implements Runnable {
+
+	private long lastRunTime = 0;
+	private long TIMEOUT = 300;
+	private Thread thread = null;
+
+	/**
+	 * This method sets the last run time to now, and starts a new thread
+	 * if one isn't already running.
+	 */
+	public void requestStart() {
+		// update the last run time - ensures that the server activity button stays red
+		lastRunTime = System.currentTimeMillis();
+		
+		// if it is already running then no point in starting again
+		// when it is finished running the thread will be set to null
+		if (thread != null) {
+			return;
+		}
+
+		// start the thread - keeps the server activity button painted red 
+		thread = new Thread(this, "BusyFlagThread");
+		thread.start();
+	}
+	
+	public void run() {
+		//System.out.println("Starting Busy Flag thread..." + Thread.currentThread().getId());
+		JButton btn = ProjectManager.getProjectManager().getServerActivityMonitorButton();
+		if ((btn == null) || !btn.isVisible()) {
+			return;
+		}
+		
+        try {
+        	// make the server activity button red - keep running while busy    
+			while ((System.currentTimeMillis() - lastRunTime) < TIMEOUT) {
+				if (!Color.RED.equals(btn.getBackground())) {
+            		btn.setBackground(Color.RED);
+            		btn.repaint();
+				}
+				Thread.sleep(50);
+			}
+			// 300ms of inactivity has occurred - change the button back to white
+			btn.setBackground(Color.WHITE);
+	  	  	//btn.repaint();
+		} catch (InterruptedException e) {
+			Log.emptyCatchBlock(e);
+		} finally {
+			//System.out.println("Busy Flag thread finished (" + Thread.currentThread().getId() + ").");
+			thread = null;
+		}
+	}
+}
+
 public class ProjectView extends JComponent {
     static private Logger log = Log.getLogger(ProjectView.class);
     
@@ -155,7 +216,7 @@ public class ProjectView extends JComponent {
     private Collection _currentClsPath;
     private Collection _currentInstances;
     private Collection _detachedTabs = new HashSet();
-    private Thread busyFlagThread = null;
+    private BusyFlagThread busyFlagThread = null;
 
     public ProjectView(Project project) {
         if (log.isLoggable(Level.FINE)) {
@@ -186,32 +247,18 @@ public class ProjectView extends JComponent {
         // add(createTabbedPane(), BorderLayout.CENTER); what does this change do? (bug fix?)
         add(BorderLayout.CENTER, createTabbedPane());
         project.getKnowledgeBase().setUndoEnabled(project.isUndoOptionEnabled());
+        
         if (project.isMultiUserClient()) {
-          startBusyFlagThread();
+        	// create the busy flag thread - when run it will make the server activity monitor button turn red
+        	// until 300 milliseconds of no server activity occur
+        	busyFlagThread = new BusyFlagThread();
         }
     }
     
     public void startBusyFlagThread() {
-      if (busyFlagThread == null) {
-        busyFlagThread = 
-          new Thread("Thread for checking how busy the client is") {
-          public void run() {
-            while (true) {
-              if (RemoteClientFrameStore.isBusy()) {
-                ProjectManager.getProjectManager().getServerActivityMonitorButton().setBackground(Color.RED);                   
-              }
-              else {
-                ProjectManager.getProjectManager().getServerActivityMonitorButton().setBackground(Color.WHITE);                 
-              }
-              try {
-                Thread.sleep(300);
-              } catch (InterruptedException e) {
-                Log.emptyCatchBlock(e);
-              }
-            }
-          }
-        };
-        busyFlagThread.start();
+      if (busyFlagThread != null) {
+    	  // request that the thread start - it will only start if it isn't already running
+    	  busyFlagThread.requestStart();
       }
     }
 

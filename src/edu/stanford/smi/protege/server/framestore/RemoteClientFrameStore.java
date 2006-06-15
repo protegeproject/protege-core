@@ -51,6 +51,8 @@ import edu.stanford.smi.protege.server.update.RemoveCacheUpdate;
 import edu.stanford.smi.protege.server.update.RemoveFrameCache;
 import edu.stanford.smi.protege.server.update.SftUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
+import edu.stanford.smi.protege.ui.ProjectManager;
+import edu.stanford.smi.protege.ui.ProjectView;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
@@ -92,10 +94,6 @@ public class RemoteClientFrameStore implements FrameStore {
     private enum CacheStatus {
       STARTED_CACHING, COMPLETED_CACHING
     }
-
-    private static boolean busyFlag = false;
-    private static long quiescenceStarted = System.currentTimeMillis();
-    private final static long quiescenceInterval = 100;
 
     private TransactionIsolationLevel transactionLevel;
     private int transactionNesting = 0;
@@ -193,15 +191,16 @@ public class RemoteClientFrameStore implements FrameStore {
           public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             fixLoader();
             if (!method.equals(getEventsMethod)) {
-              busyFlag = true;
+            	ProjectView view = ProjectManager.getProjectManager().getCurrentProjectView();
+            	if (view != null) {
+                  // make the server activity button red, it reverts to white after 300 milliseconds of inactivity
+            	  view.startBusyFlagThread();	 
+            	}
             }
             try {
               return method.invoke(remoteDelegate, args);
             } catch (InvocationTargetException ite) { 
               throw ite.getCause();
-            } finally {
-              busyFlag = false;
-              quiescenceStarted = System.currentTimeMillis();
             }
           }
           
@@ -232,14 +231,6 @@ public class RemoteClientFrameStore implements FrameStore {
   
   public RemoteClientStats getClientStats() {
     return stats;
-  }
-
-  public static boolean isBusy() {
-    boolean busy = (busyFlag || System.currentTimeMillis() <= quiescenceStarted + quiescenceInterval);
-    if (log.isLoggable(Level.FINEST)) {
-      log.finest("Checking busy flag = " + busy);
-    }
-    return busy;
   }
 
   private void fixLoader() {
