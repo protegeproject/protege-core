@@ -4,7 +4,7 @@ import java.util.EnumSet;
 
 public enum CacheRequestReason {
   USER_REQUESTED_FRAME_VALUES,  USER_NAME_REQUEST, USER_CLOSURE_REQUEST, USER_SPECIFIC_FRAMES,  
-  NEW_FRAME, IMMEDIATE_PRELOAD, PRELOAD, SUBCLASS, STATE_MACHINE;
+  NEW_FRAME, IMMEDIATE_PRELOAD, PRELOAD, KB_PRELOAD, SUBCLASS, STATE_MACHINE;
   
   private static int MIN_PRIORITY;
   static {
@@ -20,6 +20,8 @@ public enum CacheRequestReason {
   public int priority() {
     switch (this) {
     case IMMEDIATE_PRELOAD:
+      return 6;
+    case KB_PRELOAD:
       return 5;
     case NEW_FRAME:
       return 4;
