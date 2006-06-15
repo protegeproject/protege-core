@@ -21,6 +21,7 @@ import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.Registration;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
 import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
@@ -59,7 +60,6 @@ public class FrameCalculator {
     IDLE, RUNNING, SHUTDOWN
   }
   
-  private boolean shuttingDown = false;
   private FrameStore fs;
   private final Object kbLock;
   private FifoWriter<ValueUpdate> updates;
@@ -92,10 +92,10 @@ public class FrameCalculator {
   }
   
 
-  private void doWork(WorkInfo wi) {
+  private void doWork(WorkInfo wi) throws ServerSessionLost {
     Frame frame = wi.getFrame();
     effectiveClient = wi.getClient();
-    ServerFrameStore.setCurrentSession(effectiveClient);
+    server.setCurrentSession(effectiveClient);
     if (log.isLoggable(Level.FINE)) {
       log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
     }
@@ -290,13 +290,6 @@ public class FrameCalculator {
   }
   
   
-  public void dispose() {
-    shuttingDown = true;
-    synchronized (requestLock) {
-      requestLock.notifyAll();
-    }
-  }
-  
   public void deregister(RemoteSession session) {
     synchronized (requestLock) {
       List<WorkInfo> remove = new ArrayList<WorkInfo>();
@@ -401,7 +394,7 @@ public class FrameCalculator {
       try {
         while (true) {
           synchronized (requestLock) {
-            if (requests.isEmpty() || shuttingDown) {
+            if (requests.isEmpty()) {
               status = RunStatus.SHUTDOWN;
               return;
             }
