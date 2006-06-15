@@ -163,9 +163,14 @@ public class RemoteClientFrameStore implements FrameStore {
         public void run() {
           try {
             while (true) {
-              getRemoteDelegate().heartBeat(session);
+              RemoteServerFrameStore remote = getRemoteDelegate();
+              if (remote != null) {
+                remote.heartBeat(session); 
+              }
               Thread.sleep(RemoteServerFrameStore.HEARTBEAT_POLL_INTERVAL);
             }
+          } catch (ServerSessionLost ssl) {
+            Log.emptyCatchBlock(ssl);
           } catch (Exception e) {
             Log.getLogger().log(Level.SEVERE, 
                                 "Heartbeat thread died - can't survive the heart for long...",
