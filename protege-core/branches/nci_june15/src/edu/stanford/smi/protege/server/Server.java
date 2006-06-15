@@ -30,6 +30,7 @@ import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.plugin.ProjectPluginManager;
 import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
+import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
@@ -254,7 +255,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return _sessions.contains(session);
     }
 
-    public RemoteServerProject openProject(String projectName, RemoteSession session) {
+    public RemoteServerProject openProject(String projectName, RemoteSession session) 
+    throws ServerSessionLost {
         ServerProject serverProject = null;
         Project p = getOrCreateProject(projectName);
         if (p != null) {
@@ -268,7 +270,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return serverProject;
     }
 
-    private void recordConnection(RemoteSession session, ServerProject project) {
+    private void recordConnection(RemoteSession session, ServerProject project) 
+    throws ServerSessionLost {
         // Log.enter(this, "recordConnection", session, project);
         Collection<ServerProject> projects = _sessionToProjectsMap.get(session);
         if (projects == null) {
@@ -279,7 +282,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         project.register(session);
     }
 
-    private void recordDisconnection(RemoteSession session, RemoteServerProject project) {
+    private void recordDisconnection(RemoteSession session, RemoteServerProject project) 
+    throws ServerSessionLost {
         // Log.enter(this, "recordDisconnection", session, project);
         Collection<ServerProject> projects =  _sessionToProjectsMap.get(session);
         projects.remove(project);
@@ -310,7 +314,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return _baseURI.resolve(name);
     }
 
-    public void disconnectFromProject(RemoteServerProject serverProject, RemoteSession session) {
+    public void disconnectFromProject(RemoteServerProject serverProject, RemoteSession session) 
+    throws ServerSessionLost {
         recordDisconnection(session, serverProject);
     }
 
@@ -518,5 +523,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private void stopProjectUpdateThread() {
         _updateThread = null;
+    }
+    
+    public void setFrameCalculatorDisabled(boolean disabled) {
+      for (ServerProject sp : _projectToServerProjectMap.values()) {
+        sp.setFrameCalculatorDisabled(disabled);
+      }
     }
 }
