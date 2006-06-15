@@ -3,8 +3,8 @@ package edu.stanford.smi.protege.model.framestore;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
+import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.util.CacheMap;
-import edu.stanford.smi.protege.util.exceptions.TransactionException;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
