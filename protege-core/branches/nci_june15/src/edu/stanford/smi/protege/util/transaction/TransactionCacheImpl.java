@@ -2,9 +2,9 @@ package edu.stanford.smi.protege.util.transaction;
 
 import java.util.logging.Level;
 
+import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 public class TransactionCacheImpl<V, R> extends TransactionCache<V, R> {
   private TransactionMonitor transactionMonitor;
