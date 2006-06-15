@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 
 /**
  * This class is a central repository of the server properties.
@@ -27,6 +29,7 @@ public class ServerProperties {
   public static final String DELAY_MSEC = "server.delay";
   public static final String MIN_PRELOAD_FRAMES = "preload.frame.limit";
   public static final String DISABLE_HEARTBEAT = "server.disable.heartbeat";
+  public static final String TX_LEVEL = "transaction.level";
 
   public static Set<String> preloadUserFrames() {
     return getStringSet(ServerProperties.USER_PRELOAD);
@@ -58,6 +61,20 @@ public class ServerProperties {
   
   public static int minimumPreloadedFrames() {
     return Integer.getInteger(MIN_PRELOAD_FRAMES, 5000).intValue();
+  }
+  
+  public static TransactionIsolationLevel getDefaultTransactionIsolationLevel() {
+    String levelAsString = System.getProperty(TX_LEVEL);
+    if (levelAsString == null) { 
+      return null;
+    }
+    for (TransactionIsolationLevel level : TransactionIsolationLevel.values()) {
+      if (levelAsString.equals(level.toString())) {
+        return level;
+      }
+    }
+    Log.getLogger().warning("transaction level " + levelAsString + " does not match any of the available levels");
+    return null;
   }
   
 }
