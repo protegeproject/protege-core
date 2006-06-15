@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Frame;
@@ -20,7 +21,6 @@ import edu.stanford.smi.protege.test.APITestCase;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.LockStepper;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.exceptions.TransactionException;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
