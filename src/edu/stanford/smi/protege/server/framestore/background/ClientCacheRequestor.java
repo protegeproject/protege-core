@@ -25,6 +25,7 @@ public class ClientCacheRequestor {
   
   public ClientCacheRequestor(RemoteServerFrameStore delegate, RemoteSession session) {
     this.delegate = delegate;
+    this.session = session;
   }
   
   public void requestFrameValues(Set<Frame> frames, boolean skipDirectInstances) {
