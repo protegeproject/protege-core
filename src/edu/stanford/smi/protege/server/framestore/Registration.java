@@ -20,6 +20,8 @@ public class Registration {
     private List<AbstractEvent> transactionEvents = new ArrayList<AbstractEvent>();
     private List<ValueUpdate> rollbacks = new ArrayList<ValueUpdate>();
     private List<ValueUpdate> commits = new ArrayList<ValueUpdate>();
+    private long lastHeartbeat = 0;
+
 
     public Registration(FifoWriter<AbstractEvent> events,
                         FifoWriter<ValueUpdate> updates) {
@@ -59,5 +61,14 @@ public class Registration {
       commits = new ArrayList<ValueUpdate>();
       transactionEvents = new ArrayList<AbstractEvent>();
     }
+    
+    public long getLastHeartbeat() {
+      return lastHeartbeat;
+    }
+
+    public void setLastHeartbeat(long lastHeartbeat) {
+      this.lastHeartbeat = lastHeartbeat;
+    }
+
 
 }
