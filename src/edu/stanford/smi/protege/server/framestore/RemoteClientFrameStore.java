@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Facet;
@@ -55,7 +56,6 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
-import edu.stanford.smi.protege.util.exceptions.TransactionException;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
@@ -112,78 +112,7 @@ public class RemoteClientFrameStore implements FrameStore {
     
     private RemoteClientStatsImpl stats = new RemoteClientStatsImpl();
 
-    public String getName() {
-        return getClass().getName();
-    }
-
-    public RemoteServerFrameStore getRemoteDelegate() {
-        if (proxiedDelegate == null) {
-          fixLoader();
-          InvocationHandler invoker = new InvocationHandler() {
-
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-              fixLoader();
-              if (!method.equals(getEventsMethod)) {
-                busyFlag = true;
-              }
-              try {
-                return method.invoke(remoteDelegate, args);
-              } catch (InvocationTargetException ite) { 
-                throw ite.getCause();
-              } finally {
-                busyFlag = false;
-                quiescenceStarted = System.currentTimeMillis();
-              }
-            }
-            
-          };
-          proxiedDelegate = (RemoteServerFrameStore) Proxy.newProxyInstance(kb.getClass().getClassLoader(), 
-                                                                            new Class[] {RemoteServerFrameStore.class}, 
-                                                                            invoker);
-        }
-        return proxiedDelegate;
-    }
-    
-    public Map<RemoteSession, Boolean> getUserInfo() {
-      try {
-        return getRemoteDelegate().getUserInfo();
-      } catch (RemoteException re) {
-        Log.getLogger().log(Level.WARNING, "Exception caught retrieving user data from remote server", re);
-        return new HashMap<RemoteSession, Boolean>();
-      }
-    }
-    
-    public FrameCalculatorStats getServerStats() {
-      try {
-        return getRemoteDelegate().getStats();
-      } catch (RemoteException re) {
-        return null;
-      }
-    }
-    
-    public RemoteClientStats getClientStats() {
-      return stats;
-    }
-
-    public static boolean isBusy() {
-      boolean busy = (busyFlag || System.currentTimeMillis() <= quiescenceStarted + quiescenceInterval);
-      if (log.isLoggable(Level.FINEST)) {
-        log.finest("Checking busy flag = " + busy);
-      }
-      return busy;
-    }
-
-    private void fixLoader() {
-        ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
-        ClassLoader correctLoader = kb.getClass().getClassLoader();
-        if (currentLoader != correctLoader) {
-            if (log.isLoggable(Level.FINEST)) {
-              Log.getLogger().finest("Changing loader from " + currentLoader + " to " + correctLoader);
-            }
-            Thread.currentThread().setContextClassLoader(correctLoader);
-        }
-    }
-
+ 
     public RemoteClientFrameStore(String host, 
                                   String user, 
                                   String password, 
@@ -197,9 +126,7 @@ public class RemoteClientFrameStore implements FrameStore {
             RemoteServerProject project = server.openProject(projectName, session);
             remoteDelegate = project.getDomainKbFrameStore(session);
             this.kb = kb;
-            nameSlot = getSystemFrames().getNameSlot();
-            cacheRequestor = new ClientCacheRequestor(remoteDelegate, session);
-            preload(preloadAll);
+            initialize(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
             log.log(Level.FINE, "Exception caught", e);
@@ -214,14 +141,113 @@ public class RemoteClientFrameStore implements FrameStore {
             this.session = session;
             this.kb = kb;
             this.remoteDelegate = delegate;
-            nameSlot = getSystemFrames().getNameSlot();
-            cacheRequestor = new ClientCacheRequestor(remoteDelegate, session);
-            preload(preloadAll);
+            initialize(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
             log.log(Level.FINE, "Exception caught", e);
         }
     }
+
+    public void initialize(boolean preloadAll) throws RemoteException {
+      nameSlot = getSystemFrames().getNameSlot();
+      cacheRequestor = new ClientCacheRequestor(remoteDelegate, session);
+      startHeartbeatThread();
+      preload(preloadAll);
+    }
+    
+    public void startHeartbeatThread() {
+      if (ServerProperties.heartbeatDisabled()) {
+        return;
+      }
+      new Thread("Heartbeat thread [" + kb + "]") {
+        public void run() {
+          try {
+            while (true) {
+              getRemoteDelegate().heartBeat(session);
+              Thread.sleep(RemoteServerFrameStore.HEARTBEAT_POLL_INTERVAL);
+            }
+          } catch (Exception e) {
+            Log.getLogger().log(Level.SEVERE, 
+                                "Heartbeat thread died - can't survive the heart for long...",
+                                e);
+          }
+        }
+      }.start();
+    }
+    
+    
+    public String getName() {
+      return getClass().getName();
+  }
+
+  public RemoteServerFrameStore getRemoteDelegate() {
+      if (proxiedDelegate == null) {
+        fixLoader();
+        InvocationHandler invoker = new InvocationHandler() {
+
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            fixLoader();
+            if (!method.equals(getEventsMethod)) {
+              busyFlag = true;
+            }
+            try {
+              return method.invoke(remoteDelegate, args);
+            } catch (InvocationTargetException ite) { 
+              throw ite.getCause();
+            } finally {
+              busyFlag = false;
+              quiescenceStarted = System.currentTimeMillis();
+            }
+          }
+          
+        };
+        proxiedDelegate = (RemoteServerFrameStore) Proxy.newProxyInstance(kb.getClass().getClassLoader(), 
+                                                                          new Class[] {RemoteServerFrameStore.class}, 
+                                                                          invoker);
+      }
+      return proxiedDelegate;
+  }
+  
+  public Map<RemoteSession, Boolean> getUserInfo() {
+    try {
+      return getRemoteDelegate().getUserInfo();
+    } catch (RemoteException re) {
+      Log.getLogger().log(Level.WARNING, "Exception caught retrieving user data from remote server", re);
+      return new HashMap<RemoteSession, Boolean>();
+    }
+  }
+  
+  public FrameCalculatorStats getServerStats() {
+    try {
+      return getRemoteDelegate().getStats();
+    } catch (RemoteException re) {
+      return null;
+    }
+  }
+  
+  public RemoteClientStats getClientStats() {
+    return stats;
+  }
+
+  public static boolean isBusy() {
+    boolean busy = (busyFlag || System.currentTimeMillis() <= quiescenceStarted + quiescenceInterval);
+    if (log.isLoggable(Level.FINEST)) {
+      log.finest("Checking busy flag = " + busy);
+    }
+    return busy;
+  }
+
+  private void fixLoader() {
+      ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
+      ClassLoader correctLoader = kb.getClass().getClassLoader();
+      if (currentLoader != correctLoader) {
+          if (log.isLoggable(Level.FINEST)) {
+            Log.getLogger().finest("Changing loader from " + currentLoader + " to " + correctLoader);
+          }
+          Thread.currentThread().setContextClassLoader(correctLoader);
+      }
+  }
+
 
     public void setDelegate(FrameStore delegate) {
         throw new UnsupportedOperationException();
