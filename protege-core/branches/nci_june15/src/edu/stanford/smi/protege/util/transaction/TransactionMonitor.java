@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.exceptions.TransactionException;
 
 
 /**
