@@ -697,7 +697,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
               try {
                 while (_eventThread == this) {
                     try {
-                        pollForEvents();
+                        getEventsAndDispatch();
                         //ESCA-JAVA0087 
                         Thread.sleep(DELAY_MSEC);
                     } catch (Exception e) {
@@ -715,7 +715,8 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         _eventThread.start();
     }
 
-    private void pollForEvents() throws InvocationTargetException, InterruptedException {
+    public synchronized void getEventsAndDispatch() 
+    throws InvocationTargetException, InterruptedException {
         final Collection events = getDelegate().getEvents();
         if (!events.isEmpty()) {
             SwingUtilities.invokeAndWait(new Runnable() {
