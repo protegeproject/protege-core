@@ -26,6 +26,7 @@ public class ServerProperties {
   public static final String SKIP_PRELOAD = "server.client.preload.skip";
   public static final String DELAY_MSEC = "server.delay";
   public static final String MIN_PRELOAD_FRAMES = "preload.frame.limit";
+  public static final String DISABLE_HEARTBEAT = "server.disable.heartbeat";
 
   public static Set<String> preloadUserFrames() {
     return getStringSet(ServerProperties.USER_PRELOAD);
@@ -36,7 +37,7 @@ public class ServerProperties {
     Set<String> values = new HashSet<String>();
     boolean noMoreValues = false;
     for (int i = 0; !noMoreValues; i++) {
-      String value = ApplicationProperties.getString(property + i);
+      String value = System.getProperty(property + i);
       if (value == null) {
         noMoreValues = true;
       } else {
@@ -44,6 +45,11 @@ public class ServerProperties {
       }
     }
     return values;
+  }
+  
+  public static boolean heartbeatDisabled() {
+    return Boolean.getBoolean(DISABLE_HEARTBEAT);
+    
   }
   
   public static int delayInMilliseconds() {
