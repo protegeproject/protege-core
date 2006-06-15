@@ -15,10 +15,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class RobustConnection {
@@ -95,6 +97,10 @@ public class RobustConnection {
 
     private void setupConnection() throws SQLException {
         _connection = DriverManager.getConnection(_url, _username, _password);
+        TransactionIsolationLevel defaultLevel = ServerProperties.getDefaultTransactionIsolationLevel();
+        if (defaultLevel != null) {
+          _connection.setTransactionIsolation(defaultLevel.getJdbcLevel());
+        }
     }
 
     public void close() throws SQLException {
