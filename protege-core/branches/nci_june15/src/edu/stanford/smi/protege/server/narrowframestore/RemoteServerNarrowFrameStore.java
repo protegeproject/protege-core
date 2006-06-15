@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
@@ -14,7 +15,6 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.util.exceptions.TransactionException;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
