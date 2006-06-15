@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
@@ -20,11 +21,13 @@ import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStat
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.util.AbstractEvent;
-import edu.stanford.smi.protege.util.exceptions.TransactionException;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 
 public interface RemoteServerFrameStore extends Remote {
   
+    public static final long HEARTBEAT_POLL_INTERVAL=3000;  // 15 seconds
+    public static final long HEARTBEAT_CLIENT_DIED = 8 * HEARTBEAT_POLL_INTERVAL;
+
     Map<RemoteSession, Boolean> getUserInfo() throws RemoteException;
     
     FrameCalculatorStats getStats() throws RemoteException;
@@ -199,4 +202,6 @@ public interface RemoteServerFrameStore extends Remote {
    * @return true if transactions are supported
    */
     boolean setTransactionIsolationLevel(TransactionIsolationLevel level) throws TransactionException, RemoteException;
+
+    void heartBeat(RemoteSession session) throws RemoteException;
 }
