@@ -20,6 +20,7 @@ import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
+import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.narrowframestore.RemoteClientInvocationHandler;
 import edu.stanford.smi.protege.server.narrowframestore.RemoteServerNarrowFrameStore;
 import edu.stanford.smi.protege.util.Log;
@@ -162,6 +163,8 @@ public class RemoteClientProject extends Project {
     private void attemptClose() {
         try {
             _serverProject.close(_session);
+        } catch (ServerSessionLost ssl) {
+          Log.getLogger().info("Session disconnected");
         } catch (java.rmi.RemoteException e) {
             Log.getLogger().warning(e.toString());
         }
