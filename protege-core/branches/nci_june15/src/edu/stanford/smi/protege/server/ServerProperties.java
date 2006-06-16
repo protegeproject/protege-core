@@ -51,8 +51,9 @@ public class ServerProperties {
   }
   
   public static boolean heartbeatDisabled() {
-    return Boolean.getBoolean(DISABLE_HEARTBEAT);
-    
+    // disabled for now.
+    // return Boolean.getBoolean(DISABLE_HEARTBEAT);
+    return true;
   }
   
   public static int delayInMilliseconds() {
