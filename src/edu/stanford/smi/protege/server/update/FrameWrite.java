@@ -31,19 +31,6 @@ public class FrameWrite extends SftUpdate implements Localizable {
   }
   
   public String toString() {
-    String result = "Write[" + super.toString() + " -> (";
-    if (values == null) {
-      return result + "null)]";
-    }
-    int index = 0;
-    for (Object value : values) {
-      if (index == 2) {
-        break;
-      }
-      result = result + value + ",";
-      index++;
-    }
-    result = result + "...)]";
-    return result;
+    return "Write[" + super.toString() + " -> (" + FrameRead.printList(values) + ")]";
   }
 }
