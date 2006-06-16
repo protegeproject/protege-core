@@ -1046,7 +1046,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             for (ValueUpdate vu : registration.getCommits()) {
               ValueUpdate invalid = vu.getInvalidatingVariant();
               if (invalid != null) {
-                _updateWriter.write(vu);
+                _updateWriter.write(invalid);
               }
             }
           }
