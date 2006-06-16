@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.util;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import junit.framework.AssertionFailedError;
 
@@ -15,6 +16,7 @@ import junit.framework.AssertionFailedError;
  *
  */
 public class LockStepper<X extends Enum> {
+  private static transient Logger log = Log.getLogger(LockStepper.class);
 
   private X testStage;
   private Object lock = new Object();
@@ -44,6 +46,9 @@ public class LockStepper<X extends Enum> {
       if (passedObject instanceof AssertionFailedError) {
         Assert.fail("Exception in alternate thread - see logs...");
       }
+      if  (log.isLoggable(Level.FINE)) {
+        log.fine("Wait for state " + stage + " complete");
+      }
       return passedObject;
     }
   }
@@ -53,6 +58,9 @@ public class LockStepper<X extends Enum> {
       testStage = stage;
       passedObject = o;
       lock.notifyAll();
+    }
+    if (log.isLoggable(Level.FINE)) {
+      log.fine("Achieved state " + stage);
     }
   }
   
