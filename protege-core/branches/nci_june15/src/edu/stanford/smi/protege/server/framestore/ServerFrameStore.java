@@ -107,7 +107,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private boolean _isDirty;
     private final Object _kbLock;
 
-    private Slot nameSlot;
     private Facet valuesFacet;
 
     private static Map<Thread,RemoteSession> sessionMap = new HashMap<Thread, RemoteSession>();
@@ -131,7 +130,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         transactionMonitor = delegate.getTransactionStatusMonitor();
         kb.setDispatchEventsEnabled(false);
         serverMode();
-        nameSlot = _kb.getSystemFrames().getNameSlot();
         valuesFacet = _kb.getSystemFrames().getValuesFacet();
         frameCalculator = new FrameCalculator(_delegate, 
                                               _kbLock, 
@@ -143,33 +141,38 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             //used for simulating slow network response time
             Log.getLogger().config("Simulated delay of " + ServerProperties.delayInMilliseconds() + " msec/call");
         }
-        if (!ServerProperties.heartbeatDisabled()) {
-          new Thread("Heartbeat checker [" + kb + "]") {
-            public void run() {
-              try {
-                while (true) {
-                  Thread.sleep(RemoteServerFrameStore.HEARTBEAT_POLL_INTERVAL);
-                  long now = System.currentTimeMillis();
-                  synchronized (_kbLock) {
-                    for (Map.Entry<RemoteSession, Registration> entry 
-                        : _sessionToRegistrationMap.entrySet()) {
-                      Registration registration = entry.getValue();
-                      long lastHeartbeat = registration.getLastHeartbeat();
-                      if (lastHeartbeat != 0 &&  // don't kill the client before the first heartbeat
-                          lastHeartbeat <= now - RemoteServerFrameStore.HEARTBEAT_CLIENT_DIED) {
-                        RemoteSession session = entry.getKey();
-                        Log.getLogger().info("Session disconnected because of timeout");
-                        deregister(session);
-                      }
+        // disabled for now.
+        startHeartbeatThread(_kb.toString());
+    }
+    
+    private void startHeartbeatThread(String name) {
+      if (!ServerProperties.heartbeatDisabled()) {
+        new Thread("Heartbeat checker [" + name + "]") {
+          public void run() {
+            try {
+              while (true) {
+                Thread.sleep(RemoteServerFrameStore.HEARTBEAT_POLL_INTERVAL);
+                long now = System.currentTimeMillis();
+                synchronized (_kbLock) {
+                  for (Map.Entry<RemoteSession, Registration> entry 
+                      : _sessionToRegistrationMap.entrySet()) {
+                    Registration registration = entry.getValue();
+                    long lastHeartbeat = registration.getLastHeartbeat();
+                    if (lastHeartbeat != 0 &&  // don't kill the client before the first heartbeat
+                        lastHeartbeat <= now - RemoteServerFrameStore.HEARTBEAT_CLIENT_DIED) {
+                      RemoteSession session = entry.getKey();
+                      Log.getLogger().info("Session disconnected because of timeout");
+                      deregister(session);
                     }
                   }
                 }
-              } catch (Exception e) {
-                Log.getLogger().log(Level.WARNING, "Heartbeat thread died", e);
               }
+            } catch (Exception e) {
+              Log.getLogger().log(Level.WARNING, "Heartbeat thread died", e);
             }
-          }.start();
-        }
+          }
+        }.start();
+      }
     }
     
     public Map<RemoteSession, Boolean> getUserInfo() {
