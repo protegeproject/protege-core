@@ -19,4 +19,8 @@ public class FrameEvaluationCompleted extends ValueUpdate implements Localizable
     return null;
   }
   
+  public String toString() {
+    return "Completed[" + super.toString() + "]";
+  }
+  
 }

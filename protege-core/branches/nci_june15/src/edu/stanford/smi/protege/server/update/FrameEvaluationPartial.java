@@ -17,5 +17,9 @@ public class FrameEvaluationPartial extends ValueUpdate {
   public ValueUpdate getInvalidatingVariant() {
     return null;
   }
+  
+  public String toString() {
+    return "CannotComplete[" + super.toString() + "]";
+  }
 
 }
