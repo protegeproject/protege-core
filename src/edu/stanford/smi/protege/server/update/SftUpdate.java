@@ -42,5 +42,9 @@ public class SftUpdate extends ValueUpdate implements Localizable {
     return new InvalidateCacheUpdate(getFrame(), slot, facet, isTemplate);
   }
   
+  public String toString() {
+    return "[" + super.toString() + ", " + slot + ", " + facet + ", " + isTemplate + "]";
+  }
+  
 
 }

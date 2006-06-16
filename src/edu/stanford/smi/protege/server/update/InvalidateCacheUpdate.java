@@ -21,5 +21,9 @@ public class InvalidateCacheUpdate extends SftUpdate {
   public InvalidateCacheUpdate(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
     super(frame, slot, facet, isTemplate);
   }
+  
+  public String toString() {
+    return "Invalidate["+ super.toString() + "]";
+  }
 
 }
