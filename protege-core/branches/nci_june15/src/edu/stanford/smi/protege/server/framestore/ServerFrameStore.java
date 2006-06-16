@@ -93,6 +93,7 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class ServerFrameStore extends UnicastRemoteObject implements RemoteServerFrameStore {
     private static transient Logger log = Log.getLogger(ServerFrameStore.class);
+    public static final transient Logger cacheLog = Logger.getLogger("org.protege.client.cache");
   
     private FrameStore _delegate;
     private KnowledgeBase _kb;
@@ -100,7 +101,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private TransactionMonitor transactionMonitor;
     
     private FifoWriter<AbstractEvent> _eventWriter = new FifoWriter<AbstractEvent>();
+    {
+      _eventWriter.setLogger(cacheLog, "New Event");
+    }
     private FifoWriter<ValueUpdate> _updateWriter = new FifoWriter<ValueUpdate>();
+    {
+      _updateWriter.setLogger(cacheLog, "ValueUpdate");
+    }
     
     private Map<RemoteSession, Registration> _sessionToRegistrationMap 
       = new HashMap<RemoteSession, Registration>();
@@ -1350,12 +1357,22 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                          boolean isTemplate, 
                                          List values) {
       updateEvents(session);
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("Cacheing read values for session " + session);
+        cacheLog.fine("Read[" + frame + ", " + slot + ", " + facet + ", " + isTemplate + " -> " + values);
+      }
       TransactionIsolationLevel level  = getTransactionIsolationLevel();
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("Transaction Isolation Level = " + level);
+      }
       if (level == null) {
         return;  // no caching can be done
       }
       SftUpdate vu = new FrameRead(frame, slot, facet, isTemplate, values);
       if (inTransaction() && level.compareTo(TransactionIsolationLevel.REPEATABLE_READ) >= 0) {
+        if (cacheLog.isLoggable(Level.FINE)) {
+          cacheLog.fine("Repeatable Read ==> session only");
+        }
         vu.setClient(session);
         vu.setTransactionScope(true);
       }
@@ -1369,8 +1386,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                             boolean isTemplate,
                                             List values) {
       updateEvents(session);
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("Cacheing written values for session " + session);
+        cacheLog.fine("Read[" + frame + ", " + slot + ", " + facet + ", " + isTemplate + " -> " + values);
+      }
       TransactionIsolationLevel level = getTransactionIsolationLevel();
       Registration registration = _sessionToRegistrationMap.get(session);
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("Transaction Isolation Level = " + level);
+      }
       if (level  == null) {
         InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
         _updateWriter.write(invalid);
@@ -1382,6 +1406,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       SftUpdate vu = new FrameWrite(frame, slot, facet, isTemplate, values);
       if (!updatesSeenByUntransactedClients(level)) {
+        if (cacheLog.isLoggable(Level.FINE)) {
+          cacheLog.fine("Update is transaction scope and specific to this client");
+        }
         vu.setClient(session);
         vu.setTransactionScope(true);
       }
@@ -1397,8 +1424,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                                 boolean isTemplate) {
       RemoteSession session = getCurrentSession();
       updateEvents(session);
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("Cacheing unknown values for session " + session);
+        cacheLog.fine("Read[" + frame + ", " + slot + ", " + facet + ", " + isTemplate + " -> ??");
+      }
       TransactionIsolationLevel level = getTransactionIsolationLevel();
       Registration registration = _sessionToRegistrationMap.get(session);
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("Transaction Isolation Level = " + level);
+      }
       if (level == null) {
         _updateWriter.write(new InvalidateCacheUpdate(frame, slot, facet, isTemplate));
         if (inTransaction()) {
@@ -1411,6 +1445,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       SftUpdate vu = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
       if (!updatesSeenByUntransactedClients(level)) {
+        if (cacheLog.isLoggable(Level.FINE)) {
+          log.fine("Update is transaction scope and is only seen by the session");
+        }
         vu.setClient(session);
         vu.setTransactionScope(true);
       }

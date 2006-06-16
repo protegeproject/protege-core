@@ -68,7 +68,8 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
  */
 
 public class RemoteClientFrameStore implements FrameStore {
-    private static Logger log = Log.getLogger(RemoteClientFrameStore.class);
+    private static transient Logger log = Log.getLogger(RemoteClientFrameStore.class);
+    private static transient Logger cacheLog = ServerFrameStore.cacheLog;
     
     private static Method getEventsMethod;
     static {
@@ -1586,11 +1587,12 @@ public class RemoteClientFrameStore implements FrameStore {
                                 Facet facet,
                                 boolean isTemplate,
                                 List values) {
-      if (log.isLoggable(Level.FINER)) {
-        log.finer("Client Received value for frame " + frame.getFrameID() + 
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("Client Received value for frame " + frame.getFrameID() + 
                   " slot " + slot.getFrameID() + " facet " + 
                   (facet == null ? "null" : "" + facet.getFrameID()) + 
                   " is template " + isTemplate);
+        cacheLog.fine("Transaction Scope = " + isTransactionScope);
       }
       synchronized (cache) {
         Map<Frame, Map<Sft,List>> workingCache = isTransactionScope ? sessionCache : cache;
@@ -1606,8 +1608,8 @@ public class RemoteClientFrameStore implements FrameStore {
             slot.equals(nameSlot) &&
             !isTransactionScope) {
           if (values != null && !values.isEmpty()) {
-            if (log.isLoggable(Level.FINE)) {
-              log.fine("frame " + frame.getFrameID() + " has name " + values.get(0));
+            if (cacheLog.isLoggable(Level.FINE)) {
+              cacheLog.fine("frame " + frame.getFrameID() + " has name " + values.get(0));
             }
             frameNameToFrameMap.put((String) values.get(0), frame);
           }
@@ -1622,11 +1624,12 @@ public class RemoteClientFrameStore implements FrameStore {
                                        Facet facet,
                                        boolean isTemplate,
                                        boolean remove) {
-      if (log.isLoggable(Level.FINE)) {
-        log.fine("making invalid cache entry for frame " +
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("making invalid cache entry for frame " +
                  frame.getFrameID() + " slot " + slot.getFrameID() +
                  " facet " + (facet == null ? "null" : facet.toString()) +
                  " isTemplate " + isTemplate + " remove flag " + remove);
+        cacheLog.fine("Transaction Scope = " + isTransactionScope);
       }
       synchronized (cache) {
         Map<Frame, Map<Sft, List>> workingCache = isTransactionScope ? sessionCache : cache;
@@ -1646,10 +1649,13 @@ public class RemoteClientFrameStore implements FrameStore {
             if (values != null && !values.isEmpty()) {
               String name = (String) values.get(0);
               frameNameToFrameMap.remove(name);
+              if (cacheLog.isLoggable(Level.FINE)) {
+                cacheLog.fine("Flushing name also " + name);
+              }
             }
           }
-          if (log.isLoggable(Level.FINE)) {
-            log.fine("Status = " + status);
+          if (cacheLog.isLoggable(Level.FINE)) {
+            cacheLog.fine("Cache Completion Status = " + status);
           }
           if (!remove && (isTransactionScope || status != null)) {
             slotValueMap.put(lookupSft, null);
@@ -1661,9 +1667,16 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
   private void removeCachedUpdate(boolean isTransactionScope, Frame frame) {
+    if (cacheLog.isLoggable(Level.FINE)) {
+      cacheLog.fine("Removing cache entry for " + frame.getFrameID());
+      cacheLog.fine("Transaction Scope = " + isTransactionScope);
+    }
     Sft lookup = new Sft(nameSlot, null, false);
     if (cache.get(frame) != null && cache.get(frame).get(lookup) != null) {
       String name = (String) cache.get(frame).get(lookup).get(0);
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("\tName too (" + name + ")");
+      }
       frameNameToFrameMap.remove(name);
     }
     Map<Frame, Map<Sft, List>> workingCache = isTransactionScope ? sessionCache : cache;
@@ -1680,30 +1693,33 @@ public class RemoteClientFrameStore implements FrameStore {
   }
   
   private void processValueUpdate(List<ValueUpdate> updates) {
-    if (log.isLoggable(Level.FINE)) {
-      log.fine("received " + updates.size() + " value updates");
+    if (cacheLog.isLoggable(Level.FINE)) {
+      cacheLog.fine("received " + updates.size() + " value updates");
     }
     synchronized (cache) {
       for (ValueUpdate vu : updates) {
+        if (cacheLog.isLoggable(Level.FINE)) {
+          cacheLog.fine("Client Processing event " + vu);
+        }
         boolean isTransactionScope = vu.isTransactionScope();
         Map<Frame, Map<Sft, List>> workingCache = isTransactionScope ? sessionCache : cache;
         Frame frame = vu.getFrame();
         if (vu instanceof FrameEvaluationStarted) {
-          if (log.isLoggable(Level.FINE)) {
-            log.fine("Started caching for frame" + frame.getFrameID());  
+          if (cacheLog.isLoggable(Level.FINE)) {
+            cacheLog.fine("Started caching for frame" + frame.getFrameID());  
           }
           cacheStatus.put(frame, CacheStatus.STARTED_CACHING);
         } else if (vu instanceof FrameEvaluationCompleted) {
           CacheStatus status = cacheStatus.get(frame);
           if (status != null && status == CacheStatus.STARTED_CACHING) {
-            if (log.isLoggable(Level.FINE)) {
-              log.fine("Completed caching for " + frame.getFrameID());
+            if (cacheLog.isLoggable(Level.FINE)) {
+              cacheLog.fine("Completed caching for " + frame.getFrameID());
             }
             cacheStatus.put(frame, CacheStatus.COMPLETED_CACHING);
           }
         } else if (vu instanceof FrameEvaluationPartial) {
-          if (log.isLoggable(Level.FINE)) {
-            log.fine("Aborted full cache for " + frame.getFrameID());
+          if (cacheLog.isLoggable(Level.FINE)) {
+            cacheLog.fine("Aborted full cache for " + frame.getFrameID());
           }
           cacheStatus.remove(frame);
         } else if (vu instanceof RemoveFrameCache) {
@@ -1719,6 +1735,9 @@ public class RemoteClientFrameStore implements FrameStore {
           } catch (TransactionException te) {
             Log.getLogger().log(Level.WARNING, "Error handling cache update", te);
             level = null;
+          }
+          if (cacheLog.isLoggable(Level.FINE)) {
+            cacheLog.fine("Transaction Isolation Level = " + level);
           }
           if (level == null && vu instanceof FrameRead) {
             invalidateCachedEntry(false, frame, slot, facet, isTemplate, false);
@@ -1742,6 +1761,9 @@ public class RemoteClientFrameStore implements FrameStore {
   }
   
   public void flushCache() {
+    if (cacheLog.isLoggable(Level.FINE)) {
+      cacheLog.fine("Flushing client cache");
+    }
     synchronized (cache) {
       cacheStatus.clear();
       cache.clear();
