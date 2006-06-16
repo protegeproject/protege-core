@@ -47,7 +47,7 @@ import edu.stanford.smi.protege.util.Log;
 public class EventDispatchFrameStore extends ModificationFrameStore {
     private static transient Logger log = Log.getLogger(EventDispatchFrameStore.class);
     //ESCA-JAVA0077 
-    private static final int DELAY_MSEC = 5 * 1000;
+    public static final int DELAY_MSEC = 5 * 1000;
     private Map _listeners = new HashMap();
     private Thread _eventThread;
 
