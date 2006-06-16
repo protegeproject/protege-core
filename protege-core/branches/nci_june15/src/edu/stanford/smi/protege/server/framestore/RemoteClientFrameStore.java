@@ -89,7 +89,6 @@ public class RemoteClientFrameStore implements FrameStore {
 
     private Slot nameSlot;
     
-    private ClientCacheRequestor cacheRequestor;
 
     private enum CacheStatus {
       STARTED_CACHING, COMPLETED_CACHING
@@ -148,7 +147,6 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public void initialize(boolean preloadAll) throws RemoteException {
       nameSlot = getSystemFrames().getNameSlot();
-      cacheRequestor = new ClientCacheRequestor(remoteDelegate, session);
       // disabled for now - if we need we will try it.
       startHeartbeatThread();
       preload(preloadAll);
@@ -885,12 +883,10 @@ public class RemoteClientFrameStore implements FrameStore {
       if (missingClasses.isEmpty()) {
         return values;
       } else if (missingClasses.size() == 1) {
-        cacheRequestor.requestFrameValues(missingClasses, false);
         Cls subClass = (Cls) missingClasses.iterator().next();
         values.addAll(getDirectInstances(subClass));
         return values;
       } else {
-        cacheRequestor.requestFrameValues(missingClasses, false);
         try {
             RemoteResponse<Set> instances = getRemoteDelegate().getInstances(cls, session);
             localize(instances);
@@ -1287,158 +1283,11 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-
-    /**
-     * This routine assumes that the caller is holding the cache lock
-     */
-    private boolean isCached(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-      /*
-       * if the transaction isolation level is repeatable read, then we need to let the database know
-       * about all read operations.  A more complicated and optimized solution is possible if I start
-       * new cache's when the transaction starts.  Then the database will know about the first read but
-       * later reads will come from the cache.
-       */
-      synchronized (cache) {
-        Sft lookup = new Sft(slot, facet, isTemplate);
-        if (transactionNesting > 0) {
-          TransactionIsolationLevel level;
-          try {
-            level = getTransactionIsolationLevel();
-            if (level == null) {
-              stats.miss++;
-              return false;
-            }
-          } catch (TransactionException e) {
-            Log.getLogger().log(Level.WARNING, "Could not get transaction isolation level - caching disabled", e);
-            stats.miss++;
-            return false;
-          }
-          Map<Sft, List> sessionCachedValues = sessionCache.get(frame);
-          if (level.compareTo(TransactionIsolationLevel.REPEATABLE_READ) >= 0 &&
-              (sessionCachedValues == null || sessionCachedValues.get(lookup) == null)) {
-            stats.miss++;
-            return false;
-          }
-          if (level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0 &&
-              sessionCachedValues != null && sessionCachedValues.containsKey(lookup)) {
-            if (sessionCachedValues.get(lookup) == null) {
-              stats.miss++;
-              return false;
-            } else {
-              stats.hit++;
-              return true;
-            }
-          }
-        }
-        Map<Sft, List> m = cache.get(frame);
-        if (m == null) {
-          stats.miss++;
-          return false;
-        }
-        List values = m.get(lookup);
-        if (values != null) {
-          stats.hit++;
-          return  true;
-        } else {
-          boolean ret =  cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING 
-                            && !m.containsKey(lookup);
-          if  (ret) {
-            stats.hit++;
-          } else {
-            stats.miss++;
-          }
-          return ret;
-        }
-      }
-    }
-
-    private List readCache(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-      List result = null;
-      Sft lookup = new Sft(slot, facet, isTemplate);
-      if (transactionNesting > 0 && sessionCache.get(frame) != null) {
-        TransactionIsolationLevel level;
-        try {
-          level = getTransactionIsolationLevel();
-        } catch (TransactionException e) {
-          Log.getLogger().log(Level.WARNING, "Could not get transaction isolation level - caching disabled", e);
-          level = null;
-        }
-        if (level != null && level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0) {
-          result = sessionCache.get(frame).get(lookup);
-        }
-      }
-      if (result == null) {
-        result = cache.get(frame).get(lookup);
-      }
-      return result;
-    }
-
     private List getCacheDirectOwnSlotValues(Frame frame, Slot slot) throws RemoteException {
         return getCacheValues(frame, slot, null, false);
     }
 
-    /*
-     * This is the main routine for checking the cached data before going to the
-     * server.
-     */
-    private List getCacheValues(Frame frame, 
-                                Slot slot, 
-                                Facet facet, 
-                                boolean isTemplate) throws RemoteException {
-      List values = null;
-      if (isCached(frame, slot, facet, isTemplate)) {
-        synchronized (cache) {
-          values = readCache(frame, slot, facet, isTemplate);
-          /* not clear that this code actually helps?  Do some measurements.
-          if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES) && 
-              facet == null && !isTemplate) {
-            Set<Frame> subClasses = new HashSet<Frame>();
-            for (Object o : values) {
-              if (o instanceof Cls) {
-                Cls subCls = (Cls) o;
-                if (!isCached(subCls, slot, (Facet) null, false)) {
-                  subClasses.add(subCls);
-                }
-              }
-            }
-            cacheRequestor.requestFrameValues(subClasses, true);
-          }
-          */
-        }
-      } else {
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("cache miss for frame " + 
-              frame.getFrameID() + " slot " + slot.getFrameID() + 
-              (facet == null ? "null" : "" + facet.getFrameID()) +
-              " template " + isTemplate);
-        }
-        RemoteResponse<List> vu = null;
-        if (facet != null) {
-          if (isTemplate) {
-            vu = getRemoteDelegate().getDirectTemplateFacetValues((Cls) frame, 
-                                                                  slot, facet, 
-                                                                  session);
-          } else {
-            throw new UnsupportedOperationException(
-                                   "We don't cache this information...");
-          }
-        } else {
-          if (isTemplate) {
-            vu = getRemoteDelegate().getDirectTemplateSlotValues((Cls) frame, 
-                                                                 slot, session);
-          } else {
-            vu = getRemoteDelegate().getDirectOwnSlotValues(frame, slot, session);
-          }
-        }
-        localize(vu);
-        processValueUpdate(vu);
-        values = vu.getResponse();
-      }
-      if (values == null) {
-        values = new ArrayList();
-      }
-      return values;
-    }
+
     
     // -----------------------------------------------------------
 
@@ -1595,6 +1444,140 @@ public class RemoteClientFrameStore implements FrameStore {
     private Set getCacheDomain(Slot slot) throws RemoteException {
         return getCacheOwnSlotValueClosure(getDirectDomain(slot), getSystemFrames().getDirectSubclassesSlot());
     }
+    
+    
+    /*
+     * This is the main routine for checking the cached data before going to the
+     * server.
+     */
+    private List getCacheValues(Frame frame, 
+                                Slot slot, 
+                                Facet facet, 
+                                boolean isTemplate) throws RemoteException {
+      List values = null;
+      if (isCached(frame, slot, facet, isTemplate)) {
+        synchronized (cache) {
+          values = readCache(frame, slot, facet, isTemplate);
+        }
+      } else {
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("cache miss for frame " + 
+              frame.getFrameID() + " slot " + slot.getFrameID() + 
+              (facet == null ? "null" : "" + facet.getFrameID()) +
+              " template " + isTemplate);
+        }
+        RemoteResponse<List> vu = null;
+        if (facet != null) {
+          if (isTemplate) {
+            vu = getRemoteDelegate().getDirectTemplateFacetValues((Cls) frame, 
+                                                                  slot, facet, 
+                                                                  session);
+          } else {
+            throw new UnsupportedOperationException(
+                                   "We don't cache this information...");
+          }
+        } else {
+          if (isTemplate) {
+            vu = getRemoteDelegate().getDirectTemplateSlotValues((Cls) frame, 
+                                                                 slot, session);
+          } else {
+            vu = getRemoteDelegate().getDirectOwnSlotValues(frame, slot, session);
+          }
+        }
+        localize(vu);
+        processValueUpdate(vu);
+        values = vu.getResponse();
+      }
+      if (values == null) {
+        values = new ArrayList();
+      }
+      return values;
+    }
+    
+    /**
+     * This routine assumes that the caller is holding the cache lock
+     */
+    private boolean isCached(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+      /*
+       * if the transaction isolation level is repeatable read, then we need to let the database know
+       * about all read operations.  A more complicated and optimized solution is possible if I start
+       * new cache's when the transaction starts.  Then the database will know about the first read but
+       * later reads will come from the cache.
+       */
+      synchronized (cache) {
+        Sft lookup = new Sft(slot, facet, isTemplate);
+        if (transactionNesting > 0) {
+          TransactionIsolationLevel level;
+          try {
+            level = getTransactionIsolationLevel();
+            if (level == null) {
+              stats.miss++;
+              return false;
+            }
+          } catch (TransactionException e) {
+            Log.getLogger().log(Level.WARNING, "Could not get transaction isolation level - caching disabled", e);
+            stats.miss++;
+            return false;
+          }
+          Map<Sft, List> sessionCachedValues = sessionCache.get(frame);
+          if (level.compareTo(TransactionIsolationLevel.REPEATABLE_READ) >= 0 &&
+              (sessionCachedValues == null || sessionCachedValues.get(lookup) == null)) {
+            stats.miss++;
+            return false;
+          }
+          if (level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0 &&
+              sessionCachedValues != null && sessionCachedValues.containsKey(lookup)) {
+            if (sessionCachedValues.get(lookup) == null) {
+              stats.miss++;
+              return false;
+            } else {
+              stats.hit++;
+              return true;
+            }
+          }
+        }
+        Map<Sft, List> m = cache.get(frame);
+        if (m == null) {
+          stats.miss++;
+          return false;
+        }
+        List values = m.get(lookup);
+        if (values != null) {
+          stats.hit++;
+          return  true;
+        } else {
+          boolean ret =  cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING 
+                            && !m.containsKey(lookup);
+          if  (ret) {
+            stats.hit++;
+          } else {
+            stats.miss++;
+          }
+          return ret;
+        }
+      }
+    }
+
+    private List readCache(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+      List result = null;
+      Sft lookup = new Sft(slot, facet, isTemplate);
+      if (transactionNesting > 0 && sessionCache.get(frame) != null) {
+        TransactionIsolationLevel level;
+        try {
+          level = getTransactionIsolationLevel();
+        } catch (TransactionException e) {
+          Log.getLogger().log(Level.WARNING, "Could not get transaction isolation level - caching disabled", e);
+          level = null;
+        }
+        if (level != null && level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0) {
+          result = sessionCache.get(frame).get(lookup);
+        }
+      }
+      if (result == null) {
+        result = cache.get(frame).get(lookup);
+      }
+      return result;
+    }
 
 
     private void addCachedEntry(boolean isTransactionScope,
@@ -1685,6 +1668,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
     Map<Frame, Map<Sft, List>> workingCache = isTransactionScope ? sessionCache : cache;
     workingCache.remove(frame);
+    cacheStatus.remove(frame);
   }
 
   /*
