@@ -19,4 +19,8 @@ public class FrameEvaluationStarted extends ValueUpdate implements Localizable {
   public ValueUpdate getInvalidatingVariant() {
     return null;
   }
+  
+  public String toString() {
+    return "Started[" + super.toString() + "]";
+  }
 }
