@@ -43,7 +43,8 @@ public class SftUpdate extends ValueUpdate implements Localizable {
   }
   
   public String toString() {
-    return "[" + super.toString() + ", " + slot + ", " + facet + ", " + isTemplate + "]";
+    return "[" + super.toString() + ", " + slot.getFrameID() + ", " 
+              + (facet == null ? "null" : "" + facet.getFrameID()) + ", " + isTemplate + "]";
   }
   
 

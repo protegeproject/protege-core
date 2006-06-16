@@ -44,7 +44,7 @@ public abstract class ValueUpdate implements Localizable, Serializable {
   public abstract ValueUpdate getInvalidatingVariant();
   
   public String toString() {
-    return "ValueUpdate[" + frame + ", Client = " + client + ", Transaction(" + transactionScope + ")]";
+    return "ValueUpdate[" + frame.getFrameID() + ", Client = " + client + ", Transaction(" + transactionScope + ")]";
   }
 
 

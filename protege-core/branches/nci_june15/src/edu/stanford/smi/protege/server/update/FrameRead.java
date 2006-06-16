@@ -32,20 +32,14 @@ public class FrameRead extends SftUpdate implements Localizable {
   }
   
   public String toString() {
-    String result = "Read[" + super.toString() + " -> (";
-    if (values == null) {
-      return result + "null)]";
-    }
-    int index = 0;
-    for (Object value : values) {
-      if (index == 2) {
-        break;
-      }
-      result = result + value + ",";
-      index++;
-    }
-    result = result + "...)]";
-    return result;
+    return "Read[" + super.toString() + " -> (" + printList(values) + ")]";
   }
 
+  protected static String printList(List out) {
+    if (out == null) {
+      return "null";
+    } else {
+      return "List[" + out.size() + "]";
+    }
+  }
 }
