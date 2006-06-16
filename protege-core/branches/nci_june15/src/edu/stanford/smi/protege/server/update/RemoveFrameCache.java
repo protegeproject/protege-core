@@ -16,5 +16,9 @@ public class RemoveFrameCache extends ValueUpdate {
   public ValueUpdate getInvalidatingVariant() {
     return new RemoveFrameCache(getFrame());
   }
+  
+  public String toString() {
+    return "RemoveFrameCache[" + super.toString() + "]";
+  }
 
 }

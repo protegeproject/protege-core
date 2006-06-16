@@ -18,5 +18,9 @@ public class RemoveCacheUpdate extends SftUpdate {
   public RemoveCacheUpdate(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
     super(frame, slot, facet, isTemplate);
   }
+  
+  public String toString() {
+    return "RemoveValueAt[" + super.toString() + "]";
+  }
 
 }

@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.server.update;
 
+import java.util.Collections;
 import java.util.List;
 
 import edu.stanford.smi.protege.model.Facet;
@@ -29,4 +30,22 @@ public class FrameRead extends SftUpdate implements Localizable {
     super.localize(kb);
     LocalizeUtils.localize(values, kb);
   }
+  
+  public String toString() {
+    String result = "Read[" + super.toString() + " -> (";
+    if (values == null) {
+      return result + "null)]";
+    }
+    int index = 0;
+    for (Object value : values) {
+      if (index == 2) {
+        break;
+      }
+      result = result + value + ",";
+      index++;
+    }
+    result = result + "...)]";
+    return result;
+  }
+
 }

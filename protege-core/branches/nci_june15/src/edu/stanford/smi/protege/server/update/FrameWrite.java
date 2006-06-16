@@ -29,4 +29,21 @@ public class FrameWrite extends SftUpdate implements Localizable {
     super.localize(kb);
     LocalizeUtils.localize(values, kb);
   }
+  
+  public String toString() {
+    String result = "Write[" + super.toString() + " -> (";
+    if (values == null) {
+      return result + "null)]";
+    }
+    int index = 0;
+    for (Object value : values) {
+      if (index == 2) {
+        break;
+      }
+      result = result + value + ",";
+      index++;
+    }
+    result = result + "...)]";
+    return result;
+  }
 }
