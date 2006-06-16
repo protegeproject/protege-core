@@ -149,11 +149,12 @@ public class RemoteClientFrameStore implements FrameStore {
     public void initialize(boolean preloadAll) throws RemoteException {
       nameSlot = getSystemFrames().getNameSlot();
       cacheRequestor = new ClientCacheRequestor(remoteDelegate, session);
+      // disabled for now - if we need we will try it.
       startHeartbeatThread();
       preload(preloadAll);
     }
     
-    public void startHeartbeatThread() {
+    private void startHeartbeatThread() {
       if (ServerProperties.heartbeatDisabled()) {
         return;
       }
