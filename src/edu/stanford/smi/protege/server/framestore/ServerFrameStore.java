@@ -973,6 +973,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      */
     public RemoteResponse<Boolean> beginTransaction(String name, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("Begin Transaction for session " + session);
+      }
       synchronized(_kbLock) {
         updateEvents(session);
         boolean success = getDelegate().beginTransaction(name);
@@ -995,6 +998,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      */
     public RemoteResponse<Boolean> commitTransaction(RemoteSession session) throws ServerSessionLost {
       recordCall(session);
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("Commit Transaction for Session " + session);
+      }
       synchronized(_kbLock) {
         boolean success = getDelegate().commitTransaction();
         updateEvents(session);
@@ -1039,6 +1045,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      */
     public RemoteResponse<Boolean> rollbackTransaction(RemoteSession session) throws ServerSessionLost {
       recordCall(session);
+      if (cacheLog.isLoggable(Level.FINE)) {
+        cacheLog.fine("Rollback Transaction for session " + session);
+      }
       synchronized(_kbLock) {
         updateEvents(session);
         boolean success = getDelegate().rollbackTransaction();
@@ -1358,7 +1367,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                          List values) {
       updateEvents(session);
       if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Cacheing read values for session " + session);
+        cacheLog.fine("Cacheing read values for session " + session + " [" + _kb + "]");
         cacheLog.fine("Read[" + frame + ", " + slot + ", " + facet + ", " + isTemplate + " -> " + values);
       }
       TransactionIsolationLevel level  = getTransactionIsolationLevel();
@@ -1387,7 +1396,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                             List values) {
       updateEvents(session);
       if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Cacheing written values for session " + session);
+        cacheLog.fine("Cacheing written values for session " + session + "[" + _kb + "]");
         cacheLog.fine("Read[" + frame + ", " + slot + ", " + facet + ", " + isTemplate + " -> " + values);
       }
       TransactionIsolationLevel level = getTransactionIsolationLevel();
@@ -1418,14 +1427,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    private void invalidateCacheForWriteToStore(Frame frame,
+    public void invalidateCacheForWriteToStore(Frame frame,
                                                 Slot slot, 
                                                 Facet facet,
                                                 boolean isTemplate) {
       RemoteSession session = getCurrentSession();
       updateEvents(session);
       if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Cacheing unknown values for session " + session);
+        cacheLog.fine("Cacheing unknown values for session " + session + "[" + _kb + "]");
         cacheLog.fine("Read[" + frame + ", " + slot + ", " + facet + ", " + isTemplate + " -> ??");
       }
       TransactionIsolationLevel level = getTransactionIsolationLevel();
