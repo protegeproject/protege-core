@@ -13,6 +13,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
 
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.ServerProperties;
@@ -489,20 +490,23 @@ public class RobustConnection {
       return _supportsTransactions;
     }
     
-    public void setTransactionIsolationLevel(int level) throws SQLException {
-      transactionIsolationLevel = level;
-      try {
-        _connection.setTransactionIsolation(level);
-      } catch (SQLException sqle) {
-        transactionIsolationLevel = null;
-        throw sqle;
-      }
-    }
-    
     public int getTransactionIsolationLevel() throws SQLException {
       if (transactionIsolationLevel != null) {
         return transactionIsolationLevel;
       }
       return transactionIsolationLevel = _connection.getTransactionIsolation();
     }
+
+
+    public void setTransactionIsolationLevel(int level) throws SQLException {
+      transactionIsolationLevel = null;
+      try {
+        _connection.setTransactionIsolation(level);
+      } catch (SQLException sqle) {
+        Log.getLogger().log(Level.WARNING, "Problem setting the transaction isolation level", sqle);
+        transactionIsolationLevel = null;
+        throw sqle;
+      }
+    }
+    
 }
