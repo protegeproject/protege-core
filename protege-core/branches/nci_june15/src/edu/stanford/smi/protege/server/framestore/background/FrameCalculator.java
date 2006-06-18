@@ -95,7 +95,7 @@ public class FrameCalculator {
   private void doWork(WorkInfo wi) throws ServerSessionLost {
     Frame frame = wi.getFrame();
     effectiveClient = wi.getClient();
-    server.setCurrentSession(effectiveClient);
+    ServerFrameStore.setCurrentSession(effectiveClient);
     if (log.isLoggable(Level.FINE)) {
       log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
     }
@@ -122,8 +122,7 @@ public class FrameCalculator {
           checkAbilityToGenerateFullCache(wi);
           if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES) &&
               wi.skipDirectInstances()) {
-            insertValueUpdate(
-                new InvalidateCacheUpdate(frame, slot, (Facet) null, false));
+            server.invalidateCacheForWriteToStore(frame, slot, null, false);
           } else {
             values = fs.getDirectOwnSlotValues(frame, slot);
             if (values != null && !values.isEmpty()) {
@@ -164,8 +163,10 @@ public class FrameCalculator {
         }
       }
       synchronized(kbLock) {
-        if (wi.isTargetFullCache()) {
+        if (wi.isTargetFullCache() && !server.inTransaction()) {
           insertValueUpdate(new FrameEvaluationCompleted(frame));
+        } else if (wi.isTargetFullCache()) {
+          insertValueUpdate(new FrameEvaluationPartial(wi.getFrame()));
         }
       }
     } catch (Throwable t) {
