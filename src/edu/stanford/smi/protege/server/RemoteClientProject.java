@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.ClientInitializerKnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -21,6 +20,7 @@ import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
+import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.narrowframestore.RemoteClientInvocationHandler;
 import edu.stanford.smi.protege.server.narrowframestore.RemoteServerNarrowFrameStore;
 import edu.stanford.smi.protege.util.Log;
@@ -45,10 +45,12 @@ public class RemoteClientProject extends Project {
         _session = session;
         serverProject.getDomainKbFrameStore(session);
         KnowledgeBase domainKb = createKnowledgeBase(serverProject.getDomainKbFrameStore(session), 
+                                                     serverProject.getSystemNarrowFrameStore(),
                                                      serverProject.getDomainKbNarrowFrameStore(),
                                                      serverProject.getDomainKbFactoryClassName(), 
                                                      session, false);
         KnowledgeBase projectKb = createKnowledgeBase(serverProject.getProjectKbFrameStore(session),
+                                                      serverProject.getSystemNarrowFrameStore(),
                                                       serverProject.getDomainKbNarrowFrameStore(),
                                                       serverProject.getProjectKbFactoryClassName(), 
                                                       session, true);
@@ -70,7 +72,8 @@ public class RemoteClientProject extends Project {
     }
 
     private static KnowledgeBase createKnowledgeBase(RemoteServerFrameStore serverFrameStore, 
-                                                     RemoteServerNarrowFrameStore snfs,
+                                                     RemoteServerNarrowFrameStore systemNfs,
+                                                     RemoteServerNarrowFrameStore userNfs,
                                                      String factoryClassName,
                                                      RemoteSession session, 
                                                      boolean preloadAll) {
@@ -91,19 +94,22 @@ public class RemoteClientProject extends Project {
         FrameStore clientFrameStore
                = new RemoteClientFrameStore(serverFrameStore, session, kb, preloadAll);
         RemoteClientInvocationHandler rcif
-               = new RemoteClientInvocationHandler(kb, snfs);
-        NarrowFrameStore clientNarrowFrameStore = rcif.getNarrowFrameStore();
+             = new RemoteClientInvocationHandler(kb, systemNfs, session);
+        NarrowFrameStore systemNarrowFrameStore = rcif.getNarrowFrameStore();
+        rcif = new RemoteClientInvocationHandler(kb, userNfs, session);
+        NarrowFrameStore userNarrowFrameStore = rcif.getNarrowFrameStore();
 
         kb.setTerminalFrameStore(clientFrameStore);
         if (factory instanceof ClientInitializerKnowledgeBaseFactory) {
           ClientInitializerKnowledgeBaseFactory clientInit;
           clientInit = (ClientInitializerKnowledgeBaseFactory) factory;
           clientInit.initializeClientKnowledgeBase(clientFrameStore, 
-                                                   clientNarrowFrameStore, 
+                                                   systemNarrowFrameStore,
+                                                   userNarrowFrameStore, 
                                                    kb);
         }
         kb.setGenerateEventsEnabled(false);
-        kb.setCallCachingEnabled(true);
+        kb.setCallCachingEnabled(false);
 
         return kb;
     }
@@ -157,6 +163,8 @@ public class RemoteClientProject extends Project {
     private void attemptClose() {
         try {
             _serverProject.close(_session);
+        } catch (ServerSessionLost ssl) {
+          Log.getLogger().info("Session disconnected");
         } catch (java.rmi.RemoteException e) {
             Log.getLogger().warning(e.toString());
         }
@@ -190,12 +198,6 @@ public class RemoteClientProject extends Project {
     public boolean isDirty() {
         // changes are committed automatically so we are never dirty.
         return false;
-    }
-    
-    public NarrowFrameStore getRemoteNarrowFrameStore() throws RemoteException {
-      RemoteServerNarrowFrameStore rnfs = _serverProject.getDomainKbNarrowFrameStore();
-      RemoteClientInvocationHandler rcih = new RemoteClientInvocationHandler(getKnowledgeBase(), rnfs);
-      return rcih.getNarrowFrameStore();
     }
 
 }

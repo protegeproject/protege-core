@@ -23,6 +23,7 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.Tree;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * All queries go to all frame stores. Writes go to the primary (delegate) frame store.
@@ -572,5 +573,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public boolean rollbackTransaction() {
         return getDelegate().rollbackTransaction();
+    }
+
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return getDelegate().getTransactionStatusMonitor();
     }
 }

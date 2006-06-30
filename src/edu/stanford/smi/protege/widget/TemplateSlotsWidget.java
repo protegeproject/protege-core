@@ -314,9 +314,11 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
                 FrameSlotCombination combination = (FrameSlotCombination) i.next();
                 handleRemoveCombination(combination);
             }
-        } finally {
-            endTransaction();
-        }
+            commitTransaction();
+        } catch (Exception e) {
+        	rollbackTransaction();
+        	Log.getLogger().warning("Problem at removing slots from " + getCls());
+		}
     }
 
     private static void handleRemoveCombination(FrameSlotCombination combination) {

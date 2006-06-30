@@ -152,8 +152,6 @@ public abstract class APITestCase extends AbstractTestCase {
       }
     }
 
-    private static int callNumber = 0;
-
     public Project getProject() {
         if (_scratchProject == null) {
             _scratchProject = _factory.createProject();
@@ -169,7 +167,7 @@ public abstract class APITestCase extends AbstractTestCase {
         return _isFileProject && _scratchProject != null;
     }
 
-    private static void closeProject() {
+    protected static void closeProject() {
         if (_scratchProject != null) {
             _scratchProject.dispose();
             _scratchProject = null;

@@ -1,5 +1,8 @@
-package edu.stanford.smi.protege.model;
+package edu.stanford.smi.protege.server;
 
+import java.util.Set;
+
+import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 
@@ -21,6 +24,7 @@ import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 public interface ClientInitializerKnowledgeBaseFactory {
 
   void initializeClientKnowledgeBase(FrameStore fs,
+                                     NarrowFrameStore systemNfs,
                                      NarrowFrameStore nfs, 
                                      KnowledgeBase kb);
 

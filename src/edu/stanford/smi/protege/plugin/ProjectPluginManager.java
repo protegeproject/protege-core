@@ -74,8 +74,7 @@ public class ProjectPluginManager {
             isSuitable = true;
         } catch (Exception e) {
             isSuitable = false;
-            //Log.getLogger().warning(Log.toString(e));
-            Log.getLogger().warning(e.getMessage());
+            Log.getLogger().warning(Log.toString(e));
         }
         // Log.getLogger().info("is suitable=" + isSuitable + " " + projectPlugin);
         return isSuitable;

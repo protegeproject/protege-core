@@ -15,7 +15,6 @@ public class Sft implements Externalizable, Localizable {
     private Slot _slot;
     private Facet _facet;
     private boolean _isTemplate;
-    private int _hashCode;
 
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(_slot);
@@ -27,7 +26,6 @@ public class Sft implements Externalizable, Localizable {
         _slot = (Slot) in.readObject();
         _facet = (Facet) in.readObject();
         _isTemplate = in.readBoolean();
-        cacheHashCode();
     }
     
     public String toString() {
@@ -35,7 +33,9 @@ public class Sft implements Externalizable, Localizable {
     }
 
     public Sft(Slot slot, Facet facet, boolean isTemplate) {
-        set(slot, facet, isTemplate);
+      _slot = slot;
+      _facet = facet;
+      _isTemplate = isTemplate;
     }
     public Sft() {
     }
@@ -59,33 +59,19 @@ public class Sft implements Externalizable, Localizable {
     public boolean isTemplateFacet() {
         return _facet != null && _isTemplate;
     }
-
-    public void set(Slot slot, Facet facet, boolean isTemplate) {
-        _slot = slot;
-        _facet = facet;
-        _isTemplate = isTemplate;
-        cacheHashCode();
-    }
-    
-    private void cacheHashCode() {
-        _hashCode = HashUtils.getHash(_slot, _facet, _isTemplate);
-    }
     
     public int hashCode() {
-        return _hashCode;
+        return HashUtils.getHash(_slot, _facet, _isTemplate);
     }
     public boolean equals(Object o) {
-        boolean result = false;
         if (o instanceof Sft) {
             Sft rhs = (Sft) o;
-            if (_hashCode == rhs._hashCode) {
-                result = equals(_slot, rhs._slot) && equals(_facet, rhs._facet) && _isTemplate == rhs._isTemplate;
-            } else {
-                Log.getLogger().warning("equal hashs but different sfts");
-            }
+            return equals(_slot, rhs._slot) && 
+                   equals(_facet, rhs._facet) && _isTemplate == rhs._isTemplate;
         }
-        return result;
+        return false;
     }
+    
     public static boolean equals(Object o1, Object o2) {
         return SystemUtilities.equals(o1, o2);
     }

@@ -1,11 +1,15 @@
 package edu.stanford.smi.protege.server;
 
-import java.io.*;
-import java.net.*;
-import java.rmi.registry.*;
-import java.rmi.server.*;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMISocketFactory;
 
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.StringUtilities;
 
 /*
  * This code is based on an idea from here:
@@ -15,10 +19,6 @@ import edu.stanford.smi.protege.util.*;
  */
 
 public class ClientRmiSocketFactory extends RMISocketFactory {
-    private static final String SERVER_PORT = "protege.rmi.server.port";
-    private static final String SERVER_LOCAL_PORT = "protege.rmi.server.local.port";
-    private static final String REGISTRY_PORT = "protege.rmi.registry.port";
-    private static final String REGISTRY_LOCAL_PORT = "protege.rmi.registry.local.port";
 
     private int serverPort;
     private int serverLocalPort;
@@ -26,10 +26,10 @@ public class ClientRmiSocketFactory extends RMISocketFactory {
     private int registryLocalPort;
 
     public ClientRmiSocketFactory() {
-        serverPort = getPort(SERVER_PORT, 0);
-        serverLocalPort = getPort(SERVER_LOCAL_PORT, 0);
-        registryPort = getPort(REGISTRY_PORT, Registry.REGISTRY_PORT);
-        registryLocalPort = getPort(REGISTRY_LOCAL_PORT, 0);
+        serverPort = getPort(ServerProperties.SERVER_PORT, 0);
+        serverLocalPort = getPort(ServerProperties.SERVER_LOCAL_PORT, 0);
+        registryPort = getPort(ServerProperties.REGISTRY_PORT, Registry.REGISTRY_PORT);
+        registryLocalPort = getPort(ServerProperties.REGISTRY_LOCAL_PORT, 0);
         if (!isDefault()) {
             Log.getLogger().config(
                     "server=" + serverPort + ", serverLocal= " + serverLocalPort + ", registryPort=" + registryPort

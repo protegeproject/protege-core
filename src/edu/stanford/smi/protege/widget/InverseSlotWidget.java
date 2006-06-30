@@ -46,9 +46,11 @@ public class InverseSlotWidget extends AbstractSlotWidget {
             setDomain(inverseSlot, range);
             inverseSlot.setAllowsMultipleValues(true);
             setInverseSlot(inverseSlot);
-        } finally {
-            endTransaction();
-        }
+            commitTransaction();
+        } catch (Exception e) {
+        	rollbackTransaction();
+			Log.getLogger().warning("Could not create inverse slot for: " + getInstance());
+		}
         return inverseSlot;
     }
 

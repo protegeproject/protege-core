@@ -2,26 +2,44 @@ package edu.stanford.smi.protege.server;
 
 //ESCA*JAVA0100
 
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
-import java.rmi.*;
-import java.rmi.registry.*;
-import java.rmi.server.*;
-import java.util.*;
-import java.util.logging.*;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMISocketFactory;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.plugin.*;
-import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.plugin.ProjectPluginManager;
+import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
+import edu.stanford.smi.protege.util.FileUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.URIUtilities;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
     private static Server serverInstance;
-    private Map _nameToOpenProjectMap = new HashMap();
-    private Map _projectToServerProjectMap = new HashMap();
+    private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
+    private Map<Project, ServerProject> _projectToServerProjectMap = new HashMap<Project, ServerProject>();
     private KnowledgeBase _systemKb;
     private Slot _nameSlot;
     private Slot _passwordSlot;
@@ -30,7 +48,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private Cls _projectCls;
     private List _sessions = new ArrayList();
     private URI _baseURI;
-    private Map _sessionToProjectsMap = new HashMap();
+    private Map<RemoteSession, Collection<ServerProject>> _sessionToProjectsMap 
+        = new HashMap<RemoteSession, Collection<ServerProject>>();
     private Thread _updateThread;
     private URI metaprojectURI;
     private static final int NO_SAVE = -1;
@@ -183,7 +202,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             String name = (String) i.next();
             if (preload) {
                 Log.getLogger().info("Loading project " + name);
-                createProject(name);
+                try {
+                	createProject(name);
+                } catch (Exception e) {
+                	Log.getLogger().warning("Error at loading project: " + name + "Error message: "+ e.getMessage());					
+				}
             } else {
                 Log.getLogger().info("Found project " + name);
             }
@@ -232,7 +255,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return _sessions.contains(session);
     }
 
-    public RemoteServerProject openProject(String projectName, RemoteSession session) {
+    public RemoteServerProject openProject(String projectName, RemoteSession session) 
+    throws ServerSessionLost {
         ServerProject serverProject = null;
         Project p = getOrCreateProject(projectName);
         if (p != null) {
@@ -246,26 +270,31 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return serverProject;
     }
 
-    private void recordConnection(RemoteSession session, ServerProject project) {
+    private void recordConnection(RemoteSession session, ServerProject project) 
+    throws ServerSessionLost {
         // Log.enter(this, "recordConnection", session, project);
-        Collection projects = (Collection) _sessionToProjectsMap.get(session);
+        Collection<ServerProject> projects = _sessionToProjectsMap.get(session);
         if (projects == null) {
-            projects = new ArrayList();
+            projects = new ArrayList<ServerProject>();
             _sessionToProjectsMap.put(session, projects);
         }
         projects.add(project);
         project.register(session);
     }
 
-    private void recordDisconnection(RemoteSession session, RemoteServerProject project) {
+    private void recordDisconnection(RemoteSession session, RemoteServerProject project) 
+    throws ServerSessionLost {
         // Log.enter(this, "recordDisconnection", session, project);
-        Collection projects = (Collection) _sessionToProjectsMap.get(session);
+        Collection<ServerProject> projects =  _sessionToProjectsMap.get(session);
         projects.remove(project);
         _sessions.remove(session);
+        if (project instanceof ServerProject) {
+          ((ServerProject) project).deregister(session);
+        }
         Log.getLogger().info("removing session: " + session);
     }
 
-    private ServerProject getServerProject(String projectName) {
+    public ServerProject getServerProject(String projectName) {
         Project p = getProject(projectName);
         return (p == null) ? null : getServerProject(p);
     }
@@ -285,20 +314,21 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return _baseURI.resolve(name);
     }
 
-    public void disconnectFromProject(RemoteServerProject serverProject, RemoteSession session) {
+    public void disconnectFromProject(RemoteServerProject serverProject, RemoteSession session) 
+    throws ServerSessionLost {
         recordDisconnection(session, serverProject);
     }
 
     private ServerProject getServerProject(Project p) {
-        return (ServerProject) _projectToServerProjectMap.get(p);
+        return _projectToServerProjectMap.get(p);
     }
 
-    private void addServerProject(Project p, RemoteServerProject sp) {
+    private void addServerProject(Project p, ServerProject sp) {
         _projectToServerProjectMap.put(p, sp);
     }
 
-    private Project getProject(String name) {
-        return (Project) _nameToOpenProjectMap.get(name);
+    public Project getProject(String name) {
+        return _nameToOpenProjectMap.get(name);
     }
 
     private Project getOrCreateProject(String name) {
@@ -439,11 +469,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private void saveAllProjects() {
         // Log.enter(this, "update");
         ///CLOVER:FLUSH
-        Iterator i = _projectToServerProjectMap.entrySet().iterator();
+        Iterator<Map.Entry<Project, ServerProject>> i = _projectToServerProjectMap.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry entry = (Map.Entry) i.next();
-            Project project = (Project) entry.getKey();
-            ServerProject serverProject = (ServerProject) entry.getValue();
+            Map.Entry<Project, ServerProject> entry =  i.next();
+            Project project = entry.getKey();
+            ServerProject serverProject = entry.getValue();
             // Log.trace("checking " + project, this, "update");
             if (serverProject.isDirty()) {
                 save(serverProject, project);
@@ -493,5 +523,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private void stopProjectUpdateThread() {
         _updateThread = null;
+    }
+    
+    public void setFrameCalculatorDisabled(boolean disabled) {
+      for (ServerProject sp : _projectToServerProjectMap.values()) {
+        sp.setFrameCalculatorDisabled(disabled);
+      }
     }
 }

@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -48,7 +47,6 @@ import edu.stanford.smi.protege.widget.TabWidget;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class PluginUtilities {
-	private static transient Logger log = Log.getLogger(PluginUtilities.class);
 	
     private static final String TAB_WIDGET = "Tab-Widget";
     private static final String SLOT_WIDGET = "Slot-Widget";
@@ -144,12 +142,9 @@ public class PluginUtilities {
             setContextClassLoader(loader);
             clas = Class.forName(className, true, loader);
         } catch (ClassNotFoundException e) {
-          // use the default logger because this is an empty catch 
-          // block situation
-            if (Log.getLogger().isLoggable(Level.FINE)) {
-              Log.getLogger().fine("class not found " + e);
-              Log.getLogger().fine("probably just a probe for the class...");
-            }
+          // This is the empty catch block situation but I don't
+          // think logging is helpful here - it is normal and it happens
+          // too often.
             if (promiscuous) {
                 clas = promiscuousForName(className);
             }
@@ -170,10 +165,11 @@ public class PluginUtilities {
             try {
                 clas = Class.forName(className, true, loader);
             } catch (ClassNotFoundException e) {
-              Log.getLogger().fine("Class not found " + e);
-              Log.getLogger().fine("probably just a probe for the class...");
+             // The dreaded empty catch block - as above I don't think
+             // logging helps.
             } catch (NoClassDefFoundError error) {
-            	Log.emptyCatchBlock(error);
+            	// The dreaded empty  catch block - as above I don't think 
+                // logging helps.
             }
         }
         return clas;

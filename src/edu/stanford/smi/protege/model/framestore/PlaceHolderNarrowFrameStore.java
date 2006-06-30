@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * This is a placeholder with no functionality.  It is used as the root of a tree of 
@@ -169,4 +170,7 @@ public class PlaceHolderNarrowFrameStore implements NarrowFrameStore {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
+        public TransactionMonitor getTransactionStatusMonitor() {
+          throw new UnsupportedOperationException();
+        }
 }

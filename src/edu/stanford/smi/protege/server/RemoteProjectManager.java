@@ -20,8 +20,8 @@ public class RemoteProjectManager {
         if (_theInstance == null) {
             try {
                 RMISocketFactory.setSocketFactory(new ClientRmiSocketFactory());
-            } catch (IOException e) {
-                Log.getLogger().severe(Log.toString(e));
+            } catch (Exception e) {
+                Log.getLogger().severe("Could not set socket factory " + e.getMessage());
             }
             _theInstance = new RemoteProjectManager();
         }

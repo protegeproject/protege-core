@@ -22,6 +22,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SimpleStringMatcher;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * This is a version of the InMemoryFrameDb that helps support the OWL problem that frames
@@ -228,7 +229,7 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
       } else {
         equalFacet = (facetId.equals(other.facetId));
       }
-      return equalFrame && equalSlot && (isTemplate == other.isTemplate);
+      return equalFrame && equalSlot && equalFacet && (isTemplate == other.isTemplate);
     }
     
     public int hashCode() {
@@ -621,7 +622,6 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
   }
 
   public Set<Reference> getReferences(Object value) {
-    Value v = new Value(value);
     Set<Reference> references = new HashSet<Reference>();
     
     for (FrameSlotRequest req : valueMap.keySet()) {
@@ -711,4 +711,9 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     throw new UnsupportedOperationException("Not implemented yet");
   }
  
+  public TransactionMonitor getTransactionStatusMonitor() {
+    return null;
+  }
+
+
 }

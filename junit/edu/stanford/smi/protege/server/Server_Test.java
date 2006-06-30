@@ -36,8 +36,6 @@ public class Server_Test extends SimpleTestCase {
     
     private static  final String JAR_PROPERTY="junit.server.protege.jar";
     
-    private static final int RETRY = 5;
-    private static final long SLEEP = 3000;
     
     private static boolean serverRunning = false;
 
@@ -59,6 +57,10 @@ public class Server_Test extends SimpleTestCase {
     private static boolean informedServerNotConfigured = false;
     
     public static boolean startServer() throws Exception {
+      return startServer("examples/server/metaproject.pprj");
+    }
+    
+    public static boolean startServer(String projectFile) throws Exception {
       Properties jup = APITestCase.getJunitProperties();
       String jar_uri = jup.getProperty(JAR_PROPERTY);
       if (jar_uri == null) {
@@ -69,7 +71,7 @@ public class Server_Test extends SimpleTestCase {
         return false;
       }
       System.setProperty("java.rmi.server.codebase", jar_uri);
-      String [] serverArgs = {"", "examples/server/metaproject.pprj"};
+      String [] serverArgs = {"", projectFile};
       if (!serverRunning) {
         if (log.isLoggable(Level.FINE)) {
           log.fine("starting server");
@@ -137,5 +139,8 @@ public class Server_Test extends SimpleTestCase {
       assertNotNull(cls);
       p.dispose();
   }
+  
+    
+    
 
 }

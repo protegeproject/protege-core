@@ -1,9 +1,18 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.query.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public abstract class ModificationFrameStore extends AbstractFrameStore {
 
@@ -39,23 +48,23 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getSimpleInstanceCount();
     }
 
-    public Set getFrames() {
+    public Set<Frame> getFrames() {
         return getDelegate().getFrames();
     }
 
-    public Set getClses() {
+    public Set<Cls> getClses() {
         return getDelegate().getClses();
     }
 
-    public Set getSlots() {
+    public Set<Slot> getSlots() {
         return getDelegate().getSlots();
     }
 
-    public Set getFacets() {
+    public Set<Facet> getFacets() {
         return getDelegate().getFacets();
     }
 
-    public List getDirectSuperclasses(Cls cls) {
+    public List<Cls> getDirectSuperclasses(Cls cls) {
         return getDelegate().getDirectSuperclasses(cls);
     }
 
@@ -63,11 +72,11 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getSuperclasses(cls);
     }
 
-    public List getDirectSubclasses(Cls cls) {
+    public List<Cls> getDirectSubclasses(Cls cls) {
         return getDelegate().getDirectSubclasses(cls);
     }
 
-    public Set getSubclasses(Cls cls) {
+    public Set<Cls> getSubclasses(Cls cls) {
         return getDelegate().getSubclasses(cls);
     }
 
@@ -127,7 +136,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getDirectOwnSlotValues(frame, slot);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         return getDelegate().getOwnSlots(frame);
     }
 
@@ -143,7 +152,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getTemplateSlots(cls);
     }
 
-    public Set getTemplateFacets(Cls cls, Slot slot) {
+    public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
         return getDelegate().getTemplateFacets(cls, slot);
     }
 
@@ -167,7 +176,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getMatchingReferences(value, maxMatches);
     }
 
-    public List<EventObject> getEvents() {
+    public List<AbstractEvent> getEvents() {
         return getDelegate().getEvents();
     }
 
@@ -233,5 +242,9 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
 
     public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot) {
         return getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
+    }
+
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return getDelegate().getTransactionStatusMonitor();
     }
 }

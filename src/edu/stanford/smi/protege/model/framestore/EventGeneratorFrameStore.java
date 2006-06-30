@@ -3,12 +3,9 @@ package edu.stanford.smi.protege.model.framestore;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
-import com.sun.java_cup.internal.internal_error;
 
 import edu.stanford.smi.protege.event.ClsEvent;
 import edu.stanford.smi.protege.event.FrameEvent;
@@ -27,25 +24,30 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
+import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 
 public class EventGeneratorFrameStore extends ModificationFrameStore {
-    private List _events = new ArrayList<EventObject>();
+    private List _events = new ArrayList<AbstractEvent>();
     private static final int NO_VALUE = -1;
     private int _transactionStartSize = NO_VALUE;
     private DefaultKnowledgeBase _kb;
     private SystemFrames _systemFrames;
     private boolean generateEventsOnDeletingFrames = false;
+    private boolean serverMode = false;
 
     public EventGeneratorFrameStore(KnowledgeBase kb) {
         _kb = (DefaultKnowledgeBase) kb;
         _systemFrames = _kb.getSystemFrames();
     }
+    
+    public void serverMode() {
+      serverMode = true;
+    }
 
     public void reinitialize() {
         _events.clear();
-        //_transactionStartSize = NO_VALUE;
-        resetTransactionStartSize();
+        _transactionStartSize = NO_VALUE;
     }
 
     public void close() {
@@ -340,24 +342,24 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         }
     }
 
-    public List<EventObject> getEvents() {
+    public List<AbstractEvent> getEvents() {
         List events;
-        if (isInTransaction()) {
+        if (!serverMode && isInTransaction()) {
             events = Collections.EMPTY_LIST;
         } else {
             events = _events;
-            _events = new ArrayList<EventObject>();
+            _events = new ArrayList<AbstractEvent>();
             return events;
         }
         return events;
     }
 
     private boolean isInTransaction() {
+      if (serverMode) {
+        throw new UnsupportedOperationException("can't determine transaction status here as a server");
+      } else {
         return _transactionStartSize != NO_VALUE;
-    }
-    
-    private void resetTransactionStartSize() {
-    	_transactionStartSize = NO_VALUE;
+      }
     }
 
     public void addDirectSuperclass(Cls cls, Cls superclass) {
@@ -518,10 +520,11 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     public boolean beginTransaction(String name) {
         boolean allowsTransactions = getDelegate().beginTransaction(name);
         generateTransactionEvent(TransactionEvent.TRANSACTION_BEGIN, name);
-        //TT: remember only the start index of the outer transaction
-        if (allowsTransactions && !isInTransaction()) {
+        if (!serverMode) {
+          if (allowsTransactions) {
             _transactionStartSize = _events.size();
-        }        
+          }
+        }
         return allowsTransactions;
     }
     
@@ -530,22 +533,26 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     }
 
     public boolean commitTransaction() {
-        boolean commitTransaction = getDelegate().commitTransaction();     
-        if (!commitTransaction && isInTransaction()) {
-      		_events.subList(_transactionStartSize, _events.size()).clear();
+        boolean commitTransaction = getDelegate().commitTransaction();
+        generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);
+        if (!serverMode) {
+          if (!commitTransaction && _transactionStartSize != NO_VALUE) {
+            _events.subList(_transactionStartSize + 1, _events.size()).clear();
+          }
+          _transactionStartSize = NO_VALUE;
         }
-        generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);       
-        resetTransactionStartSize();        
         return commitTransaction;
     }
 
     public boolean rollbackTransaction() {
-        boolean rollbackTransaction = getDelegate().rollbackTransaction();        
-        if (rollbackTransaction && isInTransaction()) {            		
-        	_events.subList(_transactionStartSize, _events.size()).clear();
-        }
+        boolean rollbackTransaction = getDelegate().rollbackTransaction();
         generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);
-        resetTransactionStartSize();        
+        if (!serverMode) {
+          if (rollbackTransaction && _transactionStartSize != NO_VALUE) {
+            _events.subList(_transactionStartSize + 1, _events.size()).clear();
+          }
+          _transactionStartSize = NO_VALUE;
+        }
         return rollbackTransaction;
     }
 

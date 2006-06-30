@@ -1,14 +1,12 @@
 package edu.stanford.smi.protege.util;
 
 import java.util.Collection;
-import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.ui.ProjectView;
 import edu.stanford.smi.protege.util.ProjectViewEvent.Type;
 import edu.stanford.smi.protege.widget.Widget;
 
 public class ProjectViewDispatcher implements EventDispatcher {
-    private static Logger log = Log.getLogger(ProjectViewDispatcher.class);
 
 	public void postEvent(Collection listeners, Object source, int type,
 			Object arg1, Object arg2, Object arg3) {
