@@ -589,6 +589,7 @@ public class ComponentUtilities {
             if (expand) {
                 tree.scrollPathToVisible(path);
                 tree.expandPath(path);
+                tree.updateUI();
             } else {
                 tree.collapsePath(path);
             }
@@ -613,6 +614,7 @@ public class ComponentUtilities {
         final TreePath path = new TreePath(((LazyTreeModel) tree.getModel()).getPathToRoot(node));
         tree.scrollPathToVisible(path);
         tree.setSelectionPath(path);
+        tree.updateUI();
     }
 
     public static void setSelectedObjectPath(final JTree tree, Collection objectPath) {
@@ -620,6 +622,7 @@ public class ComponentUtilities {
         if (path != null) {
             final WaitCursor cursor = new WaitCursor(tree);
             tree.scrollPathToVisible(path);
+            tree.updateUI();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     tree.setSelectionPath(path);
@@ -640,6 +643,7 @@ public class ComponentUtilities {
         tree.setSelectionPaths(paths);
         if (paths.length > 0) {
             tree.scrollPathToVisible(paths[0]);
+            tree.updateUI();
         }
     }
 
