@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
@@ -21,6 +22,7 @@ import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStat
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.ProtegeJob;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 
 public interface RemoteServerFrameStore extends Remote {
@@ -178,6 +180,8 @@ public interface RemoteServerFrameStore extends Remote {
     RemoteResponse<Set> getDirectOwnSlotValuesClosure(Collection<Frame> frame, Slot slot, Set<Frame> missing, RemoteSession session) throws RemoteException;
 
     void close(RemoteSession session) throws RemoteException;
+    
+    RemoteResponse<Object> executeProtegeJob(ProtegeJob job, RemoteSession session) throws ProtegeException, RemoteException;
 
     RemoteResponse<Boolean> beginTransaction(String name, RemoteSession session) throws RemoteException;
 
