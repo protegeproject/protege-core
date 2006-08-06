@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.exception.ProtegeException;
+import edu.stanford.smi.protege.exception.ProtegeStoreException;
 import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
@@ -56,6 +58,7 @@ import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ProtegeJob;
 import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
@@ -1769,8 +1772,16 @@ public class RemoteClientFrameStore implements FrameStore {
     stats = new RemoteClientStatsImpl();
   }
   
+  public Object executeProtegeJob(ProtegeJob job) throws ProtegeException {
+    try {
+      RemoteResponse<Object> response = getRemoteDelegate().executeProtegeJob(job, session);
+      processValueUpdate(response);
+      return response.getResponse();
+    } catch (RemoteException remote) {
+      throw new ProtegeStoreException(remote);
+    }
+  }
 
-  
   public class RemoteClientStatsImpl implements RemoteClientStats {
     int miss = 0;
     int hit = 0;

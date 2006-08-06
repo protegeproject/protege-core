@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import edu.stanford.smi.protege.event.ClsEvent;
 import edu.stanford.smi.protege.event.FrameEvent;
 import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
@@ -49,6 +50,7 @@ import edu.stanford.smi.protege.server.util.FifoWriter;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ProtegeJob;
 import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
@@ -805,6 +807,21 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public void close(RemoteSession session) throws ServerSessionLost {
       recordCall(session);
+    }
+    
+    public RemoteResponse<Object> executeProtegeJob(ProtegeJob job,
+                                                    RemoteSession session) 
+                                                    throws ProtegeException, ServerSessionLost {
+      recordCall(session);
+      synchronized(_kbLock) {
+        try {
+          job.localize(_kb);
+          return new RemoteResponse<Object>(job.run(), getValueUpdates(session));
+        } catch (ProtegeException pe) {
+          Log.getLogger().log(Level.SEVERE, "Exception on remote execution", pe);
+          throw pe;
+        }
+      }
     }
 
     public void register(RemoteSession session) throws ServerSessionLost {
