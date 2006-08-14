@@ -36,10 +36,19 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class ValueCachingNarrowFrameStore implements NarrowFrameStore, IncludingKBSupport {
     private Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
-    private DatabaseFrameDb _delegate;
+    private NarrowFrameStore _delegate;
+    private DatabaseFrameDb _framedb;
     private CacheMap<Frame, Map<Sft, List>> _frameToSftToValuesMap 
         = new CacheMap<Frame, Map<Sft, List>>();
 
+    public ValueCachingNarrowFrameStore(DatabaseFrameDb delegate) {
+        if (log.isLoggable(Level.FINE)) {
+                log.fine("Constructing ValueCachingNarrowFrameStore with delegate " + delegate);
+        }
+      _delegate = delegate;
+      _framedb  = delegate;
+    }
+    
     public String getName() {
         return _delegate.getName();
     }
@@ -54,19 +63,20 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         _frameToSftToValuesMap = null;
     }
 
-    public ValueCachingNarrowFrameStore(DatabaseFrameDb delegate) {
-    	if (log.isLoggable(Level.FINE)) {
-    		log.fine("Constructing ValueCachingNarrowFrameStore with delegate " + delegate);
-    	}
-        _delegate = delegate;
-    }
-
     public Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         throw new UnsupportedOperationException();
     }
 
-    public DatabaseFrameDb getDelegate() {
+    public NarrowFrameStore getDelegate() {
         return _delegate;
+    }
+    
+    public void setFrameDb(DatabaseFrameDb framedb) {
+      _framedb = framedb;
+    }
+    
+    public DatabaseFrameDb getFrameDb() {
+      return _framedb;
     }
 
     public FrameID generateFrameID() {
@@ -303,11 +313,11 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
     private void loadFramesIntoCache() {
         _frameToSftToValuesMap = null;
         SystemUtilities.gc();
-        _frameToSftToValuesMap = _delegate.getFrameValues();
+        _frameToSftToValuesMap = _framedb.getFrameValues();
     }
     
     private Map<Sft,List> loadFrameIntoCache(Frame frame) {
-        Map<Sft, List> sftToValuesMap = _delegate.getFrameValues(frame);
+        Map<Sft, List> sftToValuesMap = _framedb.getFrameValues(frame);
         _frameToSftToValuesMap.put(frame, sftToValuesMap);
         return sftToValuesMap;
     }
