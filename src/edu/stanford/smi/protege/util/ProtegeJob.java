@@ -64,7 +64,7 @@ public abstract class ProtegeJob implements Localizable, Serializable {
    * @return 
    * @throws ProtegeException
    */
-  public abstract Object run() throws ProtegeException;
+  public abstract Serializable run() throws ProtegeException;
 
   /**
    * Returns the knowledge base associated with this job.
