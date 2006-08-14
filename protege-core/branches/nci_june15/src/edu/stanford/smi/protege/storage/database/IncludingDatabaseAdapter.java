@@ -43,7 +43,7 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
    */
   public IncludingDatabaseAdapter(ValueCachingNarrowFrameStore vcnfs) {
       super(vcnfs);
-      frameDb  = vcnfs.getDelegate();
+      frameDb  = vcnfs.getFrameDb();
   }
   
 
