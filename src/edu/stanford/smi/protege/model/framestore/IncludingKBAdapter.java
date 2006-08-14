@@ -97,6 +97,10 @@ public abstract class IncludingKBAdapter
     return delegate;
   }
   
+  public void setDelegate(NarrowFrameStore delegate) {
+    this.delegate = delegate;
+  }
+  
   public IncludedFrameLookup getIncludedFrames() {
     return iframes;
   }
