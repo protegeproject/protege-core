@@ -1706,6 +1706,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     public NarrowFrameStore getDelegate() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 }
