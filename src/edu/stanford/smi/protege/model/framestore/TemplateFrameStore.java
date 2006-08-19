@@ -261,7 +261,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         getDelegate().moveDirectType(instance, type, index);
     }
 
-    public Set executeQuery(Query query) {
+    public Set<Frame> executeQuery(Query query) {
         return getDelegate().executeQuery(query);
     }
 

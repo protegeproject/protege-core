@@ -82,7 +82,7 @@ public interface RemoteServerNarrowFrameStore extends Remote {
   Set<Reference> getMatchingReferences(String value, int maxMatches, RemoteSession session) 
     throws RemoteException;
 
-  Set executeQuery(Query query, RemoteSession session) throws RemoteException;
+  Set<Frame> executeQuery(Query query, RemoteSession session) throws RemoteException;
 
   void deleteFrame(Frame frame, RemoteSession session) throws RemoteException;
 

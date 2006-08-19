@@ -680,7 +680,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set executeQuery(Query query, RemoteSession session) throws ServerSessionLost {
+    public Set<Frame> executeQuery(Query query, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().executeQuery(query);

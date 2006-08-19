@@ -216,8 +216,8 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     /** TODO implement executeQuery */
-    public Set executeQuery(Query query) {
-        return null;
+    public Set<Frame> executeQuery(Query query) {
+      throw new UnsupportedOperationException("Not implemented yet");
     }
 
     public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {

@@ -192,7 +192,7 @@ public interface FrameStore {
     List<AbstractEvent> getEvents();
 
     // arbitrary queries
-    Set executeQuery(Query query);
+    Set<Frame> executeQuery(Query query);
 
     Set getReferences(Object object);
 

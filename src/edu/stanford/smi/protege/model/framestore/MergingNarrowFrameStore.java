@@ -522,7 +522,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return references;
     }
 
-    public Set executeQuery(Query query) {
+    public Set<Frame> executeQuery(Query query) {
         Set results = new HashSet();
         Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
