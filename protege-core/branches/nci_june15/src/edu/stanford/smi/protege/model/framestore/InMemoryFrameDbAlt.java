@@ -665,7 +665,7 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     return references;
   }
 
-  public Set executeQuery(Query query) {
+  public Set<Frame> executeQuery(Query query) {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Not implemented yet");
   }

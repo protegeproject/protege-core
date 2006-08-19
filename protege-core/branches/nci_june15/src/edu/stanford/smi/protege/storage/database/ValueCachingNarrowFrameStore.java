@@ -215,7 +215,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         _delegate.deleteFrame(frame);
     }
 
-    public Set executeQuery(Query query) {
+    public Set<Frame> executeQuery(Query query) {
         return _delegate.executeQuery(query);
     }
 

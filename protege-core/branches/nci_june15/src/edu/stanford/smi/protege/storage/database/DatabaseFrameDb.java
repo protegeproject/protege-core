@@ -768,7 +768,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         setValues(frame, slot, facet, isTemplate, values);
     }
 
-    public Set executeQuery(Query query) {
+    public Set<Frame> executeQuery(Query query) {
         return null;
     }
 

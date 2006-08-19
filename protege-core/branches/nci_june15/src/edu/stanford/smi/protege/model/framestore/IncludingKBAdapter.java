@@ -539,7 +539,7 @@ public abstract class IncludingKBAdapter
     return delegate.getMatchingReferences(value, maxMatches);
   }
 
-  public Set executeQuery(Query query) {
+  public Set<Frame> executeQuery(Query query) {
     return delegate.executeQuery(query);
   }
 

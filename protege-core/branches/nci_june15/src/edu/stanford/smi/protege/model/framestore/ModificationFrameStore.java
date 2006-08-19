@@ -180,7 +180,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getEvents();
     }
 
-    public Set executeQuery(Query query) {
+    public Set<Frame> executeQuery(Query query) {
         return getDelegate().executeQuery(query);
     }
 

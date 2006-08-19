@@ -114,7 +114,7 @@ public interface NarrowFrameStore {
 
     Set<Reference> getMatchingReferences(String value, int maxMatches);
 
-    Set executeQuery(Query query);
+    Set<Frame> executeQuery(Query query);
 
     void deleteFrame(Frame frame);
 

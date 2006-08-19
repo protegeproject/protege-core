@@ -129,7 +129,7 @@ public class PlaceHolderNarrowFrameStore implements NarrowFrameStore {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-	public Set executeQuery(Query query) {
+	public Set<Frame> executeQuery(Query query) {
 
 		throw new UnsupportedOperationException("Not implemented yet");
 	}

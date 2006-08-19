@@ -138,7 +138,7 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         deleteFrameFromCache(frame);
     }
 
-    public Set executeQuery(Query query) {
+    public Set<Frame> executeQuery(Query query) {
         return _delegate.executeQuery(query);
     }
 

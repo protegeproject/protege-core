@@ -73,7 +73,7 @@ public class SimpleFrameStore implements FrameStore {
         return _helper;
     }
 
-    public Set executeQuery(Query query) {
+    public Set<Frame> executeQuery(Query query) {
         return _helper.executeQuery(query);
     }
 

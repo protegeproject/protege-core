@@ -952,7 +952,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
  
-    public Set executeQuery(Query query) {
+    public Set<Frame> executeQuery(Query query) {
         try {
             Set frames = getRemoteDelegate().executeQuery(query, session);
             localize(frames);

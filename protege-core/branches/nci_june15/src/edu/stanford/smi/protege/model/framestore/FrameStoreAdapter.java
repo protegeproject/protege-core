@@ -279,7 +279,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getFacets();
     }
 
-    public Set executeQuery(Query query) {
+    public Set<Frame> executeQuery(Query query) {
         return getDelegate().executeQuery(query);
     }
 
