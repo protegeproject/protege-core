@@ -20,6 +20,10 @@ public class FrameID {
     this.isSystem = isSystem;
   }
   
+  public String getName() {
+    return name;
+  }
+  
   public boolean isSystem() {
     return isSystem;
   }
