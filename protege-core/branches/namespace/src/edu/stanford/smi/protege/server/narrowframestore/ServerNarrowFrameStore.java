@@ -115,12 +115,6 @@ public class ServerNarrowFrameStore
 
 
 
-  public FrameID generateFrameID() throws RemoteException {
-    return fixedDelegate.generateFrameID();
-  }
-
-
-
   public int getFrameCount() throws RemoteException {
     return fixedDelegate.getFrameCount();
   }
