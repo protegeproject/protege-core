@@ -30,10 +30,6 @@ public class PlaceHolderNarrowFrameStore implements NarrowFrameStore {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-	public FrameID generateFrameID() {
-		throw new UnsupportedOperationException("Not implemented yet");
-	}
-
 	public int getFrameCount() {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}

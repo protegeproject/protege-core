@@ -55,9 +55,6 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         return _delegate.getFrame(id);
     }
 
-    public FrameID generateFrameID() {
-        return _delegate.generateFrameID();
-    }
 
     public List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         return _delegate.getValues(frame, slot, facet, isTemplate);

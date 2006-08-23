@@ -43,8 +43,6 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
   private int flushCount = 0;
   
   private FrameFactory ff;
-  private int projectId = FrameID.allocateMemoryProjectPart();
-  private int counter = FrameID.INITIAL_USER_FRAME_ID;
   
   private Map<FrameID, FrameValue> frames = new HashMap<FrameID, FrameValue>();
   
@@ -401,9 +399,6 @@ public class InMemoryFrameDbAlt implements NarrowFrameStore {
     return null;
   }
 
-  public FrameID generateFrameID() {
-    return FrameID.createLocal(projectId, counter++);
-  }
 
   public int getFrameCount() {
     return frames.size();

@@ -1011,7 +1011,7 @@ public class SimpleFrameStore implements FrameStore {
 
     private FrameID ensureValid(FrameID id, String name) {
         if (id == null) {
-            id = _helper.generateFrameID();
+            id = new FrameID(name);
         }
         return id;
     }

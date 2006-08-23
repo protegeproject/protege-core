@@ -37,8 +37,6 @@ public interface NarrowFrameStore {
 
     NarrowFrameStore getDelegate();
 
-    FrameID generateFrameID();
-
     int getFrameCount();
 
     int getClsCount();

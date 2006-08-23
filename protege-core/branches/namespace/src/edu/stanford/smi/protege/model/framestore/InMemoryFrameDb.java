@@ -42,9 +42,6 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     private Map valueToRecordsMap = new LinkedHashMap(INITIAL_MAP_SIZE);
 
     private Record lookupRecord = new Record();
-    private static int counter = FrameID.INITIAL_USER_FRAME_ID;
-    private int projectId = FrameID.allocateMemoryProjectPart();
-
     private String frameDBName;
 
     public Collection getRecords() {
@@ -65,10 +62,6 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     		log.fine("Constructing InMemoryFrameDb with name " + name + " No delegate...");
     	}
         frameDBName = name;
-    }
-
-    public FrameID generateFrameID() {
-        return FrameID.createLocal(projectId, counter++);
     }
 
     public void close() {
