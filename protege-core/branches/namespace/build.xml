@@ -86,17 +86,20 @@
 	<!-- =================================================================== -->
 	
 	<!-- JAVACC -->
+
+        <target name = "clean-clips">
+	  <!-- Delete these files because Ant's javacc task won't regenerate files when the date on the files is the same as the date on the grammer file (Parser.jj) -->
+	  <delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
+	  <delete file = "${src}/edu/stanford/smi/protege/storage/clips/Parser.java"/>
+	  <delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParserConstants.java"/>
+	  <delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParserTokenManager.java"/>
+	  <delete file = "${src}/edu/stanford/smi/protege/storage/clips/SimpleCharStream.java"/>
+	  <delete file = "${src}/edu/stanford/smi/protege/storage/clips/Token.java"/>
+	  <delete file = "${src}/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
+        </target>
 	
 	<!-- =================================================================== -->
-	<target name = "javacc" depends = "prepare">
-		<!-- Delete these files because Ant's javacc task won't regenerate files when the date on the files is the same as the date on the grammer file (Parser.jj) -->
-		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
-		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Parser.java"/>
-		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParserConstants.java"/>
-		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParserTokenManager.java"/>
-		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/SimpleCharStream.java"/>
-		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Token.java"/>
-		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
+	<target name = "javacc" depends = "prepare,clean-clips">
 		<!-- Run JavaCC on Parser.jj to regenerate files that were deleted in above step. -->
 		<javacc javacchome = "${javacc.home}/bin/lib" target = "${scripts}/Parser.jj" outputdirectory = "${src}/edu/stanford/smi/protege/storage/clips"/>  
 	</target>  
@@ -106,7 +109,13 @@
 	
 	<!-- =================================================================== -->
 	<target name = "compile" depends = "prepare, javacc">    
-		<javac srcdir = "${src}" destdir = "${classes}" deprecation = "{deprecation}" debug = "${debug}" optimize = "${optimize}" includeAntRuntime = "${includeAntRuntime}" source = "${source}">      
+		<javac srcdir = "${src}" 
+                       destdir = "${classes}" 
+                       deprecation = "{deprecation}" 
+                       debug = "${debug}" 
+                       optimize = "${optimize}" 
+                       includeAntRuntime = "${includeAntRuntime}" 
+                       source = "${source}">
 			<classpath refid = "project.classpath"/>    
 		</javac>    
 		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.Server"/>    
@@ -200,7 +209,7 @@
 	<!-- CLEAN -->
 	
 	<!-- =================================================================== -->
-	<target name = "clean" description = "clean up">    
+	<target name = "clean" description = "clean up" depends="clean-clips">
 		<delete dir = "${classes}"/>  
 		<delete dir = "${dist}"/>
 		<delete dir = "${javadocs}"/>
