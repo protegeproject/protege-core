@@ -1650,9 +1650,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return returnFrame;
     }
 
-    public FrameID generateFrameID() {
-        return FrameID.createLocal(projectId, getNextFrameID());
-    }
 
     private int getNextFrameID() {
         try {
