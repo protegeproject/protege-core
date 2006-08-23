@@ -1,25 +1,45 @@
 package edu.stanford.smi.protege.widget;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import javax.swing.text.html.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLFrameHyperlinkEvent;
 
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.URIUtilities;
+import edu.stanford.smi.protege.util.ViewAction;
 
 /**
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class URLWidget extends TextComponentWidget {
+  
     private JEditorPane urlDisplay;
 
     public void initialize() {
@@ -108,9 +128,11 @@ public class URLWidget extends TextComponentWidget {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         try {
-                            urlDisplay.setPage(url);
+                          urlDisplay.setPage(url);
                         } catch (IOException e) {
-                          Log.getLogger().log(Level.INFO, "Exception caught", e);
+                          urlDisplay.setText("<HTML><BODY><H3>Cannot Find This Webpage</H3></HTML>");
+                        } catch (Throwable t) {
+                          Log.getLogger().log(Level.INFO, "Exception caught", t);
                         }
                     }
                 });
@@ -159,6 +181,7 @@ public class URLWidget extends TextComponentWidget {
 // Copied straight out of the JEditerPane documentation
 
 class Hyperactive implements HyperlinkListener {
+    private static Logger log = Log.getLogger(URLWidget.class);
 
     public void hyperlinkUpdate(HyperlinkEvent e) {
         if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
@@ -171,7 +194,7 @@ class Hyperactive implements HyperlinkListener {
                 try {
                     pane.setPage(e.getURL());
                 } catch (Throwable t) {
-                    t.printStackTrace();
+                  log.log(Level.SEVERE, "Exception caught", t);
                 }
             }
         }

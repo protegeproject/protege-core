@@ -1,10 +1,11 @@
-package edu.stanford.smi.protege.server;
+package edu.stanford.smi.protege.server.framestore;
 
 import java.rmi.*;
 import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.query.*;
+import edu.stanford.smi.protege.server.RemoteSession;
 
 public interface RemoteServerFrameStore extends Remote {
 
@@ -163,7 +164,7 @@ public interface RemoteServerFrameStore extends Remote {
     void moveDirectType(Instance instance, Cls type, int index, RemoteSession session) throws RemoteException;
 
     // events
-    List getEvents(RemoteSession session) throws RemoteException;
+    List<EventObject> getEvents(RemoteSession session) throws RemoteException;
 
     // arbitrary queries
     Set getReferences(Object object, RemoteSession session) throws RemoteException;

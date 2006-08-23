@@ -26,6 +26,7 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
   private ValueCachingNarrowFrameStore delegate;
   private DatabaseFrameDb frameDb;
   private Map<Integer, String> includedIdCache = new HashMap<Integer, String>();
+  private int dbCallCounter = 0;
   
   private String tableName;
   
@@ -87,24 +88,26 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
       execute(cmd, connection);
       execute(cmd2, connection);
     } catch (SQLException sqle) {
-        String message = sqle.getMessage();
-        if (message != null && !message.contains("already exists")) {
-          Log.getLogger().config("Exception caught - possible cause - table already exists (which is ok) " + sqle);
-          if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "Exception caught - possible cause - table already exists", sqle);
-          }
-        } else {
-          Log.getLogger().config("Table " + tableName + " already exists");
-        }
+      // TODO - this should be fixed - check if the table is present first.
+      if (Log.getLogger().isLoggable(Level.FINE)) {
+        Log.getLogger().fine("Exception caught creating database" + sqle);
+        Log.getLogger().fine(" ... but expecting an already created exception");
+      }
     }
   }
 
   @Override
   public boolean isLocalFrameIncluded(Frame frame) {
+    if (noIncludedFrames()) {
+      return false;
+    }
     return getLocalIncludedName(frame) != null;
   }
   
   private String getLocalIncludedName(Frame frame) {
+    if (noIncludedFrames()) {
+      return null;
+    }
     Integer localId = new Integer(frame.getFrameID().getLocalPart());
     String name = includedIdCache.get(localId);
     if (name != null) {
@@ -134,16 +137,22 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
     if (log.isLoggable(Level.FINEST) && frame != null) {
       log.finest("(" + memoryProjectId + ") Mapping local frame with id " + frame.getFrameID());
     }
-    if (frame == null  || frame.getFrameID().isSystem()) {
+    if (noIncludedFrames() || frame == null  || frame.getFrameID().isSystem()) {
       return frame;
     }
     String name = getLocalIncludedName(frame);
     if (name != null) {
       Frame globalFrame = getIncludedFrames().getInheritedFrame(name);
-      if (log.isLoggable(Level.FINEST)) {
-        log.finest("returning global frame with id = " + globalFrame.getFrameID());
+      // Not clear that globalFrame should be able to be null at this point
+      // But OWL does this (imported projects are marked as included but there 
+      // is no including frame store)
+      // TODO -- fix OWL?
+      if (globalFrame != null) {
+        if (log.isLoggable(Level.FINEST)) {
+          log.finest("returning global frame with id = " + globalFrame.getFrameID());
+        }
+        return globalFrame;
       }
-      return globalFrame;
     }
     if (log.isLoggable(Level.FINEST)) {
       log.finest("Global frame = local frame - no mapping found.");
@@ -184,11 +193,16 @@ public class IncludingDatabaseAdapter extends IncludingKBAdapter
   }
   
   public ResultSet executeQuery(String cmd) throws SQLException {
+    long startTime = 0;
     if (log.isLoggable(Level.FINER)) {
       log.finer("Executing database query = " + cmd);
+      startTime = System.currentTimeMillis();
     }
     Statement statement = frameDb.getCurrentConnection().getStatement();
     ResultSet rs = statement.executeQuery(cmd);
+    if (log.isLoggable(Level.FINER)) {
+      log.finer("Database query took " + (System.currentTimeMillis() - startTime) + " milliseconds");
+    }
     return rs;
   }
   

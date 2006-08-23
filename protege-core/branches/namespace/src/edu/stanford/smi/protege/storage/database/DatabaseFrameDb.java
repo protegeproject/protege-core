@@ -32,8 +32,8 @@ import edu.stanford.smi.protege.model.framestore.ReferenceImpl;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.Server;
-import edu.stanford.smi.protege.server.ServerFrameStore;
 import edu.stanford.smi.protege.server.Session;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 
@@ -175,7 +175,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         Object currentSession = getCurrentSession();
         RobustConnection connection = new RobustConnection(_driver, _url, _user, _password);
         _connections.put(currentSession, connection);
-        Log.getLogger().info("Created connection for " + currentSession);
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("Created connection for " + currentSession);  
+        }
         return connection;
     }
 
@@ -264,7 +266,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         try {
             executeUpdate(createTableString);
-            Log.getLogger().info("Created table with command '" + createTableString + "'");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Created table with command '" + createTableString + "'");
+            }
         } catch (SQLException e) {
             StringBuffer buffer = new StringBuffer();
             buffer.append("Failed to create table on database ");
@@ -317,7 +321,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
       try {
         if (getCurrentConnection().isMySql() 
             && getCurrentConnection().getDatabaseMajorVersion() == 5) {
-          Log.getLogger().info("Found mysql 5.0 - correcting for mysql bug 16121.");
+          if (log.isLoggable(Level.FINE)) {
+            log.fine("Found mysql 5.0 - correcting for mysql bug 16121.");
+          }
           return true;
         }
       } catch (Exception e) {
@@ -1536,7 +1542,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         command.append("SELECT COUNT(*) FROM " + _table);
         command.append(" WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME));
         command.append(" AND " + FACET_COLUMN + " = " + FrameID.NULL_FRAME_ID_VALUE);
-        command.append(" AND " + IS_TEMPLATE_COLUMN + " = false");
+        command.append(" AND " + IS_TEMPLATE_COLUMN + " = ?");
         command.append(" AND (");
         boolean isFirst = true;
         Iterator i = types.iterator();
@@ -1551,8 +1557,10 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             command.append(intValue.intValue());
         }
         command.append(")");
+        PreparedStatement stmt = getCurrentConnection().getPreparedStatement(command.toString());
+        setIsTemplate(stmt, 1, false);
         int count = -1;
-        ResultSet rs = executeQuery(command.toString());
+        ResultSet rs = executeQuery(stmt);
         while (rs.next()) {
             count = rs.getInt(1);
         }
@@ -1577,9 +1585,10 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             _countFramesText = "SELECT COUNT(*) FROM " + _table;
             _countFramesText += " WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME);
             _countFramesText += " AND " + FACET_COLUMN + " = " + FrameID.NULL_FRAME_ID_VALUE;
-            _countFramesText += " AND " + IS_TEMPLATE_COLUMN + " = false";
+            _countFramesText += " AND " + IS_TEMPLATE_COLUMN + " = ?";
         }
         PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_countFramesText);
+        setIsTemplate(stmt, 1, false);
 
         int count = -1;
         ResultSet rs = executeQuery(stmt);

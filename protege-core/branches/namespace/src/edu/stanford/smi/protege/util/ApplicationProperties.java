@@ -32,9 +32,11 @@ public class ApplicationProperties {
     public static final String BROWSER = "browser.html";
     private static final String AUTOSYNCHRONIZE_PROPERTY = "trees.autosynchronize";
     private static final String PRETTY_PRINT_SLOT_WIDGET_LABELS = "labels.pretty_print";
-    
+
     public static final String LOG_FILE_PROPERTY = "java.util.logging.config.file";
     public static final String LOG_DEBUG_PROPERTY = "log.config.debug";
+
+    public static final String REMOTE_CLIENT_PRELOAD = "remote.client.preload";
 
     private static final Properties PROPERTIES = new Properties();
     private static File _propertyFile;
@@ -357,7 +359,7 @@ public class ApplicationProperties {
     }
 
     public static String getGettingStartedURLString() {
-        return "http://protege.stanford.edu/doc/tutorial/get_started";
+        return "http://protege.stanford.edu/doc/tutorial/get_started/table_of_content.html";
     }
 
     public static String getFAQURLString() {

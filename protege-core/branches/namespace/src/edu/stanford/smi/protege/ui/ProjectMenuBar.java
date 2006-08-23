@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.plugin.*;
 import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.widget.WidgetUtilities;
 
 /**
  * The main menu bar for the application.
@@ -221,12 +222,15 @@ public class ProjectMenuBar extends JMenuBar {
 
     private static JMenu createExportSubmenu() {
         JMenu menu = ComponentFactory.createMenu(ResourceKey.PROJECT_EXPORT_TO_FORMAT);
-        menu.setEnabled(ProjectManager.getProjectManager().getCurrentProject() != null);
+        Project prj = ProjectManager.getProjectManager().getCurrentProject();
+        menu.setEnabled(prj != null);
         Collection classNames = PluginUtilities.getAvailableExportPluginClassNames();
         Iterator i = getSortedPlugins(classNames).iterator();
         while (i.hasNext()) {
             ExportPlugin plugin = (ExportPlugin) i.next();
-            createItem(menu, new ExportPluginAction(plugin));
+            ExportPluginAction exportAction = new ExportPluginAction(plugin);
+            exportAction.setEnabled(WidgetUtilities.isSuitableExport(prj, plugin));
+            createItem(menu, exportAction);            
         }
         if (menu.getItemCount() == 0) {
             menu.setEnabled(false);

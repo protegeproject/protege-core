@@ -1,11 +1,23 @@
 package edu.stanford.smi.protege.widget;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.plugin.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.ValueType;
+import edu.stanford.smi.protege.model.WidgetDescriptor;
+import edu.stanford.smi.protege.plugin.PluginUtilities;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.StringUtilities;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * Determines the mapping between a slot and its default widget.  Widgets declare themselves in their manifest file to
@@ -18,6 +30,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DefaultWidgetMapper implements WidgetMapper {
+    private Logger log = Log.getLogger(DefaultWidgetMapper.class);
     private final static String METHOD_NAME = "isSuitable";
     private final static Class[] METHOD_ARG_CLASSES = new Class[] { Cls.class, Slot.class, Facet.class };
 
@@ -79,8 +92,8 @@ public class DefaultWidgetMapper implements WidgetMapper {
                 isSuitable = result.booleanValue();
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            isSuitable = false;
+          log.log(Level.SEVERE, "Exception caught", e);
+          isSuitable = false;
         }
         return isSuitable;
     }

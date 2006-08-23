@@ -296,7 +296,8 @@ public class ProjectView extends JComponent {
                 addTab(d);
             }
         }
-        _viewHolder.setSelectedIndex(0);
+        if (_viewHolder.getComponentCount() > 0)
+        	_viewHolder.setSelectedIndex(0);
         setBorder(BorderFactory.createLoweredBevelBorder());
         return (JComponent) _viewHolder;
     }
@@ -406,7 +407,7 @@ public class ProjectView extends JComponent {
             WidgetDescriptor d = (WidgetDescriptor) i.next();
             if (d.isVisible()) {
                 int currentIndex = getTabIndex(d);
-                if (currentIndex != index) {
+                if (currentIndex != index && currentIndex != -1) {
                     TabWidget tab = (TabWidget) _viewHolder.getComponent(currentIndex);
                     addTab(tab, index);
                 }

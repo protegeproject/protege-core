@@ -7,6 +7,8 @@ import java.util.*;
 import javax.swing.*;
 
 import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.plugin.ExportPlugin;
+import edu.stanford.smi.protege.plugin.ProjectPlugin;
 import edu.stanford.smi.protege.util.*;
 
 /**
@@ -115,6 +117,27 @@ public class WidgetUtilities {
         } catch (Exception e) {
             // do nothing
         }
+        return isSuitable;
+    }
+    
+    private static final String IS_EXPORT_SUITABLE_METHOD_NAME = "isSuitable";
+    //private static final Class[] IS_EXPORT_SUITABLE_METHODS_ARGS = new Class[] { Project.class, Collection.class };
+    private static final Class[] IS_EXPORT_SUITABLE_METHODS_ARGS = new Class[] { Project.class };
+    
+    public static boolean isSuitableExport(Project project, ExportPlugin exportPlugin) {
+        boolean isSuitable;
+        try {           
+            Method method = exportPlugin.getClass().getMethod(IS_EXPORT_SUITABLE_METHOD_NAME, IS_EXPORT_SUITABLE_METHODS_ARGS);            
+            Boolean returnValue = (Boolean) method.invoke(exportPlugin, new Object[] { project });
+            isSuitable = returnValue.booleanValue();
+        } catch (NoSuchMethodException e) {
+            isSuitable = true;
+        } catch (Exception e) {
+            isSuitable = false;
+            //Log.getLogger().warning(Log.toString(e));
+            Log.getLogger().warning(e.getMessage());
+        }
+        // Log.getLogger().info("is suitable=" + isSuitable + " " + projectPlugin);
         return isSuitable;
     }
 }

@@ -171,7 +171,9 @@ public class Project {
 
     private KnowledgeBaseListener _knowledgeBaseListener = new KnowledgeBaseAdapter() {
         public void clsDeleted(KnowledgeBaseEvent event) {
-            // Log.enter(this, "clsDeleted", event);
+            if (log.isLoggable(Level.FINE)) {
+              log.fine("clsDeleted for project " + this + " event = " + event);
+            }
             Cls cls = event.getCls();
             _activeClsWidgetDescriptors.remove(cls);
             ClsWidget widget = (ClsWidget) _cachedDesignTimeClsWidgets.remove(cls);
@@ -236,7 +238,9 @@ public class Project {
     protected Project(URI uri, KnowledgeBaseFactory factory, Collection errors,
             boolean createDomainKB, boolean isMultiUserServer) {
         this.isMultiUserServer = isMultiUserServer;
-        // Log.enter(this, "Project", uri);
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("Creating Project " + uri + " multiserver = " + isMultiUserServer);
+        }
         setProjectURI(uri);
         _projectKB = loadProjectKB(uri, factory, errors);
         if (_projectKB != null) {
@@ -304,7 +308,7 @@ public class Project {
         return p;
     }
 
-    private void createDomainKB(KnowledgeBaseFactory factory, Collection errors) {
+    private boolean createDomainKB(KnowledgeBaseFactory factory, Collection errors) {
         if (factory == null) {
             factory = getKnowledgeBaseFactory();
         }
@@ -312,7 +316,7 @@ public class Project {
         	String errorMsg = "Cannot find knowledgebase factory: " + getSources().getString(KnowledgeBaseFactory.FACTORY_CLASS_NAME) + "\nPlease check that you have the required plug-in.";
         	Log.getLogger().severe(errorMsg);
         	errors.add(errorMsg);
-        	return;
+        	return false;
         }
         _domainKB = factory.createKnowledgeBase(errors);
         Iterator i = getProjectSlotValues(SLOT_JAVA_PACKAGES).iterator();
@@ -323,6 +327,7 @@ public class Project {
         _domainKB.setProject(this);
         _frameCounts.updateSystemFrameCounts(_domainKB);
         setKnowledgeBaseFactory(factory);
+        return true;
     }
 
     /**
@@ -331,8 +336,9 @@ public class Project {
      */
     public void createDomainKnowledgeBase(KnowledgeBaseFactory factory, Collection errors,
             boolean load) {
-        createDomainKB(factory, errors);
-
+        if (!createDomainKB(factory, errors))
+        	return;
+        
         if (load) {
             MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(_domainKB);
             if (mnfs != null) {
@@ -344,11 +350,13 @@ public class Project {
                 mnfs.setQueryAllFrameStores(false);
             }
         }
-        _domainKB.addKnowledgeBaseListener(_knowledgeBaseListener);
-        loadCachedKnowledgeBaseObjects(_projectInstance);
-        _domainKB.setGenerateEventsEnabled(true);
-        _domainKB.setChanged(false);
-        _projectKB.setChanged(false);
+        
+       	_domainKB.addKnowledgeBaseListener(_knowledgeBaseListener);
+       	loadCachedKnowledgeBaseObjects(_projectInstance);
+       	_domainKB.setGenerateEventsEnabled(true);
+       	_domainKB.setChanged(false);
+       	_projectKB.setChanged(false);
+        
     }
 
     /*
@@ -923,21 +931,6 @@ public class Project {
         return _widgetMapper.getSuitableWidgetClassNames(cls, slot, facet);
     }
 
-    /*
-    public WidgetDescriptor getTabWidgetDescriptor(String widgetName) {
-        WidgetDescriptor descriptor = null;
-        Iterator i = getProjectSlotValues(SLOT_TABS).iterator();
-        while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
-            WidgetDescriptor d = WidgetDescriptor.create(instance);
-            if (widgetName.equals(d.getWidgetClassName())) {
-                descriptor = d;
-                break;
-            }
-        }
-        return descriptor;
-    }
-    */
 
     public WidgetDescriptor getTabWidgetDescriptor(String widgetName) {
         WidgetDescriptor descriptor = null;
@@ -967,14 +960,10 @@ public class Project {
                 }
                 if (PluginUtilities.isLoadableClass(name)) {
                     _tabWidgetDescriptors.add(d);
-                } else {
-                	if (log.isLoggable(Level.INFO)) {
-                		log.info("Could not find slot tab classname " + name);
-                	}
                 }
                 boolean removed = availableTabNames.remove(name);
-                if (!removed && log.isLoggable(Level.INFO)) {
-                	log.info("tab " + name + " not in manifest");
+                if (!removed && log.isLoggable(Level.FINE)) {
+                  log.fine("tab " + name + " not in manifest");
                 }
             }
 

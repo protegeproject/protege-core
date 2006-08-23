@@ -6,8 +6,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.Project;
@@ -24,7 +27,7 @@ import edu.stanford.smi.protege.util.PropertyList;
  */
 public abstract class APITestCase extends AbstractTestCase {
     private Collection _firedEvents = new ArrayList();
-    private static Properties _dbProperties = null;
+    private static Properties _junitProperties = null;
     private static final String DB_PREFIX = "junit.db.";
 
     public enum DBType {
@@ -98,27 +101,38 @@ public abstract class APITestCase extends AbstractTestCase {
       return null;
     }
 
+    private static Set<DBType> informedDBConfigured = EnumSet.noneOf(DBType.class);
+ 
     public static boolean dbConfigured() {
-      Properties dbp = getDBProperties();
+      Properties dbp = getJunitProperties();
       if (dbp == null) {
         return false;
       }
       String configured = getDBProperty("configured");
       if (configured == null || !configured.toLowerCase().equals("true")) {
+        if (!informedDBConfigured.contains(_dbType)) {
+          System.out.println("Database Tests for " + _dbType + " not configured");
+          informedDBConfigured.add(_dbType);
+        }
         return false;
+      }
+      if (!informedDBConfigured.contains(_dbType)) {
+        System.out.println("Database Tests for " + _dbType + " configured");
+        informedDBConfigured.add(_dbType);
       }
       return true;
     }
     
     private static String getDBProperty(String prop) {
-      Properties dbp = getDBProperties();
+      Properties dbp = getJunitProperties();
       return dbp.getProperty(DB_PREFIX + _dbType + "." + prop);
     }
     
+    private static boolean informedNoConfigurationFile = false;
     
-    private static Properties getDBProperties() {
-      if (_dbProperties != null) {
-        return _dbProperties;
+    public static Properties getJunitProperties() {
+      if (_junitProperties != null) {
+        return _junitProperties;
       }
       try {
         Properties dbp = new Properties();
@@ -127,9 +141,13 @@ public abstract class APITestCase extends AbstractTestCase {
                                    + "junit.properties";
         InputStream is = new FileInputStream(dbPropertyFile);
         dbp.load(is);
-        _dbProperties = dbp;
-        return _dbProperties;
+        _junitProperties = dbp;
+        return _junitProperties;
       } catch (Exception e) {
+        if (!informedNoConfigurationFile) {
+          System.out.println("No configuration file for tests");
+          informedNoConfigurationFile = true;
+        }
         return null;
       }
     }

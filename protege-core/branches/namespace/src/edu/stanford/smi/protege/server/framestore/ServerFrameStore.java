@@ -1,24 +1,61 @@
-package edu.stanford.smi.protege.server;
+package edu.stanford.smi.protege.server.framestore;
 
-import java.rmi.*;
-import java.rmi.server.*;
-import java.util.*;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.model.query.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.Sft;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.server.Registration;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.LocalizeUtils;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class ServerFrameStore extends UnicastRemoteObject implements RemoteServerFrameStore {
+    private static transient Logger log = Log.getLogger(ServerFrameStore.class);
+  
     private FrameStore _delegate;
+    private FrameStore _wrappedDelegate;
     private KnowledgeBase _kb;
     private List _events = new ArrayList();
-    private Map _sessionToRegistrationMap = new HashMap();
+    private Map<RemoteSession, Registration> _sessionToRegistrationMap 
+      = new HashMap<RemoteSession, Registration>();
     private boolean _isDirty;
     private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
     private static final int MAX_VALUES = 20;
     private static final int MIN_PRELOAD_FRAMES = Integer.getInteger("preload.frame.limit", 5000).intValue();
+    /*
+     * A performance hack Indentical copies of the same sft are reduced to the same object so that only a single copy
+     * needs to be sent over the wire.
+     */
+    private Map<Sft,Sft> sftMap = new HashMap<Sft,Sft>();
 
+    
     //ESCA-JAVA0160 
     public ServerFrameStore(FrameStore delegate, KnowledgeBase kb) throws RemoteException {
         _delegate = delegate;
@@ -223,6 +260,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public synchronized List getDirectOwnSlotValues(Frame frame, Slot slot, RemoteSession session) {
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("getDirectOwnSlotValues for frame " + frame.getFrameID() + " slot " + slot.getFrameID());
+        }
         recordCall(session);
         return getDelegate().getDirectOwnSlotValues(frame, slot);
     }
@@ -485,7 +525,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return "ServerFrameStoreImpl";
     }
 
-    public synchronized List getEvents(RemoteSession session) {
+    public synchronized List<EventObject> getEvents(RemoteSession session) {
         recordCall(session);
         List events;
         List newEvents = getDelegate().getEvents();
@@ -493,7 +533,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             events = newEvents;
         } else {
             _events.addAll(newEvents);
-            Registration reg = (Registration) _sessionToRegistrationMap.get(session);
+            Registration reg = _sessionToRegistrationMap.get(session);
             if (reg == null) {
                 throw new IllegalStateException("Not registered");
             }
@@ -504,7 +544,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                 events = Collections.EMPTY_LIST;
             } else {
                 events = new ArrayList(_events.subList(lastEvent, size));
-                // Log.trace(session + " events=" + events, this, "getEvents");
+                if (log.isLoggable(Level.FINE)) {
+                  log.fine("" + session + " events=" + events);
+                }
             }
         }
         // edu.stanford.smi.protege.util.Log.enter(this, "getEvents", session,
@@ -596,8 +638,20 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public synchronized Map getFrameValues(Collection frames, RemoteSession session) {
+        long start = 0;
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("calling getFrameValues");
+          start = System.currentTimeMillis();
+        }
+        
         recordCall(session);
-        return getFrameValues(frames, false);
+        Map result =  getFrameValues(frames, false);
+        
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("getFrameValues took " + (System.currentTimeMillis() - start) + " milliseconds");
+        }
+        
+        return result;
     }
 
     private void localize(Collection frames) {
@@ -607,12 +661,18 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private Map getFrameValues(Collection frames, boolean includeAllSlots) {
         localize(frames);
         frames = supplementFrames(frames);
-        // Log.getLogger().info(_kb.getName() + " getFrameValues: " +
-        // CollectionUtilities.toString(frames));
+        if (log.isLoggable(Level.FINER)) {
+          log.fine(_kb.getName() + " getFrameValues: " + CollectionUtilities.toString(frames));
+        }
         HashMap map = new LinkedHashMap();
         Iterator i = frames.iterator();
         while (i.hasNext()) {
             Frame frame = (Frame) i.next();
+            long startTime = 0;
+            if (log.isLoggable(Level.FINE)) {
+              startTime = System.currentTimeMillis();
+              log.fine("Started getting values for frame (" + frame.getFrameID() + ")");
+            }
             Map sftValues = (Map) map.get(frame);
             if (sftValues == null) {
                 sftValues = new LinkedHashMap();
@@ -621,6 +681,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             insertOwnSlots(sftValues, frame, includeAllSlots);
             if (frame instanceof Cls) {
                 insertTemplateValues(sftValues, (Cls) frame);
+            }
+            if (log.isLoggable(Level.FINE)) {
+              log.fine("Got frame value in " + (System.currentTimeMillis() - startTime) + " milliseconds");
             }
         }
         return map;
@@ -673,11 +736,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
     }
 
-    /*
-     * A performance hack Indentical copies of the same sft are reduced to the same object so that only a single copy
-     * needs to be sent over the wire.
-     */
-    private Map sftMap = new HashMap();
 
     private Sft getSft(Slot slot, Facet facet, boolean isTemplate) {
         Sft sft = new Sft(slot, facet, isTemplate);

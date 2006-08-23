@@ -13,6 +13,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.LogManager;
 
+
 /**
  * A utility class that prints trace messages of various sorts to a log. By
  * default the "log" is the err console but it could be directed elsewhere.
@@ -64,8 +65,13 @@ public class Log {
     private static boolean configuredByFile = false;
     
     static {
+      boolean configured = false;
       String logProperty = ApplicationProperties.LOG_FILE_PROPERTY;
-      String rootDir = System.getProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
+      //String rootDir = System.getProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
+      //String rootDir = ApplicationProperties.getApplicationDirectory().getAbsolutePath();
+      //this call avoids premature initialization of ApplicationProperties and SystemUtilities which caused other initializatino problems (look and feel)
+      //TODO: find a better way to do the initialization
+      String rootDir = getApplicationDirectory().getAbsolutePath();
       try {
         if (System.getProperty(logProperty) != null) {
           if (debug) {
@@ -73,6 +79,7 @@ public class Log {
           }
           // already configured...
           configuredByFile = true;
+          configured = true;
         } else if (rootDir != null) {
           File logconfig = new File(rootDir + File.separator + "logging.properties");
           if (debug) {
@@ -85,18 +92,21 @@ public class Log {
             System.setProperty(logProperty, logconfig.getAbsolutePath());
             LogManager.getLogManager().readConfiguration();
             configuredByFile = true;
+            configured = true;
             if (debug) {
               System.out.println("Configuration done by util.Log class ");
             }
-          } else {
-            Log.getLogger().info("No log configuration file available");
           }
         }
       } catch (Exception e) {
         Log.getLogger().log(Level.WARNING, "Could not set up class specific logging", e);
       }
-      Logger rootlog = Logger.getLogger("");
-      rootlog.setLevel(Level.WARNING);
+      if (!configured) {
+    	  if (debug) {
+    		  System.out.println("using default configuration.");
+    	  }
+          Log.getLogger().setLevel(Level.CONFIG);
+      }
       // Example of programatic level setting
       // Logger.getLogger("edu.stanford.smi.protege.model.framestore").setLevel(Level.FINEST);
     }
@@ -571,6 +581,12 @@ public class Log {
         return logger;
     }
     
+    public static void emptyCatchBlock(Throwable t) {
+    	if (getLogger().isLoggable(Level.FINE)) {
+    		getLogger().log(Level.FINE, "Exception Caught", t);
+    	}
+    }
+    
     public static Logger getLogger(Class c) {
         Logger l = Logger.getLogger(c.getName());
         if (!configuredByFile) {     
@@ -632,5 +648,25 @@ public class Log {
             fileHandler.setLevel(Level.ALL);
         }
         return fileHandler;
+    }
+    
+   
+    private static File getApplicationDirectory() {
+        String dir = getSystemProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
+        if (dir == null) {
+            dir = getSystemProperty(ApplicationProperties.CURRENT_WORKING_DIRECTORY);
+        }
+        return dir == null ? null : new File(dir);
+    }
+    
+    
+    private static String getSystemProperty(String property) {
+        String value;
+        try {
+            value = System.getProperty(property);
+        } catch (SecurityException e) {
+            value = null;
+        }
+        return value;
     }
 }

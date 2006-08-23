@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.framestore.*;
 import edu.stanford.smi.protege.plugin.*;
 import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
 import edu.stanford.smi.protege.util.*;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
@@ -79,7 +80,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     public static String getBoundName() {
-        return Text.getProgramName();
+        return Text.getProgramTextName();
     }
 
     protected static String getLocalBoundName() {

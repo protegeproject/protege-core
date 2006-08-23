@@ -2,20 +2,54 @@ package edu.stanford.smi.protege.plugin;
 
 //ESCA*JAVA0100
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.jar.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
-import edu.stanford.smi.protege.widget.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.ValueType;
+import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.DirectoryClassLoader;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.MultiplexingClassLoader;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.widget.ClsWidget;
+import edu.stanford.smi.protege.widget.SlotWidget;
+import edu.stanford.smi.protege.widget.TabWidget;
 
 /**
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class PluginUtilities {
+	private static transient Logger log = Log.getLogger(PluginUtilities.class);
+	
     private static final String TAB_WIDGET = "Tab-Widget";
     private static final String SLOT_WIDGET = "Slot-Widget";
     private static final String CLS_WIDGET = "Cls-Widget";
@@ -36,7 +70,7 @@ public class PluginUtilities {
     private static Map _pluginComponentNameToDocURLMap = new HashMap();
     private static Map _pluginPackageToClassLoaderMap = new HashMap();
     private static String defaultFactoryClassName;
-    private static Map cachedClsesWithAttributeMap = new HashMap();
+    private static Map<String, Collection<Class>> cachedClsesWithAttributeMap = new HashMap<String, Collection<Class>>();
 
     private static File pluginsDir;
 
@@ -110,6 +144,12 @@ public class PluginUtilities {
             setContextClassLoader(loader);
             clas = Class.forName(className, true, loader);
         } catch (ClassNotFoundException e) {
+          // use the default logger because this is an empty catch 
+          // block situation
+            if (Log.getLogger().isLoggable(Level.FINE)) {
+              Log.getLogger().fine("class not found " + e);
+              Log.getLogger().fine("probably just a probe for the class...");
+            }
             if (promiscuous) {
                 clas = promiscuousForName(className);
             }
@@ -130,11 +170,10 @@ public class PluginUtilities {
             try {
                 clas = Class.forName(className, true, loader);
             } catch (ClassNotFoundException e) {
-                // do nothing
-                //ESCA-JAVA0170 
+              Log.getLogger().fine("Class not found " + e);
+              Log.getLogger().fine("probably just a probe for the class...");
             } catch (NoClassDefFoundError error) {
-                // Log.error(error.getMessage(), PluginUtilities.class,
-                // "promiscuousForName", className, loader);
+            	Log.emptyCatchBlock(error);
             }
         }
         return clas;
@@ -677,9 +716,9 @@ public class PluginUtilities {
      * attribute value. If there is a match the associated java Class object is
      * loaded.
      */
-    public static Collection getClassesWithAttribute(String key, String value) {
+    public static Collection<Class> getClassesWithAttribute(String key, String value) {
         // Log.enter(SystemUtilities.class, "getManifestClasses", key, value);
-        Collection classes = getCachedClsesWithAttribute(key, value);
+        Collection<Class> classes = getCachedClsesWithAttribute(key, value);
         if (classes == null) {
             classes = new HashSet();
             Iterator i = _manifestURLs.iterator();
@@ -694,14 +733,14 @@ public class PluginUtilities {
             }
             saveCachedClsesWithAttribute(key, value, classes);
         }
-        return new ArrayList(classes);
+        return new ArrayList<Class>(classes);
     }
 
-    private static Collection getCachedClsesWithAttribute(String key, String value) {
-        return (Collection) cachedClsesWithAttributeMap.get(getKey(key, value));
+    private static Collection<Class> getCachedClsesWithAttribute(String key, String value) {
+        return cachedClsesWithAttributeMap.get(getKey(key, value));
     }
 
-    private static Object getKey(String key, String value) {
+    private static String getKey(String key, String value) {
         return key + "=" + value;
     }
 
@@ -709,9 +748,9 @@ public class PluginUtilities {
         cachedClsesWithAttributeMap.put(getKey(key, value), classes);
     }
 
-    private static Collection getManifestClasses(Manifest manifest, String key, String value) {
-        Collection classes = new HashSet();
-        Iterator i = manifest.getEntries().keySet().iterator();
+    private static Collection<Class> getManifestClasses(Manifest manifest, String key, String value) {
+        Collection<Class> classes = new HashSet<Class>();
+        Iterator<String> i = manifest.getEntries().keySet().iterator();
         while (i.hasNext()) {
             String attributeName = (String) i.next();
             Attributes attributes = manifest.getAttributes(attributeName);

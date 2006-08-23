@@ -7,6 +7,7 @@
 	<!-- Set global properties for this build. -->
 	<property name = "extended.name" value = "${name} ${build.version} ${build.status}"/>
 	<property name = "src" value = "./src"/>  
+        <property name = "junit" value = "./junit"/>
 	<property name = "classes" value = "./classes"/>  
 	<property name = "docs" value = "./docs"/> 
 	<property name = "javadocs" value = "${docs}/apidocs"/>
@@ -17,7 +18,7 @@
         <property name = "plugins" value = "./plugins"/>
 	<!-- Compiler options. -->
 	<property name = "deprecation" value = "on"/>    
-	<property name = "debug" value = "off"/>  
+	<property name = "debug" value = "on"/>  
 	<property name = "optimize" value = "on"/>  
 	<property name = "packages" value = "edu.*"/>  
 	<property name = "includeAntRuntime" value = "no"/>
@@ -110,8 +111,24 @@
 		</javac>    
 		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.Server"/>    
 		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.ServerProject"/>    
-		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.ServerFrameStore"/>  
+		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>  
+		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore"/>  
 	</target>
+
+
+	<target name = "compile-junit" depends = "compile">    
+		<javac srcdir = "${junit}" 
+                       destdir = "${classes}" 
+                       deprecation = "{deprecation}" 
+                       debug = "${debug}" 
+                       optimize = "${optimize}" 
+                       includeAntRuntime = "${includeAntRuntime}" 
+                       source = "${source}">      
+			<classpath refid = "project.classpath"/>    
+		</javac>    
+	</target>
+
+
 	<!-- =================================================================== -->
 	
 	<!-- JAR -->
@@ -126,6 +143,10 @@
 		</copy>    
 		<jar jarfile = "${dist}/protege.jar" basedir = "${classes}" manifest = "${src}/META-INF/MANIFEST.MF"/>  
 	</target>
+
+
+        <target name = "jar-junit" depends="compile, compile-junit, jar"/>
+
 	<!-- =================================================================== -->
 	
 	<!-- JAVADOCS -->
@@ -188,8 +209,11 @@
 	
 	<!-- =================================================================== -->
 
-        <target name = "junit" description = "test the system" depends="jar">
-          <junit  printsummary="withOutAndErr" haltonerror="off" fork="yes">
+        <target name = "junit" 
+                description = "test the system"
+                depends="compile-junit, jar">
+          <junit  printsummary="withOutAndErr" haltonerror="on" fork="yes"
+                  showoutput="yes">
             <classpath refid="project.classpath"/>
             <classpath refid="database.drivers"/>
             <classpath>
@@ -197,12 +221,12 @@
             </classpath>
             <jvmarg value="-Djava.util.logging.config.file=junit-logging.properties"/>
             <batchtest>
-              <fileset dir="${src}">
+              <fileset dir="${junit}">
                 <include name="**/*Test.java"/>
                 <!-- Exclude the graphics tests -->
-                <exclude name="**/Application_Test.java"/>
-                <exclude name="**/action/*.java"/>
-                <exclude name="**/widget/**.java"/>
+                <exclude name="**/*Package_Test.java"/>
+                <!-- what's the story with this one? -->
+                <exclude name="**/framestore/FrameStore_Test.java"/>
               </fileset>
             </batchtest>
           </junit>

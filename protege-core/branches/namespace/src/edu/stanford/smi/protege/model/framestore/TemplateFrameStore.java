@@ -354,7 +354,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getFrames();
     }
 
-    public List getEvents() {
+    public List<EventObject> getEvents() {
         return getDelegate().getEvents();
     }
 }

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -28,6 +29,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
@@ -57,6 +59,8 @@ import edu.stanford.smi.protege.ui.ProjectManager;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ProjectChooser extends JFileChooser {
+    private static Logger log = Log.getLogger(ProjectChooser.class);
+  
     private JPanel pane;
     private CardLayout layout = new CardLayout();
     public static final String FILE_CARD = "File";
@@ -73,7 +77,7 @@ public class ProjectChooser extends JFileChooser {
         setControlButtonsAreShown(false);
         setDialogTitle("Open Project");
         String text = Text.getProgramName() + " Project";
-        ArrayList extensions = new ArrayList();
+        ArrayList<String> extensions = new ArrayList<String>();
         extensions.add(".pprj");
 
         Collection classNames = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames();
@@ -271,18 +275,32 @@ public class ProjectChooser extends JFileChooser {
         return RemoteProjectManager.getInstance().getServerProject(this, server, session);
     }
 
+    //this method should be unified with the same method in ProjectManager
     private Project loadProject(URI uri) {
-        Project project;
+        Project project = null;
         Collection errors = new ArrayList();
         long t1 = System.currentTimeMillis();
         WaitCursor waitCursor = new WaitCursor(this);
         try {
             project = Project.loadProjectFromURI(uri, errors);
-        } finally {
+        } catch (Exception e) {
+            Log.getLogger().log(Level.SEVERE, "Error loading project kb", e);
+            errors.add(e);
+        }  finally {
             waitCursor.hide();
         }
         long t2 = System.currentTimeMillis();
         Log.getLogger().info("Project load time for " + uri + ": " + (t2 - t1) / 1000 + " sec");
+        
+        //TODO: reimplement this when exception handling is improved. Handle here invalid project files 
+        if (project != null && project.getProjectInstance() == null) {
+        	String errorMsg = "Unable to load file: " + uri
+					+ "\nPossible reasons:\n- The file has an unsupported file format\n- The file is not well-formed\n- The project file is corrupt";
+        	Log.getLogger().severe(errorMsg);
+        	errors.add(errorMsg);
+        	JOptionPane.showMessageDialog(ProjectManager.getProjectManager().getMainPanel(), errorMsg, "Invalid project file", JOptionPane.WARNING_MESSAGE);
+        }
+        
         ProjectManager.getProjectManager().displayErrors("Load Project Errors", errors);
         return project;
     }
@@ -309,8 +327,9 @@ public class ProjectChooser extends JFileChooser {
                 }
             }
             catch (Exception ex) {
-                ex.printStackTrace();
-                System.err.println("Warning: Failed handle argument with " + pluginClass + ": " + ex);
+              log.log(Level.WARNING, 
+                      "Warning: Failed handle argument with " + pluginClass,
+                      ex);
             }
         }
         return null;

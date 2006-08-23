@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.server;
 
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore_Test;
 import junit.framework.*;
 
 /**
@@ -11,7 +12,6 @@ public class _ServerPackage_Test {
     public static Test suite() {
         TestSuite suite = new TestSuite("server");
         suite.addTestSuite(Server_Test.class);
-        suite.addTestSuite(RemoteProjectManager_Test.class);
         suite.addTestSuite(RemoteClientFrameStore_Test.class);
         return suite;
     }
