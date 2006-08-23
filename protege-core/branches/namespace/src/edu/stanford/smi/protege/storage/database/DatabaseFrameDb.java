@@ -44,7 +44,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     frame, frame_type, slot, facet, is_template, value_index, value_type, short_value, long_value
   }
   
-  int projectId = FrameID.allocateMemoryProjectPart();
 	
     private static final String FRAME_COLUMN = "frame";
     private static final String FRAME_TYPE_COLUMN = "frame_type";
@@ -66,7 +65,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private FrameFactory _frameFactory;
     private static boolean _isModifiable = true;
 
-    private static int lastReturnedFrameID = FrameID.INITIAL_USER_FRAME_ID - 1;
+    private static int lastReturnedFrameID;
 
     private String frameDbName;
 
@@ -118,9 +117,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
       
     }
     
-    protected void setMemoryProjectId(int memoryProjectId) {
-      projectId = memoryProjectId;
-    }
 
     public void initialize(FrameFactory factory, 
                            String driver, 
@@ -801,8 +797,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private static boolean equals(int frameIDValue, Frame frame) {
-        int value = (frame == null) ? FrameID.NULL_FRAME_ID_VALUE : getValue(frame.getFrameID());
-        return frameIDValue == value;
+        return false;
     }
 
     private String getMatchString(String value) throws SQLException {
@@ -1190,16 +1185,16 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private Frame getFrame(ResultSet rs, int frameIndex, int typeIndex) throws SQLException {
         return DatabaseUtils.getFrame(rs, 
                                       frameIndex, typeIndex,
-                                      _frameFactory, projectId,
+                                      _frameFactory, 0,
                                       _isInclude);
     }
 
     private Slot getSlot(ResultSet rs, int index) throws SQLException {
-        return DatabaseUtils.getSlot(rs, index, _frameFactory, projectId, _isInclude);
+        return DatabaseUtils.getSlot(rs, index, _frameFactory, 0, _isInclude);
     }
 
     private Facet getFacet(ResultSet rs, int index) throws SQLException {
-        return DatabaseUtils.getFacet(rs, index, _frameFactory, projectId, _isInclude);
+        return DatabaseUtils.getFacet(rs, index, _frameFactory, 0, _isInclude);
     }
 
     private static int getIndex(ResultSet rs, int index) throws SQLException {
@@ -1213,7 +1208,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private Object getShortValue(ResultSet rs, int index, int valueTypeIndex) throws SQLException {
       return DatabaseUtils.getShortValue(rs, 
                                          index, valueTypeIndex, 
-                                         _frameFactory, projectId, 
+                                         _frameFactory, 0, 
                                          _isInclude);
     }
 
@@ -1541,7 +1536,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         StringBuffer command = new StringBuffer();
         command.append("SELECT COUNT(*) FROM " + _table);
         command.append(" WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME));
-        command.append(" AND " + FACET_COLUMN + " = " + FrameID.NULL_FRAME_ID_VALUE);
+        command.append(" AND " + FACET_COLUMN + " = " + 0);
         command.append(" AND " + IS_TEMPLATE_COLUMN + " = ?");
         command.append(" AND (");
         boolean isFirst = true;
@@ -1584,7 +1579,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         if (_countFramesText == null) {
             _countFramesText = "SELECT COUNT(*) FROM " + _table;
             _countFramesText += " WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME);
-            _countFramesText += " AND " + FACET_COLUMN + " = " + FrameID.NULL_FRAME_ID_VALUE;
+            _countFramesText += " AND " + FACET_COLUMN + " = " + 0; // fix these...
             _countFramesText += " AND " + IS_TEMPLATE_COLUMN + " = ?";
         }
         PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_countFramesText);
@@ -1634,7 +1629,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             if (id != null) {
                 // get the prepared statement and set the id value
                 PreparedStatement getFrameStmt = getCurrentConnection().getPreparedStatement(_getFrameFromIdText);
-                getFrameStmt.setInt(1, id.getLocalPart());
+                getFrameStmt.setInt(1, 0); // fix this
 
                 // execute the query and retrieve the result frame
                 ResultSet rs = executeQuery(getFrameStmt);

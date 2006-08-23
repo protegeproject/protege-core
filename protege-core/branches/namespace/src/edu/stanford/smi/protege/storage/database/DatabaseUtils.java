@@ -35,7 +35,8 @@ class DatabaseUtils {
     private static final char SINGLE_QUOTE = '\'';
 
     public static int getValue(FrameID id) {
-        return id.getLocalPart();
+        //return id.getLocalPart();
+      return 0;
     }
 
     public static int getStringValueType() {
@@ -51,12 +52,12 @@ class DatabaseUtils {
     }
 
     private static void setId(PreparedStatement stmt, int index, FrameID id) throws SQLException {
-        int idValue = (id == null) ? FrameID.NULL_FRAME_ID_VALUE : getValue(id);
+        int idValue = (id == null) ? 0 : getValue(id);
         stmt.setInt(index, idValue);
     }
 
     private static String getFrameIDValueString(FrameID id) {
-        return (id == null) ? "0" : String.valueOf(id.getLocalPart());
+        return (id == null) ? "0" : String.valueOf(0);
     }
 
     public static void setValueType(PreparedStatement stmt, int index, Object o, FrameFactory factory)
@@ -239,10 +240,10 @@ class DatabaseUtils {
         FrameID id;
         if (value == 0) {
             id = null;
-        } else if (value < FrameID.INITIAL_USER_FRAME_ID) {
-            id = FrameID.createSystem(value);
+        } else if (value < 0) {
+            id = null;
         } else {
-            id = FrameID.createLocal(projectId, value);
+            id = null;
         }
         return id;
     }

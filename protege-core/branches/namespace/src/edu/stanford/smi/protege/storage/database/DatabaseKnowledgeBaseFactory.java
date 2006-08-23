@@ -179,16 +179,6 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
         return null;
     }
     
-    private static IncludingDatabaseAdapter getIncludingDatabaseAdapter(KnowledgeBase kb) {
-      NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb); // Assumes this is the top
-                                                              // of the narrow frame stores.
-      while ((nfs = nfs.getDelegate()) != null) {
-        if (nfs instanceof IncludingDatabaseAdapter) {
-          return (IncludingDatabaseAdapter) nfs;
-        }
-      }
-      return null;
-    }
 
     public static void setDriver(PropertyList sources, String driver) {
         sources.setString(DRIVER_PROPERTY, driver);
@@ -223,13 +213,6 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
       return;
     }
 
-    public IncludingDatabaseAdapter createNarrowFrameStore(String name) {
-      DatabaseFrameDb store = new DatabaseFrameDb();
-      ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
-      IncludingDatabaseAdapter ida = new IncludingDatabaseAdapter(vcnfs);
-      ida.setName(name);
-      return ida;
-    }
     
     protected void insertKB(KnowledgeBase kb, String name, Collection<URI> included) {
       NarrowFrameStore nfs = createNarrowFrameStore(name);
@@ -246,8 +229,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
                               boolean isInclude) {
         DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
         FrameFactory factory = dkb.getFrameFactory();
-        IncludingDatabaseAdapter ida = getIncludingDatabaseAdapter(dkb);
-        ida.initialize(factory, driver, url, user, password, table, isInclude);
+        // ida.initialize(factory, driver, url, user, password, table, isInclude);
         kb.flushCache();
     }
     
@@ -295,5 +277,10 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
 
   public boolean owlMode() {
       return owlMode;
+  }
+
+  public NarrowFrameStore createNarrowFrameStore(String name) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 }

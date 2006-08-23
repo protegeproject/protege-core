@@ -17,7 +17,6 @@ import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.storage.database.IncludingDatabaseAdapter.Column;
 import edu.stanford.smi.protege.util.Log;
 
 public class DatabaseWriter {
@@ -45,7 +44,7 @@ public class DatabaseWriter {
     frameDb.initialize(inputKb.getFrameFactory(), 
                        driver, url, username, password, tablename, 
                        false);
-    this.tableName = IncludingDatabaseAdapter.getTableName(tablename);
+    this.tableName = null;
     this.inputKb = inputKb;
     frames = inputKb.getFrames();
     nameSlot = (Slot) inputKb.getFrame(Model.Slot.NAME);
@@ -66,7 +65,6 @@ public class DatabaseWriter {
       Log.getLogger().config("Table " + tableName + 
                              " does not exist - initializing...");
     }
-    IncludingDatabaseAdapter.initializeInheritanceTable(tableName, frameDb.getCurrentConnection());
     boolean noIncluded = true;
     if (!owlMode) {
         for (Frame frame : frames) {
@@ -182,9 +180,11 @@ public class DatabaseWriter {
   private void updateIncludedTable(Frame frame) throws SQLException {
     String name = frame.getName();
     if (frame.isIncluded() && !frame.isSystem() && !alreadySeen.contains(frame.getFrameID())) {
+      /*
       execute("INSERT INTO " + tableName + 
           " (" + Column.local_frame_id + ", " + Column.frame_name + ") VALUES (" +
           frame.getFrameID().getLocalPart() + ", '" + name + "')");
+          */
       frameDb.saveValues(frame, nameSlot, null, false, Collections.singleton(name));
       alreadySeen.add(frame.getFrameID());
     }
