@@ -31,8 +31,6 @@ public interface RemoteServerNarrowFrameStore extends Remote {
 
     NarrowFrameStore getDelegate() throws RemoteException;
 
-    FrameID generateFrameID() throws RemoteException;
-
     int getFrameCount() throws RemoteException;
 
     int getClsCount() throws RemoteException;
