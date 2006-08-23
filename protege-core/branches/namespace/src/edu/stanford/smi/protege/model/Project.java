@@ -106,6 +106,7 @@ public class Project {
 
     private static final String CLASS_OPTIONS = "Options";
     private static final String SLOT_OPTIONS = "options";
+    private static final String SLOT_OPTIONS_INSTANCE_NAME = "option_instance";
     private static final String SLOT_DISPLAY_HIDDEN_FRAMES = "display_hidden_classes";
     private static final String SLOT_DISPLAY_ABSTRACT_CLASS_ICON = "display_abstract_class_icon";
     private static final String SLOT_DISPLAY_MULTI_PARENT_CLASS_ICON = "display_multi_parent_class_icon";
@@ -115,6 +116,7 @@ public class Project {
 
     private static final String CLASS_MAP = "Map";
     private static final String SLOT_PROPERTY_MAP = "property_map";
+    private static final String SLOT_PROPERTY_MAP_INSTANCE_NAME = "property_map_instance";
 
     private static final int WINDOW_OFFSET_PIXELS = 25;
 
@@ -788,7 +790,7 @@ public class Project {
         Instance instance = (Instance) getProjectSlotValue(SLOT_OPTIONS);
         if (instance == null) {
             Cls optionsCls = _projectKB.getCls(CLASS_OPTIONS);
-            instance = _projectKB.createInstance(null, optionsCls);
+            instance = _projectKB.createInstance(SLOT_OPTIONS_INSTANCE_NAME, optionsCls);
             setProjectSlotValue(SLOT_OPTIONS, instance);
         }
         return instance;
@@ -1645,7 +1647,7 @@ public class Project {
                     SLOT_PROPERTY_MAP);
             if (propertyMapInstance == null) {
                 Cls cls = _projectKB.getCls(CLASS_MAP);
-                propertyMapInstance = _projectKB.createInstance(null, cls);
+                propertyMapInstance = _projectKB.createInstance(SLOT_PROPERTY_MAP_INSTANCE_NAME, cls);
                 ModelUtilities.addOwnSlotValue(_projectInstance, SLOT_PROPERTY_MAP,
                         propertyMapInstance);
             }
