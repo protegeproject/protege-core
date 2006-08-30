@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
@@ -33,6 +34,7 @@ import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.ReferenceImpl;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.Session;
@@ -768,8 +770,13 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         setValues(frame, slot, facet, isTemplate, values);
     }
 
-    public Set<Frame> executeQuery(Query query) {
-        return null;
+    public void executeQuery(Query query, final QueryCallback callback) {
+      new Thread(new Runnable() {
+          public void run() {
+              callback.handleError(new ProtegeError("Not implemented yet"));
+          }
+        },
+                 "Vacuous Callback Results Thread");
     }
 
     public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
