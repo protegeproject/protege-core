@@ -25,7 +25,7 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     private ServerFrameStore _projectKbFrameStore;
     private ServerNarrowFrameStore _domainKbNarrowFrameStore;
     private ServerNarrowFrameStore _systemNarrowFrameStore;
-    private final Object _kbLock = new Object();
+    private final Object _kbLock;
 
     public URI getURI(RemoteSession session) {
         return _uri;
@@ -43,6 +43,7 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         _server = server;
         _uri = uri;
         _project = project;
+        _kbLock = _project.getKnowledgeBase();
         _domainKbFrameStore = createServerFrameStore(_project.getKnowledgeBase(), _kbLock);
         _projectKbFrameStore = createServerFrameStore(_project.getInternalProjectKnowledgeBase(), _kbLock);
         _domainKbNarrowFrameStore = createServerNarrowFrameStore();
