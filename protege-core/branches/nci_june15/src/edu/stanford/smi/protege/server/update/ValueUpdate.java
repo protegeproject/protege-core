@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
 public abstract class ValueUpdate implements Localizable, Serializable {
+  private final static long serialVersionUID = -4059275656078639103L;
   private Frame frame;
   private transient RemoteSession client;
   private boolean transactionScope = false;
