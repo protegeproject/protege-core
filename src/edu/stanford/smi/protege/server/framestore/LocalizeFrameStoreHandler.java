@@ -2,12 +2,17 @@ package edu.stanford.smi.protege.server.framestore;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.AbstractFrameStoreInvocationHandler;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.model.query.QueryCallbackClone;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 
@@ -36,6 +41,13 @@ public class LocalizeFrameStoreHandler extends AbstractFrameStoreInvocationHandl
         localize(args);
         return invoke(method, args);
     }
+    
+    @Override
+    protected void executeQuery(Query q, QueryCallback qc) {
+      q.localize(_kb);
+      LocalizeUtils.localize(qc, _kb);
+      getDelegate().executeQuery(q, qc);
+    }
 
     private void localize(Object[] args) {
         if (args != null) {
@@ -51,4 +63,6 @@ public class LocalizeFrameStoreHandler extends AbstractFrameStoreInvocationHandl
         Class[] classes = new Class[] { FrameStore.class };
         return (FrameStore) Proxy.newProxyInstance(loader, classes, this);
     }
+
+
 }
