@@ -30,6 +30,8 @@ import edu.stanford.smi.protege.model.framestore.DefaultFrameFactory;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
@@ -2277,6 +2279,12 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     
     public synchronized void removeTransactionListener(TransactionListener listener) {
         removeListener(TransactionListener.class, this, listener);
+    }
+    
+    public Set<Frame> executeQuery(Query q) {
+      SynchronizeQueryCallback callback = new SynchronizeQueryCallback(this);
+      getHeadFrameStore().executeQuery(q, callback);
+      return callback.waitForResults();
     }
 
 }
