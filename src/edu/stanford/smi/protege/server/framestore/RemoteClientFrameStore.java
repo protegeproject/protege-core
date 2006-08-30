@@ -18,8 +18,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.exception.OntologyException;
+import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.exception.ProtegeException;
-import edu.stanford.smi.protege.exception.ProtegeStoreException;
+import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
@@ -34,6 +36,7 @@ import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.server.RemoteServer;
 import edu.stanford.smi.protege.server.RemoteServerProject;
 import edu.stanford.smi.protege.server.RemoteSession;
@@ -952,14 +955,29 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
  
-    public Set<Frame> executeQuery(Query query) {
-        try {
-            Set frames = getRemoteDelegate().executeQuery(query, session);
-            localize(frames);
-            return frames;
-        } catch (RemoteException e) {
-            throw convertException(e);
+    public void executeQuery(final Query query, final QueryCallback callback) {
+      new Thread("Remote Client Callback thread") {
+        public void run() {
+          try {
+            RemoteResponse<Set<Frame>> response = getRemoteDelegate().executeQuery(query, session);
+            localize(response);
+            processValueUpdate(response);
+            callback.provideQueryResults(response.getResponse());
+          } catch (OntologyException oe) {
+            callback.handleError(oe);
+          } catch (ProtegeIOException ioe) {
+            callback.handleError(ioe);
+          } catch (RemoteException re) {
+            Log.getLogger().log(Level.WARNING, "Exception accessing remote host", re);
+            callback.handleError(new ProtegeIOException(re));
+          } catch (ProtegeError pe) {
+            callback.handleError(pe);
+          } catch (Throwable t) {
+            Log.getLogger().log(Level.WARNING, "Developer error", t);
+            callback.handleError(new ProtegeError(t));
+          }
         }
+      };
     }
 
     public synchronized Set getReferences(Object object) {
@@ -972,7 +990,9 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set getClsesWithMatchingBrowserText(String text, Collection superclasses, int maxMatches) {
+    public Set getClsesWithMatchingBrowserText(String text, 
+                                               Collection superclasses, 
+                                               int maxMatches) {
         try {
             Set clses = getRemoteDelegate().getClsesWithMatchingBrowserText(text, superclasses, maxMatches, session);
             localize(clses);
@@ -1778,7 +1798,7 @@ public class RemoteClientFrameStore implements FrameStore {
       processValueUpdate(response);
       return response.getResponse();
     } catch (RemoteException remote) {
-      throw new ProtegeStoreException(remote);
+      throw new ProtegeIOException(remote);
     }
   }
 
