@@ -11,6 +11,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
 public class FrameRead extends SftUpdate implements Localizable {
+  private static final long serialVersionUID = -189382235602118698L;
   private List values;
   
   public FrameRead(Frame frame, 

@@ -18,6 +18,8 @@ import edu.stanford.smi.protege.model.Slot;
  */
 public class InvalidateCacheUpdate extends SftUpdate {
 
+  private static final long serialVersionUID = 1172779938759893668L;
+
   public InvalidateCacheUpdate(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
     super(frame, slot, facet, isTemplate);
   }

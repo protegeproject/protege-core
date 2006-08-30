@@ -6,6 +6,7 @@ import edu.stanford.smi.protege.model.Localizable;
 
 
 public class FrameEvaluationStarted extends ValueUpdate implements Localizable {
+  private final static long serialVersionUID = 4569166782833280291L;
   
   public FrameEvaluationStarted(Frame frame) {
     super(frame);

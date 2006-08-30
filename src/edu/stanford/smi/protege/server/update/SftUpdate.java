@@ -8,6 +8,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
 public class SftUpdate extends ValueUpdate implements Localizable {
+  private static final long serialVersionUID = 8969314633657333324L;
   private Slot slot;
   private Facet facet;
   private boolean isTemplate;
