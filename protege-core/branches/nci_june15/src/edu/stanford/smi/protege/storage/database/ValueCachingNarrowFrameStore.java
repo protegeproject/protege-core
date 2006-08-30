@@ -22,6 +22,7 @@ import edu.stanford.smi.protege.model.framestore.IncludingKBSupport;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
@@ -215,8 +216,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         _delegate.deleteFrame(frame);
     }
 
-    public Set<Frame> executeQuery(Query query) {
-        return _delegate.executeQuery(query);
+    public void executeQuery(Query query, QueryCallback callback) {
+      _delegate.executeQuery(query, callback);
     }
 
     private void setCacheValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
