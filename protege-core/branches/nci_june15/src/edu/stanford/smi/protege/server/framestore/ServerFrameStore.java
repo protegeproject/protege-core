@@ -31,6 +31,7 @@ import edu.stanford.smi.protege.model.framestore.EventGeneratorFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
@@ -94,7 +95,10 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
  */
 
 public class ServerFrameStore extends UnicastRemoteObject implements RemoteServerFrameStore {
+    private static final long serialVersionUID = 2965578539383364549L;
+    
     private static transient Logger log = Log.getLogger(ServerFrameStore.class);
+    
     public static final transient Logger cacheLog = Logger.getLogger("org.protege.client.cache");
   
     private FrameStore _delegate;
@@ -680,11 +684,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set<Frame> executeQuery(Query query, RemoteSession session) throws ServerSessionLost {
+    public RemoteResponse<Set<Frame>> executeQuery(Query query, 
+                                                   RemoteSession session) 
+                                                   throws ProtegeException, ServerSessionLost {
       recordCall(session);
+      SynchronizeQueryCallback callback = new SynchronizeQueryCallback(_kbLock);
       synchronized(_kbLock) {
-        return getDelegate().executeQuery(query);
+        getDelegate().executeQuery(query,callback);
       }
+      return new RemoteResponse<Set<Frame>>(callback.waitForResults(), getValueUpdates(session));
     }
 
     public OntologyUpdate removeDirectType(Instance instance, Cls directType, RemoteSession session) throws ServerSessionLost {
