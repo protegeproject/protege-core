@@ -21,6 +21,7 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.LocalizeUtils;
@@ -29,7 +30,10 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class ServerNarrowFrameStore 
   extends UnicastRemoteObject implements RemoteServerNarrowFrameStore {
+  private static final long serialVersionUID = 1996943880174792714L;
+  
   private static transient Logger log = Log.getLogger(ServerNarrowFrameStore.class);
+  
   private NarrowFrameStore delegate;
   private NarrowFrameStore fixedDelegate;
   private KnowledgeBase kb;
@@ -253,7 +257,9 @@ public class ServerNarrowFrameStore
 
   public Set<Frame> executeQuery(Query query, RemoteSession session) throws RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
-    return fixedDelegate.executeQuery(query);
+    final SynchronizeQueryCallback callback = new SynchronizeQueryCallback(kbLock);
+    fixedDelegate.executeQuery(query, callback);
+    return callback.waitForResults();
   }
 
 
