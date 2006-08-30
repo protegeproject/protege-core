@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.model.framestore;
 
+import edu.stanford.smi.protege.exception.ModificationException;
 import edu.stanford.smi.protege.model.*;
 
 public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
