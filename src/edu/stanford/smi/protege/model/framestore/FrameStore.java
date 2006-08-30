@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
@@ -191,8 +192,20 @@ public interface FrameStore {
     // events
     List<AbstractEvent> getEvents();
 
-    // arbitrary queries
-    Set<Frame> executeQuery(Query query);
+  /**
+   * The executeQuery method allows for complex queries.  It is asynchronous 
+   * so that in server-client mode the server knowledge base lock will not be
+   * held for an excessive amount of time.
+   *
+   * The contract specifies that the implementor must call one of the 
+   * QueryCallback methods in a separate thread.  This makes it possible 
+   * for the caller to know how to retrieve the results in a synchronous way
+   * without worrying about deadlock.
+   * 
+   * @param Query  the query to be executed.
+   * @param QueryCallback the callback that receives the results of the query.
+   */
+    void executeQuery(Query query, QueryCallback callback);
 
     Set getReferences(Object object);
 

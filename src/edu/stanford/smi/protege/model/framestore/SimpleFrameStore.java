@@ -21,6 +21,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.CollectionUtilities;
@@ -73,8 +74,9 @@ public class SimpleFrameStore implements FrameStore {
         return _helper;
     }
 
-    public Set<Frame> executeQuery(Query query) {
-        return _helper.executeQuery(query);
+
+    public void executeQuery(Query query, QueryCallback callback) {
+      _helper.executeQuery(query, callback);
     }
 
     public void deleteCls(Cls cls) {

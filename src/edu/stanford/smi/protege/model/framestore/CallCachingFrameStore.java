@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 import edu.stanford.smi.protege.exception.TransactionException;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
@@ -34,6 +36,10 @@ public class CallCachingFrameStore extends AbstractFrameStoreInvocationHandler {
             result = invoke(method, args);
         }
         return result;
+    }
+    
+    public void executeQuery(Query q, QueryCallback qc) {
+      getDelegate().executeQuery(q, qc);
     }
 
     private static boolean isGetEvents(Method m) {

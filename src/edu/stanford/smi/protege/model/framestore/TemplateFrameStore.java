@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
@@ -261,8 +262,8 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         getDelegate().moveDirectType(instance, type, index);
     }
 
-    public Set<Frame> executeQuery(Query query) {
-        return getDelegate().executeQuery(query);
+    public void executeQuery(Query query, QueryCallback callback) {
+      getDelegate().executeQuery(query, callback);
     }
 
     public Set getReferences(Object object) {
