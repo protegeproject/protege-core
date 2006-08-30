@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeException;
+import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
@@ -170,14 +172,18 @@ public interface RemoteServerFrameStore extends Remote {
             throws RemoteException;
 
     Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value, int maxMatches,
-            RemoteSession session) throws RemoteException;
+                                                     RemoteSession session) throws RemoteException;
 
-    Set<Frame> executeQuery(Query query, RemoteSession session) throws RemoteException;
+    RemoteResponse<Set<Frame>> executeQuery(Query query, RemoteSession session) throws OntologyException, ProtegeIOException, RemoteException;
 
     // closures
-    RemoteResponse<Set> getDirectOwnSlotValuesClosure(Frame frame, Slot slot, Set<Frame> missing, RemoteSession session) throws RemoteException;
+    RemoteResponse<Set> getDirectOwnSlotValuesClosure(Frame frame, Slot slot, Set<Frame> missing, RemoteSession session) 
+      throws RemoteException;
     
-    RemoteResponse<Set> getDirectOwnSlotValuesClosure(Collection<Frame> frame, Slot slot, Set<Frame> missing, RemoteSession session) throws RemoteException;
+    RemoteResponse<Set> getDirectOwnSlotValuesClosure(Collection<Frame> frame, 
+                                                      Slot slot, 
+                                                      Set<Frame> missing, 
+                                                      RemoteSession session) throws RemoteException;
 
     void close(RemoteSession session) throws RemoteException;
     
