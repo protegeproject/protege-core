@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.event.KnowledgeBaseListener;
 import edu.stanford.smi.protege.event.SlotListener;
 import edu.stanford.smi.protege.event.TransactionListener;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.Disposable;
 
 /**
@@ -752,4 +753,6 @@ public interface KnowledgeBase extends Disposable {
     
     void addTransactionListener(TransactionListener listener);
     void removeTransactionListener(TransactionListener listener);
+    
+    public Set<Frame> executeQuery(Query q);
 }
