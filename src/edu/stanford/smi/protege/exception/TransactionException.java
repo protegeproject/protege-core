@@ -2,7 +2,7 @@ package edu.stanford.smi.protege.exception;
 
 
 
-public class TransactionException extends ProtegeStoreException {
+public class TransactionException extends ProtegeIOException {
 
   
   public TransactionException() {
