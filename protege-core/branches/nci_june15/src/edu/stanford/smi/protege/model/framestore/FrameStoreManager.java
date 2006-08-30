@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.exception.ProtegeException;
-import edu.stanford.smi.protege.exception.ProtegeStoreException;
+import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.cleandispatch.CleanDispatchFrameStore;
@@ -345,7 +345,7 @@ public class FrameStoreManager {
                             "A listener threw an exception while processing events", e);
         throw new ProtegeError(e);
       } catch (InterruptedException e) {
-        throw new ProtegeStoreException(e);  // arguable - who interrupted this?
+        throw new ProtegeIOException(e);  // arguable - who interrupted this?
       }
     }
 

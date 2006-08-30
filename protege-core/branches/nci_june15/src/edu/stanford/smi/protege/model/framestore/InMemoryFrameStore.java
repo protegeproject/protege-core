@@ -7,7 +7,7 @@ import edu.stanford.smi.protege.model.*;
 public class InMemoryFrameStore extends SimpleFrameStore {
     public InMemoryFrameStore(KnowledgeBase kb) {
         // super(kb, new ClosureCachingBasicFrameStore(new InMemoryFrameDb()));
-        super(kb, new ClosureCachingBasicFrameStore(new MergingNarrowFrameStore()));
+        super(kb, new ClosureCachingBasicFrameStore(new MergingNarrowFrameStore(kb)));
         addSystemFrames();
         MergingNarrowFrameStore mfs = (MergingNarrowFrameStore) getHelper().getDelegate();
         mfs.addActiveFrameStore(new InMemoryFrameDb(getName(kb)));

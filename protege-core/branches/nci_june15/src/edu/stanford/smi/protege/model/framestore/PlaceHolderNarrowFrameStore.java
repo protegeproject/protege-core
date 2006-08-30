@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
@@ -129,9 +130,12 @@ public class PlaceHolderNarrowFrameStore implements NarrowFrameStore {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-	public Set<Frame> executeQuery(Query query) {
-
-		throw new UnsupportedOperationException("Not implemented yet");
+	public void  executeQuery(Query query, final QueryCallback callback) {
+          new Thread() {
+            public void run() {
+              callback.handleError(new ProtegeError("Not implemented yet"));
+            }
+          };
 	}
 
 	public void deleteFrame(Frame frame) {

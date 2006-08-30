@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
@@ -23,6 +24,7 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SimpleStringMatcher;
@@ -216,8 +218,13 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     /** TODO implement executeQuery */
-    public Set<Frame> executeQuery(Query query) {
-      throw new UnsupportedOperationException("Not implemented yet");
+    public void executeQuery(Query query, final QueryCallback callback) {
+      new Thread(new Runnable() {
+          public void run() {
+            callback.handleError(new ProtegeError("Not implemented yet"));
+          }
+        },
+                 "Vacuous In MemoryDb callback thread");
     }
 
     public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {

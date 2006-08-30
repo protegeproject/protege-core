@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
@@ -138,8 +139,8 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         deleteFrameFromCache(frame);
     }
 
-    public Set<Frame> executeQuery(Query query) {
-        return _delegate.executeQuery(query);
+    public void executeQuery(Query query, QueryCallback callback) {
+        _delegate.executeQuery(query, callback);
     }
 
     public void close() {

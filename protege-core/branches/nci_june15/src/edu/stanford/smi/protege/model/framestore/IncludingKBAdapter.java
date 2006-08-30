@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
@@ -539,8 +540,8 @@ public abstract class IncludingKBAdapter
     return delegate.getMatchingReferences(value, maxMatches);
   }
 
-  public Set<Frame> executeQuery(Query query) {
-    return delegate.executeQuery(query);
+  public void executeQuery(Query query, QueryCallback callback) {
+    delegate.executeQuery(query, callback);
   }
 
   public void deleteFrame(Frame frame) {
