@@ -91,7 +91,7 @@ public interface Cls extends Instance {
      * The values returned are instances of this class and all of its subclasses.  If you want instances of
      * just this class see {@link #getDirectInstances()}
      */
-    Collection getInstances();
+    Collection<Instance> getInstances();
 
     /** 
      * Get all descendent classes for this class.  This includes children, grandchildren, etc.  If you want only
