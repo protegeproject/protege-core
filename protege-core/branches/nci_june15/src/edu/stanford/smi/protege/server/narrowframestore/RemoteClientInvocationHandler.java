@@ -29,6 +29,9 @@ public class RemoteClientInvocationHandler implements InvocationHandler {
     Method [] methods = NarrowFrameStore.class.getMethods();
     for (Method method : methods) {
       try {
+        if (method.getName().equals("executeQuery")) {
+          continue;
+        }
         Class[] nfsCallParams = (Class []) method.getParameterTypes();
         Class[] rnfsCallParams = new Class[nfsCallParams.length + 1];
         for (int index = 0; index < nfsCallParams.length; index++) {
