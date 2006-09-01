@@ -1,9 +1,10 @@
 package edu.stanford.smi.protege.model.query;
 //ESCA*JAVA0257
 
-import java.util.*;
+import java.util.Collection;
 
-import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Slot;
 
 public interface Query extends Localizable {
     // all types
