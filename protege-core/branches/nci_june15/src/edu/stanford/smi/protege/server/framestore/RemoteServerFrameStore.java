@@ -135,7 +135,7 @@ public interface RemoteServerFrameStore extends Remote {
 
     OntologyUpdate moveDirectSubslot(Slot slot, Slot subslot, int index, RemoteSession session) throws RemoteException;
 
-    RemoteResponse<Set> getInstances(Cls cls, RemoteSession session) throws RemoteException;
+    RemoteResponse<Set<Instance>> getInstances(Cls cls, RemoteSession session) throws RemoteException;
 
     OntologyUpdate addDirectType(Instance instance, Cls type, RemoteSession session) throws RemoteException;
 

@@ -325,9 +325,10 @@ public class RemoteClientFrameStore implements FrameStore {
         } 
     }
 
+    @SuppressWarnings("unchecked")
     public Set<Slot> getSlots() {
         Cls rootSlotClass = getSystemFrames().getRootSlotMetaCls();
-        return getInstances(rootSlotClass);
+        return (Set) getInstances(rootSlotClass);
     }
 
     public Set<Facet> getFacets() {
@@ -876,11 +877,11 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public synchronized Set getInstances(Cls cls) {
+    public synchronized Set<Instance> getInstances(Cls cls) {
       Set<Cls> subClasses = new HashSet<Cls>();
       subClasses.addAll(getSubclasses(cls));
       subClasses.add(cls);
-      Set values = new HashSet();
+      Set<Instance> values = new HashSet<Instance>();
       Set<Frame> missingClasses = new HashSet<Frame>();
       for (Cls subClass : subClasses) {
         if (isCached(subClass, getSystemFrames().getDirectInstancesSlot(), (Facet) null, false)) {
@@ -897,7 +898,7 @@ public class RemoteClientFrameStore implements FrameStore {
         return values;
       } else {
         try {
-            RemoteResponse<Set> instances = getRemoteDelegate().getInstances(cls, session);
+            RemoteResponse<Set<Instance>> instances = getRemoteDelegate().getInstances(cls, session);
             localize(instances);
             processValueUpdate(instances);
             return instances.getResponse();
