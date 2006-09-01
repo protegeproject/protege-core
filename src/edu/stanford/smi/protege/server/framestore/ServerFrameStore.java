@@ -360,12 +360,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public RemoteResponse<Set> getInstances(Cls cls, RemoteSession session) 
+    public RemoteResponse<Set<Instance>> getInstances(Cls cls, RemoteSession session) 
     throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
-        Set instances = getDelegate().getInstances(cls);
-        return new  RemoteResponse<Set>(
+        Set<Instance> instances = getDelegate().getInstances(cls);
+        return new  RemoteResponse<Set<Instance>>(
                             instances,
                             getValueUpdates(session));
       }
