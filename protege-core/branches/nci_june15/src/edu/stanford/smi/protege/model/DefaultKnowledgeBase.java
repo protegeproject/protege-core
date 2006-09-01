@@ -676,14 +676,14 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return (SimpleInstance) getFrame(name);
     }
 
-    public synchronized Collection getInstances() {
+    public synchronized Collection<Instance> getInstances() {
         return getFrames();
     }
 
     /**
      * @deprecated
      */
-    public synchronized Collection getInstances(Cls cls) {
+    public synchronized Collection<Instance> getInstances(Cls cls) {
         return getHeadFrameStore().getInstances(cls);
     }
 
