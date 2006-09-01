@@ -409,8 +409,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         label.setIcon(icon);
     }
 
-    private Collection getInstances(Cls cls) {
-        Collection instances;
+    private Collection<Instance> getInstances(Cls cls) {
+        Collection<Instance> instances;
         if (_showSubclassInstances) {
             instances = cls.getInstances();
         } else {
