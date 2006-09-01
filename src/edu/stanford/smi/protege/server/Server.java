@@ -21,16 +21,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
-import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.plugin.ProjectPluginManager;
 import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
+import edu.stanford.smi.protege.server.metaproject.MetaProject;
+import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.UserInstance;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
@@ -40,18 +41,15 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private static Server serverInstance;
     private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
     private Map<Project, ServerProject> _projectToServerProjectMap = new HashMap<Project, ServerProject>();
-    private KnowledgeBase _systemKb;
-    private Slot _nameSlot;
-    private Slot _passwordSlot;
-    private Slot _locationSlot;
-    private Cls _userCls;
-    private Cls _projectCls;
+ 
+    private URI metaprojectURI;
+    private MetaProject metaproject;
+    
     private List _sessions = new ArrayList();
     private URI _baseURI;
     private Map<RemoteSession, Collection<ServerProject>> _sessionToProjectsMap 
         = new HashMap<RemoteSession, Collection<ServerProject>>();
     private Thread _updateThread;
-    private URI metaprojectURI;
     private static final int NO_SAVE = -1;
     private int _saveIntervalMsec = NO_SAVE;
     private static final String SAVE_INTERVAL_OPTION = "-saveIntervalSec=";
@@ -180,17 +178,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private void initialize() throws RemoteException {
-        Collection errors = new ArrayList();
-        Project project = Project.loadProjectFromURI(metaprojectURI, errors);
-        if (!errors.isEmpty()) {
-            throw new RuntimeException(errors.iterator().next().toString());
-        }
-        _systemKb = project.getKnowledgeBase();
-        _projectCls = _systemKb.getCls("Project");
-        _userCls = _systemKb.getCls("User");
-        _nameSlot = _systemKb.getSlot("name");
-        _passwordSlot = _systemKb.getSlot("password");
-        _locationSlot = _systemKb.getSlot("location");
+        metaproject = new MetaProject(metaprojectURI);
         bindName();
         dumpProjects();
         startProjectUpdateThread();
@@ -341,29 +329,20 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private Project createProject(String name) {
         Project project = null;
-        Iterator i = _systemKb.getInstances(_projectCls).iterator();
-        while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
-            String projectName = (String) instance.getOwnSlotValue(_nameSlot);
-            if (projectName.equals(name)) {
-                String projectLocation = (String) instance.getOwnSlotValue(_locationSlot);
-                projectLocation = localizeLocation(projectLocation);
-                URI uri = URIUtilities.createURI(projectLocation);
-                project = Project.loadProjectFromURI(uri, new ArrayList(), true);
-                _projectPluginManager.afterLoad(project);
-                localizeProject(project);
-                _nameToOpenProjectMap.put(name, project);
-                break;
-            }
+        
+        for (MetaProjectInstance instance : metaproject.getProjectInstances()) {
+          String projectName = instance.getName();
+          if (projectName.equals(name)) {
+            String projectLocation = instance.getLocation();
+            URI uri = URIUtilities.createURI(projectLocation);
+            project = Project.loadProjectFromURI(uri, new ArrayList(), true);
+            _projectPluginManager.afterLoad(project);
+            localizeProject(project);
+            _nameToOpenProjectMap.put(name, project);
+            break;
+          }
         }
         return project;
-    }
-
-    private static String localizeLocation(String location) {
-        if (File.separatorChar != '\\') {
-            location = location.replace('\\', File.separatorChar);
-        }
-        return location;
     }
 
     private static void localizeProject(Project project) {
@@ -376,19 +355,16 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         kb.insertFrameStore(fs);
     }
 
-    public Collection getAvailableProjectNames(RemoteSession session) {
-        List names = new ArrayList();
-        Iterator i = _systemKb.getInstances(_projectCls).iterator();
-        while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
-            String fileName = (String) instance.getOwnSlotValue(_locationSlot);
-            File file = new File(fileName);
-            if (file.exists() && file.isFile()) {
-                String name = (String) instance.getOwnSlotValue(_nameSlot);
-                names.add(name);
-            } else {
-                Log.getLogger().warning("Missing project at " + fileName);
-            }
+    public Collection<String> getAvailableProjectNames(RemoteSession session) {
+        List<String> names = new ArrayList<String>();
+        for (MetaProjectInstance instance : metaproject.getProjectInstances()) {
+          String fileName = instance.getLocation();
+          File file = new File(fileName);
+          if (file.exists() && file.isFile()) {
+              names.add(instance.getName());
+          } else {
+              Log.getLogger().warning("Missing project at " + fileName);
+          }
         }
         Collections.sort(names);
         return names;
@@ -427,20 +403,18 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private boolean isValid(String name, String password) {
-        boolean isValid = false;
-        Iterator i = _systemKb.getInstances(_userCls).iterator();
-        while (i.hasNext()) {
-            Instance user = (Instance) i.next();
-            String username = (String) user.getOwnSlotValue(_nameSlot);
-            if (username.equals(name)) {
-                String userpassword = (String) user.getOwnSlotValue(_passwordSlot);
-                if (userpassword.equals(password)) {
-                    isValid = true;
-                    break;
-                }
-            }
+      boolean isValid = false;
+      for (UserInstance ui : metaproject.getUserInstances()) {
+        String username = ui.getName();
+        if (username.equals(name)) {
+          String userpassword = ui.getPassword();
+          if (userpassword.equals(password)) {
+            isValid = true;
+            break;
+          }
         }
-        return isValid;
+      }
+      return isValid;
     }
 
     public String toString() {
