@@ -270,9 +270,9 @@ public interface KnowledgeBase extends Disposable {
 
     Instance getInstance(String fullname);
 
-    Collection getInstances();
+    Collection<Instance> getInstances();
 
-    Collection getInstances(Cls cls);
+    Collection<Instance> getInstances(Cls cls);
 
     String getInvalidOwnSlotValuesText(Frame frame, Slot slot, Collection values);
 
