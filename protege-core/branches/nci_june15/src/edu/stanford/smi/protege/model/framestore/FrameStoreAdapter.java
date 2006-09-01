@@ -78,7 +78,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getOwnSlots(frame);
     }
 
-    public Set getInstances(Cls cls) {
+    public Set<Instance> getInstances(Cls cls) {
         return getDelegate().getInstances(cls);
     }
 

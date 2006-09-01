@@ -246,7 +246,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getDirectInstances(cls);
     }
 
-    public Set getInstances(Cls cls) {
+    public Set<Instance> getInstances(Cls cls) {
         return getDelegate().getInstances(cls);
     }
 
