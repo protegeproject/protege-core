@@ -382,7 +382,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
           return;
         }
         Cls cls = createCls();
-        Collection instances = _testFrameStore.getInstances(cls);
+        Collection<Instance> instances = _testFrameStore.getInstances(cls);
         assertEquals("none", 0, instances.size());
         Collection types = makeList(cls);
         _modifiableFrameStore.createSimpleInstance(getID(), null, types, true);
