@@ -140,7 +140,7 @@ public class DefaultCls extends DefaultInstance implements Cls {
         return getDefaultKnowledgeBase().getInstanceCount(this);
     }
 
-    public Collection getInstances() {
+    public Collection<Instance> getInstances() {
         return getDefaultKnowledgeBase().getInstances(this);
     }
 
