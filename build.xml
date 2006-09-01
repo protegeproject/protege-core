@@ -88,7 +88,7 @@
 	<!-- JAVACC -->
 	
 	<!-- =================================================================== -->
-	<target name = "javacc" depends = "prepare">
+        <target name = "clean-clips">
 		<!-- Delete these files because Ant's javacc task won't regenerate files when the date on the files is the same as the date on the grammer file (Parser.jj) -->
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Parser.java"/>
@@ -97,7 +97,10 @@
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/SimpleCharStream.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Token.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
-		<!-- Run JavaCC on Parser.jj to regenerate files that were deleted in above step. -->
+        </target>
+
+	<target name = "javacc" depends = "prepare,clean-clips">
+		<!-- Run JavaCC on Parser.jj to regenerate files that were deleted in above clean-clips step. -->
 		<javacc javacchome = "${javacc.home}/bin/lib" target = "${scripts}/Parser.jj" outputdirectory = "${src}/edu/stanford/smi/protege/storage/clips"/>  
 	</target>  
 	<!-- =================================================================== -->
@@ -200,7 +203,7 @@
 	<!-- CLEAN -->
 	
 	<!-- =================================================================== -->
-	<target name = "clean" description = "clean up">    
+	<target name = "clean" description = "clean up" depends="clean-clips">    
 		<delete dir = "${classes}"/>  
 		<delete dir = "${dist}"/>
 		<delete dir = "${javadocs}"/>
@@ -223,9 +226,9 @@
             <batchtest>
               <fileset dir="${junit}">
                 <include name="**/*Test.java"/>
-                <!-- Exclude the graphics tests -->
+                <!-- Exclude  multi tests -->
                 <exclude name="**/*Package_Test.java"/>
-                <!-- what's the story with this one? -->
+                <!-- This is an "abstract" test -->
                 <exclude name="**/framestore/FrameStore_Test.java"/>
               </fileset>
             </batchtest>
