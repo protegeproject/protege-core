@@ -210,16 +210,19 @@ public class SimpleFrameStore implements FrameStore {
         return _helper.getFrameCount();
     }
 
+    @SuppressWarnings("unchecked")
     public Set<Cls> getClses() {
-        return getInstances(_systemFrames.getRootClsMetaCls());
+        return (Set) getInstances(_systemFrames.getRootClsMetaCls());
     }
 
+    @SuppressWarnings("unchecked")
     public Set<Slot> getSlots() {
-        return getInstances(_systemFrames.getRootSlotMetaCls());
+        return (Set) getInstances(_systemFrames.getRootSlotMetaCls());
     }
 
+    @SuppressWarnings("unchecked")
     public Set<Facet> getFacets() {
-        return getInstances(_systemFrames.getRootFacetMetaCls());
+        return (Set) getInstances(_systemFrames.getRootFacetMetaCls());
     }
 
     public Set<Frame> getFrames() {
@@ -345,7 +348,7 @@ public class SimpleFrameStore implements FrameStore {
         return getDirectOwnSlotValues(cls, _systemFrames.getDirectInstancesSlot());
     }
 
-    public Set getInstances(Cls cls) {
+    public Set<Instance> getInstances(Cls cls) {
         Collection clses = new LinkedHashSet(getSubclasses(cls));
         clses.add(cls);
         return collectOwnSlotValues(clses, _systemFrames.getDirectInstancesSlot());

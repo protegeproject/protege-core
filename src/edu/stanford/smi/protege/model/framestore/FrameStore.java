@@ -181,7 +181,7 @@ public interface FrameStore {
 
     List getDirectInstances(Cls cls);
 
-    Set getInstances(Cls cls);
+    Set<Instance> getInstances(Cls cls);
 
     void addDirectType(Instance instance, Cls type);
 

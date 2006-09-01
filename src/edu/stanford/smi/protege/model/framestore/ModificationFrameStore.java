@@ -117,7 +117,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getDomain(slot);
     }
 
-    public Set getInstances(Cls cls) {
+    public Set<Instance> getInstances(Cls cls) {
         return getDelegate().getInstances(cls);
     }
 

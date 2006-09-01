@@ -416,7 +416,7 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         return getDelegate().getDirectInstances(cls);
     }
 
-    public Set getInstances(Cls cls) {
+    public Set<Instance> getInstances(Cls cls) {
         checkCls(cls);
         return getDelegate().getInstances(cls);
     }
