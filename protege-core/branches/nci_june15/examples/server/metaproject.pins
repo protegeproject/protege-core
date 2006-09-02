@@ -1,58 +1,105 @@
-; Fri Sep 03 11:17:42 PDT 2004
+; Fri Sep 01 16:43:49 PDT 2006
 ; 
-;+ (version "3.0")
-;+ (build "Build -1")
+;+ (version "3.2")
+;+ (build "Build 318")
 
-([projects_00014] of User
+([metaproject_Instance_10] of  Operation
+
+	(description "Any operation that only involves viewing the knowledge base.")
+	(name "READ"))
+
+([metaproject_Instance_11] of  Operation
+
+	(description "Any operation that may modify the knowledge base.")
+	(name "EDIT"))
+
+([metaproject_Instance_18] of  User
+
+	(groups
+		[projects_00016]
+		[projects_00018])
+	(name "Timothy Redmond")
+	(password "Tigra"))
+
+([metaproject_Instance_19] of  User
+
+	(groups
+		[projects_00016]
+		[projects_00018])
+	(name "Tania Tudorache"))
+
+([metaproject_Instance_21] of  Authorization
+
+	(actor [projects_00022])
+	(allow TRUE)
+	(description "Everybody can edit any project.")
+	(name "Default Policy")
+	(operation [metaproject_Instance_11])
+	(priority 5))
+
+([metaproject_Instance_22] of  Group
+)
+
+([projects_00014] of  User
+
 	(groups [projects_00016])
 	(name "Ray Fergerson")
 	(password "claudia"))
 
-([projects_00015] of User
-	(groups [projects_00018])
+([projects_00015] of  User
+
+	(groups
+		[projects_00018]
+		[projects_00016])
 	(name "Jennifer Vendetti")
 	(password "jenny"))
 
-([projects_00016] of Group
+([projects_00016] of  Group
+
 	(members
 		[projects_00019]
-		[projects_00014])
+		[projects_00014]
+		[projects_00015]
+		[metaproject_Instance_19]
+		[metaproject_Instance_18])
 	(name "Developers"))
 
-([projects_00018] of Group
+([projects_00018] of  Group
+
 	(members
 		[projects_00019]
-		[projects_00015])
+		[projects_00015]
+		[metaproject_Instance_19]
+		[metaproject_Instance_18])
 	(name "Staff"))
 
-([projects_00019] of User
+([projects_00019] of  User
+
 	(groups
 		[projects_00018]
 		[projects_00016])
 	(name "Natasha Noy")
 	(password "natalia"))
 
-([projects_00020] of Project
+([projects_00020] of  Project
+
 	(location "examples/newspaper/newspaper.pprj")
 	(name "Newspaper")
-	(owner [projects_00014])
-	(readers [projects_00022])
-	(writers [projects_00022]))
+	(owner [projects_00014]))
 
-([projects_00021] of Project
+([projects_00021] of  Project
+
 	(location "examples/wines/wines.pprj")
 	(name "Wines")
-	(owner [projects_00019])
-	(readers [projects_00022])
-	(writers
-		[projects_00019]
-		[projects_00023]))
+	(owner [projects_00019]))
 
-([projects_00022] of Group
+([projects_00022] of  Group
+
 	(description "A special group that implicitly contains all people")
 	(name "World"))
 
-([projects_00023] of User
+([projects_00023] of  User
+
 	(description "Special user that is only a member of world.")
 	(name "Guest")
 	(password "guest"))
