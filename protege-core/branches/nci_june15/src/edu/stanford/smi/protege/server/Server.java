@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
@@ -32,12 +31,15 @@ import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.URIUtilities;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
+    private static final long serialVersionUID = 1675054259604532947L;
+    
     private static Server serverInstance;
     private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
     private Map<Project, ServerProject> _projectToServerProjectMap = new HashMap<Project, ServerProject>();
@@ -178,7 +180,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private void initialize() throws RemoteException {
-        metaproject = new MetaProject(metaprojectURI);
+        metaproject = new MetaProjectImpl(metaprojectURI);
         bindName();
         dumpProjects();
         startProjectUpdateThread();
