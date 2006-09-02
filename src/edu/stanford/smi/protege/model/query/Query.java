@@ -4,6 +4,7 @@ package edu.stanford.smi.protege.model.query;
 import java.util.Collection;
 
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.model.Slot;
 
 public interface Query extends Localizable {
