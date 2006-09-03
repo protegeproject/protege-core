@@ -12,5 +12,5 @@ public interface Authorization {
   
   Set<Operation> getOperations();
 
-  Set<MetaProject> getProjects();
+  Set<MetaProjectInstance> getProjects();
 }
