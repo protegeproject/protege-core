@@ -1,7 +1,5 @@
 package edu.stanford.smi.protege.server;
 
-import java.util.Set;
-
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
