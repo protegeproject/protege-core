@@ -23,7 +23,7 @@ public class Project_Test extends APITestCase {
     private static boolean disableMissingWebPageTests = true;
     private static final String SUBDIR = "project_subdir";
     
-    private static final String NewspaperFileProperty = "junit.project.file.newspaper";
+    //private static final String NewspaperFileProperty = "junit.project.file.newspaper";
     private static final String NewspaperJarFileProperty = "junit.project.file.jar.newspaper";
     private static final String IncludingFileProperty = "junit.project.file.including";
     private static final String IncludedFileProperty = "junit.project.file.including";
@@ -36,7 +36,7 @@ public class Project_Test extends APITestCase {
 
     private static final String HTTP_PROJECT_STRING = HTTP_BASE + DIR + "newspaper.pprj";
     private static final String HTTP_JAR_PROJECT_STRING = "jar:" + HTTP_BASE + DIR + JAR_PROJECT;
-    private static final String FILE_JAR_PROJECT_STRING = "jar:" + FILE_BASE + DIR + JAR_PROJECT;
+    //private static final String FILE_JAR_PROJECT_STRING = "jar:" + FILE_BASE + DIR + JAR_PROJECT;
 
     private static final String INCLUDED_PROJECT_NAME = "included";
     private static final String MAIN_PROJECT_NAME = "main";
