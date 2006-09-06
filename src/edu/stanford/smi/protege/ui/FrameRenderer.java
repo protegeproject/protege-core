@@ -2,8 +2,6 @@ package edu.stanford.smi.protege.ui;
 
 //ESCA*JAVA0100
 
-import java.awt.Color;
-
 import javax.swing.Icon;
 
 import edu.stanford.smi.protege.model.Cls;
@@ -14,7 +12,6 @@ import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.resource.Colors;
-import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.util.Assert;
 import edu.stanford.smi.protege.util.DefaultRenderer;
 
