@@ -25,7 +25,6 @@ import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
 import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
-import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
 import edu.stanford.smi.protege.server.util.FifoWriter;
 import edu.stanford.smi.protege.util.Log;
