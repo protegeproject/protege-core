@@ -1,6 +1,5 @@
 package edu.stanford.smi.protege.server.update;
 
-import java.util.Collections;
 import java.util.List;
 
 import edu.stanford.smi.protege.model.Facet;
