@@ -37,12 +37,10 @@ public class ServerPolicy_Test extends APITestCase {
     Project p = RemoteProjectManager.getInstance().getProject(Server_Test.HOST, USER1, PASSWORD1, PROJECT_NAME, true);
     DefaultKnowledgeBase kb = (DefaultKnowledgeBase) p.getKnowledgeBase();
     
-    Set<Operation> operations = RemoteClientFrameStore.getAllowedOperations(kb);
-    assertFalse(operations.isEmpty());
-    assertTrue(operations.contains(new OperationImpl("RestartServer")));
-    assertTrue(operations.contains(OperationImpl.READ));
-    assertFalse(operations.contains(OperationImpl.EDIT));
-
+    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new OperationImpl("RestartServer")));
+    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, OperationImpl.READ));
+    assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, OperationImpl.EDIT));
+    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new OperationImpl("someWeirdNotInOntology")));
   }
 
 
