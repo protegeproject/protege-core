@@ -72,38 +72,17 @@
 	<!-- JAVACC -->
 	<!-- =================================================================== -->
 	<target name = "javacc" depends = "prepare-src">
-		<!-- delete these files because ant's javacc task won't regenerate files when the date on the files is the same as the date on the grammer file. -->
-		<delete file = "${build.src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
-		<delete file = "${build.src}/edu/stanford/smi/protege/storage/clips/Parser.java"/>
-		<delete file = "${build.src}/edu/stanford/smi/protege/storage/clips/ParserConstants.java"/>
-		<delete file = "${build.src}/edu/stanford/smi/protege/storage/clips/ParserTokenManager.java"/>
-		<delete file = "${build.src}/edu/stanford/smi/protege/storage/clips/SimpleCharStream.java"/>
-		<delete file = "${build.src}/edu/stanford/smi/protege/storage/clips/Token.java"/>
-		<delete file = "${build.src}/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
-		<!-- run javacc on parser.jj to regenerate files that were deleted in above step -->
+		<!-- Automatically generate the following files by running JavaCC on /bin/Parser.jj:  -->
+
+		<!-- edu/stanford/smi/protege/storage/clips/ParseException.java  -->
+		<!-- edu/stanford/smi/protege/storage/clips/Parser.java  -->
+		<!-- edu/stanford/smi/protege/storage/clips/ParserConstants.java  -->
+		<!-- edu/stanford/smi/protege/storage/clips/ParserTokenManager.java  -->
+		<!-- edu/stanford/smi/protege/storage/clips/SimpleCharStream.java  -->
+		<!-- edu/stanford/smi/protege/storage/clips/Token.java  -->
+		<!-- edu/stanford/smi/protege/storage/clips/TokenMgrError.java  -->
+
 		<javacc javacchome = "c:/javacc-3.2/bin/lib" target = "${build.scripts}/Parser.jj" outputdirectory = "${build.src}/edu/stanford/smi/protege/storage/clips"/>
-		<!-- check in files that were regenerated -->
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
-		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/Parser.java"/>
-		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/ParserConstants.java"/>
-		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/ParserTokenManager.java"/>
-		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/SimpleCharStream.java"/>
-		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/Token.java"/>
-		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
-		</exec>
 	</target>
 
 	<!-- =================================================================== -->
