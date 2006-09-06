@@ -218,4 +218,6 @@ public interface RemoteServerFrameStore extends Remote {
     void heartBeat(RemoteSession session) throws RemoteException;
     
     Set<Operation> getAllowedOperations(RemoteSession session) throws RemoteException;
+    
+    Set<Operation> getKnownOperations(RemoteSession session) throws RemoteException;
 }
