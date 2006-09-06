@@ -13,12 +13,12 @@ import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
-import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
 
 public class MetaProjectImpl implements MetaProject {
   private KnowledgeBase kb;
+  private Policy policy;
   
   protected enum ClsEnum {
     Project, User, Group, Operation, Authorization;
@@ -66,7 +66,10 @@ public class MetaProjectImpl implements MetaProject {
   }
   
   public Policy getPolicy() {
-    return new PolicyImpl(this);
+    if (policy == null) {
+      policy = new  PolicyImpl(this);
+    }
+    return policy;
   }
  
 }
