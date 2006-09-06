@@ -1,14 +1,11 @@
 package edu.stanford.smi.protege.model.query;
 
 import java.util.Set;
-import java.util.concurrent.Exchanger;
-import java.util.logging.Level;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.util.Log;
 
 /**
  * This class is a QueryCallback that provides utilities for making the 
