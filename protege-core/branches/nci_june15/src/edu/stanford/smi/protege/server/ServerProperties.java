@@ -3,7 +3,6 @@ package edu.stanford.smi.protege.server;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 
