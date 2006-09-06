@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.CommandManager;
 import edu.stanford.smi.protege.model.Facet;
@@ -23,7 +22,6 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.ModificationFrameStore;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class UndoFrameStore extends ModificationFrameStore implements CommandManager {
