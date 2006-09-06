@@ -21,6 +21,7 @@ public class TransactionListener_Test extends APITestCase {
         assertEventFired(TransactionEvent.TRANSACTION_BEGIN);
     }
     
+    @SuppressWarnings("deprecation")
     public void testTransactionEnd() {
         KnowledgeBase kb = getDomainKB();
         kb.addTransactionListener(new TransactionAdapter() {
