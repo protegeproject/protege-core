@@ -21,6 +21,8 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
+import edu.stanford.smi.protege.server.metaproject.Operation;
+import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.util.AbstractEvent;
@@ -214,4 +216,6 @@ public interface RemoteServerFrameStore extends Remote {
     boolean setTransactionIsolationLevel(TransactionIsolationLevel level) throws TransactionException, RemoteException;
 
     void heartBeat(RemoteSession session) throws RemoteException;
+    
+    Set<Operation> getAllowedOperations(RemoteSession session) throws RemoteException;
 }
