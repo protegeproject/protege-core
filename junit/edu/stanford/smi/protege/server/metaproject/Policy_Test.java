@@ -1,5 +1,8 @@
 package edu.stanford.smi.protege.server.metaproject;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import edu.stanford.smi.protege.model.framestore.SimpleTestCase;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectInstanceImpl;
@@ -19,15 +22,30 @@ public class Policy_Test extends SimpleTestCase {
   
   public static final Operation           RESTART  = new OperationImpl("RestartServer");   
   
+  public static void checkAuthorization(Policy p,
+                                        UserInstance user,
+                                        Operation op,
+                                        MetaProjectInstance project,
+                                        boolean allowed) {
+    Set<Operation> operations = p.getAllowedOperations(user, project);
+    if (allowed) {
+      assertTrue(p.isOperationAuthorized(user, op, project));
+      assertTrue(operations.contains(op));
+    } else {
+      assertFalse(p.isOperationAuthorized(user, op, project));
+      assertFalse(operations.contains(op));
+    } 
+  }
+  
   public void testPolicy01() {
     MetaProject mp = new MetaProjectImpl(URIUtilities.createURI(METAPROJECT));
     
     
     Policy p = mp.getPolicy();
 
-    assertTrue( p.isOperationAuthorized(NATASHA, OperationImpl.EDIT, PROJECT1));
-    assertFalse(p.isOperationAuthorized(BOB,     OperationImpl.EDIT, PROJECT1));
-    assertFalse(p.isOperationAuthorized(PAUL,    OperationImpl.EDIT, PROJECT1));
-    assertTrue( p.isOperationAuthorized(PAUL,    RESTART,            PROJECT1));
+    checkAuthorization(p, NATASHA, OperationImpl.EDIT, PROJECT1, true);
+    checkAuthorization(p, BOB,     OperationImpl.EDIT, PROJECT1, false);
+    checkAuthorization(p, PAUL,    OperationImpl.EDIT, PROJECT1, false);
+    checkAuthorization(p, PAUL,    RESTART,            PROJECT1, true);
   }
 }
