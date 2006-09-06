@@ -30,8 +30,10 @@ import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectInstanceImpl;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
@@ -97,6 +99,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     public static Server getInstance() {
         return serverInstance;
     }
+    
+    public static Policy getPolicy() {
+      return serverInstance.metaproject.getPolicy();
+    }
 
     public static String getBoundName() {
         return Text.getProgramTextName();
@@ -160,7 +166,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         System.exit(-1);
     }
 
-    public Server(String[] args) throws RemoteException, IOException {
+    private Server(String[] args) throws RemoteException, IOException {
         parseArgs(args);
         initialize();
     }
@@ -292,7 +298,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private ServerProject createServerProject(String name, Project p) {
         ServerProject impl = null;
         try {
-            impl = new ServerProject(this, getURI(name), p);
+            impl = new ServerProject(this, getURI(name), new MetaProjectInstanceImpl(name), p);
         } catch (RemoteException e) {
             Log.getLogger().severe(Log.toString(e));
         }
