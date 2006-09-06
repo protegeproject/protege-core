@@ -1814,6 +1814,15 @@ public class RemoteClientFrameStore implements FrameStore {
     }
     return allowedOps;
   }
+  
+  public static Set<Operation> getAllowedOperations(KnowledgeBase kb) throws ProtegeIOException {
+    DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
+    FrameStore terminalFS = dkb.getTerminalFrameStore();
+    if (!(terminalFS instanceof RemoteClientFrameStore)) {
+      throw new IllegalArgumentException("Policy only applies to server projects");
+    }
+    return ((RemoteClientFrameStore) terminalFS).getAllowedOperations();
+  }
 
   public class RemoteClientStatsImpl implements RemoteClientStats {
     int miss = 0;
