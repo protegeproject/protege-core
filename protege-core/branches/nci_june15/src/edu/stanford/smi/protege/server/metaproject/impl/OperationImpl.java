@@ -1,11 +1,13 @@
 package edu.stanford.smi.protege.server.metaproject.impl;
 
+import java.io.Serializable;
+
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 
-public class OperationImpl implements Operation {
+public class OperationImpl implements Operation, Serializable {
   public final static OperationImpl READ = new OperationImpl("READ");
   public final static OperationImpl EDIT = new OperationImpl("EDIT");
   
