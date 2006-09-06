@@ -1,6 +1,5 @@
 package edu.stanford.smi.protege.util.transaction;
 
-import edu.stanford.smi.protege.server.RemoteSession;
 
 /**
  * This interface represents a simple cache mechanism for storing cached  
