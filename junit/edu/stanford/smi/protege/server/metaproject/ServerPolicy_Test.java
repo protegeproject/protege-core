@@ -2,15 +2,18 @@ package edu.stanford.smi.protege.server.metaproject;
 
 import java.rmi.NotBoundException;
 import java.util.Set;
-import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.server.RemoteProjectManager;
 import edu.stanford.smi.protege.server.RemoteServerProject;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.Server_Test;
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
+import edu.stanford.smi.protege.server.metaproject.impl.OperationImpl;
 import edu.stanford.smi.protege.test.APITestCase;
-import edu.stanford.smi.protege.util.Log;
 
 public class ServerPolicy_Test extends APITestCase {
   private static final String USER1 = "Paul";
@@ -31,13 +34,15 @@ public class ServerPolicy_Test extends APITestCase {
   }
   
   public void testServerPolicy01() throws Exception {
-    Server server = Server.getInstance();
-    RemoteSession session = server.openSession(USER1, Server_Test.getMachineIpAddress(), PASSWORD1);
-    RemoteServerProject project = server.openProject(PROJECT_NAME, session);
-    RemoteServerFrameStore serverFrameStore = project.getProjectKbFrameStore(session);
-    Set<Operation> operations = serverFrameStore.getAllowedOperations(session);
-    assertFalse(operations.isEmpty());
+    Project p = RemoteProjectManager.getInstance().getProject(Server_Test.HOST, USER1, PASSWORD1, PROJECT_NAME, true);
+    DefaultKnowledgeBase kb = (DefaultKnowledgeBase) p.getKnowledgeBase();
     
+    Set<Operation> operations = RemoteClientFrameStore.getAllowedOperations(kb);
+    assertFalse(operations.isEmpty());
+    assertTrue(operations.contains(new OperationImpl("RestartServer")));
+    assertTrue(operations.contains(OperationImpl.READ));
+    assertFalse(operations.contains(OperationImpl.EDIT));
+
   }
 
 
