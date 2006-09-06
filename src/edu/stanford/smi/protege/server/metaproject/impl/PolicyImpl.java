@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Authorization;
@@ -16,10 +17,9 @@ import edu.stanford.smi.protege.util.Log;
 
 public class PolicyImpl implements Policy {
   private List<Authorization> authorizations;
-  private MetaProjectInstance project;
+  private List<Authorization> authorizationsReverseOrder;
   
-  public PolicyImpl(MetaProjectImpl mp, MetaProjectInstance project) {
-    this.project = project;
+  public PolicyImpl(MetaProjectImpl mp) {
     authorizations = new  ArrayList<Authorization>();
     for (Object auth : ClsEnum.Authorization.getCls(mp).getInstances()) {
       if (auth instanceof Instance) {
@@ -31,10 +31,10 @@ public class PolicyImpl implements Policy {
     }
     Collections.sort(authorizations, new Comparator<Authorization>() {
       public int compare(Authorization a1, Authorization a2) {
-        if (a1.getPriority() < a2.getPriority()) {
+        if (a1.getPriority() > a2.getPriority()) {
           return 1;
         }
-        else if (a1.getPriority()  > a2.getPriority()) {
+        else if (a1.getPriority()  < a2.getPriority()) {
           return -1;
         } else {
           int allow1 = a1.isAllowed() ? 1 : 0;
@@ -51,16 +51,22 @@ public class PolicyImpl implements Policy {
         }
       }      
     });
-    
+    authorizationsReverseOrder = new ArrayList<Authorization>(authorizations);
+    Collections.reverse(authorizationsReverseOrder);
   }
 
-  public boolean isOperationAuthorized(UserInstance user, Operation op) {
-    for (Authorization auth : authorizations) {
+  public boolean isOperationAuthorized(UserInstance user, Operation op, MetaProjectInstance project) {
+    for (Authorization auth : authorizationsReverseOrder) {
       if (auth.getActors().contains(user)  && auth.getOperations().contains(op) && auth.getProjects().contains(project)) {
         return auth.isAllowed();
       }
     }
     return false;
+  }
+
+  public Set<Operation> getAllowedOperations(UserInstance user, MetaProjectInstance project) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 
 }
