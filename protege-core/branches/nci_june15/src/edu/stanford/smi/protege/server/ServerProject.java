@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
+import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 import edu.stanford.smi.protege.server.narrowframestore.RemoteServerNarrowFrameStore;
 import edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore;
 
@@ -39,16 +40,18 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         return _project.getInternalProjectKnowledgeBase().getKnowledgeBaseFactory().getClass().getName();
     }
 
-    public ServerProject(Server server, URI uri, Project project) throws RemoteException {
+    public ServerProject(Server server, URI uri, MetaProjectInstance projectInstance, Project project) throws RemoteException {
         _server = server;
         _uri = uri;
         _project = project;
         _kbLock = _project.getKnowledgeBase();
         _domainKbFrameStore = createServerFrameStore(_project.getKnowledgeBase(), _kbLock);
+        _domainKbFrameStore.setMetaProjectInstance(projectInstance);
         _projectKbFrameStore = createServerFrameStore(_project.getInternalProjectKnowledgeBase(), _kbLock);
         _domainKbNarrowFrameStore = createServerNarrowFrameStore();
         _systemNarrowFrameStore = createServerSystemNarrowFrameStore();
     }
+
 
     private static ServerFrameStore createServerFrameStore(KnowledgeBase kb, Object kbLock) throws RemoteException {
         FrameStore fs = ((DefaultKnowledgeBase) kb).getHeadFrameStore();
