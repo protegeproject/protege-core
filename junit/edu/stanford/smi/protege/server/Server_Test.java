@@ -24,7 +24,7 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 public class Server_Test extends SimpleTestCase {
     private static transient Logger log = Log.getLogger(Server_Test.class);
     
-    private static final String HOST = "localhost";
+    public  static final String HOST = "localhost";
     private static final String USER1 = "Ray Fergerson";
     private static final String PASSWORD1 = "claudia";
     private static final String WRONG_PASSWORD = "elle";
