@@ -7,5 +7,7 @@ public interface Policy {
   public boolean isOperationAuthorized(UserInstance user, Operation op, MetaProjectInstance project);
   
   Set<Operation> getAllowedOperations(UserInstance user, MetaProjectInstance project);
+  
+  Set<Operation> getKnownOperations();
 
 }
