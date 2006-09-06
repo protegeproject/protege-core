@@ -29,7 +29,6 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.EventGeneratorFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
-import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
@@ -126,12 +125,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     
     private FrameCalculator frameCalculator;
 
-    /*
-     * A performance hack Identical copies of the same sft are reduced
-     * to the same object so that only a single copy needs to be sent
-     * over the wire.
-     */
-    private Map<Sft,Sft> sftMap = new HashMap<Sft,Sft>();
     
     //ESCA-JAVA0160 
     public ServerFrameStore(FrameStore delegate, 
@@ -1032,7 +1025,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         if (!inTransaction()) {
           Registration registration = _sessionToRegistrationMap.get(session);
           TransactionIsolationLevel level = getTransactionIsolationLevel();
-          Collection<ValueUpdate> updates;
           if (success && level != null && 
               level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0) {
             for (AbstractEvent eo : registration.getTransactionEvents()) {
@@ -1259,16 +1251,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
 
-    private Sft getSft(Slot slot, Facet facet, boolean isTemplate) {
-        Sft sft = new Sft(slot, facet, isTemplate);
-        Sft mapSft = (Sft) sftMap.get(sft);
-        if (mapSft == null) {
-            sftMap.put(sft, sft);
-            mapSft = sft;
-        }
-        return mapSft;
-    }
-    
     public OntologyUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       int frameCount = 0;
@@ -1373,7 +1355,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
     
     public void setFrameCalculatorDisabled(boolean disabled) {
-      frameCalculator.setDisabled(disabled);
+      FrameCalculator.setDisabled(disabled);
     }
     
     public void heartBeat(RemoteSession session) throws ServerSessionLost {
