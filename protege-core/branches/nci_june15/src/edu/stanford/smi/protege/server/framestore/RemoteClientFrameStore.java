@@ -90,7 +90,6 @@ public class RemoteClientFrameStore implements FrameStore {
     private KnowledgeBase kb;
     private ClassLoader kbClassLoader;
     private SystemFrames systemFrames;
-    private Object lock;
     private RemoteSession session;
     private RemoteServer server;
     private RemoteServerFrameStore proxiedDelegate;

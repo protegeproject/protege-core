@@ -22,7 +22,6 @@ public class Registration {
     private FifoReader<AbstractEvent> events;
     private FifoReader<ValueUpdate> updates;
     private List<AbstractEvent> transactionEvents = new ArrayList<AbstractEvent>();
-    private List<ValueUpdate> rollbacks = new ArrayList<ValueUpdate>();
     private List<ValueUpdate> commits = new ArrayList<ValueUpdate>();
     private long lastHeartbeat = 0;
 
