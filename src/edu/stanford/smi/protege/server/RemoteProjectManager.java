@@ -62,8 +62,11 @@ public class RemoteProjectManager {
         return project;
     }
 
-    public Project getProject(String serverName, String username, String password, String projectName,
-            boolean pollForEvents) {
+    public Project getProject(String serverName, 
+                              String username, 
+                              String password, 
+                              String projectName,
+                              boolean pollForEvents) {
         Project p = null;
         try {
             RemoteServer server = (RemoteServer) Naming.lookup("//" + serverName + "/" + Server.getBoundName());
