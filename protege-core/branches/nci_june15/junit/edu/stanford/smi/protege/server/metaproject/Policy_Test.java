@@ -23,11 +23,11 @@ public class Policy_Test extends SimpleTestCase {
     MetaProject mp = new MetaProjectImpl(URIUtilities.createURI(METAPROJECT));
     
     
-    Policy p = mp.getPolicy(PROJECT1);
+    Policy p = mp.getPolicy();
 
-    assertTrue( p.isOperationAuthorized(NATASHA, OperationImpl.EDIT));
-    assertFalse(p.isOperationAuthorized(BOB,     OperationImpl.EDIT));
-    assertFalse(p.isOperationAuthorized(PAUL,    OperationImpl.EDIT));
-    assertTrue( p.isOperationAuthorized(PAUL,    RESTART));
+    assertTrue( p.isOperationAuthorized(NATASHA, OperationImpl.EDIT, PROJECT1));
+    assertFalse(p.isOperationAuthorized(BOB,     OperationImpl.EDIT, PROJECT1));
+    assertFalse(p.isOperationAuthorized(PAUL,    OperationImpl.EDIT, PROJECT1));
+    assertTrue( p.isOperationAuthorized(PAUL,    RESTART,            PROJECT1));
   }
 }
