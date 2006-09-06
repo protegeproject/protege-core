@@ -32,11 +32,16 @@ import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.framestore.background.WorkInfo;
+import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.Operation;
+import edu.stanford.smi.protege.server.metaproject.Policy;
+import edu.stanford.smi.protege.server.metaproject.impl.UserInstanceImpl;
 import edu.stanford.smi.protege.server.update.FrameRead;
 import edu.stanford.smi.protege.server.update.FrameWrite;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
@@ -104,6 +109,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private KnowledgeBase _kb;
     
     private TransactionMonitor transactionMonitor;
+    
+    private MetaProjectInstance projectInstance;
     
     private FifoWriter<AbstractEvent> _eventWriter = new FifoWriter<AbstractEvent>();
     {
@@ -1471,6 +1478,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       if (!updatesSeenByUntransactedClients(level)) {
         registration.addCommittableUpdate(new InvalidateCacheUpdate(frame,slot, facet, isTemplate));
       }
+    }
+    
+    public void setMetaProjectInstance(MetaProjectInstance projectInstance) {
+      this.projectInstance = projectInstance;
+    }
+    
+    public Set<Operation> getAllowedOperations(RemoteSession session) {
+      Policy policy = Server.getPolicy();
+      return policy.getAllowedOperations(new UserInstanceImpl(session.getUserName()), projectInstance);
     }
 
 }
