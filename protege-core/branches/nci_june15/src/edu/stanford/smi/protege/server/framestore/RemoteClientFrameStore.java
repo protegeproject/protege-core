@@ -43,6 +43,7 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
+import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
 import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
@@ -114,6 +115,7 @@ public class RemoteClientFrameStore implements FrameStore {
     private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
     
     private RemoteClientStatsImpl stats = new RemoteClientStatsImpl();
+    private Set<Operation> allowedOps;
 
  
     public RemoteClientFrameStore(String host, 
@@ -1800,6 +1802,17 @@ public class RemoteClientFrameStore implements FrameStore {
     } catch (RemoteException remote) {
       throw new ProtegeIOException(remote);
     }
+  }
+  
+  public Set<Operation> getAllowedOperations() throws ProtegeIOException {
+    if (allowedOps == null) {
+      try {
+        allowedOps = getRemoteDelegate().getAllowedOperations(session);
+      } catch (RemoteException e) {
+        throw new ProtegeIOException(e);
+      }
+    }
+    return allowedOps;
   }
 
   public class RemoteClientStatsImpl implements RemoteClientStats {
