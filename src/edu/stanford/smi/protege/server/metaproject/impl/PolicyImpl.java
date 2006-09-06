@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.server.metaproject.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -65,8 +66,17 @@ public class PolicyImpl implements Policy {
   }
 
   public Set<Operation> getAllowedOperations(UserInstance user, MetaProjectInstance project) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    Set<Operation> allowedOps = new HashSet<Operation>();
+    for (Authorization auth  : authorizations) {
+      if (auth.getActors().contains(user) && auth.getProjects().contains(project)) {
+        if (auth.isAllowed()) {
+          allowedOps.addAll(auth.getOperations());
+        } else  {
+          allowedOps.removeAll(auth.getOperations());
+        }
+      }
+    }
+    return allowedOps;
   }
 
 }
