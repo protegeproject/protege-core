@@ -32,34 +32,30 @@ public class Server_Test extends SimpleTestCase {
     private static final String USER2 = "Jennifer Vendetti";
     private static final String PASSWORD2 = "jenny";
 
-    private static final String NAME = "//" + HOST + "/" + Server.getBoundName();
+    protected static final String NAME = "//" + HOST + "/" + Server.getBoundName();
     
-    private static  final String JAR_PROPERTY="junit.server.protege.jar";
-    
+    protected static  final String JAR_PROPERTY="junit.server.protege.jar";
     
     private static boolean serverRunning = false;
 
-    private RemoteServer _server;
-
+    protected static RemoteServer _server;
+    
+    private static boolean informedServerNotConfigured = false;
+    
+    
     public void setUp() throws Exception {
       super.setUp();
       try {
-        if (!startServer()) {
-          return;
-        }
-        _server = (RemoteServer) Naming.lookup(NAME);
-        _server.reinitialize();
+        startServer();
       } catch (NotBoundException e) {
         fail("Could not bind to server (is rmiregistry running?)");
       }
     }
-    
-    private static boolean informedServerNotConfigured = false;
-    
+ 
     public static boolean startServer() throws Exception {
       return startServer("examples/server/metaproject.pprj");
     }
-    
+ 
     public static boolean startServer(String projectFile) throws Exception {
       Properties jup = APITestCase.getJunitProperties();
       String jar_uri = jup.getProperty(JAR_PROPERTY);
@@ -79,20 +75,24 @@ public class Server_Test extends SimpleTestCase {
         Server.startServer(serverArgs);
         serverRunning = true;
       }
+      _server = (RemoteServer) Naming.lookup(NAME);
+      _server.reinitialize();
       return true;
     }
-      
+    
+    
     public static boolean isServerRunning() {
       return serverRunning;
     }
- 
 
-    private static String getMachineIpAddress() {
+
+    public static String getMachineIpAddress() {
         return SystemUtilities.getMachineIpAddress();
     }
 
+    
     public void testSession() throws RemoteException {
-      if (!serverRunning) {
+      if (!isServerRunning()) {
         return;
       }
       RemoteSession session = _server.openSession(USER1, getMachineIpAddress(), PASSWORD1);
@@ -103,7 +103,7 @@ public class Server_Test extends SimpleTestCase {
     }
 
     public void testConnection() throws RemoteException {
-      if (!serverRunning) {
+      if (!isServerRunning()) {
         return;
       }
       RemoteSession session1 = _server.openSession(USER1, getMachineIpAddress(), PASSWORD1);
@@ -129,7 +129,7 @@ public class Server_Test extends SimpleTestCase {
     
 
     public void testGetProject() {
-      if (!serverRunning) {
+      if (!isServerRunning()) {
         return;
       }
       Project p = RemoteProjectManager.getInstance().getProject(HOST, USER1, PASSWORD1, PROJECT_NAME, true);
