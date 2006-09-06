@@ -116,6 +116,7 @@ public class RemoteClientFrameStore implements FrameStore {
     
     private RemoteClientStatsImpl stats = new RemoteClientStatsImpl();
     private Set<Operation> allowedOps;
+    private Set<Operation> knownOps;
 
  
     public RemoteClientFrameStore(String host, 
@@ -1815,13 +1816,27 @@ public class RemoteClientFrameStore implements FrameStore {
     return allowedOps;
   }
   
-  public static boolean isOperationAllowed(KnowledgeBase kb, Operation op) throws ProtegeIOException {
+  public Set<Operation> getKnownOperations() throws ProtegeIOException {
+    if (knownOps == null) {
+      try {
+        knownOps = getRemoteDelegate().getKnownOperations(session);
+      } catch (RemoteException re)  {
+        throw new ProtegeIOException(re);
+      }
+    }
+    return knownOps;
+  }
+  
+  public static boolean isOperationAllowed(KnowledgeBase kb, Operation op) 
+  throws ProtegeIOException {
     DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
     FrameStore terminalFS = dkb.getTerminalFrameStore();
     if (!(terminalFS instanceof RemoteClientFrameStore)) {
       return true;
     }
-    return ((RemoteClientFrameStore) terminalFS).getAllowedOperations().contains(op);
+    RemoteClientFrameStore remoteFS = (RemoteClientFrameStore) terminalFS;
+    return (!remoteFS.getKnownOperations().contains(op) || 
+              remoteFS.getAllowedOperations().contains(op));
   }
 
   public class RemoteClientStatsImpl implements RemoteClientStats {
