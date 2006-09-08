@@ -23,32 +23,27 @@ public class ChangeMonitorFrameStore extends ModificationFrameStore {
         changed = false;
     }
 
-    public void setFrameName(Frame frame, String name) {
-        markChanged();
-        getDelegate().setFrameName(frame, name);
-    }
-
-    public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+    public Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaultValues) {
         markChanged();
-        return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaultValues);
+        return getDelegate().createCls(id, directTypes, directSuperclasses, loadDefaultValues);
     }
 
-    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
+    public Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues) {
         markChanged();
-        return getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaultValues);
+        return getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaultValues);
     }
 
-    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
+    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
         markChanged();
-        return getDelegate().createFacet(id, name, directTypes, loadDefaultValues);
+        return getDelegate().createFacet(id, directTypes, loadDefaultValues);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
+    public SimpleInstance createSimpleInstance(FrameID id, Collection directTypes,
             boolean loadDefaultValues) {
         markChanged();
-        return getDelegate().createSimpleInstance(id, name, directTypes, loadDefaultValues);
+        return getDelegate().createSimpleInstance(id, directTypes, loadDefaultValues);
     }
 
     public void deleteCls(Cls cls) {

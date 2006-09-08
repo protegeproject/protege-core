@@ -187,8 +187,8 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
     }
 
-    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
-        return getDelegate().createFacet(id, name, directTypes, loadDefaults);
+    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaults) {
+        return getDelegate().createFacet(id, directTypes, loadDefaults);
     }
 
     public List getDirectSubclasses(Cls cls) {
@@ -231,9 +231,9 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
-    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
+    public Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
             boolean loadDefaults) {
-        return getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
+        return getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaults);
     }
 
     public List getDirectTypes(Instance instance) {
@@ -260,9 +260,9 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
     }
 
-    public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+    public Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaults) {
-        return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
+        return getDelegate().createCls(id, directTypes, directSuperclasses, loadDefaults);
     }
 
     public Set getFacets() {
@@ -289,8 +289,8 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getMatchingReferences(value, maxMatches);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
-        return getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
+    public SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaults) {
+        return getDelegate().createSimpleInstance(id, directTypes, loadDefaults);
     }
 
     public void addDirectType(Instance instance, Cls type) {
@@ -307,10 +307,6 @@ public class FrameStoreAdapter extends AbstractFrameStore {
 
     public String getFrameName(Frame frame) {
         return getDelegate().getFrameName(frame);
-    }
-
-    public void setFrameName(Frame frame, String name) {
-        getDelegate().setFrameName(frame, name);
     }
 
     public Set getOwnFacets(Frame frame, Slot slot) {

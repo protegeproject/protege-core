@@ -254,18 +254,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     }
 
     public String getName() {
-        String name;
-        if (isDeleted()) {
-            name = "<<deleted>>";
-        } else {
-            KnowledgeBase kb = getDefaultKnowledgeBase();
-            if (kb == null) {
-                name = "<<missing kb, frameid=" + id + ">>";
-            } else {
-                name = kb.getName(this);
-            }
-        }
-        return name;
+        return getFrameID().getName();
     }
 
     public boolean getOwnSlotAllowsMultipleValues(Slot slot) {
@@ -382,10 +371,6 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
 
     public void setIncluded(boolean b) {
         setState(INCLUDED_MASK, b);
-    }
-
-    public void setName(String newName) {
-        getDefaultKnowledgeBase().setFrameName(this, newName);
     }
 
     public void setOwnFacetValue(Slot slot, Facet facet, Object value) {

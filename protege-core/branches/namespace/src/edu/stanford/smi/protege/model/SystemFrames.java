@@ -10,8 +10,7 @@ import edu.stanford.smi.protege.util.*;
 public class SystemFrames {
 
     private KnowledgeBase _kb;
-    private Map _frameIdToFrameMap = new LinkedHashMap();
-    private Map _frameIdToNameMap = new LinkedHashMap();
+    private Map<FrameID, Frame> _frameIdToFrameMap = new LinkedHashMap<FrameID, Frame>();
 
     public SystemFrames(KnowledgeBase kb) {
         _kb = kb;
@@ -22,16 +21,20 @@ public class SystemFrames {
         _frameIdToFrameMap.put(frame.getFrameID(), frame);
     }
 
-    public Collection getFrames() {
+    public Collection<Frame> getFrames() {
         return new ArrayList(_frameIdToFrameMap.values());
     }
 
-    public Collection getFrameIDs() {
+    public Collection<FrameID> getFrameIDs() {
         return new ArrayList(_frameIdToFrameMap.keySet());
     }
 
-    public Collection getFrameNames() {
-        return new ArrayList(_frameIdToNameMap.values());
+    public Collection<String> getFrameNames() {
+      List names = new ArrayList<String>();
+      for (FrameID id : _frameIdToFrameMap.keySet()) {
+        names.add(id.getName());
+      }
+      return names;
     }
 
     public Frame getFrame(FrameID id) {
@@ -60,100 +63,97 @@ public class SystemFrames {
         createFacets();
     }
 
-    private void createCls(FrameID id, String name) {
+    private void createCls(FrameID id) {
         Frame frame = new DefaultCls(_kb, id);
-        addFrame(id, name, frame);
+        addFrame(id, frame);
     }
 
-    private void createSlot(FrameID id, String name) {
+    private void createSlot(FrameID id) {
         Frame frame = new DefaultSlot(_kb, id);
-        addFrame(id, name, frame);
+        addFrame(id, frame);
     }
 
-    private void createFacet(FrameID id, String name, FacetConstraint constraint) {
+    private void createFacet(FrameID id, FacetConstraint constraint) {
         Facet facet = new DefaultFacet(_kb, id);
         if (constraint != null) {
             facet.setConstraint(constraint);
         }
-        addFrame(id, name, facet);
+        addFrame(id, facet);
     }
 
-    private void addFrame(FrameID id, String name, Frame frame) {
+    private void addFrame(FrameID id, Frame frame) {
         Object value = _frameIdToFrameMap.put(id, frame);
         if (value != null) {
-            throw new IllegalStateException("duplicate add: " + id + " " + name);
+            throw new IllegalStateException("duplicate add: " + id + " " + id.getName());
         }
-        _frameIdToNameMap.put(id, name);
     }
 
     private void createClses() {
-        createCls(Model.ClsID.THING, Model.Cls.THING);
-        createCls(Model.ClsID.SYSTEM_CLASS, Model.Cls.SYSTEM_CLASS);
-        createCls(Model.ClsID.ROOT_META_CLASS, Model.Cls.ROOT_META_CLASS);
-        createCls(Model.ClsID.CLASS, Model.Cls.CLASS);
-        createCls(Model.ClsID.SLOT, Model.Cls.SLOT);
-        createCls(Model.ClsID.FACET, Model.Cls.FACET);
-        createCls(Model.ClsID.STANDARD_CLASS, Model.Cls.STANDARD_CLASS);
-        createCls(Model.ClsID.STANDARD_SLOT, Model.Cls.STANDARD_SLOT);
-        createCls(Model.ClsID.STANDARD_FACET, Model.Cls.STANDARD_FACET);
-        createCls(Model.ClsID.CONSTRAINT, Model.Cls.CONSTRAINT);
-        createCls(Model.ClsID.RELATION, Model.Cls.RELATION);
-        createCls(Model.ClsID.DIRECTED_BINARY_RELATION, Model.Cls.DIRECTED_BINARY_RELATION);
-        createCls(Model.ClsID.PAL_CONSTRAINT, Model.Cls.PAL_CONSTRAINT);
-        createCls(Model.ClsID.ANNOTATION, Model.Cls.ANNOTATION);
-        createCls(Model.ClsID.INSTANCE_ANNOTATION, Model.Cls.INSTANCE_ANNOTATION);
+        createCls(Model.ClsID.THING);
+        createCls(Model.ClsID.SYSTEM_CLASS);
+        createCls(Model.ClsID.ROOT_META_CLASS);
+        createCls(Model.ClsID.CLASS);
+        createCls(Model.ClsID.SLOT);
+        createCls(Model.ClsID.FACET);
+        createCls(Model.ClsID.STANDARD_CLASS);
+        createCls(Model.ClsID.STANDARD_SLOT);
+        createCls(Model.ClsID.STANDARD_FACET);
+        createCls(Model.ClsID.CONSTRAINT);
+        createCls(Model.ClsID.RELATION);
+        createCls(Model.ClsID.DIRECTED_BINARY_RELATION);
+        createCls(Model.ClsID.PAL_CONSTRAINT);
+        createCls(Model.ClsID.ANNOTATION);
+        createCls(Model.ClsID.INSTANCE_ANNOTATION);
     }
 
     private void createSlots() {
-        createSlot(Model.SlotID.DOCUMENTATION, Model.Slot.DOCUMENTATION);
-        createSlot(Model.SlotID.NAME, Model.Slot.NAME);
-        createSlot(Model.SlotID.ROLE, Model.Slot.ROLE);
-        createSlot(Model.SlotID.DIRECT_TYPES, Model.Slot.DIRECT_TYPES);
-        createSlot(Model.SlotID.DIRECT_INSTANCES, Model.Slot.DIRECT_INSTANCES);
-        createSlot(Model.SlotID.DIRECT_SUPERCLASSES, Model.Slot.DIRECT_SUPERCLASSES);
-        createSlot(Model.SlotID.DIRECT_SUBCLASSES, Model.Slot.DIRECT_SUBCLASSES);
-        createSlot(Model.SlotID.DIRECT_SUPERSLOTS, Model.Slot.DIRECT_SUPERSLOTS);
-        createSlot(Model.SlotID.DIRECT_SUBSLOTS, Model.Slot.DIRECT_SUBSLOTS);
-        createSlot(Model.SlotID.ASSOCIATED_FACET, Model.Slot.ASSOCIATED_FACET);
-        createSlot(Model.SlotID.ASSOCIATED_SLOT, Model.Slot.ASSOCIATED_SLOT);
-        createSlot(Model.SlotID.DIRECT_TEMPLATE_SLOTS, Model.Slot.DIRECT_TEMPLATE_SLOTS);
-        createSlot(Model.SlotID.DIRECT_DOMAIN, Model.Slot.DIRECT_DOMAIN);
-        createSlot(Model.SlotID.INVERSE, Model.Slot.INVERSE);
-        createSlot(Model.SlotID.CONSTRAINTS, Model.Slot.CONSTRAINTS);
-        createSlot(Model.SlotID.DEFAULTS, Model.Slot.DEFAULTS);
-        createSlot(Model.SlotID.VALUE_TYPE, Model.Slot.VALUE_TYPE);
-        createSlot(Model.SlotID.MAXIMUM_CARDINALITY, Model.Slot.MAXIMUM_CARDINALITY);
-        createSlot(Model.SlotID.MINIMUM_CARDINALITY, Model.Slot.MINIMUM_CARDINALITY);
-        createSlot(Model.SlotID.NUMERIC_MINIMUM, Model.Slot.NUMERIC_MINIMUM);
-        createSlot(Model.SlotID.NUMERIC_MAXIMUM, Model.Slot.NUMERIC_MAXIMUM);
-        createSlot(Model.SlotID.PAL_STATEMENT, Model.Slot.PAL_STATEMENT);
-        createSlot(Model.SlotID.PAL_DESCRIPTION, Model.Slot.PAL_DESCRIPTION);
-        createSlot(Model.SlotID.PAL_NAME, Model.Slot.PAL_NAME);
-        createSlot(Model.SlotID.PAL_RANGE, Model.Slot.PAL_RANGE);
-        createSlot(Model.SlotID.VALUES, Model.Slot.VALUES);
-        createSlot(Model.SlotID.ANNOTATED_INSTANCE, Model.Slot.ANNOTATED_INSTANCE);
-        createSlot(Model.SlotID.ANNOTATION_TEXT, Model.Slot.ANNOTATION_TEXT);
-        createSlot(Model.SlotID.CREATOR, Model.Slot.CREATOR);
-        createSlot(Model.SlotID.CREATION_TIMESTAMP, Model.Slot.CREATION_TIMESTAMP);
-        createSlot(Model.SlotID.MODIFIER, Model.Slot.MODIFIER);
-        createSlot(Model.SlotID.MODIFICATION_TIMESTAMP, Model.Slot.MODIFICATION_TIMESTAMP);
-        createSlot(Model.SlotID.FROM, Model.Slot.FROM);
-        createSlot(Model.SlotID.TO, Model.Slot.TO);
+        createSlot(Model.SlotID.DOCUMENTATION);
+        createSlot(Model.SlotID.NAME);
+        createSlot(Model.SlotID.ROLE);
+        createSlot(Model.SlotID.DIRECT_TYPES);
+        createSlot(Model.SlotID.DIRECT_INSTANCES);
+        createSlot(Model.SlotID.DIRECT_SUPERCLASSES);
+        createSlot(Model.SlotID.DIRECT_SUBCLASSES);
+        createSlot(Model.SlotID.DIRECT_SUPERSLOTS);
+        createSlot(Model.SlotID.DIRECT_SUBSLOTS);
+        createSlot(Model.SlotID.ASSOCIATED_FACET);
+        createSlot(Model.SlotID.ASSOCIATED_SLOT);
+        createSlot(Model.SlotID.DIRECT_TEMPLATE_SLOTS);
+        createSlot(Model.SlotID.DIRECT_DOMAIN);
+        createSlot(Model.SlotID.INVERSE);
+        createSlot(Model.SlotID.CONSTRAINTS);
+        createSlot(Model.SlotID.DEFAULTS);
+        createSlot(Model.SlotID.VALUE_TYPE);
+        createSlot(Model.SlotID.MAXIMUM_CARDINALITY);
+        createSlot(Model.SlotID.MINIMUM_CARDINALITY);
+        createSlot(Model.SlotID.NUMERIC_MINIMUM);
+        createSlot(Model.SlotID.NUMERIC_MAXIMUM);
+        createSlot(Model.SlotID.PAL_STATEMENT);
+        createSlot(Model.SlotID.PAL_DESCRIPTION);
+        createSlot(Model.SlotID.PAL_NAME);
+        createSlot(Model.SlotID.PAL_RANGE);
+        createSlot(Model.SlotID.VALUES);
+        createSlot(Model.SlotID.ANNOTATED_INSTANCE);
+        createSlot(Model.SlotID.ANNOTATION_TEXT);
+        createSlot(Model.SlotID.CREATOR);
+        createSlot(Model.SlotID.CREATION_TIMESTAMP);
+        createSlot(Model.SlotID.MODIFIER);
+        createSlot(Model.SlotID.MODIFICATION_TIMESTAMP);
+        createSlot(Model.SlotID.FROM);
+        createSlot(Model.SlotID.TO);
     }
 
     private void createFacets() {
-        createFacet(Model.FacetID.DOCUMENTATION, Model.Facet.DOCUMENTATION, null);
-        createFacet(Model.FacetID.DEFAULTS, Model.Facet.DEFAULTS, new DefaultValuesConstraint());
-        createFacet(Model.FacetID.CONSTRAINTS, Model.Facet.CONSTRAINTS, null);
-        createFacet(Model.FacetID.VALUE_TYPE, Model.Facet.VALUE_TYPE, new ValueTypeConstraint());
-        createFacet(Model.FacetID.INVERSE, Model.Facet.INVERSE, null);
-        createFacet(Model.FacetID.MAXIMUM_CARDINALITY, Model.Facet.MAXIMUM_CARDINALITY,
-                new MaximumCardinalityConstraint());
-        createFacet(Model.FacetID.MINIMUM_CARDINALITY, Model.Facet.MINIMUM_CARDINALITY,
-                new MinimumCardinalityConstraint());
-        createFacet(Model.FacetID.NUMERIC_MINIMUM, Model.Facet.NUMERIC_MINIMUM, new NumericMinimumConstraint());
-        createFacet(Model.FacetID.NUMERIC_MAXIMUM, Model.Facet.NUMERIC_MAXIMUM, new NumericMaximumConstraint());
-        createFacet(Model.FacetID.VALUES, Model.Facet.VALUES, null);
+        createFacet(Model.FacetID.DOCUMENTATION, null);
+        createFacet(Model.FacetID.DEFAULTS, new DefaultValuesConstraint());
+        createFacet(Model.FacetID.CONSTRAINTS, null);
+        createFacet(Model.FacetID.VALUE_TYPE, new ValueTypeConstraint());
+        createFacet(Model.FacetID.INVERSE, null);
+        createFacet(Model.FacetID.MAXIMUM_CARDINALITY, new MaximumCardinalityConstraint());
+        createFacet(Model.FacetID.MINIMUM_CARDINALITY, new MinimumCardinalityConstraint());
+        createFacet(Model.FacetID.NUMERIC_MINIMUM, new NumericMinimumConstraint());
+        createFacet(Model.FacetID.NUMERIC_MAXIMUM, new NumericMaximumConstraint());
+        createFacet(Model.FacetID.VALUES, null);
     }
 
     public Cls getRootCls() {
@@ -415,19 +415,19 @@ public class SystemFrames {
         }
     }
 
-    private Cls addSystemCls(FrameStore fs, FrameID id, String name) {
+    private Cls addSystemCls(FrameStore fs, FrameID id) {
         Collection types = CollectionUtilities.createCollection(getStandardClsMetaCls());
-        return fs.createCls(id, name, types, Collections.EMPTY_SET, false);
+        return fs.createCls(id, types, Collections.EMPTY_SET, false);
     }
 
-    private void addSystemSlot(FrameStore fs, FrameID id, String name) {
+    private void addSystemSlot(FrameStore fs, FrameID id) {
         Collection types = CollectionUtilities.createCollection(getStandardSlotMetaCls());
-        fs.createSlot(id, name, types, Collections.EMPTY_SET, false);
+        fs.createSlot(id, types, Collections.EMPTY_SET, false);
     }
 
-    private void addSystemFacet(FrameStore fs, FrameID id, String name, FacetConstraint constraint) {
+    private void addSystemFacet(FrameStore fs, FrameID id, FacetConstraint constraint) {
         Collection types = CollectionUtilities.createCollection(getStandardFacetMetaCls());
-        Facet facet = fs.createFacet(id, name, types, false);
+        Facet facet = fs.createFacet(id, types, false);
         if (constraint != null) {
             facet.setConstraint(constraint);
         }
@@ -451,13 +451,12 @@ public class SystemFrames {
             Map.Entry entry = (Map.Entry) i.next();
             FrameID id = (FrameID) entry.getKey();
             Frame frame = (Frame) entry.getValue();
-            String name = (String) _frameIdToNameMap.get(id);
             if (frame instanceof Cls) {
-                addSystemCls(fs, id, name);
+                addSystemCls(fs, id);
             } else if (frame instanceof Slot) {
-                addSystemSlot(fs, id, name);
+                addSystemSlot(fs, id);
             } else if (frame instanceof Facet) {
-                addSystemFacet(fs, id, name, ((Facet) frame).getConstraint());
+                addSystemFacet(fs, id, ((Facet) frame).getConstraint());
             }
         }
     }

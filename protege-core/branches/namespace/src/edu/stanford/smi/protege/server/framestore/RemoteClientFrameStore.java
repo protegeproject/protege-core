@@ -245,19 +245,10 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public void setFrameName(Frame frame, String name) {
-        try {
-            setCachedFrameName(frame, name);
-            getRemoteDelegate().setFrameName(frame, name, session);
-        } catch (RemoteException e) {
-            throw convertException(e);
-        }
-    }
-
-    public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+    public Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaultValues) {
         try {
-            Cls cls = getRemoteDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaultValues,
+            Cls cls = getRemoteDelegate().createCls(id, directTypes, directSuperclasses, loadDefaultValues,
                     session);
             localize(cls);
             addCacheOwnSlotValue(directTypes, getSystemFrames().getDirectInstancesSlot(), cls);
@@ -268,10 +259,10 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
+    public Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues) {
         try {
-            Slot slot = getRemoteDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaultValues,
+            Slot slot = getRemoteDelegate().createSlot(id, directTypes, directSuperslots, loadDefaultValues,
                     session);
             localize(slot);
             addCacheOwnSlotValue(directTypes, getSystemFrames().getDirectInstancesSlot(), slot);
@@ -282,9 +273,9 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
+    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
         try {
-            Facet facet = getRemoteDelegate().createFacet(id, name, directTypes, loadDefaultValues, session);
+            Facet facet = getRemoteDelegate().createFacet(id,directTypes, loadDefaultValues, session);
             localize(facet);
             addCacheOwnSlotValue(directTypes, getSystemFrames().getDirectInstancesSlot(), facet);
             return facet;
@@ -293,11 +284,9 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
-            boolean loadDefaultValues) {
+    public SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaultValues) {
         try {
-            SimpleInstance simpleInstance = getRemoteDelegate().createSimpleInstance(id, name, directTypes,
-                    loadDefaultValues, session);
+            SimpleInstance simpleInstance = getRemoteDelegate().createSimpleInstance(id, directTypes, loadDefaultValues, session);
             localize(simpleInstance);
             addCacheOwnSlotValue(directTypes, getSystemFrames().getDirectInstancesSlot(), simpleInstance);
             return simpleInstance;

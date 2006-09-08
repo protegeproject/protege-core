@@ -114,35 +114,27 @@ public class FrameStoreMethodInvoker {
                 return rval;
             }
         });
-        addInvoker("setFrameName", new Invoker() {
-            public Object invoke(FrameStore delegate, Object[] args) {
-                delegate.setFrameName((Frame) args[0], (String) args[1]);
-                return null;
-            }
-        });
-
         addInvoker("createCls", new Invoker() {
             public Object invoke(FrameStore delegate, Object[] args) {
-                return delegate.createCls((FrameID) args[0], (String) args[1], (Collection) args[2],
-                        (Collection) args[3], getBoolean(args[4]));
+                return delegate.createCls((FrameID) args[0], (Collection) args[1],
+                        (Collection) args[2], getBoolean(args[3]));
             }
         });
         addInvoker("createSlot", new Invoker() {
             public Object invoke(FrameStore delegate, Object[] args) {
-                return delegate.createSlot((FrameID) args[0], (String) args[1], (Collection) args[2],
-                        (Collection) args[3], getBoolean(args[4]));
+                return delegate.createSlot((FrameID) args[0], (Collection) args[1],
+                        (Collection) args[2], getBoolean(args[3]));
             }
         });
         addInvoker("createFacet", new Invoker() {
             public Object invoke(FrameStore delegate, Object[] args) {
-                return delegate.createFacet((FrameID) args[0], (String) args[1], (Collection) args[2],
-                        getBoolean(args[3]));
+                return delegate.createFacet((FrameID) args[0], (Collection) args[1],
+                        getBoolean(args[2]));
             }
         });
         addInvoker("createSimpleInstance", new Invoker() {
             public Object invoke(FrameStore delegate, Object[] args) {
-                return delegate.createSimpleInstance((FrameID) args[0], (String) args[1], (Collection) args[2],
-                        getBoolean(args[3]));
+                return delegate.createSimpleInstance((FrameID) args[0], (Collection) args[1], getBoolean(args[2]));
             }
         });
 

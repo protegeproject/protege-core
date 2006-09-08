@@ -7,23 +7,19 @@ import edu.stanford.smi.protege.model.framestore.*;
 
 class CreateSimpleInstanceCommand extends AbstractCommand {
     private FrameID id;
-    private String name;
     private Collection types;
     private boolean loadDefaults;
     private SimpleInstance createdInstance;
 
-    CreateSimpleInstanceCommand(FrameStore delegate, FrameID id, String name, Collection types,
-            boolean loadDefaults) {
+    CreateSimpleInstanceCommand(FrameStore delegate, FrameID id, Collection types, boolean loadDefaults) {
         super(delegate);
         this.id = id;
-        this.name = name;
         this.types = new ArrayList(types);
         this.loadDefaults = loadDefaults;
     }
 
     public Object doIt() {
-        createdInstance = getDelegate().createSimpleInstance(id, name, types, loadDefaults);
-        name = getDelegate().getFrameName(createdInstance);
+        createdInstance = getDelegate().createSimpleInstance(id, types, loadDefaults);
         id = createdInstance.getFrameID();
         setDescription("Create instance " + getText(createdInstance) + " of type " + getText(types));
         return createdInstance;
@@ -35,7 +31,7 @@ class CreateSimpleInstanceCommand extends AbstractCommand {
     }
 
     public void redoIt() {
-        getDelegate().createSimpleInstance(id, name, types, loadDefaults);
+        getDelegate().createSimpleInstance(id, types, loadDefaults);
         createdInstance.markDeleted(false);
     }
 }

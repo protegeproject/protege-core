@@ -8,24 +8,21 @@ import edu.stanford.smi.protege.model.framestore.*;
 class CreateClsCommand extends AbstractCommand {
     private Cls createdCls;
     private FrameID id;
-    private String name;
     private Collection types;
     private Collection superclasses;
     private boolean loadDefaults;
 
-    CreateClsCommand(FrameStore delegate, FrameID id, String name, Collection types, Collection superclasses,
+    CreateClsCommand(FrameStore delegate, FrameID id, Collection types, Collection superclasses,
             boolean loadDefaults) {
         super(delegate);
         this.id = id;
-        this.name = name;
         this.types = new ArrayList(types);
         this.superclasses = new ArrayList(superclasses);
         this.loadDefaults = loadDefaults;
     }
 
     public Object doIt() {
-        createdCls = getDelegate().createCls(id, name, types, superclasses, loadDefaults);
-        name = getDelegate().getFrameName(createdCls);
+        createdCls = getDelegate().createCls(id, types, superclasses, loadDefaults);
         id = createdCls.getFrameID();
         setDescription("Create class " + getText(createdCls));
         return createdCls;
@@ -37,7 +34,7 @@ class CreateClsCommand extends AbstractCommand {
     }
 
     public void redoIt() {
-        getDelegate().createCls(id, name, types, superclasses, loadDefaults);
+        getDelegate().createCls(id, types, superclasses, loadDefaults);
         createdCls.markDeleted(false);
     }
 }

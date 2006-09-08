@@ -565,26 +565,26 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         return succeeded;
     }
 
-    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses, boolean loadDefaults) {
-        Cls cls = getDelegate().createCls(id, name, types, superclasses, loadDefaults);
+    public Cls createCls(FrameID id, Collection types, Collection superclasses, boolean loadDefaults) {
+        Cls cls = getDelegate().createCls(id, types, superclasses, loadDefaults);
         dispatchEvents();
         return cls;
     }
 
-    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
-        Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaultValues);
+    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
+        Facet facet = getDelegate().createFacet(id, directTypes, loadDefaultValues);
         dispatchEvents();
         return facet;
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types, boolean loadDefaultValues) {
-        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, types, loadDefaultValues);
+    public SimpleInstance createSimpleInstance(FrameID id, Collection types, boolean loadDefaultValues) {
+        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, types, loadDefaultValues);
         dispatchEvents();
         return simpleInstance;
     }
 
-    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots, boolean loadDefaults) {
-        Slot slot = getDelegate().createSlot(id, name, types, superslots, loadDefaults);
+    public Slot createSlot(FrameID id, Collection types, Collection superslots, boolean loadDefaults) {
+        Slot slot = getDelegate().createSlot(id, types, superslots, loadDefaults);
         dispatchEvents();
         return slot;
     }
@@ -681,11 +681,6 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     public void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values) {
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
-        dispatchEvents();
-    }
-
-    public void setFrameName(Frame frame, String name) {
-        getDelegate().setFrameName(frame, name);
         dispatchEvents();
     }
 

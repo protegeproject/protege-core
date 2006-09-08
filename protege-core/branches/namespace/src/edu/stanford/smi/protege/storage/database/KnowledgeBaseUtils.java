@@ -106,7 +106,6 @@ public class KnowledgeBaseUtils {
                 Instance instance =
                     kb.createCls(
                         goodFrame.getFrameID(),
-                        goodFrame.getName(),
                         Collections.EMPTY_LIST,
                         Collections.EMPTY_LIST,
                         false);
@@ -114,7 +113,7 @@ public class KnowledgeBaseUtils {
                 frame = instance;
             } else {
                 Cls type = (Cls) getFrame(goodType, kb);
-                frame = kb.createInstance(goodFrame.getFrameID(), goodFrame.getName(), type, false);
+                frame = kb.createInstance(goodFrame.getFrameID(), type, false);
             }
             trace("create frame: " + goodFrame);
         }

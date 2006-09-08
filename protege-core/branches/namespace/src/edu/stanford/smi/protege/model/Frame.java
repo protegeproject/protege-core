@@ -173,8 +173,6 @@ public interface Frame extends Comparable {
 
     void setIncluded(boolean b);
 
-    void setName(String newName);
-
     /** See {@link Frame}for a description of the value type. */
     void setOwnFacetValue(Slot slot, Facet facet, Object value);
 

@@ -53,18 +53,16 @@ public interface FrameStore {
 
     String getFrameName(Frame frame);
 
-    void setFrameName(Frame frame, String name);
-
     // frame creation/deletion
-    Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+    Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaultValues);
 
-    Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
+    Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues);
 
-    Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues);
+    Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues);
 
-    SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaultValues);
+    SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaultValues);
 
     /**
      * Delete a single leaf class. The operation fails if the class has subclasses or instances.

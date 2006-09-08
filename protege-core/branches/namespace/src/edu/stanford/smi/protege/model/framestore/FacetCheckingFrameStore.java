@@ -15,10 +15,6 @@ public class FacetCheckingFrameStore extends FrameStoreAdapter {
     public static class FacetException extends IllegalArgumentException {
     }
 
-    public void setFrameName(Frame frame, String name) {
-        getDelegate().setFrameName(frame, name);
-    }
-
     private static void checkAbstract(Collection types) {
         Iterator i = types.iterator();
         while (i.hasNext()) {
@@ -29,24 +25,24 @@ public class FacetCheckingFrameStore extends FrameStoreAdapter {
         }
     }
 
-    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses, boolean loadDefaults) {
+    public Cls createCls(FrameID id, Collection types, Collection superclasses, boolean loadDefaults) {
         checkAbstract(types);
-        return getDelegate().createCls(id, name, types, superclasses, loadDefaults);
+        return getDelegate().createCls(id, types, superclasses, loadDefaults);
     }
 
-    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots, boolean loadDefaults) {
+    public Slot createSlot(FrameID id, Collection types, Collection superslots, boolean loadDefaults) {
         checkAbstract(types);
-        return getDelegate().createSlot(id, name, types, superslots, loadDefaults);
+        return getDelegate().createSlot(id, types, superslots, loadDefaults);
     }
 
-    public Facet createFacet(FrameID id, String name, Collection types, boolean loadDefaults) {
+    public Facet createFacet(FrameID id, Collection types, boolean loadDefaults) {
         checkAbstract(types);
-        return getDelegate().createFacet(id, name, types, loadDefaults);
+        return getDelegate().createFacet(id, types, loadDefaults);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types, boolean loadDefaults) {
+    public SimpleInstance createSimpleInstance(FrameID id, Collection types, boolean loadDefaults) {
         checkAbstract(types);
-        return getDelegate().createSimpleInstance(id, name, types, loadDefaults);
+        return getDelegate().createSimpleInstance(id, types, loadDefaults);
     }
 
     public void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {

@@ -298,11 +298,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         markDirty();
     }
 
-    public synchronized Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaults,
+    public synchronized Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaults,
             RemoteSession session) {
         recordCall(session);
         markDirty();
-        return getDelegate().createFacet(id, name, directTypes, loadDefaults);
+        return getDelegate().createFacet(id, directTypes, loadDefaults);
     }
 
     public synchronized List getDirectSubclasses(Cls cls, RemoteSession session) {
@@ -360,11 +360,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         markDirty();
     }
 
-    public synchronized Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
+    public synchronized Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
             boolean loadDefaults, RemoteSession session) {
         recordCall(session);
         markDirty();
-        return getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
+        return getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaults);
     }
 
     public synchronized List getDirectTypes(Instance instance, RemoteSession session) {
@@ -401,11 +401,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         markDirty();
     }
 
-    public synchronized Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+    public synchronized Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaults, RemoteSession session) {
         recordCall(session);
         markDirty();
-        return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
+        return getDelegate().createCls(id, directTypes, directSuperclasses, loadDefaults);
     }
 
     public synchronized Set getFacets(RemoteSession session) {
@@ -440,11 +440,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getClsesWithMatchingBrowserText(value, superclasses, maxMatches);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
+    public synchronized SimpleInstance createSimpleInstance(FrameID id, Collection directTypes,
             boolean loadDefaults, RemoteSession session) {
         recordCall(session);
         markDirty();
-        return getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
+        return getDelegate().createSimpleInstance(id, directTypes, loadDefaults);
     }
 
     public synchronized void addDirectType(Instance instance, Cls type, RemoteSession session) {
@@ -467,12 +467,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     public synchronized String getFrameName(Frame frame, RemoteSession session) {
         recordCall(session);
         return getDelegate().getFrameName(frame);
-    }
-
-    public synchronized void setFrameName(Frame frame, String name, RemoteSession session) {
-        recordCall(session);
-        getDelegate().setFrameName(frame, name);
-        markDirty();
     }
 
     public synchronized Set getOwnFacets(Frame frame, Slot slot, RemoteSession session) {

@@ -19,27 +19,21 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getFrameName(frame);
     }
 
-    public void setFrameName(Frame frame, String name) {
-        getDelegate().setFrameName(frame, name);
+    public Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses, boolean loadDefaultValues) {
+        return getDelegate().createCls(id, directTypes, directSuperclasses, loadDefaultValues);
     }
 
-    public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+    public Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues) {
-        return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaultValues);
+        return getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaultValues);
     }
 
-    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
-            boolean loadDefaultValues) {
-        return getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaultValues);
+    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
+        return getDelegate().createFacet(id, directTypes, loadDefaultValues);
     }
 
-    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
-        return getDelegate().createFacet(id, name, directTypes, loadDefaultValues);
-    }
-
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
-            boolean loadDefaultValues) {
-        return getDelegate().createSimpleInstance(id, name, directTypes, loadDefaultValues);
+    public SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaultValues) {
+        return getDelegate().createSimpleInstance(id, directTypes, loadDefaultValues);
     }
 
     public void deleteCls(Cls cls) {

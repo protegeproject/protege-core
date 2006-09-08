@@ -7,23 +7,20 @@ import edu.stanford.smi.protege.model.framestore.*;
 
 class CreateFacetCommand extends AbstractCommand {
     private boolean loadDefaults;
-    private String name;
     private FrameID id;
     private Collection types;
     private Facet createdFacet;
 
-    CreateFacetCommand(FrameStore delegate, FrameID id, String name, Collection types, boolean loadDefaults) {
+    CreateFacetCommand(FrameStore delegate, FrameID id, Collection types, boolean loadDefaults) {
         super(delegate);
         this.id = id;
-        this.name = name;
         this.types = new ArrayList(types);
         this.loadDefaults = loadDefaults;
     }
 
     public Object doIt() {
-        createdFacet = getDelegate().createFacet(id, name, types, loadDefaults);
+        createdFacet = getDelegate().createFacet(id, types, loadDefaults);
         id = createdFacet.getFrameID();
-        name = getDelegate().getFrameName(createdFacet);
         setDescription("Create facet " + getText(createdFacet));
         return createdFacet;
     }
@@ -34,7 +31,7 @@ class CreateFacetCommand extends AbstractCommand {
     }
 
     public void redoIt() {
-        getDelegate().createFacet(id, name, types, loadDefaults);
+        getDelegate().createFacet(id, types, loadDefaults);
         createdFacet.markDeleted(false);
     }
 }

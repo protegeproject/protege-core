@@ -8,14 +8,12 @@ import edu.stanford.smi.protege.model.framestore.*;
 class DeleteClsCommand extends SimpleCommand {
     private Cls cls;
     private FrameID id;
-    private String name;
     private Collection directTypes;
     private Collection directSuperclasses;
 
     DeleteClsCommand(FrameStore delegate, Cls cls) {
         super(delegate);
         this.cls = cls;
-        this.name = cls.getName();
         this.id = cls.getFrameID();
         this.directTypes = new ArrayList(cls.getDirectTypes());
         this.directSuperclasses = new ArrayList(cls.getDirectSuperclasses());
@@ -31,7 +29,7 @@ class DeleteClsCommand extends SimpleCommand {
     }
     public void undoIt() {
         // Log.enter(this, "undoIt", name);
-        getDelegate().createCls(id, name, directTypes, directSuperclasses, false);
+        getDelegate().createCls(id, directTypes, directSuperclasses, false);
         cls.markDeleted(false);
     }
 }

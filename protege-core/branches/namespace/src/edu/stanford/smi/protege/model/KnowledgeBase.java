@@ -49,13 +49,6 @@ public interface KnowledgeBase extends Disposable {
 
     boolean areValidOwnSlotValues(Frame frame, Slot slot, Collection values);
 
-    /**
-     * @deprecated Renamed to #setFrameName(Frame, String)
-     */
-    void changeFrameName(Frame oldFrame, String newFrameName);
-
-    void setFrameName(Frame oldFrame, String newFrameName);
-
     boolean containsFrame(String name);
 
     /**
@@ -77,7 +70,7 @@ public interface KnowledgeBase extends Disposable {
      * @param id Pass null to cause the system to generate an id
      * @param name Pass null to cause the system to generate a name
      */
-    Cls createCls(FrameID id, String name, Collection parents, Collection metaClses, boolean initializeDefaults);
+    Cls createCls(FrameID id, Collection parents, Collection metaClses, boolean initializeDefaults);
 
     /**
      * @param name Pass null to cause the system to generate a name
@@ -93,7 +86,6 @@ public interface KnowledgeBase extends Disposable {
      * @param name Pass null to cause the system to generate a name
      */
     Facet createFacet(String name, Cls metaCls, boolean initializeDefaults);
-    // Facet createFacet(FrameID id, String name, Collection metaClses, boolean initializeDefaults);
 
     /**
      * @param name Pass null to cause the system to generate a name
@@ -114,19 +106,19 @@ public interface KnowledgeBase extends Disposable {
      * @param id Pass null to cause the system to generate an id
      * @param name Pass null to cause the system to generate a name
      */
-    Instance createInstance(FrameID id, String name, Cls directType, boolean initializeDefaults);
+    Instance createInstance(FrameID id, Cls directType, boolean initializeDefaults);
 
     /**
      * @param id Pass null to cause the system to generate an id
      * @param name Pass null to cause the system to generate a name
      */
-    Instance createInstance(FrameID id, String name, Collection directTypes, boolean initializeDefaults);
+    Instance createInstance(FrameID id, Collection directTypes, boolean initializeDefaults);
 
     /**
      * @param id Pass null to cause the system to generate an id
      * @param name Pass null to cause the system to generate a name
      */
-    SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean initializeDefaults);
+    SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean initializeDefaults);
 
     /**
      * @param name Pass null to cause the system to generate a name
@@ -147,7 +139,6 @@ public interface KnowledgeBase extends Disposable {
      * @param name Pass null to cause the system to generate a name
      */
     Slot createSlot(String name, Cls metaCls, Collection superslots, boolean initializeDefaults);
-    // Slot createSlot(FrameID id, String name, Collection metaClses, Collection superslots, boolean initializeDefaults);
 
     /**
      *

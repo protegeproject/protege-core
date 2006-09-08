@@ -7,14 +7,12 @@ import edu.stanford.smi.protege.model.framestore.*;
 
 class DeleteSimpleInstanceCommand extends SimpleCommand {
     private SimpleInstance simpleInstance;
-    private String name;
     private FrameID id;
     private Collection directTypes;
 
     DeleteSimpleInstanceCommand(FrameStore delegate, SimpleInstance simpleInstance) {
         super(delegate);
         this.simpleInstance = simpleInstance;
-        this.name = simpleInstance.getName();
         this.id = simpleInstance.getFrameID();
         this.directTypes = new ArrayList(simpleInstance.getDirectTypes());
         setDescription("Delete instance " + getText(simpleInstance));
@@ -27,7 +25,7 @@ class DeleteSimpleInstanceCommand extends SimpleCommand {
     }
 
     public void undoIt() {
-        getDelegate().createSimpleInstance(id, name, directTypes, false);
+        getDelegate().createSimpleInstance(id, directTypes, false);
         simpleInstance.markDeleted(false);
     }
 }

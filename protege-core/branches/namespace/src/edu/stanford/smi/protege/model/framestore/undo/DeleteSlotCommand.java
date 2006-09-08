@@ -7,7 +7,6 @@ import edu.stanford.smi.protege.model.framestore.*;
 
 class DeleteSlotCommand extends SimpleCommand {
     private Slot slot;
-    private String name;
     private FrameID id;
     private Collection directTypes;
     private Collection directSuperslots;
@@ -15,7 +14,6 @@ class DeleteSlotCommand extends SimpleCommand {
     DeleteSlotCommand(FrameStore delegate, Slot slot) {
         super(delegate);
         this.slot = slot;
-        this.name = slot.getName();
         this.id = slot.getFrameID();
         this.directTypes = new ArrayList(slot.getDirectTypes());
         this.directSuperslots = new ArrayList(slot.getDirectSuperslots());
@@ -27,7 +25,7 @@ class DeleteSlotCommand extends SimpleCommand {
         return null;
     }
     public void undoIt() {
-        getDelegate().createSlot(id, name, directTypes, directSuperslots, false);
+        getDelegate().createSlot(id, directTypes, directSuperslots, false);
         slot.markDeleted(false);
     }
 }

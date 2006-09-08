@@ -32,19 +32,17 @@ public interface RemoteServerFrameStore extends Remote {
 
     String getFrameName(Frame frame, RemoteSession session) throws RemoteException;
 
-    void setFrameName(Frame frame, String name, RemoteSession session) throws RemoteException;
-
     // frame creation/deletion
-    Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
+    Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaultValues, RemoteSession session) throws RemoteException;
 
-    Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
+    Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues, RemoteSession session) throws RemoteException;
 
-    Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues, RemoteSession session)
+    Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues, RemoteSession session)
             throws RemoteException;
 
-    SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaultValues,
+    SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaultValues,
             RemoteSession session) throws RemoteException;
 
     void deleteCls(Cls cls, RemoteSession session) throws RemoteException;

@@ -60,20 +60,20 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         return getDelegate().getFrame(name);
     }
 
-    public Cls createCls(FrameID id, String name, Collection directTypes, Collection superClasses, boolean loadDefaults) {
-        Cls cls = getDelegate().createCls(id, name, directTypes, superClasses, loadDefaults);
+    public Cls createCls(FrameID id, Collection directTypes, Collection superClasses, boolean loadDefaults) {
+        Cls cls = getDelegate().createCls(id, directTypes, superClasses, loadDefaults);
         generateCreateClsEvents(cls, directTypes);
         return cls;
     }
 
-    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection superslots, boolean loadDefaults) {
-        Slot slot = getDelegate().createSlot(id, name, directTypes, superslots, loadDefaults);
+    public Slot createSlot(FrameID id, Collection directTypes, Collection superslots, boolean loadDefaults) {
+        Slot slot = getDelegate().createSlot(id, directTypes, superslots, loadDefaults);
         generateCreateSlotEvents(slot, directTypes);
         return slot;
     }
 
-    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
-        Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaults);
+    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaults) {
+        Facet facet = getDelegate().createFacet(id, directTypes, loadDefaults);
         generateCreateFacetEvents(facet, directTypes);
         return facet;
     }
@@ -248,8 +248,8 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
-        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
+    public SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaults) {
+        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id,directTypes, loadDefaults);
         generateCreateSimpleInstanceEvents(simpleInstance, directTypes);
         return simpleInstance;
     }
@@ -498,12 +498,6 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     public void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
         generateClsEvent(ClsEvent.TEMPLATE_FACET_VALUE_CHANGED, cls, slot, facet);
-    }
-
-    public void setFrameName(Frame frame, String name) {
-        String oldName = getDelegate().getFrameName(frame);
-        getDelegate().setFrameName(frame, name);
-        generateSetFrameNameEvents(frame, oldName, name);
     }
 
     public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {

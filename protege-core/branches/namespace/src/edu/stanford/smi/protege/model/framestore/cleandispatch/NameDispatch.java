@@ -13,8 +13,6 @@ class NameDispatch implements Dispatch {
     }
 
     public void setDirectOwnSlotValues(FrameStore delegate, Frame frame, Slot slot, Collection values) {
-        Assert.assertEquals("size=1", 1, values.size());
-        String name = (String) CollectionUtilities.getFirstItem(values);
-        delegate.setFrameName(frame, name);
+      throw new UnsupportedOperationException("Not allowed to change  name slots");
     }
 }

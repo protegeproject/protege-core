@@ -173,10 +173,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized Cls createCls(String name, Collection directSuperclasses, Collection directTypes,
             boolean loadDefaults) {
-        return createCls(null, name, directSuperclasses, directTypes, loadDefaults);
+      return createCls(new FrameID(name), directSuperclasses, directTypes, loadDefaults);
     }
 
-    public synchronized Cls createCls(FrameID id, String name, Collection directSuperclasses, Collection directTypes,
+    public synchronized Cls createCls(FrameID id, Collection directSuperclasses, Collection directTypes,
             boolean loadDefaults) {
         //        if (directTypes.isEmpty()) {
         //            Cls directType;
@@ -188,35 +188,35 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         //            }
         //            directTypes = CollectionUtilities.createCollection(directType);
         //        }
-        return getHeadFrameStore().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
+        return getHeadFrameStore().createCls(id, directTypes, directSuperclasses, loadDefaults);
     }
 
     public synchronized Slot createSlot(String name, Cls directType, Collection superslots, boolean loadDefaults) {
-        return createSlot(null, name, CollectionUtilities.createCollection(directType), superslots, loadDefaults);
+        return createSlot(new FrameID(name), CollectionUtilities.createCollection(directType), superslots, loadDefaults);
     }
 
-    public synchronized Slot createSlot(FrameID id, String name, Collection directTypes, Collection superslots,
+    public synchronized Slot createSlot(FrameID id, Collection directTypes, Collection superslots,
             boolean loadDefaults) {
         //        if (directTypes.isEmpty()) {
         //            directTypes = new ArrayList();
         //            directTypes.add(_defaultSlotMetaCls);
         //        }
-        return getHeadFrameStore().createSlot(id, name, directTypes, superslots, loadDefaults);
+        return getHeadFrameStore().createSlot(id, directTypes, superslots, loadDefaults);
     }
 
     public synchronized SimpleInstance createSimpleInstance(String name, Cls directType, boolean loadDefaults) {
-        return createSimpleInstance(null, name, directType, loadDefaults);
+        return createSimpleInstance(new FrameID(name), directType, loadDefaults);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Collection types,
+    public synchronized SimpleInstance createSimpleInstance(FrameID id, Collection types,
             boolean loadDefaults) {
-        return getHeadFrameStore().createSimpleInstance(id, name, types, loadDefaults);
+        return getHeadFrameStore().createSimpleInstance(id, types, loadDefaults);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Cls directType,
+    public synchronized SimpleInstance createSimpleInstance(FrameID id, Cls directType,
             boolean loadDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
-        return createSimpleInstance(id, name, types, loadDefaults);
+        return createSimpleInstance(id, types, loadDefaults);
     }
 
     public synchronized void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
@@ -327,21 +327,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return result;
     }
 
-    /**
-     * @deprecated Renamed to #setFrameName(Frame, String)
-     */
-    public synchronized void changeFrameName(Frame frame, String newName) {
-        setFrameName(frame, newName);
-    }
-
-    public synchronized void setFrameName(Frame frame, String newName) {
-        if (isValidFrameName(newName, frame)) {
-            getHeadFrameStore().setFrameName(frame, newName);
-        } else {
-            throw new IllegalArgumentException("Invalid frame name: " + newName);
-        }
-    }
-
     public synchronized boolean containsFrame(String name) {
         return getFrame(name) != null;
     }
@@ -380,15 +365,15 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized Facet createFacet(String name, Cls directType, boolean initializeDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
-        return createFacet(null, name, types, initializeDefaults);
+        return createFacet(new FrameID(name), types, initializeDefaults);
     }
 
-    public synchronized Facet createFacet(FrameID id, String name, Collection directTypes, boolean initializeDefaults) {
+    public synchronized Facet createFacet(FrameID id, Collection directTypes, boolean initializeDefaults) {
         if (directTypes.isEmpty()) {
             directTypes = new ArrayList();
             directTypes.add(_defaultFacetMetaCls);
         }
-        return getHeadFrameStore().createFacet(id, name, directTypes, initializeDefaults);
+        return getHeadFrameStore().createFacet(id, directTypes, initializeDefaults);
     }
 
     public synchronized Instance createInstance(String name, Cls directType) {
@@ -396,34 +381,34 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Instance createInstance(String name, Collection directTypes) {
-        return createInstance(null, name, directTypes, true);
+        return createInstance(new FrameID(name), directTypes, true);
     }
 
     public synchronized Instance createInstance(String name, Cls directType, boolean initializeDefaults) {
-        return createInstance(null, name, directType, initializeDefaults);
+        return createInstance(new FrameID(name), directType, initializeDefaults);
     }
 
-    public synchronized Instance createInstance(FrameID id, String name, Cls directType, boolean initializeDefaults) {
+    public synchronized Instance createInstance(FrameID id, Cls directType, boolean initializeDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
-        return createInstance(id, name, types, initializeDefaults);
+        return createInstance(id, types, initializeDefaults);
     }
 
-    public synchronized Instance createInstance(FrameID id, String name, Collection directTypes,
+    public synchronized Instance createInstance(FrameID id, Collection directTypes,
             boolean initializeDefaults) {
         Instance instance;
         // should do better than this
         Cls directType = (Cls) CollectionUtilities.getFirstItem(directTypes);
         if (directType == null) {
-            instance = createSimpleInstance(id, name, directType, initializeDefaults);
+            instance = createSimpleInstance(id, directType, initializeDefaults);
         } else {
             if (isClsMetaCls(directType)) {
-                instance = createCls(id, name, Collections.EMPTY_LIST, directTypes, initializeDefaults);
+                instance = createCls(id, Collections.EMPTY_LIST, directTypes, initializeDefaults);
             } else if (isSlotMetaCls(directType)) {
-                instance = createSlot(id, name, directTypes, Collections.EMPTY_LIST, initializeDefaults);
+                instance = createSlot(id, directTypes, Collections.EMPTY_LIST, initializeDefaults);
             } else if (isFacetMetaCls(directType)) {
-                instance = createFacet(id, name, directTypes, initializeDefaults);
+                instance = createFacet(id, directTypes, initializeDefaults);
             } else {
-                instance = createSimpleInstance(id, name, directTypes, initializeDefaults);
+                instance = createSimpleInstance(id, directTypes, initializeDefaults);
             }
         }
         return instance;

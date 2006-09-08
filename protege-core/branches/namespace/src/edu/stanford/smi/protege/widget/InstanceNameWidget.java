@@ -57,16 +57,7 @@ public class InstanceNameWidget extends TextFieldWidget {
     }
 
     public void setInstanceValues() {
-        String name = getText();
-        if (name != null && isValidName(name)) {
-            getInstance().setName(name);
-            markDirty(false);
-
-        } else {
-            ModalDialog.showMessageDialog(this, "Invalid frame name: Unable to change name.");
-            setText(getInstance().getName());
-            getTextField().requestFocus();
-        }
+      throw new UnsupportedOperationException("Not implemented yet - names don't change");
     }
 
     protected String getInvalidTextDescription(String text) {
