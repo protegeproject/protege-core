@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameStoreManager {
+    private FrameStore immutableNamesFrameStore;
     private FrameStore deleteSimplificationFrameStore;
     private FrameStore argumentCheckingFrameStore;
     private FrameStore cachingFrameStore;
@@ -94,6 +95,7 @@ public class FrameStoreManager {
         add(changeMonitorFrameStore, true);
         add(cleanDispatchFrameStore, true);
         add(deleteSimplificationFrameStore, true);
+        add(immutableNamesFrameStore, true);
 
         // for testing
         add(traceFrameStore, false);
@@ -161,6 +163,7 @@ public class FrameStoreManager {
         closeFrameStores();
         frameStores = null;
         kb = null;
+        immutableNamesFrameStore = null;
         deleteSimplificationFrameStore = null;
         argumentCheckingFrameStore = null;
         cachingFrameStore = null;
@@ -318,6 +321,7 @@ public class FrameStoreManager {
     }
 
     private void createSystemFrameStores() {
+        immutableNamesFrameStore = create(ImmutableNamesFrameStore.class);
         deleteSimplificationFrameStore = create(DeleteSimplificationFrameStore.class);
         argumentCheckingFrameStore = create(ArgumentCheckingFrameStore.class);
         cachingFrameStore = create(CallCachingFrameStore.class);
