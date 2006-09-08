@@ -1457,9 +1457,9 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         fired[0] = Boolean.FALSE;
         FrameStore originalHead = ((DefaultKnowledgeBase) getDomainKB()).getHeadFrameStore();
         FrameStore testFs = new FrameStoreAdapter() {
-            public Slot createSlot(FrameID id, String name, Collection superslots, Collection types, boolean init) {
+            public Slot createSlot(FrameID id, Collection superslots, Collection types, boolean init) {
                 fired[0] = Boolean.TRUE;
-                return getDelegate().createSlot(id, name, superslots, types, init);
+                return getDelegate().createSlot(id, superslots, types, init);
             }
         };
         getDomainKB().insertFrameStore(testFs);
@@ -1629,27 +1629,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertEventFired(FrameEvent.OWN_SLOT_VALUE_CHANGED);
     }
 
-    public void testSetFrameName() {
-        Frame frame = createFrame();
-        String name = frame.getName();
-        frame.setName(name); // do nothing
-        try {
-            frame.setName(null);
-            fail();
-        } catch (IllegalArgumentException e) {
-            // ok
-        }
-        String name2 = name + Math.random();
-        frame.setName(name2);
-        assertEquals(name2, frame.getName());
-        Frame frame2 = createFrame();
-        try {
-            frame.setName(frame2.getName());
-            fail();
-        } catch (IllegalArgumentException e) {
-            // ok
-        }
-    }
 
     public void testSetAllowedClsesOverride() {
         Cls cls = createCls();

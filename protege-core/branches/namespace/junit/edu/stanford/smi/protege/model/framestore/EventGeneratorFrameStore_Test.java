@@ -7,6 +7,7 @@ import edu.stanford.smi.protege.model.*;
 
 public class EventGeneratorFrameStore_Test extends FrameStore_Test {
     private KnowledgeBase _kb;
+    private int nameCounter = 0;
 
     protected FrameStore createFrameStore(DefaultKnowledgeBase kb) {
         _kb = kb;
@@ -19,13 +20,17 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         super.tearDown();
         _kb = null;
     }
+    
+    public String createName() {
+      return "frameName" + nameCounter++;
+    }
 
     public void testCreateClsEvent() {
         Cls rootCls = _kb.getRootCls();
         Cls stdCls = _kb.getCls(Model.Cls.STANDARD_CLASS);
         Slot subclassesSlot = _kb.getSlot(Model.Slot.DIRECT_SUBCLASSES);
         Slot instancesSlot = _kb.getSlot(Model.Slot.DIRECT_INSTANCES);
-        Cls cls = createCls();
+        Cls cls = createCls(createName());
         List<EventObject> events = getTestFrameStore().getEvents();
         assertTrue(events.contains(new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_CREATED, cls)));
         assertTrue(events.contains(new ClsEvent(rootCls, ClsEvent.DIRECT_SUBCLASS_ADDED, cls)));
@@ -35,8 +40,8 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
     }
 
     public void testAddSuperclassEvent() {
-        Cls cls = createCls();
-        Cls superclass = createCls();
+        Cls cls = createCls(createName());
+        Cls superclass = createCls(createName());
         getTestFrameStore().getEvents();
         getTestFrameStore().addDirectSuperclass(cls, superclass);
         List<EventObject> events = getTestFrameStore().getEvents();
@@ -47,7 +52,7 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
     }
 
     public void testDeleteClsEvents() {
-        Cls cls = createCls();
+        Cls cls = createCls(createName());
         KnowledgeBaseEvent testEvent1 = new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_DELETED, cls, cls.getName());
         getTestFrameStore().getEvents();
         getTestFrameStore().deleteCls(cls);
