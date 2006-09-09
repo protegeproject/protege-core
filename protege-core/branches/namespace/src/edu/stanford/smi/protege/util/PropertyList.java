@@ -67,14 +67,15 @@ public class PropertyList implements Cloneable {
         return new PropertyList(instance);
     }
 
-    private Instance createInstance(String clsName, String instanceName) {
+    private Instance createInstance(String clsName) {
         KnowledgeBase kb = _instance.getKnowledgeBase();
         Cls cls = kb.getCls(clsName);
-        return kb.createInstance(instanceName, cls);
+        return kb.createInstance(null, cls);
     }
 
     private Instance createProperty(String name, String propertyClsName) {
-        Instance property = createInstance(propertyClsName, name);
+        Instance property = createInstance(propertyClsName);
+        setValue(property, SLOT_NAME, name);
         addProperty(property);
         return property;
     }
