@@ -9,9 +9,6 @@ public class FrameID {
   private boolean isSystem = false;
   
   public FrameID(String name) {
-    if (name == null) {
-      throw new IllegalArgumentException("Protege bug - all frames have names");
-    }
     this.name = name;
   }
   
