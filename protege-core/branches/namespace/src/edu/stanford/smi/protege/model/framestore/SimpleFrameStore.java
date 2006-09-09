@@ -707,11 +707,17 @@ public class SimpleFrameStore implements FrameStore {
 
 
     private void addInstance(Instance instance, Collection directTypes, boolean loadDefaults) {
+        insertName(instance);
         addDirectOwnSlotValuePairs(instance, _systemFrames.getDirectTypesSlot(),
                 _systemFrames.getDirectInstancesSlot(), directTypes);
         if (loadDefaults) {
             addDefaults(instance, directTypes);
         }
+    }
+   
+    private void insertName(Frame frame) {
+      addDirectOwnSlotValue(frame, _systemFrames.getNameSlot(), frame.getFrameID().getName());
+      // frameIdToFrameMap.put(frame.getFrameID(), frame);
     }
 
     private Slot getInverseSlot(Slot slot) {
