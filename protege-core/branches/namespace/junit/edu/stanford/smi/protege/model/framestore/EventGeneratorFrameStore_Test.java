@@ -30,7 +30,7 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         Cls stdCls = _kb.getCls(Model.Cls.STANDARD_CLASS);
         Slot subclassesSlot = _kb.getSlot(Model.Slot.DIRECT_SUBCLASSES);
         Slot instancesSlot = _kb.getSlot(Model.Slot.DIRECT_INSTANCES);
-        Cls cls = createCls(createName());
+        Cls cls = createCls();
         List<EventObject> events = getTestFrameStore().getEvents();
         assertTrue(events.contains(new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_CREATED, cls)));
         assertTrue(events.contains(new ClsEvent(rootCls, ClsEvent.DIRECT_SUBCLASS_ADDED, cls)));
@@ -40,8 +40,8 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
     }
 
     public void testAddSuperclassEvent() {
-        Cls cls = createCls(createName());
-        Cls superclass = createCls(createName());
+        Cls cls = createCls();
+        Cls superclass = createCls();
         getTestFrameStore().getEvents();
         getTestFrameStore().addDirectSuperclass(cls, superclass);
         List<EventObject> events = getTestFrameStore().getEvents();
@@ -52,7 +52,7 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
     }
 
     public void testDeleteClsEvents() {
-        Cls cls = createCls(createName());
+        Cls cls = createCls();
         KnowledgeBaseEvent testEvent1 = new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_DELETED, cls, cls.getName());
         getTestFrameStore().getEvents();
         getTestFrameStore().deleteCls(cls);

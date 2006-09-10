@@ -17,7 +17,7 @@ public class MergingNarrowFrameStore_Test extends FrameStore_Test {
     
 
     public void testMergingGetOwnSlotValues() {
-        Cls cls = createCls(createFrameName());
+        Cls cls = createCls();
         Slot slot = createSlotOnCls(cls);
         Instance instance = createSimpleInstance(cls);
         Collection values = makeList("foo", "bar");
@@ -36,23 +36,23 @@ public class MergingNarrowFrameStore_Test extends FrameStore_Test {
 
     public void testGetCounts() {
         int count = getFrameCount();
-        createCls(createFrameName());
+        createCls();
         assertEquals(count + 1, getFrameCount());
 
         MergingNarrowFrameStore fs = getMergingFrameStore();
         String parentName = fs.getActiveFrameStore().getName();
         fs.addActiveFrameStore(new InMemoryFrameDb("child"));
         fs.addRelation(parentName, "child");
-        createCls(createFrameName());
+        createCls();
         fs.setActiveFrameStore(parentName);
 
         assertEquals(count + 2, getFrameCount());
-        createCls(createFrameName());
+        createCls();
         assertEquals(count + 3, getFrameCount());
     }
 
     public void testInterleavedValues() {
-        Cls cls = createCls(createFrameName());
+        Cls cls = createCls();
         Slot slot = createSlotOnCls(cls);
         SimpleInstance instance = createSimpleInstance(cls);
         List values = makeList("a", "b", "c");
