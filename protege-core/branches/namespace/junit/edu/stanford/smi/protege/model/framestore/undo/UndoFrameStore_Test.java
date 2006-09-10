@@ -19,7 +19,7 @@ public class UndoFrameStore_Test extends FrameStore_Test {
     }
 
     public void testUndocreateCls() {
-        Cls cls = createCls(createFrameName());
+        Cls cls = createCls();
         String name = cls.getName();
         assertNotNull("name", name);
         Frame frame = getFrame(name);
@@ -34,7 +34,7 @@ public class UndoFrameStore_Test extends FrameStore_Test {
     }
 
     public void testUndoCreateSimpleInstance() {
-        Cls cls = createCls(createFrameName());
+        Cls cls = createCls();
         Instance instance = createSimpleInstance(cls);
         String name = instance.getName();
         assertNotNull("name", name);
@@ -68,13 +68,13 @@ public class UndoFrameStore_Test extends FrameStore_Test {
     }
 
     public void testUndoDeleteCls() {
-        Cls clsA = createCls(createFrameName());
-        Cls clsB = createCls(createFrameName());
-        Cls clsA1 = createCls(clsA, createFrameName());
-        Cls clsB1 = createCls(clsB, createFrameName());
-        Cls clsAB2 = createCls(clsA1, createFrameName());
+        Cls clsA = createCls();
+        Cls clsB = createCls();
+        Cls clsA1 = createCls(clsA);
+        Cls clsB1 = createCls(clsB);
+        Cls clsAB2 = createCls(clsA1);
         _frameStore.addDirectSuperclass(clsAB2, clsB1);
-        Cls clsAB3 = createCls(clsAB2, createFrameName());
+        Cls clsAB3 = createCls(clsAB2);
         int count = _frameStore.getFrames().size();
         _frameStore.deleteCls(clsAB3);
         int newCount = _frameStore.getFrames().size();
@@ -104,7 +104,7 @@ public class UndoFrameStore_Test extends FrameStore_Test {
     }
 
     public void testUndoSimpleTransaction() {
-        Cls cls = createCls(createFrameName());
+        Cls cls = createCls();
         Slot slot1 = createSlot();
         Slot slot2 = createSlot();
         cls.addDirectTemplateSlot(slot1);
