@@ -8,14 +8,14 @@ import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 
 public class OperationImpl implements Operation, Serializable {
-  public final static OperationImpl READ = new OperationImpl("READ");
-  public final static OperationImpl EDIT = new OperationImpl("EDIT");
+  public final static OperationImpl READ = new OperationImpl("Read");
+  public final static OperationImpl WRITE = new OperationImpl("Write");
   
   private String name;
   
   protected OperationImpl(MetaProjectImpl mp, Instance op) {
-    if (!op.getDirectTypes().contains(ClsEnum.Operation.getCls(mp))) {
-      throw new IllegalArgumentException("" + op + " should be an authorization instance");
+    if (!op.hasType(ClsEnum.Operation.getCls(mp))) {
+      throw new IllegalArgumentException("" + op + " should be an operation instance");
     }
     name = (String) op.getOwnSlotValue(SlotEnum.name.getSlot(mp));
   }

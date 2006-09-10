@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
 
@@ -21,7 +22,7 @@ public class MetaProjectImpl implements MetaProject {
   private Policy policy;
   
   protected enum ClsEnum {
-    Project, User, Group, Operation, Authorization;
+    Project, User, Group, Operation;
     
     public Cls getCls(MetaProjectImpl mp) {
       return mp.kb.getCls(toString());
@@ -29,7 +30,7 @@ public class MetaProjectImpl implements MetaProject {
   }
   
   protected enum SlotEnum {
-    name, password, location, actor, allow, operation, project, priority, members;
+    name, password, location, groups, allowedOperation;
     
     public Slot getSlot(MetaProjectImpl mp) {
       return mp.kb.getSlot(toString());
@@ -63,6 +64,14 @@ public class MetaProjectImpl implements MetaProject {
       userInstances.add(new UserInstanceImpl(this, ui));
     }
     return userInstances;
+  }
+  
+  public Set<Operation> getOperations() {
+    Set<Operation> operations = new HashSet<Operation>();
+    for (Instance ui : kb.getInstances(ClsEnum.Operation.getCls(this))) {
+      operations.add(new OperationImpl(this, ui));
+    }
+    return operations;
   }
   
   public Policy getPolicy() {
