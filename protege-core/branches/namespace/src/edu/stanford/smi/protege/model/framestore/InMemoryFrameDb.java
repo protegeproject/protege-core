@@ -34,12 +34,12 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     private static Logger log = Log.getLogger(InMemoryFrameDb.class);
     
     private static final int INITIAL_MAP_SIZE = 32771;
-    private Map<FrameID, Frame> idToFrameMap = new HashMap<FrameID, Frame>(INITIAL_MAP_SIZE);
-    private Map referenceToRecordMap = new HashMap(INITIAL_MAP_SIZE);
-    private Map frameToRecordsMap = new HashMap(INITIAL_MAP_SIZE);
-    private Map slotToRecordsMap = new HashMap(INITIAL_MAP_SIZE);
-    private Map facetToRecordsMap = new HashMap(INITIAL_MAP_SIZE);
-    private Map valueToRecordsMap = new LinkedHashMap(INITIAL_MAP_SIZE);
+    private Map<FrameID, Frame>       idToFrameMap = new HashMap<FrameID, Frame>(INITIAL_MAP_SIZE);
+    private Map<Record, Record>       referenceToRecordMap = new HashMap<Record, Record>(INITIAL_MAP_SIZE);
+    private Map<Object, Set<Record>> frameToRecordsMap    = new HashMap<Object, Set<Record>>(INITIAL_MAP_SIZE);
+    private Map<Object, Set<Record>> slotToRecordsMap     = new HashMap<Object, Set<Record>>(INITIAL_MAP_SIZE);
+    private Map<Object, Set<Record>> facetToRecordsMap    = new HashMap<Object, Set<Record>>(INITIAL_MAP_SIZE);
+    private Map<Object, Set<Record>> valueToRecordsMap    = new LinkedHashMap<Object, Set<Record>>(INITIAL_MAP_SIZE);
 
     private Record lookupRecord = new Record();
     private String frameDBName;
@@ -78,20 +78,20 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return (Record) referenceToRecordMap.get(lookupRecord);
     }
 
-    private static void addRecord(Map map, Object key, Record record) {
+    private static void addRecord(Map<Object, Set<Record>> map, Object key, Record record) {
         if (key != null) {
-            Set set = (Set) map.get(key);
+            Set<Record> set = (Set) map.get(key);
             if (set == null) {
-                set = new HashSet();
+                set = new HashSet<Record>();
                 map.put(key, set);
             }
             set.add(record);
         }
     }
 
-    public static void removeRecord(Map map, Object key, Record record) {
+    public static void removeRecord(Map<Object, Set<Record>> map, Object key, Record record) {
         if (key != null) {
-            Set set = (Set) map.get(key);
+            Set<Record> set = map.get(key);
             if (set != null) {
                 set.remove(record);
             }
@@ -392,7 +392,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     private void replaceFrameValues(Frame frame) {
-        Collection records = (Collection) valueToRecordsMap.remove(frame);
+        Set<Record> records = valueToRecordsMap.remove(frame);
         if (records != null) {
             valueToRecordsMap.put(frame, records);
             Iterator i = records.iterator();
