@@ -8,6 +8,8 @@ public interface MetaProject {
 
   Set<UserInstance> getUserInstances();
   
+  Set<Operation> getOperations();
+  
   Policy getPolicy();
   
 }

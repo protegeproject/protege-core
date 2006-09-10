@@ -1,9 +1,13 @@
 package edu.stanford.smi.protege.server.metaproject;
 
+import java.util.Set;
+
 public interface UserInstance {
   
-  public String getName();
+  String getName();
   
-  public String getPassword();
+  String getPassword();
+  
+  Set<GroupInstance> getGroups();
 
 }
