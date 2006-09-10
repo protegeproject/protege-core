@@ -3,7 +3,7 @@
 # Change to the script' working directory, should be the Protege root directory 
 cd $(dirname $0)
 
-if [  -x /usr/bin/uname  -a  "x`/usr/bin/uname`" == "Darwin" ] 
+if [  -x /usr/bin/uname  -a  "x`/usr/bin/uname`" == "xDarwin" ] 
 then
   JAVA_PATH=/usr/bin
 else 
