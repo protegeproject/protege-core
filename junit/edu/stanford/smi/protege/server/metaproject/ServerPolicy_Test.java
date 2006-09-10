@@ -1,17 +1,12 @@
 package edu.stanford.smi.protege.server.metaproject;
 
 import java.rmi.NotBoundException;
-import java.util.Set;
 
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.server.RemoteProjectManager;
-import edu.stanford.smi.protege.server.RemoteServerProject;
-import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.Server_Test;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
-import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
 import edu.stanford.smi.protege.server.metaproject.impl.OperationImpl;
 import edu.stanford.smi.protege.test.APITestCase;
 
@@ -19,9 +14,7 @@ public class ServerPolicy_Test extends APITestCase {
   private static final String USER1 = "Paul";
   private static final String PASSWORD1 = "paul";
   private static final String PROJECT_NAME = "Newspaper";
-
-
-  
+  private static final Operation SELF_DESTRUCT = new OperationImpl("DestroyInstallationToProtectAgents");
   
 
   public void setUp() throws Exception {
@@ -39,7 +32,8 @@ public class ServerPolicy_Test extends APITestCase {
     
     assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new OperationImpl("RestartServer")));
     assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, OperationImpl.READ));
-    assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, OperationImpl.EDIT));
+    assertTrue(RemoteClientFrameStore.isOperationAllowed(kb, OperationImpl.WRITE));
+    assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, SELF_DESTRUCT));
     assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new OperationImpl("someWeirdNotInOntology")));
   }
 

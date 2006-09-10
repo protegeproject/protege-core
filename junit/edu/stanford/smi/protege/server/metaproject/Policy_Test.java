@@ -43,9 +43,9 @@ public class Policy_Test extends SimpleTestCase {
     
     Policy p = mp.getPolicy();
 
-    checkAuthorization(p, NATASHA, OperationImpl.EDIT, PROJECT1, true);
-    checkAuthorization(p, BOB,     OperationImpl.EDIT, PROJECT1, false);
-    checkAuthorization(p, PAUL,    OperationImpl.EDIT, PROJECT1, false);
+    checkAuthorization(p, NATASHA, OperationImpl.WRITE, PROJECT1, true);
+    checkAuthorization(p, BOB,     OperationImpl.WRITE, PROJECT1, false);
+    checkAuthorization(p, PAUL,    OperationImpl.WRITE, PROJECT1, true);
     checkAuthorization(p, PAUL,    RESTART,            PROJECT1, true);
   }
 }
