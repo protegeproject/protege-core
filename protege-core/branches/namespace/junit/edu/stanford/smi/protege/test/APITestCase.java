@@ -7,7 +7,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
@@ -98,6 +97,7 @@ public abstract class APITestCase extends AbstractTestCase {
           return _dbType;
         }
       }
+      _dbType = null;
       return null;
     }
 
