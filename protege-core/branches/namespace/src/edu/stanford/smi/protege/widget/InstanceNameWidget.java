@@ -1,8 +1,12 @@
 package edu.stanford.smi.protege.widget;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.resource.ResourceKey;
 
 /**
  * Slot widget for altering the frame name.  This differs from a simple text field in that it must check that the new
