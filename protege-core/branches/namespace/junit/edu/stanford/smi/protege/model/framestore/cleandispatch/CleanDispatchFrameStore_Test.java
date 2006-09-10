@@ -14,8 +14,8 @@ public class CleanDispatchFrameStore_Test extends FrameStore_Test {
     }
 
     public void testCleanAddSuperclassDispatch() {
-        Cls cls = createCls(createFrameName());
-        Cls otherclass = createCls(createFrameName());
+        Cls cls = createCls();
+        Cls otherclass = createCls();
         Collection superclasses = new ArrayList(cls.getDirectSuperclasses());
         superclasses.add(otherclass);
         Slot slot = (Slot) getFrame(Model.Slot.DIRECT_SUPERCLASSES);
