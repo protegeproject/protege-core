@@ -1,173 +1,91 @@
-; Sat Sep 02 19:18:18 PDT 2006
+; Sun Sep 10 08:51:07 PDT 2006
 ; 
 ;+ (version "3.2")
 ;+ (build "Build 318")
 
-([metaproject_Instance_0] of  User
+([metaproject_Instance_0] of  Project
 
-	(groups [metaproject_Instance_2])
-	(name "Bob")
-	(password "bob"))
+	(location "examples/newspaper/newspaper.pprj")
+	(name "Newspaper"))
 
 ([metaproject_Instance_1] of  User
 
-	(groups [metaproject_Instance_2])
-	(name "Paul")
-	(password "paul"))
+	(groups [metaproject_Instance_4])
+	(name "Natasha Noy")
+	(password "natasha"))
 
 ([metaproject_Instance_10] of  Operation
 
-	(description "Any operation that only involves viewing the knowledge base.")
-	(name "READ"))
+	(allowedGroups
+		[metaproject_Instance_4]
+		[metaproject_Instance_6])
+	(name "Read"))
 
 ([metaproject_Instance_11] of  Operation
 
-	(description "Any operation that may modify the knowledge base.")
-	(name "EDIT"))
-
-([metaproject_Instance_18] of  User
-
-	(groups
-		[projects_00016]
-		[projects_00018])
-	(name "Timothy Redmond")
-	(password "Tigra"))
-
-([metaproject_Instance_19] of  User
-
-	(groups
-		[projects_00016]
-		[projects_00018])
-	(name "Tania Tudorache"))
-
-([metaproject_Instance_2] of  Group
-
-	(members
-		[metaproject_Instance_0]
-		[metaproject_Instance_1])
-	(name "Viewers"))
-
-([metaproject_Instance_21] of  Authorization
-
-	(actor [projects_00022])
-	(allow TRUE)
-	(description "Everybody can edit any project.")
-	(name "Default Policy")
-	(operation
-		[metaproject_Instance_11]
-		[metaproject_Instance_10])
-	(priority 5))
-
-([metaproject_Instance_3] of  Operation
-
-	(name "AddPlugin"))
-
-([metaproject_Instance_4] of  Operation
-
-	(name "RestartServer"))
-
-([metaproject_Instance_5] of  Authorization
-
-	(actor [metaproject_Instance_2])
-	(allow FALSE)
-	(name "DenyWriteToViewers")
-	(operation [metaproject_Instance_11])
-	(priority 6))
-
-([metaproject_Instance_6] of  User
-
-	(groups [projects_00018])
-	(name "Dilvan de Abreu Moreira")
-	(password "Dilvan"))
-
-([metaproject_Instance_7] of  Authorization
-
-	(actor
-		[projects_00018]
-		[metaproject_Instance_1])
-	(allow TRUE)
-	(name "AllowStaffAndPaulToRestart")
-	(operation [metaproject_Instance_4])
-	(priority 5))
-
-([metaproject_Instance_8] of  Authorization
-
-	(actor [projects_00016])
-	(allow TRUE)
-	(name "AllowDevelopersToAddPlugins")
-	(operation [metaproject_Instance_3])
-	(priority 5))
-
-([metaproject_Instance_9] of  Authorization
-
-	(actor [metaproject_Instance_0])
-	(allow TRUE)
-	(name "BobCanEditWines")
-	(operation [metaproject_Instance_11])
-	(priority 7)
-	(project [projects_00021]))
-
-([projects_00014] of  User
-
-	(groups [projects_00016])
-	(name "Ray Fergerson")
-	(password "claudia"))
-
-([projects_00015] of  User
-
-	(groups
-		[projects_00018]
-		[projects_00016])
-	(name "Jennifer Vendetti")
-	(password "jenny"))
-
-([projects_00016] of  Group
-
-	(members
-		[projects_00019]
-		[projects_00014]
-		[projects_00015]
-		[metaproject_Instance_19]
-		[metaproject_Instance_18])
-	(name "Developers"))
-
-([projects_00018] of  Group
-
-	(members
-		[projects_00019]
-		[projects_00015]
-		[metaproject_Instance_19]
-		[metaproject_Instance_18]
+	(allowedGroups
+		[metaproject_Instance_4]
 		[metaproject_Instance_6])
-	(name "Staff"))
+	(name "Write"))
 
-([projects_00019] of  User
+([metaproject_Instance_2] of  User
 
-	(groups
-		[projects_00018]
-		[projects_00016])
-	(name "Natasha Noy")
-	(password "natalia"))
+	(name "Bob")
+	(password "bob"))
 
-([projects_00020] of  Project
+([metaproject_Instance_26] of  Group
 
-	(location "examples/newspaper/newspaper.pprj")
-	(name "Newspaper")
-	(owner [projects_00014]))
-
-([projects_00021] of  Project
-
-	(location "examples/wines/wines.pprj")
-	(name "Wines")
-	(owner [projects_00019]))
-
-([projects_00022] of  Group
-
-	(description "A special group that implicitly contains all people")
+	(description "A group that by default includes all members.")
 	(name "World"))
 
-([projects_00023] of  User
+([metaproject_Instance_3] of  User
 
-	(description "Special user that is only a member of world.")
-	(name "Guest")
-	(password "guest"))
+	(groups
+		[metaproject_Instance_5]
+		[metaproject_Instance_6])
+	(name "Paul")
+	(password "paul"))
+
+([metaproject_Instance_35] of  Operation
+
+	(allowedGroups [metaproject_Instance_5])
+	(name "RestartServer"))
+
+([metaproject_Instance_4] of  Group
+
+	(allowedOperation
+		[metaproject_Instance_10]
+		[metaproject_Instance_11])
+	(members [metaproject_Instance_1])
+	(name "Developer"))
+
+([metaproject_Instance_5] of  Group
+
+	(allowedOperation [metaproject_Instance_35])
+	(members [metaproject_Instance_3])
+	(name "Staff"))
+
+([metaproject_Instance_6] of  Group
+
+	(allowedOperation
+		[metaproject_Instance_11]
+		[metaproject_Instance_10])
+	(members [metaproject_Instance_3])
+	(name "Editor"))
+
+([metaproject_Instance_7] of  Operation
+
+	(allowedGroups [metaproject_Instance_8])
+	(name "DestroyInstallationToProtectAgents"))
+
+([metaproject_Instance_8] of  Group
+
+	(allowedOperation [metaproject_Instance_7])
+	(members [metaproject_Instance_9])
+	(name "Secret Agents"))
+
+([metaproject_Instance_9] of  User
+
+	(groups [metaproject_Instance_8])
+	(name "Bond, James Bond")
+	(password "xlkziiiixkskxkslweere"))
