@@ -34,9 +34,8 @@ class DatabaseUtils {
 
     private static final char SINGLE_QUOTE = '\'';
 
-    public static int getValue(FrameID id) {
-        //return id.getLocalPart();
-      return 0;
+    public static String getValue(FrameID id) {
+      return id == null ? "" : id.getName();
     }
 
     public static int getStringValueType() {
@@ -52,8 +51,7 @@ class DatabaseUtils {
     }
 
     private static void setId(PreparedStatement stmt, int index, FrameID id) throws SQLException {
-        int idValue = (id == null) ? 0 : getValue(id);
-        stmt.setInt(index, idValue);
+        stmt.setString(index, getValue(id));
     }
 
     private static String getFrameIDValueString(FrameID id) {
@@ -236,21 +234,9 @@ class DatabaseUtils {
         return frame;
     }
 
-    private static FrameID createFrameID(int value, int projectId) {
-        FrameID id;
-        if (value == 0) {
-            id = null;
-        } else if (value < 0) {
-            id = null;
-        } else {
-            id = null;
-        }
-        return id;
-    }
-
     private static FrameID getFrameId(ResultSet rs, int index, int projectId) throws SQLException {
-        int value = rs.getInt(index);
-        return createFrameID(value, projectId);
+        String value = rs.getString(index);
+        return new FrameID(value);
     }
 
     public static Slot getSlot(ResultSet rs, int index, 
@@ -308,8 +294,7 @@ class DatabaseUtils {
                 }
                 break;
             default:
-                int valueInt = Integer.parseInt(valueString);
-                FrameID id = createFrameID(valueInt, projectId);
+                FrameID id = new FrameID(valueString);
                 value = getFrame(id, type, factory, isInclude);
                 break;
         }

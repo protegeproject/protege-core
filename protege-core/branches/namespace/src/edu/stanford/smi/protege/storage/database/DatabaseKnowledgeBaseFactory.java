@@ -280,7 +280,9 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
   }
 
   public NarrowFrameStore createNarrowFrameStore(String name) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Not implemented yet");
+    DatabaseFrameDb store = new DatabaseFrameDb();
+    ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
+    return vcnfs;
   }
+
 }

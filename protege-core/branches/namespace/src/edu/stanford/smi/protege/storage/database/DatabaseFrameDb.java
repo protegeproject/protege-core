@@ -39,11 +39,7 @@ import edu.stanford.smi.protege.util.Log;
 
 public class DatabaseFrameDb implements NarrowFrameStore {
   private static Logger log = Log.getLogger(DatabaseFrameDb.class);
-  
-  public enum Column {
-    frame, frame_type, slot, facet, is_template, value_index, value_type, short_value, long_value
-  }
-  
+
 	
     private static final String FRAME_COLUMN = "frame";
     private static final String FRAME_TYPE_COLUMN = "frame_type";
@@ -279,7 +275,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private String getFrameDataType() throws SQLException {
-        return getCurrentConnection().getIntegerTypeName();
+      return getCurrentConnection().getVarcharTypeName() + "(" + getCurrentConnection().getMaxVarcharSize() + ")";
     }
 
     private String getFrameTypeDataType() throws SQLException {
@@ -1003,7 +999,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
     }
 
-    private static int getValue(FrameID id) {
+    private static String getValue(FrameID id) {
         return DatabaseUtils.getValue(id);
     }
 
@@ -1643,22 +1639,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
 
         return returnFrame;
-    }
-
-
-    private int getNextFrameID() {
-        try {
-            int maxID = 0;
-            String text = "SELECT MAX(" + FRAME_COLUMN + ") FROM " + _table;
-            ResultSet rs = executeQuery(text);
-            while (rs.next()) {
-                maxID = rs.getInt(1);
-            }
-            lastReturnedFrameID = Math.max(maxID + 1, lastReturnedFrameID + 1);
-        } catch (SQLException e) {
-            createRuntimeException(e);
-        }
-        return lastReturnedFrameID;
     }
 
     public NarrowFrameStore getDelegate() {
