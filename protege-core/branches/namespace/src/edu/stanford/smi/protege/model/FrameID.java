@@ -1,10 +1,12 @@
 package edu.stanford.smi.protege.model;
 
+import java.io.Serializable;
+
 
 /**
  
  */
-public class FrameID {
+public class FrameID implements Serializable {
   private String name;
   private boolean isSystem = false;
   
