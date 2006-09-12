@@ -13,7 +13,7 @@ import edu.stanford.smi.protege.test.APITestCase;
 
 public class DatabaseKnowledgeBase_Test extends APITestCase {
   
-  public void testDBModficationSlots() throws java.text.ParseException {
+  public void testDBModficationSlots() throws Exception {
     for (DBType dbt : DBType.values()) {
       setDBType(dbt);
       if (!dbConfigured()) {
@@ -21,7 +21,12 @@ public class DatabaseKnowledgeBase_Test extends APITestCase {
       }
       DefaultKnowledgeBase_Test dkbt = new DefaultKnowledgeBase_Test();
       DefaultKnowledgeBase_Test.setDatabaseProject();
-      dkbt.testModificationSlots();
+      try {
+        dkbt.testModificationSlots();
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw e;
+      }
     }
   }
 
