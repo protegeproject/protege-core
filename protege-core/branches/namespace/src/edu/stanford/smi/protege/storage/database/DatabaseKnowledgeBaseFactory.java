@@ -229,9 +229,12 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
                               boolean isInclude) {
         DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
         FrameFactory factory = dkb.getFrameFactory();
-        // ida.initialize(factory, driver, url, user, password, table, isInclude);
+        DatabaseFrameDb nfs = (DatabaseFrameDb) MergingNarrowFrameStore.getNarrowFrameStore(kb, DatabaseFrameDb.class);
+        nfs.initialize(factory, driver, url, user, password, table, isInclude);
         kb.flushCache();
     }
+    
+
     
     private void copyKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
       String driver = getDriver(sources);
@@ -282,6 +285,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
   public NarrowFrameStore createNarrowFrameStore(String name) {
     DatabaseFrameDb store = new DatabaseFrameDb();
     ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
+    vcnfs.setName(name);
     return vcnfs;
   }
 
