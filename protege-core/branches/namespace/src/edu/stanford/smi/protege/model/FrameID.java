@@ -8,43 +8,28 @@ import java.io.Serializable;
  */
 public class FrameID implements Serializable {
   private String name;
-  private boolean isSystem = false;
   
   public FrameID(String name) {
     this.name = name;
-  }
-  
-  public FrameID(String name, boolean isSystem) {
-    this(name);
-    this.isSystem = isSystem;
   }
   
   public String getName() {
     return name;
   }
   
-  public boolean isSystem() {
-    return isSystem;
-  }
-  
-  
   public boolean equals(Object o) {
     if (!(o instanceof FrameID)) {
       return false;
     }
     FrameID other = (FrameID) o;
-    return name.equals(other.name) && isSystem == other.isSystem;
+    return name.equals(other.name);
   }
   
   public final int hashCode() {
-    return name.hashCode() + (isSystem ? 8 : 42);
-  }
-  
-  public boolean isUser() {
-    return !isSystem();
+    return name.hashCode() + 42;
   }
   
   public String toString() {
-    return (isSystem ? "SystemFrameID(" : "FrameID(") + name + ")";
+    return "FrameID(" + name + ")";
   }
 }

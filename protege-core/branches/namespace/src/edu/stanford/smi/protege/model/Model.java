@@ -51,34 +51,34 @@ public interface Model {
      * @author Ray Fergerson <fergerson@smi.stanford.edu>
      */
     interface ClsID {
-      FrameID THING = new FrameID(Cls.THING, true);
-      FrameID CLASS = new FrameID(Cls.CLASS, true);
-      FrameID STANDARD_CLASS = new FrameID(Cls.STANDARD_CLASS, true);
-      FrameID SLOT = new FrameID(Cls.SLOT, true);
-      FrameID STANDARD_SLOT = new FrameID(Cls.STANDARD_SLOT, true);
-      FrameID FACET = new FrameID(Cls.FACET, true);
-      FrameID STANDARD_FACET = new FrameID(Cls.STANDARD_FACET, true);
+      FrameID THING = new FrameID(Cls.THING);
+      FrameID CLASS = new FrameID(Cls.CLASS);
+      FrameID STANDARD_CLASS = new FrameID(Cls.STANDARD_CLASS);
+      FrameID SLOT = new FrameID(Cls.SLOT);
+      FrameID STANDARD_SLOT = new FrameID(Cls.STANDARD_SLOT);
+      FrameID FACET = new FrameID(Cls.FACET);
+      FrameID STANDARD_FACET = new FrameID(Cls.STANDARD_FACET);
 
       // FrameID INDIVIDUAL = FrameID.createSystem(BASE_ID + 7);
       // FrameID NUMBER = FrameID.createSystem(BASE_ID + 8);
-      FrameID INTEGER = new FrameID(Cls.INTEGER, true);
-      FrameID FLOAT = new FrameID(Cls.FLOAT, true);
-      FrameID STRING = new FrameID(Cls.STRING, true);
-      FrameID SYMBOL = new FrameID(Cls.SYMBOL, true);
-      FrameID BOOLEAN = new FrameID(Cls.BOOLEAN, true);
+      FrameID INTEGER = new FrameID(Cls.INTEGER);
+      FrameID FLOAT = new FrameID(Cls.FLOAT);
+      FrameID STRING = new FrameID(Cls.STRING);
+      FrameID SYMBOL = new FrameID(Cls.SYMBOL);
+      FrameID BOOLEAN = new FrameID(Cls.BOOLEAN);
 
-      FrameID PRIMITIVE_TYPE = new FrameID(Cls.PRIMITIVE_TYPE, true);
-      FrameID SYSTEM_CLASS = new FrameID(Cls.SYSTEM_CLASS, true);
-      FrameID CONSTRAINT = new FrameID(Cls.CONSTRAINT, true);
-      FrameID RELATION = new FrameID(Cls.RELATION, true);
+      FrameID PRIMITIVE_TYPE = new FrameID(Cls.PRIMITIVE_TYPE);
+      FrameID SYSTEM_CLASS = new FrameID(Cls.SYSTEM_CLASS);
+      FrameID CONSTRAINT = new FrameID(Cls.CONSTRAINT);
+      FrameID RELATION = new FrameID(Cls.RELATION);
 
-      FrameID PAL_CONSTRAINT = new FrameID(Cls.PAL_CONSTRAINT, true);
+      FrameID PAL_CONSTRAINT = new FrameID(Cls.PAL_CONSTRAINT);
 
-      FrameID ANNOTATION = new FrameID(Cls.ANNOTATION, true);
-      FrameID INSTANCE_ANNOTATION = new FrameID(Cls.INSTANCE_ANNOTATION, true);
-      FrameID DIRECTED_BINARY_RELATION = new FrameID(Cls.DIRECTED_BINARY_RELATION, true);
+      FrameID ANNOTATION = new FrameID(Cls.ANNOTATION);
+      FrameID INSTANCE_ANNOTATION = new FrameID(Cls.INSTANCE_ANNOTATION);
+      FrameID DIRECTED_BINARY_RELATION = new FrameID(Cls.DIRECTED_BINARY_RELATION);
 
-      FrameID ROOT_META_CLASS = new FrameID(Cls.ROOT_META_CLASS, true);
+      FrameID ROOT_META_CLASS = new FrameID(Cls.ROOT_META_CLASS);
     }
 
     /**
@@ -156,62 +156,62 @@ public interface Model {
      * @author Ray Fergerson <fergerson@smi.stanford.edu>
      */
     interface SlotID {
-      FrameID DOCUMENTATION = new FrameID(Slot.DOCUMENTATION, true);
-      FrameID DOMAIN = new FrameID(Slot.DOMAIN, true);
+      FrameID DOCUMENTATION = new FrameID(Slot.DOCUMENTATION);
+      FrameID DOMAIN = new FrameID(Slot.DOMAIN);
 
-      FrameID NAME = new FrameID(Slot.NAME, true);
-      FrameID ROLE = new FrameID(Slot.ROLE, true);
-      FrameID DIRECT_SUPERCLASSES = new FrameID(Slot.DIRECT_SUPERCLASSES, true);
-      FrameID DIRECT_SUBCLASSES = new FrameID(Slot.DIRECT_SUBCLASSES, true);
-      FrameID DIRECT_TYPES = new FrameID(Slot.DIRECT_TYPES, true);
+      FrameID NAME = new FrameID(Slot.NAME);
+      FrameID ROLE = new FrameID(Slot.ROLE);
+      FrameID DIRECT_SUPERCLASSES = new FrameID(Slot.DIRECT_SUPERCLASSES);
+      FrameID DIRECT_SUBCLASSES = new FrameID(Slot.DIRECT_SUBCLASSES);
+      FrameID DIRECT_TYPES = new FrameID(Slot.DIRECT_TYPES);
         /**
          * @deprecated Use #DIRECT_TYPES
          */
-      FrameID DIRECT_TYPE = new FrameID(Slot.DIRECT_TYPE, true);
-      FrameID DIRECT_INSTANCES = new FrameID(Slot.DIRECT_INSTANCES, true);
-      FrameID DIRECT_TEMPLATE_SLOTS = new FrameID(Slot.DIRECT_TEMPLATE_SLOTS, true);
+      FrameID DIRECT_TYPE = new FrameID(Slot.DIRECT_TYPE);
+      FrameID DIRECT_INSTANCES = new FrameID(Slot.DIRECT_INSTANCES);
+      FrameID DIRECT_TEMPLATE_SLOTS = new FrameID(Slot.DIRECT_TEMPLATE_SLOTS);
         // FrameID DIRECT_BROWSER_SLOT = FrameID.createSystem(BASE_ID + 9);
 
         // FrameID OWN_SLOTS = FrameID.createSystem(BASE_ID + 10);
-      FrameID ASSOCIATED_FACET = new FrameID(Slot.ASSOCIATED_FACET, true);
+      FrameID ASSOCIATED_FACET = new FrameID(Slot.ASSOCIATED_FACET);
 
-      FrameID CONSTRAINTS = new FrameID(Slot.CONSTRAINTS, true);
-      FrameID DEFAULTS = new FrameID(Slot.DEFAULTS, true);
-      FrameID VALUE_TYPE = new FrameID(Slot.VALUE_TYPE, true);
-      FrameID INVERSE = new FrameID(Slot.INVERSE, true);
-      FrameID CARDINALITY = new FrameID(Slot.CARDINALITY, true);
-      FrameID MAXIMUM_CARDINALITY = new FrameID(Slot.MAXIMUM_CARDINALITY, true);
-      FrameID MINIMUM_CARDINALITY = new FrameID(Slot.MINIMUM_CARDINALITY, true);
-      FrameID SAME_VALUES = new FrameID(Slot.SAME_VALUES, true);
-      FrameID NOT_SAME_VALUES = new FrameID(Slot.NOT_SAME_VALUES, true);
-      FrameID SUBSET_OF_VALUES = new FrameID(Slot.SUBSET_OF_VALUES, true);
-      FrameID NUMERIC_MINIMUM = new FrameID(Slot.NUMERIC_MINIMUM, true);
-      FrameID NUMERIC_MAXIMUM = new FrameID(Slot.NUMERIC_MAXIMUM, true);
-      FrameID SOME_VALUES = new FrameID(Slot.SOME_VALUES, true);
-      FrameID COLLECTION_TYPE = new FrameID(Slot.COLLECTION_TYPE, true);
+      FrameID CONSTRAINTS = new FrameID(Slot.CONSTRAINTS);
+      FrameID DEFAULTS = new FrameID(Slot.DEFAULTS);
+      FrameID VALUE_TYPE = new FrameID(Slot.VALUE_TYPE);
+      FrameID INVERSE = new FrameID(Slot.INVERSE);
+      FrameID CARDINALITY = new FrameID(Slot.CARDINALITY);
+      FrameID MAXIMUM_CARDINALITY = new FrameID(Slot.MAXIMUM_CARDINALITY);
+      FrameID MINIMUM_CARDINALITY = new FrameID(Slot.MINIMUM_CARDINALITY);
+      FrameID SAME_VALUES = new FrameID(Slot.SAME_VALUES);
+      FrameID NOT_SAME_VALUES = new FrameID(Slot.NOT_SAME_VALUES);
+      FrameID SUBSET_OF_VALUES = new FrameID(Slot.SUBSET_OF_VALUES);
+      FrameID NUMERIC_MINIMUM = new FrameID(Slot.NUMERIC_MINIMUM);
+      FrameID NUMERIC_MAXIMUM = new FrameID(Slot.NUMERIC_MAXIMUM);
+      FrameID SOME_VALUES = new FrameID(Slot.SOME_VALUES);
+      FrameID COLLECTION_TYPE = new FrameID(Slot.COLLECTION_TYPE);
 
-      FrameID PAL_STATEMENT = new FrameID(Slot.PAL_STATEMENT, true);
-      FrameID PAL_DESCRIPTION = new FrameID(Slot.PAL_DESCRIPTION, true);
-      FrameID PAL_NAME = new FrameID(Slot.PAL_NAME, true);
-      FrameID PAL_RANGE = new FrameID(Slot.PAL_RANGE, true);
+      FrameID PAL_STATEMENT = new FrameID(Slot.PAL_STATEMENT);
+      FrameID PAL_DESCRIPTION = new FrameID(Slot.PAL_DESCRIPTION);
+      FrameID PAL_NAME = new FrameID(Slot.PAL_NAME);
+      FrameID PAL_RANGE = new FrameID(Slot.PAL_RANGE);
 
-      FrameID VALUES = new FrameID(Slot.VALUES, true);
+      FrameID VALUES = new FrameID(Slot.VALUES);
 
-      FrameID DIRECT_SUBSLOTS = new FrameID(Slot.DIRECT_SUBSLOTS, true);
-      FrameID DIRECT_SUPERSLOTS = new FrameID(Slot.DIRECT_SUPERSLOTS, true);
+      FrameID DIRECT_SUBSLOTS = new FrameID(Slot.DIRECT_SUBSLOTS);
+      FrameID DIRECT_SUPERSLOTS = new FrameID(Slot.DIRECT_SUPERSLOTS);
 
-      FrameID ANNOTATED_INSTANCE = new FrameID(Slot.ANNOTATED_INSTANCE, true);
-      FrameID ANNOTATION_TEXT = new FrameID(Slot.ANNOTATION_TEXT, true);
-      FrameID CREATOR = new FrameID(Slot.CREATOR, true);
-      FrameID CREATION_TIMESTAMP = new FrameID(Slot.CREATION_TIMESTAMP, true);
-      FrameID ASSOCIATED_SLOT = new FrameID(Slot.ASSOCIATED_SLOT, true);
-      FrameID MODIFIER = new FrameID(Slot.MODIFIER, true);
-      FrameID MODIFICATION_TIMESTAMP = new FrameID(Slot.MODIFICATION_TIMESTAMP, true);
+      FrameID ANNOTATED_INSTANCE = new FrameID(Slot.ANNOTATED_INSTANCE);
+      FrameID ANNOTATION_TEXT = new FrameID(Slot.ANNOTATION_TEXT);
+      FrameID CREATOR = new FrameID(Slot.CREATOR);
+      FrameID CREATION_TIMESTAMP = new FrameID(Slot.CREATION_TIMESTAMP);
+      FrameID ASSOCIATED_SLOT = new FrameID(Slot.ASSOCIATED_SLOT);
+      FrameID MODIFIER = new FrameID(Slot.MODIFIER);
+      FrameID MODIFICATION_TIMESTAMP = new FrameID(Slot.MODIFICATION_TIMESTAMP);
 
-      FrameID FROM = new FrameID(Slot.FROM, true);
-      FrameID TO = new FrameID(Slot.TO, true);
+      FrameID FROM = new FrameID(Slot.FROM);
+      FrameID TO = new FrameID(Slot.TO);
 
-      FrameID DIRECT_DOMAIN = new FrameID(Slot.DIRECT_DOMAIN, true);
+      FrameID DIRECT_DOMAIN = new FrameID(Slot.DIRECT_DOMAIN);
     }
 
     /**
@@ -250,28 +250,28 @@ public interface Model {
      * @author Ray Fergerson <fergerson@smi.stanford.edu>
      */
     interface FacetID {
-      FrameID DIRECT_TEMPLATE_FACETS = new FrameID(Facet.DIRECT_TEMPLATE_FACETS, true);
+      FrameID DIRECT_TEMPLATE_FACETS = new FrameID(Facet.DIRECT_TEMPLATE_FACETS);
 
-      FrameID DOCUMENTATION = new FrameID(Facet.DOCUMENTATION, true);
-      FrameID DEFAULTS = new FrameID(Facet.DEFAULTS, true);
-      FrameID CONSTRAINTS = new FrameID(Facet.CONSTRAINTS, true);
+      FrameID DOCUMENTATION = new FrameID(Facet.DOCUMENTATION);
+      FrameID DEFAULTS = new FrameID(Facet.DEFAULTS);
+      FrameID CONSTRAINTS = new FrameID(Facet.CONSTRAINTS);
 
-      FrameID VALUE_TYPE = new FrameID(Facet.VALUE_TYPE, true);
-      FrameID INVERSE = new FrameID(Facet.INVERSE, true);
-      FrameID CARDINALITY = new FrameID(Facet.CARDINALITY, true);
-      FrameID MAXIMUM_CARDINALITY = new FrameID(Facet.MAXIMUM_CARDINALITY, true);
-      FrameID MINIMUM_CARDINALITY = new FrameID(Facet.MINIMUM_CARDINALITY, true);
-      FrameID SAME_VALUES = new FrameID(Facet.SAME_VALUES, true);
-      FrameID NOT_SAME_VALUES = new FrameID(Facet.NOT_SAME_VALUES, true);
-      FrameID SUBSET_OF_VALUES = new FrameID(Facet.SUBSET_OF_VALUES, true);
-      FrameID NUMERIC_MINIMUM = new FrameID(Facet.NUMERIC_MINIMUM, true);
-      FrameID NUMERIC_MAXIMUM = new FrameID(Facet.NUMERIC_MAXIMUM, true);
-      FrameID SOME_VALUES = new FrameID(Facet.SOME_VALUES, true);
-      FrameID COLLECTION_TYPE = new FrameID(Facet.COLLECTION_TYPE, true);
+      FrameID VALUE_TYPE = new FrameID(Facet.VALUE_TYPE);
+      FrameID INVERSE = new FrameID(Facet.INVERSE);
+      FrameID CARDINALITY = new FrameID(Facet.CARDINALITY);
+      FrameID MAXIMUM_CARDINALITY = new FrameID(Facet.MAXIMUM_CARDINALITY);
+      FrameID MINIMUM_CARDINALITY = new FrameID(Facet.MINIMUM_CARDINALITY);
+      FrameID SAME_VALUES = new FrameID(Facet.SAME_VALUES);
+      FrameID NOT_SAME_VALUES = new FrameID(Facet.NOT_SAME_VALUES);
+      FrameID SUBSET_OF_VALUES = new FrameID(Facet.SUBSET_OF_VALUES);
+      FrameID NUMERIC_MINIMUM = new FrameID(Facet.NUMERIC_MINIMUM);
+      FrameID NUMERIC_MAXIMUM = new FrameID(Facet.NUMERIC_MAXIMUM);
+      FrameID SOME_VALUES = new FrameID(Facet.SOME_VALUES);
+      FrameID COLLECTION_TYPE = new FrameID(Facet.COLLECTION_TYPE);
 
-      FrameID VALUES = new FrameID(Facet.VALUES, true);
+      FrameID VALUES = new FrameID(Facet.VALUES);
 
-      FrameID MODIFIER = new FrameID(Facet.MODIFIER, true);
-      FrameID MODIFICATION_TIMESTAMP = new FrameID(Facet.MODIFICATION_TIMESTAMP, true);
+      FrameID MODIFIER = new FrameID(Facet.MODIFIER);
+      FrameID MODIFICATION_TIMESTAMP = new FrameID(Facet.MODIFICATION_TIMESTAMP);
     }
 }

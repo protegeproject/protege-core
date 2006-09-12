@@ -2,10 +2,17 @@ package edu.stanford.smi.protege.model;
 
 //ESCA*JAVA0037
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.Log;
 
 public class SystemFrames {
 
@@ -396,6 +403,14 @@ public class SystemFrames {
 
     public Facet getValuesFacet() {
         return getFacet(Model.FacetID.VALUES);
+    }
+    
+    /*
+     * TODO This may change to provide a persistent way to represent the fact that a frame
+     *      is a system frame.
+     */
+    public boolean isSystem(Frame frame) {
+      return _frameIdToFrameMap.keySet().contains(frame.getFrameID());
     }
 
     public void addSystemFrames(FrameStore fs) {

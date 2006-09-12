@@ -334,7 +334,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     }
 
     public boolean isSystem() {
-        return (id == null) ? false : id.isSystem();
+        return knowledgeBase.getSystemFrames().isSystem(this);
     }
 
     public boolean isValidOwnSlotValue(Slot slot, Object o) {
