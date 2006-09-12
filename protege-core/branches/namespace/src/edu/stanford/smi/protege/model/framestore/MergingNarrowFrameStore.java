@@ -73,6 +73,16 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     public static NarrowFrameStore getSystemFrameStore(KnowledgeBase kb) {
         return get(kb).getSystemFrameStore();
     }
+    
+    public static NarrowFrameStore getNarrowFrameStore(KnowledgeBase kb, Class clazz) {
+      NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb);
+      while ((nfs = nfs.getDelegate()) != null) {
+        if (clazz.isAssignableFrom(nfs.getClass())) {
+          return nfs;
+        }
+      }
+      return null;
+    }
 
     public NarrowFrameStore getSystemFrameStore() {
         return systemFrameStore;
