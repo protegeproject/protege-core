@@ -21,9 +21,6 @@
 	<property name = "packages" value = "edu.*"/>
 	<property name = "source" value = "1.5"/>
 
-	<!-- =================================================================== -->
-	<!-- INIT -->
-	<!-- =================================================================== -->
 	<target name = "init">
 		<tstamp/>
 	</target>
@@ -35,6 +32,7 @@
 		<mkdir dir = "${build.src}"/>
 		<mkdir dir = "${build.dest}"/>
 		<mkdir dir = "${dist.dir}"/>
+
 		<!-- get source code from subversion repository -->
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
 			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/src ../${project.name}/build/src"/>
@@ -54,10 +52,12 @@
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
 			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk ../${project.name} --non-recursive"/>
 		</exec>
+
 		<!-- add license text to top of source files -->
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
 			<arg line = "/c merge_license_with_source ../${project.name}/build/src"/>
 		</exec>
+
 		<!-- increment the build number -->
 		<propertyfile file = "./build/src/edu/stanford/smi/protege/resource/files/build.properties">
 			<entry key = "build.number" default = "01" type = "int" operation = "+" pattern = "000"/>
@@ -72,8 +72,8 @@
 	<!-- JAVACC -->
 	<!-- =================================================================== -->
 	<target name = "javacc" depends = "prepare-src">
-		<!-- Automatically generate the following files by running JavaCC on /bin/Parser.jj:  -->
 
+		<!-- Automatically generate the following files by running JavaCC on /bin/Parser.jj:  -->
 		<!-- edu/stanford/smi/protege/storage/clips/ParseException.java  -->
 		<!-- edu/stanford/smi/protege/storage/clips/Parser.java  -->
 		<!-- edu/stanford/smi/protege/storage/clips/ParserConstants.java  -->
@@ -83,6 +83,7 @@
 		<!-- edu/stanford/smi/protege/storage/clips/TokenMgrError.java  -->
 
 		<javacc javacchome = "c:/javacc-3.2/bin/lib" target = "${build.scripts}/Parser.jj" outputdirectory = "${build.src}/edu/stanford/smi/protege/storage/clips"/>
+
 	</target>
 
 	<!-- =================================================================== -->
@@ -132,7 +133,7 @@
 		<javadoc packagenames = "${packages}" sourcepath = "${build.src}" destdir = "${build.javadoc}" doctitle = "${Name} ${build.status}" header = "${Name} ${build.status}" footer = "${Name} ${build.status}" windowtitle = "${Name} ${build.status}" author = "true" source = "1.5">
 			<bottom><![CDATA[
 					<small>
-					<a href=mailto:protege-discussion@smi.stanford.edu>Submit a bug report or feature request</a><br>
+					<a href=mailto:protege-discussion@lists.stanford.edu>Submit a bug report or feature request</a><br>
 					${trademark}<br>
 					${copyright}
 					</small>]]></bottom>
