@@ -1,78 +1,59 @@
-; Thu Apr 13 09:37:48 PDT 2006
+; Thu Sep 14 11:02:16 PDT 2006
 ; 
 ;+ (version "3.2")
-;+ (build "Build 316")
+;+ (build "Build 331")
 
-([metaproject_Instance_0] of  User
+([metaproject_Instance_0] of  Group
 
-	(description "Hey - we know who we are...")
-	(groups
-		[projects_00016]
-		[projects_00018])
-	(name "Timothy Redmond")
-	(password "troglodyte"))
+	(name "World"))
 
-([metaproject_Instance_2] of  User
+([metaproject_Instance_10001] of  Project
 
-	(groups
-		[projects_00016]
-		[projects_00018])
-	(name "Tania Tudorache")
-	(password "tania"))
+	(allowedGroupOperation [metaproject_Instance_10008])
+	(location "junit/pprj/scratch.pprj")
+	(name "scratch"))
 
-([projects_00014] of  User
+([metaproject_Instance_10002] of  User
 
-	(groups [projects_00016])
-	(name "Ray Fergerson")
-	(password "claudia"))
+	(name "Guest")
+	(password "guest"))
 
-([projects_00015] of  User
+([metaproject_Instance_10003] of  User
 
-	(groups [projects_00018])
 	(name "Jennifer Vendetti")
 	(password "jenny"))
 
-([projects_00016] of  Group
+([metaproject_Instance_10004] of  User
 
-	(members
-		[projects_00019]
-		[projects_00014]
-		[metaproject_Instance_2]
-		[metaproject_Instance_0])
-	(name "Developers"))
-
-([projects_00018] of  Group
-
-	(members
-		[projects_00019]
-		[projects_00015]
-		[metaproject_Instance_2]
-		[metaproject_Instance_0])
-	(name "Staff"))
-
-([projects_00019] of  User
-
-	(groups
-		[projects_00018]
-		[projects_00016])
 	(name "Natasha Noy")
 	(password "natalia"))
 
-([projects_00020] of  Project
+([metaproject_Instance_10005] of  User
 
-	(location "junit/pprj/scratch.pprj")
-	(name "scratch")
-	(owner [metaproject_Instance_0])
-	(readers [projects_00022])
-	(writers [projects_00022]))
+	(name "Ray Fergerson")
+	(password "claudia"))
 
-([projects_00022] of  Group
+([metaproject_Instance_10006] of  User
 
-	(description "A special group that implicitly contains all people")
-	(name "World"))
+	(name "Tania Tudorache")
+	(password "tania"))
 
-([projects_00023] of  User
+([metaproject_Instance_10007] of  User
 
-	(description "Special user that is only a member of world.")
-	(name "Guest")
-	(password "guest"))
+	(name "Timothy Redmond")
+	(password "troglodyte"))
+
+([metaproject_Instance_10008] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_0])
+	(allowedOperation
+		[nci_metaproject_Instance_60009]
+		[nci_metaproject_Instance_60010]))
+
+([nci_metaproject_Instance_60009] of  Operation
+
+	(name "Read"))
+
+([nci_metaproject_Instance_60010] of  Operation
+
+	(name "Write"))
