@@ -3,58 +3,40 @@ package edu.stanford.smi.protege.server.metaproject.impl;
 import java.util.HashSet;
 import java.util.Set;
 
+import sun.security.jca.GetInstance;
+
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.GroupInstance;
 import edu.stanford.smi.protege.server.metaproject.Operation;
+import edu.stanford.smi.protege.server.metaproject.UserInstance;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 import edu.stanford.smi.protege.util.Log;
 
-public class GroupInstanceImpl implements GroupInstance {
+public class GroupInstanceImpl extends WrappedProtegeInstance implements GroupInstance {
   public static final String WORLD = "World";
-
-  private String name;
-  Set<Operation> operations;
   
   protected GroupInstanceImpl(MetaProjectImpl mp, Instance group) 
   throws OntologyException {
-    if (!group.getDirectTypes().contains(ClsEnum.Group.getCls(mp))) {
-      throw new IllegalArgumentException("" + group + " should be a group instance");
-    }
-    name = (String)  group.getOwnSlotValue(SlotEnum.name.getSlot(mp));
-    
-    operations = new HashSet<Operation>();
-    for (Object instance : group.getOwnSlotValues(SlotEnum.allowedOperation.getSlot(mp))) {
-      try {
-        operations.add(new OperationImpl(mp, (Instance) instance));
-      } catch (ClassCastException cce) {
-        Log.getLogger().warning("Metaproject invalid because the allowed Operations of a group should be instances of operations");
-      }
-    }
+    super(mp, group, ClsEnum.Group);
+ 
   }
 
-  public String getName() {
-    return name;
-  }
-  
-  public Set<Operation> getAllowedOperations() {
-    return operations;
-  }
-
-  public boolean equals(Object o) {
-    if (!(o instanceof GroupInstance))  {
-      return false;
+  public String getName() throws OntologyException {
+    Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(SlotEnum.name));
+    if (!(value instanceof String)) {
+      throw new OntologyException("The " + SlotEnum.name + " slot should take on string values");
     }
-    GroupInstance other = (GroupInstance) o;
-    return name.equals(other.getName());
+    return (String) value;
   }
   
-  public int hashCode() {
-    return name.hashCode();
+  @SuppressWarnings("unchecked")
+  public Set<UserInstance> getMembers() {
+    return (Set<UserInstance>) getSlotValues(SlotEnum.member, ClsEnum.User);
   }
   
   public String toString() {
-    return name;
+    return getName();
   }
 }
