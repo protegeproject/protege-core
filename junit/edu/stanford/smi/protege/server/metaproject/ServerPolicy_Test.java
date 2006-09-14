@@ -14,8 +14,6 @@ public class ServerPolicy_Test extends APITestCase {
   private static final String USER1 = "Paul";
   private static final String PASSWORD1 = "paul";
   private static final String PROJECT_NAME = "Newspaper";
-  private static final Operation SELF_DESTRUCT = new OperationImpl("DestroyInstallationToProtectAgents");
-  
 
   public void setUp() throws Exception {
     super.setUp();
@@ -32,8 +30,8 @@ public class ServerPolicy_Test extends APITestCase {
     
     assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new OperationImpl("RestartServer")));
     assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, OperationImpl.READ));
-    assertTrue(RemoteClientFrameStore.isOperationAllowed(kb, OperationImpl.WRITE));
-    assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, SELF_DESTRUCT));
+    assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, OperationImpl.WRITE));
+    assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, Policy_Test.SELF_DESTRUCT));
     assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new OperationImpl("someWeirdNotInOntology")));
   }
 
