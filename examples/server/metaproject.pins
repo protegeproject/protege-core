@@ -1,105 +1,67 @@
-; Fri Sep 01 16:43:49 PDT 2006
+; Thu Sep 14 11:07:38 PDT 2006
 ; 
 ;+ (version "3.2")
-;+ (build "Build 318")
+;+ (build "Build 331")
 
-([metaproject_Instance_10] of  Operation
+([metaproject_Instance_0] of  Group
 
-	(description "Any operation that only involves viewing the knowledge base.")
-	(name "READ"))
+	(name "World"))
 
-([metaproject_Instance_11] of  Operation
+([metaproject_Instance_10000] of  Project
 
-	(description "Any operation that may modify the knowledge base.")
-	(name "EDIT"))
+	(allowedGroupOperation [metaproject_Instance_10008])
+	(location "examples/newspaper/newspaper.pprj")
+	(name "Newspaper")
+	(owner [metaproject_Instance_10005]))
 
-([metaproject_Instance_18] of  User
+([metaproject_Instance_10002] of  User
 
-	(groups
-		[projects_00016]
-		[projects_00018])
-	(name "Timothy Redmond")
-	(password "Tigra"))
+	(name "Guest")
+	(password "guest"))
 
-([metaproject_Instance_19] of  User
+([metaproject_Instance_10003] of  User
 
-	(groups
-		[projects_00016]
-		[projects_00018])
-	(name "Tania Tudorache"))
-
-([metaproject_Instance_21] of  Authorization
-
-	(actor [projects_00022])
-	(allow TRUE)
-	(description "Everybody can edit any project.")
-	(name "Default Policy")
-	(operation [metaproject_Instance_11])
-	(priority 5))
-
-([metaproject_Instance_22] of  Group
-)
-
-([projects_00014] of  User
-
-	(groups [projects_00016])
-	(name "Ray Fergerson")
-	(password "claudia"))
-
-([projects_00015] of  User
-
-	(groups
-		[projects_00018]
-		[projects_00016])
 	(name "Jennifer Vendetti")
 	(password "jenny"))
 
-([projects_00016] of  Group
+([metaproject_Instance_10004] of  User
 
-	(members
-		[projects_00019]
-		[projects_00014]
-		[projects_00015]
-		[metaproject_Instance_19]
-		[metaproject_Instance_18])
-	(name "Developers"))
-
-([projects_00018] of  Group
-
-	(members
-		[projects_00019]
-		[projects_00015]
-		[metaproject_Instance_19]
-		[metaproject_Instance_18])
-	(name "Staff"))
-
-([projects_00019] of  User
-
-	(groups
-		[projects_00018]
-		[projects_00016])
 	(name "Natasha Noy")
 	(password "natalia"))
 
-([projects_00020] of  Project
+([metaproject_Instance_10005] of  User
 
-	(location "examples/newspaper/newspaper.pprj")
-	(name "Newspaper")
-	(owner [projects_00014]))
+	(name "Ray Fergerson")
+	(password "claudia"))
 
-([projects_00021] of  Project
+([metaproject_Instance_10006] of  User
 
+	(name "Tania Tudorache")
+	(password "tania"))
+
+([metaproject_Instance_10007] of  User
+
+	(name "Timothy Redmond")
+	(password "troglodyte"))
+
+([metaproject_Instance_10008] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_0])
+	(allowedOperation
+		[nci_metaproject_Instance_60009]
+		[nci_metaproject_Instance_60010]))
+
+([metaproject_Instance_20002] of  Project
+
+	(allowedGroupOperation [metaproject_Instance_10008])
 	(location "examples/wines/wines.pprj")
 	(name "Wines")
-	(owner [projects_00019]))
+	(owner [metaproject_Instance_10004]))
 
-([projects_00022] of  Group
+([nci_metaproject_Instance_60009] of  Operation
 
-	(description "A special group that implicitly contains all people")
-	(name "World"))
+	(name "Read"))
 
-([projects_00023] of  User
+([nci_metaproject_Instance_60010] of  Operation
 
-	(description "Special user that is only a member of world.")
-	(name "Guest")
-	(password "guest"))
+	(name "Write"))
