@@ -223,6 +223,8 @@
               <pathelement path="${dist}/protege.jar"/>
             </classpath>
             <jvmarg value="-Djava.util.logging.config.file=junit-logging.properties"/>
+            <jvmarg value="-Xmx700M"/>
+
             <batchtest>
               <fileset dir="${junit}">
                 <include name="**/*Test.java"/>
