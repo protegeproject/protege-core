@@ -158,6 +158,7 @@ public class DBServer_Test extends APITestCase {
    */
   
 
+
   
   public enum Test01Stages {
     testStarted, mainThreadStarted, transactionOpenWithWrite, readComplete, testComplete
@@ -211,7 +212,8 @@ public class DBServer_Test extends APITestCase {
       throw e;
     }
   }
-
+  
+ 
   /* ******************************************************************************
    * Testing repeatable read
    */
@@ -325,8 +327,8 @@ public class DBServer_Test extends APITestCase {
     if (!configured) {
       return;
     }
-    TransactionMonitor tm = getTransactionMonitor();
     KnowledgeBase kb = getKb();
+    TransactionMonitor tm = getTransactionMonitor();
     assertTrue(tm.getSessions().isEmpty());
     kb.beginTransaction("Outer");
     assertTrue(tm.getSessions().size() == 1);
@@ -345,9 +347,10 @@ public class DBServer_Test extends APITestCase {
     kb.commitTransaction();
     assertTrue(tm.getNesting(mySession) == 0);
     kb.getProject().dispose();
-    
   }
+
   
+
   public enum Test04Stages {
     testStarted, firstRead, write, secondRead, firstCommit, preComplete, testCompleted
   }
