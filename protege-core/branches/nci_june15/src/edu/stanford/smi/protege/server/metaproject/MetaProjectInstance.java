@@ -1,10 +1,12 @@
 package edu.stanford.smi.protege.server.metaproject;
 
+import java.util.Set;
+
 public interface MetaProjectInstance {
   
-  public String getName();
+  String getName();
   
-  public String getLocation();
+  String getLocation();
   
-
+  Set<GroupAndOperation> getAllowedGroupOperations();
 }
