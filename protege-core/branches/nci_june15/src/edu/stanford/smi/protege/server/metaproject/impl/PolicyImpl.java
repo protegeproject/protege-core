@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.server.metaproject.impl;
 import java.util.HashSet;
 import java.util.Set;
 
+import edu.stanford.smi.protege.server.metaproject.GroupAndOperation;
 import edu.stanford.smi.protege.server.metaproject.GroupInstance;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.Operation;
@@ -16,25 +17,39 @@ public class PolicyImpl implements Policy {
     this.mp = mp;
   }
   
-  private UserInstance normalizeUser(UserInstance user) {
-    for (UserInstance normalizedUser : mp.getUserInstances()) {
-      if (user.getName().equals(normalizedUser.getName())) {
-        return normalizedUser;
+  private UserInstance fillFields(UserInstance user) {
+    for (UserInstance realUser : mp.getUserInstances()) {
+      if (user.getName().equals(realUser.getName())) {
+        return realUser;
       }
     }
     throw new IllegalArgumentException("Unknown user " + user);
   }
+  
+  private MetaProjectInstance fillFields(MetaProjectInstance project) {
+    for (MetaProjectInstance realProject : mp.getProjectInstances()) {
+      if (realProject.getName().equals(project.getName())) {
+        return realProject;
+      }
+    }
+    throw new IllegalArgumentException("Unknown project " + project);
+  }
+  
 
   /*
    * The project is ignored in this implementation.
    */
-  public boolean isOperationAuthorized(UserInstance user, Operation op, MetaProjectInstance project) {
-    user = normalizeUser(user);
+  public boolean isOperationAuthorized(UserInstance user, 
+                                       Operation op, 
+                                       MetaProjectInstance project) {
     if (!getKnownOperations().contains(op)) {
       return true;
     }
-    for (GroupInstance group  : user.getGroups()) {
-      if (group.getAllowedOperations().contains(op)) {
+    user = fillFields(user);
+    project = fillFields(project);
+    Set<GroupInstance> userGroups = user.getGroups();
+    for (GroupAndOperation ga : project.getAllowedGroupOperations()) {
+      if (userGroups.contains(ga.allowedGroup()) && ga.allowedOperations().contains(op)) {
         return true;
       }
     }
@@ -45,10 +60,14 @@ public class PolicyImpl implements Policy {
    * The project is ignored in this implementation.
    */
   public Set<Operation> getAllowedOperations(UserInstance user, MetaProjectInstance project) {
-    user = normalizeUser(user);
     Set<Operation> allowed = new HashSet<Operation>();
-    for (GroupInstance group  : user.getGroups()) {
-      allowed.addAll(group.getAllowedOperations());
+    user = fillFields(user);
+    project = fillFields(project);
+    Set<GroupInstance> userGroups = user.getGroups();
+    for (GroupAndOperation ga : project.getAllowedGroupOperations()) {
+      if (userGroups.contains(ga.allowedGroup())) {
+        allowed.addAll(ga.allowedOperations());
+      }
     }
     return allowed;
   }

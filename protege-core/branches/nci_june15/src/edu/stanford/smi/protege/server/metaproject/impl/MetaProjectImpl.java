@@ -22,19 +22,11 @@ public class MetaProjectImpl implements MetaProject {
   private Policy policy;
   
   protected enum ClsEnum {
-    Project, User, Group, Operation;
-    
-    public Cls getCls(MetaProjectImpl mp) {
-      return mp.kb.getCls(toString());
-    }
+    Project, User, Group, Operation, GroupOperation;
   }
   
   protected enum SlotEnum {
-    name, password, location, groups, allowedOperation;
-    
-    public Slot getSlot(MetaProjectImpl mp) {
-      return mp.kb.getSlot(toString());
-    }
+    name, password, location, group, member,  allowedGroup, allowedOperation, allowedGroupOperation;
   }
   
   public MetaProjectImpl(URI metaprojectURI) {
@@ -50,28 +42,56 @@ public class MetaProjectImpl implements MetaProject {
     return kb;
   }
   
-  public Set<MetaProjectInstance> getProjectInstances() {
-    Set<MetaProjectInstance> projectInstances = new HashSet<MetaProjectInstance>();
-    for (Instance pi : kb.getInstances(ClsEnum.Project.getCls(this))) {
-      projectInstances.add(new MetaProjectInstanceImpl(this, pi));
-    }
-    return projectInstances;
-  }
- 
-  public Set<UserInstance> getUserInstances() {
-    Set<UserInstance> userInstances = new HashSet<UserInstance>();
-    for (Instance ui : kb.getInstances(ClsEnum.User.getCls(this))) {
-      userInstances.add(new UserInstanceImpl(this, ui));
-    }
-    return userInstances;
+  protected Cls getCls(ClsEnum cls) {
+    return kb.getCls(cls.toString());
   }
   
-  public Set<Operation> getOperations() {
-    Set<Operation> operations = new HashSet<Operation>();
-    for (Instance ui : kb.getInstances(ClsEnum.Operation.getCls(this))) {
-      operations.add(new OperationImpl(this, ui));
+  protected Slot getSlot(SlotEnum slot) {
+    return kb.getSlot(slot.toString());
+  }
+  
+  protected WrappedProtegeInstance wrapInstance(ClsEnum cls, Instance i) {
+    if (!i.hasType(getCls(cls))) {
+      throw new IllegalArgumentException("" + i + " should be a " + cls + " instance");
     }
-    return operations;
+    switch (cls) {
+    case GroupOperation:
+      return new GroupAndOperationImpl(this, i);
+    case Group:
+      return new GroupInstanceImpl(this, i);
+    case Project:
+      return new MetaProjectInstanceImpl(this, i);
+    case Operation:
+      return new OperationImpl(this, i);
+    case User:
+      return new UserInstanceImpl(this, i);
+    default:
+      throw new UnsupportedOperationException("Unexpected cls " + cls);
+    }
+  }
+  
+  @SuppressWarnings("unchecked")
+  protected Set getWrappedInstances(ClsEnum cls) {
+    Set instances = new HashSet();
+    for (Instance i : kb.getInstances(getCls(cls))) {
+      instances.add(wrapInstance(cls, i));
+    }
+    return instances;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public Set<MetaProjectInstance> getProjectInstances() {
+    return (Set<MetaProjectInstance>) getWrappedInstances(ClsEnum.Project);
+  }
+ 
+  @SuppressWarnings("unchecked")
+  public Set<UserInstance> getUserInstances() {
+    return (Set<UserInstance>) getWrappedInstances(ClsEnum.User);
+  }
+  
+  @SuppressWarnings("unchecked")
+  public Set<Operation> getOperations() {
+    return (Set<Operation>) getWrappedInstances(ClsEnum.Operation);
   }
   
   public Policy getPolicy() {

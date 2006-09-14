@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.server.metaproject.impl;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 import edu.stanford.smi.protege.model.Instance;
@@ -9,30 +8,21 @@ import edu.stanford.smi.protege.server.metaproject.GroupInstance;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
-import edu.stanford.smi.protege.util.Log;
 
-public class UserInstanceImpl implements UserInstance, Serializable {
+public class UserInstanceImpl extends WrappedProtegeInstance implements UserInstance, Serializable {
   private static final long serialVersionUID = -4416984896523630762L;
   
-  String name;
-  String password;
-  Set<GroupInstance> groups;
+  private String name;
+  private String password;
+  private Set<GroupInstance> groups;
+
   
+  @SuppressWarnings("unchecked")
   protected UserInstanceImpl(MetaProjectImpl mp, Instance ui) {
-    if (!ui.getDirectTypes().contains(ClsEnum.User.getCls(mp))) {
-      throw new IllegalArgumentException("" + ui + " should be an user instance");
-    }
-    name = (String) ui.getOwnSlotValue(SlotEnum.name.getSlot(mp));
-    password = (String) ui.getOwnSlotValue(SlotEnum.password.getSlot(mp));
-    
-    groups = new HashSet<GroupInstance>();
-    for (Object instance : ui.getOwnSlotValues(SlotEnum.groups.getSlot(mp))) {
-      try {
-        groups.add(new GroupInstanceImpl(mp, (Instance) instance));
-      } catch (ClassCastException cce) {
-        Log.getLogger().warning("Metaproject invalid because the allowed Operations of a group should be instances of operations");
-      }
-    }
+    super(mp, ui, ClsEnum.User);
+    name = (String) ui.getOwnSlotValue(mp.getSlot(SlotEnum.name));
+    password = (String) ui.getOwnSlotValue(mp.getSlot(SlotEnum.password));
+    groups = (Set<GroupInstance>) getSlotValues(SlotEnum.group, ClsEnum.Group);
   }
   
   public UserInstanceImpl(String name) {
