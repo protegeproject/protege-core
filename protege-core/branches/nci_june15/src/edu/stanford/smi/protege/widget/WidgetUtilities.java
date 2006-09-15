@@ -135,6 +135,10 @@ public class WidgetUtilities {
     		return;
     	
     	ClsWidget clsWidget = instanceDisplay.getFirstClsWidget();
+    	
+    	if (clsWidget == null)
+    		return;
+    	
     	for (Iterator iter = inst.getOwnSlots().iterator(); iter.hasNext();) {
 			Slot slot = (Slot) iter.next();			
 			SlotWidget slotWidget = clsWidget.getSlotWidget(slot);
