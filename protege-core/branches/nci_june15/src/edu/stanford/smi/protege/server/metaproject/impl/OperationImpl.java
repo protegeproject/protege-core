@@ -11,7 +11,7 @@ public class OperationImpl extends WrappedProtegeInstance implements Operation, 
   public final static OperationImpl READ = new OperationImpl("Read");
   public final static OperationImpl WRITE = new OperationImpl("Write");
   
-  //TODO: Where should we move this, especiallt that this might be NCI specific?
+  //TODO: Where should we move this, especially that this might be NCI specific?
   public final static OperationImpl PROPERTY_TAB_READ = new OperationImpl("PropertyTabRead");
   public final static OperationImpl PROPERTY_TAB_WRITE = new OperationImpl("PropertyTabWrite");
 
