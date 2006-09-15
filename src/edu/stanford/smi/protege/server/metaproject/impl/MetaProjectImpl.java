@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import edu.stanford.smi.protege.exception.InvalidProtegeArg;
+import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -42,12 +44,20 @@ public class MetaProjectImpl implements MetaProject {
     return kb;
   }
   
-  protected Cls getCls(ClsEnum cls) {
-    return kb.getCls(cls.toString());
+  protected Cls getCls(ClsEnum cls) throws OntologyException {
+    Cls frameCls = kb.getCls(cls.toString());
+    if (frameCls == null) {
+      throw new OntologyException("Metaproject Ontology should contain a class " + cls);
+    }
+    return frameCls;
   }
   
-  protected Slot getSlot(SlotEnum slot) {
-    return kb.getSlot(slot.toString());
+  protected Slot getSlot(SlotEnum slot) throws OntologyException {
+    Slot frameSlot = kb.getSlot(slot.toString());
+    if (frameSlot == null) {
+      throw new OntologyException("Metaproject Ontology should contain a slot " + slot);
+    }
+    return frameSlot;
   }
   
   protected WrappedProtegeInstance wrapInstance(ClsEnum cls, Instance i) {
