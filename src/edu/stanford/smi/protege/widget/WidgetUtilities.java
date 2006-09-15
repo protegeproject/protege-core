@@ -7,7 +7,9 @@ import java.util.*;
 import javax.swing.*;
 
 import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.ui.InstanceDisplay;
 import edu.stanford.smi.protege.util.*;
+
 
 /**
  * A collection of utilities useful for creating and working with widgets.
@@ -117,4 +119,31 @@ public class WidgetUtilities {
         }
         return isSuitable;
     }
+    
+    /**
+     * Sets all the widgets of an instance form to enabled/disabled according to the enabled argument. 
+     * @param instanceDisplay
+     * @param enabled
+     */
+    public static void setEnabledInstanceDisplay(InstanceDisplay instanceDisplay, boolean enabled) {
+    	if (instanceDisplay == null)
+    		return;
+    	
+    	Instance inst = instanceDisplay.getCurrentInstance();
+    	
+    	if (inst == null)
+    		return;
+    	
+    	ClsWidget clsWidget = instanceDisplay.getFirstClsWidget();
+    	for (Iterator iter = inst.getOwnSlots().iterator(); iter.hasNext();) {
+			Slot slot = (Slot) iter.next();			
+			SlotWidget slotWidget = clsWidget.getSlotWidget(slot);
+			if (slotWidget != null) {
+				((AbstractSlotWidget)slotWidget).setEnabled(enabled);
+				//((AbstractSlotWidget)slotWidget).setEditable(enabled);
+			}
+		}    	
+    }
+  
+    
 }
