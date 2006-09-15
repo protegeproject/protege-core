@@ -11,6 +11,14 @@ public class OperationImpl extends WrappedProtegeInstance implements Operation, 
   public final static OperationImpl READ = new OperationImpl("Read");
   public final static OperationImpl WRITE = new OperationImpl("Write");
   
+  //TODO: Where should we move this, especiallt that this might be NCI specific?
+  public final static OperationImpl PROPERTY_TAB_READ = new OperationImpl("PropertyTabRead");
+  public final static OperationImpl PROPERTY_TAB_WRITE = new OperationImpl("PropertyTabWrite");
+
+  public final static OperationImpl ONTOLOGY_TAB_READ = new OperationImpl("OntologyTabRead");
+  public final static OperationImpl ONTOLOGY_TAB_WRITE = new OperationImpl("OntologyTabWrite");
+  
+  
   private String name;
   
   protected OperationImpl(MetaProjectImpl mp, Instance op) {
