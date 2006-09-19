@@ -18,7 +18,7 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
     private static final Logger log = Log.getLogger(AbstractFrameStoreInvocationHandler.class);
   
     private FrameStore _delegate;
-    private static final Set specialMethods = new HashSet();
+    private static final Set<Method> specialMethods = new HashSet<Method>();
 
     static {
         try {
