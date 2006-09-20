@@ -78,10 +78,13 @@ public class RemoteClientFrameStore implements FrameStore {
     private static transient Logger cacheLog = ServerFrameStore.cacheLog;
     
     private static Method getEventsMethod;
+    private static Method executeProtegeJobMethod;
     static {
       try {
         getEventsMethod = RemoteServerFrameStore.class.getDeclaredMethod("getEvents", 
                                                                          new Class[] { RemoteSession.class });
+        executeProtegeJobMethod = RemoteServerFrameStore.class.getDeclaredMethod("executeProtegeJob",
+                                                                                 new Class[] {ProtegeJob.class, RemoteSession.class});
       } catch (NoSuchMethodException nsme) {
         Log.getLogger().log(Level.SEVERE, "No such method ", nsme);
       }
@@ -200,7 +203,11 @@ public class RemoteClientFrameStore implements FrameStore {
 
           public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             synchronized (RemoteClientFrameStore.this) {
-              fixLoader();
+              if (!method.equals(executeProtegeJobMethod)) {
+                fixLoader();
+              } else {
+                ((ProtegeJob) args[0]).fixLoader();
+              }
               if (!method.equals(getEventsMethod)) {
                 ProjectView view = ProjectManager.getProjectManager().getCurrentProjectView();
                 if (view != null) {
@@ -980,7 +987,7 @@ public class RemoteClientFrameStore implements FrameStore {
             callback.handleError(new ProtegeError(t));
           }
         }
-      };
+      }.start();
     }
 
     public synchronized Set getReferences(Object object) {
