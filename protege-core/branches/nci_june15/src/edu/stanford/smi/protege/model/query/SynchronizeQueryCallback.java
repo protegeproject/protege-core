@@ -6,6 +6,8 @@ import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Localizable;
 
 /**
  * This class is a QueryCallback that provides utilities for making the 
@@ -17,7 +19,7 @@ import edu.stanford.smi.protege.model.Frame;
  *   return callback.waitForResults():
  */
 
-public class SynchronizeQueryCallback implements QueryCallback {
+public class SynchronizeQueryCallback implements QueryCallback, Localizable {
   Object kbLock;
   Object result;
 
@@ -77,6 +79,10 @@ public class SynchronizeQueryCallback implements QueryCallback {
     else {
       throw (ProtegeError) o;
     }
+  }
+
+  public void localize(KnowledgeBase kb) {
+    kbLock = kb;
   }
 }
 
