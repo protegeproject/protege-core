@@ -211,6 +211,28 @@
 	
 	<!-- =================================================================== -->
 
+
+   <!--
+     My experience is that "ant junit" provides almost no debugging
+     information when things go wrong.  (This was not true in my
+     previous job and I don't know the difference. log4j??)  When there is a
+     problem I generally use my development environment to debug
+     faulting junit.  For scripting problems with the junits the options
+
+        filtertrace="false" 
+        showoutput="true"
+
+     give a little more information.  Also when you know that some
+     junits are failing, removing the option 
+
+        haltonfailure = "on" 
+
+     is helpful for showing all the failures.  But in the committed
+     version I think that this option is very important because it
+     means that the developer will never mistakenly believe that
+     junits have succeeded.
+       -->
+
         <target name = "junit" 
                 description = "test the system"
                 depends="compile-junit, jar">
