@@ -1,6 +1,8 @@
 package edu.stanford.smi.protege.util;
 
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
@@ -22,6 +24,7 @@ import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
  * @author tredmond
  */
 public abstract class ProtegeJob implements Localizable, Serializable {
+  private static transient Logger log = Log.getLogger(ProtegeJob.class);
 
   private transient KnowledgeBase kb;
   private transient RemoteClientFrameStore clientFrameStore = null;
@@ -38,6 +41,19 @@ public abstract class ProtegeJob implements Localizable, Serializable {
       clientFrameStore = (RemoteClientFrameStore) terminalFrameStore;
     }
   }
+  
+  public void fixLoader() {
+    ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
+    ClassLoader correctLoader = getClass().getClassLoader();
+    if (currentLoader != correctLoader) {
+        if (log.isLoggable(Level.FINEST)) {
+          Log.getLogger().finest("Changing loader from " + currentLoader + " to " + correctLoader);
+        }
+        Thread.currentThread().setContextClassLoader(correctLoader);
+    }
+  }
+  
+  
   
   /**
    * This method will either execute the job.run() method or - in the
