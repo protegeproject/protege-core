@@ -244,6 +244,7 @@ public class RemoteClientFrameStore implements FrameStore {
     try {
       return getRemoteDelegate().getStats();
     } catch (RemoteException re) {
+      Log.getLogger().log(Level.INFO, "Remote exception getting server stats", re);
       return null;
     }
   }
@@ -1806,7 +1807,9 @@ public class RemoteClientFrameStore implements FrameStore {
     try {
       RemoteResponse<Object> response = getRemoteDelegate().executeProtegeJob(job, session);
       processValueUpdate(response);
-      return response.getResponse();
+      Object result = response.getResponse();
+      LocalizeUtils.localize(result, kb);
+      return result;
     } catch (RemoteException remote) {
       throw new ProtegeIOException(remote);
     }
