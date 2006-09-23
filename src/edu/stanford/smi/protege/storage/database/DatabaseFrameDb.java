@@ -802,7 +802,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
                 + ", " + IS_TEMPLATE_COLUMN;
         text += " FROM " + _table;
         text += " WHERE " + VALUE_TYPE_COLUMN + " = " + DatabaseUtils.getStringValueType();
-        text += " AND " + getShortValueMatchColumn() + " LIKE '" + getMatchString(value) + "' " + getEscapeClause();
+        text += " AND (" + getShortValueMatchColumn() + " LIKE '" + getMatchString(value) + "' " + getEscapeClause();
+        text +=        " OR " + LONG_VALUE_COLUMN + " LIKE '" + getMatchString(value) + "' " + getEscapeClause()  + " )";
 
         Set results = new HashSet();
         ResultSet rs = executeQuery(text);
