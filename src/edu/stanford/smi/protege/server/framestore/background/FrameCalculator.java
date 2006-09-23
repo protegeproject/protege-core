@@ -424,6 +424,8 @@ public class FrameCalculator {
   }
   
   public static class FrameCalculatorStatsImpl implements FrameCalculatorStats, Serializable {
+    private static final long serialVersionUID = -573113660316027300L;
+    
     private long startWorkTime;
     private long workUnits = 0;
     private long totalWorkTime  = 0;
