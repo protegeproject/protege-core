@@ -54,7 +54,7 @@ public interface RemoteServerFrameStore extends Remote {
     void deleteSimpleInstance(SimpleInstance simpleInstance, RemoteSession session) throws RemoteException;
 
     // own slots
-    Set getOwnSlots(Frame frame, RemoteSession session) throws RemoteException;
+    Set<Slot> getOwnSlots(Frame frame, RemoteSession session) throws RemoteException;
 
     Collection getOwnSlotValues(Frame frame, Slot slot, RemoteSession session) throws RemoteException;
 

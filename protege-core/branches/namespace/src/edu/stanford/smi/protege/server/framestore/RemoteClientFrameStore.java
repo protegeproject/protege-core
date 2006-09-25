@@ -331,7 +331,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         return getCacheOwnSlots(frame);
     }
 
@@ -1326,16 +1326,16 @@ public class RemoteClientFrameStore implements FrameStore {
         return getTemplateFacetValues(cls, slot, getSystemFrames().getValuesFacet());
     }
 
-    private Set getCacheOwnSlots(Frame frame) {
+    private Set<Slot> getCacheOwnSlots(Frame frame) {
         Collection types = getTypes((Instance) frame);
-        Set ownSlots = collectOwnSlotValues(types, getSystemFrames().getDirectTemplateSlotsSlot());
+        Set<Slot> ownSlots = collectOwnSlotValues(types, getSystemFrames().getDirectTemplateSlotsSlot());
         ownSlots.add(getSystemFrames().getNameSlot());
         ownSlots.add(getSystemFrames().getDirectTypesSlot());
         return ownSlots;
     }
 
-    private Set collectOwnSlotValues(Collection frames, Slot slot) {
-        Set values = new LinkedHashSet();
+    private Set<Slot> collectOwnSlotValues(Collection frames, Slot slot) {
+        Set<Slot> values = new LinkedHashSet<Slot>();
         Object[] frameArray = frames.toArray();
         for (int i = 0; i < frameArray.length; ++i) {
             Frame frame = (Frame) frameArray[i];

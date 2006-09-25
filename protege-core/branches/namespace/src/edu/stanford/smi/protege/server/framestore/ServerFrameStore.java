@@ -170,7 +170,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return getDelegate().getSuperslots(slot);
     }
 
-    public synchronized Set getOwnSlots(Frame frame, RemoteSession session) {
+    public synchronized Set<Slot> getOwnSlots(Frame frame, RemoteSession session) {
         recordCall(session);
         return getDelegate().getOwnSlots(frame);
     }
