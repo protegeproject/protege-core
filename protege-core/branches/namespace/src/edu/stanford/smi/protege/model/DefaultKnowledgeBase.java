@@ -246,7 +246,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return CollectionUtilities.getFirstItem(values);
     }
 
-    public synchronized Collection getOwnSlots(Frame frame) {
+    public synchronized Collection<Slot> getOwnSlots(Frame frame) {
         return getHeadFrameStore().getOwnSlots(frame);
     }
 
