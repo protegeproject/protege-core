@@ -240,3 +240,6 @@ Export-Project-Plugin: True
 Name: edu/stanford/smi/protege/storage/database/DatabaseCreateProjectPlugin.class
 Create-Project-Plugin: True
 
+Name: edu/stanford/smi/protege/widget/ProtegePropertiesTab.class
+Tab-Widget: True
+
