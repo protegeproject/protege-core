@@ -1720,6 +1720,10 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
             // TODO Auto-generated method stub
             return null;
         }
+
+        public Frame rename(Frame original, String name) {
+          throw new UnsupportedOperationException();
+        }
     }
 
     static interface TestInterface {
