@@ -446,7 +446,7 @@ public interface KnowledgeBase extends Disposable {
     Collection getOwnSlotDefaultValues(Frame frame, Slot slot);
     Collection getOwnSlotFacets(Frame frame, Slot slot);
     Collection getOwnSlotFacetValues(Frame frame, Slot slot, Facet facet);
-    Collection getOwnSlots(Frame frame);
+    Collection<Slot> getOwnSlots(Frame frame);
     Collection getOwnSlotValues(Frame frame, Slot slot);
     Object getDirectOwnSlotValue(Frame frame, Slot slot);
     List getDirectOwnSlotValues(Frame frame, Slot slot);
