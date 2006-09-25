@@ -277,7 +277,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
         return getDefaultKnowledgeBase().getOwnSlotFacetValues(this, slot, facet);
     }
 
-    public Collection getOwnSlots() {
+    public Collection<Slot> getOwnSlots() {
         return getDefaultKnowledgeBase().getOwnSlots(this);
     }
 
