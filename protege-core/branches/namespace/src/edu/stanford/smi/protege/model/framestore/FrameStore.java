@@ -81,7 +81,7 @@ public interface FrameStore {
     void deleteSimpleInstance(SimpleInstance simpleInstance);
 
     // own slots
-    Set getOwnSlots(Frame frame);
+    Set<Slot> getOwnSlots(Frame frame);
 
     Collection getOwnSlotValues(Frame frame, Slot slot);
 

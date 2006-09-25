@@ -127,7 +127,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getDirectOwnSlotValues(frame, slot);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot>getOwnSlots(Frame frame) {
         return getDelegate().getOwnSlots(frame);
     }
 

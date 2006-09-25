@@ -53,7 +53,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         return getDelegate().getOwnSlots(frame);
     }
 

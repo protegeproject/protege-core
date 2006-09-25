@@ -63,7 +63,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getSuperslots(slot);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         return getDelegate().getOwnSlots(frame);
     }
 

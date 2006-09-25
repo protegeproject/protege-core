@@ -261,7 +261,7 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public Set getTemplateFacets(Cls cls, Slot slot) {
-        Collection slots = getOwnSlots(slot);
+        Collection<Slot> slots = getOwnSlots(slot);
         Set facets = collectOwnSlotValues(slots, _systemFrames.getAssociatedFacetSlot());
         return unmodifiableSet(facets);
     }
@@ -409,9 +409,9 @@ public class SimpleFrameStore implements FrameStore {
         return _helper.getFrame(id);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         Collection types = getTypes((Instance) frame);
-        Set ownSlots = collectOwnSlotValues(types, _systemFrames.getDirectTemplateSlotsSlot());
+        Set<Slot> ownSlots = (Set<Slot>) collectOwnSlotValues(types, _systemFrames.getDirectTemplateSlotsSlot());
         ownSlots.add(_systemFrames.getNameSlot());
         ownSlots.add(_systemFrames.getDirectTypesSlot());
         return ownSlots;

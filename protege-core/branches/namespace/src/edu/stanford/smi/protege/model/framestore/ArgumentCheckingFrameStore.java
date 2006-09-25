@@ -155,7 +155,7 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         checkFrame(frame);
         return getDelegate().getOwnSlots(frame);
     }
