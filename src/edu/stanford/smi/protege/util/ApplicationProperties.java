@@ -235,6 +235,10 @@ public class ApplicationProperties {
         return rectangle;
     }
 
+    public static Properties getApplicationProperties() {
+    	return PROPERTIES;
+    }
+    
     public static String getApplicationOrSystemProperty(String name) {
         return getApplicationOrSystemProperty(name, null);
     }
