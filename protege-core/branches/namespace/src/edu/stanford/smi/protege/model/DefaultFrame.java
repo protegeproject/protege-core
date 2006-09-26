@@ -409,4 +409,127 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     public Icon getIcon() {
         return null;
     }
+    
+    @SuppressWarnings("unchecked")
+    public Frame replaceWithFrameNamed(String name) {
+      if (getFrameID().getName().equals(name)) {
+        return this;
+      }
+      if (this instanceof Facet) {
+        throw new UnsupportedOperationException("Can't rename facets - yet");
+      }
+      
+      Frame newFrame = createEmptyFrame(name, knowledgeBase.getDirectTypes((Instance) this), getClass());
+      replaceReferences(newFrame);  // now all frame/slot/facet values will  contain newFrame instead of this.
+      replaceMySlotValues(newFrame);
+ 
+      if (this instanceof Slot) {
+        replaceSlotValues((Slot) newFrame);
+      }
+      if (this instanceof Facet) {
+        throw new UnsupportedOperationException("Can't rename facets - yet");
+        // more things to do here to get facet values updated.  Maybe this case should be disallowed?
+        // this is complicated...
+      }
+      delete();
+      return newFrame;
+    }
+        
+    private Frame createEmptyFrame(String name, Collection directTypes, Class implementationClass) {
+      if (Cls.class.isAssignableFrom(implementationClass)) {
+        return knowledgeBase.createCls(name, directTypes);
+      }
+      else if (Slot.class.isAssignableFrom(implementationClass)) {
+        return knowledgeBase.createSlot(name);
+      }
+      else if (Facet.class.isAssignableFrom(implementationClass)) {
+        return knowledgeBase.createFacet(name);
+      }
+      else if (SimpleInstance.class.isAssignableFrom(implementationClass)) {
+        return knowledgeBase.createInstance(name, directTypes);
+      }
+      throw new UnsupportedOperationException("Unknown frame type " + implementationClass);
+    }
+    
+    
+    @SuppressWarnings("unchecked")
+    private void replaceReferences(Frame newFrame) {
+      for (Object o : getReferences()) {
+        Reference r = (Reference) o;
+        Collection values = null;
+        if (!r.isTemplate()) {
+          values = r.getFrame().getDirectOwnSlotValues(r.getSlot());
+        }
+        else if (r.getFacet() == null) {
+          values = ((Cls) r.getFrame()).getDirectTemplateSlotValues(r.getSlot());
+        }
+        else {
+          values = ((Cls) r.getFrame()).getDirectTemplateFacetValues(r.getSlot(), r.getFacet());
+        }
+        if (values.contains(this)) {
+          values = new ArrayList(values);
+          values.remove(this);
+          values.add(newFrame);
+          if (!r.isTemplate()) {
+            r.getFrame().setOwnSlotValues(equals(r.getSlot()) ? (Slot) newFrame : r.getSlot(), values);
+          }
+          else if (r.getFacet() == null) {
+            ((Cls) r.getFrame()).setTemplateSlotValues(equals(r.getSlot()) ? (Slot) newFrame : r.getSlot(), values);
+          }
+          else {
+            ((Cls) r.getFrame()).setTemplateFacetValues(equals(r.getSlot()) ? (Slot) newFrame : r.getSlot(), 
+                                                        equals(r.getFacet()) ? (Facet) newFrame : r.getFacet(), values);
+          }
+        }
+      }
+    }
+    
+    @SuppressWarnings("deprecation")
+    private void replaceMySlotValues(Frame newFrame) {
+      for (Slot slot : knowledgeBase.getOwnSlots(this)) {
+        if (slot.getFrameID().equals(Model.SlotID.NAME)) {
+          continue;
+        }
+        if (slot.getFrameID().equals(Model.SlotID.DIRECT_TYPE)) {
+          continue; // not sure why...
+        }
+        Collection values = getDirectOwnSlotValues(slot);
+        if (!values.isEmpty()) {
+          newFrame.setOwnSlotValues(equals(slot) ? (Slot) newFrame : slot, values);
+        }
+      }
+      if (this instanceof Cls) {
+        Cls originalCls = (Cls) this;
+        Cls newCls = (Cls) newFrame;
+        for (Slot slot : originalCls.getDirectTemplateSlots()) {
+          Collection values = originalCls.getDirectTemplateSlotValues(slot);
+          if (!values.isEmpty()) {
+            newCls.setTemplateSlotValues(equals(slot) ? (Slot) newFrame : slot, values);
+          }
+          for (Facet facet : originalCls.getTemplateFacets(slot)) {
+            Collection fvalues = originalCls.getDirectTemplateFacetValues(slot, facet);
+            if (!values.isEmpty()) {
+              newCls.setTemplateFacetValues(equals(slot) ? (Slot) newFrame : slot, 
+                                            equals(facet) ? (Facet) newFrame : facet, 
+                                            values);
+            }
+          }
+        }
+      }
+    }
+    
+    private void replaceSlotValues(Slot newSlot) {
+      Slot originalSlot = (Slot) this;
+      for (Object o : originalSlot.getAllowedClses()) {
+        Cls cls = (Cls) o;
+        Collection values;
+        for (Object o1 : cls.getInstances()) {
+          Instance i = (Instance) o1;
+          values = i.getOwnSlotValues(originalSlot);
+          i.setOwnSlotValues(newSlot, values);
+        }
+        values = cls.getTemplateSlotValues(originalSlot);
+        cls.setOwnSlotValues(newSlot, values);
+      }
+    }
 }
