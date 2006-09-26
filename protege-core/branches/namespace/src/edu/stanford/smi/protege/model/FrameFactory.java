@@ -52,9 +52,4 @@ public interface FrameFactory {
      * @return all java class ids which correspond to simple instances
      */
     Collection getSimpleInstanceJavaClassIds();
-    
-    /**
-     * Duplicate a frame (with all its types, instances, etc.) with a new name and then delete the original.
-     */
-    Frame rename(Frame original, String name);
 }
