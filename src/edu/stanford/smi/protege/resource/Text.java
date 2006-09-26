@@ -16,7 +16,7 @@ public final class Text {
     private static String buildFile = "build.properties";
     private static String directory = "files";
     private static Properties props;
-    private static final String PROGRAM_NAME = "Protégé";
+    private static final String PROGRAM_NAME = "Prot\u00E9g\u00E9";
     private static final String PROGRAM_ASCII_NAME = "Protege";
     public static final String PROGRAM_NAME_PROPERTY = "resource.text.program_name";
 
