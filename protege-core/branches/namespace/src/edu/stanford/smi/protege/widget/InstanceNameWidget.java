@@ -7,6 +7,7 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.ModalDialog;
 
 /**
  * Slot widget for altering the frame name.  This differs from a simple text field in that it must check that the new
@@ -61,7 +62,16 @@ public class InstanceNameWidget extends TextFieldWidget {
     }
 
     public void setInstanceValues() {
-      throw new UnsupportedOperationException("Not implemented yet - names don't change");
+      String name = getText();
+      if (name != null && isValidName(name)) {
+          getInstance().replaceWithFrameNamed(name);
+          markDirty(false);
+      } else {
+          ModalDialog.showMessageDialog(this, "Invalid frame name: Unable to change name.");
+          setText(getInstance().getName());
+          getTextField().requestFocus();
+      }
+  
     }
 
     protected String getInvalidTextDescription(String text) {
