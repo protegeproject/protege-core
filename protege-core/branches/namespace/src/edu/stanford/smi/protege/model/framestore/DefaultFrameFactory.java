@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.model.FrameFactory;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
@@ -272,80 +273,5 @@ public class DefaultFrameFactory implements FrameFactory {
     public Collection getSimpleInstanceJavaClassIds() {
         return createRange(DEFAULT_SIMPLE_INSTANCE_JAVA_CLASS_ID);
     }
-
-	@SuppressWarnings("unchecked")
-  public Frame rename(Frame original, String name) {
-		if (original.getFrameID().getName().equals(name)) {
-			return original;
-		}
-		Frame newFrame = createEmptyFrame(new FrameID(name), original.getClass());
-		DefaultKnowledgeBase kb = (DefaultKnowledgeBase) original.getKnowledgeBase();
-		for (Slot slot : kb.getOwnSlots(newFrame)) {
-			Collection values = original.getOwnSlotValues(slot);
-			newFrame.setOwnSlotValues(slot.equals(original) ? (Slot) newFrame : slot, values);
-		}
-		if (original instanceof Cls) {
-      Cls originalCls = (Cls) original;
-      Cls newCls = (Cls) newFrame;
-			for (Slot slot : originalCls.getTemplateSlots()) {
-			  Collection values = originalCls.getTemplateSlotValues(slot);
-        newCls.setTemplateSlotValues(slot.equals(original) ? (Slot) newFrame : slot, values);
-        for (Facet facet : originalCls.getTemplateFacets(slot)) {
-          Collection fvalues = originalCls.getTemplateFacetValues(slot, facet);
-          newCls.setTemplateFacetValues(slot.equals(original) ? (Slot) newFrame : slot, 
-                                        facet.equals(original) ? (Facet) newFrame : facet, 
-                                        fvalues);
-        }
-      }
-		}
-    for (Object o : newFrame.getReferences()) {
-      Reference r = (Reference) o;
-      Collection values = null;
-      if (r.getFrame().equals(original) || r.getSlot().equals(original)
-          || (r.getFacet() != null && r.getFacet().equals(original))) {
-        continue;
-      }
-      if (!r.isTemplate()) {
-        values = r.getFrame().getOwnSlotValues(r.getSlot());
-      }
-      else if (r.getFacet() == null) {
-        values = ((Cls) r.getFrame()).getTemplateSlotValues(r.getSlot());
-      }
-      else {
-        values = ((Cls) r.getFrame()).getTemplateFacetValues(r.getSlot(), r.getFacet());
-      }
-      if (values.contains(original)) {
-        values.remove(original);
-        values.add(newFrame);
-        if (!r.isTemplate()) {
-          r.getFrame().setOwnSlotValues(r.getSlot(), values);
-        }
-        else if (r.getFacet() == null) {
-          ((Cls) r.getFrame()).setTemplateSlotValues(r.getSlot(), values);
-        }
-        else {
-          ((Cls) r.getFrame()).setTemplateFacetValues(r.getSlot(), r.getFacet(), values);
-        }
-      }
-      
-    }
-		return newFrame;
-	}
-	
-	private Frame createEmptyFrame(FrameID id, Class implementationClass) {
-		if (Cls.class.isAssignableFrom(implementationClass)) {
-			return createCls(id, implementationClass);
-		}
-		else if (Slot.class.isAssignableFrom(implementationClass)) {
-			return createSlot(id, implementationClass);
-		}
-		else if (Facet.class.isAssignableFrom(implementationClass)) {
-			return createFacet(id, implementationClass);
-		}
-		else if (SimpleInstance.class.isAssignableFrom(implementationClass)) {
-			return createSimpleInstance(id, implementationClass);
-		}
-		throw new UnsupportedOperationException("Unknown frame type " + implementationClass);
-	}
-	
+    
 }
