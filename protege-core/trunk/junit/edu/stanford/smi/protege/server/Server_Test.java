@@ -24,7 +24,7 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 public class Server_Test extends SimpleTestCase {
     private static transient Logger log = Log.getLogger(Server_Test.class);
     
-    private static final String HOST = "localhost";
+    public  static final String HOST = "localhost";
     private static final String USER1 = "Ray Fergerson";
     private static final String PASSWORD1 = "claudia";
     private static final String WRONG_PASSWORD = "elle";
@@ -36,12 +36,11 @@ public class Server_Test extends SimpleTestCase {
     
     private static  final String JAR_PROPERTY="junit.server.protege.jar";
     
-    private static final int RETRY = 5;
-    private static final long SLEEP = 3000;
-    
     private static boolean serverRunning = false;
 
     private RemoteServer _server;
+    
+    private static String metaproject = "examples/server/metaproject.pprj";
 
     public void setUp() throws Exception {
       super.setUp();
@@ -69,7 +68,7 @@ public class Server_Test extends SimpleTestCase {
         return false;
       }
       System.setProperty("java.rmi.server.codebase", jar_uri);
-      String [] serverArgs = {"", "examples/server/metaproject.pprj"};
+      String [] serverArgs = {"", metaproject};
       if (!serverRunning) {
         if (log.isLoggable(Level.FINE)) {
           log.fine("starting server");
@@ -82,6 +81,10 @@ public class Server_Test extends SimpleTestCase {
       
     public static boolean isServerRunning() {
       return serverRunning;
+    }
+    
+    public static void setMetaProject(String metaproject) {
+      Server_Test.metaproject = metaproject;
     }
  
 
