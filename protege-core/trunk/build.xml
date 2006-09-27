@@ -236,7 +236,10 @@
         <target name = "junit" 
                 description = "test the system"
                 depends="compile-junit, jar">
-          <junit  printsummary="withOutAndErr" haltonerror="on" fork="yes"
+          <junit  printsummary="withOutAndErr" 
+                  haltonerror="on" 
+                  haltonfailure="on" 
+                  fork="yes"
                   showoutput="yes">
             <classpath refid="project.classpath"/>
             <classpath refid="database.drivers"/>
