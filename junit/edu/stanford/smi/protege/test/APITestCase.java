@@ -36,6 +36,12 @@ public abstract class APITestCase extends AbstractTestCase {
 
     private static DBType _dbType = DBType.Oracle;
 
+    public static final String JUNIT_DB_DRIVER_PROPERTY   = "driver";
+    public static final String JUNIT_DB_TABLE_PROPERTY    = "table";
+    public static final String JUNIT_DB_USER_PROPERTY     = "user";
+    public static final String JUNIT_DB_PASSWORD_PROPERTY = "password";
+    public static final String JUNIT_DB_URL_PROPERTY      = "url";
+
     private static ProjectFactory _factory = new ClipsProjectFactory();
     private static Project _scratchProject = _factory.createProject();
     private static boolean _isFileProject = true;
@@ -84,11 +90,11 @@ public abstract class APITestCase extends AbstractTestCase {
       if (!dbConfigured()) {
         return;
       }
-      DatabaseKnowledgeBaseFactory.setDriver(sources, getDBProperty("driver"));
-      DatabaseKnowledgeBaseFactory.setTablename(sources, getDBProperty("table"));
-      DatabaseKnowledgeBaseFactory.setUsername(sources, getDBProperty("user"));
-      DatabaseKnowledgeBaseFactory.setPassword(sources, getDBProperty("password"));
-      DatabaseKnowledgeBaseFactory.setURL(sources, getDBProperty("url"));
+      DatabaseKnowledgeBaseFactory.setDriver(sources, getDBProperty(JUNIT_DB_DRIVER_PROPERTY));
+      DatabaseKnowledgeBaseFactory.setTablename(sources, getDBProperty(JUNIT_DB_TABLE_PROPERTY));
+      DatabaseKnowledgeBaseFactory.setUsername(sources, getDBProperty(JUNIT_DB_USER_PROPERTY));
+      DatabaseKnowledgeBaseFactory.setPassword(sources, getDBProperty(JUNIT_DB_PASSWORD_PROPERTY));
+      DatabaseKnowledgeBaseFactory.setURL(sources, getDBProperty(JUNIT_DB_URL_PROPERTY));
     }
     
     public static DBType chooseDBType() {
@@ -123,7 +129,7 @@ public abstract class APITestCase extends AbstractTestCase {
       return true;
     }
     
-    private static String getDBProperty(String prop) {
+    public static String getDBProperty(String prop) {
       Properties dbp = getJunitProperties();
       return dbp.getProperty(DB_PREFIX + _dbType + "." + prop);
     }
