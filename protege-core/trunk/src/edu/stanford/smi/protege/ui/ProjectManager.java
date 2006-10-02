@@ -591,6 +591,7 @@ public class ProjectManager {
             int result = wizard.execute();
             if (result == Wizard.RESULT_FINISH) {
                 _currentProject = wizard.getProject();
+                _projectPluginManager.afterCreate(_currentProject);
                 getProjectManager().displayCurrentProject();
                 succeeded = true;
             }
