@@ -612,9 +612,11 @@ public class ComponentUtilities {
 
     public static void setSelectedNode(JTree tree, TreeNode node) {
         final TreePath path = new TreePath(((LazyTreeModel) tree.getModel()).getPathToRoot(node));
-        tree.scrollPathToVisible(path);
-        tree.setSelectionPath(path);
-        tree.updateUI();
+        if (path != null) {
+        	tree.scrollPathToVisible(path);
+        	tree.setSelectionPath(path);
+        	tree.updateUI();
+        }
     }
 
     public static void setSelectedObjectPath(final JTree tree, Collection objectPath) {
