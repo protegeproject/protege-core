@@ -114,6 +114,8 @@ public class ModelUtilities {
         Cls rootCls = cls.getKnowledgeBase().getRootCls();
         while (i.hasNext()) {
             Cls superclass = (Cls) i.next();
+            if (list.contains(superclass))
+            	continue;
             if (cls.isVisible()) {
                 List copy = new ArrayList(list);
                 getPathToRoot(superclass, list);
@@ -158,6 +160,10 @@ public class ModelUtilities {
             values = cls.getTemplateFacetValues(slot, facet);
         }
         return values;
+    }
+    
+    public static boolean isVisibleInGUI(Frame frame) {
+    	return frame.getProject().getDisplayHiddenFrames() || frame.isVisible();
     }
 
     private static boolean isCopyable(Frame frame) {
