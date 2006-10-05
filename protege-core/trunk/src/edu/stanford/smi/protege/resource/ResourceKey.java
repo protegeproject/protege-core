@@ -60,6 +60,7 @@ public class ResourceKey {
     public static final ResourceKey PROJECT_CONFIGURE = key("project.configure");
     public static final ResourceKey PROJECT_INCLUDE = key("project.include");
     public static final ResourceKey PROJECT_MANAGE_INCLUDED = key("project.manage_included");
+    public static final ResourceKey PROJECT_MANAGE_INCLUDED_DIALOG = key("project.manage_included_dialog");
     public static final ResourceKey PROJECT_MERGE_INCLUDED = key("project.merge_included");
     public static final ResourceKey PROJECT_REVERT = key("project.revert");
     public static final ResourceKey PROJECT_FILE_ENCODINGS = key("project.file_encodings");
