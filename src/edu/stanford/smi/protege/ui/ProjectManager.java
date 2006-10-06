@@ -45,6 +45,8 @@ import edu.stanford.smi.protege.plugin.ImportPlugin;
 import edu.stanford.smi.protege.plugin.PluginUtilities;
 import edu.stanford.smi.protege.plugin.ProjectPluginManager;
 import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
 import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.RemoteProjectManager;
 import edu.stanford.smi.protege.server.RemoteProjectUtil;
@@ -71,7 +73,7 @@ import edu.stanford.smi.protege.widget.TextComponentWidget;
  * Manager for the open project. The original model was that more than one project could be open at a time. This is not
  * however the case now so this object just manages a single Project. It has a handle to the view that is displaying
  * this project.
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ProjectManager {
@@ -169,7 +171,7 @@ public class ProjectManager {
         return succeeded;
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     public void cascadeWindows(Point p, Collection w) {
         ArrayList windows = new ArrayList(w);
         Collections.sort(windows, new WindowComparator());
@@ -241,11 +243,11 @@ public class ProjectManager {
 
     private boolean closeCurrentProject() {
     	ProjectView prjView = getCurrentProjectView();
-    	
-    	//this should not be the case    	
+
+    	//this should not be the case
     	if (prjView == null)
     		return true;
-    	
+
         boolean succeeded = prjView.canClose();
         if (succeeded) {
             _projectPluginManager.beforeHide(_projectView, _mainToolBar, _menuBar);
@@ -273,13 +275,13 @@ public class ProjectManager {
         boolean displayHidden = p.getDisplayHiddenClasses();
         boolean displayTabbedInstanceForm = p.getTabbedInstanceFormLayout();
         if (p != null) {
-           ConfigureProjectPanel panel = new ConfigureProjectPanel(p);              
-           String title = "Configure " + p.getProjectURI();          
+           ConfigureProjectPanel panel = new ConfigureProjectPanel(p);
+           String title = "Configure " + p.getProjectURI();
            int result = ModalDialog.showDialog(_rootPane, panel, title, ModalDialog.MODE_OK_CANCEL);
            if (result == ModalDialog.OPTION_OK) {
-                boolean needToRegenerate = (displayHidden != p.getDisplayHiddenClasses()) || (displayTabbedInstanceForm != p.getTabbedInstanceFormLayout());                
+                boolean needToRegenerate = (displayHidden != p.getDisplayHiddenClasses()) || (displayTabbedInstanceForm != p.getTabbedInstanceFormLayout());
                 reloadUI(needToRegenerate);
-            }         
+            }
         }
     }
 
@@ -514,23 +516,23 @@ public class ProjectManager {
             waitCursor.hide();
         }
         long t2 = System.currentTimeMillis();
-        
-        //TODO: reimplement this when exception handling is improved. Handle here invalid project files 
+
+        //TODO: reimplement this when exception handling is improved. Handle here invalid project files
         if (_currentProject.getProjectInstance() == null) {
-        	String errorMsg = "Unable to load file: " + uri 
+        	String errorMsg = "Unable to load file: " + uri
         			+ "\nPossible reasons:\n- The file has an unsupported file format\n- The file is not well-formed\n- The project file is corrupt";
         	Log.getLogger().severe(errorMsg);
         	errors.add(new MessageError(null, errorMsg));
         	//JOptionPane.showMessageDialog(getMainPanel(), errorMsg, "Invalid file", JOptionPane.WARNING_MESSAGE);
         }
-        
+
         displayErrors("Load Project Errors", errors);
-        
+
         if (_currentProject != null && _currentProject.getProjectInstance() != null  && _currentProject.getKnowledgeBase() != null) {
             displayCurrentProject();
             printLoadTimes(t1, t2);
         }
-        
+
     }
 
     private Project createNewProject(KnowledgeBaseFactory factory, Collection errors) {
@@ -546,7 +548,7 @@ public class ProjectManager {
             _projectPluginManager.afterLoad(project);
         } catch (Exception e) {
         	errors.add(new MessageError(e));
-            Log.getLogger().log(Level.FINE, "Error loading project", e);            
+            Log.getLogger().log(Level.FINE, "Error loading project", e);
         }
         return project;
     }
@@ -574,10 +576,10 @@ public class ProjectManager {
 
     public void mergeIncludedProjectsRequest() {
         if (hasLoadedProject() && _currentProject.hasIncludedProjects()) {
-            String text = "This action will make all included frames in the knowledge base direct members "
-                    + " of the current project.";
+            String text = "This action will make all included frames in the knowledge base direct members of the current project.";
+            String title = " " + Text.getProgramName() + ": " + LocalizedText.getText(ResourceKey.PROJECT_MERGE_INCLUDED);
             JComponent parent = getProjectManager().getMainPanel();
-            int rval = ModalDialog.showMessageDialog(parent, text, ModalDialog.MODE_OK_CANCEL);
+            int rval = ModalDialog.showMessageDialog(parent, text, title, ModalDialog.MODE_OK_CANCEL);
             if (rval == ModalDialog.OPTION_OK) {
                 _currentProject.mergeIncludedProjects();
             }
@@ -644,7 +646,7 @@ public class ProjectManager {
     public void setCurrentProject(Project project) {
         setCurrentProject(project, true);
     }
-    
+
     public void setCurrentProject(Project project, boolean remote) {
         if (closeProjectRequest()) {
             _currentProject = project;
@@ -898,7 +900,7 @@ public class ProjectManager {
         ComponentUtilities.setFrameTitle(_rootPane, text);
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     public void updateLookAndFeel(Collection windows) {
         Iterator i = windows.iterator();
         while (i.hasNext()) {
