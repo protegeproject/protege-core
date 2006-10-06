@@ -1416,4 +1416,10 @@ public class RemoteClientFrameStore implements FrameStore {
             }
         }
     }
+
+    public void replaceFrame(Frame original, Frame replacement) {
+      throw new UnsupportedOperationException("Server-client rename not implemented yet");
+    }
+    
+    
 }
