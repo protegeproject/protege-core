@@ -84,8 +84,7 @@ public class InstanceNameWidget extends TextFieldWidget {
       if (i.getName().equals(name)) {
         return;
       }
-      FrameFactory ff = i.getKnowledgeBase().getFrameFactory();
-      ff.rename(i, name);
+      i.rename(name);
       markDirty(false);
     }
 
