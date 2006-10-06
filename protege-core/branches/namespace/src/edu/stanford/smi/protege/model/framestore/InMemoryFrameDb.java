@@ -500,31 +500,23 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         idToFrameMap.put(replacement.getFrameID(),  replacement);
       }
       
-      Set<Record> removals = new HashSet<Record>();
-      Set<Record> additions = new HashSet<Record>();
-      for (Record r : referenceToRecordMap.values()) {
-        Record newRecord = r;
-        if (r.getFrame().equals(original) || r.getSlot().equals(original) 
-            || (r.getFacet() != null && r.getFacet().equals(original))) {
-          newRecord = new Record(r.getFrame().equals(original) ? replacement : r.getFrame(),
-                                 r.getSlot().equals(original) ? (Slot) replacement : r.getSlot(),
-                                 (r.getFacet() != null && r.getFacet().equals(original)) ?
-                                     (Facet) replacement : r.getFacet(),
-                                 r.isTemplate(),
-                                 r.getValues());
-          if (newRecord.getFrame().equals(replacement) 
-              && newRecord.getSlot().getFrameID().equals(Model.SlotID.NAME)
-              && newRecord.getFacet() == null 
-              && !newRecord.isTemplate()) {
-            List values = Collections.singletonList(replacement.getName());
-            newRecord.setValues(values);
-          }
-          removals.add(r);
-          additions.add(newRecord);
+      Set<Record> recordsToChange = new HashSet<Record>();
+      if (frameToRecordsMap.get(original) != null) {
+        for (Record r : frameToRecordsMap.get(original)) {
+          recordsToChange.add(r);
         }
       }
-      for (Record r : removals) { removeRecord(r); }
-      for (Record r : additions) { addRecord(r); }
+      if (slotToRecordsMap.get(original) != null) {
+        for (Record r : slotToRecordsMap.get(original)) {
+          recordsToChange.add(r);
+        }
+      }
+      if (facetToRecordsMap.get(original) != null) {
+        for (Record r : facetToRecordsMap.get(original)) {
+          recordsToChange.add(r);
+        }
+      }
+      replaceRecords(original, replacement, recordsToChange);
       
       if (valueToRecordsMap.get(original) != null) {
         for (Record r : valueToRecordsMap.get(original)) {
@@ -540,6 +532,26 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         valueToRecordsMap.remove(original);
       }
       deleteFrame(original);
+    }
+    
+    private void replaceRecords(Frame original, Frame replacement, Set<Record> records) {
+      for (Record r : records) {
+        Record newRecord = new Record(r.getFrame().equals(original) ? replacement : r.getFrame(),
+                                      r.getSlot().equals(original) ? (Slot) replacement : r.getSlot(),
+                                      (r.getFacet() != null && r.getFacet().equals(original)) ?
+                                          (Facet) replacement : r.getFacet(),
+                                      r.isTemplate(),
+                                      r.getValues());
+        if (newRecord.getFrame().equals(replacement) 
+            && newRecord.getSlot().getFrameID().equals(Model.SlotID.NAME)
+            && newRecord.getFacet() == null 
+            && !newRecord.isTemplate()) {
+          List values = Collections.singletonList(replacement.getName());
+          newRecord.setValues(values);
+        }
+        removeRecord(r);
+        addRecord(newRecord);
+      }
     }
 
 }
