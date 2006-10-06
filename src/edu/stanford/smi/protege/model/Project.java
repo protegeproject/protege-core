@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 
@@ -56,6 +57,7 @@ import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.ListenerCollection;
 import edu.stanford.smi.protege.util.ListenerList;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.MessageError;
 import edu.stanford.smi.protege.util.PropertyList;
 import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.Tree;
@@ -313,9 +315,9 @@ public class Project {
             factory = getKnowledgeBaseFactory();
         }
         if (factory == null) {
-        	String errorMsg = "Cannot find knowledgebase factory: " + getSources().getString(KnowledgeBaseFactory.FACTORY_CLASS_NAME) + "\nPlease check that you have the required plug-in.";
+        	String errorMsg = "Cannot find knowledgebase factory: " + getSources().getString(KnowledgeBaseFactory.FACTORY_CLASS_NAME) + "\nPlease check that you have the required plug-in.";        	
+        	errors.add(new MessageError(errorMsg));
         	Log.getLogger().severe(errorMsg);
-        	errors.add(errorMsg);
         	return false;
         }
         _domainKB = factory.createKnowledgeBase(errors);
@@ -346,6 +348,7 @@ public class Project {
             }
             Collection uris = loadIncludedProjects(getProjectURI(), _projectInstance, errors);
             loadDomainKB(uris, errors);
+            
             if (mnfs != null) {
                 mnfs.setQueryAllFrameStores(false);
             }
@@ -358,7 +361,7 @@ public class Project {
        	_projectKB.setChanged(false);
         
     }
-
+    
     /*
      * public static Project createFileProject(String fileName, Collection
      * errors) { return new Project(fileName, errors); }
@@ -864,14 +867,16 @@ public class Project {
         if (uri != null) {
             reader = URIUtilities.createBufferedReader(uri);
             if (reader == null) {
-                errors.add("Unable to load project: " + uri);
+            	String message = "Unable to load project from: " + uri;
+                errors.add(new MessageError(message));
+                Log.getLogger().severe(message);
             }
         }
         if (reader == null && factory != null) {
             String path = factory.getProjectFilePath();
             if (path != null) {
                 reader = FileUtilities.getResourceReader(factory.getClass(), path);
-                if (reader == null) {
+                if (reader == null) {                	
                     Log.getLogger().severe("Unable to read factory project: " + path);
                 }
             }
@@ -1301,8 +1306,10 @@ public class Project {
         try {
             clsesReader = getProjectClsesReader();
             instancesReader = getProjectInstancesReader(uri, factory, errors);
-            if (instancesReader == null) {
-                errors.add("Unable to open project: " + uri);
+            if (instancesReader == null) {      
+            	String message = "Unable to open project file: " + uri; 
+                errors.add(new MessageError(message));
+                Log.getLogger().severe(message);
             } else {
                 kb = new ClipsKnowledgeBaseFactory().loadKnowledgeBase(clsesReader,
                         instancesReader, errors);
@@ -1323,8 +1330,8 @@ public class Project {
                 kb.setDispatchEventsEnabled(false);
             }
         } catch (Exception e) {
-            Log.getLogger().log(Level.SEVERE, "Error loading project kb", e);
-            errors.add(e);
+        	errors.add(new MessageError(e));
+            Log.getLogger().log(Level.SEVERE, "Error loading project kb", e);            
         } finally {
             FileUtilities.close(clsesReader);
             FileUtilities.close(instancesReader);
@@ -1389,7 +1396,7 @@ public class Project {
             }
         }
     }
-
+    
     private void loadWidgetMapper(Instance projectInstance) {
         if (_widgetMapper == null) {
             _widgetMapper = new DefaultWidgetMapper(_projectKB);
