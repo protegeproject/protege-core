@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.storage.clips;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.resource.*;
@@ -158,7 +159,9 @@ public class ClipsKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
                 makeTempFilePermanent(pinsFile);
             }
         } catch (Exception e) {
-            errors.add(e);
+        	String message = "Error saving project. Classes file name: " + clsesFileName + ". Instances file name: " + instancesFileName;
+            errors.add(new MessageError(e, message));
+            Log.getLogger().log(Level.SEVERE, message, e);  
             close(pontWriter);
             close(pinsWriter);
         }
