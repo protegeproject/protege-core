@@ -1,8 +1,11 @@
 package edu.stanford.smi.protege.widget;
 
+import java.util.Collection;
+
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameFactory;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
@@ -16,6 +19,7 @@ import edu.stanford.smi.protege.util.ModalDialog;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InstanceNameWidget extends TextFieldWidget {
+  private static final long serialVersionUID = -1873474195346387238L;
 
     public void addNotify() {
         super.addNotify();
@@ -62,16 +66,27 @@ public class InstanceNameWidget extends TextFieldWidget {
     }
 
     public void setInstanceValues() {
-      String name = getText();
-      if (name != null && isValidName(name)) {
-          getInstance().replaceWithFrameNamed(name);
-          markDirty(false);
-      } else {
-          ModalDialog.showMessageDialog(this, "Invalid frame name: Unable to change name.");
-          setText(getInstance().getName());
-          getTextField().requestFocus();
+      Collection values = getValues();
+      if (values == null) {
+        throw new IllegalArgumentException("Illegal null value for frame");
       }
-  
+      else if (values.isEmpty()) {
+        throw new IllegalArgumentException("Missing name for class");
+      }
+      else if (values.size() > 1) {
+        throw new IllegalArgumentException("Too many names for frame " + values.size());
+      }
+      else if (!(values.iterator().next() instanceof String)) {
+        throw new IllegalArgumentException("name should be a string");
+      }
+      String name = (String) values.iterator().next();
+      Instance i = getInstance();
+      if (i.getName().equals(name)) {
+        return;
+      }
+      FrameFactory ff = i.getKnowledgeBase().getFrameFactory();
+      ff.rename(i, name);
+      markDirty(false);
     }
 
     protected String getInvalidTextDescription(String text) {
