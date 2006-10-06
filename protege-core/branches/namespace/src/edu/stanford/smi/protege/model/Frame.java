@@ -208,4 +208,11 @@ public interface Frame extends Comparable {
     void setDirectOwnSlotValues(Slot slot, Collection values);
 
     void setVisible(boolean b);
+    
+    /**
+     * This is as close as we come to renaming a frame.  Creates a clone of this with the new
+     * name and deletes this.
+     *
+     */
+    Frame rename(String name);
 }
