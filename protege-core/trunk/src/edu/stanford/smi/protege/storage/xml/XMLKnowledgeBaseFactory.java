@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.storage.xml;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.util.*;
@@ -106,7 +107,9 @@ public class XMLKnowledgeBaseFactory extends AbstractKnowledgeBaseFactory {
                 makeTempFilePermanent(file);
             }
         } catch (Exception e) {
-            errors.add(e);
+        	String message = "Errors saving file " + filename;
+            errors.add(new MessageError(e, message));
+            Log.getLogger().log(Level.SEVERE, message, e);
             close(writer);
         }
     }
