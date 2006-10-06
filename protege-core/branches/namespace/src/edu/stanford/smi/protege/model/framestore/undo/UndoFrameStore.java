@@ -294,4 +294,9 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         }
         return commands;
     }
+
+    public void replaceFrame(Frame original, Frame replacement) {
+      Log.getLogger().warning("Undoing rename operations not implemented yet");
+      getDelegate().replaceFrame(original, replacement);
+    }
 }
