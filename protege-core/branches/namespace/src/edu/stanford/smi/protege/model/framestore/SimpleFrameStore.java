@@ -1154,6 +1154,7 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public void replaceFrame(Frame original, Frame replacement) {
+      nameToFrameMap.remove(original.getFrameID().getName());
       _helper.replaceFrame(original, replacement);
     }
 }
