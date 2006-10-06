@@ -409,4 +409,9 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     public Icon getIcon() {
         return null;
     }
+    
+    public Frame rename(String name) {
+      FrameFactory ff = knowledgeBase.getFrameFactory();
+      return ff.rename(this, name);
+    }
 }
