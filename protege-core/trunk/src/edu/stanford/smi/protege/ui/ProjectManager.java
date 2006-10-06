@@ -56,6 +56,7 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.ComponentFactory;
 import edu.stanford.smi.protege.util.ComponentUtilities;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.MessageError;
 import edu.stanford.smi.protege.util.ModalDialog;
 import edu.stanford.smi.protege.util.ModalDialogCloseDoubleClickAdapter;
 import edu.stanford.smi.protege.util.ProjectChooser;
@@ -519,18 +520,17 @@ public class ProjectManager {
         	String errorMsg = "Unable to load file: " + uri 
         			+ "\nPossible reasons:\n- The file has an unsupported file format\n- The file is not well-formed\n- The project file is corrupt";
         	Log.getLogger().severe(errorMsg);
-        	errors.add(errorMsg);
-        	JOptionPane.showMessageDialog(getMainPanel(), errorMsg, "Invalid file", JOptionPane.WARNING_MESSAGE);
+        	errors.add(new MessageError(null, errorMsg));
+        	//JOptionPane.showMessageDialog(getMainPanel(), errorMsg, "Invalid file", JOptionPane.WARNING_MESSAGE);
         }
         
         displayErrors("Load Project Errors", errors);
+        
         if (_currentProject != null && _currentProject.getProjectInstance() != null  && _currentProject.getKnowledgeBase() != null) {
             displayCurrentProject();
             printLoadTimes(t1, t2);
         }
         
-        //it is not clear that this is needed
-        //bringErrorFrameToFront();
     }
 
     private Project createNewProject(KnowledgeBaseFactory factory, Collection errors) {
@@ -544,9 +544,9 @@ public class ProjectManager {
         try {
             project = Project.loadProjectFromURI(uri, errors);
             _projectPluginManager.afterLoad(project);
-        } catch (Exception e) {        	 
-            Log.getLogger().log(Level.FINE, "Error loading project", e);
-            errors.add(e);
+        } catch (Exception e) {
+        	errors.add(new MessageError(e));
+            Log.getLogger().log(Level.FINE, "Error loading project", e);            
         }
         return project;
     }
@@ -735,7 +735,8 @@ public class ProjectManager {
             try {
                 _currentProject.save(errors);
             } catch (Exception e) {
-                errors.add(e);
+                errors.add(new MessageError(e));
+                Log.getLogger().log(Level.WARNING, "Errors at save", e);
             } finally {
                 _projectPluginManager.afterSave(_currentProject);
                 waitCursor.hide();
