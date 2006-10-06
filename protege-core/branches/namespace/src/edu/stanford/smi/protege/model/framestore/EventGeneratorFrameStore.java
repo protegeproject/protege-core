@@ -550,23 +550,37 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     }
 
     public void replaceFrame(Frame original, Frame replacement) {
+      String newName = replacement.getFrameID().getName();
+      if (getFrame(newName) != null) {
+        return;
+      }
+      
+      if (original instanceof Cls) {
+        generateDeleteClsEvents((Cls) original);
+      }
+      else if (original instanceof Slot) {
+        generateDeleteSlotEvents((Slot) original);
+      }
+      else if (original instanceof Facet) {
+        generateDeleteFacetEvents((Facet) original);
+      }
+      else if (original instanceof SimpleInstance) {
+        generateDeleteSimpleInstanceEvents((SimpleInstance) original);
+      }
+      
       getDelegate().replaceFrame(original, replacement);
       
       Collection directTypes = getDelegate().getDirectTypes((Instance) replacement);
       if (original instanceof Cls) {
-        generateDeleteClsEvents((Cls) original);
         generateCreateClsEvents((Cls) replacement, directTypes); 
       }
       if (original instanceof Slot) {
-        generateDeleteSlotEvents((Slot) original);
         generateCreateSlotEvents((Slot) replacement, directTypes);
       }
       if (original instanceof Facet) {
-        generateDeleteFacetEvents((Facet) original);
         generateCreateFacetEvents((Facet) replacement, directTypes);
       }
       if (original instanceof SimpleInstance) {
-        generateDeleteSimpleInstanceEvents((SimpleInstance) original);
         generateCreateSimpleInstanceEvents((SimpleInstance) replacement, directTypes);
       }
       
