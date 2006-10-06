@@ -9,6 +9,7 @@
 	<property name = "src" value = "./src"/>  
         <property name = "junit" value = "./junit"/>
 	<property name = "classes" value = "./classes"/>  
+	<property name = "junit.classes" value = "./classes.junit"/>  
 	<property name = "docs" value = "./docs"/> 
 	<property name = "javadocs" value = "${docs}/apidocs"/>
 	<property name = "dist" value = "./dist"/>
@@ -78,6 +79,7 @@
 	<!-- =================================================================== -->
 	<target name = "prepare" depends = "init">    
 		<mkdir dir = "${classes}"/>    
+		<mkdir dir = "${junit.classes}"/>    
 		<mkdir dir = "${dist}"/>
 		<mkdir dir = "${javadocs}"/>    
                 <mkdir dir = "${logs}"/>
@@ -118,18 +120,27 @@
 	</target>
 
 
-	<target name = "compile-junit" depends = "compile">    
+	<target name = "compile-junit" depends = "jar">
 		<javac srcdir = "${junit}" 
-                       destdir = "${classes}" 
+                       destdir = "${junit.classes}" 
                        deprecation = "{deprecation}" 
                        debug = "${debug}" 
                        optimize = "${optimize}" 
                        includeAntRuntime = "${includeAntRuntime}" 
                        source = "${source}">      
 			<classpath refid = "project.classpath"/>    
+                        <classpath>
+                           <pathelement path="${dist}/protege.jar"/>
+                        </classpath>
 		</javac>    
 	</target>
 
+
+        <target name = "testjar" depends = "compile-junit">
+           <jar jarfile = "${dist}/protege-test.jar"
+                basedir="${junit.classes}">
+           </jar>
+        </target>
 
 	<!-- =================================================================== -->
 	
@@ -145,9 +156,6 @@
 		</copy>    
 		<jar jarfile = "${dist}/protege.jar" basedir = "${classes}" manifest = "${src}/META-INF/MANIFEST.MF"/>  
 	</target>
-
-
-        <target name = "jar-junit" depends="compile, compile-junit, jar"/>
 
 	<!-- =================================================================== -->
 	
@@ -204,6 +212,7 @@
 	<!-- =================================================================== -->
 	<target name = "clean" description = "clean up" depends="clean-clips">    
 		<delete dir = "${classes}"/>  
+                <delete dir = "${junit.classes}"/>
 		<delete dir = "${dist}"/>
 		<delete dir = "${javadocs}"/>
 		<delete file = "${protege.jar}"/>
@@ -235,7 +244,7 @@
 
         <target name = "junit" 
                 description = "test the system"
-                depends="compile-junit, jar">
+                depends="compile-junit, jar, testjar">
           <junit  printsummary="withOutAndErr" 
                   haltonerror="on" 
                   haltonfailure="on" 
@@ -245,8 +254,11 @@
             <classpath refid="database.drivers"/>
             <classpath>
               <pathelement path="${dist}/protege.jar"/>
+              <pathelement path="${dist}/protege-test.jar"/>
             </classpath>
             <jvmarg value="-Djava.util.logging.config.file=junit-logging.properties"/>
+            <jvmarg value="-Xmx700M"/>
+
             <batchtest>
               <fileset dir="${junit}">
                 <include name="**/*Test.java"/>
