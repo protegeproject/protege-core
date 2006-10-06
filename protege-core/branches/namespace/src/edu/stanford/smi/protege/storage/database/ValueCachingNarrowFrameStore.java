@@ -360,5 +360,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         return getDelegate().getSimpleInstanceCount();
     }
 
+    public void replaceFrame(Frame original, Frame replacement) {
+      clearCache();
+      getDelegate().replaceFrame(original, replacement);
+    }
+
 }
 

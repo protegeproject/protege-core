@@ -1646,4 +1646,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     public NarrowFrameStore getDelegate() {
         throw new UnsupportedOperationException();
     }
+    
+    public void replaceFrame(Frame original, Frame replacement) {
+      throw new UnsupportedOperationException("Have not implemented renaming of frames in database mode yet.");
+    }
 }
