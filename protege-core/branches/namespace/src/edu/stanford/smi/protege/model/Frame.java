@@ -208,10 +208,4 @@ public interface Frame extends Comparable {
     void setDirectOwnSlotValues(Slot slot, Collection values);
 
     void setVisible(boolean b);
-    
-    /**
-     * Creates a new frame identical to the original but with a different name. 
-     * Then it deletes the original from the knowledge base.
-     */
-    Frame replaceWithFrameNamed(String name);
 }
