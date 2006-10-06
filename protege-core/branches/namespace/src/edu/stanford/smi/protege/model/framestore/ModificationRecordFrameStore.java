@@ -206,4 +206,10 @@ public class ModificationRecordFrameStore extends ModificationFrameStore {
         return getDelegate().rollbackTransaction();
     }
 
+    public void replaceFrame(Frame original, Frame replacement) {
+      getDelegate().replaceFrame(original, replacement);
+      updateDeletionRecord(original);
+      updateCreationRecord(replacement);
+    }
+
 }

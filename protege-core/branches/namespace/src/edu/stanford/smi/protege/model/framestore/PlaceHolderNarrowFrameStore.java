@@ -165,4 +165,8 @@ public class PlaceHolderNarrowFrameStore implements NarrowFrameStore {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
+  public void replaceFrame(Frame original, Frame replacement) {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
+
 }

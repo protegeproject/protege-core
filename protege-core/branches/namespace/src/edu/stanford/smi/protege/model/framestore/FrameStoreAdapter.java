@@ -352,4 +352,8 @@ public class FrameStoreAdapter extends AbstractFrameStore {
     public boolean rollbackTransaction() {
         return getDelegate().rollbackTransaction();
     }
+
+    public void replaceFrame(Frame original, Frame replacement) {
+      getDelegate().replaceFrame(original, replacement);
+    }
 }

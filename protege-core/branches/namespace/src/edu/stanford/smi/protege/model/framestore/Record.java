@@ -109,6 +109,12 @@ public class Record {
     public boolean isEmpty() {
         return values.isEmpty();
     }
+    
+    public String toString() {
+      return "<Record " + frame.getFrameID().getName() + ":" + slot.getFrameID().getName()
+                 + ":" + (facet == null ? "null" : facet.getFrameID().getName())
+                 + ":" + isTemplate + ">";
+    }
 
     public boolean equals(Object o) {
         boolean areEqual = false;

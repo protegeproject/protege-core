@@ -224,4 +224,6 @@ public interface FrameStore {
     boolean rollbackTransaction();
 
     void close();
+    
+    void replaceFrame(Frame original, Frame replacement);
 }

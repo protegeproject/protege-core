@@ -575,4 +575,10 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     public boolean rollbackTransaction() {
         return getDelegate().rollbackTransaction();
     }
+
+    public void replaceFrame(Frame original, Frame replacement) {
+      for (NarrowFrameStore nfs : availableFrameStores) {
+        nfs.replaceFrame(original, replacement);
+      }
+    }
 }

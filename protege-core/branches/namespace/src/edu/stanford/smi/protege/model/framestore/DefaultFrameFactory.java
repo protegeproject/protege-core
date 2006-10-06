@@ -273,5 +273,32 @@ public class DefaultFrameFactory implements FrameFactory {
     public Collection getSimpleInstanceJavaClassIds() {
         return createRange(DEFAULT_SIMPLE_INSTANCE_JAVA_CLASS_ID);
     }
-    
+
+    @SuppressWarnings("unchecked")
+    public Frame rename(Frame original, String name) {
+      if (original.getFrameID().getName().equals(name)) {
+        return original;
+      }
+      Frame newFrame = createEmptyFrame(new FrameID(name), original.getClass());
+      DefaultKnowledgeBase kb = (DefaultKnowledgeBase) original.getKnowledgeBase();
+      kb.getHeadFrameStore().replaceFrame(original, newFrame);
+      return newFrame;
+    }
+
+    private Frame createEmptyFrame(FrameID id, Class implementationClass) {
+      if (Cls.class.isAssignableFrom(implementationClass)) {
+        return createCls(id, implementationClass);
+      }
+      else if (Slot.class.isAssignableFrom(implementationClass)) {
+        return createSlot(id, implementationClass);
+      }
+      else if (Facet.class.isAssignableFrom(implementationClass)) {
+        return createFacet(id, implementationClass);
+      }
+      else if (SimpleInstance.class.isAssignableFrom(implementationClass)) {
+        return createSimpleInstance(id, implementationClass);
+      }
+      throw new UnsupportedOperationException("Unknown frame type " + implementationClass);
+    }
+
 }

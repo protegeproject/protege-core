@@ -35,7 +35,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     
     private static final int INITIAL_MAP_SIZE = 32771;
     private Map<FrameID, Frame>       idToFrameMap = new HashMap<FrameID, Frame>(INITIAL_MAP_SIZE);
-    private Map<Record, Record>       referenceToRecordMap = new HashMap<Record, Record>(INITIAL_MAP_SIZE);
+    private Map<Record, Record>      referenceToRecordMap = new HashMap<Record, Record>(INITIAL_MAP_SIZE);
     private Map<Object, Set<Record>> frameToRecordsMap    = new HashMap<Object, Set<Record>>(INITIAL_MAP_SIZE);
     private Map<Object, Set<Record>> slotToRecordsMap     = new HashMap<Object, Set<Record>>(INITIAL_MAP_SIZE);
     private Map<Object, Set<Record>> facetToRecordsMap    = new HashMap<Object, Set<Record>>(INITIAL_MAP_SIZE);
@@ -488,6 +488,58 @@ public class InMemoryFrameDb implements NarrowFrameStore {
 
     public NarrowFrameStore getDelegate() {
         return null;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void replaceFrame(Frame original, Frame replacement) {
+      if (original.equals(replacement)) {
+        return;
+      }
+      if (idToFrameMap.containsKey(original.getFrameID())) {
+        idToFrameMap.remove(original.getFrameID());
+        idToFrameMap.put(replacement.getFrameID(),  replacement);
+      }
+      
+      Set<Record> removals = new HashSet<Record>();
+      Set<Record> additions = new HashSet<Record>();
+      for (Record r : referenceToRecordMap.values()) {
+        Record newRecord = r;
+        if (r.getFrame().equals(original) || r.getSlot().equals(original) 
+            || (r.getFacet() != null && r.getFacet().equals(original))) {
+          newRecord = new Record(r.getFrame().equals(original) ? replacement : r.getFrame(),
+                                 r.getSlot().equals(original) ? (Slot) replacement : r.getSlot(),
+                                 (r.getFacet() != null && r.getFacet().equals(original)) ?
+                                     (Facet) replacement : r.getFacet(),
+                                 r.isTemplate(),
+                                 r.getValues());
+          if (newRecord.getFrame().equals(replacement) 
+              && newRecord.getSlot().getFrameID().equals(Model.SlotID.NAME)
+              && newRecord.getFacet() == null 
+              && !newRecord.isTemplate()) {
+            List values = Collections.singletonList(replacement.getName());
+            newRecord.setValues(values);
+          }
+          removals.add(r);
+          additions.add(newRecord);
+        }
+      }
+      for (Record r : removals) { removeRecord(r); }
+      for (Record r : additions) { addRecord(r); }
+      
+      if (valueToRecordsMap.get(original) != null) {
+        for (Record r : valueToRecordsMap.get(original)) {
+          List values = r.getValues();
+          int index;
+          while ((index = values.indexOf(original)) != -1) {
+            values.remove(index);
+            values.add(index, replacement);
+          }
+          r.setValues(values);
+        }
+        valueToRecordsMap.put(replacement, valueToRecordsMap.get(original));
+        valueToRecordsMap.remove(original);
+      }
+      deleteFrame(original);
     }
 
 }

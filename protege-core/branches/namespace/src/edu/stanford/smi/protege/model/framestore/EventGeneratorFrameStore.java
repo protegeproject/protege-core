@@ -548,4 +548,27 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         generateEventsOnDeletingFrames = b;
         return oldValue;
     }
+
+    public void replaceFrame(Frame original, Frame replacement) {
+      getDelegate().replaceFrame(original, replacement);
+      
+      Collection directTypes = getDelegate().getDirectTypes((Instance) replacement);
+      if (original instanceof Cls) {
+        generateDeleteClsEvents((Cls) original);
+        generateCreateClsEvents((Cls) replacement, directTypes); 
+      }
+      if (original instanceof Slot) {
+        generateDeleteSlotEvents((Slot) original);
+        generateCreateSlotEvents((Slot) replacement, directTypes);
+      }
+      if (original instanceof Facet) {
+        generateDeleteFacetEvents((Facet) original);
+        generateCreateFacetEvents((Facet) replacement, directTypes);
+      }
+      if (original instanceof SimpleInstance) {
+        generateDeleteSimpleInstanceEvents((SimpleInstance) original);
+        generateCreateSimpleInstanceEvents((SimpleInstance) replacement, directTypes);
+      }
+      
+    }
 }

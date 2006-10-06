@@ -560,4 +560,11 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
     public List<EventObject> getEvents() {
         return getDelegate().getEvents();
     }
+
+    public void replaceFrame(Frame original, Frame replacement) {
+      checkFrame(original);
+      checkFrame(replacement);
+      getDelegate().replaceFrame(original, replacement);
+    }
+    
 }

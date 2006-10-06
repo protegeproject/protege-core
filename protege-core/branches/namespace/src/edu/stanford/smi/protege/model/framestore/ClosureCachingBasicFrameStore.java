@@ -245,5 +245,10 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     public static boolean equals(Object o1, Object o2) {
         return SystemUtilities.equals(o1, o2);
     }
+    
+    public void replaceFrame(Frame original, Frame replacement) {
+      clearCache();
+      _delegate.replaceFrame(original, replacement);
+    }
 
 }

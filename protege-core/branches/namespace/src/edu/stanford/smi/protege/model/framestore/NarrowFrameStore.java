@@ -129,4 +129,18 @@ public interface NarrowFrameStore {
     boolean commitTransaction();
 
     boolean rollbackTransaction();
+    
+    /**
+     * Replace all references of the frame original with the frame replacement.
+     * 
+     * This (somewhat expensive) routine is used when the user wants to change the name
+     * of a frame.  The result of this call is that the original frame is deleted and 
+     * the replacement frame takes over in each position where the original frame occured.
+     * When the name of a frame is being changed, the caller will create a new frame (the
+     * replacement) with the new name and will then delete the original frame.
+     *  
+     * @param original the frame in the database being replaced
+     * @param replacement the replacement frame that does not exist in the database before the call.
+     */
+    void replaceFrame(Frame original, Frame replacement);
 }

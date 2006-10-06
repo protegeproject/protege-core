@@ -1152,4 +1152,8 @@ public class SimpleFrameStore implements FrameStore {
     public String toString() {
         return StringUtilities.getClassName(this);
     }
+
+    public void replaceFrame(Frame original, Frame replacement) {
+      _helper.replaceFrame(original, replacement);
+    }
 }

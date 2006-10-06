@@ -163,4 +163,9 @@ public class ChangeMonitorFrameStore extends ModificationFrameStore {
         return getDelegate().rollbackTransaction();
     }
 
+    public void replaceFrame(Frame original, Frame replacement) {
+      markChanged();
+      getDelegate().replaceFrame(original, replacement);
+    }
+
 }
