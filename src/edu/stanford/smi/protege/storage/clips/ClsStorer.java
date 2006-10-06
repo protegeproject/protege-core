@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.storage.clips;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.util.*;
@@ -192,8 +193,9 @@ public class ClsStorer extends ClipsFileWriter {
                 printCls(cls);
             }
         } catch (Exception e) {
-            Log.getLogger().warning(e.getMessage());
-            _errors.add(e);
+        	String message = "Errors at storing class " + cls;
+            Log.getLogger().log(Level.WARNING, message, e);            
+            _errors.add(new MessageError(e, message));
         }
     }
 
@@ -234,7 +236,8 @@ public class ClsStorer extends ClipsFileWriter {
         storeSubclasses(root);
         flush();
         if (!printSucceeded()) {
-            errors.add("Store classes failed");
+            errors.add(new MessageError("Store classes failed."));
+            Log.getLogger().warning("Store classes failed.");
         }
         _kb = null;
     }
@@ -366,8 +369,9 @@ public class ClsStorer extends ClipsFileWriter {
             storeAccessorFacet();
             print(")");
         } catch (Exception e) {
-            Log.getLogger().severe(Log.toString(e));
-            _errors.add(e);
+        	String message = "Errors at storing slot " + slot + " at class " + cls;
+            Log.getLogger().log(Level.WARNING, message, e);
+            _errors.add(new MessageError(e,message));
         }
     }
 
