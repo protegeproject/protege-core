@@ -1724,6 +1724,10 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         public Frame replaceFrameWithFrameNamed(Frame original, String name) {
           throw new UnsupportedOperationException();
         }
+
+        public Frame rename(Frame original, String name) {
+          throw new UnsupportedOperationException();
+        }
     }
 
     static interface TestInterface {
