@@ -1,12 +1,13 @@
 package edu.stanford.smi.protege.storage.clips;
 
-import java.awt.*;
-import java.io.*;
-import java.lang.reflect.Array;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Collection;
 
-import javax.swing.*;
-import javax.xml.transform.ErrorListener;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import edu.stanford.smi.protege.util.MessageError;
 
@@ -35,10 +36,10 @@ public class ParseErrorPanel extends JComponent {
         
         buffer.append("There were errors at performing operation.\n\n");
         
-        for (int i = errorsList.size()-1; i >= 0; i--) {;
+        for (int i = 0; i < errorsList.size(); i++) {;
 			Object o = errorsList.get(i);
 		
-            String text = (errorsList.size() - i) + ". ";
+            String text = (i + 1) + ". ";
        
             if (o instanceof MessageError) {
             	text = text + getMessageErrorText((MessageError)o);
