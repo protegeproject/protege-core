@@ -46,7 +46,7 @@ public class ParseErrorPanel extends JComponent {
             } else if (o instanceof Exception) {
                 Exception ex = (Exception) o;
                 
-    			text = text + "    " + "Exception " + ex.getClass().toString() + 
+    			text = text + "Exception " + ex.getClass().toString() + 
 				(ex.getMessage() == null ? "" : ". \nMessage: " + ex.getMessage());
                                
                 //StringWriter s = new StringWriter();
