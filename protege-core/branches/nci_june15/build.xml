@@ -9,6 +9,7 @@
 	<property name = "src" value = "./src"/>  
         <property name = "junit" value = "./junit"/>
 	<property name = "classes" value = "./classes"/>  
+	<property name = "junit.classes" value = "./classes.junit"/>  
 	<property name = "docs" value = "./docs"/> 
 	<property name = "javadocs" value = "${docs}/apidocs"/>
 	<property name = "dist" value = "./dist"/>
@@ -78,6 +79,7 @@
 	<!-- =================================================================== -->
 	<target name = "prepare" depends = "init">    
 		<mkdir dir = "${classes}"/>    
+		<mkdir dir = "${junit.classes}"/>    
 		<mkdir dir = "${dist}"/>
 		<mkdir dir = "${javadocs}"/>    
                 <mkdir dir = "${logs}"/>
@@ -86,8 +88,7 @@
 	<!-- =================================================================== -->
 	
 	<!-- JAVACC -->
-	
-	<!-- =================================================================== -->
+
         <target name = "clean-clips">
 		<!-- Delete these files because Ant's javacc task won't regenerate files when the date on the files is the same as the date on the grammer file (Parser.jj) -->
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
@@ -97,10 +98,10 @@
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/SimpleCharStream.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Token.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
-        </target>
-
-	<target name = "javacc" depends = "prepare,clean-clips">
-		<!-- Run JavaCC on Parser.jj to regenerate files that were deleted in above clean-clips step. -->
+	</target>
+	<!-- =================================================================== -->
+	<target name = "javacc" depends = "prepare, clean-clips">
+		<!-- Run JavaCC on Parser.jj to regenerate files that were deleted in above step. -->
 		<javacc javacchome = "${javacc.home}/bin/lib" target = "${scripts}/Parser.jj" outputdirectory = "${src}/edu/stanford/smi/protege/storage/clips"/>  
 	</target>  
 	<!-- =================================================================== -->
@@ -119,18 +120,27 @@
 	</target>
 
 
-	<target name = "compile-junit" depends = "compile">    
+	<target name = "compile-junit" depends = "jar">
 		<javac srcdir = "${junit}" 
-                       destdir = "${classes}" 
+                       destdir = "${junit.classes}" 
                        deprecation = "{deprecation}" 
                        debug = "${debug}" 
                        optimize = "${optimize}" 
                        includeAntRuntime = "${includeAntRuntime}" 
                        source = "${source}">      
 			<classpath refid = "project.classpath"/>    
+                        <classpath>
+                           <pathelement path="${dist}/protege.jar"/>
+                        </classpath>
 		</javac>    
 	</target>
 
+
+        <target name = "testjar" depends = "compile-junit">
+           <jar jarfile = "${dist}/protege-test.jar"
+                basedir="${junit.classes}">
+           </jar>
+        </target>
 
 	<!-- =================================================================== -->
 	
@@ -146,9 +156,6 @@
 		</copy>    
 		<jar jarfile = "${dist}/protege.jar" basedir = "${classes}" manifest = "${src}/META-INF/MANIFEST.MF"/>  
 	</target>
-
-
-        <target name = "jar-junit" depends="compile, compile-junit, jar"/>
 
 	<!-- =================================================================== -->
 	
@@ -205,6 +212,7 @@
 	<!-- =================================================================== -->
 	<target name = "clean" description = "clean up" depends="clean-clips">    
 		<delete dir = "${classes}"/>  
+                <delete dir = "${junit.classes}"/>
 		<delete dir = "${dist}"/>
 		<delete dir = "${javadocs}"/>
 		<delete file = "${protege.jar}"/>
@@ -212,15 +220,41 @@
 	
 	<!-- =================================================================== -->
 
+
+   <!--
+     My experience is that "ant junit" provides almost no debugging
+     information when things go wrong.  (This was not true in my
+     previous job and I don't know the difference. log4j??)  When there is a
+     problem I generally use my development environment to debug
+     faulting junit.  For scripting problems with the junits the options
+
+        filtertrace="false" 
+        showoutput="true"
+
+     give a little more information.  Also when you know that some
+     junits are failing, removing the option 
+
+        haltonfailure = "on" 
+
+     is helpful for showing all the failures.  But in the committed
+     version I think that this option is very important because it
+     means that the developer will never mistakenly believe that
+     junits have succeeded.
+       -->
+
         <target name = "junit" 
                 description = "test the system"
-                depends="compile-junit, jar">
-          <junit  printsummary="withOutAndErr" haltonfailure="on" fork="yes"
+                depends="compile-junit, jar, testjar">
+          <junit  printsummary="withOutAndErr" 
+                  haltonerror="on" 
+                  haltonfailure="on" 
+                  fork="yes"
                   showoutput="yes">
             <classpath refid="project.classpath"/>
             <classpath refid="database.drivers"/>
             <classpath>
               <pathelement path="${dist}/protege.jar"/>
+              <pathelement path="${dist}/protege-test.jar"/>
             </classpath>
             <jvmarg value="-Djava.util.logging.config.file=junit-logging.properties"/>
             <jvmarg value="-Xmx700M"/>
@@ -228,9 +262,9 @@
             <batchtest>
               <fileset dir="${junit}">
                 <include name="**/*Test.java"/>
-                <!-- Exclude  multi tests -->
+                <!-- Exclude the graphics tests -->
                 <exclude name="**/*Package_Test.java"/>
-                <!-- This is an "abstract" test -->
+                <!-- what's the story with this one? -->
                 <exclude name="**/framestore/FrameStore_Test.java"/>
               </fileset>
             </batchtest>
