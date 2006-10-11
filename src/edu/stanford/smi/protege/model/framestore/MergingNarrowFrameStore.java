@@ -11,6 +11,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.exception.OntologyException;
+import edu.stanford.smi.protege.exception.ProtegeError;
+import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
@@ -19,10 +22,13 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.Tree;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * All queries go to all frame stores. Writes go to the primary (delegate) frame store.
@@ -31,6 +37,8 @@ import edu.stanford.smi.protege.util.Tree;
  */
 public class MergingNarrowFrameStore implements NarrowFrameStore {
     private static Logger log = Log.getLogger(MergingNarrowFrameStore.class);
+    
+    private Object kbLock;
 	
     private static final NarrowFrameStore ROOT_NODE = new PlaceHolderNarrowFrameStore();
 
@@ -46,9 +54,10 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     private Tree<NarrowFrameStore> frameStoreTree 
       = new Tree<NarrowFrameStore>(ROOT_NODE);
 
-    public MergingNarrowFrameStore() {
+    public MergingNarrowFrameStore(Object kbLock) {
         systemFrameStore = new InMemoryFrameDb("system");
         addActiveFrameStore(systemFrameStore);
+        this.kbLock = kbLock;
     }
 
     /**
@@ -56,18 +65,20 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
      * what sort of "real" API access to provide.
      */
     public static MergingNarrowFrameStore get(KnowledgeBase kb) {
-        MergingNarrowFrameStore mergingFrameStore = null;
         if (kb instanceof DefaultKnowledgeBase) {
             FrameStore terminalFrameStore = ((DefaultKnowledgeBase) kb).getTerminalFrameStore();
             if (terminalFrameStore instanceof SimpleFrameStore) {
                 SimpleFrameStore store = (SimpleFrameStore) terminalFrameStore;
-                NarrowFrameStore nfs = store.getHelper().getDelegate();
-                if (nfs instanceof MergingNarrowFrameStore) {
-                    mergingFrameStore = (MergingNarrowFrameStore) nfs;
-                }
+                for (NarrowFrameStore nfs = store.getHelper().getDelegate();
+                     nfs != null;
+                	 nfs = nfs.getDelegate()) {
+                	if (nfs instanceof MergingNarrowFrameStore) {
+                        return (MergingNarrowFrameStore) nfs;
+                    }
+                }                
             }
         }
-        return mergingFrameStore;
+        return null;
     }
 
     public static NarrowFrameStore getSystemFrameStore(KnowledgeBase kb) {
@@ -521,14 +532,30 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return references;
     }
 
-    public Set executeQuery(Query query) {
-        Set results = new HashSet();
-        Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
-        while (i.hasNext()) {
-            NarrowFrameStore fs = i.next();
-            results.addAll(fs.executeQuery(query));
+    public void executeQuery(final Query query, final QueryCallback callback) {
+      new Thread() {
+        public void run() {
+          try {
+            SynchronizeQueryCallback sync = new SynchronizeQueryCallback(kbLock);
+            Set<Frame> results = new HashSet<Frame>();
+            Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
+            while (i.hasNext()) {
+              NarrowFrameStore fs = i.next();
+              fs.executeQuery(query, sync);
+              results.addAll(sync.waitForResults());
+            }
+            callback.provideQueryResults(results);
+          } catch (OntologyException oe) {
+            callback.handleError(oe);
+          } catch (ProtegeIOException ioe) {
+            callback.handleError(ioe);
+          } catch (Throwable t) {
+            Log.getLogger().log(Level.WARNING, "Exception found during query", t);
+            callback.handleError(new ProtegeError(t));
+          }
         }
-        return results;
+      };
+
     }
 
     public Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
@@ -572,5 +599,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public boolean rollbackTransaction() {
         return getDelegate().rollbackTransaction();
+    }
+
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return getDelegate().getTransactionStatusMonitor();
     }
 }

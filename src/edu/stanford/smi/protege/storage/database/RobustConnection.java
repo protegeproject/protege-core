@@ -13,10 +13,16 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
 
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.ServerProperties;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class RobustConnection {
     private static final int ALLOWANCE = 100;
@@ -35,7 +41,10 @@ public class RobustConnection {
     private String _escapeClause;
     private boolean _supportsTransactions;
     private int _maxVarcharSize;
-    private int _nestedTransactionLevel;
+    
+    private RemoteSession session;
+    private TransactionMonitor transactionMonitor;
+    
     // private int _driverVarcharMaxSize;
     private String _driverLongvarcharTypeName;
     private String _driverTinyIntTypeName;
@@ -53,11 +62,17 @@ public class RobustConnection {
     // "Database.typename.tiny_integer";
     private static final String PROPERTY_BIT_TYPE_NAME = "Database.typename.bit";
     private static final String PROPERTY_CHAR_TYPE_NAME = "Database.typename.char";
+    
+    private Integer transactionIsolationLevel = null;
 
-    public RobustConnection(String driver, String url, String username, String password) throws SQLException {
+    public RobustConnection(String driver, String url, String username, String password,
+                            TransactionMonitor transactionMonitor, RemoteSession session) throws SQLException {
         _url = url;
         _username = username;
         _password = password;
+        
+        this.transactionMonitor = transactionMonitor;
+        this.session = session;
 
         Class clas = SystemUtilities.forName(driver);
         if (clas == null) {
@@ -83,6 +98,10 @@ public class RobustConnection {
 
     private void setupConnection() throws SQLException {
         _connection = DriverManager.getConnection(_url, _username, _password);
+        TransactionIsolationLevel defaultLevel = ServerProperties.getDefaultTransactionIsolationLevel();
+        if (defaultLevel != null) {
+          _connection.setTransactionIsolation(defaultLevel.getJdbcLevel());
+        }
     }
 
     public void close() throws SQLException {
@@ -398,16 +417,19 @@ public class RobustConnection {
     }
 
     public boolean beginTransaction() {
+        if (!sessionOk()) {
+          return false;
+        }
         boolean begun = false;
         try {
             if (_supportsTransactions) {
-                if (_nestedTransactionLevel == 0) {
+                if (transactionMonitor.getNesting() == 0) {
                     if (isMsAccess()) {
                         closeStatements();
                     }
                     _connection.setAutoCommit(false);
                 }
-                ++_nestedTransactionLevel;
+                transactionMonitor.beginTransaction();
             }
             begun = true;
         } catch (SQLException e) {
@@ -417,11 +439,14 @@ public class RobustConnection {
     }
 
     public boolean commitTransaction() {
+        if (!sessionOk()) {
+          return false;
+        }
         boolean committed = false;
         try {
-            if (_supportsTransactions) {
-                --_nestedTransactionLevel;
-                if (_nestedTransactionLevel == 0) {
+            if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
+                transactionMonitor.commitTransaction();
+                if (transactionMonitor.getNesting() == 0) {
                     _connection.commit();
                     _connection.setAutoCommit(true);
                 }
@@ -434,11 +459,14 @@ public class RobustConnection {
     }
 
     public boolean rollbackTransaction() {
+        if (!sessionOk()) {
+          return false;
+        }
         boolean rolledBack = false;
         try {
-            if (_supportsTransactions) {
-                --_nestedTransactionLevel;
-                 if (_nestedTransactionLevel == 0) {
+            if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
+                transactionMonitor.rollbackTransaction();
+                 if (transactionMonitor.getNesting() == 0) {
                     _connection.rollback();
                     _connection.setAutoCommit(true);
                 }
@@ -449,4 +477,36 @@ public class RobustConnection {
         }
         return rolledBack;
     }
+    
+    private boolean sessionOk() {
+      if (ServerFrameStore.getCurrentSession() == null) {
+        return session == null;
+      } else {
+        return ServerFrameStore.getCurrentSession().equals(session);
+      }
+    }
+    
+    public boolean supportsTransactions() {
+      return _supportsTransactions;
+    }
+    
+    public int getTransactionIsolationLevel() throws SQLException {
+      if (transactionIsolationLevel != null) {
+        return transactionIsolationLevel;
+      }
+      return transactionIsolationLevel = _connection.getTransactionIsolation();
+    }
+
+
+    public void setTransactionIsolationLevel(int level) throws SQLException {
+      transactionIsolationLevel = null;
+      try {
+        _connection.setTransactionIsolation(level);
+      } catch (SQLException sqle) {
+        Log.getLogger().log(Level.WARNING, "Problem setting the transaction isolation level", sqle);
+        transactionIsolationLevel = null;
+        throw sqle;
+      }
+    }
+    
 }

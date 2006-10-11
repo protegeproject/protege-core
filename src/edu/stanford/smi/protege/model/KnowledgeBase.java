@@ -1,11 +1,20 @@
 package edu.stanford.smi.protege.model;
 
-import java.net.*;
-import java.util.*;
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.ClsListener;
+import edu.stanford.smi.protege.event.FacetListener;
+import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.event.InstanceListener;
+import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.SlotListener;
+import edu.stanford.smi.protege.event.TransactionListener;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.util.Disposable;
 
 /**
  *  A container for frames.  Frame creation is funneled through here.
@@ -261,9 +270,9 @@ public interface KnowledgeBase extends Disposable {
 
     Instance getInstance(String fullname);
 
-    Collection getInstances();
+    Collection<Instance> getInstances();
 
-    Collection getInstances(Cls cls);
+    Collection<Instance> getInstances(Cls cls);
 
     String getInvalidOwnSlotValuesText(Frame frame, Slot slot, Collection values);
 
@@ -500,7 +509,7 @@ public interface KnowledgeBase extends Disposable {
     int getDirectSubclassCount(Cls cls);
     Collection getDirectSubclasses(Cls cls);
     int getDirectSuperclassCount(Cls cls);
-    Collection getDirectSuperclasses(Cls cls);
+    Collection<Cls> getDirectSuperclasses(Cls cls);
     List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet);
     Collection getDirectTemplateSlots(Cls cls);
     List getDirectTemplateSlotValues(Cls cls, Slot slot);
@@ -621,10 +630,61 @@ public interface KnowledgeBase extends Disposable {
 
     Collection getCurrentUsers();
 
+    /**
+     * Tells the system that one or more edit actions will follow which should
+     * be handled as a unit for undo.  Editing components should wrap set/add/remove
+     * calls to any resource in a 
+     * <CODE>beginTransaction() - commitTransaction() or rollbackTransaction()</CODE>
+     * block.
+     *
+     * @param name the human-readable name of the following transaction
+     * @return true
+     * @see #endTransaction()
+     */
     boolean beginTransaction(String name);
+    
+    
+    /**
+     * @deprecated Use #commitTransaction()
+     * Ends the recently opened transaction and commits the state.
+     *  
+     * @return 	true - if commit succeeds
+     * 			false - otherwise
+     * @see #beginTransaction
+     */
+    boolean endTransaction();
+    
+    
+    /**
+     * @deprecated Use #commitTransaction or #rollbackTransaction()
+     * Ends the recently opened transaction and commits or rollback based on
+     * doCommit value
+     *  
+     * @param doCommit 	true: commits transaction
+     * 					false: rolls back transaction
+     * @return true - if operation succeeded
+     * 		   false - if operation failed
+     */
     boolean endTransaction(boolean doCommit);
+    
+    /**
+     * Commits the recently opened transaction
+     * @return 	true - if commit suceeded
+     * 			false - otherwise
+     * @see #beginTransaction
+     */
+    boolean commitTransaction();
+    
+    
+    /**
+     * Rolls back the recently opened transaction
+     * @return	true - if rollback succeeded
+     * 			false - otherwise
+     * @see #beginTransaction
+     */
+    boolean rollbackTransaction();
 
-    //
+    
     void addDirectType(Instance instance, Cls directType);
     void removeDirectType(Instance instance, Cls directType);
     void moveDirectType(Instance instance, Cls directType, int index);
@@ -693,4 +753,6 @@ public interface KnowledgeBase extends Disposable {
     
     void addTransactionListener(TransactionListener listener);
     void removeTransactionListener(TransactionListener listener);
+    
+    public Set<Frame> executeQuery(Query q);
 }

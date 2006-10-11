@@ -11,6 +11,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
 
@@ -28,6 +30,9 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
             specialMethods.add(getMethod("setDelegate", FrameStore.class));
             specialMethods.add(getMethod("close"));
             specialMethods.add(getMethod("reinitialize"));
+            specialMethods.add(FrameStore.class
+                                 .getMethod("executeQuery", 
+                                            new Class[] { Query.class, QueryCallback.class }));
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
         }
@@ -57,6 +62,13 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
         return _delegate;
     }
 
+    /**
+     * This methods sets the delegate for this InvocationHandler and for
+     * the associated frame store.  It is only called by the InvocationHandler but
+     * it is overridden by classes such as the CallCachingFrameStore.
+     * 
+     * @param delegate the delegate FrameStore.
+     */
     protected void setDelegate(FrameStore delegate) {
         _delegate = delegate;
     }
@@ -118,17 +130,25 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
         String methodName = method.getName();
         if (methodName.equals("toString")) {
             o = toString();
-        } else if (methodName.equals("equals")) {
+        } 
+        else if (methodName.equals("equals")) {
             o = Boolean.valueOf(proxy == args[0]);
-        } else if (methodName.equals("getDelegate")) {
+        } 
+        else if (methodName.equals("getDelegate")) {
             o = _delegate;
-        } else if (methodName.equals("setDelegate")) {
-            _delegate = (FrameStore) args[0];
-        } else if (methodName.equals("close")) {
+        } 
+        else if (methodName.equals("setDelegate")) {
+            setDelegate((FrameStore) args[0]);
+        } 
+        else if (methodName.equals("close")) {
             handleClose();
             _delegate = null;
-        } else if (methodName.equals("reinitialize")) {
+        } 
+        else if (methodName.equals("reinitialize")) {
             handleReinitialize();
+        }
+        else if (methodName.equals("executeQuery")) {
+          executeQuery((Query) args[0], (QueryCallback) args[1]);
         }
         return o;
     }
@@ -142,6 +162,8 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
     }
 
     protected abstract Object handleInvoke(Method method, Object[] args);
+    
+    protected abstract void executeQuery(Query q, QueryCallback qc);
 
     protected Object invoke(Method m, Object args[]) {
         return invoke(m, args, _delegate);

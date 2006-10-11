@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.Collection;
-import java.util.EventObject;
 import java.util.List;
 import java.util.Set;
 
@@ -14,6 +13,9 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public interface FrameStore {
 
@@ -39,13 +41,13 @@ public interface FrameStore {
     int getFrameCount();
 
     // frame access
-    Set getClses();
+    Set<Cls> getClses();
 
-    Set getSlots();
+    Set<Slot> getSlots();
 
-    Set getFacets();
+    Set<Facet> getFacets();
 
-    Set getFrames();
+    Set<Frame> getFrames();
 
     Frame getFrame(FrameID id);
 
@@ -83,7 +85,7 @@ public interface FrameStore {
     void deleteSimpleInstance(SimpleInstance simpleInstance);
 
     // own slots
-    Set getOwnSlots(Frame frame);
+    Set<Slot> getOwnSlots(Frame frame);
 
     Collection getOwnSlotValues(Frame frame, Slot slot);
 
@@ -128,7 +130,7 @@ public interface FrameStore {
     void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values);
 
     // template facets
-    Set getTemplateFacets(Cls cls, Slot slot);
+    Set<Facet> getTemplateFacets(Cls cls, Slot slot);
 
     Set getOverriddenTemplateFacets(Cls cls, Slot slot);
 
@@ -143,13 +145,13 @@ public interface FrameStore {
     void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values);
 
     // class hierarchy
-    List getDirectSuperclasses(Cls cls);
+    List<Cls> getDirectSuperclasses(Cls cls);
 
     Set getSuperclasses(Cls cls);
 
-    List getDirectSubclasses(Cls cls);
+    List<Cls> getDirectSubclasses(Cls cls);
 
-    Set getSubclasses(Cls cls);
+    Set<Cls> getSubclasses(Cls cls);
 
     void addDirectSuperclass(Cls cls, Cls superclass);
 
@@ -179,7 +181,7 @@ public interface FrameStore {
 
     List getDirectInstances(Cls cls);
 
-    Set getInstances(Cls cls);
+    Set<Instance> getInstances(Cls cls);
 
     void addDirectType(Instance instance, Cls type);
 
@@ -188,10 +190,22 @@ public interface FrameStore {
     void moveDirectType(Instance instance, Cls type, int index);
 
     // events
-    List<EventObject> getEvents();
+    List<AbstractEvent> getEvents();
 
-    // arbitrary queries
-    Set executeQuery(Query query);
+  /**
+   * The executeQuery method allows for complex queries.  It is asynchronous 
+   * so that in server-client mode the server knowledge base lock will not be
+   * held for an excessive amount of time.
+   *
+   * The contract specifies that the implementor must call one of the 
+   * QueryCallback methods in a separate thread.  This makes it possible 
+   * for the caller to know how to retrieve the results in a synchronous way
+   * without worrying about deadlock.
+   * 
+   * @param Query  the query to be executed.
+   * @param QueryCallback the callback that receives the results of the query.
+   */
+    void executeQuery(Query query, QueryCallback callback);
 
     Set getReferences(Object object);
 
@@ -224,6 +238,14 @@ public interface FrameStore {
     boolean commitTransaction();
 
     boolean rollbackTransaction();
+
+    /**
+     * Retrieves a transaction status monitor for transactions.  If this call returns null
+     * then it means that transactions are not supported.
+     * 
+     * @return A TransactionMonitor object that tracks the status of transactions.
+     */
+    public TransactionMonitor getTransactionStatusMonitor();
 
     void close();
 }

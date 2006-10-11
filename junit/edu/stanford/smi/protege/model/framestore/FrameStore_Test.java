@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.ValueType;
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.util.Assert;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
@@ -190,6 +191,59 @@ public abstract class FrameStore_Test extends SimpleTestCase {
     }
 
     // ------------------------ test cases -------------------------------------------
+    
+    public void testClosure() {
+      if (!_initialized) {
+        return;
+      }
+      Cls big = createCls();
+      Slot slot = createSlotOnCls(big, ValueType.INSTANCE, true);
+
+      Instance a = createSimpleInstance(big);
+      Instance b = createSimpleInstance(big);
+      Instance c = createSimpleInstance(big);
+      Set<Frame> values = new HashSet<Frame>();
+      values.add(b);
+      values.add(c);
+      _modifiableFrameStore.setDirectOwnSlotValues(a, slot, values);
+      
+      Cls d = createCls();
+      Cls e = createCls();
+      Instance f = createSimpleInstance(d);
+      values = new HashSet<Frame>();
+      values.add(d);
+      values.add(e);
+      values.add(f);
+      _modifiableFrameStore.setDirectOwnSlotValues(b, slot, values);
+      
+      Instance g = createSimpleInstance(e);
+      values = new HashSet<Frame>();
+      values.add(g);
+      _modifiableFrameStore.setDirectOwnSlotValues(c, slot, values);
+      
+      Set expected = new HashSet();
+      expected.add(b);
+      expected.add(c);
+      expected.add(d);
+      expected.add(e);
+      expected.add(f);
+      expected.add(g);
+      
+      Set result = _kb.getDirectOwnSlotValuesClosure(a, slot);
+      assertTrue(result.equals(expected));
+
+      if (_testFrameStore instanceof RemoteClientFrameStore) {
+        int repeat = 10;
+        _testFrameStore.getDirectOwnSlotValues(a,slot);
+        ((RemoteClientFrameStore) _testFrameStore).flushCache();
+        while (repeat-- > 0)  {
+          result = _kb.getDirectOwnSlotValuesClosure(a, slot);
+          assertTrue(result.equals(expected));
+        }
+      }
+    }
+    
+    
     public void testCreateCls() {
         if (!_initialized) {
           return;
@@ -328,7 +382,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
           return;
         }
         Cls cls = createCls();
-        Collection instances = _testFrameStore.getInstances(cls);
+        Collection<Instance> instances = _testFrameStore.getInstances(cls);
         assertEquals("none", 0, instances.size());
         Collection types = makeList(cls);
         _modifiableFrameStore.createSimpleInstance(getID(), null, types, true);
@@ -1031,5 +1085,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEqualsList("3", makeList(instance3), _testFrameStore.getDirectOwnSlotValues(instance2, slotb));
         assertEquals(0, _testFrameStore.getDirectOwnSlotValues(instance3, slota).size());
     }
+    
+
 
 }

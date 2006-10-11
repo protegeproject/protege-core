@@ -69,7 +69,7 @@ public interface Cls extends Instance {
 
     int getDirectSuperclassCount();
 
-    Collection getDirectSuperclasses();
+    Collection<Cls> getDirectSuperclasses();
 
     /** see {@link Frame} for a description of the returned objects */
     List getDirectTemplateFacetValues(Slot slot, Facet facet);
@@ -91,7 +91,7 @@ public interface Cls extends Instance {
      * The values returned are instances of this class and all of its subclasses.  If you want instances of
      * just this class see {@link #getDirectInstances()}
      */
-    Collection getInstances();
+    Collection<Instance> getInstances();
 
     /** 
      * Get all descendent classes for this class.  This includes children, grandchildren, etc.  If you want only

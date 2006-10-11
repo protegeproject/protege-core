@@ -7,7 +7,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
@@ -35,12 +34,6 @@ public abstract class APITestCase extends AbstractTestCase {
     }
 
     private static DBType _dbType = DBType.Oracle;
-
-    public static final String JUNIT_DB_DRIVER_PROPERTY   = "driver";
-    public static final String JUNIT_DB_TABLE_PROPERTY    = "table";
-    public static final String JUNIT_DB_USER_PROPERTY     = "user";
-    public static final String JUNIT_DB_PASSWORD_PROPERTY = "password";
-    public static final String JUNIT_DB_URL_PROPERTY      = "url";
 
     private static ProjectFactory _factory = new ClipsProjectFactory();
     private static Project _scratchProject = _factory.createProject();
@@ -90,11 +83,11 @@ public abstract class APITestCase extends AbstractTestCase {
       if (!dbConfigured()) {
         return;
       }
-      DatabaseKnowledgeBaseFactory.setDriver(sources, getDBProperty(JUNIT_DB_DRIVER_PROPERTY));
-      DatabaseKnowledgeBaseFactory.setTablename(sources, getDBProperty(JUNIT_DB_TABLE_PROPERTY));
-      DatabaseKnowledgeBaseFactory.setUsername(sources, getDBProperty(JUNIT_DB_USER_PROPERTY));
-      DatabaseKnowledgeBaseFactory.setPassword(sources, getDBProperty(JUNIT_DB_PASSWORD_PROPERTY));
-      DatabaseKnowledgeBaseFactory.setURL(sources, getDBProperty(JUNIT_DB_URL_PROPERTY));
+      DatabaseKnowledgeBaseFactory.setDriver(sources, getDBProperty("driver"));
+      DatabaseKnowledgeBaseFactory.setTablename(sources, getDBProperty("table"));
+      DatabaseKnowledgeBaseFactory.setUsername(sources, getDBProperty("user"));
+      DatabaseKnowledgeBaseFactory.setPassword(sources, getDBProperty("password"));
+      DatabaseKnowledgeBaseFactory.setURL(sources, getDBProperty("url"));
     }
     
     public static DBType chooseDBType() {
@@ -129,7 +122,7 @@ public abstract class APITestCase extends AbstractTestCase {
       return true;
     }
     
-    public static String getDBProperty(String prop) {
+    private static String getDBProperty(String prop) {
       Properties dbp = getJunitProperties();
       return dbp.getProperty(DB_PREFIX + _dbType + "." + prop);
     }
@@ -158,8 +151,6 @@ public abstract class APITestCase extends AbstractTestCase {
       }
     }
 
-    private static int callNumber = 0;
-
     public Project getProject() {
         if (_scratchProject == null) {
             _scratchProject = _factory.createProject();
@@ -175,7 +166,7 @@ public abstract class APITestCase extends AbstractTestCase {
         return _isFileProject && _scratchProject != null;
     }
 
-    private static void closeProject() {
+    protected static void closeProject() {
         if (_scratchProject != null) {
             _scratchProject.dispose();
             _scratchProject = null;

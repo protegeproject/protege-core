@@ -34,7 +34,7 @@ public class SystemFrames {
         return new ArrayList(_frameIdToNameMap.values());
     }
 
-    public Frame getFrame(FrameID id) {
+    public synchronized Frame getFrame(FrameID id) {
         Frame frame = (Frame) _frameIdToFrameMap.get(id);
         if (frame == null) {
             Log.getLogger().severe("Missing system frame: " + id);

@@ -14,7 +14,6 @@ import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.MessageError;
 import edu.stanford.smi.protege.util.PropertyList;
 
 /**
@@ -129,9 +128,8 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
         try {
           initializeKB(kb, driver, url, user, password, table, true);
         } catch (Exception e) {
-        	String message = "Unable to load included knowledgebase " + url;
-            Log.getLogger().log(Level.WARNING, message , e);
-            errors.add(new MessageError(e, message));
+            Log.getLogger().log(Level.WARNING, "Unable to load included knowledgebase", e);
+            errors.add(e);
         }
     }
 
@@ -149,9 +147,8 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
         try {
           initializeKB(kb, driver, url, user, password, table, false);
         } catch (Exception e) {
-        	String message = "Unable to load knowledgebase " + url;
-            Log.getLogger().log(Level.WARNING, message , e);
-            errors.add(new MessageError(e, message));
+            Log.getLogger().log(Level.WARNING, "Unable to load knowledgebase", e);
+            errors.add(e);
         }
     }
 
@@ -288,9 +285,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
           getIncludingDatabaseAdapter(outputKb).overwriteKB(inputKb);
           */
       } catch (Exception e) {
-    	  String message = "Errors at copying knowledgebase " + url;
-    	  Log.getLogger().log(Level.WARNING, message, e);
-          errors.add(new MessageError(e, message));
+          errors.add(e);
       }
   }
 

@@ -1,9 +1,20 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.query.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public final class TemplateFrameStore extends AbstractFrameStore {
 
@@ -59,7 +70,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         return getDelegate().getOwnSlots(frame);
     }
 
@@ -139,7 +150,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
     }
 
-    public Set getTemplateFacets(Cls cls, Slot slot) {
+    public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
         return getDelegate().getTemplateFacets(cls, slot);
     }
 
@@ -167,7 +178,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
     }
 
-    public List getDirectSuperclasses(Cls cls) {
+    public List<Cls> getDirectSuperclasses(Cls cls) {
         return getDelegate().getDirectSuperclasses(cls);
     }
 
@@ -175,11 +186,11 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getSuperclasses(cls);
     }
 
-    public List getDirectSubclasses(Cls cls) {
+    public List<Cls> getDirectSubclasses(Cls cls) {
         return getDelegate().getDirectSubclasses(cls);
     }
 
-    public Set getSubclasses(Cls cls) {
+    public Set<Cls> getSubclasses(Cls cls) {
         return getDelegate().getSubclasses(cls);
     }
 
@@ -235,7 +246,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getDirectInstances(cls);
     }
 
-    public Set getInstances(Cls cls) {
+    public Set<Instance> getInstances(Cls cls) {
         return getDelegate().getInstances(cls);
     }
 
@@ -251,8 +262,8 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         getDelegate().moveDirectType(instance, type, index);
     }
 
-    public Set executeQuery(Query query) {
-        return getDelegate().executeQuery(query);
+    public void executeQuery(Query query, QueryCallback callback) {
+      getDelegate().executeQuery(query, callback);
     }
 
     public Set getReferences(Object object) {
@@ -315,6 +326,10 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().rollbackTransaction();
     }
 
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return getDelegate().getTransactionStatusMonitor();
+    }
+
     public void reinitialize() {
     }
 
@@ -338,23 +353,23 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getFrameCount();
     }
 
-    public Set getClses() {
+    public Set<Cls> getClses() {
         return getDelegate().getClses();
     }
 
-    public Set getSlots() {
+    public Set<Slot> getSlots() {
         return getDelegate().getSlots();
     }
 
-    public Set getFacets() {
+    public Set<Facet> getFacets() {
         return getDelegate().getFacets();
     }
 
-    public Set getFrames() {
+    public Set<Frame> getFrames() {
         return getDelegate().getFrames();
     }
 
-    public List<EventObject> getEvents() {
+    public List<AbstractEvent> getEvents() {
         return getDelegate().getEvents();
     }
 }

@@ -16,7 +16,7 @@ public class DefaultFrame_Test extends APITestCase {
         cls.setDirectBrowserSlotPattern(new BrowserSlotPattern(slot));
         Instance instance1 = createInstance(cls);
         Instance instance2 = createInstance(cls);
-        List list = new ArrayList();
+        List<Instance> list = new ArrayList<Instance>();
         list.add(instance1);
         list.add(instance2);
         instance2.setOwnSlotValue(slot, ":foo");

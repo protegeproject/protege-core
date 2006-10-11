@@ -19,7 +19,9 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * This class represents a Narrow Frame Store that allows its delegate 
@@ -62,8 +64,6 @@ public abstract class IncludingKBAdapter
   
   protected int memoryProjectId;
   
-  private Set<Frame> frameSetCache;
-  
   public IncludingKBAdapter(NarrowFrameStore delegate) {
     this.delegate = delegate;
   }
@@ -96,6 +96,10 @@ public abstract class IncludingKBAdapter
   
   public NarrowFrameStore getDelegate() {
     return delegate;
+  }
+  
+  public void setDelegate(NarrowFrameStore delegate) {
+    this.delegate = delegate;
   }
   
   public IncludedFrameLookup getIncludedFrames() {
@@ -336,17 +340,6 @@ public abstract class IncludingKBAdapter
     }
     return globalFrames;
   }
-  
-  private Set<Reference> mapLocalReferences(Set<Reference> localRefs) {
-    Set<Reference> globalRefs = new HashSet<Reference>();
-    for (Reference localRef : localRefs) {
-      globalRefs.add(new ReferenceImpl(mapLocalFrame(localRef.getFrame()),
-                                       mapLocalSlot(localRef.getSlot()),
-                                       mapLocalFacet(localRef.getFacet()),
-                                       localRef.isTemplate()));
-    }
-    return globalRefs;
-  }
 
   /*
    * ---------------------------------------------------------------------------
@@ -412,16 +405,13 @@ public abstract class IncludingKBAdapter
   }
 
   public Set<Frame> getFrames() {
-    if (frameSetCache != null) {
-      return frameSetCache;
-    }
-    frameSetCache = new HashSet<Frame>();
+    Set<Frame> frames = new HashSet<Frame>();
     for (Frame frame : delegate.getFrames()) {
       if (!isLocalFrameIncluded(frame)) {
-        frameSetCache.add(frame);
+        frames.add(frame);
       }
     }
-    return frameSetCache;
+    return frames;
   }
 
   public Frame getFrame(FrameID id) {
@@ -550,8 +540,8 @@ public abstract class IncludingKBAdapter
     return delegate.getMatchingReferences(value, maxMatches);
   }
 
-  public Set executeQuery(Query query) {
-    return delegate.executeQuery(query);
+  public void executeQuery(Query query, QueryCallback callback) {
+    delegate.executeQuery(query, callback);
   }
 
   public void deleteFrame(Frame frame) {
@@ -581,4 +571,9 @@ public abstract class IncludingKBAdapter
   public boolean rollbackTransaction() {
     return delegate.rollbackTransaction();
   }
+
+  public TransactionMonitor getTransactionStatusMonitor() {
+    return delegate.getTransactionStatusMonitor();
+  }
+
 }

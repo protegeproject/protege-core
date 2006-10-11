@@ -2,7 +2,6 @@ package edu.stanford.smi.protege.storage.clips;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.ui.*;
@@ -231,9 +230,8 @@ public class InstanceStorer extends ClipsFileWriter {
                 println(")");
             }
         } catch (Exception e) {
-        	String message = "Errors at storing instance " + instance;        	
-            Log.getLogger().log(Level.WARNING, message, e);
-            _errors.add(new MessageError(e,message));
+            Log.getLogger().severe(Log.toString(e));
+            _errors.add(e);
         }
     }
 
@@ -262,8 +260,7 @@ public class InstanceStorer extends ClipsFileWriter {
         }
         flush();
         if (!printSucceeded()) {
-            errors.add(new MessageError("Store instances failed"));
-            Log.getLogger().warning("Store instances failed");
+            errors.add("Store instances failed");
         }
     }
 
@@ -295,9 +292,8 @@ public class InstanceStorer extends ClipsFileWriter {
                 }
             }
         } catch (Exception e) {
-        	String message = "Errors at storing slot " + slot + " at instance " + instance;        	
-            Log.getLogger().log(Level.WARNING, message, e);
-            _errors.add(new MessageError(e, message));
+            Log.getLogger().severe(Log.toString(e));
+            _errors.add(e);
         }
     }
     

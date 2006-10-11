@@ -42,7 +42,9 @@ public class ServerProjectPanel extends JPanel {
             Object[] columns = new Object[] { "Project", "Current Users" };
             _projectTable.setModel(new DefaultTableModel(data, columns));
             _projectTable.createDefaultColumnsFromModel();
-            _projectTable.setRowSelectionInterval(0, 0);
+            if (names.size() > 0) {
+            	_projectTable.setRowSelectionInterval(0, 0);
+            }
         } catch (RemoteException e) {
             Log.getLogger().severe(Log.toString(e));
         }

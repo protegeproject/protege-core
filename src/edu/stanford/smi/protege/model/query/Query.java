@@ -1,11 +1,13 @@
 package edu.stanford.smi.protege.model.query;
 //ESCA*JAVA0257
 
-import java.util.*;
+import java.util.Collection;
 
-import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Localizable;
+import edu.stanford.smi.protege.model.Slot;
 
-public interface Query {
+public interface Query extends Localizable {
     // all types
     int EQUALS = 1;
     int CONTAINS = 10;
@@ -20,12 +22,14 @@ public interface Query {
     int GREATER_THAN_OR_EQUAL_TO = 8;
 }
 
-class AndQuery implements Query {
-    AndQuery(Collection queries) {
+abstract class AndQuery implements Query {
+
+    AndQuery(Collection<Query> queries) {
     }
+
 }
 
-class OrQuery implements Query {
+abstract class OrQuery implements Query {
     OrQuery(Collection queries) {
     }
 }
@@ -37,20 +41,21 @@ abstract class SlotValueQuery implements Query {
     }
 
     protected SlotValueQuery(Cls cls, Slot slot, int operation, Object value) {
+      
     }
 }
 
-class OwnSlotValueQuery extends SlotValueQuery {
+abstract class OwnSlotValueQuery extends SlotValueQuery {
     OwnSlotValueQuery(Cls cls, Slot slot, int operation, Object value) {
         super(cls, slot, operation, value);
     }
 }
 
-class TemplateSlotValueQuery extends SlotValueQuery {
+abstract class TemplateSlotValueQuery extends SlotValueQuery {
     TemplateSlotValueQuery(Cls cls, Slot slot, int operation, Object value) {
         super(cls, slot, operation, value);
     }
 }
 
-class TemplateFacetValueQuery implements Query {
+abstract class TemplateFacetValueQuery implements Query {
 }

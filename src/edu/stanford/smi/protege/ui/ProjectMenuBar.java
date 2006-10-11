@@ -14,7 +14,6 @@ import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.plugin.*;
 import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
-import edu.stanford.smi.protege.widget.WidgetUtilities;
 
 /**
  * The main menu bar for the application.
@@ -168,16 +167,6 @@ public class ProjectMenuBar extends JMenuBar {
         createItem(menu, new ExitApplication());
     }
 
-    private static void createItem(JMenu menu, String className) {
-        Action action = null;
-        Class clas = SystemUtilities.forName(className, true);
-        if (clas != null) {
-            action = (Action) SystemUtilities.newInstance(clas);
-        }
-        if (action != null) {
-            createItem(menu, action);
-        }
-    }
 
     private static void loadProjectMenu(JMenu menu) {
         createItem(menu, new ArchiveProject(false));
@@ -222,15 +211,12 @@ public class ProjectMenuBar extends JMenuBar {
 
     private static JMenu createExportSubmenu() {
         JMenu menu = ComponentFactory.createMenu(ResourceKey.PROJECT_EXPORT_TO_FORMAT);
-        Project prj = ProjectManager.getProjectManager().getCurrentProject();
-        menu.setEnabled(prj != null);
+        menu.setEnabled(ProjectManager.getProjectManager().getCurrentProject() != null);
         Collection classNames = PluginUtilities.getAvailableExportPluginClassNames();
         Iterator i = getSortedPlugins(classNames).iterator();
         while (i.hasNext()) {
             ExportPlugin plugin = (ExportPlugin) i.next();
-            ExportPluginAction exportAction = new ExportPluginAction(plugin);
-            exportAction.setEnabled(WidgetUtilities.isSuitableExport(prj, plugin));
-            createItem(menu, exportAction);            
+            createItem(menu, new ExportPluginAction(plugin));
         }
         if (menu.getItemCount() == 0) {
             menu.setEnabled(false);

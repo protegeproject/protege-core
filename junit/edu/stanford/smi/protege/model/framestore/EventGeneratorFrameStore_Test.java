@@ -1,9 +1,17 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.event.ClsEvent;
+import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.AbstractEvent;
 
 public class EventGeneratorFrameStore_Test extends FrameStore_Test {
     private KnowledgeBase _kb;
@@ -26,7 +34,7 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         Slot subclassesSlot = _kb.getSlot(Model.Slot.DIRECT_SUBCLASSES);
         Slot instancesSlot = _kb.getSlot(Model.Slot.DIRECT_INSTANCES);
         Cls cls = createCls();
-        List<EventObject> events = getTestFrameStore().getEvents();
+        List<AbstractEvent> events = getTestFrameStore().getEvents();
         assertTrue(events.contains(new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_CREATED, cls)));
         assertTrue(events.contains(new ClsEvent(rootCls, ClsEvent.DIRECT_SUBCLASS_ADDED, cls)));
         assertTrue(events.contains(new FrameEvent(rootCls, FrameEvent.OWN_SLOT_VALUE_CHANGED, subclassesSlot)));
@@ -39,7 +47,7 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         Cls superclass = createCls();
         getTestFrameStore().getEvents();
         getTestFrameStore().addDirectSuperclass(cls, superclass);
-        List<EventObject> events = getTestFrameStore().getEvents();
+        List<AbstractEvent> events = getTestFrameStore().getEvents();
         ClsEvent testEvent1 = new ClsEvent(cls, ClsEvent.DIRECT_SUPERCLASS_ADDED, superclass);
         ClsEvent testEvent2 = new ClsEvent(superclass, ClsEvent.DIRECT_SUBCLASS_ADDED, cls);
         assertEquals("kb event", testEvent1, events.get(0));

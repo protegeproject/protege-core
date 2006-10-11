@@ -1,9 +1,20 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.query.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class FrameStoreAdapter extends AbstractFrameStore {
 
@@ -63,11 +74,11 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getSuperslots(slot);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         return getDelegate().getOwnSlots(frame);
     }
 
-    public Set getInstances(Cls cls) {
+    public Set<Instance> getInstances(Cls cls) {
         return getDelegate().getInstances(cls);
     }
 
@@ -103,7 +114,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getClsesWithMatchingDirectTemplateSlotValue(slot, value, maxMatches);
     }
 
-    public List getDirectSuperclasses(Cls cls) {
+    public List<Cls> getDirectSuperclasses(Cls cls) {
         return getDelegate().getDirectSuperclasses(cls);
     }
 
@@ -135,11 +146,11 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getSimpleInstanceCount();
     }
 
-    public Set getClses() {
+    public Set<Cls> getClses() {
         return getDelegate().getClses();
     }
 
-    public Set getTemplateFacets(Cls cls, Slot slot) {
+    public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
         return getDelegate().getTemplateFacets(cls, slot);
     }
 
@@ -167,11 +178,11 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getDirectInstances(cls);
     }
 
-    public Set getSubclasses(Cls cls) {
+    public Set<Cls> getSubclasses(Cls cls) {
         return getDelegate().getSubclasses(cls);
     }
 
-    public Set getSlots() {
+    public Set<Slot> getSlots() {
         return getDelegate().getSlots();
     }
 
@@ -191,11 +202,11 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().createFacet(id, name, directTypes, loadDefaults);
     }
 
-    public List getDirectSubclasses(Cls cls) {
+    public List<Cls> getDirectSubclasses(Cls cls) {
         return getDelegate().getDirectSubclasses(cls);
     }
 
-    public Set getFrames() {
+    public Set<Frame> getFrames() {
         return getDelegate().getFrames();
     }
 
@@ -248,7 +259,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().addDirectSuperslot(slot, superslot);
     }
 
-    public List<EventObject> getEvents() {
+    public List<AbstractEvent> getEvents() {
         return getDelegate().getEvents();
     }
 
@@ -265,12 +276,12 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
     }
 
-    public Set getFacets() {
+    public Set<Facet> getFacets() {
         return getDelegate().getFacets();
     }
 
-    public Set executeQuery(Query query) {
-        return getDelegate().executeQuery(query);
+    public void executeQuery(Query query, QueryCallback callback) {
+      getDelegate().executeQuery(query, callback);
     }
 
     public void removeDirectType(Instance instance, Cls directType) {
@@ -355,5 +366,9 @@ public class FrameStoreAdapter extends AbstractFrameStore {
 
     public boolean rollbackTransaction() {
         return getDelegate().rollbackTransaction();
+    }
+
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return getDelegate().getTransactionStatusMonitor();
     }
 }

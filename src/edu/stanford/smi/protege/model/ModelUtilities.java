@@ -114,8 +114,6 @@ public class ModelUtilities {
         Cls rootCls = cls.getKnowledgeBase().getRootCls();
         while (i.hasNext()) {
             Cls superclass = (Cls) i.next();
-            if (list.contains(superclass))
-            	continue;
             if (cls.isVisible()) {
                 List copy = new ArrayList(list);
                 getPathToRoot(superclass, list);
@@ -161,10 +159,6 @@ public class ModelUtilities {
         }
         return values;
     }
-    
-    public static boolean isVisibleInGUI(Frame frame) {
-    	return frame.getProject().getDisplayHiddenFrames() || frame.isVisible();
-    }
 
     private static boolean isCopyable(Frame frame) {
         // deep copy does not copy clses, slots, or facets within same kb
@@ -176,11 +170,19 @@ public class ModelUtilities {
     }
 
     public static void setOwnSlotValue(Frame frame, String slotName, Object value) {
-        frame.setOwnSlotValue(getSlot(frame, slotName), value);
+    	Slot slot = getSlot(frame, slotName);
+    	if (slot != null)
+    		frame.setOwnSlotValue(slot, value);
+    	else 
+    		Log.getLogger().warning("Cannot set value of slot " + slotName + " at frame " + frame + " to " + value + " Inexistent slot.");
     }
-
+    
     public static void setOwnSlotValues(Frame frame, String slotName, Collection values) {
-        frame.setOwnSlotValues(getSlot(frame, slotName), values);
+    	Slot slot = getSlot(frame, slotName);
+    	if (slot != null)
+    		frame.setOwnSlotValues(slot, values);
+    	else 
+    		Log.getLogger().warning("Cannot set values of slot " + slotName + " at frame " + frame + " to " + values + " Inexistent slot.");        
     }
 
     public static void setTemplateFacetValue(Cls cls, Slot slot, String facetName, Object value) {

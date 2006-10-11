@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
@@ -23,11 +24,13 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SimpleStringMatcher;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 //ESCA-JAVA0100 
 public class InMemoryFrameDb implements NarrowFrameStore {
@@ -215,8 +218,13 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     /** TODO implement executeQuery */
-    public Set executeQuery(Query query) {
-        return null;
+    public void executeQuery(Query query, final QueryCallback callback) {
+      new Thread(new Runnable() {
+          public void run() {
+            callback.handleError(new ProtegeError("Not implemented yet"));
+          }
+        },
+                 "Vacuous In MemoryDb callback thread");
     }
 
     public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
@@ -386,7 +394,11 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return false;
     }
 
-    private static void replaceFrameKey(Map map, Frame frame) {
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return null;
+    }
+
+  private static void replaceFrameKey(Map map, Frame frame) {
         Collection records = (Collection) map.remove(frame);
         if (records != null) {
             map.put(frame, records);

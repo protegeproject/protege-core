@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 
@@ -36,6 +36,7 @@ import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.Assert;
 import edu.stanford.smi.protege.util.Log;
 
@@ -44,8 +45,9 @@ import edu.stanford.smi.protege.util.Log;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class EventDispatchFrameStore extends ModificationFrameStore {
+    private static transient Logger log = Log.getLogger(EventDispatchFrameStore.class);
     //ESCA-JAVA0077 
-    private static final int DELAY_MSEC = 5 * 1000;
+    public static final int DELAY_MSEC = 5 * 1000;
     private Map _listeners = new HashMap();
     private Thread _eventThread;
 
@@ -77,7 +79,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         // Log.trace("found events: " + events, this, "dispatchEvents");
         Iterator i = events.iterator();
         while (i.hasNext()) {
-            EventObject event = (EventObject) i.next();
+            AbstractEvent event = (AbstractEvent) i.next();
             try {
                 dispatchEvent(event);
             } catch (Exception e) {
@@ -94,13 +96,13 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
 
     private void dispatchEvents(boolean ignoreExceptions) {
-        Collection<EventObject> events = getDelegate().getEvents();
+        Collection<AbstractEvent> events = getDelegate().getEvents();
         if (!events.isEmpty()) {
             dispatchEvents(events, ignoreExceptions);
         }
     }
 
-    private void dispatchEvent(EventObject event) {
+    private void dispatchEvent(AbstractEvent event) {
         if (event instanceof KnowledgeBaseEvent) {
             dispatchKbEvent((KnowledgeBaseEvent) event);
         } else if (event instanceof ClsEvent) {
@@ -695,11 +697,12 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
               try {
                 while (_eventThread == this) {
                     try {
-                        pollForEvents();
+                        getEventsAndDispatch();
                         //ESCA-JAVA0087 
                         Thread.sleep(DELAY_MSEC);
                     } catch (Exception e) {
                         Log.getLogger().warning(e.toString());
+                        log.log(Level.FINE, "Exception caught", e);
                     }
                 }
               } catch (Throwable t) {
@@ -712,7 +715,8 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         _eventThread.start();
     }
 
-    private void pollForEvents() throws InvocationTargetException, InterruptedException {
+    public synchronized void getEventsAndDispatch() 
+    throws InvocationTargetException, InterruptedException {
         final Collection events = getDelegate().getEvents();
         if (!events.isEmpty()) {
             SwingUtilities.invokeAndWait(new Runnable() {

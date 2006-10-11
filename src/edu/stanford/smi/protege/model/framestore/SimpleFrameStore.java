@@ -3,7 +3,6 @@ package edu.stanford.smi.protege.model.framestore;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -22,6 +21,8 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
@@ -29,6 +30,7 @@ import edu.stanford.smi.protege.util.SimpleStringMatcher;
 import edu.stanford.smi.protege.util.StringMatcher;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class SimpleFrameStore implements FrameStore {
     private KnowledgeBase _kb;
@@ -64,7 +66,7 @@ public class SimpleFrameStore implements FrameStore {
         nameToFrameMap.clear();
     }
 
-    protected void setHelper(NarrowFrameStore helper) {
+    public void setHelper(NarrowFrameStore helper) {
         _helper = helper;
     }
 
@@ -72,8 +74,9 @@ public class SimpleFrameStore implements FrameStore {
         return _helper;
     }
 
-    public Set executeQuery(Query query) {
-        return _helper.executeQuery(query);
+
+    public void executeQuery(Query query, QueryCallback callback) {
+      _helper.executeQuery(query, callback);
     }
 
     public void deleteCls(Cls cls) {
@@ -207,19 +210,22 @@ public class SimpleFrameStore implements FrameStore {
         return _helper.getFrameCount();
     }
 
-    public Set getClses() {
-        return getInstances(_systemFrames.getRootClsMetaCls());
+    @SuppressWarnings("unchecked")
+    public Set<Cls> getClses() {
+        return (Set) getInstances(_systemFrames.getRootClsMetaCls());
     }
 
-    public Set getSlots() {
-        return getInstances(_systemFrames.getRootSlotMetaCls());
+    @SuppressWarnings("unchecked")
+    public Set<Slot> getSlots() {
+        return (Set) getInstances(_systemFrames.getRootSlotMetaCls());
     }
 
-    public Set getFacets() {
-        return getInstances(_systemFrames.getRootFacetMetaCls());
+    @SuppressWarnings("unchecked")
+    public Set<Facet> getFacets() {
+        return (Set) getInstances(_systemFrames.getRootFacetMetaCls());
     }
 
-    public Set getFrames() {
+    public Set<Frame> getFrames() {
         // return getInstances(_systemFrames.getRootCls());
         return _helper.getFrames();
     }
@@ -228,7 +234,7 @@ public class SimpleFrameStore implements FrameStore {
         return getDirectOwnSlotValues(cls, _systemFrames.getDirectTemplateSlotsSlot());
     }
 
-    public List getDirectSuperclasses(Cls cls) {
+    public List<Cls> getDirectSuperclasses(Cls cls) {
         return getDirectOwnSlotValues(cls, _systemFrames.getDirectSuperclassesSlot());
     }
 
@@ -252,15 +258,15 @@ public class SimpleFrameStore implements FrameStore {
         return getDirectOwnSlotValuesClosure(cls, _systemFrames.getDirectSuperclassesSlot());
     }
 
-    public List getDirectSubclasses(Cls cls) {
+    public List<Cls> getDirectSubclasses(Cls cls) {
         return getDirectOwnSlotValues(cls, _systemFrames.getDirectSubclassesSlot());
     }
 
-    public Set getSubclasses(Cls cls) {
+    public Set<Cls> getSubclasses(Cls cls) {
         return getDirectOwnSlotValuesClosure(cls, _systemFrames.getDirectSubclassesSlot());
     }
 
-    public Set getTemplateFacets(Cls cls, Slot slot) {
+    public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
         Collection slots = getOwnSlots(slot);
         Set facets = collectOwnSlotValues(slots, _systemFrames.getAssociatedFacetSlot());
         return unmodifiableSet(facets);
@@ -342,7 +348,7 @@ public class SimpleFrameStore implements FrameStore {
         return getDirectOwnSlotValues(cls, _systemFrames.getDirectInstancesSlot());
     }
 
-    public Set getInstances(Cls cls) {
+    public Set<Instance> getInstances(Cls cls) {
         Collection clses = new LinkedHashSet(getSubclasses(cls));
         clses.add(cls);
         return collectOwnSlotValues(clses, _systemFrames.getDirectInstancesSlot());
@@ -409,7 +415,7 @@ public class SimpleFrameStore implements FrameStore {
         return _helper.getFrame(id);
     }
 
-    public Set getOwnSlots(Frame frame) {
+    public Set<Slot> getOwnSlots(Frame frame) {
         Collection types = getTypes((Instance) frame);
         Set ownSlots = collectOwnSlotValues(types, _systemFrames.getDirectTemplateSlotsSlot());
         ownSlots.add(_systemFrames.getNameSlot());
@@ -1197,7 +1203,11 @@ public class SimpleFrameStore implements FrameStore {
         return _helper.rollbackTransaction();
     }
 
-    public List<EventObject> getEvents() {
+    public TransactionMonitor getTransactionStatusMonitor()  {
+      return _helper.getTransactionStatusMonitor();
+    }
+
+    public List<AbstractEvent> getEvents() {
         return Collections.EMPTY_LIST;
     }
 

@@ -2,11 +2,18 @@ package edu.stanford.smi.protege.ui;
 
 //ESCA*JAVA0100
 
-import javax.swing.*;
+import javax.swing.Icon;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.resource.Colors;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.DefaultRenderer;
 
 /**
  * Renderer for frames. This class has logic to render all type of frames: classes, slots, facet, simple instances.
@@ -92,7 +99,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
 
     public void load(Object value) {
         ensureIconFlagsLoaded();
-
+        
         if (value instanceof Frame) {
             Frame frameValue = (Frame) value;
             if (!(frameValue.isEditable())) {
@@ -116,6 +123,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
         }
     }
 
+    
     //ESCA-JAVA0130 
     protected Icon getIcon(Cls cls) {
         return cls.getIcon();

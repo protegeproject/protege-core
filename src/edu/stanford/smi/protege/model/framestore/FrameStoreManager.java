@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.model.framestore;
 //ESCA*JAVA0100
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.util.Collections;
@@ -14,6 +15,9 @@ import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.exception.ProtegeError;
+import edu.stanford.smi.protege.exception.ProtegeException;
+import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.cleandispatch.CleanDispatchFrameStore;
@@ -329,6 +333,22 @@ public class FrameStoreManager {
         eventDispatchFrameStore.setPollForEvents(b);
     }
     
+    public void flushEvents() throws ProtegeException {
+      try {
+        eventDispatchFrameStore.getEventsAndDispatch();
+      } catch (InvocationTargetException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof ProtegeException) {
+          throw (ProtegeException) cause;
+        }
+        Log.getLogger().log(Level.WARNING, 
+                            "A listener threw an exception while processing events", e);
+        throw new ProtegeError(e);
+      } catch (InterruptedException e) {
+        throw new ProtegeIOException(e);  // arguable - who interrupted this?
+      }
+    }
+
     public void removeListener(Class c, Object o, EventListener listener) {
         eventDispatchFrameStore.removeListener(c, o, listener);
     }

@@ -1,7 +1,8 @@
 package edu.stanford.smi.protege.server.framestore;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.FrameStore_Test;
 import edu.stanford.smi.protege.server.Server_Test;
 
 public class RemoteClientFrameStore_Test extends FrameStore_Test {
@@ -15,9 +16,11 @@ public class RemoteClientFrameStore_Test extends FrameStore_Test {
         try {
           Server_Test.startServer();
         } catch (Exception e) {
-          return null;
+          fail(e.getMessage());
         }
-
+        // Tests are a litle more deterministic if the disabled flag is turned on
+        // Is there a way to make this happen without using a static? (problem = junit and fork)
+        // FrameCalculator.setDisabled(true); 
         return new RemoteClientFrameStore(host, user, password, projectName, kb, false);
     }
     

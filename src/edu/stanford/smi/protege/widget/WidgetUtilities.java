@@ -7,9 +7,9 @@ import java.util.*;
 import javax.swing.*;
 
 import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.plugin.ExportPlugin;
-import edu.stanford.smi.protege.plugin.ProjectPlugin;
+import edu.stanford.smi.protege.ui.InstanceDisplay;
 import edu.stanford.smi.protege.util.*;
+
 
 /**
  * A collection of utilities useful for creating and working with widgets.
@@ -120,24 +120,34 @@ public class WidgetUtilities {
         return isSuitable;
     }
     
-    private static final String IS_EXPORT_SUITABLE_METHOD_NAME = "isSuitable";
-    //private static final Class[] IS_EXPORT_SUITABLE_METHODS_ARGS = new Class[] { Project.class, Collection.class };
-    private static final Class[] IS_EXPORT_SUITABLE_METHODS_ARGS = new Class[] { Project.class };
-    
-    public static boolean isSuitableExport(Project project, ExportPlugin exportPlugin) {
-        boolean isSuitable;
-        try {           
-            Method method = exportPlugin.getClass().getMethod(IS_EXPORT_SUITABLE_METHOD_NAME, IS_EXPORT_SUITABLE_METHODS_ARGS);            
-            Boolean returnValue = (Boolean) method.invoke(exportPlugin, new Object[] { project });
-            isSuitable = returnValue.booleanValue();
-        } catch (NoSuchMethodException e) {
-            isSuitable = true;
-        } catch (Exception e) {
-            isSuitable = false;
-            //Log.getLogger().warning(Log.toString(e));
-            Log.getLogger().warning(e.getMessage());
-        }
-        // Log.getLogger().info("is suitable=" + isSuitable + " " + projectPlugin);
-        return isSuitable;
+    /**
+     * Sets all the widgets of an instance form to enabled/disabled according to the enabled argument. 
+     * @param instanceDisplay
+     * @param enabled
+     */
+    public static void setEnabledInstanceDisplay(InstanceDisplay instanceDisplay, boolean enabled) {
+    	if (instanceDisplay == null)
+    		return;
+    	
+    	Instance inst = instanceDisplay.getCurrentInstance();
+    	
+    	if (inst == null)
+    		return;
+    	
+    	ClsWidget clsWidget = instanceDisplay.getFirstClsWidget();
+    	
+    	if (clsWidget == null)
+    		return;
+    	
+    	for (Iterator iter = inst.getOwnSlots().iterator(); iter.hasNext();) {
+			Slot slot = (Slot) iter.next();			
+			SlotWidget slotWidget = clsWidget.getSlotWidget(slot);
+			if (slotWidget != null) {
+				((AbstractSlotWidget)slotWidget).setEnabled(enabled);
+				//((AbstractSlotWidget)slotWidget).setEditable(enabled);
+			}
+		}    	
     }
+  
+    
 }

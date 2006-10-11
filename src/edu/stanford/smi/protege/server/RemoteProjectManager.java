@@ -2,16 +2,18 @@ package edu.stanford.smi.protege.server;
 
 //ESCA*JAVA0130
 
-import java.io.*;
-import java.rmi.*;
-import java.rmi.server.*;
+import java.rmi.Naming;
+import java.rmi.server.RMISocketFactory;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.ui.ProjectManager;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class RemoteProjectManager {
     private static RemoteProjectManager _theInstance;
@@ -20,8 +22,8 @@ public class RemoteProjectManager {
         if (_theInstance == null) {
             try {
                 RMISocketFactory.setSocketFactory(new ClientRmiSocketFactory());
-            } catch (IOException e) {
-                Log.getLogger().severe(Log.toString(e));
+            } catch (Exception e) {
+                Log.getLogger().severe("Could not set socket factory " + e.getMessage());
             }
             _theInstance = new RemoteProjectManager();
         }
@@ -60,8 +62,11 @@ public class RemoteProjectManager {
         return project;
     }
 
-    public Project getProject(String serverName, String username, String password, String projectName,
-            boolean pollForEvents) {
+    public Project getProject(String serverName, 
+                              String username, 
+                              String password, 
+                              String projectName,
+                              boolean pollForEvents) {
         Project p = null;
         try {
             RemoteServer server = (RemoteServer) Naming.lookup("//" + serverName + "/" + Server.getBoundName());

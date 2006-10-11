@@ -29,6 +29,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
@@ -229,9 +230,27 @@ public class ProjectChooser extends JFileChooser {
     public Project getProject() {
         Project project = null;
         Component c = getActiveCard();
-        
         if (c == this) {
-            project = getProjectFromFile();
+            File selectedFile = getSelectedFile();
+            String fileName = selectedFile.toString();
+            int lastDotIndex = fileName.lastIndexOf('.');
+            if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
+                String suffix = fileName.substring(lastDotIndex + 1);
+                Iterator<Class> it = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames().iterator();
+                while (it.hasNext() && project == null) {
+                    Class pluginClass = (Class) it.next();
+                    project = useCreateProjectFromFilePlugin(pluginClass, suffix, fileName);
+                    if (project != null) {
+                        String projectFilePath = fileName.substring(0, lastDotIndex) + ".pprj";
+                        project.setProjectFilePath(projectFilePath);
+                        //ProjectManager.getProjectManager().setCurrentProject(project, false);
+                    }
+                }
+            }
+            if (project == null) {
+                URI uri = getSelectedFile().toURI();
+                project = loadProject(uri);
+            }
             ApplicationProperties.setLastFileDirectory(getCurrentDirectory());
 
         } else if (c == urlPanel) {
@@ -250,56 +269,6 @@ public class ProjectChooser extends JFileChooser {
         return project;
     }
 
-    
-	private Project getProjectFromFile() {
-		Project project = null;
-		ArrayList errors = new ArrayList();
-		
-		File selectedFile = getSelectedFile();
-		String fileName = selectedFile.toString();
-		int lastDotIndex = fileName.lastIndexOf('.');
-		
-		// If the file has a suffix, use it to find the suitable project file create plugins
-		// and try to load the file with the plugins 
-		if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
-		    String suffix = fileName.substring(lastDotIndex + 1);
-		    
-		    Collection availablePlugins = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames();
-		    
-		    Iterator<Class> it = availablePlugins.iterator();
-		    
-		    while (it.hasNext() && project == null) {
-		    	Class pluginClass = (Class) it.next();
-		        project = useCreateProjectFromFilePlugin(pluginClass, suffix, fileName, errors);
-		        
-		        if (project != null) {
-		            String projectFilePath = fileName.substring(0, lastDotIndex) + ".pprj";
-		            project.setProjectFilePath(projectFilePath);
-		            break;
-		            //ProjectManager.getProjectManager().setCurrentProject(project, false);
-		        }
-		    }
-		    
-		    if (errors.size() > 0) {		    	
-		    	ProjectManager.getProjectManager().displayErrors("File load warnings and errors", errors);
-		    }
-		    
-		    if (project != null)
-		    	return project;
-		    
-		    //change this
-		    if (availablePlugins.size() > 0 && project == null) 
-		    	Log.getLogger().warning("Could not load the file with the available CreateProjectFromFile plugins. Trying the default loader...");
-		}
-		
-		// If it got here, it means that it could not load the file using the existing plugins		
-		URI uri = getSelectedFile().toURI();
-		project = loadProject(uri);
-				
-		return project;
-	}
-
-	
     private Project getRemoteProject() {
         RemoteServer server = serverPanel.getServer();
         RemoteSession session = serverPanel.getSession();
@@ -313,79 +282,58 @@ public class ProjectChooser extends JFileChooser {
         long t1 = System.currentTimeMillis();
         WaitCursor waitCursor = new WaitCursor(this);
         try {
-        	
             project = Project.loadProjectFromURI(uri, errors);
-            
-        } catch (Exception e) {         
-            errors.add(new MessageError(e));
-            Log.getLogger().log(Level.SEVERE, "Error loading project", e);
+        } catch (Exception e) {
+            Log.getLogger().log(Level.SEVERE, "Error loading project kb", e);
+            errors.add(e);
         }  finally {
             waitCursor.hide();
         }
         long t2 = System.currentTimeMillis();
-        
         Log.getLogger().info("Project load time for " + uri + ": " + (t2 - t1) / 1000 + " sec");
         
         //TODO: reimplement this when exception handling is improved. Handle here invalid project files 
         if (project != null && project.getProjectInstance() == null) {
         	String errorMsg = "Unable to load file: " + uri
 					+ "\nPossible reasons:\n- The file has an unsupported file format\n- The file is not well-formed\n- The project file is corrupt";
-        	
         	Log.getLogger().severe(errorMsg);
-        	
-        	errors.add(new MessageError(null,errorMsg));        	
+        	errors.add(errorMsg);
+        	JOptionPane.showMessageDialog(ProjectManager.getProjectManager().getMainPanel(), errorMsg, "Invalid project file", JOptionPane.WARNING_MESSAGE);
         }
         
         ProjectManager.getProjectManager().displayErrors("Load Project Errors", errors);
         return project;
     }
 
-    
-    /**    
-     * @deprecated Use: useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String fileName, Collection errors)
-     */
-    public Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String fileName) {    	
-    	return useCreateProjectFromFilePlugin(pluginClass, suffix, fileName, new ArrayList());    
+    public Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String fileName) {
+        if (pluginClass != null) {
+            try {
+                Object plugin = pluginClass.newInstance();
+                if (plugin instanceof CreateProjectFromFilePlugin) {
+                    CreateProjectFromFilePlugin p = (CreateProjectFromFilePlugin) plugin;
+                    if (PluginUtilities.isSuitableCreateProjectFromFilePlugin(p, suffix)) {
+                        File file = new File(fileName);
+                        Collection errors = new ArrayList();
+                        Project project = p.createProject(file, errors);
+                        if (!errors.isEmpty()) {
+                            Iterator it = errors.iterator();
+                            while (it.hasNext()) {
+                                Object error = it.next();
+                                System.err.println("Error with file " + fileName + ": " + error);
+                            }
+                        }
+                        return project;
+                    }
+                }
+            }
+            catch (Exception ex) {
+              log.log(Level.WARNING, 
+                      "Warning: Failed handle argument with " + pluginClass,
+                      ex);
+            }
+        }
+        return null;
     }
-    
-    
-    public Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String fileName, Collection errors) {
-    	CreateProjectFromFilePlugin plugin = getCreateProjectFromFilePluginFromClass(pluginClass);
-    	
-    	if (plugin == null || !PluginUtilities.isSuitableCreateProjectFromFilePlugin(plugin, suffix))
-    		return null;
-    	
-    	File file = new File(fileName);
-    	
-    	if (!file.exists()) {
-    		errors.add(new MessageError(null, "File: " + fileName + "does not exist."));
-    		return null;
-    	}
-    	
-    	Project project = plugin.createProject(file, errors);   	
-        
-        return project;
-    }
-
-    
-	private CreateProjectFromFilePlugin getCreateProjectFromFilePluginFromClass(Class pluginClass) {		
-        if (pluginClass == null)
-        	return null;
-        
-        Object plugin = null;
-               
-		try {
-			plugin = pluginClass.newInstance();
-			return (CreateProjectFromFilePlugin) plugin;
-		} catch (InstantiationException e) {		
-			return null;
-		} catch (IllegalAccessException e) {		
-			return null;
-		} catch (Exception e) {
-			return null;
-		}
-	}
-		
 
 }
 

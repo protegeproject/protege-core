@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.storage.xml;
 
 import java.util.*;
-import java.util.logging.Level;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
@@ -35,15 +34,8 @@ public class XMLHandler extends DefaultHandler {
     }
 
     private void handle(Exception e) {
-    	String message = "Error at parsing ";
-    	
-    	if (e instanceof SAXParseException) 
-    		message = message + "token ar line " + ((SAXParseException)e).getLineNumber() + 
-    			" column " + ((SAXParseException)e).getColumnNumber();
-    	else message = message + "XML file";
-    	
-    	errors.add(new MessageError(e, message));        
-        Log.getLogger().log(Level.SEVERE, message, e);
+        errors.add(e);
+        Log.getLogger().severe(Log.toString(e));
     }
 
     private LinkedList openElements = new LinkedList();

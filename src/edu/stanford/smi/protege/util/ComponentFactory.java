@@ -255,53 +255,12 @@ public class ComponentFactory {
         chooser.setDialogTitle(title);
         if (fileExtension == null) {
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        } else if (fileExtension.length() > 0){
+        } else {
             String text = fileDescription;
             chooser.setFileFilter(new ExtensionFilter(fileExtension, text));
         }
         return chooser;
     }
-    
-    
-    public static JFileChooser createSaveFileChooser(String title, String fileDescription, String fileExtension, final boolean overwrite) {
-        File lastDirectory = ApplicationProperties.getLastFileDirectory();
-        JFileChooser chooser = new JFileChooser(lastDirectory) {
-            public int showDialog(Component c, String s) {
-                int rval = super.showDialog(c, s);
-                if (rval == APPROVE_OPTION) {
-                    ApplicationProperties.setLastFileDirectory(getCurrentDirectory());
-                }
-                return rval;
-            }
-            
-            public void approveSelection() {
-            	if (!overwrite)
-            		return;
-            	
-            	File f = getSelectedFile();
-            	
-            	if ( f.exists() ) {
-            		String msg = "The file '"+ f.getName() + "' already exists!\nDo you want to replace it?";            		
-            		String title = getDialogTitle();
-            		int option = JOptionPane.showConfirmDialog( this, msg, title, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE );
-            		if ( option == JOptionPane.NO_OPTION ) {
-            			return;
-            		}
-            	}            	
-            	super.approveSelection();            	
-            }
-            
-        };
-        
-        chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        chooser.setDialogTitle(title);
-        if (fileExtension != null) {        
-            String text = fileDescription;
-            chooser.setFileFilter(new ExtensionFilter(fileExtension, text));
-        }
-        return chooser;
-    }
-    
 
     public static JFrame createMainFrame() {
         JFrame frame = new JFrame();

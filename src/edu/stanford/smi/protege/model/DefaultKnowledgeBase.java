@@ -25,10 +25,13 @@ import edu.stanford.smi.protege.event.InstanceListener;
 import edu.stanford.smi.protege.event.KnowledgeBaseListener;
 import edu.stanford.smi.protege.event.SlotListener;
 import edu.stanford.smi.protege.event.TransactionListener;
+import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.model.framestore.DefaultFrameFactory;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
+import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
@@ -139,6 +142,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return _frameStoreManager.isCallCachingEnabled();
     }
 
+
     public synchronized boolean setJournalingEnabled(boolean b) {
         return _frameStoreManager.setJournalingEnabled(b);
     }
@@ -165,6 +169,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized boolean isUndoEnabled() {
         return _frameStoreManager.isUndoEnabled();
+    }
+    
+    public synchronized void flushEvents() throws ProtegeException {
+      _frameStoreManager.flushEvents();
     }
 
     public synchronized List getDirectOwnSlotValues(Frame frame, Slot slot) {
@@ -305,7 +313,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return (Cls) CollectionUtilities.getFirstItem(types);
     }
 
-    public synchronized Collection getDirectSuperclasses(Cls cls) {
+    public synchronized Collection<Cls> getDirectSuperclasses(Cls cls) {
         return getHeadFrameStore().getDirectSuperclasses(cls);
     }
 
@@ -463,11 +471,16 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
             markAsDeleted(cls);
         } else {
             Collection parents = getDirectSuperclasses(cls);
-            beginTransaction("delete class " + cls.getBrowserText());
-            moveInstancesToParents(cls, parents);
-            moveSubclassesToParents(cls, parents);
-            getHeadFrameStore().deleteCls(cls);
-            endTransaction(true);
+            try {
+                beginTransaction("delete class " + cls.getBrowserText());
+                moveInstancesToParents(cls, parents);
+                moveSubclassesToParents(cls, parents);
+                getHeadFrameStore().deleteCls(cls);
+                commitTransaction();				
+			} catch (Exception e) {
+				rollbackTransaction();
+				Log.getLogger().warning("Error at deleting cls: " + cls);
+			}
         }
     }
 
@@ -565,7 +578,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getSimpleInstanceCount();
     }
 
-    public synchronized Collection getClses() {
+    public synchronized Collection<Cls> getClses() {
         return getHeadFrameStore().getClses();
     }
 
@@ -663,14 +676,14 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return (SimpleInstance) getFrame(name);
     }
 
-    public synchronized Collection getInstances() {
+    public synchronized Collection<Instance> getInstances() {
         return getFrames();
     }
 
     /**
      * @deprecated
      */
-    public synchronized Collection getInstances(Cls cls) {
+    public synchronized Collection<Instance> getInstances(Cls cls) {
         return getHeadFrameStore().getInstances(cls);
     }
 
@@ -813,7 +826,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getSlotCount();
     }
 
-    public synchronized Collection getSlots() {
+    public synchronized Collection<Slot> getSlots() {
         return getHeadFrameStore().getSlots();
     }
 
@@ -2117,6 +2130,13 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return committed;
     }
 
+    /**
+     * @deprecated Use #commitTransaction
+     */
+    public synchronized boolean endTransaction() {
+    	return commitTransaction();
+    }
+    
     public synchronized void setFrameFactory(FrameFactory factory) {
         _frameFactory = factory;
     }
@@ -2171,7 +2191,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         _frameStoreManager.insertFrameStore(newFrameStore, position);
     }
 
-    public synchronized List getFrameStores() {
+    public synchronized List<FrameStore> getFrameStores() {
         return _frameStoreManager.getFrameStores();
     }
 
@@ -2259,6 +2279,12 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     
     public synchronized void removeTransactionListener(TransactionListener listener) {
         removeListener(TransactionListener.class, this, listener);
+    }
+    
+    public Set<Frame> executeQuery(Query q) {
+      SynchronizeQueryCallback callback = new SynchronizeQueryCallback(this);
+      getHeadFrameStore().executeQuery(q, callback);
+      return callback.waitForResults();
     }
 
 }

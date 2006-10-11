@@ -1,15 +1,33 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JToolBar;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.StandardAction;
+import edu.stanford.smi.protege.util.StringUtilities;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.WaitCursor;
 
 /**
  * A generic base class for the "find box" ui feature. This class handles all of
@@ -154,4 +172,15 @@ public abstract class Finder extends JComponent {
     public String toString() {
         return StringUtilities.getClassName(this);
     }
+    
+    /**
+     * Sets the enabled state of the Finder control.
+     * Setting enabled to false will disable the finder combobox and button.
+     */
+    public void setEnabled(boolean enabled) {
+    	super.setEnabled(enabled);
+    	_comboBox.setEnabled(enabled);
+    	_findButtonAction.setEnabled(enabled);
+    }
+    
 }
