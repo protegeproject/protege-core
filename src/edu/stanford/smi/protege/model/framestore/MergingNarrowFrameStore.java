@@ -65,18 +65,20 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
      * what sort of "real" API access to provide.
      */
     public static MergingNarrowFrameStore get(KnowledgeBase kb) {
-        MergingNarrowFrameStore mergingFrameStore = null;
         if (kb instanceof DefaultKnowledgeBase) {
             FrameStore terminalFrameStore = ((DefaultKnowledgeBase) kb).getTerminalFrameStore();
             if (terminalFrameStore instanceof SimpleFrameStore) {
                 SimpleFrameStore store = (SimpleFrameStore) terminalFrameStore;
-                NarrowFrameStore nfs = store.getHelper().getDelegate();
-                if (nfs instanceof MergingNarrowFrameStore) {
-                    mergingFrameStore = (MergingNarrowFrameStore) nfs;
-                }
+                for (NarrowFrameStore nfs = store.getHelper().getDelegate();
+                     nfs != null;
+                	 nfs = nfs.getDelegate()) {
+                	if (nfs instanceof MergingNarrowFrameStore) {
+                        return (MergingNarrowFrameStore) nfs;
+                    }
+                }                
             }
         }
-        return mergingFrameStore;
+        return null;
     }
 
     public static NarrowFrameStore getSystemFrameStore(KnowledgeBase kb) {
