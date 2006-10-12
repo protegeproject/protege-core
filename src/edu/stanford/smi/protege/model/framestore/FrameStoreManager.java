@@ -335,15 +335,7 @@ public class FrameStoreManager {
     
     public void flushEvents() throws ProtegeException {
       try {
-        eventDispatchFrameStore.getEventsAndDispatch();
-      } catch (InvocationTargetException e) {
-        Throwable cause = e.getCause();
-        if (cause instanceof ProtegeException) {
-          throw (ProtegeException) cause;
-        }
-        Log.getLogger().log(Level.WARNING, 
-                            "A listener threw an exception while processing events", e);
-        throw new ProtegeError(e);
+        eventDispatchFrameStore.flushEvents();
       } catch (InterruptedException e) {
         throw new ProtegeIOException(e);  // arguable - who interrupted this?
       }
