@@ -34,6 +34,7 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.AbstractEvent;
@@ -50,6 +51,17 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     public static final int DELAY_MSEC = 5 * 1000;
     private Map _listeners = new HashMap();
     private Thread _eventThread;
+    private Object lock;
+    
+    public enum DispatchState {
+      DISPATCHING_EVENTS, IDLE, REQUEST_DISPATCH
+    };
+    private DispatchState state = DispatchState.IDLE;
+    
+    
+    public EventDispatchFrameStore(KnowledgeBase kb) {
+    	lock = kb;
+    }
 
     public void reinitialize() {
         // do nothing. In particular we do not clear the listeners. Dispatch can
@@ -690,43 +702,75 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         getDelegate().setFrameName(frame, name);
         dispatchEvents();
     }
-
+    
+    /*
+     * Care must be taken to ensure that no lock is taken inside of the knowledge base lock.
+     * But we must also ensure that all knowledge base calls are synchronized.  Can this be 
+     * done in a better way?
+     */
     private void startEventThread() {
         _eventThread = new Thread("EventDispatchFrameStoreHandler.startEventThread") {
-            public void run() {
+          public void run() {
+            while (true) {
               try {
-                while (_eventThread == this) {
-                    try {
-                        getEventsAndDispatch();
-                        //ESCA-JAVA0087 
-                        Thread.sleep(DELAY_MSEC);
-                    } catch (Exception e) {
-                        Log.getLogger().warning(e.toString());
-                        log.log(Level.FINE, "Exception caught", e);
-                    }
+                synchronized (lock) {
+                  if (_eventThread != this) {
+                    return;
+                  }
+                  state = DispatchState.DISPATCHING_EVENTS;
                 }
-              } catch (Throwable t) {
-                Log.getLogger().log(Level.INFO, "Exception caught", t);
+                getEventsAndDispatch();
+                synchronized (lock) {
+                  state = DispatchState.IDLE;
+                  lock.notifyAll();
+                  lock.wait(DELAY_MSEC);
+                }
+              } catch (Exception e) {
+                Log.getLogger().warning(e.toString());
+                log.log(Level.FINE, "Exception caught", e);
               }
             }
+          }
         };
         _eventThread.setPriority(Thread.MIN_PRIORITY);
         _eventThread.setDaemon(true);
         _eventThread.start();
     }
 
-    public synchronized void getEventsAndDispatch() 
+    private void getEventsAndDispatch() 
     throws InvocationTargetException, InterruptedException {
-        final Collection events = getDelegate().getEvents();
+        final Collection events;
+        synchronized (lock) {
+          events = getDelegate().getEvents();
+        }
         if (!events.isEmpty()) {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
                     if (getDelegate() != null) {
+                      synchronized (lock) {
                         dispatchEvents(events, true);
+                      }
                     }
                 }
             });
         }
+    }
+    
+    public void flushEvents() throws InterruptedException {
+      synchronized  (lock) {
+        while (state == DispatchState.DISPATCHING_EVENTS) {
+          lock.wait();
+        }
+        boolean eventThreadRunning = (_eventThread != null);
+        state = DispatchState.REQUEST_DISPATCH;
+        startEventThread();
+        while (state != DispatchState.IDLE) {
+          lock.wait();
+        }
+        if (!eventThreadRunning) {
+          stopEventThread();
+        }
+      }
     }
 
     private void stopEventThread() {
