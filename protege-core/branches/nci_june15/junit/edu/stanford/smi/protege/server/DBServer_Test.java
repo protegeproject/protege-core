@@ -64,7 +64,8 @@ public class DBServer_Test extends APITestCase {
     Properties props = getJunitProperties();
     String serverProjectFile = props.getProperty(DB_SERVER_METAPROJECT_PROPERTY);
     try {
-      Server_Test.startServer(serverProjectFile);
+      Server_Test.setMetaProject(serverProjectFile);
+      Server_Test.startServer();
       Naming.lookup(NAME);
     } catch (NotBoundException e) {
       fail("Could not bind to server (is rmiregistry running?)");
