@@ -18,7 +18,8 @@ public class ServerPolicy_Test extends APITestCase {
   public void setUp() throws Exception {
     super.setUp();
     try {
-      Server_Test.startServer("junit/pprj/policy/metaproject.pprj");
+      Server_Test.setMetaProject("junit/pprj/policy/metaproject.pprj");
+      Server_Test.startServer();
     } catch (NotBoundException e) {
       fail("Could not bind to server (is rmiregistry running?)");
     }
