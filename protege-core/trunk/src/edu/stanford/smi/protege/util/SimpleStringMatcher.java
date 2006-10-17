@@ -1,6 +1,6 @@
 package edu.stanford.smi.protege.util;
 
-import java.util.regex.*;
+import java.util.regex.Pattern;
 
 /**
  * A string matcher implementation.
