@@ -115,13 +115,13 @@ public class BrowserSlotPattern {
         return elements.get(0).hashCode();
     }
 
-    public List getSlots() {
-        List slots = new ArrayList();
+    public List<Slot> getSlots() {
+        List<Slot> slots = new ArrayList<Slot>();
         Iterator i = elements.iterator();
         while (i.hasNext()) {
             Object o = i.next();
             if (o instanceof Slot) {
-                slots.add(o);
+                slots.add((Slot) o);
             }
         }
         return slots;
