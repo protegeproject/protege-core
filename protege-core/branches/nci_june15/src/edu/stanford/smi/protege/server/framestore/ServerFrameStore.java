@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import edu.stanford.smi.protege.event.ClsEvent;
 import edu.stanford.smi.protege.event.FrameEvent;
 import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
@@ -821,14 +822,17 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                                     RemoteSession session) 
                                                     throws ProtegeException, ServerSessionLost {
       recordCall(session);
-      synchronized(_kbLock) {
-        try {
+      try {
+        synchronized(_kbLock) {
           job.localize(_kb);
-          return new RemoteResponse<Object>(job.run(), getValueUpdates(session));
-        } catch (ProtegeException pe) {
-          Log.getLogger().log(Level.SEVERE, "Exception on remote execution", pe);
-          throw pe;
         }
+        Object ret = job.run();
+        synchronized(_kbLock) {
+          return new RemoteResponse<Object>(ret, getValueUpdates(session));
+        }
+      } catch (ProtegeException pe) {
+        Log.getLogger().log(Level.WARNING, "Exception on remote execution", pe);
+        throw pe;
       }
     }
 
