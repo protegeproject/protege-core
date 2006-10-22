@@ -34,7 +34,7 @@ public class Server_Test extends SimpleTestCase {
 
     private static final String NAME = "//" + HOST + "/" + Server.getBoundName();
     
-    private static  final String JAR_PROPERTY="junit.server.protege.jar";
+    public static  final String JAR_PROPERTY="junit.server.protege.jar";
     
     private static boolean serverRunning = false;
 
