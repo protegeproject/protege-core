@@ -53,7 +53,7 @@ public class SimpleListModel extends AbstractListModel {
     }
 
     public Object getElementAt(int i) {
-        return i < _list.size() ? _list.get(i) : null;
+        return (i >= 0 && i < _list.size()) ? _list.get(i) : null;
     }
 
     public int getSize() {
