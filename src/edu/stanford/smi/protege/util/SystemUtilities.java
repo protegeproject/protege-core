@@ -306,7 +306,7 @@ public class SystemUtilities {
 
     public static void showHTML(String url) {
         try {
-            if (!url.startsWith("http:") && !url.startsWith("file:")) {
+            if (!url.startsWith("http:") && !url.startsWith("file:") && !url.startsWith("mailto:")) {
                 url = new File(url).toURI().toURL().toString();
             }
             // Log.enter(SystemUtilities.class, "showHTML", url);
