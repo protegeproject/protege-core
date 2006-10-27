@@ -648,15 +648,19 @@ public class ProjectManager {
     }
 
     public void setCurrentProject(Project project, boolean remote) {
+    	setCurrentProject(project, remote, false);
+    }
+
+    public void  setCurrentProject(Project project, boolean remote, boolean suppressDisplay) {
         if (closeProjectRequest()) {
             _currentProject = project;
-            if (_currentProject != null) {
-                _projectPluginManager.afterLoad(_currentProject);
-                displayCurrentProject(remote);
+            if ( _currentProject != null ) {
+                _projectPluginManager .afterLoad( _currentProject);
+                if (!suppressDisplay) displayCurrentProject(remote);
             }
         }
     }
-
+    
     private static void printDisplayTime(final long t1) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
