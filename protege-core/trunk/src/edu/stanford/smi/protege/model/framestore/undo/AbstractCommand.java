@@ -32,6 +32,10 @@ abstract class AbstractCommand implements Command {
 
     protected static String getText(Frame frame) {
         String s = frame.getBrowserText();
+        
+        if (s == null) 
+        	s = frame.getName();
+        
         if (s.indexOf(' ') != -1) {
             s = '\'' + s + '\'';
         }
