@@ -319,7 +319,7 @@ public class Project {
         	errors.add(new MessageError(errorMsg));
         	Log.getLogger().severe(errorMsg);
         	return false;
-        }
+        }        
         _domainKB = factory.createKnowledgeBase(errors);
         Iterator i = getProjectSlotValues(SLOT_JAVA_PACKAGES).iterator();
         while (i.hasNext()) {
@@ -1311,8 +1311,14 @@ public class Project {
                 errors.add(new MessageError(message));
                 Log.getLogger().severe(message);
             } else {
-                kb = new ClipsKnowledgeBaseFactory().loadKnowledgeBase(clsesReader,
-                        instancesReader, errors);
+                //kb = new ClipsKnowledgeBaseFactory().loadKnowledgeBase(clsesReader, instancesReader, errors);
+            	ClipsKnowledgeBaseFactory clipsFactory = new ClipsKnowledgeBaseFactory();
+            	
+            	kb = clipsFactory.createKnowledgeBase(errors);
+            	kb.setGenerateEventsEnabled(false);
+            	
+            	clipsFactory.loadKnowledgeBase(kb, clsesReader, instancesReader, false, errors);
+            	
                 if (errors.size() == 0) {
                     BackwardsCompatibilityProjectFixups.fix(kb);
                 }
