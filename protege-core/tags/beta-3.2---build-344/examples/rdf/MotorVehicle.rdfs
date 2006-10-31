@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE rdf:RDF [
+	 <!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	 <!ENTITY a 'http://protege.stanford.edu/system#'>
+	 <!ENTITY mv 'http://protege.stanford.edu/mv#'>
+	 <!ENTITY rdfs 'http://www.w3.org/TR/1999/PR-rdf-schema-19990303#'>
+]>
+<rdf:RDF xmlns:rdf="&rdf;"
+	 xmlns:a="&a;"
+	 xmlns:mv="&mv;"
+	 xmlns:rdfs="&rdfs;">
+<rdfs:Class rdf:about="&mv;MiniVan">
+	<rdfs:subClassOf rdf:resource="&mv;PassengerVehicle"/>
+	<rdfs:subClassOf rdf:resource="&mv;Van"/>
+</rdfs:Class>
+<rdfs:Class rdf:about="&mv;MotorVehicle">
+	<rdfs:subClassOf rdf:resource="&rdfs;Resource"/>
+</rdfs:Class>
+<rdfs:Class rdf:about="&mv;PassengerVehicle">
+	<rdfs:subClassOf rdf:resource="&mv;MotorVehicle"/>
+</rdfs:Class>
+<rdfs:Class rdf:about="&mv;Person">
+	<rdfs:subClassOf rdf:resource="&rdfs;Resource"/>
+</rdfs:Class>
+<rdfs:Class rdf:about="&mv;Truck">
+	<rdfs:subClassOf rdf:resource="&mv;MotorVehicle"/>
+</rdfs:Class>
+<rdfs:Class rdf:about="&mv;Van">
+	<rdfs:subClassOf rdf:resource="&mv;MotorVehicle"/>
+</rdfs:Class>
+<rdf:Property rdf:about="&mv;name"
+	 a:maxCardinality="1">
+	<rdfs:domain rdf:resource="&mv;Person"/>
+	<rdfs:range rdf:resource="&rdfs;Literal"/>
+</rdf:Property>
+<rdf:Property rdf:about="&mv;rearSeatLegRoom"
+	 a:maxCardinality="1"
+	 a:range="integer">
+	<rdfs:domain rdf:resource="&mv;MotorVehicle"/>
+	<rdfs:range rdf:resource="&rdfs;Literal"/>
+</rdf:Property>
+<rdf:Property rdf:about="&mv;registeredTo"
+	 a:maxCardinality="1">
+	<rdfs:domain rdf:resource="&mv;MotorVehicle"/>
+	<rdfs:range rdf:resource="&mv;Person"/>
+</rdf:Property>
+</rdf:RDF>
