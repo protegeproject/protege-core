@@ -78,9 +78,9 @@ public class ConfigureProtegePropertiesPanel extends AbstractValidatableComponen
 		copyProperties(_copyProtegeProperties, ApplicationProperties.getApplicationProperties());		
 		ApplicationProperties.flush();
 		
-		File laxFile = getLaxFile();		
+		File laxFile = getLaxFile();
 		if (laxFile.exists()) {
-			_protegeLax.savePropertyFile(laxFile);
+			_protegeLax.savePropertyFile(laxFile,true);
 		}
 	}
 
