@@ -298,7 +298,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private ServerProject createServerProject(String name, Project p) {
         ServerProject impl = null;
         try {
-            impl = new ServerProject(this, getURI(name), new MetaProjectInstanceImpl(name), p);
+            impl = new ServerProject(this, getURI(name), metaproject.getProjectInstance(name), p);
         } catch (RemoteException e) {
             Log.getLogger().severe(Log.toString(e));
         }
@@ -315,7 +315,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         recordDisconnection(session, serverProject);
     }
 
-    private ServerProject getServerProject(Project p) {
+    public ServerProject getServerProject(Project p) {
         return _projectToServerProjectMap.get(p);
     }
 
