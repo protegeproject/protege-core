@@ -9,7 +9,13 @@ import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.Server;
+import edu.stanford.smi.protege.server.ServerProject;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.server.metaproject.MetaProject;
+import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 
 /**
  * This class defines a unit of work to be executed in the 
@@ -23,7 +29,7 @@ import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
  *
  * @author tredmond
  */
-public abstract class ProtegeJob implements Localizable, Serializable {
+public abstract class ProtegeJob<E> implements Localizable, Serializable {
   private static transient Logger log = Log.getLogger(ProtegeJob.class);
 
   private transient KnowledgeBase kb;
@@ -63,11 +69,12 @@ public abstract class ProtegeJob implements Localizable, Serializable {
    * @return the object returned by the execution of this job.
    * @throws ProtegeException the exception thrown by this job during its execution.
    */
-  public Object execute() throws ProtegeException {
+  @SuppressWarnings("unchecked")
+  public E execute() throws ProtegeException {
     if (clientFrameStore == null) {
       return run();
     } else {
-      return clientFrameStore.executeProtegeJob(this);
+      return (E) clientFrameStore.executeProtegeJob(this);
     }
   }
   
@@ -80,7 +87,7 @@ public abstract class ProtegeJob implements Localizable, Serializable {
    * @return 
    * @throws ProtegeException
    */
-  public abstract Serializable run() throws ProtegeException;
+  public abstract E run() throws ProtegeException;
 
   /**
    * Returns the knowledge base associated with this job.
@@ -89,6 +96,22 @@ public abstract class ProtegeJob implements Localizable, Serializable {
    */
   public KnowledgeBase getKnowledgeBase() {
     return kb;
+  }
+  
+  /**
+   * This is a utility for dealing with the metaproject instance when it is known that we are executing
+   * on the server side.
+   * 
+   * This utility makes it easier for developers to access and work with the meta-ontology in 
+   * server-client mode.
+   * 
+   * @return The MetaProjectInstance for this project.
+   */
+  public MetaProjectInstance getMetaProjectInstance() {
+    RemoteSession session = ServerFrameStore.getCurrentSession();
+    ServerProject serverProject = Server.getInstance().getServerProject(getKnowledgeBase().getProject());
+    ServerFrameStore serverFs = (ServerFrameStore) serverProject.getDomainKbFrameStore(session);
+    return serverFs.getMetaProjectInstance();
   }
   
   /**
