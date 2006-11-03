@@ -1488,6 +1488,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       this.projectInstance = projectInstance;
     }
     
+    public MetaProjectInstance getMetaProjectInstance() {
+      return projectInstance;
+    }
+    
     public Set<Operation> getAllowedOperations(RemoteSession session) {
       Policy policy = Server.getPolicy();
       return policy.getAllowedOperations(new UserInstanceImpl(session.getUserName()), 
