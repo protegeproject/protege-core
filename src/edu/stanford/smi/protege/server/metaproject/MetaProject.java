@@ -2,9 +2,25 @@ package edu.stanford.smi.protege.server.metaproject;
 
 import java.util.Set;
 
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Slot;
+
 public interface MetaProject {
+  public enum ClsEnum {
+    Project, User, Group, Operation, GroupOperation;
+  }
+  
+  public enum SlotEnum {
+    name, password, location, group, member,  allowedGroup, allowedOperation, allowedGroupOperation;
+  }
+  
+  Cls getCls(ClsEnum cls);
+  
+  Slot getSlot(SlotEnum slot);
   
   Set<MetaProjectInstance> getProjectInstances();
+  
+  MetaProjectInstance getProjectInstance(String name);
 
   Set<UserInstance> getUserInstances();
   
@@ -13,3 +29,5 @@ public interface MetaProject {
   Policy getPolicy();
   
 }
+
+
