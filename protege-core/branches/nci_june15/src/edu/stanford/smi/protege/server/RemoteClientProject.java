@@ -29,18 +29,25 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 public class RemoteClientProject extends Project {
     private static Logger log = Log.getLogger(RemoteClientProject.class);
   
+    private RemoteServer _server;
     private RemoteServerProject _serverProject;
     private RemoteSession _session;
     private Thread shutdownHook;
 
-    public static Project createProject(RemoteServerProject serverProject, RemoteSession session, boolean pollForEvents)
+    public static Project createProject(RemoteServer server, 
+                                        RemoteServerProject serverProject, 
+                                        RemoteSession session, boolean pollForEvents)
             throws RemoteException {
-        return new RemoteClientProject(serverProject, session, pollForEvents);
+        return new RemoteClientProject(server, serverProject, session, pollForEvents);
     }
 
-    public RemoteClientProject(RemoteServerProject serverProject, RemoteSession session, boolean pollForEvents)
+    public RemoteClientProject(RemoteServer server,
+                               RemoteServerProject serverProject, 
+                               RemoteSession session, 
+                               boolean pollForEvents)
             throws RemoteException {
         super(null, null, new ArrayList(), false);
+        _server = server;
         _serverProject = serverProject;
         _session = session;
         serverProject.getDomainKbFrameStore(session);
@@ -112,6 +119,14 @@ public class RemoteClientProject extends Project {
         kb.setCallCachingEnabled(false);
 
         return kb;
+    }
+    
+    public RemoteSession getSession() {
+      return _session;
+    }
+    
+    public RemoteServer getServer() {
+      return _server;
     }
 
     public URI getProjectURI() {
