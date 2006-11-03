@@ -10,11 +10,11 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.GroupInstance;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
+import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
+import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 import edu.stanford.smi.protege.util.Log;
 
-public class GroupInstanceImpl extends WrappedProtegeInstance implements GroupInstance {
+public class GroupInstanceImpl extends WrappedProtegeInstanceImpl implements GroupInstance {
   public static final String WORLD = "World";
   
   protected GroupInstanceImpl(MetaProjectImpl mp, Instance group) 

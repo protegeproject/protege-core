@@ -4,19 +4,19 @@ import java.util.HashSet;
 import java.util.Set;
 
 import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
+import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
+import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 
-public class WrappedProtegeInstance {
+public class WrappedProtegeInstanceImpl {
   MetaProjectImpl mp;
   private Instance i;
   private ClsEnum cls;
   
-  public WrappedProtegeInstance() {
+  public WrappedProtegeInstanceImpl() {
     
   }
   
-  public WrappedProtegeInstance(MetaProjectImpl mp, Instance i, ClsEnum cls) {
+  public WrappedProtegeInstanceImpl(MetaProjectImpl mp, Instance i, ClsEnum cls) {
     if (!i.hasType(mp.getCls(cls))) {
       throw new IllegalArgumentException("" + i + " should be of type " + cls);
     }
@@ -25,7 +25,7 @@ public class WrappedProtegeInstance {
     this.mp = mp;
   }
   
-  protected MetaProjectImpl getMetaProject() {
+  public MetaProjectImpl getMetaProject() {
     return mp;
   }
   
@@ -47,10 +47,10 @@ public class WrappedProtegeInstance {
   }
   
   public boolean equals(Object o) {
-    if (!(o instanceof WrappedProtegeInstance)) {
+    if (!(o instanceof WrappedProtegeInstanceImpl)) {
       return false;
     }
-    WrappedProtegeInstance other = (WrappedProtegeInstance) o;
+    WrappedProtegeInstanceImpl other = (WrappedProtegeInstanceImpl) o;
     return mp == other.mp && getProtegeInstance().equals(other.getProtegeInstance());
   }
   

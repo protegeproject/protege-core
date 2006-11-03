@@ -4,10 +4,10 @@ import java.io.Serializable;
 
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Operation;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
+import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
+import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 
-public class OperationImpl extends WrappedProtegeInstance implements Operation, Serializable {
+public class OperationImpl extends WrappedProtegeInstanceImpl implements Operation, Serializable {
   public final static OperationImpl READ = new OperationImpl("Read");
   public final static OperationImpl WRITE = new OperationImpl("Write");
   

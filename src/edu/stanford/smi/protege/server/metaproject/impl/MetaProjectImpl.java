@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.stanford.smi.protege.exception.InvalidProtegeArg;
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
@@ -23,14 +23,6 @@ public class MetaProjectImpl implements MetaProject {
   private KnowledgeBase kb;
   private Policy policy;
   
-  protected enum ClsEnum {
-    Project, User, Group, Operation, GroupOperation;
-  }
-  
-  protected enum SlotEnum {
-    name, password, location, group, member,  allowedGroup, allowedOperation, allowedGroupOperation;
-  }
-  
   public MetaProjectImpl(URI metaprojectURI) {
     Collection errors = new ArrayList();
     Project project = Project.loadProjectFromURI(metaprojectURI, errors);
@@ -44,7 +36,7 @@ public class MetaProjectImpl implements MetaProject {
     return kb;
   }
   
-  protected Cls getCls(ClsEnum cls) throws OntologyException {
+  public Cls getCls(ClsEnum cls) throws OntologyException {
     Cls frameCls = kb.getCls(cls.toString());
     if (frameCls == null) {
       throw new OntologyException("Metaproject Ontology should contain a class " + cls);
@@ -52,7 +44,7 @@ public class MetaProjectImpl implements MetaProject {
     return frameCls;
   }
   
-  protected Slot getSlot(SlotEnum slot) throws OntologyException {
+  public Slot getSlot(SlotEnum slot) throws OntologyException {
     Slot frameSlot = kb.getSlot(slot.toString());
     if (frameSlot == null) {
       throw new OntologyException("Metaproject Ontology should contain a slot " + slot);
@@ -60,7 +52,7 @@ public class MetaProjectImpl implements MetaProject {
     return frameSlot;
   }
   
-  protected WrappedProtegeInstance wrapInstance(ClsEnum cls, Instance i) {
+  protected WrappedProtegeInstanceImpl wrapInstance(ClsEnum cls, Instance i) {
     if (!i.hasType(getCls(cls))) {
       throw new IllegalArgumentException("" + i + " should be a " + cls + " instance");
     }
@@ -92,6 +84,18 @@ public class MetaProjectImpl implements MetaProject {
   @SuppressWarnings("unchecked")
   public Set<MetaProjectInstance> getProjectInstances() {
     return (Set<MetaProjectInstance>) getWrappedInstances(ClsEnum.Project);
+  }
+  
+  public MetaProjectInstance getProjectInstance(String name) {
+    Collection frames = kb.getFramesWithValue(getSlot(SlotEnum.name), null, false, name);
+    if (frames == null || frames.isEmpty()) {
+      return null;
+    }
+    Frame frame = (Frame) frames.iterator().next();
+    if (!(frame instanceof Frame)) {
+      return null;
+    }
+    return new MetaProjectInstanceImpl(this, (Instance) frame);
   }
  
   @SuppressWarnings("unchecked")

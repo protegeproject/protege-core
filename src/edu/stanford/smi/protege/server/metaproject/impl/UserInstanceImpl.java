@@ -6,10 +6,10 @@ import java.util.Set;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.GroupInstance;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
+import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
+import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 
-public class UserInstanceImpl extends WrappedProtegeInstance implements UserInstance, Serializable {
+public class UserInstanceImpl extends WrappedProtegeInstanceImpl implements UserInstance, Serializable {
   private static final long serialVersionUID = -4416984896523630762L;
   
   private String name;
