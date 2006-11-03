@@ -3,12 +3,12 @@
 # Change to the script' working directory, should be the Protege root directory 
 cd $(dirname $0)
 
-if [  -x /usr/bin/uname  -a  "x`/usr/bin/uname`" == "xDarwin" ] 
+if [  -x /usr/bin/uname  -a  "x`/usr/bin/uname`" = "xDarwin" ] 
 then
   JAVA_PATH=/usr/bin
 else 
   # Attempt to use the bundled VM if none specified
-  if [ "$JAVA_HOME" == "" ]; then
+  if [ "$JAVA_HOME" = "" ]; then
 	JAVA_HOME=.
   fi
 
