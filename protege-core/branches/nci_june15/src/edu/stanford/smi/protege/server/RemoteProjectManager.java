@@ -75,7 +75,7 @@ public class RemoteProjectManager {
                 if (session != null) {
                     RemoteServerProject serverProject = server.openProject(projectName, session);
                     if (serverProject != null) {
-                        p = RemoteClientProject.createProject(serverProject, session, pollForEvents);
+                        p = RemoteClientProject.createProject(server, serverProject, session, pollForEvents);
                     }
                 }
             }
@@ -89,7 +89,7 @@ public class RemoteProjectManager {
         Project p = null;
         try {
             RemoteServerProject serverProject = server.openProject(name, session);
-            p = RemoteClientProject.createProject(serverProject, session, true);
+            p = RemoteClientProject.createProject(server, serverProject, session, true);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
         }
