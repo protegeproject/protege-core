@@ -45,7 +45,7 @@ public class ConfigureProtegePropertiesPanel extends AbstractValidatableComponen
 		_protegeProp = new ProtegePropertiesComponent(_copyProtegeProperties);
 		_protegeProp.setVisibleHeaderButton(_protegeProp.getLoadAction(), false);
 		
-		_tabbedPane.addTab("protege.properties",_protegeProp);
+		_tabbedPane.addTab(ApplicationProperties.FILE_NAME,_protegeProp);
 				
 		File laxFile = getLaxFile();
 		
@@ -53,7 +53,7 @@ public class ConfigureProtegePropertiesPanel extends AbstractValidatableComponen
 			_protegeLax = new ProtegePropertiesComponent(laxFile);
 			_protegeLax.setVisibleHeaderButton(_protegeLax.getLoadAction(), false);
 			
-			_tabbedPane.addTab("Protege.lax", _protegeLax);
+			_tabbedPane.addTab(PROTEGE_LAX_FILE, _protegeLax);
 		}
 		
 		add(_tabbedPane);		
@@ -75,6 +75,9 @@ public class ConfigureProtegePropertiesPanel extends AbstractValidatableComponen
 	}
 
 	public void saveContents() {
+		_protegeLax.stopCellEditing();
+		_protegeProp.stopCellEditing();
+		
 		copyProperties(_copyProtegeProperties, ApplicationProperties.getApplicationProperties());		
 		ApplicationProperties.flush();
 		
