@@ -215,7 +215,7 @@ public class ProtegePropertiesComponent extends JPanel {
     		OutputStream out = new FileOutputStream(propFile);
     		
     		//TT: The Java Properties escapes the ":" charachter in the saved file, and lax cannot in
-    		//interpret the new Lax file correctly. That is why another save method should be used for that.    		
+    		//interpret the new Lax file correctly. That is why another save method is used for that.    		
     		if (escapeColonChar)
     			FileUtilities.savePropertiesFile(propFile, _propertiesTableModel.getProperties());
     		else
@@ -357,5 +357,10 @@ public class ProtegePropertiesComponent extends JPanel {
     	
     public boolean isChangedContent() {
     	return _propertiesTableModel.isChanged();
+    }
+    
+    public void stopCellEditing(){
+    	if (_propertiesTable.getCellEditor() != null)
+    		_propertiesTable.getCellEditor().stopCellEditing();
     }
 }
