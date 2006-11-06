@@ -266,4 +266,23 @@ public class URIUtilities {
         }
         return uri;
     }
+    
+    public static boolean isValidURI(String s){
+    	try {
+    		URI uri = new URI(s);
+    		return true;
+    	}catch (Exception e) {
+			return false;
+		}
+    }
+    
+    public static boolean isAbsoluteURI(String s) {
+    	try {
+    		URI uri = new URI(s);
+    		return uri.isAbsolute();
+    	}catch (Exception e) {
+			return false;
+		}    	
+    }
+    
 }
