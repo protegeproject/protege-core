@@ -114,6 +114,10 @@ public abstract class AbstractEvent extends EventObject implements Localizable {
         }
         return equals;
     }
+    
+    public void setTimeStamp(long timeStamp) {
+      _timeStamp = timeStamp;
+    }
 
     
 	/**
