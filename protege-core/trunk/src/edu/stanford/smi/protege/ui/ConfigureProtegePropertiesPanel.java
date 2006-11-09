@@ -49,7 +49,7 @@ public class ConfigureProtegePropertiesPanel extends AbstractValidatableComponen
 				
 		File laxFile = getLaxFile();
 		
-		if (laxFile.exists()) {
+		if (laxFile != null && laxFile.exists()) {
 			_protegeLax = new ProtegePropertiesComponent(laxFile);
 			_protegeLax.setVisibleHeaderButton(_protegeLax.getLoadAction(), false);
 			
@@ -75,14 +75,15 @@ public class ConfigureProtegePropertiesPanel extends AbstractValidatableComponen
 	}
 
 	public void saveContents() {
-		_protegeLax.stopCellEditing();
 		_protegeProp.stopCellEditing();
-		
+		if (_protegeLax != null)
+			_protegeLax.stopCellEditing();
+				
 		copyProperties(_copyProtegeProperties, ApplicationProperties.getApplicationProperties());		
 		ApplicationProperties.flush();
 		
 		File laxFile = getLaxFile();
-		if (laxFile.exists()) {
+		if (_protegeLax!= null && laxFile != null && laxFile.exists()) {
 			_protegeLax.savePropertyFile(laxFile,true);
 		}
 	}
