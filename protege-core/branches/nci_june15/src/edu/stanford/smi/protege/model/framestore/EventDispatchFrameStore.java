@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.model.framestore;
 
+import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,11 +53,6 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private Map _listeners = new HashMap();
     private Thread _eventThread;
     private Object lock;
-    
-    public enum DispatchState {
-      DISPATCHING_EVENTS, IDLE, REQUEST_DISPATCH
-    };
-    private DispatchState state = DispatchState.IDLE;
     
     
     public EventDispatchFrameStore(KnowledgeBase kb) {
@@ -703,11 +699,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         dispatchEvents();
     }
     
-    /*
-     * Care must be taken to ensure that no lock is taken inside of the knowledge base lock.
-     * But we must also ensure that all knowledge base calls are synchronized.  Can this be 
-     * done in a better way?
-     */
+
     private void startEventThread() {
         _eventThread = new Thread("EventDispatchFrameStoreHandler.startEventThread") {
           public void run() {
@@ -717,12 +709,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                   if (_eventThread != this) {
                     return;
                   }
-                  state = DispatchState.DISPATCHING_EVENTS;
                 }
                 getEventsAndDispatch();
                 synchronized (lock) {
-                  state = DispatchState.IDLE;
-                  lock.notifyAll();
                   lock.wait(DELAY_MSEC);
                 }
               } catch (Exception e) {
@@ -739,38 +728,33 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     private void getEventsAndDispatch() 
     throws InvocationTargetException, InterruptedException {
-        final Collection events;
-        synchronized (lock) {
-          events = getDelegate().getEvents();
+        if (EventQueue.isDispatchThread()) {
+            getEventsAndDispatch2();
         }
-        if (!events.isEmpty()) {
+        else {  // careful - deadlock territory...
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
-                    if (getDelegate() != null) {
-                      synchronized (lock) {
-                        dispatchEvents(events, true);
-                      }
-                    }
+                    getEventsAndDispatch2();
                 }
             });
         }
     }
     
+    private void getEventsAndDispatch2() {
+        synchronized (lock) {
+            if (getDelegate() != null) {
+                Collection events = getDelegate().getEvents();
+                dispatchEvents(events, true);
+            }
+        } 
+    }
+    
     public void flushEvents() throws InterruptedException {
-      synchronized  (lock) {
-        while (state == DispatchState.DISPATCHING_EVENTS) {
-          lock.wait();
+        try {
+            getEventsAndDispatch();
+        } catch (InvocationTargetException ite) {
+            Log.getLogger().warning("Exception caught " + ite);
         }
-        boolean eventThreadRunning = (_eventThread != null);
-        state = DispatchState.REQUEST_DISPATCH;
-        startEventThread();
-        while (state != DispatchState.IDLE) {
-          lock.wait();
-        }
-        if (!eventThreadRunning) {
-          stopEventThread();
-        }
-      }
     }
 
     private void stopEventThread() {
