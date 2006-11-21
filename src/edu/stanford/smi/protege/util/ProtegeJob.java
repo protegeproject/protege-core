@@ -14,7 +14,6 @@ import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProject;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
-import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 
 /**
@@ -29,7 +28,7 @@ import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
  *
  * @author tredmond
  */
-public abstract class ProtegeJob<E> implements Localizable, Serializable {
+public abstract class ProtegeJob implements Localizable, Serializable {
   private static transient Logger log = Log.getLogger(ProtegeJob.class);
 
   private transient KnowledgeBase kb;
@@ -70,11 +69,11 @@ public abstract class ProtegeJob<E> implements Localizable, Serializable {
    * @throws ProtegeException the exception thrown by this job during its execution.
    */
   @SuppressWarnings("unchecked")
-  public E execute() throws ProtegeException {
+  public Object execute() throws ProtegeException {
     if (clientFrameStore == null) {
       return run();
     } else {
-      return (E) clientFrameStore.executeProtegeJob(this);
+      return clientFrameStore.executeProtegeJob(this);
     }
   }
   
@@ -87,7 +86,7 @@ public abstract class ProtegeJob<E> implements Localizable, Serializable {
    * @return 
    * @throws ProtegeException
    */
-  public abstract E run() throws ProtegeException;
+  public abstract Object run() throws ProtegeException;
 
   /**
    * Returns the knowledge base associated with this job.
