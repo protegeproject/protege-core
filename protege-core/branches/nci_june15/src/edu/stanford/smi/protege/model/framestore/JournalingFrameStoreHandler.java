@@ -66,10 +66,10 @@ public class JournalingFrameStoreHandler extends AbstractFrameStoreInvocationHan
             super.provideQueryResults(results);
           }
         };
-        getDelegate().executeQuery(q, myCallback);
-        if (recordQueries) {
+      }
+      getDelegate().executeQuery(q, myCallback);
+      if (recordQueries) {
           journaler.info("Executing query " + q + " (callback may log entry before this log)");
-        }
       }
     }
 
