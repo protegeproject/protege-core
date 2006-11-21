@@ -16,6 +16,30 @@ import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 
+/*
+ * There is a temptation to define Protege using a generic here.  But this
+ * creates a problem.  If we define a class Foo extending Protege<String>
+ * then the class Foo will include a defintion of 
+ *      String execute();
+ * Unfortunately code expecting a Protege object will need a definition of 
+ *      Object execute()
+ * and will not find it.  This can lead to AbstractMethodError even when the 
+ * sources are in sync and everything compiles (on at least some jvm).  It is possible
+ * that the jvm generating the exception and the jvm that compiled the code
+ * have different treatment of this situation. 
+ * 
+ * There may be a good solution to this problem (generic method declarations) but 
+ * there are several places where this can go wrong (e.g. the rmi implementation?)
+ * so I have decided not to mess with it.
+ * 
+ * This problem is jvm specific.  On the OS X jvm, there appears to be no
+ * problem but on other jvm's there is.  From my reading of the generics 
+ * documentation, this should not happen.  This case is explicitly  considered
+ * and a solution is explained.  Is this related to RMI and is it a java bug?
+ * 
+ * Still under investigation...
+ */
+
 /**
  * This class defines a unit of work to be executed in the 
  * context of a knowledge base.  The purpose of this class is 
