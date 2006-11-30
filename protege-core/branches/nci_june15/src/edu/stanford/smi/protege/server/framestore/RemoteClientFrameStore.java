@@ -208,13 +208,6 @@ public class RemoteClientFrameStore implements FrameStore {
               } else {
                 ((ProtegeJob) args[0]).fixLoader();
               }
-              if (!method.equals(getEventsMethod)) {
-                ProjectView view = ProjectManager.getProjectManager().getCurrentProjectView();
-                if (view != null) {
-                  // make the server activity button red, it reverts to white after 300 milliseconds of inactivity
-                  view.startBusyFlagThread();	 
-                }
-              }
               try {
                 return method.invoke(remoteDelegate, args);
               } catch (InvocationTargetException ite) { 
