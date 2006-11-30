@@ -87,7 +87,6 @@ public class ProjectManager {
     private boolean _doExitVM = true;
     private JFrame _errorFrame;
     private JComponent _toolBarHolder;
-	private JButton _serverActivityMonitorButton;
 
     private static class FactoryPanel extends JPanel {
         private JList _list;
@@ -836,14 +835,7 @@ public class ProjectManager {
         JLabel icon = ComponentFactory.createLabel(Icons.getLogo());
         icon.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
         
-        _serverActivityMonitorButton = new JButton();
-		_serverActivityMonitorButton.setMaximumSize(new Dimension(7,7));
-        _serverActivityMonitorButton.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-        _serverActivityMonitorButton.setEnabled(false);
-        _serverActivityMonitorButton.setBackground(Color.WHITE);
-        
-        panel2.add(icon);
-        panel2.add(_serverActivityMonitorButton);        
+        panel2.add(icon);     
         _headerPanel.add(panel2, BorderLayout.EAST);
 
         _toolBarHolder = Box.createHorizontalBox();
@@ -971,8 +963,4 @@ public class ProjectManager {
         ArchiveManager manager = ArchiveManager.getArchiveManager();
         manager.archive(_currentProject, comment);
     }
-
-	public JButton getServerActivityMonitorButton() {
-		return _serverActivityMonitorButton;
-	}
 }
