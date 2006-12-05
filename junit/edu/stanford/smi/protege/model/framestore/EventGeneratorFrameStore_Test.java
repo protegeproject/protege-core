@@ -32,6 +32,13 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
       }
       return false;
     }
+    
+    private boolean isSimilarEvent(EventObject event1, AbstractEvent event2) {
+        if (event1 instanceof AbstractEvent) {
+            event2.setTimeStamp(((AbstractEvent) event1).getTimeStamp());
+        }
+        return event1.equals(event2);
+    }
 
     public void testCreateClsEvent() {
         Cls rootCls = _kb.getRootCls();
@@ -55,8 +62,8 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         List<EventObject> events = getTestFrameStore().getEvents();
         ClsEvent testEvent1 = new ClsEvent(cls, ClsEvent.DIRECT_SUPERCLASS_ADDED, superclass);
         ClsEvent testEvent2 = new ClsEvent(superclass, ClsEvent.DIRECT_SUBCLASS_ADDED, cls);
-        assertEquals("kb event", testEvent1, events.get(0));
-        assertEquals("kb event", testEvent2, events.get(1));
+        assertTrue("kb event", isSimilarEvent(events.get(0), testEvent1));
+        assertTrue("kb event", isSimilarEvent(events.get(1), testEvent2));
     }
 
     public void testDeleteClsEvents() {
