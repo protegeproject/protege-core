@@ -28,6 +28,7 @@ OPTIONS=$MAXIMUM_MEMORY
 
 #Possible instrumentation options - debug, etc.
 #DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8100,server=y,suspend=n"
+#JCONSOLE=-Dcom.sun.management.jmxremote
 
 # Run Protege
 $JAVA_PATH/java $OPTIONS -cp $JARS $MAIN_CLASS $1
