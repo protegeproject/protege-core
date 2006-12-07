@@ -29,6 +29,7 @@ public class ConfigureProjectPanel extends ValidatableTabComponent {
         addTab("Tab Widgets", new ConfigureTabsPanel(project));
         // addTab("Slot Widgets", new ConfigureWidgetsPanel(project));
         addTab("Options", new ConfigureOptionsPanel(project));
+        addTab("Property Files", new ConfigureProtegePropertiesPanel(project));
         
         addUserDefinedConfigTabs();
     }
