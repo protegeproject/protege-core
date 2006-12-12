@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.model.query.QueryCallbackClone;
 import edu.stanford.smi.protege.util.Log;
 
 public class JournalingFrameStoreHandler extends AbstractFrameStoreInvocationHandler {
+    public final static String journaller_name = "protege.journal";
     private Logger journaler;
     private Handler handler;
     private boolean recordQueries = false;
@@ -24,7 +25,7 @@ public class JournalingFrameStoreHandler extends AbstractFrameStoreInvocationHan
         try {
             stop();
             handler = new java.util.logging.FileHandler(new File(journalURI).getPath(), true);
-            journaler = Logger.getLogger("protege.journal");
+            journaler = Logger.getLogger(journaller_name);
             journaler.setUseParentHandlers(false);
             journaler.addHandler(handler);
             journaler.setLevel(Level.ALL);
