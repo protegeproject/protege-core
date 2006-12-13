@@ -287,9 +287,8 @@ public class ProjectChooser extends JFileChooser {
 		    if (project != null)
 		    	return project;
 		    
-		    //change this
-		    if (availablePlugins.size() > 0 && project == null) 
-		    	Log.getLogger().warning("Could not load the file with the available CreateProjectFromFile plugins. Trying the default loader...");
+		    //if (availablePlugins.size() > 0 && project == null) 
+		    //	Log.getLogger().warning("Could not load the file with the available CreateProjectFromFile plugins. Trying the default loader...");
 		}
 		
 		// If it got here, it means that it could not load the file using the existing plugins		
