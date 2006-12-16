@@ -1,65 +1,48 @@
 package edu.stanford.smi.protege.ui;
 
 import java.awt.*;
-import java.awt.event.*;
-import java.net.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
 import edu.stanford.smi.protege.util.*;
 
 /**
  * Startup dialog that is displayed when a user starts Protege (without
  * double clicking on a project file).  The dialog is displayed on top of the
- * main window and gives the user the option to create a new project, open
- * a recently used project, or launch one of several help topics.
+ * main window and gives users the option to create a new project, open
+ * a recently used project, browse for an existing file that is not in the
+ * recently used list, or launch one of several help topics.
  *
  * @author Jennifer Vendetti
  */
 public class WelcomeDialog extends JDialog {
-
-    JPanel panel = new JPanel(new BorderLayout(5, 5));
-    JPanel centerPanel = new JPanel(new BorderLayout());
-    JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-
-    // Panels for create new project button and protege logo.
-    JPanel newButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    JPanel iconPanel = new JPanel(new FlowLayout());
-    JPanel topPanel = new JPanel(new BorderLayout());
-
-    // Panels for opening recently used/other projects.
-    JPanel mruPanel = new JPanel(new BorderLayout());
-    JPanel openButtons = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    JPanel openPanel = new JPanel(new BorderLayout());
-
-    // Panels for help buttons.
-    JPanel helpPanel = new JPanel(new BorderLayout());
-    JPanel hspHolder = new JPanel(new FlowLayout());
-    JPanel helpSubPanel = new JPanel(new GridLayout(4, 1, 0, 2));
-
-    TitledBorder titledBorder1;
-    TitledBorder titledBorder2;
-
-    JButton closeButton = createButton(ResourceKey.CLOSE_BUTTON_LABEL, Icons.getCloseIcon());
-    JButton faqButton = createButton(ResourceKey.WELCOME_DIALOG_FAQ);
-    JButton newButton = createButton(ResourceKey.WELCOME_DIALOG_NEW, Icons.getNewProjectIcon());
-    JButton openButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN);
-    JButton openOtherButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN_OTHER, Icons.getOpenProjectIcon());
-    JButton topicsButton = createButton(ResourceKey.WELCOME_DIALOG_ALL_TOPICS);
-    JButton tutorialButton = createButton(ResourceKey.WELCOME_DIALOG_GETTING_STARTED);
-    JButton usersGuideButton = createButton(ResourceKey.WELCOME_DIALOG_USERS_GUIDE);
-
-    ButtonGroup group = new ButtonGroup();
-    ProjectList mruList;
-    JScrollPane mruScrollPane;
-    JLabel iconLabel;
-    JRadioButton[] rbArray;
-    List projectURIList = new ArrayList(ApplicationProperties.getMRUProjectList());
+    JButton cancelButton;
+    JButton faqButton;
+    JButton newButton;
+    JButton openOtherButton;
+    JButton openRecentButton;
+    JButton topicsButton;
+    JButton tutorialButton;
+    JButton usersGuideButton;
+    JPanel helpButtonsPanel;
+    JPanel projectsPanel;
+    JLabel protegeIconLabel;
+    List projectURIs;
+    ProjectList projectList;
 
     // Extended the JList class in order to have tool tips for each
     // individual list item.
@@ -74,7 +57,7 @@ public class WelcomeDialog extends JDialog {
             String toolTip = null;
             int index = locationToIndex(event.getPoint());
             if (index >= 0) {
-                toolTip = projectURIList.get(index).toString();
+                toolTip = projectURIs.get(index).toString();
             }
             return toolTip;
         }
@@ -83,129 +66,197 @@ public class WelcomeDialog extends JDialog {
     public WelcomeDialog(java.awt.Frame frame, String title, boolean modal) {
         super(frame, title, modal);
         try {
-            this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            jbInit();
-            pack();
-
-            Runnable doFocus = new Runnable() {
-                public void run() {
-                    closeButton.requestFocus();
-                }
-            };
-            SwingUtilities.invokeLater(doFocus);
-
+            setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            setSize(500, 300);
+            projectURIs = new ArrayList(ApplicationProperties.getMRUProjectList());
+            initializeUI();
         } catch (Exception ex) {
             Log.getLogger().severe(Log.toString(ex));
         }
     }
 
-    void jbInit() {
-        titledBorder1 = createBorder(ResourceKey.WELCOME_DIALOG_OPEN_RECENT_PROJECT_TITLE);
-        titledBorder2 = createBorder(ResourceKey.WELCOME_DIALOG_HELP_TITLE);
-        openPanel.setBorder(titledBorder1);
-        hspHolder.setBorder(titledBorder2);
+    private void initializeUI() {
+		// Build sub panels
+        buildProjectsPanel();
+        buildHelpPanel();
 
-        /**
-         * Build top panel
-         */
+        // Build main dialog
+        Container contentPane = getContentPane();
+        contentPane.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
 
-        setToolTipText(newButton, ResourceKey.WELCOME_DIALOG_NEW_TOOLTIP);
-        newButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                newButton_actionPerformed(ae);
+        // Protege logo
+        protegeIconLabel = new JLabel(Icons.getLogo());
+        c.gridx = 1;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(7, 0, 0, 0);
+        c.anchor = GridBagConstraints.CENTER;
+        contentPane.add(protegeIconLabel, c);
+
+        // Add Project & File Access panel
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridheight = 2;
+        c.fill = GridBagConstraints.BOTH;
+        c.insets = new Insets(7, 2, 0, 0);
+        c.anchor = GridBagConstraints.FIRST_LINE_START;
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        contentPane.add(projectsPanel, c);
+
+        // Add Help panel
+        c.gridx = 1;
+        c.gridy = 1;
+        c.gridheight = 1;
+        c.weightx = 0.0;
+        c.weighty = 0.0;
+        contentPane.add(helpButtonsPanel, c);
+
+        // Cancel button
+        cancelButton = createButton(ResourceKey.CANCEL_BUTTON_LABEL,
+        							Icons.getCancelIcon());
+        cancelButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                closeButton_actionPerformed(e);
             }
         });
-        newButtonPanel.add(newButton);
+        c.gridx = 0;
+        c.gridy = 2;
+        c.gridwidth = 2;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(11, 0, 7, 0);
+        c.anchor = GridBagConstraints.CENTER;
+        contentPane.add(cancelButton, c);
 
+        getRootPane().setDefaultButton(cancelButton);
+    }
+
+    private void buildProjectsPanel() {
+        projectsPanel = new JPanel(new GridBagLayout());
+        projectsPanel.setBorder(createBorder(ResourceKey.WELCOME_DIALOG_OPEN_RECENT_PROJECT_TITLE));
+        GridBagConstraints c = new GridBagConstraints();
+
+		// List of recently accessed project & files
+        initializeList();
+        JScrollPane projectScrollPane = new JScrollPane(projectList);
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 4;
+        c.fill = GridBagConstraints.BOTH;
+        c.insets = new Insets(0, 2, 5, 2); // top, left, bottom, right
+        c.anchor = GridBagConstraints.FIRST_LINE_START;
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        projectsPanel.add(projectScrollPane, c);
+
+        // Open Recent button
+        openRecentButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN, Icons.getOpenProjectIcon());
+        openRecentButton.setMnemonic(LocalizedText.getMnemonic(ResourceKey.WELCOME_DIALOG_OPEN));
+        setToolTipText(openRecentButton, ResourceKey.WELCOME_DIALOG_OPEN_TOOLTIP);
+        openRecentButton.setEnabled(false);
+        openRecentButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                openButton_actionPerformed(ae);
+            }
+        });
+        c.gridx = 1;
+        c.gridy = 0;
+        c.gridwidth = 1;
+    	c.gridheight = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 0, 5, 0);
+        c.weightx = 0.0;
+        c.weighty = 0.0;
+        projectsPanel.add(openRecentButton, c);
+
+        // Open Other button
+        openOtherButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN_OTHER, Icons.getOpenProjectIcon());
+        openOtherButton.setMnemonic(LocalizedText.getMnemonic(ResourceKey.WELCOME_DIALOG_OPEN_OTHER));
         setToolTipText(openOtherButton, ResourceKey.WELCOME_DIALOG_OPEN_OTHER_TOOLTIP);
         openOtherButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 openOtherButton_actionPerformed(ae);
             }
         });
-        newButtonPanel.add(openOtherButton);
+        c.gridx = 1;
+        c.gridy = 1;
+        projectsPanel.add(openOtherButton, c);
 
-        iconLabel = new JLabel("   ", Icons.getLogo(), SwingConstants.LEFT);
-        iconPanel.add(iconLabel);
+        // Filler
+        JLabel label = new JLabel("");
+        c.gridx = 1;
+        c.gridy = 2;
+        c.weighty = 1.0;
+        projectsPanel.add(label, c);
 
-        topPanel.add(newButtonPanel, BorderLayout.CENTER);
-        topPanel.add(iconPanel, BorderLayout.EAST);
-
-        /**
-         * Build Open Recent/Other Project panel
-         */
-
-        initList();
-        mruScrollPane = new JScrollPane(mruList);
-        mruPanel.add(mruScrollPane, BorderLayout.CENTER);
-
-        setToolTipText(openButton, ResourceKey.WELCOME_DIALOG_OPEN_TOOLTIP);
-        openButton.setEnabled(false);
-        openButton.addActionListener(new ActionListener() {
+        // New Project button
+        newButton = createButton(ResourceKey.WELCOME_DIALOG_NEW, Icons.getNewProjectIcon());
+        newButton.setMnemonic(LocalizedText.getMnemonic(ResourceKey.WELCOME_DIALOG_NEW));
+        setToolTipText(newButton, ResourceKey.WELCOME_DIALOG_NEW_TOOLTIP);
+        newButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                openButton_actionPerformed(ae);
+                newButton_actionPerformed(ae);
             }
         });
-        openButtons.add(openButton);
+        c.gridx = 1;
+        c.gridy = 3;
+        c.weighty = 0.0;
+        projectsPanel.add(newButton, c);
+    }
 
-        openPanel.add(mruPanel, BorderLayout.CENTER);
-        openPanel.add(openButtons, BorderLayout.SOUTH);
+    private void buildHelpPanel() {
+        helpButtonsPanel = new JPanel();
+        helpButtonsPanel.setLayout(new BoxLayout(helpButtonsPanel, BoxLayout.PAGE_AXIS));
+        helpButtonsPanel.setBorder(createBorder(ResourceKey.WELCOME_DIALOG_HELP_TITLE));
+        Dimension verticalSpace = new Dimension(0, 5);
 
-        /**
-         * Build help panel
-         */
-
-        helpSubPanel.add(tutorialButton);
+        // Add "Getting Started" button
+        tutorialButton = createButton(ResourceKey.WELCOME_DIALOG_GETTING_STARTED);
+        tutorialButton.setMnemonic(LocalizedText.getMnemonic(ResourceKey.WELCOME_DIALOG_GETTING_STARTED));
         tutorialButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 tutorialButton_actionPerformed(ae);
             }
         });
+        helpButtonsPanel.add(tutorialButton);
+        helpButtonsPanel.add(Box.createRigidArea(verticalSpace));
 
-        helpSubPanel.add(faqButton);
+        // Add "FAQ" button
+        faqButton = createButton(ResourceKey.WELCOME_DIALOG_FAQ);
+        faqButton.setMnemonic(LocalizedText.getMnemonic(ResourceKey.WELCOME_DIALOG_FAQ));
         faqButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 faqButton_actionPerformed(ae);
             }
         });
+        helpButtonsPanel.add(faqButton);
+        helpButtonsPanel.add(Box.createRigidArea(verticalSpace));
 
-        helpSubPanel.add(usersGuideButton);
+        // Add "User's Guide" button
+        usersGuideButton = createButton(ResourceKey.WELCOME_DIALOG_USERS_GUIDE);
+        usersGuideButton.setMnemonic(LocalizedText.getMnemonic(ResourceKey.WELCOME_DIALOG_USERS_GUIDE));
         usersGuideButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 usersGuideButton_actionPerformed(ae);
             }
         });
+        helpButtonsPanel.add(usersGuideButton);
+        helpButtonsPanel.add(Box.createRigidArea(verticalSpace));
 
-        helpSubPanel.add(topicsButton);
+        // Add "All Topics" button
+        topicsButton = createButton(ResourceKey.WELCOME_DIALOG_ALL_TOPICS);
+        topicsButton.setMnemonic(LocalizedText.getMnemonic(ResourceKey.WELCOME_DIALOG_ALL_TOPICS));
         topicsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 topicsButton_actionPerformed(ae);
             }
         });
-
-        hspHolder.add(helpSubPanel);
-        helpPanel.add(hspHolder, BorderLayout.CENTER);
-
-        /**
-         * Build main dialog
-         */
-
-        centerPanel.add(openPanel, BorderLayout.CENTER);
-        centerPanel.add(helpPanel, BorderLayout.EAST);
-
-        panel.add(topPanel, BorderLayout.NORTH);
-        panel.add(centerPanel, BorderLayout.CENTER);
-
-        closeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                closeButton_actionPerformed(e);
-            }
-        });
-        bottomPanel.add(closeButton);
-
-        this.getContentPane().setLayout(new BorderLayout(0, 10));
-        this.getContentPane().add(panel, BorderLayout.CENTER);
-        this.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
+        helpButtonsPanel.add(topicsButton);
+        equalizeHelpButtons();
     }
 
     private static JButton createButton(ResourceKey key) {
@@ -226,34 +277,34 @@ public class WelcomeDialog extends JDialog {
         button.setToolTipText(text);
     }
 
-    private void initList() {
+    private void initializeList() {
         DefaultListModel model = new DefaultListModel();
 
         // Populate the list's model with data.
-        for (int i = 0; i < projectURIList.size(); i++) {
-            URI uri = (URI) projectURIList.get(i);
+        for (int i = 0; i < projectURIs.size(); i++) {
+            URI uri = (URI) projectURIs.get(i);
             String projectName = URIUtilities.getBaseName(uri);
             model.addElement(projectName);
         }
 
-        mruList = new ProjectList(model);
-        mruList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        projectList = new ProjectList(model);
+        projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        mruList.addListSelectionListener(new ListSelectionListener() {
+        projectList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (e.getValueIsAdjusting()) {
                     return;
                 }
-                if (!mruList.isSelectionEmpty()) {
-                    openButton.setEnabled(true);
+				if (!projectList.isSelectionEmpty()) {
+                    openRecentButton.setEnabled(true);
                 }
             }
         });
 
-        mruList.addMouseListener(new MouseAdapter() {
+        projectList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    int index = mruList.locationToIndex(e.getPoint());
+                    int index = projectList.locationToIndex(e.getPoint());
                     doOpenProject(index);
                 }
             }
@@ -262,7 +313,7 @@ public class WelcomeDialog extends JDialog {
 
     private void doOpenProject(int index) {
         if (index >= 0) {
-            URI uri = (URI) projectURIList.get(index);
+            URI uri = (URI) projectURIs.get(index);
             WaitCursor cursor = new WaitCursor(this.getRootPane());
             setVisible(false);
             ProjectManager.getProjectManager().loadProject(uri);
@@ -279,7 +330,7 @@ public class WelcomeDialog extends JDialog {
     }
 
     public void openButton_actionPerformed(ActionEvent ae) {
-        int index = mruList.getSelectedIndex();
+        int index = projectList.getSelectedIndex();
         doOpenProject(index);
     }
 
@@ -308,5 +359,39 @@ public class WelcomeDialog extends JDialog {
 
     public void closeButton_actionPerformed(ActionEvent e) {
         setVisible(false);
+    }
+
+    private void equalizeHelpButtons() {
+		String[] labels = new String[] { faqButton.getText(),
+        								 topicsButton.getText(),
+                                         tutorialButton.getText(),
+										 usersGuideButton.getText() };
+
+		// Get the largest width and height
+		Dimension maxSize= new Dimension(0,0);
+		Rectangle2D textBounds = null;
+        FontMetrics metrics = faqButton.getFontMetrics(faqButton.getFont());
+    	Graphics g = getGraphics();
+    	for (int i=0; i<labels.length; ++i) {
+			textBounds = metrics.getStringBounds(labels[i], g);
+        	maxSize.width = Math.max(maxSize.width, (int)textBounds.getWidth());
+			maxSize.height = Math.max(maxSize.height, (int)textBounds.getHeight());
+    	}
+
+        Insets insets = faqButton.getBorder().getBorderInsets(faqButton);
+        maxSize.width += insets.left + insets.right;
+        maxSize.height += insets.top + insets.bottom;
+
+        // Reset preferred and maximum sizes since BoxLayout takes both
+    	// into account
+        faqButton.setPreferredSize((Dimension)maxSize.clone());
+        topicsButton.setPreferredSize((Dimension)maxSize.clone());
+        tutorialButton.setPreferredSize((Dimension)maxSize.clone());
+        usersGuideButton.setPreferredSize((Dimension)maxSize.clone());
+
+        faqButton.setMaximumSize((Dimension)maxSize.clone());
+        topicsButton.setMaximumSize((Dimension)maxSize.clone());
+        tutorialButton.setMaximumSize((Dimension)maxSize.clone());
+        usersGuideButton.setMaximumSize((Dimension)maxSize.clone());
     }
 }
