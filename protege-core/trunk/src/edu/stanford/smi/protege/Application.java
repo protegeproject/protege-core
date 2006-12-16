@@ -39,7 +39,7 @@ import edu.stanford.smi.protege.util.URIUtilities;
  */
 public class Application {
     private static transient Logger log = Log.getLogger(Application.class);
-    
+
     private static JFrame _mainFrame;
     private static SplashScreen _splashScreen;
     private static WelcomeDialog _welcome;
@@ -126,12 +126,9 @@ public class Application {
             }
             else {
                 showMainFrame();
-                // Check to see if the user wants to see the welcome dialog.
-                boolean show = ApplicationProperties.getWelcomeDialogShow();
-                if (show) {
+                if (ApplicationProperties.getWelcomeDialogShow()) {
                     // Load the main frame and show the welcome dialog.
                     _welcome = new WelcomeDialog(_mainFrame, "Welcome to " + Text.getProgramName(), true);
-                    _welcome.setSize(new Dimension(600, 350));
                     _welcome.setLocationRelativeTo(_mainFrame);
                     _welcome.setVisible(true);
                 }
@@ -161,7 +158,7 @@ public class Application {
                 }
             }
             catch (Exception ex) {
-              log.log(Level.SEVERE, 
+              log.log(Level.SEVERE,
                       "Warning: Failed handle argument with " + pluginClass,
                       ex);
             }
