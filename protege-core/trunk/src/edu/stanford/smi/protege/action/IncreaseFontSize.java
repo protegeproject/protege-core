@@ -16,6 +16,6 @@ public class IncreaseFontSize extends FontAction {
 	}
 
 	public void actionPerformed(ActionEvent event) {
-		changeSize(+1);
+		changeSize(+2);
 	}
 }
