@@ -162,6 +162,9 @@ public class WelcomeDialog extends JDialog {
                 openButton_actionPerformed(ae);
             }
         });
+        if ((projectList.getModel().getSize()) == 0) {
+            openRecentButton.setEnabled(false);
+        }
         c.gridx = 1;
         c.gridy = 0;
         c.gridwidth = 1;
