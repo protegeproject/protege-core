@@ -157,12 +157,14 @@ public class WelcomeDialog extends JDialog {
         openRecentButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN, Icons.getOpenProjectIcon());
         openRecentButton.setMnemonic(LocalizedText.getMnemonic(ResourceKey.WELCOME_DIALOG_OPEN));
         setToolTipText(openRecentButton, ResourceKey.WELCOME_DIALOG_OPEN_TOOLTIP);
-        openRecentButton.setEnabled(false);
         openRecentButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 openButton_actionPerformed(ae);
             }
         });
+        if ((projectList.getModel().getSize()) == 0) {
+            openRecentButton.setEnabled(false);
+        }
         c.gridx = 1;
         c.gridy = 0;
         c.gridwidth = 1;
@@ -283,21 +285,24 @@ public class WelcomeDialog extends JDialog {
         // Populate the list's model with data.
         for (int i = 0; i < projectURIs.size(); i++) {
             URI uri = (URI) projectURIs.get(i);
-            String projectName = URIUtilities.getBaseName(uri);
+            String projectName = URIUtilities.getName(uri);
             model.addElement(projectName);
         }
 
         projectList = new ProjectList(model);
         projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        if (projectList.getModel().getSize() != 0) {
+            projectList.setSelectedIndex(0);
+        }
 
         projectList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (e.getValueIsAdjusting()) {
                     return;
                 }
-				if (!projectList.isSelectionEmpty()) {
+				/*if (!projectList.isSelectionEmpty()) {
                     openRecentButton.setEnabled(true);
-                }
+                }*/
             }
         });
 

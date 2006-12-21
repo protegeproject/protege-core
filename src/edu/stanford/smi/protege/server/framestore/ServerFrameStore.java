@@ -40,7 +40,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private static transient Logger log = Log.getLogger(ServerFrameStore.class);
   
     private FrameStore _delegate;
-    private FrameStore _wrappedDelegate;
     private KnowledgeBase _kb;
     private List _events = new ArrayList();
     private Map<RemoteSession, Registration> _sessionToRegistrationMap 

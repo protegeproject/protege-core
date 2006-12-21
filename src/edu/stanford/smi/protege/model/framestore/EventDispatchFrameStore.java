@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 
@@ -44,6 +45,7 @@ import edu.stanford.smi.protege.util.Log;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class EventDispatchFrameStore extends ModificationFrameStore {
+    private static final Logger log = Log.getLogger(EventDispatchFrameStore.class);
     //ESCA-JAVA0077 
     private static final int DELAY_MSEC = 5 * 1000;
     private Map _listeners = new HashMap();
@@ -82,8 +84,8 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                 dispatchEvent(event);
             } catch (Exception e) {
                 if (!ignoreExceptions) {
-                  if (Log.getLogger().isLoggable(Level.FINE)) {
-                    Log.getLogger().log(Level.FINE, "Exception caught", e);
+                  if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "Exception caught", e);
                   } else {
                     Log.getLogger().warning("Excepction caught " + e.toString());
                     Log.getLogger().warning("using fine logging for more details");
