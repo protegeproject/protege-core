@@ -93,7 +93,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return new FrameStoreManager(this);
     }
 
-    protected FrameStoreManager getFrameStoreManager() {
+    public FrameStoreManager getFrameStoreManager() {
         return _frameStoreManager;
     }
 
