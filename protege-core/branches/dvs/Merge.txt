@@ -1,1 +1,6 @@
 Intial copy at revision 4746
+Merged to 4792 (Protege_3.2.1)
+  svn merge 
+       http://smi-protege/repos/protege/protege-core/trunk@4746 
+       http://smi-protege/repos/protege/protege-core/trunk@4792
+
