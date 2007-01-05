@@ -14,18 +14,22 @@ import edu.stanford.smi.protege.util.*;
  * Author: Tim Goffings Date: Oct 3, 2002 - 3:51:34 PM
  */
 
-public class ClientRmiSocketFactory extends RMISocketFactory {
-    private static final String SERVER_PORT = "protege.rmi.server.port";
-    private static final String SERVER_LOCAL_PORT = "protege.rmi.server.local.port";
-    private static final String REGISTRY_PORT = "protege.rmi.registry.port";
-    private static final String REGISTRY_LOCAL_PORT = "protege.rmi.registry.local.port";
+public class ClientRmiSocketFactory extends RMISocketFactory implements Serializable {
+    private static final long serialVersionUID = 1237035652027282759L;
+    
+    private static ClientRmiSocketFactory instance;
+    // Port Settings
+    public static final String SERVER_PORT = "protege.rmi.server.port";
+    public static final String SERVER_LOCAL_PORT = "protege.rmi.server.local.port";
+    public static final String REGISTRY_PORT = "protege.rmi.registry.port";
+    public static final String REGISTRY_LOCAL_PORT = "protege.rmi.registry.local.port";
 
     private int serverPort;
     private int serverLocalPort;
     private int registryPort;
     private int registryLocalPort;
 
-    public ClientRmiSocketFactory() {
+    private ClientRmiSocketFactory() {
         serverPort = getPort(SERVER_PORT, 0);
         serverLocalPort = getPort(SERVER_LOCAL_PORT, 0);
         registryPort = getPort(REGISTRY_PORT, Registry.REGISTRY_PORT);
@@ -35,6 +39,13 @@ public class ClientRmiSocketFactory extends RMISocketFactory {
                     "server=" + serverPort + ", serverLocal= " + serverLocalPort + ", registryPort=" + registryPort
                             + ", registryLocal=" + registryLocalPort);
         }
+    }
+    
+    public static ClientRmiSocketFactory getInstance() {
+        if (instance == null) {
+            instance = new ClientRmiSocketFactory();
+        }
+        return instance;
     }
 
     private static int getPort(String name, int defaultValue) {
@@ -61,7 +72,13 @@ public class ClientRmiSocketFactory extends RMISocketFactory {
     private static Socket createSocket(String host, int hostPort, int localPort) throws IOException {
         SocketAddress serverAddress = new InetSocketAddress(host, hostPort);
         SocketAddress localAddress = new InetSocketAddress(localPort);
-        Socket socket = new Socket();
+        Socket socket;
+        if (SSLSettings.useSSL()) {
+            socket = new SSLSettings().createSSLClientSocket();
+        }
+        else {
+            socket = new Socket();
+        }
         socket.setReuseAddress(true);
         socket.bind(localAddress);
         socket.connect(serverAddress);
