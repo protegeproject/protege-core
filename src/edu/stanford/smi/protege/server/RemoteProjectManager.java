@@ -18,11 +18,6 @@ public class RemoteProjectManager {
 
     public static RemoteProjectManager getInstance() {
         if (_theInstance == null) {
-            try {
-                RMISocketFactory.setSocketFactory(new ClientRmiSocketFactory());
-            } catch (IOException e) {
-                Log.getLogger().severe(Log.toString(e));
-            }
             _theInstance = new RemoteProjectManager();
         }
         return _theInstance;
