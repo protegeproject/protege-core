@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.server.narrowframestore.RemoteServerNarrowFrameS
 import edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore;
 
 public class ServerProject extends UnicastRemoteObject implements RemoteServerProject {
+    private static final long serialVersionUID = 5881874010413881020L;
     private URI _uri;
     private Server _server;
     private Project _project;
@@ -37,6 +38,9 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     }
 
     public ServerProject(Server server, URI uri, Project project) throws RemoteException {
+        super(ServerRmiSocketFactory.getServerPort(),
+              ClientRmiSocketFactory.getInstance(),
+              ServerRmiSocketFactory.getInstance());
         _server = server;
         _uri = uri;
         _project = project;
