@@ -2,21 +2,38 @@ package edu.stanford.smi.protege.server;
 
 //ESCA*JAVA0100
 
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
-import java.rmi.*;
-import java.rmi.registry.*;
-import java.rmi.server.*;
-import java.util.*;
-import java.util.logging.*;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMISocketFactory;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.*;
-import edu.stanford.smi.protege.plugin.*;
-import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.plugin.ProjectPluginManager;
+import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.FileUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.URIUtilities;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
     private static Server serverInstance;
@@ -50,26 +67,17 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     /**
-     * Calls startServer with {@link ServerRmiSocketFactory}as the socket factory.
-     */
-    public static void startServer(String[] args) throws IOException {
-        startServer(args, new ServerRmiSocketFactory());
-    }
-
-    /**
      * Start up the server.
      * 
      * @param args
      *            the arguments to the server
-     * @param sf
-     *            the socket factory to be used
+     *
      * @throws IOException
      *             if the socket factory has already been set
      * @see RMISocketFactory#setSocketFactory(RMISocketFactory)
      */
-    public static void startServer(String[] args, RMISocketFactory sf) throws IOException {
+    public static void startServer(String[] args) throws IOException {
         System.setProperty("java.rmi.server.RMIClassLoaderSpi", ProtegeRmiClassLoaderSpi.class.getName());
-        RMISocketFactory.setSocketFactory(sf);
         SystemUtilities.initialize();
         serverInstance = new Server(args);
         Log.getLogger().info("Protege server ready to accept connections...");
@@ -89,7 +97,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private static Registry getRegistry() throws RemoteException {
         int port = Integer.getInteger("protege.rmi.registry.port", Registry.REGISTRY_PORT).intValue();
-        return LocateRegistry.getRegistry(null, port, RMISocketFactory.getSocketFactory());
+        return LocateRegistry.getRegistry(null, port);
     }
 
     private void parseArgs(String[] args) {
@@ -142,6 +150,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     public Server(String[] args) throws RemoteException, IOException {
+        super(ServerRmiSocketFactory.getServerPort(),
+              ClientRmiSocketFactory.getInstance(), ServerRmiSocketFactory.getInstance());
         parseArgs(args);
         initialize();
     }
