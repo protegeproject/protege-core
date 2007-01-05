@@ -14,13 +14,25 @@ import edu.stanford.smi.protege.util.*;
  */
 
 public class ServerRmiSocketFactory extends RMISocketFactory {
+    private static ServerRmiSocketFactory instance;
     private int fixedPort;
 
-    public ServerRmiSocketFactory() {
-        fixedPort = Integer.getInteger("protege.rmi.server.port", 0).intValue();
+    private ServerRmiSocketFactory() {
+        fixedPort = getServerPort();
         if (fixedPort != 0) {
             Log.getLogger().config("fixed port=" + fixedPort);
         }
+    }
+    
+    public static ServerRmiSocketFactory getInstance() {
+        if (instance == null) {
+            instance = new ServerRmiSocketFactory();
+        }
+        return instance;
+    }
+    
+    public static int getServerPort() {
+        return Integer.getInteger("protege.rmi.server.port", 0).intValue();
     }
     
     public Socket createSocket(String host, int port) throws IOException {
@@ -37,7 +49,13 @@ public class ServerRmiSocketFactory extends RMISocketFactory {
      */
     public ServerSocket createServerSocket(int requestedPort) throws IOException {
         int port = requestedPort == 0 ? fixedPort : requestedPort;
-        ServerSocket socket = new ServerSocket(port);
+        ServerSocket socket;
+        if (SSLSettings.useSSL()) {
+            socket = new SSLSettings().createSSLServerSocket(port);
+        }
+        else {
+            socket = new ServerSocket(port);
+        }
         if (fixedPort != 0) {
             Log.getLogger().config("local port: " + socket.getLocalPort());
         }
