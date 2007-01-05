@@ -1,12 +1,23 @@
 package edu.stanford.smi.protege.server;
 
-import java.awt.*;
-import java.rmi.*;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.LabeledComponent;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.Validatable;
 
 /**
  * 
@@ -96,7 +107,10 @@ public class ServerPanel extends JPanel implements Validatable {
     private static RemoteServer connectToHost(String serverName) {
         RemoteServer server = null;
         try {
-            server = (RemoteServer) Naming.lookup("//" + serverName + "/" + Server.getBoundName());
+            int port = Integer.getInteger("protege.rmi.registry.port", Registry.REGISTRY_PORT).intValue();
+            Registry registry = LocateRegistry.getRegistry(serverName, port);
+            server = (RemoteServer) registry.lookup(Server.getBoundName());
+            // server = (RemoteServer) Naming.lookup("//" + serverName + "/" + Server.getBoundName());
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
         }
