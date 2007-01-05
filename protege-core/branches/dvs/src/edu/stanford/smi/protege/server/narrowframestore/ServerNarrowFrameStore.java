@@ -20,12 +20,15 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
+import edu.stanford.smi.protege.server.ClientRmiSocketFactory;
+import edu.stanford.smi.protege.server.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class ServerNarrowFrameStore 
   extends UnicastRemoteObject implements RemoteServerNarrowFrameStore {
+  private static final long serialVersionUID = -1111655753334971261L;
   private static transient Logger log = Log.getLogger(ServerNarrowFrameStore.class);
   NarrowFrameStore delegate;
   NarrowFrameStore fixedDelegate;
@@ -34,6 +37,9 @@ public class ServerNarrowFrameStore
   private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
   
   public ServerNarrowFrameStore(NarrowFrameStore delegate, KnowledgeBase kb) throws RemoteException {
+    super(ServerRmiSocketFactory.getServerPort(),
+          ClientRmiSocketFactory.getInstance(),
+          ServerRmiSocketFactory.getInstance());
     this.delegate = delegate;
     this.kb = kb;
     fixedDelegate 
