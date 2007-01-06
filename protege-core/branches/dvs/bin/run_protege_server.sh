@@ -31,16 +31,22 @@ MAX_MEMORY=-Xmx100M
 CODEBASE_URL=file:$PWD/protege.jar
 CODEBASE=-Djava.rmi.server.codebase=$CODEBASE_URL
 HOSTNAME_PARAM=-Djava.rmi.server.hostname=$HOSTNAME
-OPTIONS="$SAVE_INTERVAL $MAX_MEMORY $CODEBASE $HOSTNAME_PARAM"
-METAPROJECT=examples/server/metaproject.pprj
-TX="-Dtransaction.level=READ_COMMITTED"
+LOGIN_MODULE="-Djava.security.auth.login.config==jaas.config"
+OPTIONS="$SAVE_INTERVAL $MAX_MEMORY $CODEBASE $HOSTNAME_PARAM $LOGIN_MODULE"
 
 #
 # Instrumentation debug, delay simulation,  etc
 #
+#TX="-Dtransaction.level=READ_COMMITTED"
 #DELAY="-Dserver.delay=80"
 #DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
+#PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100"
+#SSLOPTS="-Dprotege.rmi.usessl=true -Dprotege.rmi.ssl.keystore=protegekeys -Dprotege.rmi.ssl.password=protege"
+
+OPTIONS="$OPTIONS $TX $DELAY $PORTOPTS $SSLOPTS"
+
+METAPROJECT=examples/server/metaproject.pprj
 
 
 $JAVA_PATH/rmiregistry &
-$JAVA_PATH/java -cp $CLASSPATH $TX $OPTIONS $MAINCLASS $METAPROJECT
+$JAVA_PATH/java -cp $CLASSPATH $OPTIONS $MAINCLASS $METAPROJECT
