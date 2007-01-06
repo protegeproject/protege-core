@@ -96,7 +96,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private static Registry getRegistry() throws RemoteException {
-        int port = Integer.getInteger("protege.rmi.registry.port", Registry.REGISTRY_PORT).intValue();
+        int port = Integer.getInteger(ClientRmiSocketFactory.REGISTRY_PORT, 
+                                      Registry.REGISTRY_PORT).intValue();
         return LocateRegistry.getRegistry(null, port);
     }
 
