@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import javax.security.auth.login.LoginContext;
+
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -29,6 +31,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.plugin.ProjectPluginManager;
 import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.server.auth.ProtegeCallbackHandler;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
@@ -406,8 +409,24 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return true;
         // return System.currentTimeMillis() - session.getLastAccessTime() > 10000;
     }
+    
+
 
     private boolean isValid(String name, String password) {
+        LoginContext lc;
+        try {
+            lc = new LoginContext("Protege",
+                                  new ProtegeCallbackHandler(name, password));
+            lc.login();
+        }
+        catch (Exception e) {
+            Log.getLogger().warning("Failed login " + e);
+            return false;
+        }
+        return true;
+    }
+    
+    public boolean metaprojectAuthCheck(String name, String password) {
         boolean isValid = false;
         Iterator i = _systemKb.getInstances(_userCls).iterator();
         while (i.hasNext()) {
