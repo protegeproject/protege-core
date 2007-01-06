@@ -13,7 +13,8 @@ import edu.stanford.smi.protege.util.*;
  * Date: Oct 3, 2002 - 3:51:34 PM 
  */
 
-public class ServerRmiSocketFactory extends RMISocketFactory {
+public class ServerRmiSocketFactory implements RMIServerSocketFactory {
+    
     private static ServerRmiSocketFactory instance;
     private int fixedPort;
 
@@ -32,15 +33,7 @@ public class ServerRmiSocketFactory extends RMISocketFactory {
     }
     
     public static int getServerPort() {
-        return Integer.getInteger("protege.rmi.server.port", 0).intValue();
-    }
-    
-    public Socket createSocket(String host, int port) throws IOException {
-        Socket socket = new Socket(host, port);
-        if (fixedPort != 0) {
-            Log.getLogger().config("local port: " + socket.getLocalPort());
-        }
-        return socket;
+        return Integer.getInteger(ClientRmiSocketFactory.SERVER_PORT, 0).intValue();
     }
 
     /*
