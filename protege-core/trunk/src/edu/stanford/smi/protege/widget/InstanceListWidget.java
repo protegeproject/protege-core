@@ -107,7 +107,7 @@ public class InstanceListWidget extends AbstractListWidget {
 
     protected void handleAddAction() {
         Collection clses = getCls().getTemplateSlotAllowedClses(getSlot());
-        String title = (String) _addInstancesAction.getValue(Action.SHORT_DESCRIPTION);
+        String title = (String) _addInstancesAction.getValue(Action.NAME);
         addItems(DisplayUtilities.pickInstances(InstanceListWidget.this, clses, title));
     }
 
