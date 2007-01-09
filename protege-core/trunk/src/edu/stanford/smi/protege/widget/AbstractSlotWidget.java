@@ -472,7 +472,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
             setValues(values);
             updateBorder(values);
         } catch (Exception e) {
-            Log.getLogger().warning(e.toString());
+            Log.getLogger().warning(e.toString() + " at setting the widget values for instance " + _instance + " and " + _slot );
             setValues(Collections.EMPTY_LIST);
         }
     }
