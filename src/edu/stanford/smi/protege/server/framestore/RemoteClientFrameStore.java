@@ -1213,7 +1213,8 @@ public class RemoteClientFrameStore implements FrameStore {
     // -----------------------------------------------------------
 
     // This code is copied from SimpleFrameStore
-    private Collection getCacheOwnFacetValues(Frame frame, Slot slot, Facet facet) {
+    // Old implementation
+/*    private Collection getCacheOwnFacetValues(Frame frame, Slot slot, Facet facet) {
         Collection values = new ArrayList();
         Iterator i = getDirectTypes((Instance) frame).iterator();
         while (i.hasNext()) {
@@ -1222,6 +1223,20 @@ public class RemoteClientFrameStore implements FrameStore {
         }
         return values;
     }
+*/    
+
+    // TT 2007/01/09:  This code is copied from SimpleFrameStore
+    public Collection getCacheOwnFacetValues(Frame frame, Slot slot, Facet facet) {
+        Collection values = new ArrayList();
+        Iterator i = getDirectTypes((Instance) frame).iterator();
+        while (i.hasNext()) {
+            Cls cls = (Cls) i.next();
+            Collection typeValues = getTemplateFacetValues(cls, slot, facet);
+            values = resolveValues(values, typeValues, facet);
+        }
+        return values;
+    }
+    
 
     private Collection getCacheTemplateFacetValues(Cls localCls, Slot slot, Facet facet) {
         Collection values = new ArrayList(getDirectTemplateFacetValues(localCls, slot, facet));
