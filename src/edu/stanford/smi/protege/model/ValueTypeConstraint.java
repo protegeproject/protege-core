@@ -53,20 +53,27 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
         } else {
             allowedClses = Collections.EMPTY_LIST;
         }
-        ensureClses(allowedClses);
+        allowedClses = ensureClses(allowedClses);
         return allowedClses;
     }
 
-    private static void ensureClses(Collection clses) {
+    private static Collection ensureClses(Collection clses) {
+    	ArrayList copyClses = new ArrayList();
+    	
         Iterator i = clses.iterator();
         while (i.hasNext()) {
             Object o = i.next();
             if (!(o instanceof Cls)) {
                 Log.getLogger().severe("Invalid Class: " + o 
                                           + " with type = " + (o == null ? " null " : o.getClass().toString()));
-                clses.remove(o);
-            }
+                //clses.remove(o);
+            } else {            	
+            	if (!copyClses.contains(o))
+            	copyClses.add(o);
+            }            
         }
+        
+        return copyClses;
     }
 
     private static KnowledgeBase getKb(Collection bindingValue) {
@@ -96,7 +103,7 @@ public class ValueTypeConstraint extends AbstractFacetConstraint {
         } else {
             allowedParents = Collections.EMPTY_LIST;
         }
-        ensureClses(allowedParents);
+        allowedParents = ensureClses(allowedParents);
         return allowedParents;
     }
 
