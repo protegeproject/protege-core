@@ -117,7 +117,7 @@ public class DirectTypesList extends SelectableContainer {
                 Iterator i = clses.iterator();
                 while (i.hasNext()) {
                     Cls cls = (Cls) i.next();
-                    if (!instance.hasDirectType(cls)) {
+                    if (!instance.hasType(cls)) {
                     	instance.addDirectType(cls);
                     }
                 }
