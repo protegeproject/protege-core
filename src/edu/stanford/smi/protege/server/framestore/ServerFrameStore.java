@@ -36,9 +36,12 @@ import edu.stanford.smi.protege.server.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ProtegeJob;
 import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class ServerFrameStore extends UnicastRemoteObject implements RemoteServerFrameStore {
+    private static final long serialVersionUID = -3532822492029656344L;
+
     private static transient Logger log = Log.getLogger(ServerFrameStore.class);
   
     private FrameStore _delegate;
@@ -803,4 +806,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             }
         }
     }
+    
+    public synchronized Object executeProtegeJob(ProtegeJob job,
+                                                 RemoteSession session) {
+      recordCall(session);
+      job.localize(_kb);
+      return job.run();
+    }
+
 }
