@@ -14,7 +14,6 @@ import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProject;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
-import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 
 /*
  * There is a temptation to define Protege using a generic here.  But this
@@ -119,22 +118,6 @@ public abstract class ProtegeJob implements Localizable, Serializable {
    */
   public KnowledgeBase getKnowledgeBase() {
     return kb;
-  }
-  
-  /**
-   * This is a utility for dealing with the metaproject instance when it is known that we are executing
-   * on the server side.
-   * 
-   * This utility makes it easier for developers to access and work with the meta-ontology in 
-   * server-client mode.
-   * 
-   * @return The MetaProjectInstance for this project.
-   */
-  public MetaProjectInstance getMetaProjectInstance() {
-    RemoteSession session = ServerFrameStore.getCurrentSession();
-    ServerProject serverProject = Server.getInstance().getServerProject(getKnowledgeBase().getProject());
-    ServerFrameStore serverFs = (ServerFrameStore) serverProject.getDomainKbFrameStore(session);
-    return serverFs.getMetaProjectInstance();
   }
   
   /**
