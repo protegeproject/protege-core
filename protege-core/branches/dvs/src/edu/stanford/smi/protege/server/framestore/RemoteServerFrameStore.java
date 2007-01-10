@@ -1,11 +1,23 @@
 package edu.stanford.smi.protege.server.framestore;
 
-import java.rmi.*;
-import java.util.*;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.Collection;
+import java.util.EventObject;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.query.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.util.ProtegeJob;
 
 public interface RemoteServerFrameStore extends Remote {
 
@@ -210,6 +222,9 @@ public interface RemoteServerFrameStore extends Remote {
     Frame getFrame(FrameID id, RemoteSession session) throws RemoteException;
 
     Map getFrameValues(Collection frames, RemoteSession session) throws RemoteException;
+    
+    Object executeProtegeJob(ProtegeJob job, 
+                             RemoteSession session) throws RemoteException;
 
     Map preload(boolean all, RemoteSession session) throws RemoteException;
 }

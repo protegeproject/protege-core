@@ -37,6 +37,7 @@ import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ProtegeJob;
 import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class RemoteClientFrameStore implements FrameStore {
@@ -1427,4 +1428,15 @@ public class RemoteClientFrameStore implements FrameStore {
             }
         }
     }
+    
+    public Object executeProtegeJob(ProtegeJob job) {
+        try {
+          job.fixLoader();
+          Object result = getRemoteDelegate().executeProtegeJob(job, session);
+          LocalizeUtils.localize(result, kb);
+          return result;
+        } catch (RemoteException remote) {
+          throw convertException(remote);
+        }
+      }
 }
