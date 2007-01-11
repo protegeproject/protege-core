@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -13,10 +15,18 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.Log;
 
 public class SSLSettings {
+	private static Logger log = Log.getLogger(SSLSettings.class);
+	
+	public enum Context {
+		NONE, LOGIN, ALWAYS;
+	}
+	private static Context policy;
+	
     // SSL Settings
-    public static final String USE_SSL="protege.rmi.usessl";
+    public static final String SSL_POLICY="protege.rmi.ssl.policy";
     public static final String SSL_KEYSTORE = "protege.rmi.ssl.keystore";
     public static final String SSL_PASSWORD = "protege.rmi.ssl.password";
     
@@ -31,9 +41,6 @@ public class SSLSettings {
     
     private void initializeSSLServerFactory() throws IOException {
         if (factory != null) return;
-        if (!useSSL()) {
-            throw new IllegalStateException("SSL not enabled");
-        }
         try {
             SSLContext ctx;
             KeyManagerFactory kmf;
@@ -69,12 +76,6 @@ public class SSLSettings {
         return SSLSocketFactory.getDefault().createSocket();
     }
     
-    public static boolean useSSL() {
-        String value = ApplicationProperties.getApplicationOrSystemProperty(USE_SSL);
-        if (value == null) return false;
-        return value.toLowerCase().equals("true");
-    }
-    
     public static File getKeyStore() throws IOException {
         String keystore = ApplicationProperties.getApplicationOrSystemProperty(SSL_KEYSTORE);
         if (keystore == null) {
@@ -97,6 +98,25 @@ public class SSLSettings {
     
     public static String getSSLProtocol() {
         return ApplicationProperties.getApplicationOrSystemProperty(SSL_PROTOCOL, DEFAULT_SSL_PROTOCOL);
+    }
+    
+    public static boolean useSSL(Context context) {
+    	if (policy == null) {
+    		policy = Context.NONE;
+    		String when = ApplicationProperties.getApplicationOrSystemProperty(SSL_POLICY);
+    		if (when != null) {
+    			when = when.toUpperCase();
+    			if (when.equals("NONE")) policy = Context.NONE;
+    			else if (when.equals("LOGIN")) policy = Context.LOGIN;
+    			else policy = Context.ALWAYS;
+    			if (policy != Context.NONE) Log.getLogger().config("SSL policy set to " + policy);
+    		}
+    	}
+    	boolean usessl = (context.compareTo(policy) <= 0);
+    	if (log.isLoggable(Level.FINE)) {
+    		log.fine("Policy = " + policy + " context = " + context + " use ssl = " + usessl);
+    	}
+    	return usessl;
     }
 
 }
