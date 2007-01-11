@@ -32,6 +32,7 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.ClientRmiSocketFactory;
 import edu.stanford.smi.protege.server.Registration;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.SSLSettings;
 import edu.stanford.smi.protege.server.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
@@ -62,9 +63,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     
     //ESCA-JAVA0160 
     public ServerFrameStore(FrameStore delegate, KnowledgeBase kb) throws RemoteException {
-        super(ServerRmiSocketFactory.getServerPort(),
-              ClientRmiSocketFactory.getInstance(),
-              ServerRmiSocketFactory.getInstance());
+        super(ServerRmiSocketFactory.getServerPort(SSLSettings.Context.ALWAYS),
+              new ClientRmiSocketFactory(SSLSettings.Context.ALWAYS),
+              new ServerRmiSocketFactory(SSLSettings.Context.ALWAYS));
         _delegate = delegate;
         _kb = kb;
         kb.setDispatchEventsEnabled(false);
