@@ -21,6 +21,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.ClientRmiSocketFactory;
+import edu.stanford.smi.protege.server.SSLSettings;
 import edu.stanford.smi.protege.server.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
@@ -37,9 +38,9 @@ public class ServerNarrowFrameStore
   private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
   
   public ServerNarrowFrameStore(NarrowFrameStore delegate, KnowledgeBase kb) throws RemoteException {
-    super(ServerRmiSocketFactory.getServerPort(),
-          ClientRmiSocketFactory.getInstance(),
-          ServerRmiSocketFactory.getInstance());
+    super(ServerRmiSocketFactory.getServerPort(SSLSettings.Context.ALWAYS),
+          new ClientRmiSocketFactory(SSLSettings.Context.ALWAYS),
+          new ServerRmiSocketFactory(SSLSettings.Context.ALWAYS));
     this.delegate = delegate;
     this.kb = kb;
     fixedDelegate 
