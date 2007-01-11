@@ -154,8 +154,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     public Server(String[] args) throws RemoteException, IOException {
-        super(ServerRmiSocketFactory.getServerPort(),
-              ClientRmiSocketFactory.getInstance(), ServerRmiSocketFactory.getInstance());
+        super(ServerRmiSocketFactory.getServerPort(SSLSettings.Context.LOGIN),
+              new ClientRmiSocketFactory(SSLSettings.Context.LOGIN), 
+              new ServerRmiSocketFactory(SSLSettings.Context.LOGIN));
         parseArgs(args);
         initialize();
     }
