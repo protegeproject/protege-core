@@ -38,9 +38,9 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     }
 
     public ServerProject(Server server, URI uri, Project project) throws RemoteException {
-        super(ServerRmiSocketFactory.getServerPort(),
-              ClientRmiSocketFactory.getInstance(),
-              ServerRmiSocketFactory.getInstance());
+        super(ServerRmiSocketFactory.getServerPort(SSLSettings.Context.ALWAYS),
+              new ClientRmiSocketFactory(SSLSettings.Context.ALWAYS),
+              new ServerRmiSocketFactory(SSLSettings.Context.ALWAYS));
         _server = server;
         _uri = uri;
         _project = project;
