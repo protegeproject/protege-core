@@ -72,7 +72,7 @@ public class ClientRmiSocketFactory implements RMIClientSocketFactory, Serializa
     private void reportPorts() {
         int serverPort   = getPort(SERVER_PORT, 0);
         int registryPort = getPort(REGISTRY_PORT, Registry.REGISTRY_PORT);
-        if (serverPort == 0 && registryPort == Registry.REGISTRY_PORT) {
+        if (!(serverPort == 0 && registryPort == Registry.REGISTRY_PORT)) {
         	Log.getLogger().config("server=" + serverPort + ", registryPort=" + registryPort);
         }
     }
