@@ -40,10 +40,10 @@ OPTIONS="$SAVE_INTERVAL $MAX_MEMORY $CODEBASE $HOSTNAME_PARAM $LOGIN_MODULE"
 #TX="-Dtransaction.level=READ_COMMITTED"
 #DELAY="-Dserver.delay=80"
 #DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
-#PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100"
-#SSLOPTS="-Dprotege.rmi.usessl=true -Dprotege.rmi.ssl.keystore=protegekeys -Dprotege.rmi.ssl.password=protege"
+#PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.server.ssl.port=5300 -Dprotege.rmi.registry.port=5100"
+#SSLOPTS="-Dprotege.rmi.ssl.policy=login -Dprotege.rmi.ssl.keystore=protegekeys -Dprotege.rmi.ssl.password=protege"
 
-OPTIONS="$OPTIONS $TX $DELAY $PORTOPTS $SSLOPTS"
+OPTIONS="$OPTIONS $TX $DELAY $DEBUG_OPT $PORTOPTS $SSLOPTS"
 
 METAPROJECT=examples/server/metaproject.pprj
 
