@@ -110,11 +110,11 @@ public class ServerPanel extends JPanel implements Validatable {
             int port = Integer.getInteger(ClientRmiSocketFactory.REGISTRY_PORT, 
                                           Registry.REGISTRY_PORT).intValue();
             Registry registry = LocateRegistry.getRegistry(serverName, port);
-            if (SSLSettings.useSSL()) {
+            if (SSLSettings.useSSL(SSLSettings.Context.LOGIN)) {
                 ClientRmiSocketFactory.resetAuth();
             }
             server = (RemoteServer) registry.lookup(Server.getBoundName());
-            if (SSLSettings.useSSL() && !ClientRmiSocketFactory.checkAuth()) {
+            if (SSLSettings.useSSL(SSLSettings.Context.LOGIN) && !ClientRmiSocketFactory.checkAuth()) {
                 Log.getLogger().severe("Requested ssl security but server is not secured.");
                 return null;
             }
