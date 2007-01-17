@@ -47,7 +47,7 @@ public class Application {
 
     private static void initialize() {
         try {
-            SystemUtilities.initialize();
+            SystemUtilities.initGraphics();
         } catch (Exception e) {
             Log.getLogger().log(Level.SEVERE, "failed to initialize", e);
         }
