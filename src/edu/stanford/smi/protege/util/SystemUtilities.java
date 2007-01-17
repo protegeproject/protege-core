@@ -40,9 +40,13 @@ public class SystemUtilities {
     static {
         init();
     }
-
+    
     public static void initialize() {
-        // do nothing except ensure that the static initializer has run
+        // just to call the static initializers.
+    }
+
+    public static void initGraphics() {
+        loadLookAndFeel();
     }
 
     public static void debugBreak() {
@@ -138,7 +142,6 @@ public class SystemUtilities {
 
             logSystemInfo();
             loadParameters();
-            loadLookAndFeel();
             PluginUtilities.initialize();
             loadUseAntialiasing();
             //ESCA-JAVA0170 
