@@ -32,7 +32,7 @@ public class Applet extends JApplet {
 
     public void init() {
         try {
-            SystemUtilities.initialize();
+            SystemUtilities.initGraphics();
             SystemUtilities.setApplet(true);
             URL projectURL = getProjectURL();
             setup(projectURL);
