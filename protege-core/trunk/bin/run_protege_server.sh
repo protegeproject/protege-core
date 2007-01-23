@@ -24,22 +24,31 @@ fi
 CLASSPATH=protege.jar:looks.jar:unicode_panel.jar:driver.jar:driver0.jar:driver1.jar:driver2.jar
 MAINCLASS=edu.stanford.smi.protege.server.Server
 
-# If you want automatic saving of the project, setup the number of seconds in SAVE_INTERVAL_VALUE
-# SAVE_INTERVAL=-DsaveIntervalSec=120
 
+
+
+# ------------------- JVM Options ------------------- 
 MAX_MEMORY=-Xmx100M
 CODEBASE_URL=file:$PWD/protege.jar
 CODEBASE=-Djava.rmi.server.codebase=$CODEBASE_URL
 HOSTNAME_PARAM=-Djava.rmi.server.hostname=$HOSTNAME
-OPTIONS="$SAVE_INTERVAL $MAX_MEMORY $CODEBASE $HOSTNAME_PARAM"
-METAPROJECT=examples/server/metaproject.pprj
 TX="-Dtransaction.level=READ_COMMITTED"
+OPTIONS="$MAX_MEMORY $CODEBASE $HOSTNAME_PARAM ${TX}"
 
 #
 # Instrumentation debug, delay simulation,  etc
 #
 #DELAY="-Dserver.delay=80"
+#PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100"
 #DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
+
+# If you want automatic saving of the project, 
+# setup the number of seconds in SAVE_INTERVAL_VALUE
+# SAVE_INTERVAL=-DsaveIntervalSec=120
+OPTIONS="${OPTIONS} ${SAVE_INTERVAL} ${DEBUG_OPT} ${PORTOPTS}"
+# ------------------- JVM Options ------------------- 
+
+METAPROJECT=examples/server/metaproject.pprj
 
 
 $JAVA_PATH/rmiregistry &

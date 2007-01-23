@@ -28,6 +28,8 @@ OPTIONS=$MAXIMUM_MEMORY
 
 #Possible instrumentation options - debug, etc.
 #DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8100,server=y,suspend=n"
+#PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100 -Dprotege.rmi.server.local.port=2388"
+#SSLOPTS="-Dprotege.rmi.usessl=true -Djavax.net.ssl.trustStore=protegeca -Djavax.net.ssl.trustStorePassword=protege"
 
 # Run Protege
 $JAVA_PATH/java $OPTIONS -cp $JARS $MAIN_CLASS $1
