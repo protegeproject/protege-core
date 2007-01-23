@@ -23,6 +23,8 @@ fi
 
 JARS=protege.jar:driver.jar:driver1.jar:looks.jar:unicode_panel.jar
 MAIN_CLASS=edu.stanford.smi.protege.Application
+
+# ------------------- JVM Options ------------------- 
 MAXIMUM_MEMORY=-Xmx100M
 OPTIONS=$MAXIMUM_MEMORY
 
@@ -30,6 +32,8 @@ OPTIONS=$MAXIMUM_MEMORY
 #DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8100,server=y,suspend=n"
 #PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100 -Dprotege.rmi.server.local.port=2388"
 #SSLOPTS="-Dprotege.rmi.usessl=true -Djavax.net.ssl.trustStore=protegeca -Djavax.net.ssl.trustStorePassword=protege"
+OPTIONS="${OPTIONS} ${DEBUG_OPT} ${PORT_OPTS} ${SSLOPTS}"
+# ------------------- JVM Options ------------------- 
 
 # Run Protege
 $JAVA_PATH/java $OPTIONS -cp $JARS $MAIN_CLASS $1
