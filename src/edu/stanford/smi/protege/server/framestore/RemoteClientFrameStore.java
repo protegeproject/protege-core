@@ -80,7 +80,12 @@ public class RemoteClientFrameStore implements FrameStore {
         fixLoader();
         return remoteDelegate;
     }
-
+    
+    public RemoteServerFrameStore getRemoteDelegate(ProtegeJob job) {
+        job.fixLoader();
+        return remoteDelegate;
+    }
+    
     private void fixLoader() {
         ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
         ClassLoader correctLoader = kb.getClass().getClassLoader();
@@ -1431,8 +1436,7 @@ public class RemoteClientFrameStore implements FrameStore {
     
     public Object executeProtegeJob(ProtegeJob job) {
         try {
-          job.fixLoader();
-          Object result = getRemoteDelegate().executeProtegeJob(job, session);
+          Object result = getRemoteDelegate(job).executeProtegeJob(job, session);
           LocalizeUtils.localize(result, kb);
           return result;
         } catch (RemoteException remote) {

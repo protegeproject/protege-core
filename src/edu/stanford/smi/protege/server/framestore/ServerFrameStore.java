@@ -34,6 +34,7 @@ import edu.stanford.smi.protege.server.Registration;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.SSLSettings;
 import edu.stanford.smi.protege.server.ServerRmiSocketFactory;
+import edu.stanford.smi.protege.server.Session;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
@@ -91,15 +92,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
     }
 
-    private static RemoteSession currentSession;
+    private static Map<Thread, RemoteSession> sessionMap = new HashMap<Thread, RemoteSession>();
 
     private void recordCall(RemoteSession session) {
         delay();
-        currentSession = session;
+        sessionMap.put(Thread.currentThread(), session);
     }
 
     public static RemoteSession getCurrentSession() {
-        return currentSession;
+        return sessionMap.get(Thread.currentThread());
     }
 
     public synchronized int getClsCount(RemoteSession session) {
