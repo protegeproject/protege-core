@@ -115,6 +115,7 @@ public class WidgetUtilities {
             Boolean b = (Boolean) m.invoke(null, args);
             isSuitable = b.booleanValue();
         } catch (Exception e) {
+        	Log.emptyCatchBlock(e);
             // do nothing
         }
         return isSuitable;
