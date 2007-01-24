@@ -171,7 +171,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return _frameStoreManager.isUndoEnabled();
     }
     
-    public synchronized void flushEvents() throws ProtegeException {
+    public void flushEvents() throws ProtegeException {
       _frameStoreManager.flushEvents();
     }
 
