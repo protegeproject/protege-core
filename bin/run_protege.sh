@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# ------------------- Where is Java? ------------------- 
+
 # Change to the script' working directory, should be the Protege root directory 
 cd $(dirname $0)
 
@@ -20,6 +22,7 @@ if [ ! -e $JAVA_PATH/java ]; then
 	echo Java VM could not be found. Please check your JAVA_HOME environment variable.
 	exit 1
 fi
+# ------------------- Where is Java? ------------------- 
 
 JARS=protege.jar:driver.jar:driver1.jar:looks.jar:unicode_panel.jar
 MAIN_CLASS=edu.stanford.smi.protege.Application
