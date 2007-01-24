@@ -33,7 +33,6 @@ import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectInstanceImpl;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
