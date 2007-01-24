@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 
 import edu.stanford.smi.protege.model.Cls;
@@ -48,7 +49,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private Slot _locationSlot;
     private Cls _userCls;
     private Cls _projectCls;
-    private List _sessions = new ArrayList();
+    private Map<Session, Subject> subjectMap = new HashMap<Session, Subject>();
     private URI _baseURI;
     private Map _sessionToProjectsMap = new HashMap();
     private Thread _updateThread;
@@ -170,7 +171,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private void clear() {
         _nameToOpenProjectMap.clear();
         _projectToServerProjectMap.clear();
-        _sessions.clear();
+        subjectMap.clear();
         _sessionToProjectsMap.clear();
         stopProjectUpdateThread();
     }
@@ -231,20 +232,25 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     public RemoteSession openSession(String username, String userIpAddress, String password) {
-        RemoteSession session = null;
-        if (isValid(username, password)) {
+        Session session = null;
+        Subject subject = login(username, password);
+        if (subject != null) {
             session = new Session(username, userIpAddress);
-            _sessions.add(session);
+            subjectMap.put(session, subject);
         }
         return session;
     }
 
     public void closeSession(RemoteSession session) {
-        _sessions.remove(session);
+        subjectMap.remove(session);
     }
     
     public boolean isActive(RemoteSession session) {
-        return _sessions.contains(session);
+        return subjectMap.containsKey(session);
+    }
+    
+    public Subject getSubject(RemoteSession session) {
+    	return subjectMap.get(session);
     }
 
     public RemoteServerProject openProject(String projectName, RemoteSession session) {
@@ -276,7 +282,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         // Log.enter(this, "recordDisconnection", session, project);
         Collection projects = (Collection) _sessionToProjectsMap.get(session);
         projects.remove(project);
-        _sessions.remove(session);
+        subjectMap.remove(session);
         Log.getLogger().info("removing session: " + session);
     }
 
@@ -413,18 +419,18 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     
 
 
-    private boolean isValid(String name, String password) {
+    private Subject login(String name, String password) {
         LoginContext lc;
         try {
             lc = new LoginContext("Protege",
                                   new ProtegeCallbackHandler(name, password));
             lc.login();
+            return lc.getSubject();
         }
         catch (Exception e) {
             Log.getLogger().warning("Failed login " + e);
-            return false;
+            return null;
         }
-        return true;
     }
     
     public boolean metaprojectAuthCheck(String name, String password) {
