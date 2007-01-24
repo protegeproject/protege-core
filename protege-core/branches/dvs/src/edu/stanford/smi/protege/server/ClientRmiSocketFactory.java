@@ -23,8 +23,6 @@ import edu.stanford.smi.protege.util.StringUtilities;
  */
 
 public class ClientRmiSocketFactory implements RMIClientSocketFactory, Serializable {
-    private static final long serialVersionUID = 1237035652027282759L;
-    
     // Port Settings
     public static final String SERVER_PORT = "protege.rmi.server.port";
     public static final String SERVER_SSL_PORT = "protege.rmi.server.ssl.port";

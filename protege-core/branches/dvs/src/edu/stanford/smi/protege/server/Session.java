@@ -1,9 +1,14 @@
 package edu.stanford.smi.protege.server;
 
-import java.io.*;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 public class Session implements RemoteSession, Externalizable {
-    private static int nextId = 100;
+	private static final long serialVersionUID = 1317171818730685947L;
+	
+	private static int nextId = 100;
     private int id;
     private String userName;
     private String userIpAddress;
