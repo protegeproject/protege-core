@@ -25,6 +25,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -46,6 +48,7 @@ import edu.stanford.smi.protege.widget.TabWidget;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class PluginUtilities {
+    private static Logger log = Log.getLogger(PluginUtilities.class);
 	
     private static final String TAB_WIDGET = "Tab-Widget";
     private static final String SLOT_WIDGET = "Slot-Widget";
@@ -144,6 +147,9 @@ public class PluginUtilities {
           // This is the empty catch block situation but I don't
           // think logging is helpful here - it is normal and it happens
           // too often.
+            if (log.isLoggable(Level.FINEST)) {
+                log.log(Level.FINEST, "Standard Exception Ignored", e);
+            }
             if (promiscuous) {
                 clas = promiscuousForName(className);
             }
@@ -166,9 +172,15 @@ public class PluginUtilities {
             } catch (ClassNotFoundException e) {
              // The dreaded empty catch block - as above I don't think
              // logging helps.
+                if (log.isLoggable(Level.FINEST)) {
+                    log.log(Level.FINEST, "Standard Exception Ignored", e);
+                }
             } catch (NoClassDefFoundError error) {
             	// The dreaded empty  catch block - as above I don't think 
                 // logging helps.
+                if (log.isLoggable(Level.FINEST)) {
+                    log.log(Level.FINEST, "Standard Exception Ignored", error);
+                }
             }
         }
         return clas;
