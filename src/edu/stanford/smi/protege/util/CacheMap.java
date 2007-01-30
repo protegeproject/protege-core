@@ -86,7 +86,7 @@ public class CacheMap<X,Y> {
         referenceQueue = new ReferenceQueue();
     }
 
-    public Collection getKeys() {
+    public Collection<X> getKeys() {
         pollQueue();
         return new ArrayList<X>(keyToReferenceMap.keySet());
     }
