@@ -106,23 +106,27 @@ public abstract class APITestCase extends AbstractTestCase {
       }
       return null;
     }
+    
+    public static boolean dbConfigured() {
+    		return dbConfigured(true);
+    }
 
     private static Set<DBType> informedDBConfigured = EnumSet.noneOf(DBType.class);
  
-    public static boolean dbConfigured() {
+    public static boolean dbConfigured(boolean report) {
       Properties dbp = getJunitProperties();
       if (dbp == null) {
         return false;
       }
       String configured = getDBProperty("configured");
       if (configured == null || !configured.toLowerCase().equals("true")) {
-        if (!informedDBConfigured.contains(_dbType)) {
+        if (report && !informedDBConfigured.contains(_dbType)) {
           System.out.println("Database Tests for " + _dbType + " not configured");
           informedDBConfigured.add(_dbType);
         }
         return false;
       }
-      if (!informedDBConfigured.contains(_dbType)) {
+      if (report && !informedDBConfigured.contains(_dbType)) {
         System.out.println("Database Tests for " + _dbType + " configured");
         informedDBConfigured.add(_dbType);
       }
