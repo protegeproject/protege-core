@@ -412,6 +412,22 @@ public class SimpleFrameStore implements FrameStore {
     public Set getOwnSlots(Frame frame) {
         Collection types = getTypes((Instance) frame);
         Set ownSlots = collectOwnSlotValues(types, _systemFrames.getDirectTemplateSlotsSlot());
+        /*
+         * Meaningful Comment:
+         * new code to add subslots of the direct slots.  This is necessary if
+         * we want frame, slot -> non-empty value  to imply that slot is 
+         * in frame.getOwnSlots(). 
+         */
+        Set subSlots = new HashSet();
+        for (Object o : ownSlots) {
+        	if (o instanceof Slot) {
+        		Slot slot = (Slot) o;
+        		Set addSlots = getSubslots(slot);
+        		if (addSlots != null) subSlots.addAll(addSlots);
+        	}
+        }
+        ownSlots.addAll(subSlots);
+        
         ownSlots.add(_systemFrames.getNameSlot());
         ownSlots.add(_systemFrames.getDirectTypesSlot());
         return ownSlots;
