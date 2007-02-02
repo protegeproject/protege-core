@@ -626,10 +626,15 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
     
     public List<EventObject> getEvents() {
-    	dispatchEvents();
-    	List<EventObject>  events = savedEvents;
-    	savedEvents = new ArrayList<EventObject>();
-        return events;
+    	if (serverMode) {
+    		dispatchEvents();
+    		List<EventObject>  events = savedEvents;
+    		savedEvents = new ArrayList<EventObject>();
+    		return events;
+    	}
+    	else {
+    		return super.getEvents();
+    	}
     }
 
     public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
