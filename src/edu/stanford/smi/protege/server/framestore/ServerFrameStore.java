@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -17,6 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
@@ -26,7 +28,9 @@ import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.EventDispatchFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.ClientRmiSocketFactory;
@@ -34,7 +38,6 @@ import edu.stanford.smi.protege.server.Registration;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.SSLSettings;
 import edu.stanford.smi.protege.server.ServerRmiSocketFactory;
-import edu.stanford.smi.protege.server.Session;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
@@ -60,6 +63,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      * needs to be sent over the wire.
      */
     private Map<Sft,Sft> sftMap = new HashMap<Sft,Sft>();
+    
+    private static Set<KnowledgeBase> requiresEventDispatch = new HashSet<KnowledgeBase>();
 
     
     //ESCA-JAVA0160 
@@ -69,12 +74,24 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
               new ServerRmiSocketFactory(SSLSettings.Context.ALWAYS));
         _delegate = delegate;
         _kb = kb;
-        kb.setDispatchEventsEnabled(false);
-        // kb.setJournalingEnabled(true);
+        if (!requiresEventDispatch.contains(kb)) {
+        	kb.setDispatchEventsEnabled(false);
+        }
+        else {
+        	FrameStoreManager fsm = ((DefaultKnowledgeBase) kb).getFrameStoreManager();
+        	EventDispatchFrameStore dispatcher = (EventDispatchFrameStore) fsm.getFrameStoreFromClass(EventDispatchFrameStore.class);
+        	dispatcher.setServerMode(true);
+        	requiresEventDispatch.remove(kb);
+        }
         if (DELAY_MSEC != 0) {
             //used for simulating slow network response time
             Log.getLogger().config("Simulated delay of " + DELAY_MSEC + " msec/call");
         }
+    }
+    
+    public static void requestEventDispatch(KnowledgeBase kb) {
+    	kb.setDispatchEventsEnabled(true);
+    	requiresEventDispatch.add(kb);
     }
 
     private FrameStore getDelegate() {
