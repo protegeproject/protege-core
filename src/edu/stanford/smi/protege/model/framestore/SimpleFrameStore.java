@@ -774,6 +774,28 @@ public class SimpleFrameStore implements FrameStore {
         }
     }
 
+
+    /*
+     * Paradoxically this method is both trivially simple and very confusing.
+     *
+     * Suppose
+     *   1. s and inverse_s are inverse slots
+     *   2. for some class C the default template slot value for
+     *      inverse_s at C is f
+     *   3. i is an instance of C
+     * 
+     * Then by the template slot value definition it follows that the
+     * inverse_s slot value of i includes f.  So it must also follow
+     * that the s slot value of f includes i.
+     *
+     * To find all of these, i, we have to do a search for all
+     * classes C whose default template slot value for inverse_s
+     * includes f.  This is why we use the 
+     *
+     *    _helper.getFrames(Slot, Facet, Boolean, Object) 
+     *
+     * call.
+     */
     private void addInferredInverseSlotValues(Frame frame, Slot slot, Collection values) {
         Slot inverseSlot = getInverseSlot(slot);
         if (inverseSlot != null) {
