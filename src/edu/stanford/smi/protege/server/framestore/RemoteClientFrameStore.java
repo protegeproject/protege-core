@@ -131,6 +131,10 @@ public class RemoteClientFrameStore implements FrameStore {
     public FrameStore getDelegate() {
         return null;
     }
+    
+    public RemoteSession getSession() {
+    	return session;
+    }
 
     public void reinitialize() {
         // do nothing
