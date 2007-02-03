@@ -107,8 +107,25 @@ public class ServerPanel extends JPanel implements Validatable {
     private static RemoteServer connectToHost(String serverName) {
         RemoteServer server = null;
         try {
-            int port = Integer.getInteger(ClientRmiSocketFactory.REGISTRY_PORT, 
-                                          Registry.REGISTRY_PORT).intValue();
+            int port = 0;
+            int index;
+            boolean userNamesPort = false;
+            if ((index = serverName.lastIndexOf(":")) > 0) {
+            	try {
+            		port = Integer.parseInt(serverName.substring(index+1));
+            		serverName = serverName.substring(0, index);
+            		userNamesPort = true;
+            	} catch (NumberFormatException nfe) {
+            		// Empty Catch Block
+            		// nothing needs to be done here becauuse it just means 
+            		// that the server name is not in the form
+            		// hostname:port even though it has a ":" in it.
+            	}
+            }
+            if (!userNamesPort) {
+            	port = Integer.getInteger(ClientRmiSocketFactory.REGISTRY_PORT, 
+            							  Registry.REGISTRY_PORT).intValue();
+            }
             Registry registry = LocateRegistry.getRegistry(serverName, port);
             if (SSLSettings.useSSL(SSLSettings.Context.LOGIN)) {
                 ClientRmiSocketFactory.resetAuth();
