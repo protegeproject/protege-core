@@ -37,6 +37,7 @@ import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ProtegeJob;
 import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class RemoteClientFrameStore implements FrameStore {
@@ -79,6 +80,11 @@ public class RemoteClientFrameStore implements FrameStore {
         fixLoader();
         return remoteDelegate;
     }
+    
+    public RemoteServerFrameStore getRemoteDelegate(ProtegeJob job) {
+        job.fixLoader();
+        return remoteDelegate;
+    }
 
     private void fixLoader() {
         ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
@@ -106,10 +112,14 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public RemoteClientFrameStore(RemoteServerFrameStore delegate, RemoteSession session, KnowledgeBase kb,
-            boolean preloadAll) {
+    public RemoteClientFrameStore(RemoteServer server, 
+                                  RemoteServerFrameStore delegate, 
+                                  RemoteSession session, 
+                                  KnowledgeBase kb,
+                                  boolean preloadAll) {
         try {
             this.session = session;
+            this.server = server;
             this.kb = kb;
             this.remoteDelegate = delegate;
             preload(preloadAll);
@@ -124,6 +134,14 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public FrameStore getDelegate() {
         return null;
+    }
+    
+    public RemoteSession getSession() {
+        return session;
+    }
+    
+    public RemoteServer getRemoteServer() {
+        return server;
     }
 
     public void reinitialize() {
@@ -1442,4 +1460,15 @@ public class RemoteClientFrameStore implements FrameStore {
             }
         }
     }
+    
+    public Object executeProtegeJob(ProtegeJob job) {
+        try {
+            Object result = getRemoteDelegate(job).executeProtegeJob(job, session);
+            LocalizeUtils.localize(result, kb);
+            return result;
+        } catch (RemoteException remote) {
+            throw convertException(remote);
+        }
+    }
+
 }
