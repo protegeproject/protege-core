@@ -93,7 +93,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return new FrameStoreManager(this);
     }
 
-    protected FrameStoreManager getFrameStoreManager() {
+    public FrameStoreManager getFrameStoreManager() {
         return _frameStoreManager;
     }
 
@@ -848,13 +848,18 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized String getUserName() {
-    	if (_userName != null)
-			return _userName;
-				
-		RemoteSession session = ServerFrameStore.getCurrentSession();    	
-    	_userName = (session != null ? session.getUserName() : ApplicationProperties.getUserName()); 
-		
-		return _userName;
+        if (_userName != null) {
+            return _userName;
+        }
+                
+        RemoteSession session = ServerFrameStore.getCurrentSession();
+        if (session != null) {
+            return session.getUserName();
+        }
+        _userName = ApplicationProperties.getUserName();
+        
+        return _userName;       
+
     }
 
     public synchronized String getVersionString() {
