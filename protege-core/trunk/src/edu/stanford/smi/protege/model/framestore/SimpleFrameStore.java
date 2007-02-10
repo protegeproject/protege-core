@@ -412,6 +412,22 @@ public class SimpleFrameStore implements FrameStore {
     public Set getOwnSlots(Frame frame) {
         Collection types = getTypes((Instance) frame);
         Set ownSlots = collectOwnSlotValues(types, _systemFrames.getDirectTemplateSlotsSlot());
+        /*
+         * Meaningful Comment:
+         * new code to add subslots of the direct slots.  This is necessary if
+         * we want frame, slot -> non-empty value  to imply that slot is 
+         * in frame.getOwnSlots(). 
+         */
+        Set subSlots = new HashSet();
+        for (Object o : ownSlots) {
+        	if (o instanceof Slot) {
+        		Slot slot = (Slot) o;
+        		Set addSlots = getSubslots(slot);
+        		if (addSlots != null) subSlots.addAll(addSlots);
+        	}
+        }
+        ownSlots.addAll(subSlots);
+        
         ownSlots.add(_systemFrames.getNameSlot());
         ownSlots.add(_systemFrames.getDirectTypesSlot());
         return ownSlots;
@@ -774,28 +790,6 @@ public class SimpleFrameStore implements FrameStore {
         }
     }
 
-
-    /*
-     * Paradoxically this method is both trivially simple and very confusing.
-     *
-     * Suppose
-     *   1. s and inverse_s are inverse slots
-     *   2. for some class C the default template slot value for
-     *      inverse_s at C is f
-     *   3. i is an instance of C
-     * 
-     * Then by the template slot value definition it follows that the
-     * inverse_s slot value of i includes f.  So it must also follow
-     * that the s slot value of f includes i.
-     *
-     * To find all of these, i, we have to do a search for all
-     * classes C whose default template slot value for inverse_s
-     * includes f.  This is why we use the 
-     *
-     *    _helper.getFrames(Slot, Facet, Boolean, Object) 
-     *
-     * call.
-     */
     private void addInferredInverseSlotValues(Frame frame, Slot slot, Collection values) {
         Slot inverseSlot = getInverseSlot(slot);
         if (inverseSlot != null) {
