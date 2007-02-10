@@ -297,7 +297,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         _projectToServerProjectMap.put(p, sp);
     }
 
-    private Project getProject(String name) {
+    public Project getProject(String name) {
         return (Project) _nameToOpenProjectMap.get(name);
     }
 
@@ -493,5 +493,19 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private void stopProjectUpdateThread() {
         _updateThread = null;
+    }
+    /*********************************************************
+     * Meta-project stuff.
+     */
+    public KnowledgeBase getMetaProject() {
+        return _systemKb;
+    }
+    
+    public Cls getProjectCls() {
+        return _projectCls;
+    }
+    
+    public Slot getNameSlot() {
+        return _nameSlot;
     }
 }

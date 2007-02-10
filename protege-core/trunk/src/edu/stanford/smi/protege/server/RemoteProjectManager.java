@@ -70,7 +70,7 @@ public class RemoteProjectManager {
                 if (session != null) {
                     RemoteServerProject serverProject = server.openProject(projectName, session);
                     if (serverProject != null) {
-                        p = RemoteClientProject.createProject(serverProject, session, pollForEvents);
+                        p = RemoteClientProject.createProject(serverProject, server, session, pollForEvents);
                     }
                 }
             }
@@ -80,11 +80,11 @@ public class RemoteProjectManager {
         return p;
     }
 
-    private Project connectToProject(RemoteServer server, RemoteSession session, String name) {
+    public Project connectToProject(RemoteServer server, RemoteSession session, String name) {
         Project p = null;
         try {
             RemoteServerProject serverProject = server.openProject(name, session);
-            p = RemoteClientProject.createProject(serverProject, session, true);
+            p = RemoteClientProject.createProject(serverProject, server, session, true);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
         }
