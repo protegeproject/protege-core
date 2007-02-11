@@ -75,7 +75,7 @@
 	<target name = "init">    
 	  <tstamp/>  
           <condition property="protege.home.set">
-            <available file="${protege.home}/protege.jar" type="file"/>
+            <available file="${protege.home}" type="dir"/>
           </condition>
 	</target>  
 	<!-- =================================================================== -->
@@ -184,6 +184,22 @@
           </fail>
           <copy file="${dist}/protege.jar"
                 todir = "${protege.home}"/>
+        </target>
+
+        <target name="install" depends="jar" if="protege.home.set">
+          <copy file="dist/protege.jar" todir="${protege.home}"/>
+          <copy todir="${protege.home}">
+            <fileset dir="dist" includes="protege.jar"/>
+            <fileset dir="./lib" includes="*.jar"/>
+            <fileset dir="bin">
+              <include name="*.sh"/>
+              <include name="*.bat"/>
+            </fileset>
+            <fileset dir="lib">
+              <include name="*.jar"/>
+            </fileset>
+          </copy>
+          <mkdir dir="${protege.home}/plugins"/>
         </target>
 
 
