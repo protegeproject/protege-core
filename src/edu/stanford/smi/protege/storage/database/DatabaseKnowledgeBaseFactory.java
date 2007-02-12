@@ -179,7 +179,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
         return null;
     }
     
-    private static IncludingDatabaseAdapter getIncludingDatabaseAdapter(KnowledgeBase kb) {
+    public static IncludingDatabaseAdapter getIncludingDatabaseAdapter(KnowledgeBase kb) {
       NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb); // Assumes this is the top
                                                               // of the narrow frame stores.
       while ((nfs = nfs.getDelegate()) != null) {
