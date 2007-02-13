@@ -20,7 +20,7 @@ import edu.stanford.smi.protege.util.*;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
     private static Server serverInstance;
-    private Map _nameToOpenProjectMap = new HashMap();
+    private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
     private Map _projectToServerProjectMap = new HashMap();
     private KnowledgeBase _systemKb;
     private Slot _nameSlot;
@@ -72,6 +72,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         RMISocketFactory.setSocketFactory(sf);
         SystemUtilities.initialize();
         serverInstance = new Server(args);
+        for (Project p : serverInstance._nameToOpenProjectMap.values()) {
+            serverInstance._projectPluginManager.afterLoad(p);
+        }
         Log.getLogger().info("Protege server ready to accept connections...");
     }
     
@@ -297,7 +300,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         _projectToServerProjectMap.put(p, sp);
     }
 
-    private Project getProject(String name) {
+    public Project getProject(String name) {
         return (Project) _nameToOpenProjectMap.get(name);
     }
 
@@ -320,7 +323,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                 projectLocation = localizeLocation(projectLocation);
                 URI uri = URIUtilities.createURI(projectLocation);
                 project = Project.loadProjectFromURI(uri, new ArrayList(), true);
-                _projectPluginManager.afterLoad(project);
+                if (serverInstance != null) _projectPluginManager.afterLoad(project);
                 localizeProject(project);
                 _nameToOpenProjectMap.put(name, project);
                 break;
@@ -493,5 +496,19 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private void stopProjectUpdateThread() {
         _updateThread = null;
+    }
+    /*********************************************************
+     * Meta-project stuff.
+     */
+    public KnowledgeBase getMetaProject() {
+        return _systemKb;
+    }
+    
+    public Cls getProjectCls() {
+        return _projectCls;
+    }
+    
+    public Slot getNameSlot() {
+        return _nameSlot;
     }
 }

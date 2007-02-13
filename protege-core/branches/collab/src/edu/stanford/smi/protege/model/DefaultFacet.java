@@ -77,10 +77,22 @@ public class DefaultFacet extends DefaultInstance implements Facet {
     }
 
     public ValueType getValueType() {
-        return getAssociatedSlot().getValueType();
+    	Slot associatedSlot = getAssociatedSlot();
+    	
+    	if (associatedSlot == null) {
+    		Log.getLogger().warning("Cannot find associated slot of " + this + ". Assuming value type is " + ValueType.ANY);
+    		return ValueType.ANY;
+    	}
+        return associatedSlot.getValueType();
     }
 
     public boolean getAllowsMultipleValues() {
+    	Slot associatedSlot = getAssociatedSlot();
+    	
+    	if (associatedSlot == null) {
+    		Log.getLogger().warning("Cannot find associated slot of " + this + ". Assuming cardinality is multiple");
+    		return true;
+    	}
         return getAssociatedSlot().getAllowsMultipleValues();
     }
 

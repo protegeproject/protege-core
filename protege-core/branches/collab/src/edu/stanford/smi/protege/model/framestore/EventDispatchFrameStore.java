@@ -9,6 +9,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -50,6 +51,8 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private static final int DELAY_MSEC = 5 * 1000;
     private Map _listeners = new HashMap();
     private Thread _eventThread;
+    private boolean serverMode = false;
+    private List<EventObject> savedEvents = new ArrayList<EventObject>();
 
     public void reinitialize() {
         // do nothing. In particular we do not clear the listeners. Dispatch can
@@ -87,7 +90,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                   if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "Exception caught", e);
                   } else {
-                    Log.getLogger().warning("Excepction caught " + e.toString());
+                    Log.getLogger().warning("Exception caught " + e.toString());
                     Log.getLogger().warning("using fine logging for more details");
                   }
                 }
@@ -97,6 +100,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     private void dispatchEvents(boolean ignoreExceptions) {
         Collection<EventObject> events = getDelegate().getEvents();
+        if (serverMode) {
+        	this.savedEvents.addAll(events);
+        }
         if (!events.isEmpty()) {
             dispatchEvents(events, ignoreExceptions);
         }
@@ -613,6 +619,22 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         getDelegate().deleteSlot(slot);
         removeSlotListeners(slot);
         dispatchEvents();
+    }
+    
+    public void setServerMode(boolean serverMode) {
+    	this.serverMode = serverMode;
+    }
+    
+    public List<EventObject> getEvents() {
+    	if (serverMode) {
+    		dispatchEvents();
+    		List<EventObject>  events = savedEvents;
+    		savedEvents = new ArrayList<EventObject>();
+    		return events;
+    	}
+    	else {
+    		return super.getEvents();
+    	}
     }
 
     public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
