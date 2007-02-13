@@ -211,10 +211,10 @@ public class ComponentUtilities {
         for (int i = 0; i < nChildren; ++i) {
             childNode = (LazyTreeNode) node.getChildAt(i);
             if (equals(childNode.getUserObject(), userObject)) {
-                break;
+                return childNode;
             }
         }
-        return childNode;
+        return null;
     }
 
     public static boolean equals(Object o1, Object o2) {
@@ -397,7 +397,7 @@ public class ComponentUtilities {
             Object userObject = i.next();
             node = getChildNode(node, userObject);
             if (node == null) {
-                Log.getLogger().warning("Child node not found: " + userObject);
+                //Log.getLogger().warning("Child node not found: " + userObject);
                 return null;
             }
             nodePath.add(node);
