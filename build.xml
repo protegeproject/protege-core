@@ -228,6 +228,22 @@
 	
 	<!-- =================================================================== -->
 
+     <target name = "buildDbScratchProject" 
+             description = "build the scratch project for the db server tests"
+             depends = "jar">
+       <java classname = "edu.stanford.smi.protege.server.DBServer_Test"
+             fork = "true">
+         <classpath>
+           <pathelement location="${dist}/protege.jar"/>
+           <fileset dir="${lib}">
+             <include name="*.jar"/>
+           </fileset>
+           <fileset dir="dbdrivers">
+             <include name="*.jar"/>
+           </fileset>
+         </classpath>
+       </java>
+     </target>
 
    <!--
      My experience is that "ant junit" provides almost no debugging
@@ -252,7 +268,7 @@
 
         <target name = "junit" 
                 description = "test the system"
-                depends="jar">
+                depends="jar, buildDbScratchProject">
           <junit  printsummary="withOutAndErr" 
                   haltonerror="on" 
                   haltonfailure="on" 
