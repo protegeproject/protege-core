@@ -222,11 +222,6 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
             }
         }
         setActiveFrameStore(parent);
-        if (parent instanceof IncludingKBSupport) { 
-          IncludedFrameLookup ifl = new IncludedFrameLookupImpl(getNameSlot(),
-                                                                    parent, frameStoreTree);
-          ((IncludingKBSupport) parent).setIncludedFrames(ifl);
-        }
         if (log.isLoggable(Level.FINE)) {
             log.fine("Added new active frame store");
             dumpFrameStores(Level.FINE);
