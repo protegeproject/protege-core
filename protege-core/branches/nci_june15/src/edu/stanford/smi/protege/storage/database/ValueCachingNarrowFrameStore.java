@@ -17,8 +17,6 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.model.framestore.IncludedFrameLookup;
-import edu.stanford.smi.protege.model.framestore.IncludingKBSupport;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
@@ -36,7 +34,7 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
  * Description of this class
  */
 
-public class ValueCachingNarrowFrameStore implements NarrowFrameStore, IncludingKBSupport {
+public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     private Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private NarrowFrameStore _delegate;
     private DatabaseFrameDb _framedb;
@@ -345,16 +343,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore, Including
         transactedWrites.clear();
     }
 
-    
-    
-
-  /*----------------------------IncludingKBSupport Interfaces */
-
-    public void setIncludedFrames(IncludedFrameLookup iframes) {
-      if (_delegate instanceof IncludingKBSupport) {
-        ((IncludingKBSupport) _delegate).setIncludedFrames(iframes);
-      }
-    }
 
   /*----------------------------NarrowFrameStore Interfaces */
 
