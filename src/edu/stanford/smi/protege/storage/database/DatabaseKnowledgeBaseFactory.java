@@ -168,7 +168,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
         }
     }
 
-    private static DatabaseFrameDb getDatabaseFrameDb(KnowledgeBase kb) {
+    protected static DatabaseFrameDb getDatabaseFrameDb(KnowledgeBase kb) {
         NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb); // Assumes this is the top
                                                                 // of the narrow frame stores.
         while ((nfs = nfs.getDelegate()) != null) {
@@ -179,17 +179,6 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
         return null;
     }
     
-    public static IncludingDatabaseAdapter getIncludingDatabaseAdapter(KnowledgeBase kb) {
-      NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb); // Assumes this is the top
-                                                              // of the narrow frame stores.
-      while ((nfs = nfs.getDelegate()) != null) {
-        if (nfs instanceof IncludingDatabaseAdapter) {
-          return (IncludingDatabaseAdapter) nfs;
-        }
-      }
-      return null;
-    }
-
     public static void setDriver(PropertyList sources, String driver) {
         sources.setString(DRIVER_PROPERTY, driver);
     }
@@ -223,18 +212,11 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
       return;
     }
 
-    public IncludingDatabaseAdapter createNarrowFrameStore(String name) {
+    public ValueCachingNarrowFrameStore createNarrowFrameStore(String name) {
       DatabaseFrameDb store = new DatabaseFrameDb();
       ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
-      IncludingDatabaseAdapter ida = new IncludingDatabaseAdapter(vcnfs);
-      ida.setName(name);
-      return ida;
-    }
-    
-    protected void insertKB(KnowledgeBase kb, String name, Collection<URI> included) {
-      NarrowFrameStore nfs = createNarrowFrameStore(name);
-      MergingNarrowFrameStore mnfs = getMergingFrameStore((DefaultKnowledgeBase) kb);
-      mnfs.addActiveFrameStore(nfs, included);
+      vcnfs.setName(name);
+      return vcnfs;
     }
     
     protected void initializeKB(KnowledgeBase kb, 
@@ -246,8 +228,8 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
                               boolean isInclude) {
         DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
         FrameFactory factory = dkb.getFrameFactory();
-        IncludingDatabaseAdapter ida = getIncludingDatabaseAdapter(dkb);
-        ida.initialize(factory, driver, url, user, password, table, isInclude);
+        DatabaseFrameDb db = getDatabaseFrameDb(dkb);
+        db.initialize(factory, driver, url, user, password, table, isInclude);
         kb.flushCache();
     }
     
@@ -268,26 +250,19 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
                                  String tablename, 
                                  Collection errors) {
       try {
-        DatabaseWriter dbw = new DatabaseWriter(inputKb,
-                                                driver, url, 
-                                                username, password, 
-                                                tablename);
-        dbw.setOwlMode(owlMode);
-        dbw.save();
-        /*
-          DefaultKnowledgeBase outputKb = new DefaultKnowledgeBase();
-          Collection<URI> uris = inputKb.getProject().getDirectIncludedProjectURIs();
-          for (URI uri : uris) {
-            outputKb.getProject().includeProject(uri, errors);
-          }
-          insertKB(outputKb, " <new> ", uris);
-          initializeKB(outputKb, driver, url, username, password, tablename, false);
-          getIncludingDatabaseAdapter(outputKb).overwriteKB(inputKb);
-          */
+          DatabaseFrameDb db = new DatabaseFrameDb();
+          db.initialize(inputKb.getFrameFactory(), driver, url, username, password, tablename, false);
+          db.overwriteKB(inputKb, true);
       } catch (Exception e) {
           errors.add(e);
       }
   }
+  
+  protected void insertKB(KnowledgeBase kb, String name, Collection<URI> included) {
+      NarrowFrameStore nfs = createNarrowFrameStore(name);
+      MergingNarrowFrameStore mnfs = getMergingFrameStore((DefaultKnowledgeBase) kb);
+      mnfs.addActiveFrameStore(nfs, included);
+    }
 
   protected void setOwlMode(boolean owlMode) {
       this.owlMode = owlMode;
