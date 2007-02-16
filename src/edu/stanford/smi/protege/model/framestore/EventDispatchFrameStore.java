@@ -9,6 +9,7 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -53,6 +54,10 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private Map _listeners = new HashMap();
     private Thread _eventThread;
     private Object lock;
+    
+    private boolean serverMode = false;
+    private List<AbstractEvent> savedEvents = new ArrayList<AbstractEvent>();
+
     
     
     public EventDispatchFrameStore(KnowledgeBase kb) {
@@ -105,6 +110,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     private void dispatchEvents(boolean ignoreExceptions) {
         Collection<AbstractEvent> events = getDelegate().getEvents();
+        if (serverMode) {
+            savedEvents.addAll(events);
+        }
         if (!events.isEmpty()) {
             dispatchEvents(events, ignoreExceptions);
         }
@@ -773,4 +781,21 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             stopEventThread();
         }
     }
+    
+    public void setServerMode(boolean serverMode) {
+        this.serverMode = serverMode;
+    }
+        
+    public List<AbstractEvent> getEvents() {
+        if (serverMode) {
+            dispatchEvents();
+            List<AbstractEvent>  events = savedEvents;
+            savedEvents = new ArrayList<AbstractEvent>();
+            return events;
+        }
+        else {
+            return super.getEvents();
+        }
+    }
+
 }
