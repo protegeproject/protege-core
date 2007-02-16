@@ -97,11 +97,11 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                 dispatchEvent(event);
             } catch (Exception e) {
                 if (!ignoreExceptions) {
-                  if (Log.getLogger().isLoggable(Level.FINE)) {
-                    Log.getLogger().log(Level.FINE, "Exception caught", e);
+                  if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "Exception caught", e);
                   } else {
-                    Log.getLogger().warning("Excepction caught " + e.toString());
-                    Log.getLogger().warning("using fine logging for more details");
+                    Log.getLogger().warning("Exception caught " + e.toString());
+                    Log.getLogger().warning("use fine logging for more details");
                   }
                 }
             }
