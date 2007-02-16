@@ -32,6 +32,9 @@ import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
@@ -858,8 +861,19 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized String getUserName() {
+        if (_userName != null) {
+            return _userName;
+        }
+                
+        RemoteSession session = ServerFrameStore.getCurrentSession();
+        if (session != null) {
+            return session.getUserName();
+        }
+        _userName = ApplicationProperties.getUserName();
+        
         return _userName;
     }
+
 
     public synchronized String getVersionString() {
         return _versionString;
