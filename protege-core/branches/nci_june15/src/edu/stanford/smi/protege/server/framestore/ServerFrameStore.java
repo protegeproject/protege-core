@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
 import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
@@ -27,8 +28,10 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.EventDispatchFrameStore;
 import edu.stanford.smi.protege.model.framestore.EventGeneratorFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
@@ -132,6 +135,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     
     private FrameCalculator frameCalculator;
 
+    private static Set<KnowledgeBase> requiresEventDispatch = new HashSet<KnowledgeBase>();
+
     
     //ESCA-JAVA0160 
     public ServerFrameStore(FrameStore delegate, 
@@ -141,7 +146,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         _kb = kb;
         _kbLock = kbLock;
         transactionMonitor = delegate.getTransactionStatusMonitor();
-        kb.setDispatchEventsEnabled(false);
+        if (!requiresEventDispatch.contains(kb)) {
+            kb.setDispatchEventsEnabled(false);
+        }
+        else {
+            FrameStoreManager fsm = ((DefaultKnowledgeBase) kb).getFrameStoreManager();
+            EventDispatchFrameStore dispatcher = (EventDispatchFrameStore) fsm.getFrameStoreFromClass(EventDispatchFrameStore.class);
+            dispatcher.setServerMode(true);
+            requiresEventDispatch.remove(kb);
+        }
         serverMode();
         valuesFacet = _kb.getSystemFrames().getValuesFacet();
         frameCalculator = new FrameCalculator(_delegate, 
@@ -157,6 +170,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         // disabled for now.
         startHeartbeatThread(_kb.toString());
     }
+    
+    public static void requestEventDispatch(KnowledgeBase kb) {
+        kb.setDispatchEventsEnabled(true);
+        requiresEventDispatch.add(kb);
+    }
+
     
     private void startHeartbeatThread(String name) {
       if (!ServerProperties.heartbeatDisabled()) {
