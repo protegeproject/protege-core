@@ -19,10 +19,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 
+import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.plugin.ProjectPluginManager;
 import edu.stanford.smi.protege.resource.Text;
@@ -32,6 +35,8 @@ import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
+import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
+import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
@@ -92,6 +97,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         RMISocketFactory.setSocketFactory(sf);
         SystemUtilities.initialize();
         serverInstance = new Server(args);
+        for (Entry<String, Project> entry : serverInstance._nameToOpenProjectMap.entrySet()) {
+            String name = entry.getKey();
+            Project p = entry.getValue();
+            Log.getLogger().info("Loading project plugins for project " + name);
+            serverInstance._projectPluginManager.afterLoad(p);
+        }
         Log.getLogger().info("Protege server ready to accept connections...");
     }
     
@@ -343,7 +354,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             String projectLocation = instance.getLocation();
             URI uri = URIUtilities.createURI(projectLocation);
             project = Project.loadProjectFromURI(uri, new ArrayList(), true);
-            _projectPluginManager.afterLoad(project);
+            if (serverInstance != null) _projectPluginManager.afterLoad(project);
             localizeProject(project);
             _nameToOpenProjectMap.put(name, project);
             break;
@@ -511,4 +522,22 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         sp.setFrameCalculatorDisabled(disabled);
       }
     }
+    
+    /* -----------------------------------------------------------------------
+     * MetaProject utilities
+     */
+    public KnowledgeBase getMetaProject() {
+        return metaproject.getKnowledgeBase();
+    }
+    
+    public Cls getProjectCls()  {
+        return metaproject.getCls(ClsEnum.Project);
+    }
+    
+    public Slot getNameSlot() {
+        return metaproject.getSlot(SlotEnum.name);
+    }
+    
+    
+
 }
