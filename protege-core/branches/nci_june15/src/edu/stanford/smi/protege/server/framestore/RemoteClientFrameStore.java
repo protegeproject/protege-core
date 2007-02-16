@@ -142,11 +142,13 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public RemoteClientFrameStore(RemoteServerFrameStore delegate, 
+    public RemoteClientFrameStore(RemoteServer server,
+                                  RemoteServerFrameStore delegate, 
                                   RemoteSession session,
                                   KnowledgeBase kb,
                                   boolean preloadAll) {
         try {
+            this.server = server;
             this.session = session;
             this.kb = kb;
             this.remoteDelegate = delegate;
@@ -1855,6 +1857,14 @@ public class RemoteClientFrameStore implements FrameStore {
     RemoteClientFrameStore remoteFS = (RemoteClientFrameStore) terminalFS;
     return (!remoteFS.getKnownOperations().contains(op) || 
               remoteFS.getAllowedOperations().contains(op));
+  }
+  
+  public RemoteServer getRemoteServer() {
+      return server;
+  }
+  
+  public RemoteSession getSession() {
+      return session;
   }
 
   public class RemoteClientStatsImpl implements RemoteClientStats {
