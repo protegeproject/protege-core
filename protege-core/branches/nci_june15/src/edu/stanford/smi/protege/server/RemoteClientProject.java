@@ -51,12 +51,14 @@ public class RemoteClientProject extends Project {
         _serverProject = serverProject;
         _session = session;
         serverProject.getDomainKbFrameStore(session);
-        KnowledgeBase domainKb = createKnowledgeBase(serverProject.getDomainKbFrameStore(session), 
+        KnowledgeBase domainKb = createKnowledgeBase(server,
+                                                     serverProject.getDomainKbFrameStore(session), 
                                                      serverProject.getSystemNarrowFrameStore(),
                                                      serverProject.getDomainKbNarrowFrameStore(),
                                                      serverProject.getDomainKbFactoryClassName(), 
                                                      session, false);
-        KnowledgeBase projectKb = createKnowledgeBase(serverProject.getProjectKbFrameStore(session),
+        KnowledgeBase projectKb = createKnowledgeBase(server,
+                                                      serverProject.getProjectKbFrameStore(session),
                                                       serverProject.getSystemNarrowFrameStore(),
                                                       serverProject.getDomainKbNarrowFrameStore(),
                                                       serverProject.getProjectKbFactoryClassName(), 
@@ -78,7 +80,8 @@ public class RemoteClientProject extends Project {
         return localKb;
     }
 
-    private static KnowledgeBase createKnowledgeBase(RemoteServerFrameStore serverFrameStore, 
+    private static KnowledgeBase createKnowledgeBase(RemoteServer server,
+                                                     RemoteServerFrameStore serverFrameStore, 
                                                      RemoteServerNarrowFrameStore systemNfs,
                                                      RemoteServerNarrowFrameStore userNfs,
                                                      String factoryClassName,
@@ -99,7 +102,7 @@ public class RemoteClientProject extends Project {
           log.fine("created kb=" + kb);
         }
         FrameStore clientFrameStore
-               = new RemoteClientFrameStore(serverFrameStore, session, kb, preloadAll);
+               = new RemoteClientFrameStore(server, serverFrameStore, session, kb, preloadAll);
         RemoteClientInvocationHandler rcif
              = new RemoteClientInvocationHandler(kb, systemNfs, session);
         NarrowFrameStore systemNarrowFrameStore = rcif.getNarrowFrameStore();
