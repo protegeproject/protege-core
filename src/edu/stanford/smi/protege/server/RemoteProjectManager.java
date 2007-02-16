@@ -85,7 +85,7 @@ public class RemoteProjectManager {
         return p;
     }
 
-    private Project connectToProject(RemoteServer server, RemoteSession session, String name) {
+    public Project connectToProject(RemoteServer server, RemoteSession session, String name) {
         Project p = null;
         try {
             RemoteServerProject serverProject = server.openProject(name, session);
