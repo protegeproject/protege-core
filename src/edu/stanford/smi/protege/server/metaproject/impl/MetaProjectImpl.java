@@ -31,10 +31,7 @@ public class MetaProjectImpl implements MetaProject {
     }
     kb = project.getKnowledgeBase();
   }
-  
-  protected KnowledgeBase getKnowledgeBase() {
-    return kb;
-  }
+
   
   public Cls getCls(ClsEnum cls) throws OntologyException {
     Cls frameCls = kb.getCls(cls.toString());
@@ -113,6 +110,10 @@ public class MetaProjectImpl implements MetaProject {
       policy = new  PolicyImpl(this);
     }
     return policy;
+  }
+  
+  public KnowledgeBase getKnowledgeBase() {
+      return kb;
   }
  
 }

@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.server.metaproject;
 import java.util.Set;
 
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Slot;
 
 public interface MetaProject {
@@ -27,6 +28,8 @@ public interface MetaProject {
   Set<Operation> getOperations();
   
   Policy getPolicy();
+  
+  KnowledgeBase getKnowledgeBase();
   
 }
 
