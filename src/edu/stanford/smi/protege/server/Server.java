@@ -476,9 +476,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private static void save(ServerProject serverProject, Project project) {
         Log.getLogger().info("saving " + project);
         Collection errors = new ArrayList();
-        synchronized (serverProject.getDomainKbFrameStore(null)) {
-            synchronized (serverProject.getProjectKbFrameStore(null)) {
+        synchronized (project.getInternalProjectKnowledgeBase()) {
+            synchronized (project.getKnowledgeBase()) {
                 project.save(errors);
+                serverInstance._projectPluginManager.afterSave(project);
             }
         }
         serverProject.setClean();
@@ -504,9 +505,23 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
               try {
                 SystemUtilities.sleepMsec(100);
                 Log.getLogger().info("Server exiting.");
-                System.exit(0);
+                for (Project p : _projectToServerProjectMap.keySet()) { 
+                    synchronized (p.getInternalProjectKnowledgeBase()) {
+                        synchronized(p.getKnowledgeBase()) {
+                            try {
+                                _projectPluginManager.beforeClose(p);
+                            }
+                            catch (Exception e) {
+                                Log.getLogger().log(Level.INFO, "Exception caught cleaning up", e);
+                            }
+                        }
+                    }
+                }
               } catch (Exception e) {
                 Log.getLogger().log(Level.INFO, "Exception caught", e);
+              }
+              finally {
+                  System.exit(0);
               }
             }
         };
