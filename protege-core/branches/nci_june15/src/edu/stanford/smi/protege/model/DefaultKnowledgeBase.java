@@ -861,6 +861,9 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized String getUserName() {
+    	//TT: The implementation is incomplete.
+    	//We should add code to get the user name for the multi-user client, which 
+    	//does not seem to work now. (This hasn't been tested yet)
         if (_userName != null) {
             return _userName;
         }
@@ -869,7 +872,9 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         if (session != null) {
             return session.getUserName();
         }
-        _userName = ApplicationProperties.getUserName();
+        if (!_project.isMultiUserServer()) {
+        	_userName = ApplicationProperties.getUserName();
+        }
         
         return _userName;
     }
