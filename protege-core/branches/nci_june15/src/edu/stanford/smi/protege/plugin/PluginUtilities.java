@@ -149,15 +149,22 @@ public class PluginUtilities {
           // too often.
             if (log.isLoggable(Level.FINEST)) {
                 log.log(Level.FINEST, "Standard Exception Ignored", e);
+                log.finest("Promiscuous = " + promiscuous);
             }
             if (promiscuous) {
                 clas = promiscuousForName(className);
+                if (log.isLoggable(Level.FINEST)) {
+                    log.finest("Promiscuous found = " + clas);
+                }
             }
             //ESCA-JAVA0170 
         } catch (Throwable e) {
             Log.getLogger().warning(e.getMessage());
         }
         setContextClassLoader(oldLoader);
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest("Class loader found " + clas);
+        }
         return clas;
     }
 
@@ -173,15 +180,18 @@ public class PluginUtilities {
              // The dreaded empty catch block - as above I don't think
              // logging helps.
                 if (log.isLoggable(Level.FINEST)) {
-                    log.log(Level.FINEST, "Standard Exception Ignored", e);
+                    log.log(Level.FINEST, "Standard Exception Ignored by loader " + loader, e);
                 }
             } catch (NoClassDefFoundError error) {
             	// The dreaded empty  catch block - as above I don't think 
                 // logging helps.
                 if (log.isLoggable(Level.FINEST)) {
-                    log.log(Level.FINEST, "Standard Exception Ignored", error);
+                    log.log(Level.FINEST, "Standard Exception Ignored by loader" + loader, error);
                 }
             }
+        }
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest("Promiscuous mode returned class = " + clas);
         }
         return clas;
     }
