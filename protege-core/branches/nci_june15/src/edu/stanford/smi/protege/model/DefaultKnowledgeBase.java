@@ -729,7 +729,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return frames;
     }
 
-    public synchronized String getName() {
+    public String getName() {
         return _name;
     }
 
@@ -2116,7 +2116,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         _frameStoreManager.removeListener(c, o, listener);
     }
 
-    public synchronized String toString() {
+    public String toString() {
         return StringUtilities.getClassName(this) + "(" + getName() + ")";
     }
 
