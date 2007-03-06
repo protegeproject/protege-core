@@ -383,7 +383,7 @@ public class FrameCalculator {
     private RunStatus status = RunStatus.IDLE;
     
     public FrameCalculatorThread() {
-      super("Frame Pre-Calculation Thread [" + server + "]");
+      super("Frame Pre-Calculation Thread");
     }
     
     public void run() {
