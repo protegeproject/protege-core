@@ -26,6 +26,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class EventGeneratorFrameStore extends ModificationFrameStore {
     private List _events = new ArrayList<AbstractEvent>();
@@ -529,7 +530,16 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     }
     
     private void generateTransactionEvent(int type, String name) {
-        _events.add(new TransactionEvent(_kb, type, name));
+        Frame applyTo = null;
+        if (name != null) {
+            int index = name.indexOf(TransactionMonitor.APPLY_TO_TRAILER_STRING);
+            if (index >= 0) {
+                index += TransactionMonitor.APPLY_TO_TRAILER_STRING.length();
+                String frame_name = name.substring(index);
+                applyTo = getDelegate().getFrame(name);
+            }
+        }
+        _events.add(new TransactionEvent(_kb, type, name, applyTo));
     }
 
     public boolean commitTransaction() {
