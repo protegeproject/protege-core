@@ -39,6 +39,7 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * Default implementation of the KnowledgeBase interface. Delegates almost everything to the FrameStore chain.
@@ -2127,6 +2128,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     public synchronized boolean beginTransaction(String name) {
         return getHeadFrameStore().beginTransaction(name);
     }
+    
+    public synchronized boolean beginTransaction(String name, Frame appliedToFrame) {
+    	return beginTransaction(name + TransactionMonitor.APPLY_TO_TRAILER_STRING + appliedToFrame.getName());		
+	}
 
     public synchronized boolean commitTransaction() {
         return getHeadFrameStore().commitTransaction();
