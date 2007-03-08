@@ -17,7 +17,7 @@ import edu.stanford.smi.protege.util.Log;
  */
 public abstract class TransactionMonitor {
   
-  public static final String APPLY_TO_TRAILER_STRING = "Apply to: ";
+  public static final String APPLY_TO_TRAILER_STRING = " -- Apply to: ";
   
   private Map<RemoteSession,Integer> transactionsInProgress = new HashMap<RemoteSession, Integer>();
 
