@@ -630,6 +630,7 @@ public interface KnowledgeBase extends Disposable {
 
     Collection getCurrentUsers();
 
+        
     /**
      * Tells the system that one or more edit actions will follow which should
      * be handled as a unit for undo.  Editing components should wrap set/add/remove
@@ -643,6 +644,7 @@ public interface KnowledgeBase extends Disposable {
      */
     boolean beginTransaction(String name);
     
+    boolean beginTransaction(String name, Frame appliedToFrame);
     
     /**
      * @deprecated Use #commitTransaction()
