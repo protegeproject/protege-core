@@ -116,6 +116,10 @@ public abstract class AbstractWidget extends JPanel {
         getKnowledgeBase().beginTransaction(name);
     }
 
+    protected void beginTransaction(String name, String appliedToFrameName) {
+        getKnowledgeBase().beginTransaction(name, appliedToFrameName);
+    }
+
     /**
      * @deprecated Use commitTranscation() or rollbackTransaction()
      */
