@@ -2130,6 +2130,9 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
     
     public synchronized boolean beginTransaction(String name, String appliedToFrameName) {
+    	if (appliedToFrameName == null) {
+    		return beginTransaction(name);
+    	}
     	return beginTransaction(name + TransactionMonitor.APPLY_TO_TRAILER_STRING + appliedToFrameName);		
 	}
 
