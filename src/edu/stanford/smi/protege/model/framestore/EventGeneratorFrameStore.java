@@ -530,16 +530,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     }
     
     private void generateTransactionEvent(int type, String name) {
-        Frame applyTo = null;
-        if (name != null) {
-            int index = name.indexOf(TransactionMonitor.APPLY_TO_TRAILER_STRING);
-            if (index >= 0) {
-                index += TransactionMonitor.APPLY_TO_TRAILER_STRING.length();
-                String frame_name = name.substring(index);
-                applyTo = getDelegate().getFrame(name);
-            }
-        }
-        _events.add(new TransactionEvent(_kb, type, name, applyTo));
+        _events.add(new TransactionEvent(_kb, type, name));
     }
 
     public boolean commitTransaction() {
