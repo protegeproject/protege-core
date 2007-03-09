@@ -644,7 +644,7 @@ public interface KnowledgeBase extends Disposable {
      */
     boolean beginTransaction(String name);
     
-    boolean beginTransaction(String name, Frame appliedToFrame);
+    boolean beginTransaction(String name, String appliedToFrameName);
     
     /**
      * @deprecated Use #commitTransaction()
