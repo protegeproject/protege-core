@@ -476,7 +476,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         } else {
             Collection parents = getDirectSuperclasses(cls);
             try {
-                beginTransaction("delete class " + cls.getBrowserText());
+                beginTransaction("delete class " + cls.getBrowserText(), cls.getName());
                 moveInstancesToParents(cls, parents);
                 moveSubclassesToParents(cls, parents);
                 getHeadFrameStore().deleteCls(cls);
@@ -2129,8 +2129,8 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().beginTransaction(name);
     }
     
-    public synchronized boolean beginTransaction(String name, Frame appliedToFrame) {
-    	return beginTransaction(name + TransactionMonitor.APPLY_TO_TRAILER_STRING + appliedToFrame.getName());		
+    public synchronized boolean beginTransaction(String name, String appliedToFrameName) {
+    	return beginTransaction(name + TransactionMonitor.APPLY_TO_TRAILER_STRING + appliedToFrameName);		
 	}
 
     public synchronized boolean commitTransaction() {
