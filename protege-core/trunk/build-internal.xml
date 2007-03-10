@@ -15,8 +15,6 @@
 	<property name = "lib.dir" value = "./lib"/>
 	<property name = "examples.dir" value = "./examples"/>
 	<property name = "deprecation" value = "on"/>    
-	<property name = "debug" value = "off"/>
-	<property name = "includeAntRuntime" value = "no"/>
 	<property name = "optimize" value = "on"/>
 	<property name = "packages" value = "edu.*"/>
 	<property name = "source" value = "1.5"/>
@@ -90,7 +88,7 @@
 	<!-- COMPILE -->
 	<!-- =================================================================== -->
 	<target name = "compile" depends = "javacc">
-		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "${debug}" optimize = "${optimize}" includeAntRuntime = "${includeAntRuntime}" source = "${source}">
+		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "on" debuglevel = "lines" optimize = "${optimize}" includeAntRuntime = "no" source = "${source}">
 			<classpath>
 				<fileset dir = "${lib.dir}">
 					<include name = "**/*.jar"/>
