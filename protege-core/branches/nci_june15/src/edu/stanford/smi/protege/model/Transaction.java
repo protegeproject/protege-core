@@ -29,6 +29,10 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class Transaction {
+    
+    
+    public static final String APPLY_TO_TRAILER_STRING = " -- Apply to: ";
+    
     private KnowledgeBase _knowledgeBase;
 
     protected Transaction(KnowledgeBase kb) {
