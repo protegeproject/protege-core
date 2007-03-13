@@ -438,10 +438,14 @@ public class ApplicationProperties {
         setString(LAST_LOADED_URI, uri.toString());
     }
     
+    /**
+     * @return The URL connect timeout in seconds as set in the protege.properties file for the property url.connect.timeout.
+     *  It returns the default value 15 seconds, if the url connect property is not set in protege.properties.
+     */
     public static int getUrlConnectTimeout() {
-    	int timeout = 15000;
+    	int timeout = 15;
     		
-    	String timeoutString = getApplicationOrSystemProperty(URL_CONNECT_TIMEOUT, "15000");
+    	String timeoutString = getApplicationOrSystemProperty(URL_CONNECT_TIMEOUT, "15");
     	
     	try {
     		timeout = Integer.parseInt(timeoutString);
@@ -452,14 +456,24 @@ public class ApplicationProperties {
     	return timeout;
     }
     
+    /**
+     * Sets the connect timeout. 
+     * This value is written to the protege.properties file when the project is saved as:
+     * <p> url.connect.timeout=timeout
+     * @param timeout in seconds.
+     */
     public static void setUrlConnectTimeout(int timeout) {
     	setInt(URL_CONNECT_TIMEOUT, timeout);
     }
     
+    /**
+     * @return The URL connect read timeout in seconds as set in the protege.properties file for the property url.connect.read.timeout.
+     *  It returns the default value 15 seconds, if the url connect read property is not set in protege.properties.
+     */
     public static int getUrlConnectReadTimeout() {
-    	int timeout = 15000;
+    	int timeout = 15;
     		
-    	String timeoutString = getApplicationOrSystemProperty(URL_CONNECT_READ_TIMEOUT, "15000");
+    	String timeoutString = getApplicationOrSystemProperty(URL_CONNECT_READ_TIMEOUT, "15");
     	
     	try {
     		timeout = Integer.parseInt(timeoutString);
@@ -469,7 +483,13 @@ public class ApplicationProperties {
     	    	
     	return timeout;
     }
-    
+
+    /**
+     * Sets the connect read timeout.
+      * This value is written to the protege.properties file when the project is saved as:
+     * <p> url.connect.read.timeout=timeout
+     * @param timeout in seconds.
+     */
     public static void setUrlConnectReadTimeout(int timeout) {
     	setInt(URL_CONNECT_READ_TIMEOUT, timeout);
     }
