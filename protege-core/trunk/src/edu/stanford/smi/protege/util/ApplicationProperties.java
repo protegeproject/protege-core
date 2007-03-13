@@ -37,7 +37,11 @@ public class ApplicationProperties {
     public static final String LOG_DEBUG_PROPERTY = "log.config.debug";
 
     public static final String REMOTE_CLIENT_PRELOAD = "remote.client.preload";
+    
+    public static final String URL_CONNECT_TIMEOUT = "url.connect.timeout";
 
+    public static final String URL_CONNECT_READ_TIMEOUT = "url.connect.read.timeout";
+    
     private static final Properties PROPERTIES = new Properties();
     private static File _propertyFile;
 
@@ -433,4 +437,44 @@ public class ApplicationProperties {
     public static void setLastLoadedURI(URI uri) {
         setString(LAST_LOADED_URI, uri.toString());
     }
+    
+    public static int getUrlConnectTimeout() {
+    	int timeout = 15000;
+    		
+    	String timeoutString = getApplicationOrSystemProperty(URL_CONNECT_TIMEOUT, "15000");
+    	
+    	try {
+    		timeout = Integer.parseInt(timeoutString);
+		} catch (NumberFormatException e) {
+			Log.getLogger().warning("Error parsing " + timeoutString + " to an int. Cannot set URL connect timeout. Use default value (15 sec).");
+		}
+    	    	
+    	return timeout;
+    }
+    
+    public static void setUrlConnectTimeout(int timeout) {
+    	setInt(URL_CONNECT_TIMEOUT, timeout);
+    }
+    
+    public static int getUrlConnectReadTimeout() {
+    	int timeout = 15000;
+    		
+    	String timeoutString = getApplicationOrSystemProperty(URL_CONNECT_READ_TIMEOUT, "15000");
+    	
+    	try {
+    		timeout = Integer.parseInt(timeoutString);
+		} catch (NumberFormatException e) {
+			Log.getLogger().warning("Error parsing " + timeoutString + " to an int. Cannot set URL read connect timeout. Use default value (15 sec).");
+		}
+    	    	
+    	return timeout;
+    }
+    
+    public static void setUrlConnectReadTimeout(int timeout) {
+    	setInt(URL_CONNECT_READ_TIMEOUT, timeout);
+    }
+    
+    
+    
+    
 }
