@@ -191,6 +191,10 @@ public abstract class AbstractTabWidget extends AbstractWidget implements TabWid
     }
 
     public Collection getSelection() {
+    	if (_clsTree == null) {
+    		return Collections.EMPTY_LIST;
+    	}
+    	
         TreePath path = _clsTree.getSelectionPath();
         return (path == null) ? Collections.EMPTY_LIST : ComponentUtilities.getObjectPath(path);
     }
