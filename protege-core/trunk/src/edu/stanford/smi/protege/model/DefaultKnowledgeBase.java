@@ -1011,11 +1011,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         _project = project;
     }
 
-    public synchronized void setUserName(String userName) {
-        _userName = userName;
-        _frameStoreManager.setAuthor(userName);
-    }
-
     /**
      * @deprecated Use #setFacetCheckingEnabled(boolean)
      */
