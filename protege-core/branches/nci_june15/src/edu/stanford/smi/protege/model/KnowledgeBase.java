@@ -435,8 +435,6 @@ public interface KnowledgeBase extends Disposable {
 
     void setProject(Project project);
 
-    void setUserName(String name);
-
     /**
      * Checks every call that changes an own slot value that the new value
      * is consistent with all facets.  This checking is disabled by default.  It can significately slow

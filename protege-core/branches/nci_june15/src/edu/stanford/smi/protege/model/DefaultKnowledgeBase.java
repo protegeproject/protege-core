@@ -33,6 +33,7 @@ import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CollectionUtilities;
@@ -64,7 +65,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     private KnowledgeBaseFactory _knowledgeBaseFactory;
     private Project _project;
     private String _name;
-    private String _userName;
     private String _versionString;
     private FrameNameValidator _frameNameValidator;
 
@@ -859,24 +859,29 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         instances.removeAll(getReachableSimpleInstances(rootInstances));
         return instances;
     }
-
+    
+    private String _userName;
+    public final static String SERVER_PROCESS_USER = "**Server Process UserId**";
     public synchronized String getUserName() {
-    	//TT: The implementation is incomplete.
-    	//We should add code to get the user name for the multi-user client, which 
-    	//does not seem to work now. (This hasn't been tested yet)
         if (_userName != null) {
             return _userName;
         }
-                
-        RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (session != null) {
-            return session.getUserName();
+        Project p = getProject();
+        if (p != null && p.isMultiUserClient()) {
+            FrameStoreManager fsm = getFrameStoreManager();
+            RemoteClientFrameStore fs = (RemoteClientFrameStore) fsm.getFrameStoreFromClass(RemoteClientFrameStore.class);
+            return _userName = fs.getSession().getUserName();
         }
-        if (!_project.isMultiUserServer()) {
-        	_userName = ApplicationProperties.getUserName();
+        else if (p != null && p.isMultiUserServer()) {
+            RemoteSession session = ServerFrameStore.getCurrentSession();
+            if (session != null) {
+                return session.getUserName();
+            }
+            else return SERVER_PROCESS_USER;
         }
-        
-        return _userName;
+        else { // standalone case
+            return _userName = ApplicationProperties.getUserName();
+        }
     }
 
 
@@ -1018,11 +1023,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized void setProject(Project project) {
         _project = project;
-    }
-
-    public synchronized void setUserName(String userName) {
-        _userName = userName;
-        _frameStoreManager.setAuthor(userName);
     }
 
     /**
