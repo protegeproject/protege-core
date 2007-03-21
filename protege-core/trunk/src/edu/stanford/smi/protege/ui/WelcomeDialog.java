@@ -154,7 +154,7 @@ public class WelcomeDialog extends JDialog {
         projectsPanel.add(projectScrollPane, c);
 
         // Open Recent button
-        openRecentButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN, Icons.getOpenProjectIcon());
+        openRecentButton = createButton(ResourceKey.WELCOME_DIALOG_OPEN);
         openRecentButton.setMnemonic(LocalizedText.getMnemonic(ResourceKey.WELCOME_DIALOG_OPEN));
         setToolTipText(openRecentButton, ResourceKey.WELCOME_DIALOG_OPEN_TOOLTIP);
         openRecentButton.addActionListener(new ActionListener() {
