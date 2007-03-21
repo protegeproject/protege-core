@@ -30,6 +30,7 @@ import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CollectionUtilities;
@@ -61,7 +62,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     private KnowledgeBaseFactory _knowledgeBaseFactory;
     private Project _project;
     private String _name;
-    private String _userName;
     private String _versionString;
     private FrameNameValidator _frameNameValidator;
 
@@ -847,19 +847,28 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return instances;
     }
 
+    private String _userName;
+    public final static String SERVER_PROCESS_USER = "**Server Process UserId**";
     public synchronized String getUserName() {
         if (_userName != null) {
             return _userName;
         }
-                
-        RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (session != null) {
-            return session.getUserName();
+        Project p = getProject();
+        if (p != null && p.isMultiUserClient()) {
+            FrameStoreManager fsm = getFrameStoreManager();
+            RemoteClientFrameStore fs = (RemoteClientFrameStore) fsm.getFrameStoreFromClass(RemoteClientFrameStore.class);
+            return _userName = fs.getSession().getUserName();
         }
-        _userName = ApplicationProperties.getUserName();
-        
-        return _userName;       
-
+        else if (p != null && p.isMultiUserServer()) {
+            RemoteSession session = ServerFrameStore.getCurrentSession();
+            if (session != null) {
+                return session.getUserName();
+            }
+            else return SERVER_PROCESS_USER;
+        }
+        else { // standalone case
+            return _userName = ApplicationProperties.getUserName();
+        }
     }
 
     public synchronized String getVersionString() {
