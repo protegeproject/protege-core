@@ -27,6 +27,7 @@ import edu.stanford.smi.protege.event.SlotListener;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreAdapter;
 import edu.stanford.smi.protege.test.APITestCase;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.StandardDateFormat;
 import edu.stanford.smi.protege.util.SystemUtilities;
@@ -772,12 +773,12 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     }
 
     public void testModificationSlots() throws java.text.ParseException {
-        final String USERNAME = "tester";
+        final String user_name = ApplicationProperties.getUserName();
         Date start = new Date();
         SystemUtilities.sleepMsec(100);
         KnowledgeBase kb = getDomainKB();
         kb.setModificationRecordUpdatingEnabled(true);
-        kb.setUserName(USERNAME);
+
         Cls metaCls = createSubCls(getCls(Model.Cls.STANDARD_CLASS));
         metaCls.addDirectTemplateSlot(getSlot(Model.Slot.CREATOR));
         metaCls.addDirectTemplateSlot(getSlot(Model.Slot.CREATION_TIMESTAMP));
@@ -785,7 +786,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         metaCls.addDirectTemplateSlot(getSlot(Model.Slot.MODIFICATION_TIMESTAMP));
         Slot slot = createSingleValuedSlot(ValueType.INSTANCE);
         Cls a = (Cls) createInstance(metaCls);
-        assertEquals("creator", USERNAME, kb.getFrameCreator(a));
+        assertEquals("creator", user_name, kb.getFrameCreator(a));
         String creationString = kb.getFrameCreationTimestamp(a);
         assertNotNull("creation stamp", creationString);
         Date createDate = new StandardDateFormat().parse(creationString);
@@ -797,10 +798,8 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         a.addDirectTemplateSlot(slot);
         SystemUtilities.sleepMsec(100);
 
-        kb.setUserName(null);
-
         String modifier = kb.getFrameLastModifier(a);
-        assertEquals("name", USERNAME, modifier);
+        assertEquals("name", user_name, modifier);
         String modStamp = kb.getFrameLastModificationTimestamp(a);
         assertNotNull("timestamp", modStamp);
         Date modDate = new StandardDateFormat().parse(modStamp);
