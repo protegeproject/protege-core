@@ -103,7 +103,7 @@
 			targetfile="${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
 	</target>
 	
-    <target name = "clean-clips" unless="clips-up-to-date" depends="check-clips">
+    <target name = "clean-clips">
 		<!-- Delete these files because Ant's javacc task won't regenerate files when the date on the files is the same as the date on the grammer file (Parser.jj) -->
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Parser.java"/>
@@ -113,8 +113,13 @@
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Token.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
 	</target>
+	
+    <target name = "maybe-clean-clips" unless="clips-up-to-date" depends="check-clips">
+		<antcall target="clean-clips"/>
+	</target>
+	
 	<!-- =================================================================== -->
-	<target name = "javacc" depends = "prepare, clean-clips">
+	<target name = "javacc" depends = "prepare, maybe-clean-clips">
 		<!-- Run JavaCC on Parser.jj to regenerate files that were deleted in above step. -->
 		<javacc javacchome = "${javacc.home}/bin/lib" target = "${scripts}/Parser.jj" outputdirectory = "${src}/edu/stanford/smi/protege/storage/clips"/>  
 	</target>  
@@ -242,7 +247,7 @@
 	<!-- =================================================================== -->
 	<target name = "clean" description = "clean up" depends="clean-clips">    
 		<delete dir = "${classes}"/>  
-                <delete dir = "${junit.classes}"/>
+        <delete dir = "${junit.classes}"/>
 		<delete dir = "${dist}"/>
 		<delete dir = "${javadocs}"/>
 		<delete file = "${protege.jar}"/>
