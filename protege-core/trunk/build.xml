@@ -96,8 +96,14 @@
 	<!-- =================================================================== -->
 	
 	<!-- JAVACC -->
-
-        <target name = "clean-clips">
+	
+	<target name = "check-clips">
+		<uptodate property="clips-up-to-date" 
+			srcfile="bin/Parser.jj" 
+			targetfile="${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
+	</target>
+	
+    <target name = "clean-clips" unless="clips-up-to-date" depends="check-clips">
 		<!-- Delete these files because Ant's javacc task won't regenerate files when the date on the files is the same as the date on the grammer file (Parser.jj) -->
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Parser.java"/>
@@ -184,6 +190,16 @@
           </fail>
           <copy file="${dist}/protege.jar"
                 todir = "${protege.home}"/>
+        </target>
+
+        <target name = "run" depends = "update">
+          <java classname="edu.stanford.smi.protege.Application">
+            <classpath>
+              <pathelement location="${protege.home}/protege.jar"/>
+              <pathelement location="${protege.home}/looks.jar"/>
+              <pathelement location="${protege.home}/unicode_panel.jar"/>
+            </classpath>
+          </java>
         </target>
 
         <target name="install" depends="jar" if="protege.home.set">
