@@ -192,16 +192,6 @@
                 todir = "${protege.home}"/>
         </target>
 
-        <target name = "run" depends = "update">
-          <java classname="edu.stanford.smi.protege.Application">
-            <classpath>
-              <pathelement location="${protege.home}/protege.jar"/>
-              <pathelement location="${protege.home}/looks.jar"/>
-              <pathelement location="${protege.home}/unicode_panel.jar"/>
-            </classpath>
-          </java>
-        </target>
-
         <target name="install" depends="jar" if="protege.home.set">
           <copy file="dist/protege.jar" todir="${protege.home}"/>
           <copy todir="${protege.home}">
