@@ -73,10 +73,12 @@
 	<!-- =================================================================== -->
 
 	<target name = "init">    
-	  <tstamp/>  
-          <condition property="protege.home.set">
-            <available file="${protege.home}" type="dir"/>
-          </condition>
+	  <tstamp>
+         <format property="build.time" pattern="MM/dd/yyyy hh:mm aa"/>
+      </tstamp>
+      <condition property="protege.home.set">
+         <available file="${protege.home}" type="dir"/>
+      </condition>
 	</target>  
 	<!-- =================================================================== -->
 	
@@ -157,8 +159,17 @@
 		</copy>    
 		<copy todir = "${classes}/edu/stanford/smi/protege/resource/image">      
 			<fileset dir = "${src}/edu/stanford/smi/protege/resource/image"/>    
-		</copy>    
-		<jar jarfile = "${dist}/protege.jar" basedir = "${classes}" manifest = "${src}/META-INF/MANIFEST.MF"/>  
+		</copy>
+        <copy todir="${dist}" file="${src}/META-INF/MANIFEST.MF" overwrite="true"/>
+        <manifest file="${dist}/MANIFEST.MF" 
+                  mode = "update">
+           <attribute name="Built-By" value = "${user.name}"/>
+           <attribute name="Build-Date" value = "${build.time}"/>
+           <attribute name="Build-Version" value="${extended.name} (${build.number})"/>
+        </manifest>
+		<jar jarfile = "${dist}/protege.jar" 
+             basedir = "${classes}" 
+             manifest = "${dist}/MANIFEST.MF"/>
 	</target>
 
 	<!-- =================================================================== -->
