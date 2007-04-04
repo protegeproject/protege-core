@@ -1,13 +1,17 @@
 <?xml version = "1.0" encoding = "utf-8"?>
 <project name = "Protege" default = "usage" basedir = ".">    
 	<description>Autonomous Ant file for building Protege</description>  
+
+    <property environment="env"/>
+    <property name="protege.home" value="${env.PROTEGE_HOME}"/>
+
 	<!-- Load necessary property files. -->
 	<property file = "./src/edu/stanford/smi/protege/resource/files/build.properties"/>  
 	<property file = "local.properties"/>  
 	<!-- Set global properties for this build. -->
 	<property name = "extended.name" value = "${name} ${build.version} ${build.status}"/>
 	<property name = "src" value = "./src"/>  
-        <property name = "junit" value = "./junit"/>
+    <property name = "junit" value = "./junit"/>
 	<property name = "classes" value = "./classes"/>  
 	<property name = "junit.classes" value = "./classes.junit"/>  
 	<property name = "docs" value = "./docs"/> 
@@ -15,11 +19,8 @@
 	<property name = "dist" value = "./dist"/>
 	<property name = "lib" value = "./lib"/>
 	<property name = "scripts" value = "./bin"/>
-        <property name = "logs" value = "./logs"/>
-        <property name = "plugins" value = "./plugins"/>
-
-        <property environment="env"/>
-        <property name="protege.home" value="${env.PROTEGE_HOME}"/>
+    <property name = "logs" value = "./logs"/>
+    <property name = "plugins" value = "./plugins"/>
 
 	<!-- Compiler options. -->
 	<property name = "deprecation" value = "on"/>    
@@ -29,15 +30,15 @@
 	<property name = "includeAntRuntime" value = "no"/>
 	<property name = "source" value = "1.5"/>
 	<path id = "project.classpath">    
-            <pathelement location = "${lib}/junit.jar"/>
+        <pathelement location = "${lib}/junit.jar"/>
 	    <pathelement location = "${lib}/looks.jar"/>
-            <pathelement location = "${lib}/unicode_panel.jar"/>
+        <pathelement location = "${lib}/unicode_panel.jar"/>
 	</path>  
-        <path id = "database.drivers">
-          <fileset dir="dbdrivers">
-            <include name="*.jar"/>
-          </fileset>
-        </path>
+    <path id = "database.drivers">
+       <fileset dir="dbdrivers">
+          <include name="*.jar"/>
+       </fileset>
+    </path>
 	<!-- =================================================================== -->
 	
 	<!-- USAGE -->
@@ -73,10 +74,12 @@
 	<!-- =================================================================== -->
 
 	<target name = "init">    
-	  <tstamp/>  
-          <condition property="protege.home.set">
-            <available file="${protege.home}/protege.jar" type="file"/>
-          </condition>
+	  <tstamp>
+         <format property="build.time" pattern="MM/dd/yyyy hh:mm aa"/>
+      </tstamp>
+      <condition property="protege.home.set">
+         <available file="${protege.home}/protege.jar" type="file"/>
+      </condition>
 	</target>  
 	<!-- =================================================================== -->
 	
@@ -97,8 +100,17 @@
 	
 	<!-- JAVACC -->
 
-        <target name = "clean-clips">
-		<!-- Delete these files because Ant's javacc task won't regenerate files when the date on the files is the same as the date on the grammer file (Parser.jj) -->
+	<target name = "check-clips">
+		<uptodate property="clips-up-to-date" 
+			srcfile="bin/Parser.jj" 
+			targetfile="${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
+	</target>
+
+
+    <target name = "clean-clips">
+		<!-- Delete these files because Ant's javacc task won't
+             regenerate files when the date on the files is the same
+             as the date on the grammer file (Parser.jj) -->
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Parser.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/ParserConstants.java"/>
@@ -107,10 +119,20 @@
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/Token.java"/>
 		<delete file = "${src}/edu/stanford/smi/protege/storage/clips/TokenMgrError.java"/>
 	</target>
+
+    <target name = "maybe-clean-clips" 
+            unless="clips-up-to-date" 
+            depends="check-clips">
+		<antcall target="clean-clips"/>
+	</target>
+
+
 	<!-- =================================================================== -->
-	<target name = "javacc" depends = "prepare, clean-clips">
+	<target name = "javacc" depends = "prepare, maybe-clean-clips">
 		<!-- Run JavaCC on Parser.jj to regenerate files that were deleted in above step. -->
-		<javacc javacchome = "${javacc.home}/bin/lib" target = "${scripts}/Parser.jj" outputdirectory = "${src}/edu/stanford/smi/protege/storage/clips"/>  
+		<javacc javacchome = "${javacc.home}/bin/lib" 
+                target = "${scripts}/Parser.jj" 
+                outputdirectory = "${src}/edu/stanford/smi/protege/storage/clips"/>  
 	</target>  
 	<!-- =================================================================== -->
 	
@@ -119,19 +141,23 @@
 	<!-- =================================================================== -->
 	<target name = "compile" depends = "prepare, javacc">    
 		<javac destdir = "${classes}" 
-                       deprecation = "{deprecation}" 
-                       debug = "${debug}" 
-                       optimize = "${optimize}" 
-                       includeAntRuntime = "${includeAntRuntime}" 
-                       source = "${source}">
-                        <src path="${src}"/>
-                        <src path="${junit}"/>
-			<classpath refid = "project.classpath"/>    
+               deprecation = "{deprecation}" 
+               debug = "${debug}" 
+               optimize = "${optimize}" 
+               includeAntRuntime = "${includeAntRuntime}" 
+               source = "${source}">
+           <src path="${src}"/>
+           <src path="${junit}"/>
+           <classpath refid = "project.classpath"/>    
 		</javac>    
-		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.Server"/>    
-		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.ServerProject"/>    
-		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>  
-		<rmic base = "${classes}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore"/>  
+		<rmic base = "${classes}" stubversion = "1.2" 
+              classname = "edu.stanford.smi.protege.server.Server"/>    
+		<rmic base = "${classes}" stubversion = "1.2" 
+              classname = "edu.stanford.smi.protege.server.ServerProject"/>    
+		<rmic base = "${classes}" stubversion = "1.2" 
+              classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>
+		<rmic base = "${classes}" stubversion = "1.2" 
+              classname = "edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore"/>
 	</target>
 
 
@@ -146,8 +172,17 @@
 		</copy>    
 		<copy todir = "${classes}/edu/stanford/smi/protege/resource/image">      
 			<fileset dir = "${src}/edu/stanford/smi/protege/resource/image"/>    
-		</copy>    
-		<jar jarfile = "${dist}/protege.jar" basedir = "${classes}" manifest = "${src}/META-INF/MANIFEST.MF"/>  
+		</copy>
+        <copy todir="${dist}" file="${src}/META-INF/MANIFEST.MF"/>
+        <manifest file="${dist}/MANIFEST.MF" 
+                  mode = "update">
+           <attribute name="Built By" value = "${user.name}"/>
+           <attribute name="Build Date" value = "${build.time}"/>
+           <attribute name="Version" value="${extended.name} (${build.number})"/>
+        </manifest>
+                  
+		<jar jarfile = "${dist}/protege.jar" basedir = "${classes}" 
+             manifest = "${dist}/MANIFEST.MF"/>  
 	</target>
 
 	<!-- =================================================================== -->
@@ -158,7 +193,13 @@
 	
 	<!-- =================================================================== -->
 	<target name = "javadocs" depends = "prepare">    
-		<javadoc packagenames = "${packages}" sourcepath = "${src}" destdir = "${javadocs}" doctitle = "${extended.name}" windowtitle = "${extended.name} API" author = "true" source = "${source}">      
+		<javadoc packagenames = "${packages}" 
+                 sourcepath = "${src}" 
+                 destdir = "${javadocs}" 
+                 doctitle = "${extended.name}" 
+                 windowtitle = "${extended.name} API" 
+                 author = "true" 
+                 source = "${source}">      
 			<bottom><![CDATA[
 	<small>
 	<a href=mailto:protege-help@smi.stanford.edu>Submit a bug report or feature request</a><br>
@@ -186,6 +227,19 @@
                 todir = "${protege.home}"/>
         </target>
 
+        <target name="install" depends="jar">
+          <copy file="dist/protege.jar" todir="${protege.home}"/>
+          <copy todir="${protege.home}">
+            <fileset dir="dist" includes="protege.jar"/>
+            <fileset dir="./lib" includes="*.jar"/>
+            <fileset dir="bin">
+              <include name="*.sh"/>
+              <include name="*.bat"/>
+            </fileset>
+          </copy>
+          <mkdir dir="${protege.home}/plugins"/>
+          <mkdir dir="${protege.home}/logs"/>
+        </target>
 
 	<!-- DIST -->
 	
