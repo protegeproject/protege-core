@@ -1,9 +1,14 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.io.*;
+import java.io.Serializable;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Localizable;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.HashUtils;
+import edu.stanford.smi.protege.util.LocalizeUtils;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * @author Ray Fergerson
@@ -11,11 +16,12 @@ import edu.stanford.smi.protege.util.*;
  * Description of this class
  */
 
-public class Sft implements Externalizable, Localizable {
+public class Sft implements Localizable, Serializable {
     private Slot _slot;
     private Facet _facet;
     private boolean _isTemplate;
 
+    /* from Externalizable Interface
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(_slot);
         out.writeObject(_facet);
@@ -27,6 +33,7 @@ public class Sft implements Externalizable, Localizable {
         _facet = (Facet) in.readObject();
         _isTemplate = in.readBoolean();
     }
+    */
     
     public String toString() {
         return "Sft(" + _slot + ", " + _facet + ", " + _isTemplate + ")";
