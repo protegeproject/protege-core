@@ -1,8 +1,9 @@
 package edu.stanford.smi.protege.server;
 
-import java.io.*;
+import java.io.Serializable;
 
-public class Session implements RemoteSession, Externalizable {
+
+public class Session implements RemoteSession, Serializable {
     private static int nextId = 100;
     private int id;
     private String userName;
@@ -22,6 +23,7 @@ public class Session implements RemoteSession, Externalizable {
 
     }
     
+    /* from Externalizable interface
     public void writeExternal(ObjectOutput output) throws IOException {
         output.writeInt(id);
         output.writeUTF(userName);
@@ -38,6 +40,7 @@ public class Session implements RemoteSession, Externalizable {
         lastAccessTime = input.readLong();
 
     }
+    */
 
     public String getUserName() {
         return userName;
