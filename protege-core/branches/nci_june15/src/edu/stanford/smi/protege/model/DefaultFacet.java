@@ -1,13 +1,13 @@
 package edu.stanford.smi.protege.model;
 
-import java.io.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.FacetListener;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.util.CollectionUtilities;
 
 /**
  * Default implementation of Facet interface.  Forwards all method calls
@@ -19,6 +19,7 @@ public class DefaultFacet extends DefaultInstance implements Facet {
 
     private FacetConstraint _constraint;
 
+    /* from Externalizable interface
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         _constraint = (FacetConstraint) in.readObject();
         super.readExternal(in);
@@ -28,6 +29,7 @@ public class DefaultFacet extends DefaultInstance implements Facet {
         out.writeObject(_constraint);
         super.writeExternal(out);
     }
+    */
 
     public DefaultFacet(KnowledgeBase kb, FrameID id) {
         super(kb, id);
