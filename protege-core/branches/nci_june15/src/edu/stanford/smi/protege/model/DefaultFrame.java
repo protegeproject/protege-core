@@ -1,20 +1,27 @@
 package edu.stanford.smi.protege.model;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * Default implementation of Frame interface. Forwards all method calls to its DefaultKnowledgeBase.
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public abstract class DefaultFrame implements Frame, Localizable, Externalizable {
+public abstract class DefaultFrame implements Frame, Localizable, Serializable {
     private static final char SPECIAL_NAME_CHAR = ':';
 
     private transient KnowledgeBase knowledgeBase;
@@ -31,6 +38,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
     private static final int DELETED_MASK = 1 << 3;
     private int state;
 
+    /* from Externalizable Interface
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         id = (FrameID) in.readObject();
         state = in.readInt();
@@ -40,6 +48,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Externalizable
         out.writeObject(id);
         out.writeInt(state);
     }
+    */
 
     protected DefaultFrame() {
 

@@ -1,9 +1,6 @@
 package edu.stanford.smi.protege.model;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.Serializable;
 
 import edu.stanford.smi.protege.util.Assert;
 import edu.stanford.smi.protege.util.HashUtils;
@@ -20,7 +17,7 @@ import edu.stanford.smi.protege.util.HashUtils;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public class FrameID implements Externalizable {
+public class FrameID implements  Serializable {
     public static final int NULL_FRAME_ID_VALUE = 0;
     public static final int NULL_FRAME_ID_LOCAL_VALUE = NULL_FRAME_ID_VALUE;
     public static final int INITIAL_USER_FRAME_ID = 10000;
@@ -42,6 +39,7 @@ public class FrameID implements Externalizable {
 
     }
 
+    /* from Externalizable Interface
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeInt(localPart);
         out.writeInt(diskProjectPart);
@@ -54,6 +52,7 @@ public class FrameID implements Externalizable {
         memoryProjectPart = in.readInt();
         cacheHashCode();
     }
+    */
 
     public static FrameID createSystem(int value) {
         assert(0 < value && value < INITIAL_USER_FRAME_ID);
