@@ -173,12 +173,12 @@
 		<copy todir = "${classes}/edu/stanford/smi/protege/resource/image">      
 			<fileset dir = "${src}/edu/stanford/smi/protege/resource/image"/>    
 		</copy>
-        <copy todir="${dist}" file="${src}/META-INF/MANIFEST.MF"/>
+        <copy todir="${dist}" file="${src}/META-INF/MANIFEST.MF" overwrite="true"/>
         <manifest file="${dist}/MANIFEST.MF" 
                   mode = "update">
-           <attribute name="Built By" value = "${user.name}"/>
-           <attribute name="Build Date" value = "${build.time}"/>
-           <attribute name="Version" value="${extended.name} (${build.number})"/>
+           <attribute name="Built-By" value = "${user.name}"/>
+           <attribute name="Build-Date" value = "${build.time}"/>
+           <attribute name="Build-Version" value="${extended.name} (${build.number})"/>
         </manifest>
                   
 		<jar jarfile = "${dist}/protege.jar" basedir = "${classes}" 
@@ -213,33 +213,33 @@
 	</target>  
 	<!-- =================================================================== -->
 	
-        <target name = "update" depends = "jar">
-          <fail message = "The Protege Home variable must be set for an install">
-            <condition>
-              <not>
+    <target name = "update" depends = "jar">
+       <fail message = "The Protege Home variable must be set for an install">
+          <condition>
+             <not>
                 <and>
-                  <isset property="protege.home.set"/>
+                   <isset property="protege.home.set"/>
                 </and>
-              </not>
-            </condition>
-          </fail>
-          <copy file="${dist}/protege.jar"
-                todir = "${protege.home}"/>
-        </target>
+             </not>
+          </condition>
+       </fail>
+       <copy file="${dist}/protege.jar"
+             todir = "${protege.home}"/>
+    </target>
 
-        <target name="install" depends="jar">
-          <copy file="dist/protege.jar" todir="${protege.home}"/>
-          <copy todir="${protege.home}">
-            <fileset dir="dist" includes="protege.jar"/>
-            <fileset dir="./lib" includes="*.jar"/>
-            <fileset dir="bin">
-              <include name="*.sh"/>
-              <include name="*.bat"/>
-            </fileset>
-          </copy>
-          <mkdir dir="${protege.home}/plugins"/>
-          <mkdir dir="${protege.home}/logs"/>
-        </target>
+    <target name="install" depends="jar">
+       <copy file="dist/protege.jar" todir="${protege.home}"/>
+       <copy todir="${protege.home}">
+          <fileset dir="dist" includes="protege.jar"/>
+          <fileset dir="./lib" includes="*.jar"/>
+          <fileset dir="bin">
+             <include name="*.sh"/>
+             <include name="*.bat"/>
+          </fileset>
+       </copy>
+       <mkdir dir="${protege.home}/plugins"/>
+       <mkdir dir="${protege.home}/logs"/>
+    </target>
 
 	<!-- DIST -->
 	
