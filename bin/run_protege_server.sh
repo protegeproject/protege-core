@@ -5,7 +5,18 @@
 # Change to the script' working directory, should be the Protege root directory 
 cd $(dirname $0)
 
-if [  -x /usr/bin/uname  -a  "x`/usr/bin/uname`" = "xDarwin" ] 
+
+DARWIN="false"
+
+if [  -x /usr/bin/uname ]
+then
+  if [ "x`/usr/bin/uname`" = "xDarwin" ] 
+  then
+    DARWIN="true"
+  fi
+fi
+
+if [ ${DARWIN} = "true" ]
 then
   JAVA_PATH=/usr/bin
 else 
@@ -47,7 +58,7 @@ OPTIONS="$MAX_MEMORY $CODEBASE $HOSTNAME_PARAM ${TX}"
 # If you want automatic saving of the project, 
 # setup the number of seconds in SAVE_INTERVAL_VALUE
 # SAVE_INTERVAL=-DsaveIntervalSec=120
-OPTIONS="${OPTIONS} ${SAVE_INTERVAL} ${DEBUG_OPT} ${PORTOPTS}"
+OPTIONS="${OPTIONS} ${DELAY} ${PORTOPTS} ${DEBUG_OPT} ${SAVE_INTERVAL}"
 # ------------------- JVM Options ------------------- 
 
 METAPROJECT=examples/server/metaproject.pprj
