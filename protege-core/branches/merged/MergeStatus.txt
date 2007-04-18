@@ -4,3 +4,24 @@ Merged With Trunk:          1776  To install temporary fix which includes
                                   database.
 Merged With Trunk Revision: 2010  To synchronize some updates to the
                                   junit tests 
+
+Starting the merge process:
+
+    Copy the latest branches/nci_june15 to branches/merged - revision 5933
+
+    Check the merged branch out.
+
+    The nci_june15 branch was merged to trunk@2010 so this is where I will
+    start the diffs
+
+    svn merge $p/trunk@2010 $p/trunk@5933 .
+       (p=http://smi-protege/repos/protege/protege-core).
+
+
+    Put the nci_june15 version of the server tree back in place of the
+    conflicted  stuff in the working repository.
+
+       rm -rf src/edu/stanford/smi/protege/server
+       svn update  src/edu/stanford/smi/protege/server
+       svn diff -r 2010:5933 $p/trunk/src/edu/stanford/smi/protege/server \
+                   > ~/Shared/Journal/diff-server.txt                         
