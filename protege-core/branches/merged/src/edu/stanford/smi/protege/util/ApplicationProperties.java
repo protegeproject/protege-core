@@ -32,12 +32,16 @@ public class ApplicationProperties {
     public static final String BROWSER = "browser.html";
     private static final String AUTOSYNCHRONIZE_PROPERTY = "trees.autosynchronize";
     private static final String PRETTY_PRINT_SLOT_WIDGET_LABELS = "labels.pretty_print";
-    
+
     public static final String LOG_FILE_PROPERTY = "java.util.logging.config.file";
     public static final String LOG_DEBUG_PROPERTY = "log.config.debug";
 
     public static final String REMOTE_CLIENT_PRELOAD = "remote.client.preload";
+    
+    public static final String URL_CONNECT_TIMEOUT = "url.connect.timeout";
 
+    public static final String URL_CONNECT_READ_TIMEOUT = "url.connect.read.timeout";
+    
     private static final Properties PROPERTIES = new Properties();
     private static File _propertyFile;
 
@@ -238,7 +242,7 @@ public class ApplicationProperties {
     public static Properties getApplicationProperties() {
     	return PROPERTIES;
     }
-
+    
     public static String getApplicationOrSystemProperty(String name) {
         return getApplicationOrSystemProperty(name, null);
     }
@@ -363,7 +367,7 @@ public class ApplicationProperties {
     }
 
     public static String getGettingStartedURLString() {
-        return "http://protege.stanford.edu/doc/tutorial/get_started";
+        return "http://protege.stanford.edu/doc/tutorial/get_started/table_of_content.html";
     }
 
     public static String getFAQURLString() {
@@ -433,4 +437,64 @@ public class ApplicationProperties {
     public static void setLastLoadedURI(URI uri) {
         setString(LAST_LOADED_URI, uri.toString());
     }
+    
+    /**
+     * @return The URL connect timeout in seconds as set in the protege.properties file for the property url.connect.timeout.
+     *  It returns the default value 15 seconds, if the url connect property is not set in protege.properties.
+     */
+    public static int getUrlConnectTimeout() {
+    	int timeout = 15;
+    		
+    	String timeoutString = getApplicationOrSystemProperty(URL_CONNECT_TIMEOUT, "15");
+    	
+    	try {
+    		timeout = Integer.parseInt(timeoutString);
+		} catch (NumberFormatException e) {
+			Log.getLogger().warning("Error parsing " + timeoutString + " to an int. Cannot set URL connect timeout. Use default value (15 sec).");
+		}
+    	    	
+    	return timeout;
+    }
+    
+    /**
+     * Sets the connect timeout. 
+     * This value is written to the protege.properties file when the project is saved as:
+     * <p> url.connect.timeout=timeout
+     * @param timeout in seconds.
+     */
+    public static void setUrlConnectTimeout(int timeout) {
+    	setInt(URL_CONNECT_TIMEOUT, timeout);
+    }
+    
+    /**
+     * @return The URL connect read timeout in seconds as set in the protege.properties file for the property url.connect.read.timeout.
+     *  It returns the default value 15 seconds, if the url connect read property is not set in protege.properties.
+     */
+    public static int getUrlConnectReadTimeout() {
+    	int timeout = 15;
+    		
+    	String timeoutString = getApplicationOrSystemProperty(URL_CONNECT_READ_TIMEOUT, "15");
+    	
+    	try {
+    		timeout = Integer.parseInt(timeoutString);
+		} catch (NumberFormatException e) {
+			Log.getLogger().warning("Error parsing " + timeoutString + " to an int. Cannot set URL read connect timeout. Use default value (15 sec).");
+		}
+    	    	
+    	return timeout;
+    }
+
+    /**
+     * Sets the connect read timeout.
+      * This value is written to the protege.properties file when the project is saved as:
+     * <p> url.connect.read.timeout=timeout
+     * @param timeout in seconds.
+     */
+    public static void setUrlConnectReadTimeout(int timeout) {
+    	setInt(URL_CONNECT_READ_TIMEOUT, timeout);
+    }
+    
+    
+    
+    
 }
