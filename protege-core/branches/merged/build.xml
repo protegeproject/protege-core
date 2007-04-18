@@ -22,6 +22,10 @@
     <property name = "logs" value = "./logs"/>
     <property name = "plugins" value = "./plugins"/>
 
+
+        <property environment="env"/>
+        <property name="protege.home" value="${env.PROTEGE_HOME}"/>
+
 	<!-- Compiler options. -->
 	<property name = "deprecation" value = "on"/>    
 	<property name = "debug" value = "on"/>  
@@ -130,7 +134,7 @@
 	<!-- =================================================================== -->
 	<target name = "javacc" depends = "prepare, maybe-clean-clips">
 		<!-- Run JavaCC on Parser.jj to regenerate files that were deleted in above step. -->
-		<javacc javacchome = "${javacc.home}/bin/lib" 
+		<javacc javacchome = "${javacc.home}" 
                 target = "${scripts}/Parser.jj" 
                 outputdirectory = "${src}/edu/stanford/smi/protege/storage/clips"/>  
 	</target>  
@@ -171,7 +175,7 @@
 			<fileset dir = "${src}/edu/stanford/smi/protege/resource/files"/>    
 		</copy>    
 		<copy todir = "${classes}/edu/stanford/smi/protege/resource/image">      
-			<fileset dir = "${src}/edu/stanford/smi/protege/resource/image"/>    
+			<fileset dir = "${src}/edu/stanford/smi/protege/resource/image"/>
 		</copy>
         <copy todir="${dist}" file="${src}/META-INF/MANIFEST.MF" overwrite="true"/>
         <manifest file="${dist}/MANIFEST.MF" 
@@ -213,6 +217,7 @@
 	</target>  
 	<!-- =================================================================== -->
 	
+
     <target name = "update" depends = "jar">
        <fail message = "The Protege Home variable must be set for an install">
           <condition>
@@ -274,13 +279,14 @@
 	<!-- =================================================================== -->
 	<target name = "clean" description = "clean up" depends="clean-clips">    
 		<delete dir = "${classes}"/>  
-                <delete dir = "${junit.classes}"/>
+        <delete dir = "${junit.classes}"/>
 		<delete dir = "${dist}"/>
 		<delete dir = "${javadocs}"/>
 		<delete file = "${protege.jar}"/>
 	</target>
 	
 	<!-- =================================================================== -->
+
 
      <target name = "buildDbScratchProject" 
              description = "build the scratch project for the db server tests"
@@ -319,7 +325,6 @@
      means that the developer will never mistakenly believe that
      junits have succeeded.
        -->
-
         <target name = "junit" 
                 description = "test the system"
                 depends="jar, buildDbScratchProject">
