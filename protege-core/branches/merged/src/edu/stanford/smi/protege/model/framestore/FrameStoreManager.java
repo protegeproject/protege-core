@@ -3,7 +3,6 @@ package edu.stanford.smi.protege.model.framestore;
 //ESCA*JAVA0100
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.util.Collections;
@@ -15,7 +14,6 @@ import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.model.Cls;
