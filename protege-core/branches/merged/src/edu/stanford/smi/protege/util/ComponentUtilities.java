@@ -211,10 +211,10 @@ public class ComponentUtilities {
         for (int i = 0; i < nChildren; ++i) {
             childNode = (LazyTreeNode) node.getChildAt(i);
             if (equals(childNode.getUserObject(), userObject)) {
-                break;
+                return childNode;
             }
         }
-        return childNode;
+        return null;
     }
 
     public static boolean equals(Object o1, Object o2) {
@@ -397,7 +397,7 @@ public class ComponentUtilities {
             Object userObject = i.next();
             node = getChildNode(node, userObject);
             if (node == null) {
-                Log.getLogger().warning("Child node not found: " + userObject);
+                //Log.getLogger().warning("Child node not found: " + userObject);
                 return null;
             }
             nodePath.add(node);
@@ -612,8 +612,11 @@ public class ComponentUtilities {
 
     public static void setSelectedNode(JTree tree, TreeNode node) {
         final TreePath path = new TreePath(((LazyTreeModel) tree.getModel()).getPathToRoot(node));
-        tree.scrollPathToVisible(path);
-        tree.setSelectionPath(path);
+        if (path != null) {
+        	tree.scrollPathToVisible(path);
+        	tree.setSelectionPath(path);
+        	tree.updateUI();
+        }
         tree.updateUI();
     }
 
@@ -626,6 +629,7 @@ public class ComponentUtilities {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     tree.setSelectionPath(path);
+                    tree.updateUI();
                     cursor.hide();
                 }
             });
@@ -759,5 +763,5 @@ public class ComponentUtilities {
         // Scroll the area into view
         //viewport.scrollRectToVisible(rect);
     }
-  
+
 }
