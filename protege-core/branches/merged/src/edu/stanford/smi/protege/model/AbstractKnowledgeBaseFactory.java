@@ -14,6 +14,8 @@ import java.util.Collection;
 import edu.stanford.smi.protege.model.framestore.InMemoryFrameDb;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.util.FileUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.MessageError;
 import edu.stanford.smi.protege.util.PropertyList;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.URIUtilities;
@@ -35,7 +37,9 @@ public abstract class AbstractKnowledgeBaseFactory implements KnowledgeBaseFacto
         }
         BufferedReader reader = URIUtilities.createBufferedReader(inputUri);
         if (reader == null) {
-            errors.add("Unable to open " + inputUri + " for " + name);
+        	String message = "Unable to open " + inputUri + " for " + name; 
+            errors.add(new MessageError(message));
+            Log.getLogger().severe(message);
         }
         return reader;
     }
