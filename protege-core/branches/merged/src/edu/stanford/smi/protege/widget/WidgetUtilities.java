@@ -1,14 +1,23 @@
 package edu.stanford.smi.protege.widget;
 
-import java.awt.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Iterator;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 
-import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.WidgetDescriptor;
+import edu.stanford.smi.protege.plugin.ExportPlugin;
 import edu.stanford.smi.protege.ui.InstanceDisplay;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 
 /**
@@ -119,6 +128,7 @@ public class WidgetUtilities {
         }
         return isSuitable;
     }
+
     
     /**
      * Sets all the widgets of an instance form to enabled/disabled according to the enabled argument. 
@@ -148,6 +158,26 @@ public class WidgetUtilities {
 			}
 		}    	
     }
-  
     
+    private static final String IS_EXPORT_SUITABLE_METHOD_NAME = "isSuitable";
+    //private static final Class[] IS_EXPORT_SUITABLE_METHODS_ARGS = new Class[] { Project.class, Collection.class };
+    private static final Class[] IS_EXPORT_SUITABLE_METHODS_ARGS = new Class[] { Project.class };
+    
+    public static boolean isSuitableExport(Project project, ExportPlugin exportPlugin) {
+        boolean isSuitable;
+        try {           
+            Method method = exportPlugin.getClass().getMethod(IS_EXPORT_SUITABLE_METHOD_NAME, IS_EXPORT_SUITABLE_METHODS_ARGS);            
+            Boolean returnValue = (Boolean) method.invoke(exportPlugin, new Object[] { project });
+            isSuitable = returnValue.booleanValue();
+        } catch (NoSuchMethodException e) {
+            isSuitable = true;
+        } catch (Exception e) {
+            isSuitable = false;
+            //Log.getLogger().warning(Log.toString(e));
+            Log.getLogger().warning(e.getMessage());
+        }
+        // Log.getLogger().info("is suitable=" + isSuitable + " " + projectPlugin);
+        return isSuitable;
+    }
+
 }
