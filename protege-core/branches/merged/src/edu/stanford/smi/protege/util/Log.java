@@ -51,6 +51,15 @@ public class Log {
    * execution.
    */
     private static boolean debug = false;
+    
+    
+    /**
+     * This flag is used to give only one warning in the console if the
+     * Log.getLogger() throws IO exceptions, rather than having this warning
+     * repeated many times in the console.
+     */
+    private static boolean displayedIOWarning = false;
+    
     static {
       String debugLogProperty = ApplicationProperties.LOG_DEBUG_PROPERTY;
       if (System.getProperty(debugLogProperty) != null) {
@@ -593,7 +602,10 @@ public class Log {
           try {
             l.addHandler(getFileHandler());
           } catch (IOException e) {
-            getLogger().warning("IO exception getting logger" + e);
+        	  if (!Log.displayedIOWarning) {        		  
+        		  System.err.println("Warning: IO exception getting logger. " + e.getMessage());
+        		  Log.displayedIOWarning = true;
+        	  }
           }
           l.addHandler(getConsoleHandler());
         }
