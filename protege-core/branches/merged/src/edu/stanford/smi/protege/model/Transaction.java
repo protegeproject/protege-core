@@ -2,7 +2,7 @@ package edu.stanford.smi.protege.model;
 
 //ESCA*JAVA0037
 
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.Log;
 
 /**
  * Encapsulation of method for executing a tranaction.
@@ -29,10 +29,8 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class Transaction {
-    
-    
     public static final String APPLY_TO_TRAILER_STRING = " -- Apply to: ";
-    
+
     private KnowledgeBase _knowledgeBase;
 
     protected Transaction(KnowledgeBase kb) {
