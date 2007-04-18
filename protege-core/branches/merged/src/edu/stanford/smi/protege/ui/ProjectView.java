@@ -427,6 +427,12 @@ public class ProjectView extends JComponent {
     }
 
     public void reloadAll() {
+    	TabWidget tabWidget = getSelectedTab();
+    	String selectedTabClassName = null;
+    	
+    	if (tabWidget != null) 
+    		selectedTabClassName = tabWidget.getDescriptor().getWidgetClassName();
+    	
         closeDetachedTabs();
         if (_viewHolder != null) {
             ComponentUtilities.dispose((Component) _viewHolder);
@@ -434,6 +440,13 @@ public class ProjectView extends JComponent {
         removeAll();
         _project.clearCachedWidgets();
         add(createTabbedPane());
+        
+        if (selectedTabClassName != null) {
+        	TabWidget newTabWidget = getTabByClassName(selectedTabClassName);
+        	if (newTabWidget != null)
+        		setSelectedTab(newTabWidget);
+        }
+        
         revalidate();
         repaint();
     }
