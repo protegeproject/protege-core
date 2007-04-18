@@ -1,6 +1,0 @@
-Original Checkout Revision: 1730
-Merged With Trunk:          1776  To install temporary fix which includes 
-                                  frames from included projects in the 
-                                  database.
-Merged With Trunk Revision: 2010  To synchronize some updates to the
-                                  junit tests 
