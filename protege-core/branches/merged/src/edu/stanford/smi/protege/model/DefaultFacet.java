@@ -8,6 +8,7 @@ import javax.swing.Icon;
 import edu.stanford.smi.protege.event.FacetListener;
 import edu.stanford.smi.protege.resource.Icons;
 import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.Log;
 
 /**
  * Default implementation of Facet interface.  Forwards all method calls
@@ -79,10 +80,22 @@ public class DefaultFacet extends DefaultInstance implements Facet {
     }
 
     public ValueType getValueType() {
-        return getAssociatedSlot().getValueType();
+    	Slot associatedSlot = getAssociatedSlot();
+    	
+    	if (associatedSlot == null) {
+    		Log.getLogger().warning("Cannot find associated slot of " + this + ". Assuming value type is " + ValueType.ANY);
+    		return ValueType.ANY;
+    	}
+        return associatedSlot.getValueType();
     }
 
     public boolean getAllowsMultipleValues() {
+    	Slot associatedSlot = getAssociatedSlot();
+    	
+    	if (associatedSlot == null) {
+    		Log.getLogger().warning("Cannot find associated slot of " + this + ". Assuming cardinality is multiple");
+    		return true;
+    	}
         return getAssociatedSlot().getAllowsMultipleValues();
     }
 
