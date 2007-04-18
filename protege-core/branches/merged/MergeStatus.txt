@@ -24,4 +24,7 @@ Starting the merge process:
        rm -rf src/edu/stanford/smi/protege/server
        svn update  src/edu/stanford/smi/protege/server
        svn diff -r 2010:5933 $p/trunk/src/edu/stanford/smi/protege/server \
-                   > ~/Shared/Journal/diff-server.txt                         
+                   > ~/Shared/Journal/diff-server.txt    
+                   
+There was no other svn activity during this process.
+All the merges were committed.                     
