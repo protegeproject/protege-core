@@ -1,6 +1,6 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.Collection;
+import java.util.EventObject;
 import java.util.List;
 
 import edu.stanford.smi.protege.event.ClsEvent;
@@ -27,19 +27,39 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         super.tearDown();
         _kb = null;
     }
+    
+    private boolean containsSimilarEvent(List<EventObject> events, AbstractEvent event) {
+      for (EventObject ev : events) {
+        if (ev instanceof AbstractEvent) {
+          event.setTimeStamp(((AbstractEvent) ev).getTimeStamp());
+        }
+        if (ev.equals(event)) {
+          return  true;
+        }
+      }
+      return false;
+    }
+    
+    private boolean isSimilarEvent(EventObject event1, AbstractEvent event2) {
+        if (event1 instanceof AbstractEvent) {
+            event2.setTimeStamp(((AbstractEvent) event1).getTimeStamp());
+        }
+        return event1.equals(event2);
+    }
 
+    @SuppressWarnings("unchecked")
     public void testCreateClsEvent() {
         Cls rootCls = _kb.getRootCls();
         Cls stdCls = _kb.getCls(Model.Cls.STANDARD_CLASS);
         Slot subclassesSlot = _kb.getSlot(Model.Slot.DIRECT_SUBCLASSES);
         Slot instancesSlot = _kb.getSlot(Model.Slot.DIRECT_INSTANCES);
         Cls cls = createCls();
-        List<AbstractEvent> events = getTestFrameStore().getEvents();
-        assertTrue(events.contains(new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_CREATED, cls)));
-        assertTrue(events.contains(new ClsEvent(rootCls, ClsEvent.DIRECT_SUBCLASS_ADDED, cls)));
-        assertTrue(events.contains(new FrameEvent(rootCls, FrameEvent.OWN_SLOT_VALUE_CHANGED, subclassesSlot)));
-        assertTrue(events.contains(new ClsEvent(stdCls, ClsEvent.DIRECT_INSTANCE_ADDED, cls)));
-        assertTrue(events.contains(new FrameEvent(stdCls, FrameEvent.OWN_SLOT_VALUE_CHANGED, instancesSlot, null)));
+        List<EventObject> events = (List) getTestFrameStore().getEvents();
+        assertTrue(containsSimilarEvent(events, new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_CREATED, cls)));
+        assertTrue(containsSimilarEvent(events, new ClsEvent(rootCls, ClsEvent.DIRECT_SUBCLASS_ADDED, cls)));
+        assertTrue(containsSimilarEvent(events, new FrameEvent(rootCls, FrameEvent.OWN_SLOT_VALUE_CHANGED, subclassesSlot)));
+        assertTrue(containsSimilarEvent(events, new ClsEvent(stdCls, ClsEvent.DIRECT_INSTANCE_ADDED, cls)));
+        assertTrue(containsSimilarEvent(events, new FrameEvent(stdCls, FrameEvent.OWN_SLOT_VALUE_CHANGED, instancesSlot, null)));
     }
 
     public void testAddSuperclassEvent() {
@@ -50,16 +70,17 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         List<AbstractEvent> events = getTestFrameStore().getEvents();
         ClsEvent testEvent1 = new ClsEvent(cls, ClsEvent.DIRECT_SUPERCLASS_ADDED, superclass);
         ClsEvent testEvent2 = new ClsEvent(superclass, ClsEvent.DIRECT_SUBCLASS_ADDED, cls);
-        assertEquals("kb event", testEvent1, events.get(0));
-        assertEquals("kb event", testEvent2, events.get(1));
+        assertTrue("kb event", isSimilarEvent(events.get(0), testEvent1));
+        assertTrue("kb event", isSimilarEvent(events.get(1), testEvent2));
     }
 
-    public void testDeleteClsEvents() {
+    @SuppressWarnings("unchecked")
+	public void testDeleteClsEvents() {
         Cls cls = createCls();
         KnowledgeBaseEvent testEvent1 = new KnowledgeBaseEvent(_kb, KnowledgeBaseEvent.CLS_DELETED, cls, cls.getName());
         getTestFrameStore().getEvents();
         getTestFrameStore().deleteCls(cls);
-        Collection events = getTestFrameStore().getEvents();
-        assertTrue(events.contains(testEvent1));
+        List<EventObject> events = (List) getTestFrameStore().getEvents();
+        assertTrue(containsSimilarEvent(events, testEvent1));
     }
 }
