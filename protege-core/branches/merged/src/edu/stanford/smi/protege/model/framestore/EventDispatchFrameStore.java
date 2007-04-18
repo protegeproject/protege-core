@@ -48,7 +48,7 @@ import edu.stanford.smi.protege.util.Log;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class EventDispatchFrameStore extends ModificationFrameStore {
-    private static transient Logger log = Log.getLogger(EventDispatchFrameStore.class);
+    private static final transient Logger log = Log.getLogger(EventDispatchFrameStore.class);
     //ESCA-JAVA0077 
     public static final int DELAY_MSEC = 5 * 1000;
     private Map _listeners = new HashMap();
@@ -96,12 +96,16 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             try {
                 dispatchEvent(event);
             } catch (Exception e) {
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "Exception caught", e);
+                }
                 if (!ignoreExceptions) {
                   if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "Exception caught", e);
+                    Log.getLogger().warning("Exception caught during event dispatch - see the log for details - " + e);
+                  } else {
+                    Log.getLogger().warning("Exception caught " + e.toString());
+                    Log.getLogger().warning("use fine logging for more details");
                   }
-                  Log.getLogger().warning("Exception caught " + e.toString());
-                  Log.getLogger().warning("use fine logging for more details");
                 }
             }
         }
@@ -111,6 +115,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         Collection<AbstractEvent> events = getDelegate().getEvents();
         if (serverMode) {
             savedEvents.addAll(events);
+        }
+        if (serverMode) {
+        	this.savedEvents.addAll(events);
         }
         if (!events.isEmpty()) {
             dispatchEvents(events, ignoreExceptions);
@@ -629,7 +636,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         removeSlotListeners(slot);
         dispatchEvents();
     }
-
+    
     public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
         getDelegate().moveDirectOwnSlotValue(frame, slot, from, to);
         dispatchEvents();
