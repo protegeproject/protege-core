@@ -60,6 +60,7 @@ public class ResourceKey {
     public static final ResourceKey PROJECT_CONFIGURE = key("project.configure");
     public static final ResourceKey PROJECT_INCLUDE = key("project.include");
     public static final ResourceKey PROJECT_MANAGE_INCLUDED = key("project.manage_included");
+    public static final ResourceKey PROJECT_MANAGE_INCLUDED_DIALOG = key("project.manage_included_dialog");
     public static final ResourceKey PROJECT_MERGE_INCLUDED = key("project.merge_included");
     public static final ResourceKey PROJECT_REVERT = key("project.revert");
     public static final ResourceKey PROJECT_FILE_ENCODINGS = key("project.file_encodings");
@@ -283,15 +284,13 @@ public class ResourceKey {
     public static final ResourceKey WELCOME_DIALOG_ALL_TOPICS = key("welcome_dialog.all_topics");
     public static final ResourceKey WELCOME_DIALOG_USERS_GUIDE = key("welcome_dialog.users_guide");
     public static final ResourceKey WELCOME_DIALOG_FAQ = key("welcome_dialog.faq");
-    public static final ResourceKey WELCOME_DIALOG_OPEN_RECENT_PROJECT_TITLE = key("welcome_dialog.open_recent_project_title");
     public static final ResourceKey WELCOME_DIALOG_NEW = key("welcome_dialog.new");
     public static final ResourceKey WELCOME_DIALOG_NEW_TOOLTIP = key("welcome_dialog.new_tooltip");
-    public static final ResourceKey WELCOME_DIALOG_BUILD = key("welcome_dialog.build");
-    public static final ResourceKey WELCOME_DIALOG_BUILD_TOOLTIP = key("welcome_dialog.build_tooltip");
     public static final ResourceKey WELCOME_DIALOG_OPEN = key("welcome_dialog.open");
     public static final ResourceKey WELCOME_DIALOG_OPEN_TOOLTIP = key("welcome_dialog.open_tooltip");
     public static final ResourceKey WELCOME_DIALOG_OPEN_OTHER = key("welcome_dialog.open_other");
     public static final ResourceKey WELCOME_DIALOG_OPEN_OTHER_TOOLTIP = key("welcome_dialog.open_existing_tooltip");
+    public static final ResourceKey WELCOME_DIALOG_OPEN_RECENT_PROJECT_TITLE = key("welcome_dialog.open_recent_project_title");
 
     // These really should be part of the knowledge-base localization scheme
     public static final ResourceKey NAME_SLOT_WIDGET_LABEL = key("slot_widget_label.name");
