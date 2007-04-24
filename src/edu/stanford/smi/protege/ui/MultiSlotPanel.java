@@ -1,15 +1,22 @@
 package edu.stanford.smi.protege.ui;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.BrowserSlotPattern;
 import edu.stanford.smi.protege.util.ComponentFactory;
-
-import javax.swing.*;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
-import java.awt.*;
 
 public class MultiSlotPanel extends JPanel {
     private Cls cls;
@@ -24,16 +31,69 @@ public class MultiSlotPanel extends JPanel {
     }
 
     private void createUI() {
-        setLayout(new GridLayout(2, 10, 0, 4));
-        add(ComponentFactory.createLabel("Set display slots and optional text:"));
+    	this.setLayout(new GridBagLayout());
+    	GridBagConstraints c = new GridBagConstraints();
         Collection slots = cls.getVisibleTemplateSlots();
-        JPanel panel = new JPanel(new FlowLayout());
-        for (int i = 0; i < 5; ++i) {
-            panel.add(createTextPanel());
-            panel.add(createSlotPanel(slots));
-        }
-        panel.add(createTextPanel());
-        add(panel);
+    	
+    	// label
+        c.gridx = 0;
+    	c.gridy = 0;
+    	c.gridwidth = 5;
+    	c.insets = new Insets(2, 2, 8, 2);
+    	c.anchor = GridBagConstraints.FIRST_LINE_START;
+    	add(ComponentFactory.createLabel("Set display slots and optional text:"), c);
+    	
+    	// first row
+    	c.gridx = 0;
+    	c.gridy = 1;
+    	c.gridwidth = 1;
+    	c.fill = GridBagConstraints.HORIZONTAL;
+    	c.insets = new Insets(2, 2, 2, 2);
+    	c.weightx = 0.5;
+    	add(createTextPanel(), c);
+    	
+    	// all other rows
+    	for (int i=1; i<=4; i++) {
+    		c.gridy = i;
+    		addComponentRow(c, slots);
+    	}
+    }
+
+    private JComponent createTextPanel() {
+        JTextField textField = ComponentFactory.createTextField();
+        textField.setColumns(2);
+        panels.add(textField);
+        return textField;
+    }
+
+    private JComponent createSlotPanel(Collection slots) {
+        JComboBox slotBox = ComponentFactory.createComboBox();
+        slotBox.setRenderer(new FrameRenderer());
+        List values = new ArrayList(slots);
+        values.add(0, null);
+        ComboBoxModel model = new DefaultComboBoxModel(values.toArray());
+        slotBox.setModel(model);
+        slotBox.setSelectedItem(null);
+        panels.add(slotBox);
+        return slotBox;
+    }
+    
+    private void addComponentRow(GridBagConstraints c, Collection slots) {
+    	c.gridx = 1;
+    	c.weightx = 1.0;
+    	add(createSlotPanel(slots), c);
+
+    	c.gridx = 2;
+    	c.weightx = 0.5;
+    	add(createTextPanel(), c);
+    	
+    	c.gridx = 3;
+    	c.weightx = 1.0;
+    	add(createSlotPanel(slots), c);
+    	
+    	c.gridx = 4;
+    	c.weightx = 0.5;
+    	add(createTextPanel(), c);
     }
 
     private void loadUI() {
@@ -59,26 +119,7 @@ public class MultiSlotPanel extends JPanel {
             }
         }
     }
-
-    private JComponent createTextPanel() {
-        JTextField textField = ComponentFactory.createTextField();
-        textField.setColumns(2);
-        panels.add(textField);
-        return textField;
-    }
-
-    private JComponent createSlotPanel(Collection slots) {
-        JComboBox slotBox = ComponentFactory.createComboBox();
-        slotBox.setRenderer(new FrameRenderer());
-        List values = new ArrayList(slots);
-        values.add(0, null);
-        ComboBoxModel model = new DefaultComboBoxModel(values.toArray());
-        slotBox.setModel(model);
-        slotBox.setSelectedItem(null);
-        panels.add(slotBox);
-        return slotBox;
-    }
-
+    
     public BrowserSlotPattern getBrowserTextPattern() {
         List elements = new ArrayList();
         Iterator i = panels.iterator();
