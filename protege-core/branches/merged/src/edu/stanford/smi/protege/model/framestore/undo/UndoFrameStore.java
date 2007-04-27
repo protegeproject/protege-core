@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.CommandManager;
 import edu.stanford.smi.protege.model.Facet;
@@ -22,6 +23,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.ModificationFrameStore;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class UndoFrameStore extends ModificationFrameStore implements CommandManager {
@@ -33,6 +35,25 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     private List _commands = new ArrayList();
     private int _lastExecutedCommand = NO_COMMAND;
     private LinkedList _macroCommandList = new LinkedList();
+    
+    /*
+     * If the delegate does not support transactions then the undo manager will do the
+     * best that it can at the task.
+     */
+    private TransactionMonitor transactionMonitor = new TransactionMonitor() {
+
+        @Override
+        public TransactionIsolationLevel getTransationIsolationLevel() throws TransactionException {
+            return TransactionIsolationLevel.READ_UNCOMMITTED;
+        }
+
+        @Override
+        public void setTransactionIsolationLevel(TransactionIsolationLevel level) throws TransactionException {
+            // TODO Auto-generated method stub
+            throw new TransactionException("Cannot set transaction isolation level using undo");
+        }
+        
+    };
 
     public void close() {
         super.close();
@@ -241,6 +262,7 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     public boolean beginTransaction(String name) {
         // Log.enter(this, "beginTransaction", name);
         boolean ok = getDelegate().beginTransaction(name);
+        transactionMonitor.beginTransaction();
         pushTransaction(new MacroCommand(name, getDelegate()));
         return ok;
     }
@@ -262,6 +284,7 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     public boolean commitTransaction() {
         popTransaction();
         boolean committed = getDelegate().commitTransaction();
+        transactionMonitor.commitTransaction();
         notifyListeners();
         return committed;
     }
@@ -269,6 +292,7 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     public boolean rollbackTransaction() {
         popTransaction();
         boolean succeeded = getDelegate().rollbackTransaction();
+        transactionMonitor.rollbackTransaction();
         if (!succeeded) {
             undo();
             _commands.remove(_lastExecutedCommand + 1);
@@ -277,10 +301,14 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     }
     
     public TransactionMonitor getTransactionStatusMonitor() {
-      /*
-       * If the delegate doesn't support transactions then  this guy won't either.
-       */
-      return getDelegate().getTransactionStatusMonitor();
+        TransactionMonitor delegateMonitor = getDelegate().getTransactionStatusMonitor();
+        if (delegateMonitor == null || 
+                delegateMonitor.getTransationIsolationLevel() == TransactionIsolationLevel.NONE) {
+            return transactionMonitor;
+        }
+        else {
+            return getDelegate().getTransactionStatusMonitor();
+        }
     }
 
     private void notifyListeners() {
