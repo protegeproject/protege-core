@@ -26,6 +26,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.WidgetDescriptor;
 import edu.stanford.smi.protege.resource.Text;
@@ -187,7 +188,9 @@ public class ProjectView extends JComponent {
         setLayout(new BorderLayout());
         // add(createTabbedPane(), BorderLayout.CENTER); what does this change do? (bug fix?)
         add(BorderLayout.CENTER, createTabbedPane());
-        project.getKnowledgeBase().setUndoEnabled(project.isUndoOptionEnabled());
+        if (!project.isMultiUserClient()) {
+            project.getKnowledgeBase().setUndoEnabled(project.isUndoOptionEnabled());
+        }
     }
   
 
