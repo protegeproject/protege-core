@@ -23,6 +23,7 @@ import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.plugin.CreateProjectFromFilePlugin;
 import edu.stanford.smi.protege.plugin.PluginUtilities;
 import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.server.ServerPanel;
 import edu.stanford.smi.protege.ui.ProjectManager;
 import edu.stanford.smi.protege.ui.SplashScreen;
 import edu.stanford.smi.protege.ui.WelcomeDialog;
@@ -94,8 +95,16 @@ public class Application {
         Project project = null;
         if (args.length > 0) {
             String possibleFilename = args[0];
+            boolean isFile = false;
+            
+            try {
+            	isFile = new File(possibleFilename).exists();
+			} catch (Exception e) {
+				//Fine to have empty catch block here				
+			}
+            
             int lastDotIndex = possibleFilename.lastIndexOf('.');
-            if (lastDotIndex > 0 && lastDotIndex < possibleFilename.length() - 1 && new File(possibleFilename).exists()) {
+            if (lastDotIndex > 0 && lastDotIndex < possibleFilename.length() - 1 && isFile) {
                 if (!possibleFilename.endsWith(projectFileExtension)){
                     String suffix = possibleFilename.substring(lastDotIndex + 1);
                     Iterator it = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames().iterator();
@@ -126,11 +135,16 @@ public class Application {
             }
             else {
                 showMainFrame();
-                if (ApplicationProperties.getWelcomeDialogShow()) {
-                    // Load the main frame and show the welcome dialog.
-                    _welcome = new WelcomeDialog(_mainFrame, "Welcome to " + Text.getProgramName(), true);
-                    _welcome.setLocationRelativeTo(_mainFrame);
-                    _welcome.setVisible(true);
+                if (!SystemUtilities.isApplet()) {
+                	if (ApplicationProperties.getWelcomeDialogShow()) {
+                		// Load the main frame and show the welcome dialog.                	                	
+                		_welcome = new WelcomeDialog(_mainFrame, "Welcome to " + Text.getProgramName(), true);
+                		_welcome.setLocationRelativeTo(_mainFrame);
+                		_welcome.setVisible(true);                	
+                	}
+                } else {
+                	//is applet
+                	ProjectManager.getProjectManager().openRemoteProjectRequest();
                 }
             }
         }
