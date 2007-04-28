@@ -5,6 +5,7 @@ package edu.stanford.smi.protege.server;
 import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
+import java.util.logging.Level;
 
 import javax.swing.*;
 
@@ -20,8 +21,8 @@ public class RemoteProjectManager {
         if (_theInstance == null) {
             try {
                 RMISocketFactory.setSocketFactory(new ClientRmiSocketFactory());
-            } catch (IOException e) {
-                Log.getLogger().severe(Log.toString(e));
+            } catch (Exception e) {
+                Log.getLogger().log(Level.SEVERE, "Error at setting the socket factory.", e);                
             }
             _theInstance = new RemoteProjectManager();
         }
@@ -84,9 +85,13 @@ public class RemoteProjectManager {
         Project p = null;
         try {
             RemoteServerProject serverProject = server.openProject(name, session);
+            if (serverProject == null) {
+            	Log.getLogger().warning("Could not open project " + name + " on server " + server);
+            	return null;
+            }
             p = RemoteClientProject.createProject(serverProject, server, session, true);
         } catch (Exception e) {
-            Log.getLogger().severe(Log.toString(e));
+            Log.getLogger().log(Level.WARNING, "Could not connect to remote project " + name, e);
         }
         return p;
     }
