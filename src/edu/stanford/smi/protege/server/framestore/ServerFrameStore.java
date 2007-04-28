@@ -54,9 +54,19 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private Map<RemoteSession, Registration> _sessionToRegistrationMap 
       = new HashMap<RemoteSession, Registration>();
     private boolean _isDirty;
-    private static final int DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue();
     private static final int MAX_VALUES = 20;
-    private static final int MIN_PRELOAD_FRAMES = Integer.getInteger("preload.frame.limit", 5000).intValue();
+    
+    private static int DELAY_MSEC = 0;
+    private static int MIN_PRELOAD_FRAMES = 5000;
+    
+    static {
+    	try {
+    	    DELAY_MSEC = Integer.getInteger("server.delay", 0).intValue(); 
+    	    MIN_PRELOAD_FRAMES = Integer.getInteger("preload.frame.limit", 5000).intValue();			
+		} catch (Exception e) {
+			Log.getLogger().warning("Could not read server delay and/or preload frame limit values");
+		}
+    }
     /*
      * A performance hack Indentical copies of the same sft are reduced to the same object so that only a single copy
      * needs to be sent over the wire.
