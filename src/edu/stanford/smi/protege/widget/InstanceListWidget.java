@@ -164,6 +164,8 @@ public class InstanceListWidget extends AbstractListWidget {
     }
 
     public void setEditable(boolean b) {
+    	b = b && !isReadOnlyConfiguredWidget();
+    	
         setAllowed(_createInstanceAction, b);
         setAllowed(_addInstancesAction, b);
         setAllowed(_removeInstancesAction, b);

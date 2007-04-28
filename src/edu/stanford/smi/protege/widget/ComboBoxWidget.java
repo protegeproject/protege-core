@@ -116,6 +116,8 @@ public class ComboBoxWidget extends AbstractSlotWidget {
     }
 
     public void setEditable(boolean b) {
+    	b = b && !isReadOnlyConfiguredWidget();
+    	
         _comboBox.setEnabled(b);
     }
 
@@ -132,5 +134,14 @@ public class ComboBoxWidget extends AbstractSlotWidget {
     public void setValues(Collection values) {
         Object value = CollectionUtilities.getFirstItem(values);
         _comboBox.setSelectedItem(value);
+    }
+    
+    @Override
+    public WidgetConfigurationPanel createWidgetConfigurationPanel() {
+    	WidgetConfigurationPanel confPanel = super.createWidgetConfigurationPanel();
+    	
+    	confPanel.addTab("Options", new ReadOnlyWidgetConfigurationPanel(this));
+    	
+    	return confPanel;
     }
 }

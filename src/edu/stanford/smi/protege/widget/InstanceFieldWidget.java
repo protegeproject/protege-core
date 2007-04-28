@@ -189,6 +189,8 @@ public class InstanceFieldWidget extends AbstractSlotWidget {
     }
 
     public void setEditable(boolean b) {
+    	b = b && !isReadOnlyConfiguredWidget();
+    	
         setAllowed(_createAction, b);
         setAllowed(_addAction, b);
         setAllowed(_removeAction, b);
@@ -211,5 +213,14 @@ public class InstanceFieldWidget extends AbstractSlotWidget {
 
     public void setShowNewInstances(boolean b) {
         _showNewInstances = b;
+    }
+    
+    @Override
+    public WidgetConfigurationPanel createWidgetConfigurationPanel() {
+    	WidgetConfigurationPanel confPanel = super.createWidgetConfigurationPanel();
+    	
+    	confPanel.addTab("Options", new ReadOnlyWidgetConfigurationPanel(this));
+    	
+    	return confPanel;
     }
 }
