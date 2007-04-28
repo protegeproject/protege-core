@@ -50,6 +50,9 @@ import edu.stanford.smi.protege.resource.ResourceKey;
 import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.RemoteProjectManager;
 import edu.stanford.smi.protege.server.RemoteProjectUtil;
+import edu.stanford.smi.protege.server.RemoteServer;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.ServerPanel;
 import edu.stanford.smi.protege.storage.clips.ParseErrorPanel;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ArchiveManager;
@@ -274,12 +277,15 @@ public class ProjectManager {
         Project p = getCurrentProject();
         boolean displayHidden = p.getDisplayHiddenClasses();
         boolean displayTabbedInstanceForm = p.getTabbedInstanceFormLayout();
+        boolean addNameOnInstanceForm = p.getAddNameOnInstanceForm();
         if (p != null) {
            ConfigureProjectPanel panel = new ConfigureProjectPanel(p);
            String title = "Configure " + p.getProjectURI();
            int result = ModalDialog.showDialog(_rootPane, panel, title, ModalDialog.MODE_OK_CANCEL);
            if (result == ModalDialog.OPTION_OK) {
-                boolean needToRegenerate = (displayHidden != p.getDisplayHiddenClasses()) || (displayTabbedInstanceForm != p.getTabbedInstanceFormLayout());
+                boolean needToRegenerate = (displayHidden != p.getDisplayHiddenClasses()) || 
+                (displayTabbedInstanceForm != p.getTabbedInstanceFormLayout()) || 
+                (addNameOnInstanceForm != p.getAddNameOnInstanceForm());
                 reloadUI(needToRegenerate);
             }
         }
@@ -371,10 +377,14 @@ public class ProjectManager {
     public void exitApplicationRequest() {
         boolean succeeded = closeProjectRequest();
         if (succeeded) {
-            java.awt.Frame mainFrame = ComponentUtilities.getFrame(_rootPane);
-            ApplicationProperties.recordMainFrameProperties(mainFrame);
-            ApplicationProperties.flush();
-            ComponentUtilities.dispose(mainFrame);
+        	try {
+        		java.awt.Frame mainFrame = ComponentUtilities.getFrame(_rootPane);
+        		ApplicationProperties.recordMainFrameProperties(mainFrame);
+        		ApplicationProperties.flush();
+        		ComponentUtilities.dispose(mainFrame);
+        	} catch (Throwable e) {
+        		Log.getLogger().warning("Errors at saving protege.properties");
+        	}
             if (_doExitVM) {
                 SystemUtilities.exit();
             }
