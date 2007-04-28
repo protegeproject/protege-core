@@ -62,8 +62,12 @@ public class Log {
     
     static {
       String debugLogProperty = ApplicationProperties.LOG_DEBUG_PROPERTY;
-      if (System.getProperty(debugLogProperty) != null) {
-          debug = true;
+      try {
+    	  if (System.getProperty(debugLogProperty) != null) {
+    		  debug = true;
+    	  }
+      } catch (Throwable t) {
+    	  debug = false;  // this is not really recommended.
       }
     }
   
@@ -80,8 +84,8 @@ public class Log {
       //String rootDir = ApplicationProperties.getApplicationDirectory().getAbsolutePath();
       //this call avoids premature initialization of ApplicationProperties and SystemUtilities which caused other initializatino problems (look and feel)
       //TODO: find a better way to do the initialization
-      String rootDir = getApplicationDirectory().getAbsolutePath();
       try {
+        String rootDir = getApplicationDirectory().getAbsolutePath();
         if (System.getProperty(logProperty) != null) {
           if (debug) {
             System.out.println("Already configured...");
@@ -107,14 +111,18 @@ public class Log {
             }
           }
         }
-      } catch (Exception e) {
-        Log.getLogger().log(Level.WARNING, "Could not set up class specific logging", e);
+      } catch (Throwable e) {
+    	  System.out.println("Could not set up class specific logging");
       }
       if (!configured) {
     	  if (debug) {
     		  System.out.println("using default configuration.");
     	  }
-          Log.getLogger().setLevel(Level.CONFIG);
+    	  try {
+    		  Log.getLogger().setLevel(Level.CONFIG);
+    	  } catch (Throwable t) {
+    		  System.out.println("Could not set logger level");
+    	  }
       }
       // Example of programatic level setting
       // Logger.getLogger("edu.stanford.smi.protege.model.framestore").setLevel(Level.FINEST);
@@ -575,12 +583,13 @@ public class Log {
         if (logger == null) {
             logger = Logger.getLogger("protege.system");
             if (!configuredByFile) {
-              try {
+              try {            	 
                 logger.setUseParentHandlers(false);
                 logger.setLevel(Level.ALL);
                 addConsoleHandler();
-                addFileHandler();
-              } catch (SecurityException e) {
+                addFileHandler();                
+              } catch (Throwable e) {
+            	  System.out.println("Exception configuring logger");
                 // do nothing, happens in applets
                 // NOTE - empty catch blocks are VERY DANGEROUS
                 // but this might be ok...
@@ -601,13 +610,18 @@ public class Log {
         if (!configuredByFile) {     
           try {
             l.addHandler(getFileHandler());
-          } catch (IOException e) {
+            
+            Handler consoleHandler = getConsoleHandler(); 
+            if (l != null && consoleHandler != null) {
+          	  l.addHandler(consoleHandler);
+            }            
+            
+          } catch (Throwable e) {
         	  if (!Log.displayedIOWarning) {        		  
         		  System.err.println("Warning: IO exception getting logger. " + e.getMessage());
         		  Log.displayedIOWarning = true;
         	  }
-          }
-          l.addHandler(getConsoleHandler());
+          }        
         }
         return l;
     }
@@ -621,16 +635,26 @@ public class Log {
     }
 
     private static void addConsoleHandler() {
-        logger.addHandler(getConsoleHandler());
+        Handler consoleHandler = getConsoleHandler(); 
+        if (logger != null && consoleHandler != null) {
+      	  logger.addHandler(consoleHandler);
+        }        
     }
     
     private static Handler getConsoleHandler() {
-        if (consoleHandler == null) {
-            consoleHandler = new ConsoleHandler();
-            consoleHandler.setFormatter(new ConsoleFormatter());
-            consoleHandler.setLevel(Level.ALL);
-        }
-        return consoleHandler;
+    	try {
+    		if (consoleHandler == null) {
+    			consoleHandler = new ConsoleHandler();
+    			consoleHandler.setFormatter(new ConsoleFormatter());
+    			consoleHandler.setLevel(Level.ALL);
+    		}
+    		return consoleHandler;
+    	}catch (Throwable e) {
+    		// When does this happen?
+    		System.err.println("Warning: Cannot set console log debugger handler.");
+    	}
+    	
+    	return null;
     }
 
     private static void addFileHandler() {
@@ -638,7 +662,7 @@ public class Log {
             Handler handler = getFileHandler();
             logger.addHandler(handler);
             handler.publish(new LogRecord(Level.INFO, "*** SYSTEM START ***"));
-        } catch (IOException e) {
+        } catch (Throwable e) {
             // do nothing, happens in applets
           // NOTE - empty catch blocks are VERY DANGEROUS
           // but this might be ok...
