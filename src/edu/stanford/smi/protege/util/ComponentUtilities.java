@@ -168,6 +168,11 @@ public class ComponentUtilities {
 
     public static void extendSelection(JTree tree, Object userObject) {
         LazyTreeNode selectedNode = (LazyTreeNode) tree.getLastSelectedPathComponent();
+        
+        if (selectedNode == null) {
+        	return;
+        }
+        	
         int index = selectedNode.getUserObjectIndex(userObject);
         if (index == -1) {
             Log.getLogger().warning("object not found: " + userObject);
