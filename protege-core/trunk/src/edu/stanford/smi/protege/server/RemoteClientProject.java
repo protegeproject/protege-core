@@ -151,7 +151,7 @@ public class RemoteClientProject extends Project {
     }
 
     public void dispose() {
-        Log.getLogger().info("remote project dispose");
+        Log.getLogger().info("Remote project dispose. Project: " + getName() + " Session: " + _session);
         super.dispose();
         attemptClose();
         uninstallShutdownHook();
@@ -161,7 +161,7 @@ public class RemoteClientProject extends Project {
         try {
             _serverProject.close(_session);
         } catch (java.rmi.RemoteException e) {
-            Log.getLogger().warning(e.toString());
+            Log.getLogger().log(Level.WARNING, "Errors at attempting to close remote project " + getName(), e);
         }
     }
 
@@ -183,11 +183,20 @@ public class RemoteClientProject extends Project {
               }
             }
         };
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
+        
+        try {
+        	Runtime.getRuntime().addShutdownHook(shutdownHook);
+        } catch (Throwable e) {
+        	Log.getLogger().warning("Error at installing shutdown hook. Message:" + e.getMessage());
+        }
     }
 
     private void uninstallShutdownHook() {
-        Runtime.getRuntime().removeShutdownHook(shutdownHook);
+    	try {
+    		Runtime.getRuntime().removeShutdownHook(shutdownHook);
+    	} catch (Throwable e) {
+    		Log.getLogger().warning("Error at uninstalling shutdown hook. Message: " + e.getMessage());
+    	}
     }
 
     public boolean isDirty() {
