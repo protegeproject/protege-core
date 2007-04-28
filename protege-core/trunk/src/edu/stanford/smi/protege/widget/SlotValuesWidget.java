@@ -236,6 +236,8 @@ public class SlotValuesWidget extends AbstractListWidget {
         } else {
             result = slot.isEditable();
         }
+        
+        result = result && !isReadOnlyConfiguredWidget();
         return result;
     }
 

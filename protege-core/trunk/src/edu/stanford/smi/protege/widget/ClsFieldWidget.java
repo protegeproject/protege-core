@@ -154,6 +154,8 @@ public class ClsFieldWidget extends AbstractSlotWidget {
     }
 
     public void setEditable(boolean b) {
+    	b = b && !isReadOnlyConfiguredWidget();
+    	
         setAllowed(_addAction, b);
         setAllowed(_removeAction, b);
     }
@@ -166,5 +168,14 @@ public class ClsFieldWidget extends AbstractSlotWidget {
 
     protected void updateList() {
         ComponentUtilities.setListValues(_list, CollectionUtilities.createCollection(this._instance));
+    }
+    
+    @Override
+    public WidgetConfigurationPanel createWidgetConfigurationPanel() {
+    	WidgetConfigurationPanel confPanel = super.createWidgetConfigurationPanel();
+    	
+    	confPanel.addTab("Options", new ReadOnlyWidgetConfigurationPanel(this));
+    	
+    	return confPanel;
     }
 }

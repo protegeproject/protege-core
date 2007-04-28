@@ -18,6 +18,8 @@ import edu.stanford.smi.protege.util.*;
  */
 
 public abstract class AbstractSlotWidget extends AbstractWidget implements SlotWidget {
+	public static final String READ_ONLY_WIDGET_PROPERTY = "readOnly_configured";
+	
     private Collection _buttonInfo;
     private Cls _cls;
     private Slot _slot;
@@ -500,5 +502,14 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
             currentLabel = LocalizedText.getText(key);
         }
         return currentLabel;
+    }
+        
+    public boolean isReadOnlyConfiguredWidget() {
+    	Boolean value = this.getPropertyList().getBoolean(READ_ONLY_WIDGET_PROPERTY);
+    	return (value == null ? false : value.booleanValue());
+    }
+    
+    public void setReadOnlyWidget(boolean isReadOnly) {
+    	this.getPropertyList().setBoolean(READ_ONLY_WIDGET_PROPERTY, isReadOnly);
     }
 }

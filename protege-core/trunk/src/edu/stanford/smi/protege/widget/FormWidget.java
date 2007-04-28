@@ -249,7 +249,17 @@ public class FormWidget extends AbstractClsWidget {
     }
     
     protected Collection getClsSlots() {
-        return getCls().getVisibleTemplateSlots();
+    	Collection templateSlots = getCls().getVisibleTemplateSlots();
+    	
+    	if (getProject().getAddNameOnInstanceForm()) {    	
+    		Slot nameSlot = getKnowledgeBase().getNameSlot();
+    		
+    		if (!templateSlots.contains(nameSlot)) {
+    			templateSlots.add(nameSlot);
+    		}
+    	}
+    	
+        return templateSlots;
     }
 
     protected void createWidgets() {
@@ -275,6 +285,7 @@ public class FormWidget extends AbstractClsWidget {
                         if (slot != null) {
                             succeeded = isSuitable(descriptor, getCls(), slot);
                         }
+                        
                         if (succeeded) {
                             succeeded = slots.remove(slot);
                         }
@@ -883,6 +894,10 @@ public class FormWidget extends AbstractClsWidget {
     }
 
     private void replaceWidget(Component oldComponent, String newClassName) {
+    	if (oldComponent == null) {
+    		return;
+    	}
+    	
         Rectangle bounds = oldComponent.getBounds();
         Dimension oldPreferredSize = oldComponent.getPreferredSize();
         remove(oldComponent);
@@ -892,7 +907,7 @@ public class FormWidget extends AbstractClsWidget {
         descriptor.setWidgetClassName(newClassName);
         descriptor.setBounds(new Rectangle());
         ComponentUtilities.dispose(oldComponent);
-
+    	
         if (newClassName == null) {
             if (_selectedWidget == oldComponent) {
                 clearSelection();

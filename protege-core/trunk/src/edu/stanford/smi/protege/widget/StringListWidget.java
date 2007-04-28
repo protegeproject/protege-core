@@ -83,6 +83,8 @@ public class StringListWidget extends AbstractListWidget {
     }
 
     public void setEditable(boolean b) {
+    	b = b && !isReadOnlyConfiguredWidget();
+    	
         _createAction.setAllowed(b);
         _removeAction.setAllowed(b);
     }
