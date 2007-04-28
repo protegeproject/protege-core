@@ -20,10 +20,11 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     private JCheckBox _confirmOnRemoveComponent;
     private JCheckBox _isEditableComponent;
     private JCheckBox _updateModificationSlotsComponent;
-    private JCheckBox journalingEnabledCheckBox;
-    private JCheckBox prettyPrintSlotWidgetLabelsCheckBox;
-    private JCheckBox tabbedInstanceFormCheckBox;
-
+    private JCheckBox _journalingEnabledCheckBox;
+    private JCheckBox _prettyPrintSlotWidgetLabelsCheckBox;
+    private JCheckBox _tabbedInstanceFormCheckBox;
+    private JCheckBox _addNameOnInstanceFormCheckBox;
+    
     ConfigureOptionsPanel(Project project) {
         _project = project;
         setLayout(new BorderLayout());
@@ -35,22 +36,23 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         c.add(createJournalingEnabledCheckBox());
         c.add(createPrettyPrintSlotWidgetLabelsCheckBox());
         c.add(createTabbedInstanceFormComponent());
+        c.add(createNameOnInstanceFormComponent());
         add(c);
 
     }
 
     private JComponent createJournalingEnabledCheckBox() {
-        journalingEnabledCheckBox = ComponentFactory.createCheckBox();
-        journalingEnabledCheckBox.setText("Enable Journaling");
-        journalingEnabledCheckBox.setSelected(_project.isJournalingEnabled());
-        return journalingEnabledCheckBox;
+        _journalingEnabledCheckBox = ComponentFactory.createCheckBox();
+        _journalingEnabledCheckBox.setText("Enable Journaling");
+        _journalingEnabledCheckBox.setSelected(_project.isJournalingEnabled());
+        return _journalingEnabledCheckBox;
     }
 
     private JComponent createPrettyPrintSlotWidgetLabelsCheckBox() {
-        prettyPrintSlotWidgetLabelsCheckBox = ComponentFactory.createCheckBox();
-        prettyPrintSlotWidgetLabelsCheckBox.setText("Capitalize Slot Widget Labels");
-        prettyPrintSlotWidgetLabelsCheckBox.setSelected(_project.getPrettyPrintSlotWidgetLabels());
-        return prettyPrintSlotWidgetLabelsCheckBox;
+        _prettyPrintSlotWidgetLabelsCheckBox = ComponentFactory.createCheckBox();
+        _prettyPrintSlotWidgetLabelsCheckBox.setText("Capitalize Slot Widget Labels");
+        _prettyPrintSlotWidgetLabelsCheckBox.setSelected(_project.getPrettyPrintSlotWidgetLabels());
+        return _prettyPrintSlotWidgetLabelsCheckBox;
     }
 
     private JComponent createConfirmOnRemoveComponent() {
@@ -79,11 +81,17 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     }
 
     private JComponent createTabbedInstanceFormComponent() {
-        tabbedInstanceFormCheckBox = ComponentFactory.createCheckBox("Used Tabbed Forms for Multi-Type Instances");
-        setValue(tabbedInstanceFormCheckBox, _project.getTabbedInstanceFormLayout());
-        return tabbedInstanceFormCheckBox;
+        _tabbedInstanceFormCheckBox = ComponentFactory.createCheckBox("Used Tabbed Forms for Multi-Type Instances");
+        setValue(_tabbedInstanceFormCheckBox, _project.getTabbedInstanceFormLayout());
+        return _tabbedInstanceFormCheckBox;
     }
 
+    private JComponent createNameOnInstanceFormComponent() {
+        _addNameOnInstanceFormCheckBox = ComponentFactory.createCheckBox("Add :NAME Slot on Instance Forms");
+        setValue(_addNameOnInstanceFormCheckBox, _project.getAddNameOnInstanceForm());
+        return _addNameOnInstanceFormCheckBox;
+    }
+    
     private static boolean getValue(JCheckBox box) {
         return box.isSelected();
     }
@@ -94,9 +102,10 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         _project.setDisplayConfirmationOnRemove(getValue(_confirmOnRemoveComponent));
         _project.setIsReadonly(!getValue(_isEditableComponent));
         _project.setUpdateModificationSlots(getValue(_updateModificationSlotsComponent));
-        _project.setJournalingEnabled(getValue(journalingEnabledCheckBox));
-        _project.setPrettyPrintSlotWidgetLabels(getValue(prettyPrintSlotWidgetLabelsCheckBox));
-        _project.setTabbedInstanceFormLayout(getValue(tabbedInstanceFormCheckBox));
+        _project.setJournalingEnabled(getValue(_journalingEnabledCheckBox));
+        _project.setPrettyPrintSlotWidgetLabels(getValue(_prettyPrintSlotWidgetLabelsCheckBox));
+        _project.setTabbedInstanceFormLayout(getValue(_tabbedInstanceFormCheckBox));
+        _project.setAddNameOnInstanceForm(getValue(_addNameOnInstanceFormCheckBox));
     }
 
     private static void setValue(JCheckBox box, boolean value) {
