@@ -61,16 +61,17 @@ public class RemoteClientFrameStore implements FrameStore {
     private static boolean preloadRemoteClient;
     static {
       boolean defaultValue = true;
-      String property = System.getProperty(ApplicationProperties.REMOTE_CLIENT_PRELOAD);
-      if (property != null) {
-        try {
-          preloadRemoteClient = Boolean.getBoolean(property);
+      try {
+    	  String property = System.getProperty(ApplicationProperties.REMOTE_CLIENT_PRELOAD);
+    	  if (property != null) {        
+    		  preloadRemoteClient = Boolean.getBoolean(property);
+    	  }
         } catch (Exception e) {
           // style to avoid empty catch block  and emphasize motivation
           preloadRemoteClient = defaultValue;
         }
-      }
-    }
+     }
+    
 
     public String getName() {
         return getClass().getName();
