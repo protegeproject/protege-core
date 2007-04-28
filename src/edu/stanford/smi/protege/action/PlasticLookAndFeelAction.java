@@ -19,7 +19,7 @@ public class PlasticLookAndFeelAction extends LookAndFeelAction {
     }
 
     public void actionPerformed(ActionEvent event) {
-        PlasticLookAndFeel.setMyCurrentTheme(new ProtegePlasticTheme());
+        PlasticLookAndFeel.setPlasticTheme(new ProtegePlasticTheme());
         super.actionPerformed(event);
     }
 }
