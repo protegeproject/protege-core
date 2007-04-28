@@ -16,9 +16,13 @@ import edu.stanford.smi.protege.model.framestore.*;
 import edu.stanford.smi.protege.plugin.*;
 import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
+import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 import edu.stanford.smi.protege.util.*;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
+	private final static String SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY = "server.newproject.save.directory";
+	public final static String SERVER_ALLOW_CREATE_USERS = "server.allow.create.users";
+	
     private static Server serverInstance;
     private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
     private Map _projectToServerProjectMap = new HashMap();
@@ -223,6 +227,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (isValid(username, password)) {
             session = new Session(username, userIpAddress);
             _sessions.add(session);
+            //TT: Use a different logger
+            Log.getLogger().info("Server: User " + username + " (IP:" + userIpAddress + ") logged to the server at " + new Date());
         }
         return session;
     }
@@ -246,6 +252,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             }
             recordConnection(session, serverProject);
         }
+//      TT: Use a different logger
+        Log.getLogger().info("Server: User " + session.getUserName() + " (IP:" + session.getUserIpAddress() + ") opened project " + projectName + " at " + new Date());
         return serverProject;
     }
 
@@ -265,7 +273,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Collection projects = (Collection) _sessionToProjectsMap.get(session);
         projects.remove(project);
         _sessions.remove(session);
-        Log.getLogger().info("removing session: " + session);
+        Log.getLogger().info("Server: Removing session: " + session);
     }
 
     private ServerProject getServerProject(String projectName) {
@@ -329,6 +337,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                 break;
             }
         }
+        
         return project;
     }
 
@@ -349,6 +358,76 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         kb.insertFrameStore(fs);
     }
 
+    
+	public RemoteServerProject createProject(String newProjectName, RemoteSession session, KnowledgeBaseFactory kbfactory, boolean saveToMetaProject) throws RemoteException {
+        Project project = null;
+        Iterator i = _systemKb.getInstances(_projectCls).iterator();
+        while (i.hasNext()) {
+            Instance instance = (Instance) i.next();
+            String existingProjectName = (String) instance.getOwnSlotValue(_nameSlot);
+            if (existingProjectName.equals(newProjectName)) {
+            	Log.getLogger().warning("Server: Attempting to create server project with existing project name. No server project created.");
+            	return null;
+            }
+        }
+    
+        String defaultSaveDir = ApplicationProperties.getApplicationDirectory().getAbsolutePath();
+        
+        String newProjectsDir = ApplicationProperties.getApplicationOrSystemProperty(SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY, defaultSaveDir);
+
+        URI uri = URIUtilities.createURI(newProjectsDir + File.separator + newProjectName + ".pprj");
+        
+        if (uri == null) {
+        	Log.getLogger().warning("Could not create new server project at location " + newProjectsDir + File.separator + newProjectName + ".pprj");
+        	return null;
+        }
+
+        ArrayList errors = new ArrayList();
+        
+        project = Project.createNewProject(kbfactory, errors);
+        Log.getLogger().info("Server: Created server project at: " + uri);
+        
+        if (errors.size() > 0) {
+        	Log.getLogger().warning("Server: Errors at creating new project " + newProjectName);
+        	return null;
+        }
+
+        project.setProjectURI(uri);
+        
+        //how to treat other cases?
+        if (kbfactory instanceof ClipsKnowledgeBaseFactory) {
+        	ClipsKnowledgeBaseFactory.setSourceFiles(project.getSources(), newProjectName + ".pont", newProjectName + ".pins");
+        }
+        
+        //should we do that?
+        project.save(errors);
+        if (errors.size() > 0) {
+        	Log.getLogger().warning("Server: Errors at saving new project " + newProjectName);
+        	return null;
+        }
+        
+        project = Project.loadProjectFromURI(uri, new ArrayList(), true);
+
+        if (serverInstance != null) {
+        	_projectPluginManager.afterLoad(project);
+        }
+        
+        localizeProject(project);
+        _nameToOpenProjectMap.put(newProjectName, project);
+        
+        if (saveToMetaProject) {
+        	Instance newProjectInstance = _projectCls.createDirectInstance(null);
+        	newProjectInstance.setOwnSlotValue(_nameSlot, newProjectName);
+        	newProjectInstance.setOwnSlotValue(_locationSlot, newProjectsDir + File.separator + newProjectName + ".pprj");
+ 
+        	saveMetaProject();
+         	
+        }
+        
+        return getServerProject(project);		
+	}
+
+    
     public Collection getAvailableProjectNames(RemoteSession session) {
         List names = new ArrayList();
         Iterator i = _systemKb.getInstances(_projectCls).iterator();
@@ -399,15 +478,32 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         // return System.currentTimeMillis() - session.getLastAccessTime() > 10000;
     }
 
-    private boolean isValid(String name, String password) {
+	public boolean createUser(String userName, String password) {
+		Collection existingUsers = _systemKb.getFramesWithValue(_nameSlot, null, false, userName);
+		
+		if (existingUsers.size() > 0) {
+			Log.getLogger().warning("Server: Could not create user with name " + userName+ ". User name already exists.");
+			return false;
+		}
+		
+		Instance userInstance = _userCls.createDirectInstance(null);
+		userInstance.setOwnSlotValue(_nameSlot, userName);
+		userInstance.setOwnSlotValue(_passwordSlot, password);
+			
+		return saveMetaProject();
+	}
+
+
+
+	private boolean isValid(String name, String password) {
         boolean isValid = false;
         Iterator i = _systemKb.getInstances(_userCls).iterator();
         while (i.hasNext()) {
             Instance user = (Instance) i.next();
             String username = (String) user.getOwnSlotValue(_nameSlot);
-            if (username.equals(name)) {
+            if (username != null && username.equals(name)) {
                 String userpassword = (String) user.getOwnSlotValue(_passwordSlot);
-                if (userpassword.equals(password)) {
+                if (userpassword != null && userpassword.equals(password)) {
                     isValid = true;
                     break;
                 }
@@ -511,4 +607,20 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     public Slot getNameSlot() {
         return _nameSlot;
     }
+
+    
+    private boolean saveMetaProject() {
+    	ArrayList errors = new ArrayList();
+    	
+       	getMetaProject().getProject().save(errors);
+    	if (errors.size() > 0) {
+    		Log.getLogger().warning("Server: Errors at saving metaproject");
+    		return false;
+    	}
+    	
+    	Log.getLogger().info("Saved metaproject");
+	    	
+    	return true;
+	}
+    
 }
