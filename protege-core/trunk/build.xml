@@ -15,11 +15,11 @@
 	<property name = "dist" value = "./dist"/>
 	<property name = "lib" value = "./lib"/>
 	<property name = "scripts" value = "./bin"/>
-        <property name = "logs" value = "./logs"/>
-        <property name = "plugins" value = "./plugins"/>
+    <property name = "logs" value = "./logs"/>
+    <property name = "plugins" value = "./plugins"/>
 
-        <property environment="env"/>
-        <property name="protege.home" value="${env.PROTEGE_HOME}"/>
+    <property environment="env"/>
+    <property name="protege.home" value="${env.PROTEGE_HOME}"/>
 
 	<!-- Compiler options. -->
 	<property name = "deprecation" value = "on"/>    
@@ -29,15 +29,15 @@
 	<property name = "includeAntRuntime" value = "no"/>
 	<property name = "source" value = "1.5"/>
 	<path id = "project.classpath">    
-            <pathelement location = "${lib}/junit.jar"/>
-	    <pathelement location = "${lib}/looks.jar"/>
-            <pathelement location = "${lib}/unicode_panel.jar"/>
+       <pathelement location = "${lib}/junit.jar"/>
+	   <pathelement location = "${lib}/looks-2.1.3.jar"/>
+       <pathelement location = "${lib}/unicode_panel.jar"/>
 	</path>  
-        <path id = "database.drivers">
-          <fileset dir="dbdrivers">
-            <include name="*.jar"/>
-          </fileset>
-        </path>
+    <path id = "database.drivers">
+       <fileset dir="dbdrivers">
+          <include name="*.jar"/>
+       </fileset>
+    </path>
 	<!-- =================================================================== -->
 	
 	<!-- USAGE -->
