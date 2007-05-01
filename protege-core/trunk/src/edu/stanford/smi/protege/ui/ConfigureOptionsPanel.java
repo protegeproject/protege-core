@@ -75,7 +75,8 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     }
 
     private JComponent createUpdateModificationSlotsComponent() {
-        _updateModificationSlotsComponent = ComponentFactory.createCheckBox("Update Modification Slots");
+    	//TT: temporary fix. Maybe use a different flag later
+        _updateModificationSlotsComponent = ComponentFactory.createCheckBox("Track changes");
         setValue(_updateModificationSlotsComponent, _project.getUpdateModificationSlots());
         return _updateModificationSlotsComponent;
     }
