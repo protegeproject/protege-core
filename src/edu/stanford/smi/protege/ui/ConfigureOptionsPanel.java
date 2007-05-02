@@ -24,6 +24,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     private JCheckBox _prettyPrintSlotWidgetLabelsCheckBox;
     private JCheckBox _tabbedInstanceFormCheckBox;
     private JCheckBox _addNameOnInstanceFormCheckBox;
+    private JCheckBox _trackChangesActiveComponent;
     
     ConfigureOptionsPanel(Project project) {
         _project = project;
@@ -33,6 +34,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         c.add(createConfirmOnRemoveComponent());
         c.add(createIsEditableComponent());
         c.add(createUpdateModificationSlotsComponent());
+        c.add(createChangeTrackingActiveComponent());
         c.add(createJournalingEnabledCheckBox());
         c.add(createPrettyPrintSlotWidgetLabelsCheckBox());
         c.add(createTabbedInstanceFormComponent());
@@ -74,13 +76,19 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         return _isEditableComponent;
     }
 
-    private JComponent createUpdateModificationSlotsComponent() {
-    	//TT: temporary fix. Maybe use a different flag later
-        _updateModificationSlotsComponent = ComponentFactory.createCheckBox("Track changes");
+    private JComponent createUpdateModificationSlotsComponent() {    	
+        _updateModificationSlotsComponent = ComponentFactory.createCheckBox("Update modification slots");
         setValue(_updateModificationSlotsComponent, _project.getUpdateModificationSlots());
         return _updateModificationSlotsComponent;
     }
 
+    private JComponent createChangeTrackingActiveComponent() {    	
+        _trackChangesActiveComponent = ComponentFactory.createCheckBox("Track changes");
+        setValue(_trackChangesActiveComponent, _project.getChangeTrackingActive());
+        return _trackChangesActiveComponent;
+    }
+
+    
     private JComponent createTabbedInstanceFormComponent() {
         _tabbedInstanceFormCheckBox = ComponentFactory.createCheckBox("Used Tabbed Forms for Multi-Type Instances");
         setValue(_tabbedInstanceFormCheckBox, _project.getTabbedInstanceFormLayout());
@@ -103,6 +111,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         _project.setDisplayConfirmationOnRemove(getValue(_confirmOnRemoveComponent));
         _project.setIsReadonly(!getValue(_isEditableComponent));
         _project.setUpdateModificationSlots(getValue(_updateModificationSlotsComponent));
+        _project.setChangeTrackingActive(getValue(_trackChangesActiveComponent));
         _project.setJournalingEnabled(getValue(_journalingEnabledCheckBox));
         _project.setPrettyPrintSlotWidgetLabels(getValue(_prettyPrintSlotWidgetLabelsCheckBox));
         _project.setTabbedInstanceFormLayout(getValue(_tabbedInstanceFormCheckBox));
