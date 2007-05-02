@@ -115,6 +115,7 @@ public class Project {
     private static final String SLOT_UPDATE_MODIFICATION_SLOTS = "update_modification_slots";
     private static final String SLOT_TABBED_INSTANCE_FORM_LAYOUT = "tabbed_instance_form_layout";
     private static final String CLIENT_PROPERTY_ADD_NAME_ON_INSTANCE_FORM = "add_name_on_instance_form";
+    private static final String CHANGE_TRACKING_ACTIVE = "change_tracking_active";
     
     private static final String CLASS_MAP = "Map";
     private static final String SLOT_PROPERTY_MAP = "property_map";
@@ -2085,6 +2086,20 @@ public class Project {
 
     public void setAddNameOnInstanceForm(boolean b) {    	
         setClientInformation(CLIENT_PROPERTY_ADD_NAME_ON_INSTANCE_FORM, b ? "true" : "false");
+    }
+    
+    public boolean getChangeTrackingActive() {
+    	String changeTrackingActive = (String) getClientInformation(CHANGE_TRACKING_ACTIVE);
+    	
+    	if (changeTrackingActive == null || !changeTrackingActive.equals("true")) {
+    		return false;
+    	}
+    	
+    	return true;
+    }
+
+    public void setChangeTrackingActive(boolean b) {    	
+        setClientInformation(CHANGE_TRACKING_ACTIVE, b ? "true" : "false");
     }
    
 }
