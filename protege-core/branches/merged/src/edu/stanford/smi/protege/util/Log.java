@@ -590,9 +590,6 @@ public class Log {
                 addFileHandler();                
               } catch (Throwable e) {
             	  System.out.println("Exception configuring logger");
-                // do nothing, happens in applets
-                // NOTE - empty catch blocks are VERY DANGEROUS
-                // but this might be ok...
               }
             }
         }
@@ -663,9 +660,7 @@ public class Log {
             logger.addHandler(handler);
             handler.publish(new LogRecord(Level.INFO, "*** SYSTEM START ***"));
         } catch (Throwable e) {
-            // do nothing, happens in applets
-          // NOTE - empty catch blocks are VERY DANGEROUS
-          // but this might be ok...
+            System.err.println("Error adding file handler to logger");
         }
     }
     
@@ -702,6 +697,7 @@ public class Log {
             value = System.getProperty(property);
         } catch (SecurityException e) {
             value = null;
+            // WARNING: Empty catch block
         }
         return value;
     }
