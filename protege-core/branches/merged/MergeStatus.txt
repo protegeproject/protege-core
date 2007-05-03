@@ -28,3 +28,9 @@ Starting the merge process:
                    
 There was no other svn activity during this process.
 All the merges were committed.                     
+
+ --> preparing for head:
+
+svn merge $p/trunk@5933 $p/trunk@6240 .
+rm -rf src/edu/stanford/smi/protege/server
+svn update src/edu/stanford/smi/protege/server
