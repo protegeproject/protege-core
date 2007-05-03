@@ -120,6 +120,8 @@ public class ClsListWidget extends AbstractListWidget {
     }
 
     public void setEditable(boolean b) {
+    	b = b && !isReadOnlyConfiguredWidget();
+    	
         setAllowed(_addAction, b);
         setAllowed(_removeAction, b);
     }

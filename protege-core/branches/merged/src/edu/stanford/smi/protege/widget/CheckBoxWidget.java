@@ -61,6 +61,7 @@ public class CheckBoxWidget extends AbstractSlotWidget {
     }
 
     public void setEditable(boolean b) {
+    	b = b && !isReadOnlyConfiguredWidget();
         _checkBox.setEnabled(b);
     }
 
@@ -73,5 +74,14 @@ public class CheckBoxWidget extends AbstractSlotWidget {
         Boolean b = (Boolean) CollectionUtilities.getFirstItem(values);
         boolean checked = (b == null) ? false : b.booleanValue();
         _checkBox.setSelected(checked);
+    }
+    
+    @Override
+    public WidgetConfigurationPanel createWidgetConfigurationPanel() {
+    	WidgetConfigurationPanel confPanel = super.createWidgetConfigurationPanel();
+    	
+    	confPanel.addTab("Options", new ReadOnlyWidgetConfigurationPanel(this));
+    	
+    	return confPanel;
     }
 }

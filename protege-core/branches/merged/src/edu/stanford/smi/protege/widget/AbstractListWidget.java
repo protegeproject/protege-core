@@ -93,6 +93,8 @@ public abstract class AbstractListWidget extends AbstractSlotWidget {
 
     public void initialize() {
         initialize(getDoubleClickAction());
+        
+        setEditable(true);
     }
 
     public void initialize(Action action) {
@@ -128,6 +130,9 @@ public abstract class AbstractListWidget extends AbstractSlotWidget {
     }
 
     public void setEditable(boolean b) {
+    	
+    	b = b && !isReadOnlyConfiguredWidget();
+    	
         Iterator i = _labeledComponent.getHeaderButtonActions().iterator();
         while (i.hasNext()) {
             Action action = (Action) i.next();
@@ -155,4 +160,14 @@ public abstract class AbstractListWidget extends AbstractSlotWidget {
     public void setValues(Collection values) {
         ComponentUtilities.setListValues(_list, values);
     }
+    
+    @Override
+    public WidgetConfigurationPanel createWidgetConfigurationPanel() {
+    	WidgetConfigurationPanel confPanel = super.createWidgetConfigurationPanel();
+    	
+    	confPanel.addTab("Options", new ReadOnlyWidgetConfigurationPanel(this));
+    	
+    	return confPanel;
+    }
+    
 }
