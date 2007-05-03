@@ -1,5 +1,5 @@
 <?xml version = "1.0" encoding = "utf-8"?>
-<project name = "Protege" default = "usage" basedir = ".">    
+<project name = "Protege" default = "jar" basedir = ".">    
 	<description>Autonomous Ant file for building Protege</description>  
 
     <property environment="env"/>
@@ -23,8 +23,8 @@
     <property name = "plugins" value = "./plugins"/>
 
 
-        <property environment="env"/>
-        <property name="protege.home" value="${env.PROTEGE_HOME}"/>
+    <property environment="env"/>
+    <property name="protege.home" value="${env.PROTEGE_HOME}"/>
 
 	<!-- Compiler options. -->
 	<property name = "deprecation" value = "on"/>    
