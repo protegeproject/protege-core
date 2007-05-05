@@ -139,7 +139,7 @@
 			<link href = "http://www.junit.org/junit/javadoc/3.8/"/>
 			<classpath>
 				<pathelement location = "${lib.dir}/junit.jar"/>
-				<pathelement location = "${lib.dir}/looks.jar"/>
+				<pathelement location = "${looks.jar}"/>
 				<pathelement location = "${lib.dir}/unicode_panel.jar"/>
 			</classpath>
 		</javadoc>
@@ -160,7 +160,7 @@
 		</zip>
 		<zip zipfile = "${dist.dir}/protege-bin-${version}.zip" update = "no">
 			<zipfileset dir = "${dist.dir}" includes = "protege.jar"/>
-			<zipfileset dir = "${lib.dir}" includes = "looks.jar,unicode_panel.jar"/>
+			<zipfileset dir = "${lib.dir}" includes = "*.jar" excludes = "junit.jar"/>
 		</zip>
 	</target>
 	
