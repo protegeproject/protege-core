@@ -39,9 +39,14 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.ArrayListMultiMap;
 import edu.stanford.smi.protege.util.Assert;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * 
@@ -55,11 +60,10 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private Thread _eventThread;
     private Object lock;
     
-    private boolean serverMode = false;
+    private boolean dispatchEventsOnServerAndRemoteClient = false;
     private List<AbstractEvent> savedEvents = new ArrayList<AbstractEvent>();
+    private ArrayListMultiMap<RemoteSession, AbstractEvent> transactedEvents = new ArrayListMultiMap<RemoteSession, AbstractEvent>();
 
-    
-    
     public EventDispatchFrameStore(KnowledgeBase kb) {
     	lock = kb;
     }
@@ -111,14 +115,27 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void dispatchEvents(boolean ignoreExceptions) {
         Collection<AbstractEvent> events = getDelegate().getEvents();
-        if (serverMode) {
+        if (dispatchEventsOnServerAndRemoteClient) {
             savedEvents.addAll(events);
+            if (!serverModeEventsSeenByUntransacted()) {
+                RemoteSession session = ServerFrameStore.getCurrentSession();
+                transactedEvents.addValues(session, events);
+                events = Collections.EMPTY_LIST;
+            }
         }
         if (!events.isEmpty()) {
             dispatchEvents(events, ignoreExceptions);
         }
+    }
+    
+    private boolean serverModeEventsSeenByUntransacted() {
+        TransactionMonitor tm = getDelegate().getTransactionStatusMonitor();
+        if (!tm.inTransaction()) return true;
+        TransactionIsolationLevel level = tm.getTransationIsolationLevel();
+        return level.compareTo(TransactionIsolationLevel.READ_UNCOMMITTED) <= 0;
     }
 
     private void dispatchEvent(AbstractEvent event) {
@@ -582,6 +599,15 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     public boolean commitTransaction() {
         boolean succeeded = getDelegate().commitTransaction();
+        if (dispatchEventsOnServerAndRemoteClient) {
+            TransactionMonitor tm = getDelegate().getTransactionStatusMonitor();
+            if (!tm.inTransaction()) {
+                List<AbstractEvent> committedEvents = transactedEvents.removeKey(ServerFrameStore.getCurrentSession());
+                if (succeeded && committedEvents != null) {
+                    dispatchEvents(committedEvents, false);
+                }
+            }
+        }
         dispatchEvents();
         return succeeded;
     }
@@ -686,6 +712,12 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     public boolean rollbackTransaction() {
         boolean succeeded = getDelegate().rollbackTransaction();
+        if (dispatchEventsOnServerAndRemoteClient) {
+            TransactionMonitor tm = getDelegate().getTransactionStatusMonitor();
+            if (!tm.inTransaction()) {
+                transactedEvents.removeKey(ServerFrameStore.getCurrentSession());
+            }
+        }
         dispatchEvents();
         return succeeded;
     }
@@ -786,11 +818,11 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
     
     public void setServerMode(boolean serverMode) {
-        this.serverMode = serverMode;
+        this.dispatchEventsOnServerAndRemoteClient = serverMode;
     }
         
     public List<AbstractEvent> getEvents() {
-        if (serverMode) {
+        if (dispatchEventsOnServerAndRemoteClient) {
             dispatchEvents();
             List<AbstractEvent>  events = savedEvents;
             savedEvents = new ArrayList<AbstractEvent>();
