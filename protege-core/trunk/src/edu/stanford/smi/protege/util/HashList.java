@@ -8,6 +8,7 @@ import java.util.*;
  * hacked. JDK 1.4 offers a standard version of this class which we will soon switch to.
  *
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * @deprecated Use ArrayList instead.
  */
 public class HashList extends AbstractSequentialList implements Cloneable, Serializable {
     private transient Entry header = new Entry(null, null, null);
