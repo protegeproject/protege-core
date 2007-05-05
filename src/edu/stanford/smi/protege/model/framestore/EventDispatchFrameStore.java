@@ -116,9 +116,6 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         if (serverMode) {
             savedEvents.addAll(events);
         }
-        if (serverMode) {
-        	this.savedEvents.addAll(events);
-        }
         if (!events.isEmpty()) {
             dispatchEvents(events, ignoreExceptions);
         }
