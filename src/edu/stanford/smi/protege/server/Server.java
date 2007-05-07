@@ -53,7 +53,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private URI metaprojectURI;
     private MetaProject metaproject;
     
-    private List _sessions = new ArrayList();
+    private List<RemoteSession> _sessions = new ArrayList<RemoteSession>();
     private URI _baseURI;
     private Map<RemoteSession, Collection<ServerProject>> _sessionToProjectsMap 
         = new HashMap<RemoteSession, Collection<ServerProject>>();
@@ -252,6 +252,13 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         return session;
     }
+    
+    public RemoteSession cloneSession(RemoteSession session) {
+        if (!_sessions.contains(session)) {
+            return null;
+        }
+        return new Session(session.getUserName(), session.getUserIpAddress());
+    }
 
     public void closeSession(RemoteSession session) {
         _sessions.remove(session);
@@ -263,6 +270,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     public RemoteServerProject openProject(String projectName, RemoteSession session) 
     throws ServerSessionLost {
+        if (!_sessions.contains(session)) {
+            return null;  // user didn't really log in
+        }
         ServerProject serverProject = null;
         Project p = getOrCreateProject(projectName);
         if (p != null) {
@@ -271,6 +281,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                 serverProject = createServerProject(projectName, p);
                 addServerProject(p, serverProject);
             }
+            if (_sessionToProjectsMap.get(session) != null &&
+                    _sessionToProjectsMap.get(session).contains(serverProject)) {
+                return null;
+            }
             recordConnection(session, serverProject);
         }
         return serverProject;
@@ -278,7 +292,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private void recordConnection(RemoteSession session, ServerProject project) 
     throws ServerSessionLost {
-        // Log.enter(this, "recordConnection", session, project);
         Collection<ServerProject> projects = _sessionToProjectsMap.get(session);
         if (projects == null) {
             projects = new ArrayList<ServerProject>();
@@ -286,11 +299,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         projects.add(project);
         project.register(session);
+        Log.getLogger().info("adding session " + session);
     }
 
     private void recordDisconnection(RemoteSession session, RemoteServerProject project) 
     throws ServerSessionLost {
-        // Log.enter(this, "recordDisconnection", session, project);
         Collection<ServerProject> projects =  _sessionToProjectsMap.get(session);
         projects.remove(project);
         _sessions.remove(session);
