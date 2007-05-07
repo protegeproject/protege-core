@@ -833,7 +833,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public void close(RemoteSession session) throws ServerSessionLost {
-      recordCall(session);
+      recordCallNoCheck(session);
     }
     
     public RemoteResponse<Object> executeProtegeJob(ProtegeJob job,
