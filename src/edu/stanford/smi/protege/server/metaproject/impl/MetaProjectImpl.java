@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Cls;
@@ -18,6 +19,8 @@ import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.MessageError;
 
 public class MetaProjectImpl implements MetaProject {
   private KnowledgeBase kb;
@@ -115,5 +118,33 @@ public class MetaProjectImpl implements MetaProject {
   public KnowledgeBase getKnowledgeBase() {
       return kb;
   }
+  
+	public boolean save(Collection errors) {
+		ArrayList saveErrors = new ArrayList();
+		
+		try {			
+			kb.getProject().save(saveErrors);
+
+			if (saveErrors.size() > 0) {
+				Log.getLogger().warning("Server: Errors at saving metaproject. Error messages: " + saveErrors);
+				errors.addAll(saveErrors);
+				return false;
+			}
+
+		} catch (Exception e) {
+			Log.getLogger().log(Level.WARNING, "Server: Errors at saving metaproject. Error message: " + e.getMessage(), e);
+			errors.add(e);
+			return false;
+		}
+		
+		Log.getLogger().info("SERVER: Saved metaproject.");
+		return true;
+	}
+
+	//TT: Tim, can you please implement this method? Thanks!
+	public MetaProjectInstance createMetaProjectInstance(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
  
 }
