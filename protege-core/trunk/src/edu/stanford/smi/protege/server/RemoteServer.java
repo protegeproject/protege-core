@@ -1,7 +1,10 @@
 package edu.stanford.smi.protege.server;
 
-import java.rmi.*;
-import java.util.*;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.Collection;
+
+import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 
 public interface RemoteServer extends Remote {
     
@@ -18,6 +21,11 @@ public interface RemoteServer extends Remote {
     Collection getCurrentSessions(String projectName, RemoteSession session) throws RemoteException;
 
     RemoteServerProject openProject(String projectName, RemoteSession session) throws RemoteException;
+    
+    RemoteServerProject createProject(String projectName, RemoteSession session, KnowledgeBaseFactory kbfactory, boolean saveToMetaProject) throws RemoteException;
+
+    //TT: To be added later
+    //boolean createUser(String userName, String password) throws RemoteException;
 
     void shutdown() throws RemoteException;
 }
