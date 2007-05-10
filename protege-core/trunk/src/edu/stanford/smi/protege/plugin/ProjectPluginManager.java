@@ -54,14 +54,19 @@ public class ProjectPluginManager {
     }
 
     public void afterLoad(Project project) {
-        Iterator i = projectPlugins.iterator();
-        while (i.hasNext()) {
-            ProjectPlugin plugin = (ProjectPlugin) i.next();
-            if (isSuitable(project, plugin)) {
-                plugin.afterLoad(project);
-            }
-        }
-    }
+		Iterator i = projectPlugins.iterator();
+		while (i.hasNext()) {
+			ProjectPlugin plugin = (ProjectPlugin) i.next();
+			if (isSuitable(project, plugin)) {
+				try {
+					plugin.afterLoad(project);
+				} catch (Exception e) {
+					Log.getLogger().log(Level.WARNING,
+							"There were errors at loading project plugin " + plugin, e);
+				}
+			}
+		}
+	}
 
     private static boolean isSuitable(Project project, ProjectPlugin projectPlugin) {
         boolean isSuitable;
