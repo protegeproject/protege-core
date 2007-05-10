@@ -69,16 +69,12 @@ public class MetaProjectInstanceImpl extends WrappedProtegeInstanceImpl
 		return name;
 	}
 
-	//TT: Tim, can you please implement this method? Thanks!
 	public void setLocation(String location) {
-		// TODO Auto-generated method stub
-		
+	    setSlotValue(SlotEnum.location, location);
 	}
-	
-	//TT: Tim, can you please implement this method? Thanks!
+
 	public void setName(String name) {
-		// TODO Auto-generated method stub
-		
-	}
+	    setSlotValue(SlotEnum.name, name);
+    }
 
 }
