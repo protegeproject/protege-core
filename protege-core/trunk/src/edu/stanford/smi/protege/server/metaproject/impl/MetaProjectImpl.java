@@ -141,10 +141,9 @@ public class MetaProjectImpl implements MetaProject {
 		return true;
 	}
 
-	//TT: Tim, can you please implement this method? Thanks!
 	public MetaProjectInstance createMetaProjectInstance(String name) {
-		// TODO Auto-generated method stub
-		return null;
+	    Instance pi = kb.createInstance(name, getCls(ClsEnum.Project));
+        return new MetaProjectInstanceImpl(this, pi);
 	}
  
 }
