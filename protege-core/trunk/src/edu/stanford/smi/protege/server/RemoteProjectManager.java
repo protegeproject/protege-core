@@ -4,6 +4,7 @@ package edu.stanford.smi.protege.server;
 
 import java.rmi.Naming;
 import java.rmi.server.RMISocketFactory;
+import java.util.logging.Level;
 
 import javax.swing.JComponent;
 
@@ -89,10 +90,14 @@ public class RemoteProjectManager {
         Project p = null;
         try {
             RemoteServerProject serverProject = server.openProject(name, session);
+            if (serverProject == null) {
+            	Log.getLogger().warning("Could not open project " + name + " on server.");
+            	return null;
+            }
             p = RemoteClientProject.createProject(server, serverProject, session, true);
         } catch (Exception e) {
-            Log.getLogger().severe(Log.toString(e));
+            Log.getLogger().log(Level.WARNING, "Could not connect to remote project " + name, e);
         }
-        return p;
+        return p;    	
     }
 }
