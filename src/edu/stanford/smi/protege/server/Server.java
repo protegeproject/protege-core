@@ -23,7 +23,9 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
@@ -38,6 +40,8 @@ import edu.stanford.smi.protege.server.metaproject.UserInstance;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
+import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
@@ -45,6 +49,8 @@ import edu.stanford.smi.protege.util.URIUtilities;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
     private static final long serialVersionUID = 1675054259604532947L;
+    
+	private final static String SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY = "server.newproject.save.directory";
     
     private static Server serverInstance;
     private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
@@ -289,7 +295,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         return serverProject;
     }
-
+    
+    
     private void recordConnection(RemoteSession session, ServerProject project) 
     throws ServerSessionLost {
         Collection<ServerProject> projects = _sessionToProjectsMap.get(session);
@@ -375,6 +382,75 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         return project;
     }
+    
+	public RemoteServerProject createProject(String newProjectName, RemoteSession session, KnowledgeBaseFactory kbfactory, boolean saveToMetaProject) throws RemoteException {
+        Project project = null;
+        
+        for (MetaProjectInstance instance : metaproject.getProjectInstances()) {
+            String projectName = instance.getName();
+            if (projectName.equals(newProjectName)) {              
+              	Log.getLogger().warning("Server: Attempting to create server project with existing project name. No server project created.");
+              	return null;
+              }
+        }
+                       
+        String defaultSaveDir = ApplicationProperties.getApplicationDirectory().getAbsolutePath();
+        
+        String newProjectsDir = ApplicationProperties.getApplicationOrSystemProperty(SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY, defaultSaveDir);
+
+        URI uri = URIUtilities.createURI(newProjectsDir + File.separator + newProjectName + ".pprj");
+        
+        if (uri == null) {
+        	Log.getLogger().warning("Could not create new server project at location " + newProjectsDir + File.separator + newProjectName + ".pprj");
+        	return null;
+        }
+
+        ArrayList errors = new ArrayList();
+        
+        project = Project.createNewProject(kbfactory, errors);
+        Log.getLogger().info("Server: Created server project at: " + uri);
+        
+        if (errors.size() > 0) {
+        	Log.getLogger().warning("Server: Errors at creating new project " + newProjectName);
+        	return null;
+        }
+
+        project.setProjectURI(uri);
+        
+        //TT: How to treat other knowledge base factories?
+        if (kbfactory instanceof ClipsKnowledgeBaseFactory) {
+        	ClipsKnowledgeBaseFactory.setSourceFiles(project.getSources(), newProjectName + ".pont", newProjectName + ".pins");
+        }
+              
+        project.save(errors);
+        if (errors.size() > 0) {
+        	Log.getLogger().warning("Server: Errors at saving new project " + newProjectName);
+        	return null;
+        }
+        
+        project = Project.loadProjectFromURI(uri, new ArrayList(), true);
+
+        if (serverInstance != null) {
+        	_projectPluginManager.afterLoad(project);
+        }
+        
+        localizeProject(project);
+        _nameToOpenProjectMap.put(newProjectName, project);
+        
+        if (saveToMetaProject) {
+        	//TT: Tim, can you please implement this method? Thanks!
+        	//this
+        	MetaProjectInstance newProjectInstance = metaproject.createMetaProjectInstance(newProjectName);
+        	//and this
+        	newProjectInstance.setLocation(newProjectsDir + File.separator + newProjectName + ".pprj");
+        	        	
+        	metaproject.save(errors);
+        }
+        
+        return getServerProject(project);		
+	}
+
+    
 
     private static void localizeProject(Project project) {
         localizeKB(project.getKnowledgeBase());
