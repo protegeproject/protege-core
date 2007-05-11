@@ -14,6 +14,9 @@ import edu.stanford.smi.protege.resource.*;
  *  
  */
 public class ProtegePlasticTheme extends ExperienceBlue {
+	
+	public final static int DEFAULT_FONT_SIZE = 11;
+	public final static Font DEFAULT_FONT = new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE);
 
     public void addCustomEntriesToTable(UIDefaults table) {
         super.addCustomEntriesToTable(table);
