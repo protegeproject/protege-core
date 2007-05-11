@@ -183,9 +183,10 @@ public class SystemUtilities {
                 PopupFactory.setSharedInstance(new PopupFactory());
                 PlasticLookAndFeel.setCurrentTheme(PlasticHack.createTheme());
                 PlasticLookAndFeel.setTabStyle(PlasticLookAndFeel.TAB_STYLE_METAL_VALUE);
-                FontSet fontSet = FontSets.createDefaultFontSet(new Font("Dialog", Font.PLAIN, 11));
+                
+                FontSet fontSet = FontSets.createDefaultFontSet(ProtegePlasticTheme.DEFAULT_FONT);
                 FontPolicy fixedPolicy = FontPolicies.createFixedPolicy(fontSet);
-                PlasticLookAndFeel.setFontPolicy(fixedPolicy);     
+                PlasticLookAndFeel.setFontPolicy(fixedPolicy);
            
             } else if (lafName.indexOf("Metal") != -1) {
                 MetalLookAndFeel.setCurrentTheme(createDefaultMetalTheme());
