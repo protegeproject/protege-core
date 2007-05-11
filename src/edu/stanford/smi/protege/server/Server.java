@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.server;
 
 //ESCA*JAVA0100
-
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -15,6 +14,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +23,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.Cls;
-import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.Project;
@@ -256,6 +255,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             session = new Session(username, userIpAddress);
             _sessions.add(session);
         }
+                        
         return session;
     }
     
@@ -295,6 +295,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             }
             recordConnection(session, serverProject);
         }
+        
+        Log.getLogger().info("Server: Opened project " + projectName + " for " + session + " on " + new Date());   
+        
         return serverProject;
     }
     
@@ -308,7 +311,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         projects.add(project);
         project.register(session);
-        Log.getLogger().info("adding session " + session);
+        Log.getLogger().info("Adding session " + session);
     }
 
     private void recordDisconnection(RemoteSession session, RemoteServerProject project) 
@@ -319,7 +322,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (project instanceof ServerProject) {
           ((ServerProject) project).deregister(session);
         }
-        Log.getLogger().info("removing session: " + session);
+        Log.getLogger().info("Removing session: " + session);
     }
 
     public ServerProject getServerProject(String projectName) {
@@ -565,7 +568,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private static void save(ServerProject serverProject, Project project) {
-        Log.getLogger().info("saving " + project);
+        Log.getLogger().info("Saving " + project);
         Collection errors = new ArrayList();
         synchronized (project.getInternalProjectKnowledgeBase()) {
             synchronized (project.getKnowledgeBase()) {
