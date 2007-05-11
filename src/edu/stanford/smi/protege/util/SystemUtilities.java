@@ -16,6 +16,10 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.plaf.metal.*;
 
+import com.jgoodies.looks.FontPolicies;
+import com.jgoodies.looks.FontPolicy;
+import com.jgoodies.looks.FontSet;
+import com.jgoodies.looks.FontSets;
 import com.jgoodies.looks.plastic.*;
 
 import edu.stanford.smi.protege.plugin.*;
@@ -179,6 +183,10 @@ public class SystemUtilities {
                 PopupFactory.setSharedInstance(new PopupFactory());
                 PlasticLookAndFeel.setCurrentTheme(PlasticHack.createTheme());
                 PlasticLookAndFeel.setTabStyle(PlasticLookAndFeel.TAB_STYLE_METAL_VALUE);
+                FontSet fontSet = FontSets.createDefaultFontSet(new Font("Dialog", Font.PLAIN, 11));
+                FontPolicy fixedPolicy = FontPolicies.createFixedPolicy(fontSet);
+                PlasticLookAndFeel.setFontPolicy(fixedPolicy);     
+           
             } else if (lafName.indexOf("Metal") != -1) {
                 MetalLookAndFeel.setCurrentTheme(createDefaultMetalTheme());
             }
