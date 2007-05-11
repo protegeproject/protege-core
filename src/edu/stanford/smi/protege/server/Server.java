@@ -252,6 +252,15 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         return session;
     }
+    
+    public RemoteSession cloneSession(RemoteSession session) {
+        if (!_sessions.contains(session)) {
+            return null;
+        }
+        session =  new Session(session.getUserName(), session.getUserIpAddress());
+        _sessions.add(session);
+        return session;
+    }
 
     public void closeSession(RemoteSession session) {
         _sessions.remove(session);
