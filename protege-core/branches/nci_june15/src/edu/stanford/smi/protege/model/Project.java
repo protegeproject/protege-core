@@ -114,6 +114,8 @@ public class Project {
     private static final String SLOT_TABBED_INSTANCE_FORM_LAYOUT = "tabbed_instance_form_layout";
     private static final String SLOT_IS_UNDO_ENABLED = "undo_enabled";
 
+    private static final String CHANGE_TRACKING_ACTIVE = "change_tracking_active";
+    
     private static final String CLASS_MAP = "Map";
     private static final String SLOT_PROPERTY_MAP = "property_map";
 
@@ -2080,4 +2082,17 @@ public class Project {
 		setOption(SLOT_IS_UNDO_ENABLED, enabled);		
 	}
 
+    public boolean getChangeTrackingActive() {
+        String changeTrackingActive = (String) getClientInformation(CHANGE_TRACKING_ACTIVE);
+        
+        if (changeTrackingActive == null || !changeTrackingActive.equals("true")) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    public void setChangeTrackingActive(boolean b) {        
+        setClientInformation(CHANGE_TRACKING_ACTIVE, b ? "true" : "false");
+    }
 }
