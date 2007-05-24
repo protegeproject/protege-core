@@ -1,0 +1,67 @@
+; Thu Sep 14 11:07:38 PDT 2006
+; 
+;+ (version "3.2")
+;+ (build "Build 331")
+
+([metaproject_Instance_0] of  Group
+
+	(name "World"))
+
+([metaproject_Instance_10000] of  Project
+
+	(allowedGroupOperation [metaproject_Instance_10008])
+	(location "examples/newspaper/newspaper.pprj")
+	(name "Newspaper")
+	(owner [metaproject_Instance_10005]))
+
+([metaproject_Instance_10002] of  User
+
+	(name "Guest")
+	(password "guest"))
+
+([metaproject_Instance_10003] of  User
+
+	(name "Jennifer Vendetti")
+	(password "jenny"))
+
+([metaproject_Instance_10004] of  User
+
+	(name "Natasha Noy")
+	(password "natalia"))
+
+([metaproject_Instance_10005] of  User
+
+	(name "Ray Fergerson")
+	(password "claudia"))
+
+([metaproject_Instance_10006] of  User
+
+	(name "Tania Tudorache")
+	(password "tania"))
+
+([metaproject_Instance_10007] of  User
+
+	(name "Timothy Redmond")
+	(password "troglodyte"))
+
+([metaproject_Instance_10008] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_0])
+	(allowedOperation
+		[nci_metaproject_Instance_60009]
+		[nci_metaproject_Instance_60010]))
+
+([metaproject_Instance_20002] of  Project
+
+	(allowedGroupOperation [metaproject_Instance_10008])
+	(location "examples/wines/wines.pprj")
+	(name "Wines")
+	(owner [metaproject_Instance_10004]))
+
+([nci_metaproject_Instance_60009] of  Operation
+
+	(name "Read"))
+
+([nci_metaproject_Instance_60010] of  Operation
+
+	(name "Write"))
