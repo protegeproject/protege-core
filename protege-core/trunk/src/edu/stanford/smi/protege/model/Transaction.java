@@ -36,6 +36,10 @@ public abstract class Transaction {
     protected Transaction(KnowledgeBase kb) {
         _knowledgeBase = kb;
     }
+    
+    public KnowledgeBase getKnowledgeBase() {
+        return _knowledgeBase;
+    }
 
     /** returns true if the the results of this method should be committed */
     public abstract boolean doOperations();
@@ -74,8 +78,11 @@ public abstract class Transaction {
         }
         return commited;
     }
-
-    public KnowledgeBase getKnowledgeBase() {
-        return _knowledgeBase;
+    
+    public static String getApplyTo(String beginString) {
+        int index = beginString.indexOf(Transaction.APPLY_TO_TRAILER_STRING);
+        if (index < 0) return null;
+        index += Transaction.APPLY_TO_TRAILER_STRING.length();
+        return beginString.substring(index);
     }
 }
