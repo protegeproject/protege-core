@@ -206,11 +206,21 @@ public class RemoteClientProject extends Project {
               }
             }
         };
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
+        try {
+        	Runtime.getRuntime().addShutdownHook(shutdownHook);
+		} catch (Exception e) {
+			//this happens in applets
+			Log.getLogger().log(Level.WARNING, "Unable to install shutdown hook", e);			
+		}        
     }
 
     private void uninstallShutdownHook() {
-        Runtime.getRuntime().removeShutdownHook(shutdownHook);
+        try {
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
+		} catch (Exception e) {
+			//this happens in applets
+			Log.getLogger().log(Level.WARNING, "Unable to remove shutdown hook", e);			
+		}
     }
 
     public boolean isDirty() {
