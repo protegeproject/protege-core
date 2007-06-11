@@ -35,7 +35,7 @@ if [ ! -e $JAVA_PATH/java ]; then
 fi
 # ------------------- Where is Java? ------------------- 
 
-JARS=protege.jar:driver.jar:driver1.jar:looks-2.1.3.jar:unicode_panel.jar
+JARS=protege.jar:driver.jar:driver1.jar:looks-2.1.3.jar:unicode_panel.jar:plugins/edu.stanford.smi.protegex.changes/change-model.jar
 MAIN_CLASS=edu.stanford.smi.protege.Application
 
 # ------------------- JVM Options ------------------- 
