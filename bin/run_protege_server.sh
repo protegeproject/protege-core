@@ -35,7 +35,7 @@ fi
 # ------------------- Where is Java? ------------------- 
 
 
-CLASSPATH=protege.jar:looks-2.1.3.jar:unicode_panel.jar:driver.jar:driver0.jar:driver1.jar:driver2.jar
+CLASSPATH=protege.jar:looks-2.1.3.jar:unicode_panel.jar:driver.jar:driver0.jar:driver1.jar:driver2.jar:plugins/edu.stanford.smi.protegex.changes/change-model.jar
 MAINCLASS=edu.stanford.smi.protege.server.Server
 
 
