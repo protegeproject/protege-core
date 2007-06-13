@@ -34,6 +34,8 @@ public interface MetaProject {
   
   MetaProjectInstance createMetaProjectInstance(String name);
   
+  UserInstance createUserInstance(String name, String password);
+  
   boolean save(Collection errors);
   
 }
