@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.server;
 //ESCA*JAVA0100
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -49,6 +50,7 @@ import edu.stanford.smi.protege.util.URIUtilities;
 public class Server extends UnicastRemoteObject implements RemoteServer {
     private static final long serialVersionUID = 1675054259604532947L;
     
+	public final static String SERVER_ALLOW_CREATE_USERS = "server.allow.create.users";
 	private final static String SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY = "server.newproject.save.directory";
     
     private static Server serverInstance;
@@ -513,6 +515,26 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return true;
         // return System.currentTimeMillis() - session.getLastAccessTime() > 10000;
     }
+    
+	public boolean createUser(String userName, String password) {
+		List<String> names = new ArrayList<String>();
+		for (UserInstance instance : metaproject.getUserInstances()) {
+			String existingUserName = instance.getName();
+			if (existingUserName.equals(userName)) {
+				Log.getLogger().warning(
+						"Server: Could not create user with name " + userName
+								+ ". User name already exists.");
+				return false;
+			}
+		}
+		UserInstance newUserInstance = metaproject.createUserInstance(userName,
+				password);
+
+		ArrayList errors = new ArrayList();
+		boolean success = metaproject.save(errors);
+				
+		return (success && errors.size() == 0);
+	}
 
     private boolean isValid(String name, String password) {
       boolean isValid = false;
