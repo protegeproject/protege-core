@@ -57,4 +57,12 @@ public class UserInstanceImpl extends WrappedProtegeInstanceImpl implements User
     return name;
   }
   
+  public void setName(String name) {
+	  setSlotValue(SlotEnum.name, name);
+  }
+  
+  public void setPassword(String password) {
+	  setSlotValue(SlotEnum.password, password);
+  }
+  
 }
