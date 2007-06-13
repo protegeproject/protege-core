@@ -145,5 +145,15 @@ public class MetaProjectImpl implements MetaProject {
 	    Instance pi = kb.createInstance(name, getCls(ClsEnum.Project));
         return new MetaProjectInstanceImpl(this, pi);
 	}
+	
+	public UserInstance createUserInstance(String name, String password) {
+		Instance ui = kb.createInstance(null, getCls(ClsEnum.User));
+		
+		UserInstance userInstance = new UserInstanceImpl(this, ui);
+		userInstance.setName(name);
+		userInstance.setPassword(password);
+		
+		return userInstance;
+	}
  
 }
