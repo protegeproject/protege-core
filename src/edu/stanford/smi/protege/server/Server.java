@@ -49,10 +49,7 @@ import edu.stanford.smi.protege.util.URIUtilities;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
     private static final long serialVersionUID = 1675054259604532947L;
-    
-	public final static String SERVER_ALLOW_CREATE_USERS = "server.allow.create.users";
-	private final static String SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY = "server.newproject.save.directory";
-    
+        
     private static Server serverInstance;
     private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
     private Map<Project, ServerProject> _projectToServerProjectMap = new HashMap<Project, ServerProject>();
@@ -400,10 +397,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
               	return null;
               }
         }
-                       
-        String defaultSaveDir = ApplicationProperties.getApplicationDirectory().getAbsolutePath();
-        
-        String newProjectsDir = ApplicationProperties.getApplicationOrSystemProperty(SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY, defaultSaveDir);
+                
+        String newProjectsDir = ServerProperties.getDefaultNewProjectSaveDirectory();
 
         URI uri = URIUtilities.createURI(newProjectsDir + File.separator + newProjectName + ".pprj");
         
@@ -514,6 +509,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private static boolean isCurrent(Session session) {
         return true;
         // return System.currentTimeMillis() - session.getLastAccessTime() > 10000;
+    }
+    
+    public boolean allowsCreateUsers() throws RemoteException {    	
+    	return ServerProperties.getAllowsCreateUsers();
     }
     
 	public boolean createUser(String userName, String password) {
