@@ -23,6 +23,8 @@ public interface RemoteServer extends Remote {
     RemoteServerProject openProject(String projectName, RemoteSession session) throws RemoteException;
     
     RemoteServerProject createProject(String projectName, RemoteSession session, KnowledgeBaseFactory kbfactory, boolean saveToMetaProject) throws RemoteException;
+    
+    boolean allowsCreateUsers() throws RemoteException;
    
     boolean createUser(String userName, String password) throws RemoteException;
 
