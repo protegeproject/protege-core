@@ -343,6 +343,8 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
             widget.getCls().removeFrameListener(_frameListener);
         }
         _currentWidgets.clear();
+        
+        _project = null;
     }
 
     private void ensureYellowStickiesAreVisible() {
