@@ -301,4 +301,10 @@ public class PropertyMapUtil {
             ModelUtilities.setOwnSlotValue(entryInstance, VALUE_CLASS_SLOT, valueEntry.valueClass);
         }
     }
+    
+    public static void dispose() {
+    	_valuesToMaps.clear();
+    	_domainKB = null;
+    	_projectKB = null;
+    }
 }
