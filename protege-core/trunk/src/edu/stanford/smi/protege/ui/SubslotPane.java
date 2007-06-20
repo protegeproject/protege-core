@@ -362,4 +362,11 @@ public class SubslotPane extends SelectableContainer {
     public String toString() {
         return "SubclassPane";
     }
+    
+    @Override
+    public void dispose() {
+       	super.dispose();
+    	_project = null;
+    	_knowledgeBase = null;
+    }
 }
