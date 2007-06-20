@@ -515,6 +515,12 @@ public class Project {
         _cachedDesignTimeClsWidgets = null;
         _frames = null;
         _objects = null;
+        
+        //_widgetMapper = null;
+                       
+        _directBrowserSlotPatterns = null;
+        
+        PropertyMapUtil.dispose();
     }
 
     private void clearWidgets() {
