@@ -10,6 +10,8 @@ import javax.swing.border.*;
 import javax.swing.table.*;
 import javax.swing.tree.*;
 
+import edu.stanford.smi.protege.ui.ProjectMenuBar;
+
 /**
  * Utility methods for dealing with various swing components.
  * 
@@ -768,5 +770,33 @@ public class ComponentUtilities {
         // Scroll the area into view
         //viewport.scrollRectToVisible(rect);
     }
-
+    
+    
+    public static JMenu getMenu(JMenuBar menuBar, String menuText) {
+    	return getMenu(menuBar, menuText, false);
+    }
+    
+    public static JMenu getMenu(JMenuBar menuBar, String menuText, boolean create) {
+    	return getMenu(menuBar, menuText, create, menuBar.getMenuCount());
+    }
+    
+	public static JMenu getMenu(JMenuBar menuBar, String menuText, boolean create, int menuIndex) {
+		JMenu menu = null;
+		
+		for (int i = 0; i < menuBar.getMenuCount(); i++) {
+			menu = menuBar.getMenu(i);
+			if (menu.getText().equals(menuText)) {
+				return menu;
+			}
+		}
+		
+		if (create) {
+			menu = new JMenu(menuText);
+			menuBar.add(menu, menuIndex);
+		}
+		
+		return menu;
+	}
+	
+	
 }
