@@ -527,6 +527,10 @@ public class ProjectView extends JComponent {
     }
 
     private void reattachTab(Component c) {
+    	if (_project == null) {
+    		return;
+    	}
+    	
         int index = getInsertionPoint(c);
         addTab((TabWidget) c, index);
         _viewHolder.setSelectedIndex(index);
@@ -534,6 +538,7 @@ public class ProjectView extends JComponent {
     }
 
     private int getInsertionPoint(Component c) {
+
         String classNameToMatch = c.getClass().getName();
         int insertionPoint = 0;
         Iterator i = _project.getTabWidgetDescriptors().iterator();
