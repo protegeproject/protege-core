@@ -485,8 +485,13 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private static void save(ServerProject serverProject, Project project) {
         Log.getLogger().info("saving " + project);
         Collection errors = new ArrayList();
-        synchronized (project.getInternalProjectKnowledgeBase()) {
-            synchronized (project.getKnowledgeBase()) {
+        /*
+         * The order of these synchronize statements is critical.  There is some 
+         * OWLFrameStore code (which holds the knowledgebase lock) that makes calls
+         * to the internal project knowledge base to get configuration parameters.
+         */
+        synchronized (project.getKnowledgeBase()) {
+            synchronized (project.getInternalProjectKnowledgeBase()) {
                 project.save(errors);
                 serverInstance._projectPluginManager.afterSave(project);
             }
@@ -515,8 +520,13 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                 SystemUtilities.sleepMsec(100);
                 Log.getLogger().info("Server exiting.");
                 for (Project p : _projectToServerProjectMap.keySet()) { 
-                    synchronized (p.getInternalProjectKnowledgeBase()) {
-                        synchronized(p.getKnowledgeBase()) {
+                    /*
+                     * The order of these synchronize statements is critical.  There is some 
+                     * OWLFrameStore code (which holds the knowledgebase lock) that makes calls
+                     * to the internal project knowledge base to get configuration parameters.
+                     */
+                    synchronized(p.getKnowledgeBase()) {
+                        synchronized (p.getInternalProjectKnowledgeBase()) {
                             try {
                                 _projectPluginManager.beforeClose(p);
                             }
