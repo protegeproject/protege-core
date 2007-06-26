@@ -41,12 +41,13 @@ MAINCLASS=edu.stanford.smi.protege.server.Server
 
 # ------------------- JVM Options ------------------- 
 MAX_MEMORY=-Xmx100M
+HEADLESS=-Djava.awt.headless=true
 CODEBASE_URL=file:$PWD/protege.jar
 CODEBASE=-Djava.rmi.server.codebase=$CODEBASE_URL
 HOSTNAME_PARAM=-Djava.rmi.server.hostname=$HOSTNAME
 TX="-Dtransaction.level=READ_COMMITTED"
 
-OPTIONS="$MAX_MEMORY $CODEBASE $HOSTNAME_PARAM ${TX}"
+OPTIONS="$MAX_MEMORY $HEADLESS $CODEBASE $HOSTNAME_PARAM ${TX}"
 
 #
 # Instrumentation debug, delay simulation,  etc

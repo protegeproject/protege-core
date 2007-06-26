@@ -13,8 +13,9 @@ set MAINCLASS=edu.stanford.smi.protege.server.Server
 set METAPROJECT=examples\server\metaproject.pprj
 
 set MAX_MEMORY=-Xmx100M 
+set HEADLESS=-Djava.awt.headless=true
 set CODEBASE=-Djava.rmi.server.codebase=%CODEBASE_URL%
 
-set OPTIONS=%MAX_MEMORY% %CODEBASE%
+set OPTIONS=%MAX_MEMORY% %CODEBASE% %HEADLESS%
 
 %JDKBIN%\java %OPTIONS% -cp %CLASSPATH% %MAINCLASS% %METAPROJECT%  
