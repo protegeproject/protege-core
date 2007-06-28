@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.model.FrameFactory;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
@@ -36,8 +37,8 @@ public class SimpleFrameStore implements FrameStore {
     private KnowledgeBase _kb;
     private SystemFrames _systemFrames;
     private NarrowFrameStore _helper;
-    private Set _inheritedSuperslotSlots = new HashSet();
-    private CacheMap nameToFrameMap = new CacheMap();
+    private Set<Slot> _inheritedSuperslotSlots = new HashSet<Slot>();
+    private CacheMap<String, Frame> nameToFrameMap = new CacheMap<String, Frame>();
 
     // private Map frameIdToFrameMap = new HashMap();
 
