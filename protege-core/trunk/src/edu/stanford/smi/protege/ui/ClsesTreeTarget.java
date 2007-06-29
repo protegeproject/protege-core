@@ -71,7 +71,15 @@ public class ClsesTreeTarget extends TreeTarget {
             } else {
                 parentNode = targetNode.getLazyTreeNodeParent();
             }
-            parentCls = (Cls) parentNode.getUserObject();
+            
+            Object parentObject = parentNode.getUserObject();
+            
+            if (!(parentObject instanceof Cls)) {
+            	return false;
+            }
+            
+            parentCls = (Cls) parentObject;
+            
             boolean isOK = true;
             if (!sourceCls.hasDirectSuperclass(parentCls)) {
                 isOK = addSuperclass(sourceCls, parentCls);
