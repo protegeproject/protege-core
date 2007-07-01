@@ -38,11 +38,11 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     
     private static final int INITIAL_MAP_SIZE = 32771;
     private Map<FrameID, Frame> idToFrameMap = new HashMap<FrameID, Frame>(INITIAL_MAP_SIZE);
-    private Map referenceToRecordMap = new HashMap(INITIAL_MAP_SIZE);
-    private Map frameToRecordsMap = new HashMap(INITIAL_MAP_SIZE);
-    private Map slotToRecordsMap = new HashMap(INITIAL_MAP_SIZE);
-    private Map facetToRecordsMap = new HashMap(INITIAL_MAP_SIZE);
-    private Map valueToRecordsMap = new LinkedHashMap(INITIAL_MAP_SIZE);
+    private Map<Record, Record> referenceToRecordMap = new HashMap<Record, Record>(INITIAL_MAP_SIZE);
+    private Map<Frame, Set<Record>> frameToRecordsMap = new HashMap<Frame, Set<Record>>(INITIAL_MAP_SIZE);
+    private Map<Slot, Set<Record>> slotToRecordsMap = new HashMap<Slot, Set<Record>>(INITIAL_MAP_SIZE);
+    private Map<Facet, Set<Record>> facetToRecordsMap = new HashMap<Facet, Set<Record>>(INITIAL_MAP_SIZE);
+    private Map<Object, Set<Record>> valueToRecordsMap = new LinkedHashMap<Object, Set<Record>>(INITIAL_MAP_SIZE);
 
     private Record lookupRecord = new Record();
     private static int counter = FrameID.INITIAL_USER_FRAME_ID;
@@ -50,8 +50,8 @@ public class InMemoryFrameDb implements NarrowFrameStore {
 
     private String frameDBName;
 
-    public Collection getRecords() {
-        return new ArrayList(referenceToRecordMap.keySet());
+    public Collection<Record> getRecords() {
+        return new ArrayList<Record>(referenceToRecordMap.keySet());
     }
 
     public String getName() {
@@ -85,23 +85,23 @@ public class InMemoryFrameDb implements NarrowFrameStore {
 
     private Record lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         lookupRecord.set(frame, slot, facet, isTemplate);
-        return (Record) referenceToRecordMap.get(lookupRecord);
+        return referenceToRecordMap.get(lookupRecord);
     }
 
-    private static void addRecord(Map map, Object key, Record record) {
+    private static <X> void addRecord(Map<X, Set<Record>> map, X key, Record record) {
         if (key != null) {
-            Set set = (Set) map.get(key);
+            Set<Record> set = map.get(key);
             if (set == null) {
-                set = new HashSet();
+                set = new HashSet<Record>();
                 map.put(key, set);
             }
             set.add(record);
         }
     }
 
-    public static void removeRecord(Map map, Object key, Record record) {
+    public static <X> void removeRecord(Map<X, Set<Record>> map, Object key, Record record) {
         if (key != null) {
-            Set set = (Set) map.get(key);
+            Set<Record> set = map.get(key);
             if (set != null) {
                 set.remove(record);
             }
@@ -162,44 +162,44 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         }
     }
 
-    private static Set lookupRecords(Map map, Object value) {
-        return (Set) map.get(value);
+    private static <X, Y>  Set<Y> lookupRecords(Map<X, Set<Y>> map, Object value) {
+        return map.get(value);
     }
 
-    public Set getReferences(Object value) {
-        Set records = lookupRecords(valueToRecordsMap, value);
+    public Set<Reference> getReferences(Object value) {
+        Set<Record> records = lookupRecords(valueToRecordsMap, value);
         return recordsToReferences(records);
     }
 
-    public Set getMatchingReferences(String value, int maxMatches) {
-        Set records = getMatchingRecords(value, maxMatches);
+    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
+        Set<Record> records = getMatchingRecords(value, maxMatches);
         return recordsToReferences(records);
     }
 
-    private Set getMatchingRecords(String value, int maxMatches) {
+    private Set<Record> getMatchingRecords(String value, int maxMatches) {
         if (maxMatches < 1) {
             maxMatches = Integer.MAX_VALUE;
         }
         SimpleStringMatcher matcher = new SimpleStringMatcher(value);
-        Set matches = new HashSet();
-        Iterator i = valueToRecordsMap.entrySet().iterator();
+        Set<Record> matches = new HashSet<Record>();
+        Iterator<Map.Entry<Object, Set<Record>>> i = valueToRecordsMap.entrySet().iterator();
         while (i.hasNext() && matches.size() < maxMatches) {
-            Map.Entry entry = (Map.Entry) i.next();
+            Map.Entry<Object, Set<Record>> entry = i.next();
             Object o = entry.getKey();
             if (o instanceof String && matcher.isMatch((String) o)) {
-                Set records = (Set) entry.getValue();
+                Set<Record> records = entry.getValue();
                 matches.addAll(records);
             }
         }
         return matches;
     }
 
-    private static Set recordsToReferences(Set records) {
-        Set references;
+    private static Set<Reference> recordsToReferences(Set<Record> records) {
+        Set<Reference> references;
         if (records == null) {
             references = Collections.EMPTY_SET;
         } else {
-            references = new HashSet(records.size());
+            references = new HashSet<Reference>(records.size());
             Iterator i = records.iterator();
             while (i.hasNext()) {
                 Record record = (Record) i.next();
@@ -297,10 +297,10 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         removeFrameValue(valueToRecordsMap, frame);
     }
 
-    private void removeRecords(Map map, Frame frame) {
-        Collection records = lookupRecords(map, frame);
+    private <X> void removeRecords(Map<X, Set<Record>> map, Frame frame) {
+        Collection<Record> records = lookupRecords(map, frame);
         if (records != null) {
-            records = new ArrayList(records);
+            records = new ArrayList<Record>(records);
             Iterator i = records.iterator();
             while (i.hasNext()) {
                 Record record = (Record) i.next();
@@ -310,12 +310,12 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         }
     }
 
-    private static void removeFrameValue(Map map, Frame frame) {
-        Set records = lookupRecords(map, frame);
+    private static <X> void removeFrameValue(Map<X, Set<Record>> map, Frame frame) {
+        Set<Record> records = lookupRecords(map, frame);
         if (records != null) {
-            Iterator i = records.iterator();
+            Iterator<Record> i = records.iterator();
             while (i.hasNext()) {
-                Record record = (Record) i.next();
+                Record record = i.next();
                 record.removeValue(frame);
             }
             map.remove(frame);
@@ -332,13 +332,13 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return matches;
     }
 
-    public Set getFrames(Slot slot, Facet facet, boolean isTemplate, Object value) {
-        Set frames = new HashSet();
-        Set records = lookupRecords(valueToRecordsMap, value);
+    public Set<Frame>getFrames(Slot slot, Facet facet, boolean isTemplate, Object value) {
+        Set<Frame> frames = new HashSet<Frame>();
+        Set<Record> records = lookupRecords(valueToRecordsMap, value);
         if (records != null) {
-            Iterator i = records.iterator();
+            Iterator<Record> i = records.iterator();
             while (i.hasNext()) {
-                Record record = (Record) i.next();
+                Record record = i.next();
                 if (matches(record, slot, facet, isTemplate)) {
                     frames.add(record.getFrame());
                 }
@@ -347,18 +347,18 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return frames;
     }
 
-    public Set getFramesWithAnyValue(Slot slot, Facet facet, boolean isTemplate) {
-        Set frames = new HashSet();
-        Collection records;
+    public Set<Frame> getFramesWithAnyValue(Slot slot, Facet facet, boolean isTemplate) {
+        Set<Frame> frames = new HashSet<Frame>();
+        Collection<Record> records;
         if (facet != null) {
             records = lookupRecords(facetToRecordsMap, facet);
         } else {
             records = lookupRecords(slotToRecordsMap, slot);
         }
         if (records != null) {
-            Iterator i = records.iterator();
+            Iterator<Record> i = records.iterator();
             while (i.hasNext()) {
-                Record record = (Record) i.next();
+                Record record = i.next();
                 if (matches(record, slot, facet, isTemplate)) {
                     frames.add(record.getFrame());
                 }
@@ -367,14 +367,14 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return frames;
     }
 
-    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
+    public Set<Frame> getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
         if (maxMatches < 1) {
             maxMatches = Integer.MAX_VALUE;
         }
-        Set frames = new HashSet();
-        Iterator i = getMatchingRecords(value, FrameStore.UNLIMITED_MATCHES).iterator();
+        Set<Frame> frames = new HashSet<Frame>();
+        Iterator<Record> i = getMatchingRecords(value, FrameStore.UNLIMITED_MATCHES).iterator();
         while (i.hasNext() && frames.size() < maxMatches) {
-            Record record = (Record) i.next();
+            Record record = i.next();
             if (matches(record, slot, facet, isTemplate)) {
                 frames.add(record.getFrame());
             }
@@ -398,20 +398,20 @@ public class InMemoryFrameDb implements NarrowFrameStore {
       return null;
     }
 
-  private static void replaceFrameKey(Map map, Frame frame) {
-        Collection records = (Collection) map.remove(frame);
+  private static <X> void replaceFrameKey(Map<X, Set<Record>> map, Frame frame) {
+        Set<Record> records = map.remove(frame);
         if (records != null) {
-            map.put(frame, records);
-            Iterator i = records.iterator();
+            map.put((X) frame, records);
+            Iterator<Record> i = records.iterator();
             while (i.hasNext()) {
-                Record record = (Record) i.next();
+                Record record = i.next();
                 record.replaceFrameReference(frame);
             }
         }
     }
 
     private void replaceFrameValues(Frame frame) {
-        Collection records = (Collection) valueToRecordsMap.remove(frame);
+        Set<Record> records = valueToRecordsMap.remove(frame);
         if (records != null) {
             valueToRecordsMap.put(frame, records);
             Iterator i = records.iterator();
@@ -454,8 +454,8 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return count;
     }
 
-    public Set getFrames() {
-        return new HashSet(frameToRecordsMap.keySet());
+    public Set<Frame> getFrames() {
+        return new HashSet<Frame>(frameToRecordsMap.keySet());
     }
 
     public int getSimpleInstanceCount() {
