@@ -129,7 +129,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     
     private boolean serverModeEventsSeenByUntransacted() {
         TransactionMonitor tm = getDelegate().getTransactionStatusMonitor();
-        if (!tm.inTransaction()) return true;
+        if (tm == null || !tm.inTransaction()) return true;
         TransactionIsolationLevel level = tm.getTransationIsolationLevel();
         return level.compareTo(TransactionIsolationLevel.READ_UNCOMMITTED) <= 0;
     }
