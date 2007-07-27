@@ -39,14 +39,18 @@ OPTIONS="$SAVE_INTERVAL $MAX_MEMORY $CODEBASE $HOSTNAME_PARAM $LOGIN_MODULE"
 #
 #TX="-Dtransaction.level=READ_COMMITTED"
 #DELAY="-Dserver.delay=80"
-#DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
+DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
 #PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.server.ssl.port=5300 -Dprotege.rmi.registry.port=5100"
 #SSLOPTS="-Dprotege.rmi.ssl.policy=login -Dprotege.rmi.ssl.keystore=protegekeys -Dprotege.rmi.ssl.password=protege"
 
 OPTIONS="$OPTIONS $TX $DELAY $DEBUG_OPT $PORTOPTS $SSLOPTS"
 
-METAPROJECT=examples/server/metaproject.pprj
+# ------------------- Cmd Options -------------------
+# If you want automatic saving of the project,
+# setup the number of seconds in SAVE_INTERVAL_VALUE 
+SAVE_INTERVAL=-saveIntervalSec=120
+# ------------------- Cmd Options -------------------
 
-
-$JAVA_PATH/rmiregistry &
-$JAVA_PATH/java -cp $CLASSPATH $OPTIONS $MAINCLASS $METAPROJECT
+METAPROJECT=examples/eBay/metaproject.pprj
+#$JAVA_PATH/rmiregistry &
+$JAVA_PATH/java -cp $CLASSPATH $OPTIONS $MAINCLASS ${SAVE_INTERVAL} $METAPROJECT

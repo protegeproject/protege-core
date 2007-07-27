@@ -182,6 +182,8 @@
               </not>
             </condition>
           </fail>
+          <copy file="bin/run_protege_server.sh" todir="${protege.home}"/>
+          <copy file="bin/jaas.config" todir="${protege.home}"/>
           <copy file="${dist}/protege.jar"
                 todir = "${protege.home}"/>
         </target>
