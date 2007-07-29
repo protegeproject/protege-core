@@ -246,6 +246,68 @@
        <mkdir dir="${protege.home}/logs"/>
     </target>
 
+    <!-- Run targets -->
+
+    <target name="debug" depends="update">
+        <java fork="true" dir="${protege.home}" 
+              classname="edu.stanford.smi.protege.Application">
+            <jvmarg value = "-Xdebug"/>
+            <jvmarg value = "-Xrunjdwp:transport=dt_socket,address=8100,server=y,suspend=y"/> 
+            <classpath>
+                <pathelement path="${protege.home}/protege.jar"/>
+                <pathelement path="${protege.home}/looks-2.1.3.jar"/>
+                <pathelement path="${protege.home}/unicode_panel.jar"/>
+                <pathelement path="${protege.home}/plugins/edu.stanford.smi.protegex.changes/change-model.jar"/>
+                <fileset dir="./dbdrivers"/>
+            </classpath>
+        </java>
+    </target>
+	
+    <target name="run" depends="update">
+        <java fork="true" dir="${protege.home}" 
+              classname="edu.stanford.smi.protege.Application">
+            <classpath>
+                <pathelement path="${protege.home}/protege.jar"/>
+                <pathelement path="${protege.home}/looks-2.1.3.jar"/>
+                <pathelement path="${protege.home}/unicode_panel.jar"/>
+                <pathelement path="${protege.home}/plugins/edu.stanford.smi.protegex.changes/change-model.jar"/>
+                <fileset dir="./dbdrivers"/>
+            </classpath>
+        </java>
+    </target>
+	
+	   <target name="run.server" depends="update">
+	        <java fork="true" dir="${protege.home}" 
+	              classname="edu.stanford.smi.protege.server.Server">
+	        	<jvmarg value = "-Djava.rmi.server.codebase=file:${protege.home}/protege.jar"/>
+	            <classpath>
+	                <pathelement path="${protege.home}/protege.jar"/>
+	                <pathelement path="${protege.home}/looks-2.1.3.jar"/>
+	                <pathelement path="${protege.home}/unicode_panel.jar"/>
+	                <pathelement path="${protege.home}/plugins/edu.stanford.smi.protegex.changes/change-model.jar"/>
+	                <fileset dir="./dbdrivers"/>
+	            </classpath>
+	        	<arg value="examples/server/metaproject.pprj"/>
+	        </java>
+	    </target>
+	
+	   <target name="debug.server" depends="update">
+	        <java fork="true" dir="${protege.home}" 
+	              classname="edu.stanford.smi.protege.server.Server">
+	            <jvmarg value = "-Xdebug"/>
+	            <jvmarg value = "-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y"/> 
+	        	<jvmarg value = "-Djava.rmi.server.codebase=file:${protege.home}/protege.jar"/>
+	            <classpath>
+	                <pathelement path="${protege.home}/protege.jar"/>
+	                <pathelement path="${protege.home}/looks-2.1.3.jar"/>
+	                <pathelement path="${protege.home}/unicode_panel.jar"/>
+	                <pathelement path="${protege.home}/plugins/edu.stanford.smi.protegex.changes/change-model.jar"/>
+	                <fileset dir="./dbdrivers"/>
+	            </classpath>
+	        	<arg value="examples/server/metaproject.pprj"/>
+	        </java>
+	    </target>
+
 	<!-- DIST -->
 	
 	<!-- Zips up all source code, resources, and API documentation. -->
