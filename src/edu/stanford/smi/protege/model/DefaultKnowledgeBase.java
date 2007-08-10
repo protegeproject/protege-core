@@ -35,6 +35,7 @@ import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.server.framestore.background.ServerCacheStateMachine;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
@@ -67,6 +68,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     private String _name;
     private String _versionString;
     private FrameNameValidator _frameNameValidator;
+    private ServerCacheStateMachine cacheMachine;
 
     {
         initializeKBName();
@@ -2311,6 +2313,14 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
       SynchronizeQueryCallback callback = new SynchronizeQueryCallback(this);
       getHeadFrameStore().executeQuery(q, callback);
       return callback.waitForResults();
+    }
+    
+    public ServerCacheStateMachine getCacheMachine() {
+        return cacheMachine;
+    }
+    
+    public void setCacheMachine(ServerCacheStateMachine machine) {
+        cacheMachine = machine;
     }
 
 }
