@@ -1,6 +1,8 @@
 package edu.stanford.smi.protege.server.framestore.background;
 
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.server.RemoteSession;
@@ -10,9 +12,9 @@ public class WorkInfo implements Comparable<WorkInfo> {
   
   private RemoteSession client;
   private Frame frame;
-  private EnumSet<State> states = EnumSet.noneOf(State.class);
+  private Set<ServerCachedState> states = new HashSet<ServerCachedState>();
   private EnumSet<CacheRequestReason> reasons = EnumSet.noneOf(CacheRequestReason.class);
-  private boolean skipDirectInstances = true;
+  private boolean skipDirectInstances = false;
   private boolean targetFullCache = true;
   
   private int sequence = counter++;
@@ -25,11 +27,11 @@ public class WorkInfo implements Comparable<WorkInfo> {
     this.client = client;
   }
   
-  public void addState(State state) {
+  public void addState(ServerCachedState state) {
     states.add(state);
   }
   
-  public EnumSet<State> getStates() {
+  public Set<ServerCachedState> getStates() {
     return states;
   }
   
