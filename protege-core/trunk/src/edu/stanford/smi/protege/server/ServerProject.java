@@ -54,8 +54,7 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
 
 
     private static ServerFrameStore createServerFrameStore(KnowledgeBase kb, Object kbLock) throws RemoteException {
-        FrameStore fs = ((DefaultKnowledgeBase) kb).getHeadFrameStore();
-        ServerFrameStore sfs = new ServerFrameStore(fs, kb, kbLock);
+        ServerFrameStore sfs = new ServerFrameStore(kb, kbLock);
         return sfs;
     }
     
