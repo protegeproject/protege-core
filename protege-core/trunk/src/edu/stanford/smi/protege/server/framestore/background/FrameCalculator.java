@@ -74,20 +74,28 @@ public class FrameCalculator {
   private Object requestLock = new Object();
   private SortedSet<WorkInfo> requests = new TreeSet<WorkInfo>();
   private Map<ClientAndFrame, WorkInfo> requestMap = new HashMap<ClientAndFrame, WorkInfo>();
-  private StateMachine machine = null;
+  private ServerCacheStateMachine machine = null;
   private static boolean disabled = false;
   
   FrameCalculatorStatsImpl stats = new FrameCalculatorStatsImpl();
   
   public FrameCalculator(FrameStore fs,
+                         ServerCacheStateMachine machine,
                          Object kbLock,
                          FifoWriter<ValueUpdate> updates,
                          ServerFrameStore server,
                          Map<RemoteSession, Registration> sessionMap) {
     this.fs = fs;
+    this.machine = machine;
     this.kbLock = kbLock;
     this.updates = updates;
     this.server = server;
+  }
+  
+  public void setStateMachine(ServerCacheStateMachine machine) {
+      synchronized (requestLock) {
+          this.machine = machine;
+      }
   }
   
 
@@ -193,13 +201,13 @@ public class FrameCalculator {
   public void addFollowedExprs(Frame frame, Slot slot, List values) {
     synchronized (requestLock) {
       if (machine == null) {
-        machine = new StateMachine(fs, kbLock);
+          return;
       }
       WorkInfo wi = requestMap.get(new ClientAndFrame(effectiveClient, frame));
       if (wi == null) {
         return;
       }
-      for (State state : wi.getStates()) {
+      for (ServerCachedState state : wi.getStates()) {
         if (log.isLoggable(Level.FINER)) {
           log.finer("Following expr " + frame + " with slot " + slot + " in state " + state);
         }
@@ -207,7 +215,7 @@ public class FrameCalculator {
         for (Object o : values) {
           if (o instanceof Frame) {
             Frame inner = (Frame) o;
-            State newState = machine.nextState(state, slot, inner);
+            ServerCachedState newState = machine.nextState(state, frame, slot, inner);
             if (newState == null) {
               continue;
             }
@@ -227,11 +235,11 @@ public class FrameCalculator {
 
   public WorkInfo addRequest(Frame frame, RemoteSession session, CacheRequestReason reason) {
     synchronized (requestLock) {
-      return addRequest(frame, session, State.Start, reason);
+      return addRequest(frame, session, machine == null ? null : machine.getInitialState(), reason);
     }
   }
   
-  public WorkInfo addRequest(Frame frame, State state, CacheRequestReason  reason) {
+  public WorkInfo addRequest(Frame frame, ServerCachedState state, CacheRequestReason  reason) {
     synchronized (requestLock) {
       return addRequest(frame, effectiveClient, state, reason);
     }
@@ -239,7 +247,7 @@ public class FrameCalculator {
   
   public WorkInfo addRequest(Frame frame, 
                              RemoteSession session, 
-                             State state, 
+                             ServerCachedState state, 
                              CacheRequestReason reason) {
     if (disabled) {
       return null;
@@ -328,55 +336,71 @@ public class FrameCalculator {
 
   
   public void logRequests() {
-    if (log.isLoggable(Level.FINE)) {
-      synchronized (requestLock) {
-        log.fine("Request queue has length " + requests.size());
-        if (log.isLoggable(Level.FINER)) {
-          for (WorkInfo wi : requests) {
-            log.fine("Request for frame" + wi.getFrame());
-            log.fine("\tClient = " + wi.getClient());
-            log.fine("\tStates = " + wi.getStates());
-            log.fine("\tReasons = " + wi.getReasons());
+      if (log.isLoggable(Level.FINE)) {
+          try {
+              synchronized (requestLock) {
+                  log.fine("Request queue has length " + requests.size());
+                  if (log.isLoggable(Level.FINER)) {
+                      for (WorkInfo wi : requests) {
+                          log.fine("Request for frame" + wi.getFrame());
+                          log.fine("\tClient = " + wi.getClient());
+                          log.fine("\tStates = " + wi.getStates());
+                          log.fine("\tReasons = " + wi.getReasons());
+                      }
+                  } else {
+                      Map<CacheRequestReason, Integer> reasonCounts
+                          = new EnumMap<CacheRequestReason, Integer>(CacheRequestReason.class);
+                      Map<ServerCachedState, Integer> stateCounts = new HashMap<ServerCachedState, Integer>();
+                      for (CacheRequestReason reason : CacheRequestReason.values()) {
+                          reasonCounts.put(reason, 0);
+                      }
+                      for (WorkInfo wi : requests) {
+                          for (ServerCachedState state : wi.getStates()) {
+                              Integer counts = stateCounts.get(state);
+                              if (counts == null) {
+                                  counts = 0;
+                              }
+                              stateCounts.put(state, counts + 1);
+                          }
+                      }
+                      for (WorkInfo wi : requests) {
+                          for (CacheRequestReason reason : wi.getReasons()) {
+                              reasonCounts.put(reason, reasonCounts.get(reason) + 1);
+                          }
+                      }
+                      for (ServerCachedState state : stateCounts.keySet()) {
+                          if (stateCounts.get(state) != null) {
+                              log.fine("\tCount for state " + state + " = " + stateCounts.get(state));
+                          }
+                      }
+                      for (CacheRequestReason reason : CacheRequestReason.values()) {
+                          if (reasonCounts.get(reason) != 0) {
+                              log.fine("\tCount for reason " + reason + " = " + reasonCounts.get(reason));
+                          }
+                      }
+                  }
+
+              }
           }
-        } else {
-          EnumMap<CacheRequestReason, Integer> reasonCounts
-              = new EnumMap<CacheRequestReason, Integer>(CacheRequestReason.class);
-          EnumMap<State, Integer> stateCounts
-              = new EnumMap<State, Integer>(State.class);
-          for (State state : State.values()) {
-            stateCounts.put(state, 0);
+          catch (Throwable t) {
+              log.log(Level.FINE, "Could not log requests", t);
           }
-          for (CacheRequestReason reason : CacheRequestReason.values()) {
-            reasonCounts.put(reason, 0);
-          }
-          for (WorkInfo wi : requests) {
-            for (State state : wi.getStates()) {
-              stateCounts.put(state, stateCounts.get(state) + 1);
-            }
-          }
-          for (WorkInfo wi : requests) {
-            for (CacheRequestReason reason : wi.getReasons()) {
-              reasonCounts.put(reason, reasonCounts.get(reason) + 1);
-            }
-          }
-          for (State state : State.values()) {
-            if (stateCounts.get(state) != 0) {
-              log.fine("\tCount for state " + state + " = " + stateCounts.get(state));
-            }
-          }
-          for (CacheRequestReason reason : CacheRequestReason.values()) {
-            if (reasonCounts.get(reason) != 0) {
-              log.fine("\tCount for reason " + reason + " = " + reasonCounts.get(reason));
-            }
-          }
-        }
-        
       }
-    }
   }
   
   public Object getRequestLock() {
     return requestLock;
+  }
+  
+  public boolean inFrameCalculatorThread() {
+      synchronized (requestLock) {
+          if (innerThread == null) {
+              return false;
+          }
+          else {
+              return Thread.currentThread().equals(innerThread);
+          }
+      }
   }
   
   private class FrameCalculatorThread extends Thread {
