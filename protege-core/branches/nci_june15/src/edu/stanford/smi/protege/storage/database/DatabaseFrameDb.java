@@ -781,7 +781,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
         try {
-            return getMatchingFramesSQL(slot, facet, isTemplate, value);
+            return getMatchingFramesSQL(slot, facet, isTemplate, value, maxMatches);
         } catch (SQLException e) {
             throw createRuntimeException(e);
         }
@@ -796,8 +796,26 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         return matchColumn;
     }
-
-    private Set getMatchingFramesSQL(Slot slot, Facet facet, boolean isTemplate, String value) throws SQLException {
+    
+    /*
+     * Ok the maxMatches code below is clearly broken.  Here is some explanation:
+     * 
+     * 1. There is no portable way of limiting a database search to some number of matches.
+     *    In mysql and postgres, there is a limit keyword.  Oracle uses a nested select and a rownum variable.
+     *    Microsoft uses a "top 10" syntax.  Some database only restrict how many results you get but require you to start from
+     *    the beginning if you want more.  Etc...  It is hard to accomodate this neatly.
+     * 2. In real live queries on the Thesaurus using the "*" query (which returned 888,497 rows) the database query itself 
+     *    only took about 15-20 seconds (!) on a dual 1.42Mhz PowerMac (e.g. a slow machine).  Indeed returning the result did not take 
+     *    that long either.  What did take a tremendous amount of time was processing the returned data in the gui.
+     * 3. On the other hand any time spent in this routine is painful because the knowledge base is locked for the duration.
+     *    In the client-server mode this is awkward.
+     * 4. I am not sure why the desired slot and isTemplate values are not in the database query.  Changing this 
+     *    would help but there may be a reason why Ray didn't put them in there.  This would be a good thing to
+     *    investigate later.
+     *    
+     * Good enough for today.
+     */
+    private Set getMatchingFramesSQL(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) throws SQLException {
         String text = "SELECT " + FRAME_COLUMN + ", " + FRAME_TYPE_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN
                 + ", " + IS_TEMPLATE_COLUMN;
         text += " FROM " + _table;
@@ -814,6 +832,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             boolean returnedIsTemplate = rs.getBoolean(5);
             if (equals(returnedSlot, slot) && equals(returnedFacet, facet) && returnedIsTemplate == isTemplate) {
                 results.add(frame);
+                if (--maxMatches == 0) break;
             }
         }
         rs.close();
