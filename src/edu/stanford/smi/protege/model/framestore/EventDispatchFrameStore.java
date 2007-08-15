@@ -601,7 +601,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         boolean succeeded = getDelegate().commitTransaction();
         if (dispatchEventsOnServerAndRemoteClient) {
             TransactionMonitor tm = getDelegate().getTransactionStatusMonitor();
-            if (!tm.inTransaction()) {
+            if (tm == null || !tm.inTransaction()) {
                 List<AbstractEvent> committedEvents = transactedEvents.removeKey(ServerFrameStore.getCurrentSession());
                 if (succeeded && committedEvents != null) {
                     dispatchEvents(committedEvents, false);
@@ -714,7 +714,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         boolean succeeded = getDelegate().rollbackTransaction();
         if (dispatchEventsOnServerAndRemoteClient) {
             TransactionMonitor tm = getDelegate().getTransactionStatusMonitor();
-            if (!tm.inTransaction()) {
+            if (tm == null || !tm.inTransaction()) {
                 transactedEvents.removeKey(ServerFrameStore.getCurrentSession());
             }
         }
