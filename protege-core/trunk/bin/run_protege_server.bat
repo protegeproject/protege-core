@@ -12,7 +12,7 @@ set CLASSPATH=protege.jar;looks-2.1.3.jar;unicode_panel.jar;driver.jar;driver0.j
 set MAINCLASS=edu.stanford.smi.protege.server.Server
 set METAPROJECT=examples\server\metaproject.pprj
 
-set MAX_MEMORY=-Xmx100M 
+set MAX_MEMORY=-Xmx200M 
 set HEADLESS=-Djava.awt.headless=true
 set CODEBASE=-Djava.rmi.server.codebase=%CODEBASE_URL%
 
