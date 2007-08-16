@@ -1,7 +1,7 @@
-; Fri May 25 14:33:41 PDT 2007
+; Thu Aug 16 16:49:40 PDT 2007
 ; 
 ;+ (version "3.3")
-;+ (build "Build 407")
+;+ (build "Build 418")
 
 ([metaproject_Instance_0] of  Group
 
@@ -70,18 +70,35 @@
 ([metaproject_Instance_30000] of  Project
 
 	(allowedGroupOperation [metaproject_Instance_10008])
-	(annotationProject [metaproject_Instance_30001])
-	(description "Example on how to configure a collaborative project.")
-	(location "examples/collaborativeNewspaper/newspaper.pprj")
-	(name "Collaborative Newspaper")
+	(annotationProject [metaproject_Instance_40001])
+	(description "The OWL pizza project with collaborative toppings :)")
+	(location "examples/collaborativePizza/collaborativePizza.owl.pprj")
+	(name "Collaborative Pizza")
 	(owner [metaproject_Instance_10006]))
 
 ([metaproject_Instance_30001] of  Project
 
 	(allowedGroupOperation [metaproject_Instance_10008])
 	(description "Annotation project for the \"Collaborative Newspaper\" project as an RDFS ontology.")
-	(location "examples/collaborativeNewspaper/annotation_newspaper.pprj")
+	(location "examples/collaborativeNewspaper/annotation_collaborativeNewspaper.pprj")
 	(name "Collaborative Newspaper Annotations")
+	(owner [metaproject_Instance_10006]))
+
+([metaproject_Instance_40000] of  Project
+
+	(allowedGroupOperation [metaproject_Instance_10008])
+	(annotationProject [metaproject_Instance_30001])
+	(description "Example on how to configure a collaborative project.")
+	(location "examples/collaborativeNewspaper/collaborativeNewspaper.pprj")
+	(name "Collaborative Newspaper")
+	(owner [metaproject_Instance_10006]))
+
+([metaproject_Instance_40001] of  Project
+
+	(allowedGroupOperation [metaproject_Instance_10008])
+	(description "The annotation project for Collaborative Pizza")
+	(location "examples/collaborativePizza/annotation_collaborativePizza.owl.pprj")
+	(name "Collaborative Pizza Annotations")
 	(owner [metaproject_Instance_10006]))
 
 ([nci_metaproject_Instance_60009] of  Operation
