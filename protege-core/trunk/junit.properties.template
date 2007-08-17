@@ -44,13 +44,7 @@ junit.memory=700M
 
 
 #--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==
-# The server test depends on the rmi_registry to be running.  The
-# server tests are disabled if there is no pointer to the location of
-# the jar file. These tests use the metaproject from examples/server/metaproject.pprj.
-#
-
-junit.server.protege.jar=file:///Users/tredmond/dev/workspace/protege-head/dist/protege.jar
-
+# The server test depends on the rmi_registry to be running.
 
 #--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==
 # Configuration settings for the database server-client tests.  We need to configure 
