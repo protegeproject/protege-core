@@ -823,5 +823,21 @@ public class PluginUtilities {
         }
         return false;
     }
+    
+    // ------------------------------------------------------------------------------------
+    
+    public static boolean isPluginAvailable(String javaClassName) {
+    	boolean found = false;
+    	
+    	try {
+    		Class pluginClass = forName(javaClassName, true);
+    		
+    		found = (pluginClass != null);
+		} catch (Exception e) {
+			// An exception should never be thrown here..
+		}
+    	    	
+    	return found;
+    }
 
 }
