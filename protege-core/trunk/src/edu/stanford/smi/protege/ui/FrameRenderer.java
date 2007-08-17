@@ -39,7 +39,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
 
     protected boolean _displayType = false;
 
-    protected static FrameRenderer _frameRendererPrototype = new FrameRenderer();
+    private static FrameRenderer _frameRendererPrototype = new FrameRenderer();
 
     public static FrameRenderer createInstance() {
         FrameRenderer renderer;
