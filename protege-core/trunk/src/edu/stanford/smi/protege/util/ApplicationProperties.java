@@ -113,6 +113,13 @@ public class ApplicationProperties {
                 sep + "examples" + sep + "newspaper" + sep + "newspaper.pprj";
             uri = URIUtilities.createURI(exampleProjectName);
             addProjectToMRUList(uri);
+            
+            if (PluginUtilities.isPluginAvailable("edu.stanford.smi.protege.collab.projectPlugin.ProtegeCollabGUIProjectPlugin")) {
+                exampleProjectName = getApplicationDirectory().getPath() +
+                sep + "examples" + sep + "collaborativePizza" + sep + "collaborativePizza.owl.pprj";
+            uri = URIUtilities.createURI(exampleProjectName);
+            addProjectToMRUList(uri);
+            }
         }
     }
 
