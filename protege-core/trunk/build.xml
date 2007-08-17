@@ -390,11 +390,13 @@
         <target name = "junit" 
                 description = "test the system"
                 depends="jar, buildDbScratchProject">
+          <property file="junit.properties"/>
           <junit  printsummary="withOutAndErr" 
-                  haltonerror="on" 
-                  haltonfailure="on" 
-                  fork="yes"
-                  showoutput="yes">
+                  filtertrace="${junit.filtertrace}"
+                  showoutput="${junit.showoutput}"
+                  haltonerror="${junit.haltonerror}" 
+                  haltonfailure="${junit.haltonfailure}" 
+                  fork="yes">
             <classpath refid="project.classpath"/>
             <classpath refid="database.drivers"/>
             <classpath>
@@ -402,11 +404,11 @@
               <pathelement path="${dist}/protege-test.jar"/>
             </classpath>
             <jvmarg value="-Djava.util.logging.config.file=junit-logging.properties"/>
-            <jvmarg value="-Xmx700M"/>
+            <jvmarg value="-Xmx${junit.memory}"/>
 
             <batchtest>
               <fileset dir="${junit}">
-                <include name="**/*Test.java"/>
+                <include name="${junit.includes}"/>
                 <!-- Exclude the graphics tests -->
                 <exclude name="**/*Package_Test.java"/>
                 <!-- what's the story with this one? -->
