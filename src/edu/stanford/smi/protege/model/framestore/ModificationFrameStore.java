@@ -101,7 +101,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getDirectTypes(instance);
     }
 
-    public List getDirectInstances(Cls cls) {
+    public List<Instance> getDirectInstances(Cls cls) {
         return getDelegate().getDirectInstances(cls);
     }
 

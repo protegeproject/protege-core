@@ -174,7 +174,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
     }
 
-    public List getDirectInstances(Cls cls) {
+    public List<Instance> getDirectInstances(Cls cls) {
         return getDelegate().getDirectInstances(cls);
     }
 
