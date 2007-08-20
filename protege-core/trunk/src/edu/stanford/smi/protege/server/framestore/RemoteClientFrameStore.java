@@ -874,9 +874,9 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public synchronized List getDirectInstances(Cls cls) {
+    public synchronized List<Instance> getDirectInstances(Cls cls) {
         try {
-            return getCacheDirectOwnSlotValues(cls, getSystemFrames().getDirectInstancesSlot());
+            return (List<Instance>) getCacheDirectOwnSlotValues(cls, getSystemFrames().getDirectInstancesSlot());
         } catch (RemoteException e) {
             throw convertException(e);
         }
