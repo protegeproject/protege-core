@@ -16,7 +16,7 @@ import edu.stanford.smi.protege.util.*;
 public class ClipsFilesCreateProjectPlugin extends AbstractCreateProjectPlugin implements ClipsFilesPlugin {
     private String clsesFileName;
     private String instancesFileName;
-    private Collection includedProjects;
+    private Collection<URI> includedProjects;
 
     public ClipsFilesCreateProjectPlugin() {
         super(ClipsKnowledgeBaseFactory.DESCRIPTION);
@@ -27,8 +27,8 @@ public class ClipsFilesCreateProjectPlugin extends AbstractCreateProjectPlugin i
         this.instancesFileName = instancesFileName;
     }
 
-    public void setIncludedProjects(Collection includedProjects) {
-        this.includedProjects = new ArrayList(includedProjects);
+    public void setIncludedProjects(Collection<URI> includedProjects) {
+        this.includedProjects = new ArrayList<URI>(includedProjects);
     }
 
     public boolean canCreateProject(KnowledgeBaseFactory factory, boolean useExistingSources) {
@@ -38,9 +38,9 @@ public class ClipsFilesCreateProjectPlugin extends AbstractCreateProjectPlugin i
     protected void initialize(Project project) {
         super.initialize(project);
         if (includedProjects != null) {
-            Iterator i = includedProjects.iterator();
+            Iterator<URI> i = includedProjects.iterator();
             while (i.hasNext()) {
-                URI uri = (URI) i.next();
+                URI uri = i.next();
                 project.includeProject(uri, false, null);
             }
         }
