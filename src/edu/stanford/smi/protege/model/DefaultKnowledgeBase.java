@@ -510,9 +510,9 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     private void moveInstancesToParents(Cls cls, Collection parents) {
-        Iterator i = new ArrayList(getDirectInstances(cls)).iterator();
+        Iterator<Instance> i = new ArrayList<Instance>(getDirectInstances(cls)).iterator();
         while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
+            Instance instance = i.next();
             moveInstanceToParents(instance, cls, parents);
         }
     }
@@ -1221,7 +1221,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getDirectInstances(cls).size();
     }
 
-    public synchronized Collection getDirectInstances(Cls cls) {
+    public synchronized Collection<Instance> getDirectInstances(Cls cls) {
         return getHeadFrameStore().getDirectInstances(cls);
     }
 
