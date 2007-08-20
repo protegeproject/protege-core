@@ -102,9 +102,9 @@ public class XMLStorer {
     }
 
     private void storeSimpleInstances(Cls cls, Set storedInstances) {
-        Iterator i = cls.getDirectInstances().iterator();
+        Iterator<Instance> i = cls.getDirectInstances().iterator();
         while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
+            Instance instance = i.next();
             if (instance instanceof SimpleInstance && !storedInstances.contains(instance)) {
                 storeSimpleInstance((SimpleInstance) instance);
                 storedInstances.add(instance);
