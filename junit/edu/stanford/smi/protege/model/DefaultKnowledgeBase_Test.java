@@ -681,9 +681,9 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         saveAndReload();
         testCls = getCls(clsName);
         assertNotNull("after reload", testCls);
-        Iterator i = testCls.getDirectInstances().iterator();
+        Iterator<Instance> i = testCls.getDirectInstances().iterator();
         while (i.hasNext()) {
-            Instance inst = (Instance) i.next();
+            Instance inst = i.next();
             assertTrue("correct class: " + inst, testJavaClass.isInstance(instance));
         }
         getProject().removeJavaPackageName(packageName);
