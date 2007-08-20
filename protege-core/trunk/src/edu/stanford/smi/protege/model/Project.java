@@ -868,7 +868,7 @@ public class Project {
         if (cls == null) {
             Log.getLogger().severe("no project class");
         } else {
-            Collection instances = cls.getDirectInstances();
+            Collection<Instance> instances = cls.getDirectInstances();
             // Assert.areEqual(instances.size(), 1);
             result = (Instance) CollectionUtilities.getFirstItem(instances);
         }
