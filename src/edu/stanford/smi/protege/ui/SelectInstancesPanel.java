@@ -140,7 +140,7 @@ public class SelectInstancesPanel extends JComponent {
         }
     }
 
-    protected Collection getInstances(Cls cls) {
+    protected Collection<Instance> getInstances(Cls cls) {
         boolean direct = _directAllInstanceComboBox.getSelectedItem().equals(DIRECT_INSTANCES_TEXT);
         return (direct) ? cls.getDirectInstances() : cls.getInstances();
     }
