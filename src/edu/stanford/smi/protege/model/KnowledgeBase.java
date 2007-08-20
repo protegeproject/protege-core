@@ -503,7 +503,7 @@ public interface KnowledgeBase extends Disposable {
     void addTemplateSlotValue(Cls cls, Slot slot, Object value);
     Slot getNameSlot();
     int getDirectInstanceCount(Cls cls);
-    Collection getDirectInstances(Cls cls);
+    Collection<Instance> getDirectInstances(Cls cls);
     int getDirectSubclassCount(Cls cls);
     Collection getDirectSubclasses(Cls cls);
     int getDirectSuperclassCount(Cls cls);
