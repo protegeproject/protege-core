@@ -61,7 +61,7 @@ public interface Cls extends Instance {
      * The values returned are instances of this class but not instances of its subclasses.  If you want instances of
      * both a class and its subclasses see {@link #getInstances()}
      */
-    Collection getDirectInstances();
+    Collection<Instance> getDirectInstances();
 
     int getDirectSubclassCount();
 
