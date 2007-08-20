@@ -104,7 +104,7 @@ public class DefaultCls extends DefaultInstance implements Cls {
         return getDefaultKnowledgeBase().getDirectInstanceCount(this);
     }
 
-    public Collection getDirectInstances() {
+    public Collection<Instance> getDirectInstances() {
         return getDefaultKnowledgeBase().getDirectInstances(this);
     }
 
