@@ -345,7 +345,7 @@ public class SimpleFrameStore implements FrameStore {
         return getDirectOwnSlotValues(instance, _systemFrames.getDirectTypesSlot());
     }
 
-    public List getDirectInstances(Cls cls) {
+    public List<Instance> getDirectInstances(Cls cls) {
         return getDirectOwnSlotValues(cls, _systemFrames.getDirectInstancesSlot());
     }
 

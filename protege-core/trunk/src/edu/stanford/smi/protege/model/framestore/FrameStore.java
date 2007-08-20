@@ -179,7 +179,7 @@ public interface FrameStore {
 
     Set getTypes(Instance instance);
 
-    List getDirectInstances(Cls cls);
+    List<Instance> getDirectInstances(Cls cls);
 
     Set<Instance> getInstances(Cls cls);
 
