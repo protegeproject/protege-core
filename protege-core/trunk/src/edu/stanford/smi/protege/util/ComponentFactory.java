@@ -262,6 +262,26 @@ public class ComponentFactory {
         return chooser;
     }
     
+    public static JFileChooser createFileChooser(String title, ExtensionFilter extensionFilter) {
+        File lastDirectory = ApplicationProperties.getLastFileDirectory();
+        JFileChooser chooser = new JFileChooser(lastDirectory) {
+            public int showDialog(Component c, String s) {
+                int rval = super.showDialog(c, s);
+                if (rval == APPROVE_OPTION) {
+                    ApplicationProperties.setLastFileDirectory(getCurrentDirectory());
+                }
+                return rval;
+            }
+        };
+        chooser.setDialogTitle(title);
+        if (extensionFilter == null) {
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        } else {            
+            chooser.setFileFilter(extensionFilter);
+        }
+        return chooser;
+    }
+    
     
     public static JFileChooser createSaveFileChooser(String title, String fileDescription, String fileExtension, final boolean overwrite) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
