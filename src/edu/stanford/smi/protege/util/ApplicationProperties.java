@@ -101,7 +101,14 @@ public class ApplicationProperties {
             char sep = java.io.File.separatorChar;
             String exampleProjectName;
             URI uri;
-
+            
+            if (PluginUtilities.isPluginAvailable("edu.stanford.smi.protege.collab.projectPlugin.ProtegeCollabGUIProjectPlugin")) {
+                exampleProjectName = getApplicationDirectory().getPath() +
+                sep + "examples" + sep + "collaborativePizza" + sep + "collaborativePizza.owl.pprj";
+            uri = URIUtilities.createURI(exampleProjectName);
+            addProjectToMRUList(uri);
+            }
+            
             if (PluginUtilities.isOWLAvailable()) {
                 exampleProjectName = getApplicationDirectory().getPath() +
                     sep + "examples" + sep + "pizza" + sep + "pizza.owl.pprj";
@@ -112,14 +119,9 @@ public class ApplicationProperties {
             exampleProjectName = getApplicationDirectory().getPath() +
                 sep + "examples" + sep + "newspaper" + sep + "newspaper.pprj";
             uri = URIUtilities.createURI(exampleProjectName);
-            addProjectToMRUList(uri);
+            addProjectToMRUList(uri);            
+
             
-            if (PluginUtilities.isPluginAvailable("edu.stanford.smi.protege.collab.projectPlugin.ProtegeCollabGUIProjectPlugin")) {
-                exampleProjectName = getApplicationDirectory().getPath() +
-                sep + "examples" + sep + "collaborativePizza" + sep + "collaborativePizza.owl.pprj";
-            uri = URIUtilities.createURI(exampleProjectName);
-            addProjectToMRUList(uri);
-            }
         }
     }
 
