@@ -88,7 +88,7 @@
 	<!-- COMPILE -->
 	<!-- =================================================================== -->
 	<target name = "compile" depends = "javacc">
-		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "on" debuglevel = "lines" optimize = "${optimize}" includeAntRuntime = "no" source = "${source}">
+		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "true" debuglevel = "lines" optimize = "${optimize}" includeAntRuntime = "no" source = "${source}">
 			<classpath>
 				<fileset dir = "${lib.dir}">
 					<include name = "**/*.jar"/>
