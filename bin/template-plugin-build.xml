@@ -2,6 +2,7 @@
 <project name = "Query Plugin" default = "dist" basedir = ".">    
    <property environment="env"/>
    <property name="protege.home" value="${env.PROTEGE_HOME}"/>
+   <property file="local.properties"/>
 
    <property name = "src"             location = "./src"/>  
    <property name = "build"           location = "./build"/>
@@ -41,6 +42,7 @@
       <echo message="the PROTEGE_HOME environment variable to a"/>
       <echo message="protege installation directory where the"/>
       <echo message="appropriate plugins have been installed."/>
+      <echo message="Alternatively set the jar libs in local.properties (protege.lib=...)"/>
       <echo message="Use the -v option to ant to see what jars are missing."/>
     </target>
       
@@ -77,16 +79,16 @@
    </target>
 
    <target name = "jar" depends = "compile">
-     <copy todir="${build}" 
+     <copy tofile="${build}/manifest.mf" 
            file="etc/meta-inf/manifest.mf" overwrite="true"/>
-     <manifest file="${build}/MANIFEST.MF" 
+     <manifest file="${build}/manifest.mf" 
                mode = "update">
         <attribute name="Built-By" value = "${user.name}"/>
         <attribute name="Build-Date" value = "${build.time}"/>
      </manifest>
      <jar jarfile = "${plugins}/${plugin_dist}/${pluginName}.jar" 
           basedir = "${classes}" 
-          manifest = "${build}/MANIFEST.MF"/>
+          manifest = "${build}/manifest.mf"/>
      <copy todir="${plugins}/${plugin_dist}">
        <fileset dir="${lib}" excludes="junit*.jar"/>
      </copy>
