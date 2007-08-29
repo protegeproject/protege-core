@@ -1735,4 +1735,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     public NarrowFrameStore getDelegate() {
         return null;
     }
+    
+    public void reinitialize() {
+    }
 }
