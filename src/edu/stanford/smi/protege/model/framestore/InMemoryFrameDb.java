@@ -509,4 +509,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return null;
     }
 
+	public void reinitialize() {
+	}
+
 }

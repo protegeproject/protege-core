@@ -65,6 +65,7 @@ public class SimpleFrameStore implements FrameStore {
 
     public void reinitialize() {
         nameToFrameMap.clear();
+        _helper.reinitialize();
     }
 
     public void setHelper(NarrowFrameStore helper) {

@@ -599,4 +599,10 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     public TransactionMonitor getTransactionStatusMonitor()  {
       return getDelegate().getTransactionStatusMonitor();
     }
+
+	public void reinitialize() {
+		for (NarrowFrameStore nfs : availableFrameStores) {
+			nfs.reinitialize();
+		}
+	}
 }
