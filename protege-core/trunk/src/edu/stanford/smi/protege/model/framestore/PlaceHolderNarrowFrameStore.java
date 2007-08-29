@@ -178,4 +178,8 @@ public class PlaceHolderNarrowFrameStore implements NarrowFrameStore {
         public TransactionMonitor getTransactionStatusMonitor() {
           throw new UnsupportedOperationException();
         }
+
+		public void reinitialize() {
+
+		}
 }

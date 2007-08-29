@@ -154,4 +154,6 @@ public interface NarrowFrameStore {
      * @return A TransactionMonitor object that tracks the status of transactions.
      */
     TransactionMonitor getTransactionStatusMonitor();
+    
+    void reinitialize();
 }
