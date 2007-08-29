@@ -585,6 +585,13 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
       return getDelegate().getTransactionStatusMonitor();
     }
 
+	public void reinitialize() {
+		clearCache();
+    	if (getDelegate() != null) {
+    		getDelegate().reinitialize();
+    	}
+	}
+
 
 }
 
