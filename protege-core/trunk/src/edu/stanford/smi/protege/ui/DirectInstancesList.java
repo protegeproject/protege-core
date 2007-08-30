@@ -1,18 +1,68 @@
 package edu.stanford.smi.protege.ui;
 //ESCA*JAVA0100
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 
-import edu.stanford.smi.protege.action.*;
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.action.DeleteInstancesAction;
+import edu.stanford.smi.protege.action.MakeCopiesAction;
+import edu.stanford.smi.protege.action.ReferencersAction;
+import edu.stanford.smi.protege.event.ClsAdapter;
+import edu.stanford.smi.protege.event.ClsEvent;
+import edu.stanford.smi.protege.event.ClsListener;
+import edu.stanford.smi.protege.event.FrameAdapter;
+import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.model.BrowserSlotPattern;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.resource.Colors;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.AllowableAction;
+import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.ConcurrentListModel;
+import edu.stanford.smi.protege.util.CreateAction;
+import edu.stanford.smi.protege.util.Disposable;
+import edu.stanford.smi.protege.util.LabeledComponent;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.SelectableContainer;
+import edu.stanford.smi.protege.util.SelectableList;
+import edu.stanford.smi.protege.util.SimpleListModel;
+import edu.stanford.smi.protege.util.ViewAction;
 
 /**
  * The panel that holds the list of direct instances of one or more classes. If
@@ -22,8 +72,9 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DirectInstancesList extends SelectableContainer implements Disposable {
-    // private static final String SHOW_SUBCLASS_INSTANCES = DirectInstancesList.class.getName()
-    //        + ".show_subclass_instances";
+
+    private static final long serialVersionUID = 3123829893591425192L;
+    
     private Collection _clses = Collections.EMPTY_LIST;
     private SelectableList _list;
     private Project _project;
@@ -35,6 +86,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     private static final int SORT_LIMIT;
     private boolean _showSubclassInstances;
     private LabeledComponent _labeledComponent;
+    
+    private AddInstancesRunner background;
 
     static {
         SORT_LIMIT = ApplicationProperties.getIntegerProperty("ui.DirectInstancesList.sort_limit", 1000);
@@ -76,6 +129,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
         _list = ComponentFactory.createSelectableList(viewAction);
         _list.setCellRenderer(FrameRenderer.createInstance());
+        _list.setModel(new ConcurrentListModel());
 
         _labeledComponent = new LabeledComponent(null, ComponentFactory.createScrollPane(_list));
         addButtons(viewAction, _labeledComponent);
@@ -367,25 +421,41 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     }
 
     public void reload() {
+        if (background != null) {
+            background.cancel();
+            background = null;
+        }
         removeInstanceListeners();
         Object selectedValue = _list.getSelectedValue();
-        Set instanceSet = new LinkedHashSet();
+        Set<Instance> instanceSet = new LinkedHashSet<Instance>();
         Iterator i = _clses.iterator();
         while (i.hasNext()) {
             Cls cls = (Cls) i.next();
             instanceSet.addAll(getInstances(cls));
         }
-        List instances = new ArrayList(instanceSet);
+        List<Instance> instances = new ArrayList<Instance>(instanceSet);
         if (instances.size() <= SORT_LIMIT) {
             Collections.sort(instances, new FrameComparator());
+            getModel().setValues(instances);
+            addInstanceListeners();
+            background = null;
         }
-        getModel().setValues(instances);
+        else {
+            background = new AddInstancesRunner(instances);
+            getModel().clear();
+            if (instances.contains(selectedValue)) {
+                getModel().addValue(selectedValue);
+            }
+        }
+
         if (instances.contains(selectedValue)) {
             _list.setSelectedValue(selectedValue, true);
         } else if (!instances.isEmpty()) {
             _list.setSelectedIndex(0);
         }
-        addInstanceListeners();
+        if (background != null) {
+            new Thread(background, "Calculate Instances For Panel").start();
+        }
         reloadHeader(_clses);
         updateLabel();
     }
@@ -474,5 +544,100 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
      */
     public void setShowDisplaySlotPanel(boolean b) {
 
+    }
+    
+    public enum InstanceThreadState {
+        INIT,
+        RUNNING,
+        CANCELLING,
+        HALTED;
+        
+    }
+    
+    private class AddInstancesRunner implements Runnable {
+        private List<Instance> instances;
+        private InstanceThreadState state = InstanceThreadState.INIT;
+        
+        public AddInstancesRunner(List<Instance> instances) {
+            this.instances = instances;
+        }
+
+        public void run() {
+            try {
+                for (final Instance instance : instances) {
+                    synchronized (this) {
+                        if (state == InstanceThreadState.HALTED) return;
+                    }
+                    if (!getModel().contains(instance)) {
+                        try {
+                            SwingUtilities.invokeAndWait(new Runnable() {
+                                public void run() {
+                                    /* Since I am writing you a message - you know it is not good.
+                                     * 
+                                     * If AddInstanceRunner.cancel is called in the AWT event queue thread
+                                     * then it will happen either before or after the following.  Therefore
+                                     * we won't get a cancel in the middle of the addValue operation.
+                                     */
+                                    if (testState()) {
+                                        getModel().addValue(instance);
+                                    }
+                                }
+                            });
+                        } catch (InterruptedException e) {
+                            Log.getLogger().log(Level.SEVERE, "Exception caught talking to swing", e);
+                        } catch (InvocationTargetException e) {
+                            Log.getLogger().log(Level.SEVERE, "Exception caught talking to swing", e);
+                        }
+                    }
+                }
+            }
+            finally {
+                halt();
+            }
+        }
+        
+        
+        /*
+         * it turns out that the state machine wasn't needed for now.  But if we generalize
+         * how the cancel works (e.g. outside the awt thread) then it will be needed again.
+         */
+        private synchronized boolean testState() {
+            switch (state) {
+            case INIT:
+                state = InstanceThreadState.RUNNING;
+                return true;
+            case RUNNING:
+                return true;
+            case CANCELLING:
+                state = InstanceThreadState.HALTED;
+                return false;
+            case HALTED:
+                return false;
+            default:
+                throw new RuntimeException("Programmer error");
+            }
+        }
+        
+        private synchronized void halt() {
+            state = InstanceThreadState.HALTED;
+        }
+        
+        public synchronized void cancel() {
+            switch (state) {
+            case INIT:
+                state = InstanceThreadState.HALTED;
+                break;
+            case RUNNING:
+            case CANCELLING:
+                state = InstanceThreadState.CANCELLING;
+                break;
+            case HALTED:
+                break;
+            default:
+                throw new RuntimeException("Programmer Error");
+            }
+
+        }
+        
     }
 }
