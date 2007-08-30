@@ -1,8 +1,12 @@
 package edu.stanford.smi.protege.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractListModel;
 
 /**
  * A list model where elements are stored in a {@link java.util.List}.
@@ -13,11 +17,20 @@ public class SimpleListModel extends AbstractListModel {
     private List _list;
 
     public SimpleListModel() {
-        _list = new ArrayList();
+        _list = makeList();
     }
 
     public SimpleListModel(Collection values) {
-        _list = new ArrayList(values);
+        _list = makeList();
+        _list.addAll(values);
+    }
+    
+    protected List makeList() {
+        return new ArrayList();
+    }
+    
+    protected List getList() {
+        return _list;
     }
 
     public int addValue(Object o) {
