@@ -56,7 +56,8 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private static final transient Logger log = Log.getLogger(EventDispatchFrameStore.class);
     //ESCA-JAVA0077 
     public static final int DELAY_MSEC = 5 * 1000;
-    private Map _listeners = new HashMap();
+    private Map<Class, Map<Object, Collection<EventListener>>> _listeners 
+                    = new HashMap<Class, Map<Object,Collection<EventListener>>>();
     private Thread _eventThread;
     private Object lock;
     
@@ -92,11 +93,11 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
      * We ignore exceptions in the multiuser server client because they are an almost unavoidable side-effect of event
      * processing in some cases
      */
-    private void dispatchEvents(Collection events, boolean ignoreExceptions) {
+    private void dispatchEvents(Collection<AbstractEvent> events, boolean ignoreExceptions) {
         // Log.trace("found events: " + events, this, "dispatchEvents");
-        Iterator i = events.iterator();
+        Iterator<AbstractEvent> i = events.iterator();
         while (i.hasNext()) {
-            AbstractEvent event = (AbstractEvent) i.next();
+            AbstractEvent event = i.next();
             try {
                 dispatchEvent(event);
             } catch (Exception e) {
@@ -161,7 +162,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
     
     private void dispatchTransactionEvent(TransactionEvent event) {
-        Iterator i = getListeners(TransactionListener.class, event.getSource()).iterator();
+        Iterator<EventListener> i = getListeners(TransactionListener.class, event.getSource()).iterator();
         while (i.hasNext()) {
             TransactionListener listener = (TransactionListener) i.next();
             switch (event.getEventType()) {
@@ -181,7 +182,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     private void dispatchKbEvent(KnowledgeBaseEvent event) {
         // Log.enter(this, "dispatchEvents", event);
-        Iterator i = getListeners(KnowledgeBaseListener.class, event.getSource()).iterator();
+        Iterator<EventListener> i = getListeners(KnowledgeBaseListener.class, event.getSource()).iterator();
         while (i.hasNext()) {
             KnowledgeBaseListener listener = (KnowledgeBaseListener) i.next();
             switch (event.getEventType()) {
@@ -439,22 +440,28 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         }
     }
 
-    public Collection getListeners(Class c, Object o) {
-        Collection allListeners = null;
-        Map listeners = (Map) _listeners.get(c);
+    public Collection<EventListener> getListeners(Class c, Object o) {
+        Collection<EventListener> allListeners = null;
+        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
         if (listeners != null) {
-            Collection objectListeners = (Collection) listeners.get(o);
+            Collection<EventListener> objectListeners = listeners.get(o);
             allListeners = addListeners(objectListeners, allListeners);
-            Collection globalListeners = (Collection) listeners.get(null);
+            Collection<EventListener> globalListeners = listeners.get(null);
             allListeners = addListeners(globalListeners, allListeners);
         }
-        return allListeners == null ? Collections.EMPTY_LIST : allListeners;
+        if (allListeners != null) {
+            return allListeners;
+        }
+        else {
+            return Collections.EMPTY_LIST;
+        }
     }
 
-    private static Collection addListeners(Collection listenersToAdd, Collection listeners) {
+    private static Collection<EventListener> addListeners(Collection<EventListener> listenersToAdd, 
+                                                          Collection<EventListener> listeners) {
         if (listenersToAdd != null) {
             if (listeners == null) {
-                listeners = new ArrayList(listenersToAdd);
+                listeners = new ArrayList<EventListener>(listenersToAdd);
             } else {
                 listeners.addAll(listenersToAdd);
             }
@@ -463,7 +470,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
 
     private void removeListeners(Class listenerType, Frame frame) {
-        Map listeners = (Map) _listeners.get(listenerType);
+        Map<Object, Collection<EventListener>> listeners = _listeners.get(listenerType);
         if (listeners != null) {
             listeners.remove(frame);
         }
@@ -507,11 +514,11 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         }
     }
 
-    private Collection getListenedToSubclasses(Class c, Cls cls) {
-        Set listenedToSubclasses = new HashSet();
-        Map listeners = (Map) _listeners.get(c);
+    private Collection<Cls> getListenedToSubclasses(Class c, Cls cls) {
+        Set<Cls> listenedToSubclasses = new HashSet<Cls>();
+        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
         if (listeners != null) {
-            Set listenedToObjects = listeners.keySet();
+            Set<Object> listenedToObjects = listeners.keySet();
             Iterator i = listenedToObjects.iterator();
             while (i.hasNext()) {
                 Object o = i.next();
@@ -526,11 +533,11 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         return listenedToSubclasses;
     }
 
-    private Collection getListenedToInstances(Class c, Cls cls) {
-        Set listenedToInstances = new HashSet();
-        Map listeners = (Map) _listeners.get(c);
+    private Collection<Instance> getListenedToInstances(Class c, Cls cls) {
+        Set<Instance> listenedToInstances = new HashSet<Instance>();
+        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
         if (listeners != null) {
-            Set listenedToObjects = listeners.keySet();
+            Set<Object> listenedToObjects = listeners.keySet();
             Iterator i = listenedToObjects.iterator();
             while (i.hasNext()) {
                 Object o = i.next();
@@ -547,23 +554,23 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     public void addListener(Class c, Object o, EventListener listener) {
         // Log.enter(this, "addListener", c, o, listener);
-        Map listeners = (Map) _listeners.get(c);
+        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
         if (listeners == null) {
-            listeners = new HashMap();
+            listeners = new HashMap<Object, Collection<EventListener>>();
             _listeners.put(c, listeners);
         }
-        Collection objectListeners = (Collection) listeners.get(o);
+        Collection<EventListener> objectListeners = listeners.get(o);
         if (objectListeners == null) {
-            objectListeners = new ArrayList();
+            objectListeners = new ArrayList<EventListener>();
             listeners.put(o, objectListeners);
         }
         objectListeners.add(listener);
     }
 
     public void removeListener(Class c, Object o, EventListener listener) {
-        Map listeners = (Map) _listeners.get(c);
+        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
         if (listeners != null) {
-            Collection objectListeners = (Collection) listeners.get(o);
+            Collection<EventListener> objectListeners = listeners.get(o);
             if (objectListeners != null) {
                 objectListeners.remove(listener);
             }
@@ -786,7 +793,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private void getEventsAndDispatch2() {
         synchronized (lock) {
             if (getDelegate() != null) {
-                Collection events = getDelegate().getEvents();
+                Collection<AbstractEvent> events = getDelegate().getEvents();
                 dispatchEvents(events, true);
             }
         } 
