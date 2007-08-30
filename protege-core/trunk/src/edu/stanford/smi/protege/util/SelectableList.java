@@ -1,10 +1,11 @@
 package edu.stanford.smi.protege.util;
 
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.MouseEvent;
+import java.util.Collection;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JList;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * A JList that implements the {@link Selectable} interface.
