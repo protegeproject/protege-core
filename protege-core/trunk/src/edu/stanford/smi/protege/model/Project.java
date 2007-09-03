@@ -30,7 +30,6 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 
@@ -118,6 +117,7 @@ public class Project {
 
     private static final String CLIENT_PROPERTY_ADD_NAME_ON_INSTANCE_FORM = "add_name_on_instance_form";
     private static final String CHANGE_TRACKING_ACTIVE = "change_tracking_active";
+    private static final String SUPRESS_INSTANCE_COUNT_DISPLAY = "suppress_instance_counting";
 
     private static final String CLASS_MAP = "Map";
     private static final String SLOT_PROPERTY_MAP = "property_map";
@@ -2129,6 +2129,20 @@ public class Project {
 
     public void setChangeTrackingActive(boolean b) {    	
         setClientInformation(CHANGE_TRACKING_ACTIVE, b ? "true" : "false");
+    }
+    
+    public boolean getSuppressInstanceCounting() {
+        String suppressInstanceCounting = (String) getClientInformation(SUPRESS_INSTANCE_COUNT_DISPLAY);
+        
+        if (suppressInstanceCounting == null || !suppressInstanceCounting.equals("true")) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    public void setSuppressInstanceCounting(boolean b) {        
+        setClientInformation(SUPRESS_INSTANCE_COUNT_DISPLAY, b ? "true" : "false");
     }
 
 }
