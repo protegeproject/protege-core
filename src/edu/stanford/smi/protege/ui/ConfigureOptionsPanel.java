@@ -33,6 +33,8 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     private JCheckBox _trackChangesActiveComponent;
     private JCheckBox _supressInstanceCountDisplayComponent;
     
+    private boolean _supressInstanceCountDisplayValue;
+    
     ConfigureOptionsPanel(Project project) {
         _project = project;
         setLayout(new BorderLayout());
@@ -107,7 +109,8 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
 
     private JComponent createSuppressInstanceCountingComponent() {      
         _supressInstanceCountDisplayComponent = ComponentFactory.createCheckBox("Suppress Instance Count Display");
-        setValue(_supressInstanceCountDisplayComponent, _project.getSuppressInstanceCounting());
+        _supressInstanceCountDisplayValue = _project.getSuppressInstanceCounting();
+        setValue(_supressInstanceCountDisplayComponent, _supressInstanceCountDisplayValue);
         return _supressInstanceCountDisplayComponent;
     }
     
@@ -134,12 +137,17 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         _project.setIsReadonly(!getValue(_isEditableComponent));
         _project.setUpdateModificationSlots(getValue(_updateModificationSlotsComponent));
         _project.setChangeTrackingActive(getValue(_trackChangesActiveComponent));
-        _project.setSuppressInstanceCounting(getValue(_supressInstanceCountDisplayComponent));
         _project.setJournalingEnabled(getValue(_journalingEnabledCheckBox));
         _project.setPrettyPrintSlotWidgetLabels(getValue(_prettyPrintSlotWidgetLabelsCheckBox));
         _project.setTabbedInstanceFormLayout(getValue(_tabbedInstanceFormCheckBox));
         _project.setAddNameOnInstanceForm(getValue(_addNameOnInstanceFormCheckBox));
         _project.setUndoOption(getValue(_enableUndoCheckBox));
+        
+        boolean newSupressInstanceCountingValue = getValue(_supressInstanceCountDisplayComponent);
+        if (newSupressInstanceCountingValue ^ _supressInstanceCountDisplayValue) {
+            _project.setSuppressInstanceCounting(newSupressInstanceCountingValue);
+            ProjectManager.getProjectManager().reloadUI(true);
+        }
     }
 
     private static void setValue(JCheckBox box, boolean value) {
