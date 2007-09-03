@@ -1,11 +1,15 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.*;
+import java.awt.BorderLayout;
 
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.util.AbstractValidatableComponent;
+import edu.stanford.smi.protege.util.ComponentFactory;
 
 /**
  * A panel to display the global options for the application and allow the user to set them.
@@ -27,6 +31,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     private JCheckBox _enableUndoCheckBox;
     private JCheckBox _addNameOnInstanceFormCheckBox;
     private JCheckBox _trackChangesActiveComponent;
+    private JCheckBox _supressInstanceCountDisplayComponent;
     
     ConfigureOptionsPanel(Project project) {
         _project = project;
@@ -42,6 +47,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         c.add(createTabbedInstanceFormComponent());
         c.add(createEnableUndoCheckBox());
         c.add(createNameOnInstanceFormComponent());
+        c.add(createSuppressInstanceCountingComponent());
         add(c);
 
     }
@@ -98,6 +104,12 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         return _trackChangesActiveComponent;
     }
 
+
+    private JComponent createSuppressInstanceCountingComponent() {      
+        _supressInstanceCountDisplayComponent = ComponentFactory.createCheckBox("Suppress Instance Count Display");
+        setValue(_supressInstanceCountDisplayComponent, _project.getSuppressInstanceCounting());
+        return _supressInstanceCountDisplayComponent;
+    }
     
     private JComponent createTabbedInstanceFormComponent() {
         _tabbedInstanceFormCheckBox = ComponentFactory.createCheckBox("Used Tabbed Forms for Multi-Type Instances");
@@ -122,6 +134,7 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         _project.setIsReadonly(!getValue(_isEditableComponent));
         _project.setUpdateModificationSlots(getValue(_updateModificationSlotsComponent));
         _project.setChangeTrackingActive(getValue(_trackChangesActiveComponent));
+        _project.setSuppressInstanceCounting(getValue(_supressInstanceCountDisplayComponent));
         _project.setJournalingEnabled(getValue(_journalingEnabledCheckBox));
         _project.setPrettyPrintSlotWidgetLabels(getValue(_prettyPrintSlotWidgetLabelsCheckBox));
         _project.setTabbedInstanceFormLayout(getValue(_tabbedInstanceFormCheckBox));
