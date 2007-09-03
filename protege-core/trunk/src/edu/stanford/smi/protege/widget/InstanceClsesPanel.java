@@ -46,7 +46,7 @@ public class InstanceClsesPanel extends SelectableContainer {
         _clsTree.setLargeModel(true);
 
         FrameRenderer renderer = FrameRenderer.createInstance();
-        renderer.setDisplayDirectInstanceCount(true);
+        renderer.setDisplayDirectInstanceCount(!_project.getSuppressInstanceCounting());
         _clsTree.setCellRenderer(renderer);
         _clsTree.setSelectionRow(0);
         String classHiearchyLabel = LocalizedText.getText(ResourceKey.CLASS_BROWSER_HIERARCHY_LABEL);
