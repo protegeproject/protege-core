@@ -2,15 +2,32 @@ package edu.stanford.smi.protege.util;
 
 //ESCA*JAVA0025
 
-import java.awt.*;
-import java.awt.dnd.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.dnd.DropTarget;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.*;
-import javax.swing.plaf.metal.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.JViewport;
+import javax.swing.ListCellRenderer;
+import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.tree.TreeCellRenderer;
 
 /**
  * Default implementation of the various renderer interfaces. This renderer is used for all Protege widget rendering.
