@@ -339,6 +339,10 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     public void dispose() {
         removeClsListeners();
+        if (background != null) {
+            background.cancel();
+            background = null;
+        }
     }
 
     public JComponent getDragComponent() {
