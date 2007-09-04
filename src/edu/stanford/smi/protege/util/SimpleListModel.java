@@ -140,6 +140,10 @@ public class SimpleListModel extends AbstractListModel {
             fireIntervalAdded(this, 0, values.size() - 1);
         }
     }
+    
+    public List toList() {
+        return Collections.unmodifiableList(_list);
+    }
 
     public String toString() {
         return "SimpleListModel";
