@@ -12,7 +12,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -26,7 +25,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 
 import edu.stanford.smi.protege.action.DeleteInstancesAction;
@@ -61,7 +59,6 @@ import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.ModalDialog;
 import edu.stanford.smi.protege.util.SelectableContainer;
 import edu.stanford.smi.protege.util.SelectableList;
-import edu.stanford.smi.protege.util.SimpleListModel;
 import edu.stanford.smi.protege.util.ViewAction;
 
 /**
@@ -75,35 +72,40 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     private static final long serialVersionUID = 3123829893591425192L;
     
-    private Collection _clses = Collections.EMPTY_LIST;
+    public final static String SORT_LIMIT_PROPERTY = "ui.DirectInstancesList.sort_limit";
+    public static final int SORT_LIMIT;
+    static {
+        SORT_LIMIT = ApplicationProperties.getIntegerProperty(SORT_LIMIT_PROPERTY, 1000);
+    }
+    
+    private Collection<Cls> _clses = Collections.EMPTY_LIST;
     private SelectableList _list;
     private Project _project;
     private AllowableAction _createAction;
     private AllowableAction _copyAction;
     private AllowableAction _deleteAction;
     private HeaderComponent _header;
-    private Collection listenedToInstances = new ArrayList();
-    private static final int SORT_LIMIT;
     private boolean _showSubclassInstances;
     private LabeledComponent _labeledComponent;
     
     private AddInstancesRunner background;
 
-    static {
-        SORT_LIMIT = ApplicationProperties.getIntegerProperty("ui.DirectInstancesList.sort_limit", 1000);
-    }
 
     private ClsListener _clsListener = new ClsAdapter() {
         public void directInstanceAdded(ClsEvent event) {
-            Instance instance = event.getInstance();
-            if (!getModel().contains(instance)) {
-                ComponentUtilities.addListValue(_list, instance);
-                instance.addFrameListener(_instanceFrameListener);
+            synchronized (DirectInstancesList.this) {
+                if (background != null) {
+                    background.addChange(event);
+                }
             }
         }
 
         public void directInstanceRemoved(ClsEvent event) {
-            removeInstance(event.getInstance());
+            synchronized (DirectInstancesList.this) {
+                if (background != null) {
+                    background.addChange(event);
+                }
+            }
         }
     };
 
@@ -111,15 +113,6 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         public void ownSlotValueChanged(FrameEvent event) {
             super.ownSlotValueChanged(event);
             updateButtons();
-        }
-    };
-
-    private FrameListener _instanceFrameListener = new FrameAdapter() {
-        public void browserTextChanged(FrameEvent event) {
-            super.browserTextChanged(event);
-            // Log.enter(this, "browserTextChanged", event);
-            sort();
-            repaint();
         }
     };
 
@@ -185,37 +178,12 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     }
 
     private void addClsListeners() {
-        Iterator i = _clses.iterator();
+        Iterator<Cls> i = _clses.iterator();
         while (i.hasNext()) {
-            Cls cls = (Cls) i.next();
+            Cls cls = i.next();
             cls.addClsListener(_clsListener);
             cls.addFrameListener(_clsFrameListener);
         }
-    }
-
-    private void addInstanceListeners() {
-        ListModel model = _list.getModel();
-        int start = _list.getFirstVisibleIndex();
-        int stop = _list.getLastVisibleIndex();
-        for (int i = start; i < stop; ++i) {
-            Instance instance = (Instance) model.getElementAt(i);
-            addInstanceListener(instance);
-
-        }
-    }
-
-    private void removeInstanceListeners() {
-        Iterator i = listenedToInstances.iterator();
-        while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
-            instance.removeFrameListener(_instanceFrameListener);
-        }
-        listenedToInstances.clear();
-    }
-
-    private void addInstanceListener(Instance instance) {
-        instance.addFrameListener(_instanceFrameListener);
-        listenedToInstances.add(instance);
     }
 
     protected Action createCreateAction() {
@@ -230,7 +198,11 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                             newCls.addDirectSuperclass(kb.getRootCls());
                         }
                     }
-                    _list.setSelectedValue(instance, true);
+                    synchronized (DirectInstancesList.this) {
+                        if (background != null) {
+                            background.setDeferredSelection(instance);
+                        }
+                    }
                 }
             }
         };
@@ -367,15 +339,14 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     public void dispose() {
         removeClsListeners();
-        removeInstanceListeners();
     }
 
     public JComponent getDragComponent() {
         return _list;
     }
 
-    private SimpleListModel getModel() {
-        return (SimpleListModel) _list.getModel();
+    private ConcurrentListModel getModel() {
+        return (ConcurrentListModel) _list.getModel();
     }
 
     private boolean isSelectionEditable() {
@@ -398,74 +369,63 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         updateButtons();
     }
 
-    private void removeInstance(Instance instance) {
-        ComponentUtilities.removeListValue(_list, instance);
-        instance.removeFrameListener(_instanceFrameListener);
-    }
 
     private void removeClsListeners() {
-        Iterator i = _clses.iterator();
+        Iterator<Cls> i = _clses.iterator();
         while (i.hasNext()) {
-            Cls cls = (Cls) i.next();
+            Cls cls = i.next();
             cls.removeClsListener(_clsListener);
             cls.removeFrameListener(_clsFrameListener);
         }
     }
 
-    public void setClses(Collection newClses) {
+    public void setClses(Collection<Cls> newClses) {
         removeClsListeners();
-        _clses = new ArrayList(newClses);
+        _clses = new ArrayList<Cls>(newClses);
         reload();
         updateButtons();
         addClsListeners();
     }
 
     public void reload() {
-        if (background != null) {
-            background.cancel();
-            background = null;
+        synchronized (this) {
+            if (background != null) {
+                background.cancel();
+                background = null;
+            }
         }
-        removeInstanceListeners();
         Object selectedValue = _list.getSelectedValue();
         Set<Instance> instanceSet = new LinkedHashSet<Instance>();
-        Iterator i = _clses.iterator();
+        Iterator<Cls> i = _clses.iterator();
         while (i.hasNext()) {
-            Cls cls = (Cls) i.next();
+            Cls cls = i.next();
             instanceSet.addAll(getInstances(cls));
         }
-        List<Instance> instances = new ArrayList<Instance>(instanceSet);
-        if (instances.size() <= SORT_LIMIT) {
-            Collections.sort(instances, new FrameComparator());
-            getModel().setValues(instances);
-            addInstanceListeners();
-            background = null;
-        }
-        else {
-            background = new AddInstancesRunner(instances);
-            getModel().clear();
-            if (instances.contains(selectedValue)) {
-                getModel().addValue(selectedValue);
+        getModel().clear();
+        synchronized (this) {
+            if (background != null) {
+                background.cancel();
+            }
+            background = new AddInstancesRunner(new ArrayList<Instance>(instanceSet));
+            new Thread(background, "Calculate Instances For Panel").start();
+            if (instanceSet.contains(selectedValue) && selectedValue instanceof Instance) {
+                background.setDeferredSelection((Instance) selectedValue);
             }
         }
 
-        if (instances.contains(selectedValue)) {
-            _list.setSelectedValue(selectedValue, true);
-        } else if (!instances.isEmpty()) {
+        if (!instanceSet.isEmpty()) {
             _list.setSelectedIndex(0);
-        }
-        if (background != null) {
-            new Thread(background, "Calculate Instances For Panel").start();
         }
         reloadHeader(_clses);
         updateLabel();
     }
 
-    private void reloadHeader(Collection clses) {
+    private void reloadHeader(Collection<Cls> clses) {
         StringBuffer text = new StringBuffer();
         Icon icon = null;
-        Iterator i = clses.iterator();
+        Iterator<Cls> i = clses.iterator();
         while (i.hasNext()) {
-            Cls cls = (Cls) i.next();
+            Cls cls = i.next();
             if (icon == null) {
                 icon = cls.getIcon();
             }
@@ -492,11 +452,11 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         return instances;
     }
 
-    private static Collection removeHiddenInstances(Collection instances) {
-        Collection visibleInstances = new ArrayList(instances);
-        Iterator i = visibleInstances.iterator();
+    private static Collection<Instance> removeHiddenInstances(Collection<Instance> instances) {
+        Collection<Instance> visibleInstances = new ArrayList<Instance>(instances);
+        Iterator<Instance> i = visibleInstances.iterator();
         while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
+            Instance instance = i.next();
             if (!instance.isVisible()) {
                 i.remove();
             }
@@ -504,21 +464,10 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         return visibleInstances;
     }
 
-    public void sort() {
-        _list.setListenerNotificationEnabled(false);
-        Object selectedValue = _list.getSelectedValue();
-        List instances = new ArrayList(getModel().getValues());
-        if (instances.size() <= SORT_LIMIT) {
-            Collections.sort(instances, new FrameComparator());
+    public synchronized void setSelectedInstance(Instance instance) {
+        if (background != null) {
+            background.setDeferredSelection(instance);
         }
-        getModel().setValues(instances);
-        _list.setSelectedValue(selectedValue);
-        _list.setListenerNotificationEnabled(true);
-    }
-
-    public void setSelectedInstance(Instance instance) {
-        _list.setSelectedValue(instance, true);
-        updateButtons();
     }
 
     private void updateButtons() {
@@ -546,97 +495,153 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     }
     
-    public enum InstanceThreadState {
-        INIT,
-        RUNNING,
-        CANCELLING,
-        HALTED;
-        
-    }
+    
     
     private class AddInstancesRunner implements Runnable {
         private List<Instance> instances;
-        private InstanceThreadState state = InstanceThreadState.INIT;
+        private List<ClsEvent> changes = new ArrayList<ClsEvent>();
+        private Instance deferredSelection;
+        private boolean sorted;
+        
+        private boolean cancelled = false;
         
         public AddInstancesRunner(List<Instance> instances) {
             this.instances = instances;
+            sorted = (SORT_LIMIT < 0  || instances.size() < SORT_LIMIT);
         }
 
         public void run() {
-            try {
-                for (final Instance instance : instances) {
-                    synchronized (this) {
-                        if (state == InstanceThreadState.HALTED) return;
-                    }
-                    if (!getModel().contains(instance)) {
-                        try {
-                            SwingUtilities.invokeAndWait(new Runnable() {
-                                public void run() {
-                                    /* Since I am writing you a message - you know it is not good.
-                                     * 
-                                     * If AddInstanceRunner.cancel is called in the AWT event queue thread
-                                     * then it will happen either before or after the following.  Therefore
-                                     * we won't get a cancel in the middle of the addValue operation.
-                                     */
-                                    if (testState()) {
-                                        getModel().addValue(instance);
-                                    }
-                                }
-                            });
-                        } catch (InterruptedException e) {
-                            Log.getLogger().log(Level.SEVERE, "Exception caught talking to swing", e);
-                        } catch (InvocationTargetException e) {
-                            Log.getLogger().log(Level.SEVERE, "Exception caught talking to swing", e);
+            while (true) {
+                addOneInstance(getNextInstance());
+                synchronized (this) {
+                    if (cancelled) return;
+                }
+                handleChanges();
+            }
+        }
+        
+        private void addOneInstance(final Instance instance) {
+            if (instance == null) {
+                return;
+            }
+            if (!getModel().contains(instance)) {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            /* Since I am writing you a message - you know it is not good.
+                             * 
+                             * If AddInstanceRunner.cancel is called in the AWT event queue thread
+                             * then it will happen either before or after the following.  Therefore
+                             * we won't get a cancel in the middle of the addValue operation.
+                             */
+                            if (!cancelled) {
+                                insertInstanceInList(instance);
+                            }
                         }
-                    }
+                    });
+                } catch (InterruptedException e) {
+                    Log.getLogger().log(Level.SEVERE, "Exception caught talking to swing", e);
+                } catch (InvocationTargetException e) {
+                    Log.getLogger().log(Level.SEVERE, "Exception caught talking to swing", e);
                 }
             }
-            finally {
-                halt();
+        }
+        
+        private synchronized Instance getNextInstance() {
+            if (instances.isEmpty() && !cancelled) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    Log.getLogger().log(Level.SEVERE, "Interrupted thread - why?", e);
+                }
+            }
+            if (instances.isEmpty() || cancelled)  {
+                return null;
+            }
+            Instance instance = instances.get(0);
+            instances.remove(0);
+            return instance;
+        }
+        
+        private void handleChanges() {
+            final List<ClsEvent> localChanges = new ArrayList<ClsEvent>();
+            final Instance localDeferredSelection;
+            boolean noChanges;
+            synchronized (this) {
+                noChanges = changes.isEmpty();
+                localChanges.addAll(changes);
+                changes.clear();
+                localDeferredSelection = deferredSelection;
+                deferredSelection = null;
+            }
+            /* Another warning comment
+             * I need to get into the swing thread so that I can be synchronized with the cancel method.
+             */
+            if (!noChanges || localDeferredSelection != null) {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            if (cancelled) {
+                                return;
+                            }
+                            for (ClsEvent event : localChanges) {
+                                if (event.getEventType() == ClsEvent.DIRECT_INSTANCE_ADDED) {
+                                    Instance instance = event.getInstance();
+                                    insertInstanceInList(instance);
+                                    instances.remove(instance);
+                                }
+                                else if (event.getEventType() == ClsEvent.DIRECT_INSTANCE_REMOVED) {
+                                    Instance instance = event.getInstance();
+                                    getModel().removeValue(instance);
+                                    instances.remove(instance);
+                                }
+                            }
+                            if (localDeferredSelection != null) {
+                                if (instances.contains(localDeferredSelection)) {
+                                    insertInstanceInList(localDeferredSelection);
+                                    instances.remove(localDeferredSelection);
+                                }
+                                _list.setSelectedValue(localDeferredSelection, true);
+                                updateButtons();
+                            }
+                        }
+                    });
+                } catch (InterruptedException e) {
+                    Log.getLogger().log(Level.SEVERE, "Interrupted Thread - why?", e);
+                } catch (InvocationTargetException e) {
+                    Log.getLogger().log(Level.WARNING, "Exception processing updates to instance list", e);
+                }
             }
         }
         
-        
-        /*
-         * it turns out that the state machine wasn't needed for now.  But if we generalize
-         * how the cancel works (e.g. outside the awt thread) then it will be needed again.
-         */
-        private synchronized boolean testState() {
-            switch (state) {
-            case INIT:
-                state = InstanceThreadState.RUNNING;
-                return true;
-            case RUNNING:
-                return true;
-            case CANCELLING:
-                state = InstanceThreadState.HALTED;
-                return false;
-            case HALTED:
-                return false;
-            default:
-                throw new RuntimeException("Programmer error");
+        private void insertInstanceInList(Instance instance) {
+            if (sorted) {
+                List list = getModel().toList();
+                int index = Collections.binarySearch(list, instance, new FrameComparator());
+                if (index >= 0) {
+                    getModel().addValue(instance, index);
+                }
+                else if (index < 0) {
+                    getModel().addValue(instance, -index - 1);
+                }
+            }
+            else {
+                getModel().addValue(instance);
             }
         }
         
-        private synchronized void halt() {
-            state = InstanceThreadState.HALTED;
+        public synchronized void addChange(ClsEvent event) {
+            changes.add(event);
+            notifyAll();
+        }
+        
+        public synchronized void setDeferredSelection(Instance instance) {
+            deferredSelection = instance;
         }
         
         public synchronized void cancel() {
-            switch (state) {
-            case INIT:
-                state = InstanceThreadState.HALTED;
-                break;
-            case RUNNING:
-            case CANCELLING:
-                state = InstanceThreadState.CANCELLING;
-                break;
-            case HALTED:
-                break;
-            default:
-                throw new RuntimeException("Programmer Error");
-            }
-
+            cancelled = true;
+            notifyAll();
         }
         
     }
