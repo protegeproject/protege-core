@@ -25,11 +25,11 @@ import edu.stanford.smi.protege.util.DefaultRenderer;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameRenderer extends DefaultRenderer implements Cloneable {
-    protected static final int NONE = 0;
-    protected static final int DIRECT = 1;
-    protected static final int ALL = 2;
+    public enum InstanceCountType {
+        NONE, DIRECT, ALL;
+    }
 
-    protected int _instanceCountType = NONE;
+    protected InstanceCountType _instanceCountType = InstanceCountType.NONE;
     protected boolean _hasLoadedIconFlags = false;
     protected boolean _displayFrameTypeIcon = true;
     protected boolean _displayAbstractIcon = true;
@@ -65,19 +65,19 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     protected String getInstanceCountString(Cls cls) {
         int count;
         switch (_instanceCountType) {
-            case NONE:
-                count = 0;
-                break;
-            case DIRECT:
-                count = cls.getDirectInstanceCount();
-                break;
-            case ALL:
-                count = cls.getInstanceCount();
-                break;
-            default:
-                Assert.fail("bad type: " + _instanceCountType);
-                count = 0;
-                break;
+        case NONE:
+            count = 0;
+            break;
+        case DIRECT:
+            count = cls.getDirectInstanceCount();
+            break;
+        case ALL:
+            count = cls.getInstanceCount();
+            break;
+        default:
+            Assert.fail("bad type: " + _instanceCountType);
+        count = 0;
+        break;
         }
         String s;
         if (count > 0) {
@@ -171,7 +171,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     }
 
     public void setDisplayDirectInstanceCount(boolean b) {
-        _instanceCountType = b ? DIRECT : NONE;
+        _instanceCountType = b ? InstanceCountType.DIRECT : InstanceCountType.NONE;
     }
 
     public void setDisplayFrameTypeIcon(boolean b) {
@@ -183,7 +183,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     }
 
     public void setDisplayInstanceCount(boolean b) {
-        _instanceCountType = b ? ALL : NONE;
+        _instanceCountType = b ? InstanceCountType.ALL : InstanceCountType.NONE;
     }
 
     public void setDisplayTrailingIcons(boolean b) {
