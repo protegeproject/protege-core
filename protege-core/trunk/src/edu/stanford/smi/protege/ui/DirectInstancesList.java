@@ -38,6 +38,7 @@ import edu.stanford.smi.protege.event.FrameEvent;
 import edu.stanford.smi.protege.event.FrameListener;
 import edu.stanford.smi.protege.model.BrowserSlotPattern;
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
@@ -46,6 +47,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.resource.Colors;
 import edu.stanford.smi.protege.resource.LocalizedText;
 import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.AllowableAction;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CollectionUtilities;
@@ -112,7 +114,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     private FrameListener _clsFrameListener = new FrameAdapter() {
         public void ownSlotValueChanged(FrameEvent event) {
             super.ownSlotValueChanged(event);
-            updateButtons();
+            background.addChange(event);
         }
     };
 
@@ -411,7 +413,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                 background.cancel();
             }
             background = new AddInstancesRunner(new ArrayList<Instance>(instanceSet));
-            new Thread(background, "Calculate Instances For Panel").start();
+            Thread th = new Thread(background, "Calculate Instances For Panel");
+            th.start();
             if (instanceSet.contains(selectedValue) && selectedValue instanceof Instance) {
                 background.setDeferredSelection((Instance) selectedValue);
             }
@@ -503,7 +506,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     
     private class AddInstancesRunner implements Runnable {
         private List<Instance> instances;
-        private List<ClsEvent> changes = new ArrayList<ClsEvent>();
+        private List<AbstractEvent> changes = new ArrayList<AbstractEvent>();
         private Instance deferredSelection;
         private boolean sorted;
         
@@ -516,11 +519,26 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
         public void run() {
             while (true) {
+                waitToProcessEvents();
                 addOneInstance(getNextInstance());
                 synchronized (this) {
                     if (cancelled) return;
                 }
                 handleChanges();
+            }
+        }
+        
+        private void waitToProcessEvents() {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                   public void run() {
+                       ;
+                   }
+                });
+            } catch (InterruptedException e) {
+                Log.getLogger().log(Level.SEVERE, "Interrupt caught - why?", e);
+            } catch (InvocationTargetException e) {
+                Log.getLogger().log(Level.SEVERE, "Programmer error", e);
             }
         }
         
@@ -568,7 +586,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         }
         
         private void handleChanges() {
-            final List<ClsEvent> localChanges = new ArrayList<ClsEvent>();
+            final List<AbstractEvent> localChanges = new ArrayList<AbstractEvent>();
             final Instance localDeferredSelection;
             boolean noChanges;
             synchronized (this) {
@@ -588,16 +606,30 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                             if (cancelled) {
                                 return;
                             }
-                            for (ClsEvent event : localChanges) {
-                                if (event.getEventType() == ClsEvent.DIRECT_INSTANCE_ADDED) {
-                                    Instance instance = event.getInstance();
-                                    insertInstanceInList(instance);
-                                    instances.remove(instance);
+                            for (AbstractEvent event : localChanges) {
+                                if (event instanceof ClsEvent) {
+                                    ClsEvent clsEvent = (ClsEvent) event;
+                                    if (clsEvent.getEventType() == ClsEvent.DIRECT_INSTANCE_ADDED) {
+                                        Instance instance = clsEvent.getInstance();
+                                        insertInstanceInList(instance);
+                                        instances.remove(instance);
+                                    }
+                                    else if (clsEvent.getEventType() == ClsEvent.DIRECT_INSTANCE_REMOVED) {
+                                        Instance instance = clsEvent.getInstance();
+                                        getModel().removeValue(instance);
+                                        instances.remove(instance);
+                                    }
                                 }
-                                else if (event.getEventType() == ClsEvent.DIRECT_INSTANCE_REMOVED) {
-                                    Instance instance = event.getInstance();
-                                    getModel().removeValue(instance);
-                                    instances.remove(instance);
+                                else if (event instanceof FrameEvent) {
+                                    FrameEvent frameEvent = (FrameEvent) event;
+                                    Frame frame = frameEvent.getFrame();
+                                    if (frameEvent.getEventType() == FrameEvent.OWN_SLOT_VALUE_CHANGED &&
+                                            getModel().contains(frame) &&
+                                            frame instanceof Instance) {
+                                        getModel().removeValue(frame);
+                                        insertInstanceInList((Instance) frame);
+                                        updateButtons();
+                                    }
                                 }
                             }
                             if (localDeferredSelection != null) {
@@ -634,7 +666,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
             }
         }
         
-        public synchronized void addChange(ClsEvent event) {
+        public synchronized void addChange(AbstractEvent event) {
             changes.add(event);
             notifyAll();
         }
