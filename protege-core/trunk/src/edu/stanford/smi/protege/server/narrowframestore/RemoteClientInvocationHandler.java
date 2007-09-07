@@ -29,7 +29,7 @@ public class RemoteClientInvocationHandler implements InvocationHandler {
     Method [] methods = NarrowFrameStore.class.getMethods();
     for (Method method : methods) {
       try {
-        if (method.getName().equals("executeQuery")) {
+        if (method.getName().equals("executeQuery") || method.getName().equals("reinitialize")) {
           continue;
         }
         Class[] nfsCallParams = (Class []) method.getParameterTypes();
