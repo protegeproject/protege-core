@@ -1,0 +1,1288 @@
+options {
+    STATIC = false;
+    CACHE_TOKENS = true;
+    OPTIMIZE_TOKEN_MANAGER = true;
+    UNICODE_INPUT = true;
+}
+
+PARSER_BEGIN(Parser)
+
+package edu.stanford.smi.protege.storage.clips;
+
+import java.util.*;
+import java.util.logging.*;
+import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.util.*;
+
+public final class Parser {
+    private KnowledgeBase itsKB;
+    private Collection _itsErrors;
+    private boolean isInclude;
+    private Cls itsDefaultMetaCls;
+    private Map itsInverseSlotMap = new HashMap();
+    private Map itsSuperslotsMap = new HashMap();
+    private Collection itsUndefinedClses = new HashSet();
+    private Collection itsUndefinedInstances = new HashSet();
+    private String state;
+    private static final String LOADING_CLASSES = "loading classes";
+    private static final String LOADING_INSTANCES = "loading instances";
+
+    public String toString() {
+        return "ClipsParser";
+    }
+    
+    private void recordError(String msg) {
+    	recordError(msg, null);
+    }
+    
+    private void recordError(String msg, Throwable e) {
+        Object error = (e == null) ? (Object) msg : e;
+        _itsErrors.add(error);
+        Log.getLogger().log(Level.SEVERE, msg, e);
+    }
+
+    
+
+    public void loadClses(KnowledgeBase kb, boolean isIncluded, Collection errors) {
+        try {
+            state = LOADING_CLASSES;
+            itsKB = kb;
+            itsDefaultMetaCls = kb.getCls(Model.Cls.STANDARD_CLASS);
+            this.isInclude = isIncluded;
+            _itsErrors = errors;
+            parseOntology();
+            connectInverseSlots();
+            connectSuperslots();
+            checkUndefinedClasses();
+        } catch (Exception e) {
+        	recordError("Error parsing classes", e);
+        }
+    }
+
+    private static final String UNDEFINED_CLASS = ":UNDEFINED";
+    private Cls getUndefinedSuperclass() {
+        Cls cls = itsKB.getCls(UNDEFINED_CLASS);
+        if (cls == null) {
+            Collection parents = CollectionUtilities.createCollection(itsKB.getRootCls());
+            cls = itsKB.createCls(UNDEFINED_CLASS, parents);
+        }
+        return cls;
+    }
+
+    private void checkUndefinedClasses() {
+        if (!itsUndefinedClses.isEmpty()) {
+            Cls standardCls = itsKB.getDefaultClsMetaCls();
+            Cls undefinedSuperclass = getUndefinedSuperclass();
+            Iterator i = itsUndefinedClses.iterator();
+            while (i.hasNext()) {
+                Cls cls = (Cls) i.next();
+                recordError("Undefined class: " + cls.getName() + " found while " + state);
+                cls.addDirectSuperclass(undefinedSuperclass);
+                cls.setDirectType(standardCls);
+            }
+            itsUndefinedClses.clear();
+        }
+    }
+
+    private void checkUndefinedInstances() {
+        if (!itsUndefinedInstances.isEmpty()) {
+            Cls cls = getUndefinedSuperclass();
+            Iterator i = itsUndefinedInstances.iterator();
+            while (i.hasNext()) {
+                Instance instance = (Instance) i.next();
+                recordError("Undefined instance: " + instance.getName());
+                instance.setDirectType(cls);
+            }
+        }
+    }
+
+    public void loadInstances(KnowledgeBase kb, boolean isIncluded, Collection errors) {
+        try {
+            state = LOADING_INSTANCES;
+            itsKB = kb;
+            this.isInclude = isIncluded;
+            _itsErrors = errors;
+                  parseKnowledgeBase();
+            checkUndefinedClasses();
+            checkUndefinedInstances();
+        } catch (Exception e) {
+        	recordError("Error loading instances", e);
+        }
+    }
+
+    private void handleException(Throwable e) {
+        recordError("Parsing error", e);
+        Token t;
+        do {
+            t = getNextToken();
+        } while ((t.kind != EOF) && (t.kind != RPAREN && getToken(1).kind != LPAREN));
+    }
+
+    private void nameConflictError(String name, String typeName, Frame frame) {
+        String text = name + " is both a " + typeName + " and a " + getTypeName(frame);
+        recordError(text, null);
+    }
+
+    private String getTypeName(Frame frame) {
+        String typeName;
+        if (frame instanceof Cls) {
+            typeName = "class";
+        } else if (frame instanceof Slot) {
+            typeName = "slot";
+        } else if (frame instanceof Facet) {
+            typeName = "facet";
+        } else if (frame instanceof SimpleInstance) {
+            typeName = "simple instance";
+        } else {
+            typeName = frame.getClass().getName();
+        }
+        return typeName;
+    }
+
+    private int nClses;
+    private static int MIN_TRACE_COUNT = 5000;
+    private static int TRACE_COUNT_DELTA = 1000;
+    private static int MIN_CLASS_TRACE_COUNT = MIN_TRACE_COUNT;
+    private static int MIN_INSTANCE_TRACE_COUNT = MIN_TRACE_COUNT;
+    private static int CLASS_TRACE_COUNT_DELTA = TRACE_COUNT_DELTA;
+    private static int INSTANCE_TRACE_COUNT_DELTA = TRACE_COUNT_DELTA;
+
+    private Cls getCls(String name, String comment, Collection parents, boolean isDefinition) {
+        if (name.equals(ClipsUtil.TOP_LEVEL_SLOT_CLASS)) {
+            return null;
+        }
+
+        if (name.equals("USER")) {
+            name = itsKB.getRootCls().getName();
+        }
+
+        Cls cls;
+        Frame frame = itsKB.getFrame(name);
+        if (frame == null) {
+            cls = itsKB.createCls(name, parents, itsDefaultMetaCls, false);
+            if ((++nClses % CLASS_TRACE_COUNT_DELTA) == 0 && nClses >= MIN_CLASS_TRACE_COUNT) {
+                Log.getLogger().info("Loaded " + nClses + " classes: " + name);
+            }
+            if (comment != null) {
+                cls.setDocumentation(comment);
+            }
+            if (!isDefinition) {
+                itsUndefinedClses.add(cls);
+            }
+        } else if (frame instanceof Cls) {
+            cls = (Cls) frame;
+            if (isDefinition) {
+                boolean succeeded = itsUndefinedClses.remove(cls);
+                if (succeeded) {
+		            if (comment != null) {
+		                cls.setDocumentation(comment);
+		            }
+		            if (!parents.isEmpty()) {
+		                addDirectSuperclasses(cls, parents);
+		            }
+                } else {
+                    recordError("Duplicate definition of class " + name + " was ignored");
+                }
+            }
+        } else if (frame instanceof SimpleInstance && ((Instance) frame).getDirectType() == null) {
+            itsKB.setDirectType((Instance) frame, itsKB.getDefaultClsMetaCls());
+            cls = itsKB.getCls(name);
+            Iterator i = parents.iterator();
+            while (i.hasNext()) {
+                Cls parent = (Cls) i.next();
+                cls.addDirectSuperclass(parent);
+            }
+        } else {
+            nameConflictError(name, "class", frame);
+            cls = getCls(name + "_", comment, parents, isDefinition);
+        }
+        if (isInclude) {
+            cls.setIncluded(true);
+        }
+        return cls;
+    }
+
+    private void addDirectSuperclasses(Cls cls, Collection parents) {
+        Iterator i = parents.iterator();
+        while (i.hasNext()) {
+            Cls parent = (Cls) i.next();
+            cls.addDirectSuperclass(parent);
+        }
+    }
+
+    private boolean hasSlot(String name) {
+        return itsKB.containsFrame(name);
+    }
+
+    private Slot getExistingSlot(String name) {
+        Slot slot;
+        Frame frame = itsKB.getFrame(name);
+        if (frame instanceof Slot) {
+            slot = (Slot) frame;
+        } else {
+            recordError("non-existent slot: " + name);
+            slot = getSlot(name);
+        }
+        return slot;
+    }
+
+    private Slot getSlot(String name) {
+        Slot slot;
+        Frame frame = itsKB.getFrame(name);
+        if (frame == null) {
+            slot = itsKB.createSlot(name, itsKB.getDefaultSlotMetaCls(), false);
+        } else if (frame instanceof Slot) {
+            slot = (Slot) frame;
+        } else {
+            nameConflictError(name, "slot", frame);
+            slot = getSlot(name + "_");
+        }
+        if (isInclude) {
+            slot.setIncluded(true);
+        }
+        return slot;
+    }
+
+    private int nInstances;
+    private int nSetTypeInstances;
+    private Instance getInstance(String instanceName, Collection types) {
+        Instance instance = itsKB.getInstance(instanceName);
+        if (instance == null) {
+        	Collection directTypes = types == null ? Collections.EMPTY_LIST : types;
+            instance = itsKB.createInstance(new FrameID(instanceName), directTypes, false);
+            if ((++nInstances % INSTANCE_TRACE_COUNT_DELTA) == 0 && nInstances >= MIN_INSTANCE_TRACE_COUNT) {
+                Log.getLogger().info("Loaded " + nInstances + " instances: " + instanceName);
+            }
+            if (types == null) {
+                itsUndefinedInstances.add(instance);
+            }
+            if (instance instanceof Cls) {
+                itsUndefinedClses.add(instance);
+            }
+        } else if (types != null && !CollectionUtilities.equalsSet(instance.getDirectTypes(), types)) {
+            if (isTypeMismatch(instance, types)) {
+                recordError("type mismatch: " + instance + " cannot become an instance of " + types);
+            }
+            Instance oldInstance = instance;
+            instance = instance.setDirectTypes(types);
+            if ((++nSetTypeInstances % INSTANCE_TRACE_COUNT_DELTA) == 0 && nSetTypeInstances >= MIN_INSTANCE_TRACE_COUNT) {
+                Log.getLogger().info("Set type on " + nSetTypeInstances + " instances: " + instanceName);
+            }
+            itsUndefinedInstances.remove(oldInstance);
+        }
+        if (isInclude) {
+            instance.setIncluded(true);
+        }
+        return instance;
+    }
+
+    private static boolean isTypeMismatch(Instance instance, Collection types) {
+        boolean isTypeMismatch;
+        Cls cls = (Cls) CollectionUtilities.getFirstItem(types);
+        if (instance instanceof Cls) {
+            isTypeMismatch = !cls.isClsMetaCls();
+        } else if (instance instanceof Slot) {
+            isTypeMismatch = !cls.isSlotMetaCls();
+        } else if (instance instanceof Facet) {
+            isTypeMismatch = !cls.isFacetMetaCls();
+        } else {
+            isTypeMismatch = false;
+        }
+        return isTypeMismatch;
+    }
+
+    private void checkBooleanAndSetValues(Cls cls, Slot slot, Collection values) {
+        if (areBooleanValues(values)) {
+            if (cls == null) {
+                Collection defaults = slot.getDefaultValues();
+                defaults = convertToBooleanDefaults(defaults);
+                slot.setValueType(ValueType.BOOLEAN);
+                slot.setDefaultValues(defaults);
+            } else {
+                Collection defaults = cls.getTemplateSlotDefaultValues(slot);
+                defaults = convertToBooleanDefaults(defaults);
+                cls.setTemplateSlotValueType(slot, ValueType.BOOLEAN);
+                cls.setTemplateSlotDefaultValues(slot, defaults);
+            }
+        } else {
+            if (cls == null) {
+                slot.setAllowedValues(values);
+            } else {
+                cls.setTemplateSlotAllowedValues(slot, values);
+            }
+        }
+    }
+	/*
+    private void checkBoolean(Cls cls, Slot slot) {
+        Collection values = (cls == null) ? slot.getAllowedValues() : cls.getTemplateSlotAllowedValues(slot);
+        if (areBooleanValues(values)) {
+            if (cls == null) {
+                slot.setValueType(ValueType.BOOLEAN);
+                Collection defaults = slot.getDefaultValues();
+                defaults = convertToBooleanDefaults(defaults);
+                slot.setDefaultValues(defaults);
+            } else {
+                cls.setTemplateSlotValueType(slot, ValueType.BOOLEAN);
+                Collection defaults = cls.getTemplateSlotDefaultValues(slot);
+                defaults = convertToBooleanDefaults(defaults);
+                cls.setTemplateSlotDefaultValues(slot, defaults);
+            }
+        }
+    }
+    */
+
+    private boolean areBooleanValues(Collection values) {
+        boolean areBooleanValues = false;
+        if (values.size() == 2) {
+            Iterator i = values.iterator();
+            String v1 = (String) i.next();
+            if (isBooleanValue(v1)) {
+                String v2 = (String) i.next();
+                if (isBooleanValue(v2)) {
+                    areBooleanValues = !v1.equalsIgnoreCase(v2);
+                }
+            }
+        }
+        return areBooleanValues;
+    }
+
+    private Collection convertToBooleanDefaults(Collection c) {
+        Collection booleans;
+        if (c.isEmpty()) {
+            booleans = Collections.EMPTY_LIST;
+        } else {
+            booleans = new ArrayList();
+            Iterator i = c.iterator();
+            while (i.hasNext()) {
+                Object o = i.next();
+                booleans.add(Boolean.valueOf(o.toString()));
+            }
+        }
+        return booleans;
+    }
+
+    private static boolean isBooleanValue(String s) {
+        return s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false");
+    }
+
+    private void checkedValueAdd(Collection values, ValueType type, Object value) {
+        try {
+            tryCheckedValueAdd(values, type, value);
+        } catch (Exception e) {
+            recordError("invalid object type", e);
+        }
+    }
+    
+    public static boolean equals(Object o1, Object o2) {
+    	return SystemUtilities.equals(o1, o2);
+    }
+
+    private void tryCheckedValueAdd(Collection values, ValueType type, Object value) {
+        if (type == ValueType.CLS && value instanceof String) {
+            value = getCls((String)value, null, Collections.EMPTY_LIST, false);
+        } else if (type == ValueType.INSTANCE && value instanceof String) {
+            value = getInstance((String)value, null);
+        } else if (type == ValueType.FLOAT) {
+            value = toFloat((String)value);
+        } else if (type == ValueType.INTEGER) {
+            value = toInteger((String)value);
+        } else if (type == ValueType.BOOLEAN) {
+            value = new Boolean((String)value);
+        } else if (type == ValueType.ANY && value instanceof String) {
+            // here we are essentially guessing
+            Object first = CollectionUtilities.getFirstItem(values);
+            if (first != null && appearsToBeValueType(values)) {
+                value = getInstance((String) value, null);
+            }
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("null value");
+        }
+        values.add(value);
+    }
+
+    private static boolean appearsToBeValueType(Collection values) {
+        boolean isValueType = false;
+        Object first = CollectionUtilities.getFirstItem(values);
+        if (first != null) {
+            isValueType = first.equals(ValueType.INSTANCE.toString()) || first.equals(ValueType.CLS.toString());
+        }
+        return isValueType;
+    }
+
+    Slot createTemplateSlot(String name, boolean isSingle, Cls cls, boolean isTopLevel) {
+        Slot slot = getSlot(name);
+        if (cls != null && !cls.hasTemplateSlot(slot)) {
+            cls.addDirectTemplateSlot(slot);
+        }
+        if (!isSingle) {
+            if (isTopLevel) {
+                slot.setAllowsMultipleValues(true);
+            } else {
+                cls.setTemplateSlotAllowsMultipleValues(slot, true);
+            }
+        }
+        return slot;
+    }
+
+    ValueType getSlotType(Cls cls, Slot slot) {
+        return (cls == null) ? slot.getValueType() : cls.getTemplateSlotValueType(slot);
+    }
+
+    private static final String VARIABLE = "?VARIABLE";
+
+    private Integer toInteger(String s) {
+        Integer i = null;
+        try {
+            if (!s.equals(VARIABLE)) {
+                i = new Integer(s);
+            }
+        } catch (Exception e) {
+            try {
+                Float f = new Float(s);
+                i = new Integer(f.intValue());
+            } catch (Exception e2) {
+                recordError("Invalid integer: " + s, e2);
+                i = null;
+            }
+        }
+        return i;
+    }
+
+    private Float toFloat(String s) {
+        Float f = null;
+        try {
+            if (!s.equals(VARIABLE)) {
+                f = new Float(s);
+            }
+        } catch (Exception e) {
+            recordError("Invalid floating point number: " + s, e);
+            f = null;
+        }
+        return f;
+    }
+
+    private void addInverseSlotPair(Slot slot, Slot inverseSlot) {
+        Slot existingSlot = (Slot) itsInverseSlotMap.get(inverseSlot);
+        if (existingSlot == null) {
+            itsInverseSlotMap.put(slot, inverseSlot);
+        } else if (!equals(existingSlot, slot)) {
+            recordError("mismatched inverse slots: " + slot + ", " + inverseSlot + ", " + existingSlot);
+        } else {
+            // do nothing
+        }
+    }
+
+    private void addSuperslots(Slot slot, Collection superslots) {
+        itsSuperslotsMap.put(slot, superslots);
+    }
+
+    private void connectInverseSlots() {
+        Iterator i = itsInverseSlotMap.keySet().iterator();
+        while (i.hasNext()) {
+            Slot slot = (Slot) i.next();
+            Slot inverseSlot = (Slot) itsInverseSlotMap.get(slot);
+            slot.setInverseSlot(inverseSlot);
+        }
+    }
+
+    private void connectSuperslots() {
+        Iterator i = itsSuperslotsMap.keySet().iterator();
+        while (i.hasNext()) {
+            Slot slot = (Slot) i.next();
+            Collection superslots = (Collection) itsSuperslotsMap.get(slot);
+            connectSuperslots(slot, superslots);
+        }
+    }
+
+    private void connectSuperslots(Slot slot, Collection superslots) {
+        Iterator i = superslots.iterator();
+        while (i.hasNext()) {
+            String name = (String) i.next();
+            Slot superslot = itsKB.getSlot(name);
+            slot.addDirectSuperslot(superslot);
+        }
+    }
+
+    private Facet getOrCreateFacet(String facetName) {
+        Facet facet = itsKB.getFacet(facetName);
+        if (facet == null) {
+            facet = itsKB.createFacet(facetName, itsKB.getDefaultFacetMetaCls(), false);
+        }
+        return facet;
+    }
+    
+    private Map clsToSlotToValueType = new HashMap();
+    private ValueType getOwnSlotValueType(Instance instance, Collection directTypes, Slot slot) {
+        ValueType valueType;
+        if (directTypes.size() == 1) {
+            Cls type = (Cls) CollectionUtilities.getFirstItem(directTypes);
+            Map slotToValueType = (Map) clsToSlotToValueType.get(type);
+            if (slotToValueType == null) {
+                slotToValueType = new HashMap();
+                clsToSlotToValueType.put(type, slotToValueType);
+            }
+            valueType = (ValueType) slotToValueType.get(slot);
+            if (valueType == null) {
+                valueType = instance.getOwnSlotValueType(slot);
+                slotToValueType.put(slot, valueType);
+            }
+        } else {
+            valueType = instance.getOwnSlotValueType(slot);
+        }
+        return valueType;
+    }
+
+}
+PARSER_END(Parser)
+
+// -----------------------------------------------------------------------------------------
+
+SKIP: {
+      " "
+    | "\t"
+    | "\n"
+    | "\r"
+}
+
+SPECIAL_TOKEN: {
+      <COMMENT_LINE:        (<BLANK_COMMENT>) | (<TEXT_COMMENT>) >
+    | <#EOL:		    ("\r"|"\n"|"\r\n") >
+    | <#BLANK_COMMENT:      ";" <EOL> >
+    | <#TEXT_COMMENT:       ";" ~["+"] (~["\r","\n"])* <EOL> >
+}
+
+// keywords which are not valid symbols
+TOKEN: {
+    <QUESTION_NONE:		"?NONE">
+    |	<QUESTION_DEFAULT:	"?DEFAULT">
+    |	<LPAREN:		"(">
+    |	<RPAREN:		")">
+    |	<BRA:			"[">
+    |	<KET:			"]">
+    |	<EXTENSION:		";+">
+}
+
+// keywords which are also valid symbols
+TOKEN: {
+        <ABSTRACT:              "abstract">
+    |	<ACCESS:                "access">
+    |	<ALLOWED_CLASSES:	"allowed-classes">
+    |	<ALLOWED_FLOATS:	"allowed-floats">
+    |	<ALLOWED_GRAMMAR:	"allowed-grammar">
+    |	<ALLOWED_INTEGERS:	"allowed-integers">
+    |	<ALLOWED_PARENTS:	"allowed-parents">
+    |	<ALLOWED_STRINGS:	"allowed-strings">
+    |	<ALLOWED_SYMBOLS:	"allowed-symbols">
+    |	<ALLOWED_VALUES:	"allowed-values">
+    |	<ANY:                   "ANY">
+    |   <ASSOCIATED_FACET:      "associated-facet">
+    |   <BUILD:                 "build">
+    |	<CARDINALITY:           "cardinality">
+    |	<COMMENT:               "comment">
+    |	<COMPOSITE:             "composite">
+    |	<CONCRETE:              "concrete">
+    |	<CREATE_ACCESSOR:	"create-accessor">
+    |	<DEFAULT_:	        "default">
+    |	<DEFCLASS:	        "defclass">
+    |	<EXCLUSIVE:	        "exclusive">
+    |	<FLOAT:	                "FLOAT">
+    |	<INCLUDE:	        "include">
+    |	<INHERIT:	        "inherit">
+    |	<INITIALIZER_ONLY:	"initializer-only">
+    |	<INSTANCE:		"INSTANCE">
+    |	<INTEGER:		"INTEGER">
+    |	<INVERSE_SLOT:		"inverse-slot">
+    |	<IS_A:			"is-a">
+    |	<LOCAL:			"local">
+    |	<MULTISLOT:		"multislot">
+    |	<NO_INHERIT:		"no-inherit">
+    |	<NON_REACTIVE:		"non-reactive">
+    |	<NOTE:			"note">
+    |	<OF:			"of">
+    |	<OVERRIDE_MESSAGE:	"override-message">
+    |	<PATTERN_MATCH:		"pattern-match">
+    |	<PRIVATE:		"PRIVATE">
+    |	<PROPAGATION:		"propagation">
+    |	<PUBLIC:		"PUBLIC">
+    |	<RANGE:			"range">
+    |	<REACTIVE:		"reactive">
+    |	<READ:			"read">
+    |	<READ_ONLY:		"read-only">
+    |	<READ_WRITE:		"read-write">
+    |	<ROLE:			"role">
+    |	<SINGLE_SLOT:		"single-slot">
+    |	<SHARED:		"shared">
+    |	<SLOT:			"slot">
+    |	<SOURCE:		"source">
+    |	<STORAGE:		"storage">
+    |	<STRING:		"STRING">
+    |   <SUBSLOT_OF:            "subslot-of">
+    |	<SYMBOL:		"SYMBOL">
+    |	<TYPE:			"type">
+    |   <USER_FACET:            "user-facet">
+    |   <VALUE:                 "value">
+    |	<VISIBILITY:		"VISIBILITY">
+    |   <VERSION:               "version">
+    |	<WRITE:			"write">
+}
+
+TOKEN: {
+         <INSTANCE_NAME_LITERAL:    "[" <SYMBOL_LITERAL> "]">
+    |    <STRING_LITERAL:
+		      "\""
+		      (   (~["\"","\\","\n","\r"])
+		        | ("\\"
+		            ( ["n","t","b","r","f","\\","'","\""]
+		            | ["0"-"7"] ( ["0"-"7"] )?
+		            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+		            )
+		          )
+		      )*
+		      "\""
+        >
+    |	<SYMBOL_LITERAL:	    <SYMBOL_CHAR_START> ((<SYMBOL_CHAR_MIDDLE>) | ("(" (<SYMBOL_CHAR_MIDDLE>)* ")"))* >
+    |	<#SYMBOL_CHAR_START:        ~["(",")","\r","\t","\n"," ","[", "]", "\""] >
+    |	<#SYMBOL_CHAR_MIDDLE:       <SYMBOL_CHAR_START> | "[" | "]" | "\"" >
+}
+
+// --------------------------------------------------------------------------------------
+
+void accessFacet(Cls cls, Slot slot) : {} {
+    <ACCESS> (<READ_WRITE> | <READ_ONLY> | <INITIALIZER_ONLY>)
+}
+
+void allowedClassesValueDescription(Cls cls, Slot slot) : {
+    Collection clses;
+} {
+    <ALLOWED_CLASSES> clses=clsesList() {
+        if (cls == null) {
+            slot.setAllowedClses(clses);
+        } else {
+            cls.setTemplateSlotAllowedClses(slot, clses);
+        }
+    }
+}
+
+void allowedConstantValueDescription(Cls cls, Slot slot) : {} {
+      allowedFloatsValueDescription(cls, slot)
+    |	allowedIntegersValueDescription(cls, slot)
+    |	allowedSymbolsValueDescription(cls, slot)
+    |	allowedStringsValueDescription(cls, slot)
+    |	allowedValuesValueDescription(cls, slot)
+}
+
+void allowedConstantValueDescriptionExtension(Cls cls, Slot slot) : {} {
+      allowedClassesValueDescription(cls, slot)
+    |	allowedGrammarValueDescription(cls, slot)
+    |	allowedParentsValueDescription(cls, slot)
+}
+
+void allowedFloatsValueDescription(Cls cls, Slot slot) : {
+    String s;
+    List list = new ArrayList();
+} {
+    <ALLOWED_FLOATS> (s=symbol() {list.add(s);})+
+}
+
+void allowedGrammarValueDescription(Cls cls, Slot slot) : {
+} {
+    <ALLOWED_GRAMMAR> string() [string()]
+}
+
+void allowedIntegersValueDescription(Cls cls, Slot slot) : {
+    String s;
+    List list = new ArrayList();
+} {
+    <ALLOWED_INTEGERS> (s=symbol() {list.add(s);})+
+}
+
+void allowedParentsValueDescription(Cls cls, Slot slot) : {
+    Collection parents;
+} {
+    <ALLOWED_PARENTS> parents=clsesList() {
+        if (cls == null) {
+            slot.setAllowedParents(parents);
+        } else {
+            cls.setTemplateSlotAllowedParents(slot, parents);
+        }
+    }
+}
+
+void allowedStringsValueDescription(Cls cls, Slot slot) : {
+    String s;
+    List list = new ArrayList();
+} {
+    <ALLOWED_STRINGS> (s=string() {list.add(s);} )+ {
+        if (cls == null) {
+            slot.setAllowedValues(list);
+        } else {
+            cls.setTemplateSlotAllowedValues(slot, list);
+        }
+    }
+}
+
+void allowedSymbolsValueDescription(Cls cls, Slot slot) : {
+    String s;
+    List list = new ArrayList();
+} {
+    <ALLOWED_SYMBOLS> (s=symbol() {list.add(s);} )+ {
+        if (cls == null) {
+            slot.setAllowedValues(list);
+        } else {
+            cls.setTemplateSlotAllowedValues(slot, list);
+        }
+    }
+}
+
+void allowedValuesValueDescription(Cls cls, Slot slot) : {
+    List list;
+} {
+    <ALLOWED_VALUES> list=constants() {
+    	checkBooleanAndSetValues(cls, slot, list);
+    }
+}
+
+void cardinalityValueDescription(Cls cls, Slot slot) : {
+    String minString;
+    String maxString;
+} {
+    <CARDINALITY> minString=symbol() maxString=symbol() {
+        Integer min = toInteger(minString);
+        if (min != null && min.intValue() != 0) {
+            if (cls == null) {
+                slot.setMinimumCardinality(min.intValue());
+            } else {
+                cls.setTemplateSlotMinimumCardinality(slot, min.intValue());
+            }
+        }
+        Integer max = toInteger(maxString);
+        if (max != null) {
+            if (cls == null) {
+                slot.setMaximumCardinality(max.intValue());
+            } else {
+                cls.setTemplateSlotMaximumCardinality(slot, max.intValue());
+            }
+        }
+    }
+}
+
+void cls() : {
+    Cls cls;
+    String name;
+    String comment = null;
+    Collection parents;
+} {
+    try {
+        <LPAREN> <DEFCLASS> name=symbol() (comment=string())?
+                <LPAREN> <IS_A> parents=clsesList() <RPAREN> {
+            cls=getCls(name, comment, parents, true);
+        }
+        clsRole(cls) (slot(cls))* <RPAREN>
+    } catch (Exception e) {
+        handleException(e);
+    } catch (TokenMgrError e) {
+    	handleException(e);
+    }
+}
+
+Cls clsReference() : {
+    String name;
+} {
+    name=symbol() {
+        return getCls(name, null, Collections.EMPTY_LIST, false);
+    }
+}
+
+List clsesList() : {
+    List clses = new ArrayList();
+    Cls cls;
+} {
+    (cls=clsReference() {clses.add(cls);} )* {
+        return clses;
+    }
+}
+
+void clsRole(Cls cls) : {
+    boolean isAbstract;
+} {
+    <LPAREN> <ROLE> (<CONCRETE> {isAbstract = false;}
+            |	<ABSTRACT> {isAbstract = true;}) <RPAREN> {
+        if (cls != null) {
+            cls.setAbstract(isAbstract);
+        }
+    }
+}
+
+Object constant() : {
+    Object o;
+} {
+    (o=string() | o=symbol() | o=instanceReference()) {
+        return o;
+    }
+}
+
+List constants() : {
+    Object value;
+    List list = new ArrayList();
+} {
+    (value = constant() {list.add(value);} )+ {
+        return list;
+    }
+}
+
+void constraintValueDescription(Cls cls, Slot slot) : {
+} {
+      typeValueDescription(cls, slot)
+    |	allowedConstantValueDescription(cls, slot)
+    | rangeValueDescription(cls, slot)
+    |	cardinalityValueDescription(cls, slot)
+}
+
+void constraintValueDescriptionExtension(Cls cls, Slot slot) : {} {
+    allowedConstantValueDescriptionExtension(cls, slot)
+}
+
+void createAccessorFacet(Cls cls, Slot slot) : {}
+{
+    <CREATE_ACCESSOR> (<QUESTION_NONE> | <READ> | <WRITE> | <READ_WRITE>) {
+        // discard
+    }
+}
+
+void defaultFacet(Cls cls, Slot slot) : {
+    List list = new ArrayList();
+    Object value;
+    ValueType type = getSlotType(cls, slot);
+} {
+    <DEFAULT_> (value=constant() {checkedValueAdd(list, type, value);})+ {
+        if (cls == null) {
+            slot.setDefaultValues(list);
+        } else {
+            cls.setTemplateSlotDefaultValues(slot, list);
+        }
+    }
+}
+
+String facetName() : {
+    String name;
+} {
+    name=symbol() {
+        return name;
+    }
+}
+
+void userFacet(Cls cls, Slot slot) : {
+    List rawvalues = new ArrayList();
+    String facetName;
+    Object rawvalue;
+} {
+    <USER_FACET> facetName=facetName() (rawvalue=constant() {rawvalues.add(rawvalue);})+ {
+        Facet facet = getOrCreateFacet(facetName);
+        ValueType type = facet.getValueType();
+        List values = new ArrayList();
+        Iterator i = rawvalues.iterator();
+        while (i.hasNext()) {
+            Object value = i.next();
+            checkedValueAdd(values, type, value);
+        }
+        if (cls != null) {
+        	cls.setTemplateFacetValues(slot, facet, values);
+        }
+    }
+}
+
+void templateSlotValueFacet(Cls cls, Slot slot) : {
+    List list = new ArrayList();
+    Object value;
+    ValueType type = getSlotType(cls, slot);
+} {
+    <VALUE> (value=constant() {checkedValueAdd(list, type, value);})+ {
+        if (cls == null) {
+            slot.setValues(list);
+        } else {
+            cls.setTemplateSlotValues(slot, list);
+        }
+    }
+}
+
+void facet(Cls cls, Slot slot) : {} {
+        defaultFacet(cls, slot)
+    |	storageFacet(cls, slot)
+    |	accessFacet(cls, slot)
+    |   userFacet(cls, slot)
+    |	propagationFacet(cls, slot)
+    |	sourceFacet(cls, slot)
+    |	patternMatchFacet(cls, slot)
+    |	visibilityFacet(cls, slot)
+    |	createAccessorFacet(cls, slot)
+    |	overrideMessageFacet(cls, slot)
+    |	constraintValueDescription(cls, slot)
+    |   slotDocumentationFacet(cls, slot)
+    |   inverseSlotProperty(cls, slot)
+    |   templateSlotValueFacet(cls, slot)
+    |   superslotProperty(cls, slot)
+    |   associatedFacet(cls, slot)
+    |	constraintValueDescriptionExtension(cls, slot)
+}
+
+void facetStatement(Cls cls, Slot slot) : {} {
+    [<EXTENSION>] <LPAREN> facet(cls, slot) <RPAREN>
+}
+
+void includeOntologies() : {
+    String name;
+    List list = new ArrayList();
+} {
+    <EXTENSION> <LPAREN> <INCLUDE> (name=string() {list.add(name);})* <RPAREN> {
+        // included ontologies
+    }
+}
+
+void instance() : {
+    String instanceName;
+    Cls type;
+    Collection types = new ArrayList();
+    Instance instance;
+} {
+    try {
+        <LPAREN> instanceName=instanceName() <OF> (type=clsReference() {types.add(type);})+ {
+            instance=getInstance(instanceName, types);
+        }
+        (slotValue(instance, types))* <RPAREN>
+    } catch (Exception e) {
+        handleException(e);
+    } catch (TokenMgrError e) {
+    	handleException(e);
+    }
+}
+
+String instanceName() : {
+    String name;
+    Token t;
+} {
+    t=<INSTANCE_NAME_LITERAL> {
+        name = t.image;
+        name = name.substring(1, name.length()-1);
+        name = ClipsUtil.toInternalSymbol(name);
+        return name;
+    }
+}
+
+Instance instanceReference() : {
+    String name;
+} {
+    name=instanceName() {
+        return getInstance(name, null);
+    }
+}
+
+void oldStuff() : {} {
+    <EXTENSION> string() <EXTENSION> instanceName() {
+        // do nothing
+    }
+}
+
+void overrideMessageFacet(Frame frame, Slot slot) : {} {
+    <OVERRIDE_MESSAGE> (<QUESTION_DEFAULT> | symbol()) {
+        // do nothing
+    }
+}
+
+void versionInfo() : {
+    String version;
+    String build;
+} {
+    <EXTENSION> <LPAREN> <VERSION> version=string() <RPAREN>
+    <EXTENSION> <LPAREN> <BUILD> build=string() <RPAREN>
+    {
+    itsKB.setVersionString(version);
+    itsKB.setBuildString(build);
+    }
+}
+
+void parseKnowledgeBase() : {} {
+    (LOOKAHEAD(3) oldStuff())? (versionInfo())? (instance())* <EOF>
+}
+
+void parseOntology() : {} {
+    (LOOKAHEAD(3) includeOntologies())? (versionInfo())? (cls())* <EOF>
+}
+
+void patternMatchFacet(Frame frame, Slot slot) : {} {
+    <PATTERN_MATCH> (<REACTIVE> | <NON_REACTIVE>) {
+        // do nothing
+    }
+}
+
+void patternMatchRole(Frame frame, Slot slot) : {} {
+    <LPAREN> <PATTERN_MATCH> (<REACTIVE> | <NON_REACTIVE>) <RPAREN> {
+        // do nothing
+    }
+}
+
+void propagationFacet(Frame frame, Slot slot) : {} {
+    <PROPAGATION> (<INHERIT> | <NO_INHERIT>) {
+        // do nothing
+    }
+}
+
+void rangeValueDescription(Cls cls, Slot slot) : {
+    String min;
+    String max;
+} {
+    <RANGE> min=symbol() max=symbol() {
+        Float minValue = toFloat(min);
+        Float maxValue = toFloat(max);
+        if (cls == null) {
+            slot.setMinimumValue(minValue);
+            slot.setMaximumValue(maxValue);
+        } else {
+            cls.setTemplateSlotMinimumValue(slot, minValue);
+            cls.setTemplateSlotMaximumValue(slot, maxValue);
+        }
+    }
+}
+
+void slot(Cls cls) : {
+    boolean isTopLevel;
+    boolean isSingle;
+    String name;
+    Slot slot;
+} {
+    try {
+        <LPAREN> isSingle=slotCardinality() name=slotName() {
+            isTopLevel = (cls == null) || !hasSlot(name);
+            slot=createTemplateSlot(name, isSingle, cls, isTopLevel);
+            if (isTopLevel) {
+                cls = null;
+            }
+        }
+        (facetStatement(cls, slot))* <RPAREN>
+    } catch (Exception e) {
+        handleException(e);
+    }
+}
+
+
+boolean slotCardinality() : {
+    boolean single = true;
+} {
+    (<SLOT> | <SINGLE_SLOT> | <MULTISLOT> {single=false;}) {
+        return single;
+    }
+}
+
+void slotDocumentationFacet(Cls cls, Slot slot) : {
+    String s;
+} {
+    <COMMENT> s=string() {
+        if (cls == null) {
+            slot.setDocumentation(s);
+        } else {
+            cls.setTemplateSlotDocumentation(slot, s);
+        }
+    }
+}
+
+void inverseSlotProperty(Cls cls, Slot slot) : {
+    String s;
+} {
+    <INVERSE_SLOT> s=slotName() {
+        Slot inverseSlot = getSlot(s);
+        addInverseSlotPair(slot, inverseSlot);
+    }
+}
+
+void superslotProperty(Cls cls, Slot slot) : {
+    String s;
+    Collection superslots = new ArrayList();
+} {
+    <SUBSLOT_OF> (s=slotName() {superslots.add(s);})* {
+        addSuperslots(slot, superslots);
+    }
+}
+
+void associatedFacet(Cls cls, Slot slot) : {
+    String facetName;
+}{
+    <ASSOCIATED_FACET> facetName = facetName() {
+        Facet facet = getOrCreateFacet(facetName);
+        slot.setAssociatedFacet(facet);
+        facet.setAssociatedSlot(slot);
+    }
+}
+
+String slotName() : {
+    String s;
+} {
+    s = symbol() {
+        if (s.equals("name_")) {
+            s = "name";
+        } else if (s.equals("is-a_")) {
+            s = "is-a";
+        } else if (s.charAt(0) == ':') {
+            // hack for old tables project
+            if (s.equals(":domain-value")
+                    || s.equals(":range-value")
+                    || s.equals(":entry-slot")
+                    || s.equals(":domain-value-slots")
+                    || s.equals(":range-value-slots")) {
+                s = s.substring(1, s.length());
+            }
+        }
+        return s;
+    }
+}
+
+void slotValue(Instance instance, Collection directTypes) : {
+    String name;
+    Collection values;
+    Slot slot;
+    ValueType valueType;
+} {
+    <LPAREN> name=slotName() {
+        slot=getExistingSlot(name);
+        valueType = getOwnSlotValueType(instance, directTypes, slot);
+    }
+    values=slotValueFields(instance, slot, valueType) <RPAREN> {
+        if (slot == null) {
+            recordError("value for unknown slot: " + name + " in instance " + instance);
+        } else {
+            instance.setOwnSlotValues(slot, values);
+        }
+    }
+}
+
+Collection slotValueFields(Instance instance, Slot slot, ValueType type) : {
+    Collection values = new ArrayList();
+    Object value;
+} {
+    ( value=constant() {checkedValueAdd(values, type, value);} )* {
+        return values;
+    }
+}
+
+void slotValueFieldProperty() : {} {
+    <LPAREN> symbol() ( constant() )* <RPAREN>
+}
+
+void sourceFacet(Cls cls, Slot slot) : {} {
+    <SOURCE> (<COMPOSITE> | <EXCLUSIVE>)
+}
+
+void storageFacet(Cls cls, Slot slot) : {} {
+    <STORAGE> (<LOCAL> | <SHARED>)
+}
+
+String string() : {
+    Token t;
+} {
+    t=<STRING_LITERAL> {
+        return ClipsUtil.toInternalString(t.image);
+    }
+}
+
+String symbol() : {
+    Token t;
+    String s;
+} {
+    (t=<SYMBOL_LITERAL> {s=t.image;} | s=keyword()) {
+        return ClipsUtil.toInternalSymbol(s);
+    }
+}
+
+void typeValueDescription(Cls cls, Slot slot) : {
+    ValueType type;
+} {
+    <TYPE> (<FLOAT> 		   {type=ValueType.FLOAT;}
+            | <INSTANCE>	{type=ValueType.INSTANCE;}
+            | <INTEGER>  {type=ValueType.INTEGER;}
+            | <STRING>   {type=ValueType.STRING;}
+            | <SYMBOL>   {type=ValueType.SYMBOL;}
+            | <ANY>			   {type=ValueType.ANY;}
+            ) {
+        if (cls == null) {
+            if (slot.getValueType() != type) {
+                slot.setValueType(type);
+            }
+        } else {
+            if (cls.getTemplateSlotValueType(slot) != type) {
+                cls.setTemplateSlotValueType(slot, type);
+            }
+        }
+    }
+}
+
+void visibilityFacet(Cls cls, Slot slot) : {} {
+    <VISIBILITY> (<PUBLIC> | <PRIVATE>)
+}
+
+String keyword() : {
+    Token t;
+} {
+    ( t=<ABSTRACT>
+            | t= <ACCESS>
+            | t= <ASSOCIATED_FACET>
+            | t= <ALLOWED_CLASSES>
+            | t= <ALLOWED_FLOATS>
+            | t= <ALLOWED_GRAMMAR>
+            | t= <ALLOWED_PARENTS>
+            | t= <ALLOWED_INTEGERS>
+            | t= <ALLOWED_STRINGS>
+            | t= <ALLOWED_SYMBOLS>
+            | t= <ALLOWED_VALUES>
+            | t= <ANY>
+            | t= <BUILD>
+            | t= <CARDINALITY>
+            | t= <COMMENT>
+            | t= <COMPOSITE>
+            | t= <CONCRETE>
+            | t= <CREATE_ACCESSOR>
+            | t= <DEFAULT_>
+            | t= <DEFCLASS>
+            | t= <EXCLUSIVE>
+            | t= <FLOAT>
+            | t= <INCLUDE>
+            | t= <INHERIT>
+            | t= <INITIALIZER_ONLY>
+            | t= <INSTANCE>
+            | t= <INTEGER>
+            | t= <INVERSE_SLOT>
+            | t= <IS_A>
+            | t= <LOCAL>
+            | t= <MULTISLOT>
+            | t= <NO_INHERIT>
+            | t= <NON_REACTIVE>
+            | t= <NOTE>
+            | t= <OF>
+            | t= <OVERRIDE_MESSAGE>
+            | t= <PATTERN_MATCH>
+            | t= <PRIVATE>
+            | t= <PROPAGATION>
+            | t= <PUBLIC>
+            | t= <RANGE>
+            | t= <REACTIVE>
+            | t= <READ>
+            | t= <READ_ONLY>
+            | t= <READ_WRITE>
+            | t= <ROLE>
+            | t= <SINGLE_SLOT>
+            | t= <SHARED>
+            | t= <SLOT>
+            | t= <SOURCE>
+            | t= <STORAGE>
+            | t= <STRING>
+            | t= <SUBSLOT_OF>
+            | t= <SYMBOL>
+            | t= <TYPE>
+            | t= <USER_FACET>
+            | t= <VALUE>
+            | t= <VERSION>
+            | t= <VISIBILITY>
+            | t= <WRITE>
+            ) {
+        return t.image;
+    }
+}
+
