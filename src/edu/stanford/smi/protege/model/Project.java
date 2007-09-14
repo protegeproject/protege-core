@@ -1665,6 +1665,13 @@ public class Project {
     }
 
     private void saveProjectKB(Collection errors) {
+    	/* This happens in OWL mode, if the owl model is opened with the JenaOWLModel calls
+    	 * and not with the project calls.
+    	 */
+    	if (_uri == null) {
+    		return;
+    	}
+    	
         String s = new File(_uri).toString();
         new ClipsKnowledgeBaseFactory().saveKnowledgeBase(_projectKB, null, s, errors);
     }
