@@ -1230,7 +1230,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     //------------------------------
     public synchronized void preload(boolean preloadAll) throws RemoteException {
-      boolean skip = Boolean.getBoolean(ServerProperties.SKIP_PRELOAD);
+      boolean skip = ServerProperties.skipPreload();
       if (skip) {
         return;
       }
