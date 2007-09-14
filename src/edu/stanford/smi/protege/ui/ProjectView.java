@@ -309,7 +309,11 @@ public class ProjectView extends JComponent {
         while (i.hasNext()) {
             WidgetDescriptor d = (WidgetDescriptor) i.next();
             if (d.isVisible()) {
-                addTab(d);
+            	try {
+            		addTab(d);
+				} catch (Throwable t) {
+					Log.getLogger().log(Level.WARNING,"Errors at adding tab " + d.getWidgetClassName(), t);
+				}
             }
         }
         if (_viewHolder.getComponentCount() > 0)
