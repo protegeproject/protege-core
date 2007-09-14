@@ -27,6 +27,8 @@ public class ApplicationProperties {
     public static final String EXTRA_MANIFEST_PATH = PluginUtilities.EXTRA_MANIFEST_PATH;
     public static final String MRU_PROJECTS = "history.projects.reopen";
     public static final String WELCOME_DIALOG = "ui.welcomedialog.show";
+    public static final String WELCOME_DIALOG_START_IN_SERVER_PANEL = "ui.welcomedialog.start.in.server.panel";
+    
     public static final String MAIN_FRAME_RECTANGLE = "mainframe.rectangle";
     public static final String LOOK_AND_FEEL = "swing.defaultlaf";
     public static final String BROWSER = "browser.html";
