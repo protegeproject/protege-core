@@ -45,7 +45,8 @@ public class Application {
     private static SplashScreen _splashScreen;
     private static WelcomeDialog _welcome;
     private static final String projectFileExtension = ".pprj";
-
+    private static final String propertyOptionsPrefix = "-prop";
+    
     private static void initialize() {
         try {
             SystemUtilities.initGraphics();
@@ -68,10 +69,15 @@ public class Application {
         URI uri = null;
         if (args.length > 0) {
             String projectString = args[0];
+            if (projectString.startsWith(propertyOptionsPrefix)) {
+            	//this is a property, ignore it
+            	return uri;
+            }
+            
             if (!projectString.endsWith(projectFileExtension)) {
                 projectString += projectFileExtension;
             }
-            uri = URIUtilities.createURI(projectString);
+            uri = URIUtilities.createURI(projectString);            
         }
 
         return uri;
@@ -136,7 +142,10 @@ public class Application {
             else {
                 showMainFrame();
                 if (!SystemUtilities.isApplet()) {
-                	if (ApplicationProperties.getWelcomeDialogShow()) {
+                	String startInServerPanel = ApplicationProperties.getString(ApplicationProperties.WELCOME_DIALOG_START_IN_SERVER_PANEL, "false");
+                	if (startInServerPanel.equalsIgnoreCase("true")) {
+                		ProjectManager.getProjectManager().openRemoteProjectRequest();
+                	} else if (ApplicationProperties.getWelcomeDialogShow()) {
                 		// Load the main frame and show the welcome dialog.                	                	
                 		_welcome = new WelcomeDialog(_mainFrame, "Welcome to " + Text.getProgramName(), true);
                 		_welcome.setLocationRelativeTo(_mainFrame);
@@ -242,7 +251,22 @@ public class Application {
     }
 
     private static void parseOptions(String[] args) {
-        // do nothing
+    	for (int i = 0; i < args.length; i++) {
+    		String option = args[i];
+			try {				
+				if (option.startsWith(propertyOptionsPrefix)) {
+					int index = option.indexOf("=");
+					if (index != -1) {
+						String propName = option.substring(5, index);
+						String value = option.substring(index+1);
+						ApplicationProperties.setString(propName, value);
+					}
+				}
+			} catch (Throwable t) {
+				Log.getLogger().log(Level.WARNING, "Error at parsing or setting application property: " + option +
+						". This option will be ignored.", t);
+			}
+		}
     }
 
     public static void repaint() {
