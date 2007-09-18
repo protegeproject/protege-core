@@ -1,12 +1,18 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.*;
-import java.net.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.net.URL;
 
-import javax.swing.*;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.StringUtilities;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * Panel to display for the "About Box" menu item.
@@ -15,15 +21,20 @@ import edu.stanford.smi.protege.util.*;
  */
 public class AboutBox extends JPanel {
 
-    public AboutBox() {
+    public AboutBox(URL url, Dimension preferredSize) {
         setLayout(new BorderLayout());
-        URL url = Text.getAboutURL();
         JEditorPane pane = ComponentFactory.createHTMLBrowser(url);
         substitute(pane);
-
-        add(new JScrollPane(pane));
         pane.setEditable(false);
-        setPreferredSize(new Dimension(535, 550));
+
+        if (preferredSize != null) {
+        	setPreferredSize(preferredSize);
+        } else {
+        	setPreferredSize(new Dimension(535, 550));
+        }
+
+        JScrollPane scrollPane = new JScrollPane(pane);
+        add(scrollPane);
     }
 
     private static void substitute(JEditorPane pane) {
