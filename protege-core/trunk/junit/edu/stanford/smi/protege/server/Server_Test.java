@@ -39,6 +39,8 @@ public class Server_Test extends SimpleTestCase {
     public static  final String JAR_PROPERTY="junit.server.protege.jar";
     
     private static boolean serverRunning = false;
+    
+    private static String protegeJarLocation = "dist/protege.jar";
 
     private RemoteServer _server;
     
@@ -61,10 +63,14 @@ public class Server_Test extends SimpleTestCase {
     
     public static boolean startServer() throws Exception {
       File appDir = ApplicationProperties.getApplicationDirectory();
-      File jar = new File(appDir, "dist/protege.jar");
+      File jar = new File(appDir, protegeJarLocation);
       if (!jar.exists()) {
-          System.out.println("Need to compile to a jar file before running server tests");
-          System.out.println("System tests not configured");
+          jar = new File(protegeJarLocation);
+          if (!jar.exists()) {
+              System.out.println("Need to compile to a jar file before running server tests");
+              System.out.println("System tests not configured");
+              return false;
+          }
       }
       System.setProperty("java.rmi.server.codebase", jar.toURL().toString());
       String [] serverArgs = {"", metaproject};
@@ -139,5 +145,9 @@ public class Server_Test extends SimpleTestCase {
       assertNotNull(cls);
       p.dispose();
   }
+    
+    public static void setProtegeJarLocation(String location) {
+        protegeJarLocation = location;
+    }
 
 }
