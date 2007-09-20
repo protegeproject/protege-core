@@ -425,11 +425,12 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         return stickyInstances;
     }
 
-    private Map getYellowStickyMap() {
+    @SuppressWarnings("unchecked")
+    private Map<Instance, Rectangle> getYellowStickyMap() {
         String mapName = "InstanceDisplay.yellow_stickies";
-        Map map = (Map) _project.getClientInformation(mapName);
+        Map<Instance, Rectangle> map = (Map<Instance, Rectangle>) _project.getClientInformation(mapName);
         if (map == null) {
-            map = new HashMap();
+            map = new HashMap<Instance, Rectangle>();
             _project.setClientInformation(mapName, map);
         }
         return map;
@@ -519,8 +520,8 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
 
     private JInternalFrame loadIntoFrame(final Instance instance) {
         JInternalFrame frame = _project.showInInternalFrame(instance);
-        Map propertyMap = getYellowStickyMap();
-        Rectangle r = (Rectangle) propertyMap.get(instance);
+        Map<Instance, Rectangle> propertyMap = getYellowStickyMap();
+        Rectangle r = propertyMap.get(instance);
         if (r == null) {
             frame.setLocation(getNextYellowStickyPosition());
             propertyMap.put(instance, frame.getBounds());
