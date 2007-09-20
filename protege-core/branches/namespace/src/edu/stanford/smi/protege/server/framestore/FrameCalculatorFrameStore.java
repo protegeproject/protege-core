@@ -99,10 +99,9 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     
     @Override
     public Facet createFacet(FrameID id, 
-                             String name, 
                              Collection directTypes, 
                              boolean loadDefaults) {
-        Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaults);
+        Facet facet = getDelegate().createFacet(id, directTypes, loadDefaults);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         if (!frameCalculator.inFrameCalculatorThread() && session != null) {
             frameCalculator.addRequest(facet, session,  CacheRequestReason.NEW_FRAME);
@@ -111,10 +110,10 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     }
     
     @Override
-    public Slot createSlot(FrameID id, String name, Collection directTypes,
+    public Slot createSlot(FrameID id,Collection directTypes,
                            Collection directSuperslots,
                            boolean loadDefaults) {
-        Slot slot = getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
+        Slot slot = getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaults);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         if (!frameCalculator.inFrameCalculatorThread() && session != null) {
             frameCalculator.addRequest(slot,  session, CacheRequestReason.NEW_FRAME);
@@ -124,11 +123,10 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     
     @Override
     public Cls createCls(FrameID id, 
-                         String name, 
                          Collection directTypes, 
                          Collection directSuperclasses,
                          boolean loadDefaults) {
-        Cls cls = getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
+        Cls cls = getDelegate().createCls(id, directTypes, directSuperclasses, loadDefaults);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         if (!frameCalculator.inFrameCalculatorThread() && session != null) {
             frameCalculator.addRequest(cls,  session, CacheRequestReason.NEW_FRAME);
@@ -138,10 +136,9 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     
     @Override
     public SimpleInstance createSimpleInstance(FrameID id, 
-                                               String name, 
                                                Collection directTypes,
                                                boolean loadDefaults) {
-        SimpleInstance si = getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
+        SimpleInstance si = getDelegate().createSimpleInstance(id, directTypes, loadDefaults);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         if (!frameCalculator.inFrameCalculatorThread() && session != null) {
             frameCalculator.addRequest(si,  session, CacheRequestReason.NEW_FRAME);

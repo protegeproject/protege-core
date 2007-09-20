@@ -439,8 +439,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             }
         }
     }
-
-<<<<<<< .working
+    
     @SuppressWarnings("unchecked")
     public Collection<EventListener> getListeners(Class c, Object o) {
         Collection<EventListener> allListeners = null;

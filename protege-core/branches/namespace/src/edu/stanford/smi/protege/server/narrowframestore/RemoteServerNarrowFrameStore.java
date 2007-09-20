@@ -99,7 +99,7 @@ public interface RemoteServerNarrowFrameStore extends Remote {
 
   TransactionMonitor getTransactionStatusMonitor(RemoteSession session) throws RemoteException, TransactionException;
 
-   void replaceFrame(Frame original, Frame replacement) throws RemoteException;
+   void replaceFrame(Frame original, Frame replacement, RemoteSession session) throws RemoteException;
 
 
 }

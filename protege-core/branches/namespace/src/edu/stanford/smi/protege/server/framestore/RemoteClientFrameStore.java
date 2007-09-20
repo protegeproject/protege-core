@@ -402,12 +402,11 @@ public class RemoteClientFrameStore implements FrameStore {
 
 
     public synchronized Cls createCls(FrameID id, 
-                         String name, 
                          Collection directTypes, 
                          Collection directSuperclasses,
                          boolean loadDefaultValues) {
         try {
-            RemoteResponse<Cls> wrappedCls = getRemoteDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaultValues,
+            RemoteResponse<Cls> wrappedCls = getRemoteDelegate().createCls(id, directTypes, directSuperclasses, loadDefaultValues,
                     session);
             localize(wrappedCls);
             processValueUpdate(wrappedCls);
@@ -418,13 +417,12 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public synchronized Slot createSlot(FrameID id, 
-                           String name, 
                            Collection directTypes, 
                            Collection directSuperslots,
                            boolean loadDefaultValues) {
         try {
             RemoteResponse<Slot> wrappedSlot 
-              = getRemoteDelegate().createSlot(id, name, 
+              = getRemoteDelegate().createSlot(id, 
                                                directTypes, directSuperslots, 
                                                loadDefaultValues,
                                                session);
@@ -437,10 +435,10 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
 
-    public synchronized Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
+    public synchronized Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
         try {
             RemoteResponse<Facet> wrappedFacet 
-              = getRemoteDelegate().createFacet(id, name, 
+              = getRemoteDelegate().createFacet(id,
                                                 directTypes, 
                                                 loadDefaultValues, session);
             localize(wrappedFacet);
@@ -452,12 +450,11 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public synchronized SimpleInstance createSimpleInstance(FrameID id, 
-                                               String name, 
                                                Collection directTypes,
                                                boolean loadDefaultValues) {
         try {
             RemoteResponse<SimpleInstance> wrappedSimpleInstance 
-              = getRemoteDelegate().createSimpleInstance(id, name, directTypes,
+              = getRemoteDelegate().createSimpleInstance(id, directTypes,
                                                          loadDefaultValues, 
                                                          session);
             localize(wrappedSimpleInstance);
@@ -1882,7 +1879,6 @@ public class RemoteClientFrameStore implements FrameStore {
     }
     
   }
-}
 
     public void replaceFrame(Frame original, Frame replacement) {
       throw new UnsupportedOperationException("Server-client rename not implemented yet");

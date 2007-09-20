@@ -308,4 +308,9 @@ public class ServerNarrowFrameStore
     ServerFrameStore.recordCallNoCheck(session);
     return fixedDelegate.getTransactionStatusMonitor();
   }
+  
+  public void replaceFrame(Frame original, Frame replacement, RemoteSession session) throws RemoteException {
+    ServerFrameStore.recordCallNoCheck(session);
+    fixedDelegate.replaceFrame(original, replacement);
+  }  
 }

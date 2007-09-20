@@ -807,7 +807,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
      *    
      * Good enough for today.
      */
-     private Set<Frame:> getMatchingFramesSQL(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) throws SQLException {
+     private Set<Frame> getMatchingFramesSQL(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) throws SQLException {
         String text = "SELECT " + FRAME_COLUMN + ", " + FRAME_TYPE_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN
                 + ", " + IS_TEMPLATE_COLUMN;
         text += " FROM " + _table;

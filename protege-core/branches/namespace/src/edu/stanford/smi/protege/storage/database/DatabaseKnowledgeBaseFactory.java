@@ -279,11 +279,6 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
       return owlMode;
   }
 
-  public NarrowFrameStore createNarrowFrameStore(String name) {
-    DatabaseFrameDb store = new DatabaseFrameDb();
-    ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
-    vcnfs.setName(name);
-    return vcnfs;
-  }
+
 
 }

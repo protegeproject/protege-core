@@ -389,36 +389,24 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set getFramesWithDirectOwnSlotValue(Slot slot, 
-                                               Object value, 
-                                               RemoteSession session) 
+    public Set<Slot> getOwnSlots(Frame frame, RemoteSession session) 
     throws ServerSessionLost {
-      recordCall(session);
-      synchronized(_kbLock) {
-        return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
-      }
-    }
-
-    public Set<Slot> getOwnSlots(Frame frame, RemoteSession session) {
         recordCall(session);
         synchronized(_kbLock) {
             return getDelegate().getOwnSlots(frame);
         }
     }
 
-    public Set getInstances(Cls cls, RemoteSession session) {
-        recordCall(session);
-        synchronized(_kbLock) {
-            return getDelegate().getInstances(cls);
-        }
-    }
 
-    public synchronized Set getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) {
+
+    public synchronized Set getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) 
+    throws ServerSessionLost {
         recordCall(session);
         synchronized(_kbLock) {
             return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
         }
     }
+
 
     public Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
@@ -551,14 +539,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public RemoteResponse<Facet> createFacet(FrameID id, 
-                                             String name, 
                                              Collection directTypes, 
                                              boolean loadDefaults,
                                              RemoteSession session) throws ServerSessionLost {
         recordCall(session);
         synchronized(_kbLock) {
             markDirty();
-            Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaults);
+            Facet facet = getDelegate().createFacet(id, directTypes, loadDefaults);
             return new RemoteResponse<Facet>(facet, getValueUpdates(session));
         }
     }
@@ -635,7 +622,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         markDirty();
-        Slot slot =  getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
+        Slot slot =  getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaults);
         return new RemoteResponse<Slot>(slot, getValueUpdates(session));
       }
     }
@@ -691,7 +678,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         markDirty();
-        Cls cls = getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
+        Cls cls = getDelegate().createCls(id,directTypes, directSuperclasses, loadDefaults);
         return new RemoteResponse(cls, getValueUpdates(session));
       }
     }
@@ -755,7 +742,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         recordCall(session);
         markDirty();
-        SimpleInstance si = getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
+        SimpleInstance si = getDelegate().createSimpleInstance(id, directTypes, loadDefaults);
         return new RemoteResponse<SimpleInstance>(si, getValueUpdates(session));
       }
     }
@@ -1309,7 +1296,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
     
     private void addSystemClasses(Set<Frame> frames, Cls cls)  {
-      if (!cls.getFrameID().isSystem() || frames.contains(cls)) {
+      
+      if (!cls.isSystem() || frames.contains(cls)) {
         return;
       }
       List<Cls> subClasses = null;

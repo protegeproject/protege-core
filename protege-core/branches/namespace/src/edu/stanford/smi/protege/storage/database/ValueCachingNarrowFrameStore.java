@@ -359,10 +359,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         return _delegate;
     }
 
-    public FrameID generateFrameID() {
-        return _delegate.generateFrameID();
-    }
-
     public int getFrameCount() {
         return getDelegate().getFrameCount();
     }
