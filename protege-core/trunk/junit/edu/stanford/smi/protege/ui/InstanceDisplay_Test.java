@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.ui;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -12,6 +13,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Instance;
@@ -27,6 +29,8 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * Unit tests for the InstanceDisplay class
+ * 
+ * Warning - these tests have an infinite number of race conditions.
  *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
@@ -35,9 +39,9 @@ public class InstanceDisplay_Test extends APITestCase {
     private void deleteAllStickies() {
         KnowledgeBase kb = getDomainKB();
         Cls cls = kb.getCls(Model.Cls.INSTANCE_ANNOTATION);
-        Iterator i = new ArrayList(cls.getInstances()).iterator();
+        Iterator<Instance> i = new ArrayList<Instance>(cls.getInstances()).iterator();
         while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
+            Instance instance = i.next();
             kb.deleteInstance(instance);
         }
     }
@@ -123,12 +127,33 @@ public class InstanceDisplay_Test extends APITestCase {
         String frameName = createCls().getName();
         JFrame frame1 = loadIntoFrame(frameName);
         pressButton(frame1, Icons.getCreateClsNoteIcon());
-        JInternalFrame iFrame = (JInternalFrame) ComponentUtilities.getDescendentOfClass(JInternalFrame.class, frame1);
+        final JInternalFrame iFrame = (JInternalFrame) ComponentUtilities.getDescendentOfClass(JInternalFrame.class, frame1);
         JTextArea area = (JTextArea) ComponentUtilities.getDescendentOfClass(JTextArea.class, iFrame);
         area.setText("This is a test - " + System.currentTimeMillis());
-        Point loc = iFrame.getLocation();
-        loc.x += 100;
-        iFrame.setLocation(loc);
+        final Point loc = iFrame.getLocation();
+        loc.x += 100;    
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+               public void run() {
+                   iFrame.setLocation(loc);
+               } 
+            });
+        } catch (InterruptedException e) {
+            fail();
+        } catch (InvocationTargetException e) {
+            fail();
+        }
+        try { // wait for the swing queue to process  the above change.
+            SwingUtilities.invokeAndWait(new Runnable() {
+               public void run() {
+                   iFrame.setLocation(loc);
+               } 
+            });
+        } catch (InterruptedException e) {
+            fail();
+        } catch (InvocationTargetException e) {
+            fail();
+        }
         ComponentUtilities.dispose(frame1);
 
         JFrame frame2 = loadIntoFrame(frameName);
