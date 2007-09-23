@@ -26,7 +26,7 @@ import edu.stanford.smi.protege.widget.*;
 public class InstanceDisplay extends JDesktopPane implements Disposable {
     private Project _project;
     private JScrollPane _scrollPane;
-    private Collection _currentWidgets = new ArrayList();
+    private Collection<ClsWidget> _currentWidgets = new ArrayList<ClsWidget>();
     private Instance _currentInstance;
     private Cls _currentAssociatedCls;
     private HeaderComponent _header;
@@ -335,9 +335,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         if (_currentInstance != null) {
             _currentInstance.removeInstanceListener(_instanceListener);
         }
-        Iterator i = _currentWidgets.iterator();
-        while (i.hasNext()) {
-            ClsWidget widget = (ClsWidget) i.next();
+        for (ClsWidget widget : _currentWidgets) {
             widget.removeWidgetListener(_widgetListener);
             widget.getCls().removeClsListener(_clsListener);
             widget.getCls().removeFrameListener(_frameListener);
@@ -363,9 +361,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
 
     private ClsWidget getClsWidget(Cls cls) {
         ClsWidget widget = null;
-        Iterator i = _currentWidgets.iterator();
-        while (i.hasNext()) {
-            ClsWidget clsWidget = (ClsWidget) i.next();
+        for (ClsWidget clsWidget : _currentWidgets) {
             if (clsWidget.getCls().equals(cls)) {
                 widget = clsWidget;
                 break;
@@ -574,9 +570,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     }
 
     protected void removeCurrentWidgets() {
-        Iterator i = _currentWidgets.iterator();
-        while (i.hasNext()) {
-            ClsWidget widget = (ClsWidget) i.next();
+        for (ClsWidget widget : _currentWidgets) {
             widget.getCls().removeClsListener(_clsListener);
             widget.getCls().removeFrameListener(_frameListener);
             widget.removeWidgetListener(_widgetListener);
@@ -633,9 +627,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
                 addRuntimeWidgets(instance, associatedCls);
             } else {
                 if (typesMatchCurrentWidgets(instance)) {
-                    Iterator i = _currentWidgets.iterator();
-                    while (i.hasNext()) {
-                        ClsWidget clsWidget = (ClsWidget) i.next();
+                    for (ClsWidget clsWidget : _currentWidgets) {
                         clsWidget.setInstance(instance);
                         clsWidget.setAssociatedCls(associatedCls);
                     }
@@ -659,9 +651,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         Set types = new HashSet(instance.getDirectTypes());
         if (types.size() == _currentWidgets.size()) {
             typesMatch = true;
-            Iterator i = _currentWidgets.iterator();
-            while (i.hasNext()) {
-                ClsWidget widget = (ClsWidget) i.next();
+            for (ClsWidget widget : _currentWidgets) {
                 if (!types.contains(widget.getCls())) {
                     typesMatch = false;
                     break;
