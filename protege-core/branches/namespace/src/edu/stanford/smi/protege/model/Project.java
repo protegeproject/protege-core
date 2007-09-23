@@ -132,8 +132,7 @@ public class Project {
     private Instance _projectInstance;
     private KnowledgeBase _domainKB;
     private String _defaultClsWidgetClassName;
-    private Map _activeClsWidgetDescriptors = new HashMap(); // <Cls,
-    // WidgetDescriptor>
+    private Map<Cls, WidgetDescriptor> _activeClsWidgetDescriptors = new HashMap<Cls, WidgetDescriptor>(); 
     private Map _cachedDesignTimeClsWidgets = new HashMap(); // Cls -> ClsWidget
     private Map _frames = new HashMap(); // <Instance or FrameSlotPair, JFrame>
     private Map _objects = new HashMap(); // <JFrame, Instance or FrameSlotPair>
@@ -197,7 +196,7 @@ public class Project {
 
         public void frameNameChanged(KnowledgeBaseEvent event) {
             Frame frame = event.getFrame();
-            WidgetDescriptor d = (WidgetDescriptor) _activeClsWidgetDescriptors.get(frame);
+            WidgetDescriptor d = _activeClsWidgetDescriptors.get(frame);
             if (d != null) {
                 d.setName(frame.getName());
             }
@@ -570,7 +569,7 @@ public class Project {
         return _directBrowserSlotPatterns.keySet();
     }
 
-    public Collection getClsesWithCustomizedForms() {
+    public Collection<Cls> getClsesWithCustomizedForms() {
         return _activeClsWidgetDescriptors.keySet();
     }
 
@@ -1019,7 +1018,7 @@ public class Project {
     }
 
     public boolean hasCustomizedDescriptor(Cls cls) {
-        WidgetDescriptor d = (WidgetDescriptor) _activeClsWidgetDescriptors.get(cls);
+        WidgetDescriptor d = _activeClsWidgetDescriptors.get(cls);
         if (d != null && !d.isDirectlyCustomizedByUser()) {
             d = null;
         }
@@ -1412,8 +1411,7 @@ public class Project {
                     // Log.getLogger().info("**" + cls + " " + d.getWidgetClassName());
                     // be careful not to overwrite widgets on an "include"
                     // command.
-                    WidgetDescriptor existingDescriptor = (WidgetDescriptor) _activeClsWidgetDescriptors
-                            .get(cls);
+                    WidgetDescriptor existingDescriptor =  _activeClsWidgetDescriptors.get(cls);
                     if (existingDescriptor == null || existingDescriptor.isIncluded()) {
                         _activeClsWidgetDescriptors.put(cls, d);
                     }
@@ -1437,9 +1435,9 @@ public class Project {
     }
 
     private void makeTemporaryWidgetsIncluded(boolean b) {
-        Iterator i = _activeClsWidgetDescriptors.values().iterator();
+        Iterator<WidgetDescriptor> i = _activeClsWidgetDescriptors.values().iterator();
         while (i.hasNext()) {
-            WidgetDescriptor d = (WidgetDescriptor) i.next();
+            WidgetDescriptor d = i.next();
             if (d.isTemporary()) {
                 d.setIncluded(b);
             }
@@ -1525,9 +1523,9 @@ public class Project {
         _directBrowserSlotPatterns = browserSlots;
         _includedBrowserSlotPatterns.clear();
 
-        Iterator i = _activeClsWidgetDescriptors.values().iterator();
+        Iterator<WidgetDescriptor> i = _activeClsWidgetDescriptors.values().iterator();
         while (i.hasNext()) {
-            WidgetDescriptor d = (WidgetDescriptor) i.next();
+            WidgetDescriptor d = i.next();
             if (d.isIncluded()) {
                 d.setIncluded(false);
             }
@@ -1617,9 +1615,9 @@ public class Project {
 
     private void saveCustomizedWidgets() {
         setProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, null);
-        Iterator i = _activeClsWidgetDescriptors.values().iterator();
+        Iterator<WidgetDescriptor> i = _activeClsWidgetDescriptors.values().iterator();
         while (i.hasNext()) {
-            WidgetDescriptor d = (WidgetDescriptor) i.next();
+            WidgetDescriptor d = i.next();
             if (!d.isTemporary() && !d.isIncluded()) {
                 addProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, d.getInstance());
             }
@@ -1951,7 +1949,7 @@ public class Project {
     }
 
     private WidgetDescriptor getClsWidgetDescriptor(Cls cls) {
-        WidgetDescriptor d = (WidgetDescriptor) _activeClsWidgetDescriptors.get(cls);
+        WidgetDescriptor d = _activeClsWidgetDescriptors.get(cls);
         if (d == null) {
             d = WidgetDescriptor.create(_projectKB);
             d.setWidgetClassName(_defaultClsWidgetClassName);
