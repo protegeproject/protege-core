@@ -206,31 +206,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         runtimeEx.initCause(e);        
         return runtimeEx;
     }
-
-    /*
-     * Using the database metadata to decide if a table exists turns out to be unreliable. Instead we just do a select
-     * of something fast and make sure that the table isn't completely empty. If this succeeds the table is assumed to
-     * be ok.
-     */
-
-    public boolean tableExists() {
-        boolean exists = false;
-        String command = "SELECT " + FRAME_COLUMN + ", " + FRAME_TYPE_COLUMN + " FROM " + _table;
-        command += " WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME);
-        command += " AND " + SHORT_VALUE_COLUMN + " = '" + Model.Cls.THING + "'";
-        try {
-            ResultSet rs = executeQuery(command);
-            while (rs.next()) {
-                exists = true;
-                break;
-            }
-            rs.close();
-        } catch (SQLException e) {
-            // do nothing
-        }
-        return exists;
-    }
-
+    
     public void createNewTableAndIndices() {
         try {
             ensureEmptyTableExists();
@@ -1596,8 +1572,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private int countFramesSQL(Collection types) throws SQLException {
         StringBuffer command = new StringBuffer();
         command.append("SELECT COUNT(*) FROM " + _table);
-        command.append(" WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME));
-        command.append(" AND " + FACET_COLUMN + " = \"\"");
+        command.append(" WHERE " + SLOT_COLUMN + " = '" + getValue(Model.SlotID.NAME));
+        command.append("' AND " + FACET_COLUMN + " = \"\"");
         command.append(" AND " + IS_TEMPLATE_COLUMN + " = ?");
         command.append(" AND (");
         boolean isFirst = true;
@@ -1690,7 +1666,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             if (id != null) {
                 // get the prepared statement and set the id value
                 PreparedStatement getFrameStmt = getCurrentConnection().getPreparedStatement(_getFrameFromIdText);
-                getFrameStmt.setInt(1, 0); // fix this
+                DatabaseUtils.setFrameId(getFrameStmt, 1, id);
 
                 // execute the query and retrieve the result frame
                 ResultSet rs = executeQuery(getFrameStmt);
@@ -1713,7 +1689,63 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     public void reinitialize() {
     }
     
+    private String _updateFrameFieldText;
+    private String _updateSlotFieldText;
+    private String _updateFacetFieldText;
+    private String _updateValueFieldText;
+    private String _replaceNameText;
+    
     public void replaceFrame(Frame original, Frame replacement) {
-      throw new UnsupportedOperationException("Have not implemented renaming of frames in database mode yet.");
+    	try {
+    		if (_updateFrameFieldText == null) {
+    			_updateFrameFieldText = "UPDATE " + _table + " SET " + FRAME_COLUMN + " = ? WHERE ";
+    			_updateFrameFieldText = _updateFrameFieldText + FRAME_COLUMN + " = ?";
+    		}
+    		PreparedStatement updateFrameFieldStatement = getCurrentConnection().getPreparedStatement(_updateFrameFieldText);
+    		setFrame(updateFrameFieldStatement, 1, replacement);
+    		setFrame(updateFrameFieldStatement, 2, original);
+    		executeUpdate(updateFrameFieldStatement);
+    		
+    		if (_updateSlotFieldText == null) {
+    			_updateSlotFieldText = "UPDATE " + _table + " SET " + SLOT_COLUMN + " = ? WHERE ";
+    			_updateSlotFieldText = _updateSlotFieldText + SLOT_COLUMN + " = ?";
+    		}
+    		PreparedStatement updateSlotFieldStatement = getCurrentConnection().getPreparedStatement(_updateSlotFieldText);
+    		setFrame(updateSlotFieldStatement, 1, replacement);
+    		setFrame(updateSlotFieldStatement, 2, original);
+    		executeUpdate(updateSlotFieldStatement);
+    		
+    		if (_updateFacetFieldText == null) {
+    			_updateFacetFieldText = "UPDATE " + _table + " SET " + FACET_COLUMN + " = ? WHERE ";
+    			_updateFacetFieldText = _updateFacetFieldText + FACET_COLUMN + " = ?";
+    		}
+    		PreparedStatement updateFacetFieldStatement = getCurrentConnection().getPreparedStatement(_updateFacetFieldText);
+    		setFrame(updateFacetFieldStatement, 1, replacement);
+    		setFrame(updateFacetFieldStatement, 2, original);
+    		executeUpdate(updateFacetFieldStatement);
+    		
+    		if (_updateValueFieldText == null) {
+    			_updateValueFieldText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ? WHERE ";
+    			_updateValueFieldText = _updateValueFieldText + SHORT_VALUE_COLUMN + " = ? AND ";
+    			_updateValueFieldText = _updateValueFieldText + VALUE_TYPE_COLUMN + " >= " + DatabaseUtils.BASE_FRAME_TYPE_VALUE;
+    		}
+    		PreparedStatement updateValueFieldStatement = getCurrentConnection().getPreparedStatement(_updateValueFieldText);
+    		setFrame(updateValueFieldStatement, 1, replacement);
+    		setFrame(updateValueFieldStatement, 2, original);
+    		executeUpdate(updateValueFieldStatement);
+    		
+    		if (_replaceNameText == null) {
+    			_replaceNameText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ?," +  VALUE_TYPE_COLUMN + " = ? WHERE ";
+    			_replaceNameText = _replaceNameText + FRAME_COLUMN + " = ? AND ";
+    			_replaceNameText = _replaceNameText + SLOT_COLUMN + " = '" + getValue(Model.SlotID.NAME) + "'";
+    		}
+    		PreparedStatement replaceNameStatement = getCurrentConnection().getPreparedStatement(_replaceNameText);
+    		setShortValue(replaceNameStatement, 1, 2, replacement.getFrameID().getName());
+    		setFrame(replaceNameStatement, 3, replacement);
+    		executeUpdate(replaceNameStatement);
+    	}
+    	catch (SQLException sqle) {
+    		createRuntimeException(sqle);
+    	}
     }
 }
