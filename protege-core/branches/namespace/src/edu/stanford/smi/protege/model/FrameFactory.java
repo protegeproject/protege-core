@@ -1,6 +1,6 @@
 package edu.stanford.smi.protege.model;
 
-import java.util.*;
+import java.util.Collection;
 
 /**
  * 
