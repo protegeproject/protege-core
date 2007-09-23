@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.Assert;
 
 class DatabaseUtils {
+	public static final String NULL_FRAME_ID_STRING = "";
     /*
      * These constants are store in the database as a performance hack. When a frame is read out of the db we need to
      * make a java object from it. To do this we need to know if it is a class, a slot, or a simple instance. We could
@@ -27,10 +28,11 @@ class DatabaseUtils {
     private static final int VALUE_TYPE_FLOAT = 2;
     private static final int VALUE_TYPE_STRING = 3;
     private static final int VALUE_TYPE_BOOLEAN = 4;
-    // private static final int VALUE_TYPE_SIMPLE_INSTANCE = 5;
-    // private static final int VALUE_TYPE_CLASS = 6;
-    // private static final int VALUE_TYPE_SLOT = 7;
-    // private static final int VALUE_TYPE_FACET = 8;
+    /*
+     * The Frame type values start at 5.  This allow me to check or search for frames by
+     * checking if the value type is greater than BASE_FRAME_TYPE_VALUE.
+     */
+    public static final int BASE_FRAME_TYPE_VALUE = 5;
 
     private static final char SINGLE_QUOTE = '\'';
 
@@ -55,7 +57,7 @@ class DatabaseUtils {
     }
 
     private static String getFrameIDValueString(FrameID id) {
-        return (id == null) ? "" : id.getName();
+        return (id == null) ? NULL_FRAME_ID_STRING : id.getName();
     }
 
     public static void setValueType(PreparedStatement stmt, int index, Object o, FrameFactory factory)
@@ -86,6 +88,10 @@ class DatabaseUtils {
             type = factory.getJavaClassId((Frame) value);
         }
         return type;
+    }
+    
+    public static void setFrameId(PreparedStatement stmt, int index, FrameID frameId) throws SQLException {
+    	setId(stmt, index, frameId);
     }
 
     public static void setFrame(PreparedStatement stmt, int index, Frame frame) throws SQLException {
