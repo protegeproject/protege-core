@@ -133,13 +133,13 @@ public class Project {
     private KnowledgeBase _domainKB;
     private String _defaultClsWidgetClassName;
     private Map<Cls, WidgetDescriptor> _activeClsWidgetDescriptors = new HashMap<Cls, WidgetDescriptor>(); 
-    private Map _cachedDesignTimeClsWidgets = new HashMap(); // Cls -> ClsWidget
-    private Map _frames = new HashMap(); // <Instance or FrameSlotPair, JFrame>
-    private Map _objects = new HashMap(); // <JFrame, Instance or FrameSlotPair>
+    private Map<Cls, ClsWidget> _cachedDesignTimeClsWidgets = new HashMap<Cls, ClsWidget>();
+    private Map<Object, JFrame> _frames = new HashMap<Object, JFrame>(); // <Instance or FrameSlotPair, JFrame>
+    private Map<JFrame, Object> _objects = new HashMap<JFrame, Object>(); // <JFrame, Instance or FrameSlotPair>
     private WidgetMapper _widgetMapper;
 
     // private Collection _cachedIncludedProjectURIs = new ArrayList();
-    private Tree projectURITree = new Tree();
+    private Tree<URI> projectURITree = new Tree<URI>();
     private URI activeRootURI;
 
     private Point _lastLocation;
@@ -152,14 +152,12 @@ public class Project {
     private Boolean _updateModificationSlots;
     private Boolean prettyPrintSlotWidgetLabels;
     private Boolean _isUndoEnabled;
-    private Map _includedBrowserSlotPatterns = new HashMap(); // <Cls,
-    // BrowserSlotPattern>
-    private Map _directBrowserSlotPatterns = new HashMap(); // <Cls,
-    // BrowserSlotPattern>
-    private Set _hiddenFrames = new HashSet();
-    private Set _includedHiddenFrames = new HashSet();
+    private Map<Cls, BrowserSlotPattern> _includedBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>(); 
+    private Map<Cls, BrowserSlotPattern> _directBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>();
+    private Set<Frame> _hiddenFrames = new HashSet<Frame>();
+    private Set<Frame> _includedHiddenFrames = new HashSet<Frame>();
     private boolean _hasChanged;
-    private Collection _tabWidgetDescriptors;
+    private Collection<WidgetDescriptor> _tabWidgetDescriptors;
     private Map _clientInformation = new HashMap();
     private FrameCountsImpl _frameCounts = new FrameCountsImpl();
     private boolean isMultiUserServer;
@@ -185,7 +183,7 @@ public class Project {
             }
             Cls cls = event.getCls();
             _activeClsWidgetDescriptors.remove(cls);
-            ClsWidget widget = (ClsWidget) _cachedDesignTimeClsWidgets.remove(cls);
+            ClsWidget widget = _cachedDesignTimeClsWidgets.remove(cls);
             if (widget != null) {
                 ComponentUtilities.dispose((Component) widget);
             }
@@ -211,9 +209,9 @@ public class Project {
         public void slotDeleted(KnowledgeBaseEvent event) {
             Slot slot = (Slot) event.getFrame();
             removeDisplay(slot);
-            Iterator i = _directBrowserSlotPatterns.entrySet().iterator();
+            Iterator<Map.Entry<Cls, BrowserSlotPattern>> i = _directBrowserSlotPatterns.entrySet().iterator();
             while (i.hasNext()) {
-                Map.Entry entry = (Map.Entry) i.next();
+                Map.Entry<Cls, BrowserSlotPattern> entry = i.next();
                 BrowserSlotPattern pattern = (BrowserSlotPattern) entry.getValue();
                 if (pattern.contains(slot)) {
                     i.remove();
@@ -295,9 +293,9 @@ public class Project {
     }
 
     public void clearCachedWidgets() {
-        Iterator i = _cachedDesignTimeClsWidgets.values().iterator();
+        Iterator<ClsWidget> i = _cachedDesignTimeClsWidgets.values().iterator();
         while (i.hasNext()) {
-            ClsWidget widget = (ClsWidget) i.next();
+            ClsWidget widget = i.next();
             ComponentUtilities.dispose((Component)widget);
         }
         _cachedDesignTimeClsWidgets.clear();
@@ -526,7 +524,7 @@ public class Project {
 
     private void clearWidgets() {
         if (_cachedDesignTimeClsWidgets != null) {
-            Iterator i = _cachedDesignTimeClsWidgets.values().iterator();
+            Iterator<ClsWidget> i = _cachedDesignTimeClsWidgets.values().iterator();
             while (i.hasNext()) {
                 JComponent widget = (JComponent) i.next();
                 ComponentUtilities.dispose(widget);
@@ -565,7 +563,7 @@ public class Project {
         return getBrowserSlotPattern(cls).getSlots();
     }
 
-    public Collection getClsesWithDirectBrowserSlots() {
+    public Collection<Cls> getClsesWithDirectBrowserSlots() {
         return _directBrowserSlotPatterns.keySet();
     }
 
@@ -573,8 +571,8 @@ public class Project {
         return _activeClsWidgetDescriptors.keySet();
     }
 
-    public Collection getHiddenFrames() {
-        return new HashSet(_hiddenFrames);
+    public Collection<Frame> getHiddenFrames() {
+        return new HashSet<Frame>(_hiddenFrames);
     }
 
     public BrowserSlotPattern getBrowserSlotPattern(Cls cls) {
@@ -620,7 +618,7 @@ public class Project {
     }
 
     public ClsWidget getDesignTimeClsWidget(Cls cls) {
-        ClsWidget widget = (ClsWidget) _cachedDesignTimeClsWidgets.get(cls);
+        ClsWidget widget = _cachedDesignTimeClsWidgets.get(cls);
         if (widget == null) {
             // Log.enter(this, "createClsWidget", cls, new Boolean(designTime));
             WidgetDescriptor d = getClsWidgetDescriptor(cls);
@@ -644,7 +642,7 @@ public class Project {
     }
 
     public BrowserSlotPattern getDirectBrowserSlotPattern(Cls cls) {
-        return (BrowserSlotPattern) _directBrowserSlotPatterns.get(cls);
+        return _directBrowserSlotPatterns.get(cls);
     }
 
     public boolean getDisplayAbstractClassIcon() {
@@ -792,7 +790,7 @@ public class Project {
         return URIUtilities.getBaseName(_uri);
     }
 
-    public Collection getOpenWindows() {
+    public Collection<JFrame> getOpenWindows() {
         return Collections.unmodifiableCollection(_frames.values());
     }
 
@@ -968,11 +966,11 @@ public class Project {
         return descriptor;
     }
 
-    public Collection getTabWidgetDescriptors() {
+    public Collection<WidgetDescriptor> getTabWidgetDescriptors() {
         if (_tabWidgetDescriptors == null) {
             Set availableTabNames = new HashSet(PluginUtilities.getAvailableTabWidgetClassNames());
 
-            _tabWidgetDescriptors = new ArrayList();
+            _tabWidgetDescriptors = new ArrayList<WidgetDescriptor>();
             Iterator i = getProjectSlotValues(SLOT_TABS).iterator();
             while (i.hasNext()) {
                 Instance instance = (Instance) i.next();
@@ -1510,14 +1508,14 @@ public class Project {
     }
 
     private void removeDisplay(Frame frame) {
-        JFrame jframe = (JFrame) _frames.get(frame);
+        JFrame jframe = _frames.get(frame);
         if (jframe != null) {
             ComponentUtilities.closeWindow(jframe);
         }
     }
 
     public void removeIncludedProjectReferences() {
-        Map browserSlots = new HashMap();
+        Map<Cls, BrowserSlotPattern> browserSlots = new HashMap<Cls, BrowserSlotPattern>();
         browserSlots.putAll(_includedBrowserSlotPatterns);
         browserSlots.putAll(_directBrowserSlotPatterns);
         _directBrowserSlotPatterns = browserSlots;
@@ -1531,7 +1529,7 @@ public class Project {
             }
         }
 
-        projectURITree = new Tree(getProjectURI());
+        projectURITree = new Tree<URI>(getProjectURI());
         setProjectSlotValue(SLOT_INCLUDED_PROJECTS, null);
 
         _hiddenFrames.addAll(_includedHiddenFrames);
@@ -1602,9 +1600,9 @@ public class Project {
     private void saveBrowserSlots() {
         PropertyList browserSlots = getPropertyList(SLOT_BROWSER_SLOTS);
         browserSlots.clear();
-        Iterator i = _directBrowserSlotPatterns.entrySet().iterator();
+        Iterator<Map.Entry<Cls, BrowserSlotPattern>> i = _directBrowserSlotPatterns.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry entry = (Map.Entry) i.next();
+            Map.Entry<Cls, BrowserSlotPattern> entry = i.next();
             Cls cls = (Cls) entry.getKey();
             BrowserSlotPattern slotPattern = (BrowserSlotPattern) entry.getValue();
             if (!isIncludedBrowserSlotPattern(cls, slotPattern)) {
@@ -1643,10 +1641,10 @@ public class Project {
     }
 
     private void saveHiddenFrameFlags() {
-        Collection hiddenFrames = new ArrayList();
-        Iterator i = _hiddenFrames.iterator();
+        Collection<String> hiddenFrames = new ArrayList<String>();
+        Iterator<Frame> i = _hiddenFrames.iterator();
         while (i.hasNext()) {
-            Frame frame = (Frame) i.next();
+            Frame frame = i.next();
             if (!_includedHiddenFrames.contains(frame)) {
                 String name = frame.getName();
                 if (name == null) {
@@ -1684,10 +1682,10 @@ public class Project {
     }
 
     private void saveTabWidgetInstances() {
-        Collection instances = new ArrayList();
-        Iterator i = _tabWidgetDescriptors.iterator();
+        Collection<Instance> instances = new ArrayList<Instance>();
+        Iterator<WidgetDescriptor> i = _tabWidgetDescriptors.iterator();
         while (i.hasNext()) {
-            WidgetDescriptor d = (WidgetDescriptor) i.next();
+            WidgetDescriptor d = i.next();
             String clsName = d.getWidgetClassName();
             if (SystemUtilities.forName(clsName) != null) {
                 instances.add(d.getInstance());
@@ -1861,7 +1859,7 @@ public class Project {
     }
 
     public void setTabWidgetDescriptorOrder(Collection c) {
-        _tabWidgetDescriptors = new ArrayList(c);
+        _tabWidgetDescriptors = new ArrayList<WidgetDescriptor>(c);
         saveTabWidgetInstances();
     }
 
@@ -1880,7 +1878,7 @@ public class Project {
 
     public JFrame show(Cls cls, Slot slot) {
         FrameSlotCombination combination = new FrameSlotCombination(cls, slot);
-        JFrame frame = (JFrame) _frames.get(combination);
+        JFrame frame = _frames.get(combination);
         if (frame == null) {
             frame = createFrame(cls, slot);
             setIconImage(frame, slot);
@@ -1893,7 +1891,7 @@ public class Project {
 
     public JFrame show(Instance instance) {
         Assert.assertNotNull("instance", instance);
-        JFrame frame = (JFrame) _frames.get(instance);
+        JFrame frame = _frames.get(instance);
         if (frame == null) {
             frame = createFrame(instance);
             setIconImage(frame, instance);
