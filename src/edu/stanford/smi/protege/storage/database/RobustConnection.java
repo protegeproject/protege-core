@@ -342,6 +342,9 @@ public class RobustConnection {
         if (_driverVarcharTypeName == null || isPostgres()) {
             _driverVarcharTypeName = "VARCHAR";
         }
+        if (isOracle()) { 
+            _driverLongvarcharTypeName = "CLOB";  // can't search on the default LONG.
+        }
     }
 
     private static String getName(String typeName, String driverName) {
@@ -351,6 +354,7 @@ public class RobustConnection {
 
     public String getLongvarcharTypeName() {
         String name = SystemUtilities.getSystemProperty(OLD_PROPERTY_LONGVARCHAR_TYPE_NAME);
+        name = name;
         if (name == null || name.length() == 0) {
             name = getName(PROPERTY_LONGVARCHAR_TYPE_NAME, _driverLongvarcharTypeName);
         }
