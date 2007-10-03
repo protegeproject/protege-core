@@ -564,6 +564,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         removeRecord(r);
         addRecord(newRecord);
       }
+      original.markDeleted(true);
     }
 
 	public void reinitialize() {
