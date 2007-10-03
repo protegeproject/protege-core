@@ -1743,6 +1743,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     		setShortValue(replaceNameStatement, 1, 2, replacement.getFrameID().getName());
     		setFrame(replaceNameStatement, 3, replacement);
     		executeUpdate(replaceNameStatement);
+    		original.markDeleted(true);
     	}
     	catch (SQLException sqle) {
     		createRuntimeException(sqle);
