@@ -12,7 +12,11 @@ import edu.stanford.smi.protege.util.*;
  */
 public class FrameEvent extends AbstractEvent {
     private static final int BASE = 100;
-    public static final int NAME_CHANGED = BASE + 1;
+    /*
+     * @deprecated Use FrameEvent.REPLACE_FRAME instead
+     */
+    @Deprecated public static final int NAME_CHANGED = BASE + 1;
+    public static final int REPLACE_FRAME = BASE + 1;
     public static final int DELETED = BASE + 2;
     public static final int VISIBILITY_CHANGED = BASE + 3;
     public static final int BROWSER_TEXT_CHANGED = BASE + 5;
@@ -54,6 +58,10 @@ public class FrameEvent extends AbstractEvent {
     
     public Slot getSlot() {
         return (Slot) getArgument1();
+    }
+    
+    public Frame getOldFrame() {
+        return (Frame) getArgument2();
     }
     
     public boolean isDeletingFrameEvent() {

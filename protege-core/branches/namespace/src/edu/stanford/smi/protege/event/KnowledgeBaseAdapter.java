@@ -29,7 +29,15 @@ public abstract class KnowledgeBaseAdapter implements KnowledgeBaseListener {
     public void facetDeleted(KnowledgeBaseEvent event) {
     }
 
+    /*
+     * @deprecated Override replaceFrame instead
+     */
+    @Deprecated
     public void frameNameChanged(KnowledgeBaseEvent event) {
+        frameReplaced(event);
+    }
+    
+    public void frameReplaced(KnowledgeBaseEvent event) {
     }
 
     public void instanceCreated(KnowledgeBaseEvent event) {

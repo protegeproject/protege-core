@@ -13,7 +13,15 @@ public abstract class FrameAdapter implements FrameListener {
     public void deleted(FrameEvent event) {
     }
 
+    /**
+     * @deprecated Override frameReplaced instead.
+     */
+    @Deprecated
     public void nameChanged(FrameEvent event) {
+        frameReplaced(event);
+    }
+    
+    public void frameReplaced(FrameEvent event) {
     }
 
     public void ownFacetAdded(FrameEvent event) {

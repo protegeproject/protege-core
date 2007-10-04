@@ -27,6 +27,16 @@ public interface KnowledgeBaseListener extends EventListener {
 
     void facetDeleted(KnowledgeBaseEvent event);
 
+    /**
+     * This method should be called frameReplaced().  Its name cannot be changed for
+     * backwards compatibility reasons.  The closest thing in Protege frames to a rename
+     * frame operation is a replace frame operation where a frame is deleted and a new 
+     * frame is created which is identical to the original except for the name.  When this 
+     * happens the following method is called.
+     * 
+     * @param event
+     *  
+     */
     void frameNameChanged(KnowledgeBaseEvent event);
 
     void instanceCreated(KnowledgeBaseEvent event);
