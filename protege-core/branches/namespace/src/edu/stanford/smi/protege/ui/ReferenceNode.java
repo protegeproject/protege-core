@@ -20,7 +20,7 @@ public class ReferenceNode extends LazyTreeNode {
         }
     };
     private FrameListener _frameListener = new FrameAdapter() {
-        public void nameChanged(FrameEvent event) {
+        public void replaceFrame(FrameEvent event) {
             notifyNodeChanged();
         }
 
