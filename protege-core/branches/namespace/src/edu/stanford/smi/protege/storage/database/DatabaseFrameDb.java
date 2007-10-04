@@ -30,6 +30,7 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.ReferenceImpl;
 import edu.stanford.smi.protege.model.framestore.Sft;
@@ -1263,26 +1264,35 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private static final Map slotToFacetsCacheMap = new HashMap();
-
+    
     protected void saveFrames(KnowledgeBase kb) throws SQLException {
         nFrames = kb.getFrameCount();
         loopcount = 0;
         previousTime = System.currentTimeMillis();
+        
+        MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(kb);
+        NarrowFrameStore nfs = null;
+        if (mnfs != null) {
+            nfs = mnfs.getActiveFrameStore();
+        }
 
         if (nFrames > LOOP_SIZE) {
             Log.getLogger().info("Getting " + nFrames + " frames, please be patient, " + new Date());
         }
-        Iterator i = kb.getFrames().iterator();
-        while (i.hasNext()) {
-            Frame frame = (Frame) i.next();
+        Collection<Frame> frames;
+        if (nfs == null) {
+            frames = kb.getFrames();
+        }
+        else {
+            frames = nfs.getFrames();
+        }
+        for (Frame frame : frames) {
             printTraceMessage();
-            saveDirectOwnSlotValues(frame);
+            saveDirectOwnSlotValues(frame, nfs);
             if (frame instanceof Cls) {
                 Cls cls = (Cls) frame;
-                saveDirectTemplateSlotInformation(cls);
+                saveDirectTemplateSlotInformation(cls, nfs);
             }
-            // do this just in case it helps with caching
-            i.remove();
         }
     }
 
@@ -1361,30 +1371,48 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         getCurrentConnection().commit();
     }
 
-    private void saveDirectOwnSlotValues(Frame frame) throws SQLException {
+    private void saveDirectOwnSlotValues(Frame frame, NarrowFrameStore nfs) throws SQLException {
         Iterator i = frame.getOwnSlots().iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();
-            Collection values = frame.getDirectOwnSlotValues(slot);
+            Collection values;
+            if (nfs == null) {
+                values = frame.getDirectOwnSlotValues(slot);
+            }
+            else {
+                values = nfs.getValues(frame, slot, null, false);
+            }
             saveValues(frame, slot, null, false, values);
         }
     }
 
-    private void saveDirectTemplateSlotInformation(Cls cls) throws SQLException {
+    private void saveDirectTemplateSlotInformation(Cls cls, NarrowFrameStore nfs) throws SQLException {
         Iterator i = cls.getTemplateSlots().iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();
-            Collection values = cls.getDirectTemplateSlotValues(slot);
+            Collection values;
+            if (nfs == null) {
+                values = cls.getDirectTemplateSlotValues(slot);
+            }
+            else {
+                values  = nfs.getValues(cls, slot, null, true);
+            }
             saveValues(cls, slot, null, true, values);
-            saveDirectTemplateFacetValues(cls, slot);
+            saveDirectTemplateFacetValues(cls, slot, nfs);
         }
     }
 
-    private void saveDirectTemplateFacetValues(Cls cls, Slot slot) throws SQLException {
+    private void saveDirectTemplateFacetValues(Cls cls, Slot slot, NarrowFrameStore nfs) throws SQLException {
         Iterator i = getTemplateFacets(cls, slot).iterator();
         while (i.hasNext()) {
             Facet facet = (Facet) i.next();
-            Collection values = cls.getDirectTemplateFacetValues(slot, facet);
+            Collection values;
+            if (nfs == null) {
+                values = cls.getDirectTemplateFacetValues(slot, facet);
+            }
+            else {
+                values = nfs.getValues(cls, slot, facet, true);
+            }
             saveValues(cls, slot, facet, true, values);
         }
     }
