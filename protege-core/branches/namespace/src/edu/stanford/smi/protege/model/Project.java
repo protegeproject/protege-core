@@ -192,7 +192,7 @@ public class Project {
             _hiddenFrames.remove(cls);
         }
 
-        public void frameNameChanged(KnowledgeBaseEvent event) {
+        public void frameReplaced(KnowledgeBaseEvent event) {
             Frame frame = event.getFrame();
             WidgetDescriptor d = _activeClsWidgetDescriptors.get(frame);
             if (d != null) {
