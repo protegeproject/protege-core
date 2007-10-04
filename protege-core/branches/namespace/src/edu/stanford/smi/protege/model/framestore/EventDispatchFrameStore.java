@@ -214,7 +214,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                 case KnowledgeBaseEvent.INSTANCE_DELETED:
                     listener.instanceDeleted(event);
                     break;
-                case KnowledgeBaseEvent.FRAME_NAME_CHANGED:
+                case KnowledgeBaseEvent.FRAME_REPLACED:
                     listener.frameNameChanged(event);
                     break;
                 case KnowledgeBaseEvent.DEFAULT_CLS_METACLASS_CHANGED:
@@ -403,7 +403,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         while (i.hasNext()) {
             FrameListener listener = (FrameListener) i.next();
             switch (event.getEventType()) {
-                case FrameEvent.NAME_CHANGED:
+                case FrameEvent.REPLACE_FRAME:
                     listener.nameChanged(event);
                     break;
                 case FrameEvent.VISIBILITY_CHANGED:

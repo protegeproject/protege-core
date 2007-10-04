@@ -29,7 +29,7 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class EventGeneratorFrameStore extends ModificationFrameStore {
-    private List _events = new ArrayList<AbstractEvent>();
+    private List<AbstractEvent> _events = new ArrayList<AbstractEvent>();
     private static final int NO_VALUE = -1;
     private int _transactionStartSize = NO_VALUE;
     private DefaultKnowledgeBase _kb;
@@ -86,11 +86,12 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
     }
 
-    private void generateSetFrameNameEvents(Frame frame, String oldName, String newName) {
-        generateFrameEvent(FrameEvent.NAME_CHANGED, frame, oldName);
-        generateFrameEvent(FrameEvent.BROWSER_TEXT_CHANGED, frame);
-        generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, _systemFrames.getNameSlot());
-        generateKbEvent(KnowledgeBaseEvent.FRAME_NAME_CHANGED, frame, oldName);
+    private void generateReplaceFrameEvents(Frame original, Frame replacement) {
+        String oldName = original.getName();
+        generateFrameEvent(FrameEvent.REPLACE_FRAME, original, oldName, replacement);
+        generateFrameEvent(FrameEvent.BROWSER_TEXT_CHANGED, original);
+        generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, original, _systemFrames.getNameSlot());
+        generateKbEvent(KnowledgeBaseEvent.FRAME_REPLACED, original, oldName, replacement);
 
     }
 
@@ -301,6 +302,10 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
 
     private void generateKbEvent(int type, Frame frame, String s) {
         _events.add(new KnowledgeBaseEvent(_kb, type, frame, s));
+    }
+    
+    private void generateKbEvent(int type, Frame frame, String s, Frame oldFrame) {
+        _events.add(new KnowledgeBaseEvent(_kb, type, frame, s, oldFrame));
     }
 
     private boolean generateEvent(Frame frame) {
@@ -558,26 +563,28 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     }
 
     public void replaceFrame(Frame original, Frame replacement) {
-      String newName = replacement.getFrameID().getName();
+      String newName = replacement.getFrameID().getName(); 
       if (getFrame(newName) != null) {
-        return;
+          return;
       }
-      
-      if (original instanceof Cls) {
-        generateDeleteClsEvents((Cls) original);
+      generateReplaceFrameEvents(original, replacement);
+      try {
+          if (original instanceof Cls) {
+              generateDeleteClsEvents((Cls) original);
+          }
+          else if (original instanceof Slot) {
+              generateDeleteSlotEvents((Slot) original);
+          }
+          else if (original instanceof Facet) {
+              generateDeleteFacetEvents((Facet) original);
+          }
+          else if (original instanceof SimpleInstance) {
+              generateDeleteSimpleInstanceEvents((SimpleInstance) original);
+          }
       }
-      else if (original instanceof Slot) {
-        generateDeleteSlotEvents((Slot) original);
+      finally {
+          getDelegate().replaceFrame(original, replacement);
       }
-      else if (original instanceof Facet) {
-        generateDeleteFacetEvents((Facet) original);
-      }
-      else if (original instanceof SimpleInstance) {
-        generateDeleteSimpleInstanceEvents((SimpleInstance) original);
-      }
-      
-      getDelegate().replaceFrame(original, replacement);
-      
       Collection directTypes = getDelegate().getDirectTypes((Instance) replacement);
       if (original instanceof Cls) {
         generateCreateClsEvents((Cls) replacement, directTypes); 
