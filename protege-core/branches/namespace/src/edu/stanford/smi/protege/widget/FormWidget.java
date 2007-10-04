@@ -145,7 +145,7 @@ public class FormWidget extends AbstractClsWidget {
     }
 
     private KnowledgeBaseListener _kbListener = new KnowledgeBaseAdapter() {
-        public void frameNameChanged(KnowledgeBaseEvent event) {
+        public void frameReplaced(KnowledgeBaseEvent event) {
             Frame frame = event.getFrame();
             if (frame instanceof Slot) {
                 Slot slot = (Slot) frame;

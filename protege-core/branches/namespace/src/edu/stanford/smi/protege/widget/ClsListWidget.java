@@ -25,7 +25,7 @@ public class ClsListWidget extends AbstractListWidget {
             repaint();
         }
 
-        public void nameChanged(FrameEvent event) {
+        public void replaceFrame(FrameEvent event) {
             repaint();
         }
     };

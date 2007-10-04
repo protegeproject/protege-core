@@ -28,7 +28,7 @@ public class ClsFieldWidget extends AbstractSlotWidget {
         public void ownSlotValueChanged(FrameEvent event) {
             repaint();
         }
-        public void nameChanged(FrameEvent event) {
+        public void replaceFrame(FrameEvent event) {
             repaint();
         }
     };

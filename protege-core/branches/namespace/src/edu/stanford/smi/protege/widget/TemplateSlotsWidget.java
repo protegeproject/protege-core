@@ -62,7 +62,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
     };
 
     private KnowledgeBaseListener _knowledgeBaseListener = new KnowledgeBaseAdapter() {
-        public void frameNameChanged(KnowledgeBaseEvent event) {
+        public void frameReplaced(KnowledgeBaseEvent event) {
             repaint();
         }
     };
