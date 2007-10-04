@@ -22,7 +22,6 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.metaproject.Operation;
-import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.util.AbstractEvent;
