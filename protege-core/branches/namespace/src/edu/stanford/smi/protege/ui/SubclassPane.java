@@ -1,17 +1,42 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.*;
-import java.awt.dnd.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DropTarget;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTree;
+import javax.swing.tree.TreePath;
 
-import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.ModelUtilities;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.DefaultRenderer;
+import edu.stanford.smi.protege.util.LazyTreeNode;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.SelectableContainer;
+import edu.stanford.smi.protege.util.SelectableTree;
+import edu.stanford.smi.protege.util.StandardAction;
+import edu.stanford.smi.protege.util.SuperclassTraverser;
+import edu.stanford.smi.protege.util.TreePopupMenuMouseListener;
+import edu.stanford.smi.protege.util.WaitCursor;
 
 /**
  * This component displays the superclass/subclass tree on the classes tab.

@@ -1,9 +1,9 @@
 package edu.stanford.smi.protege.util;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.util.Collection;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 
 /**
  * A swing container component that contains a Selectable component.  All Selectable calls are delegated to the 

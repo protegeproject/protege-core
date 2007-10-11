@@ -10,6 +10,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
@@ -205,7 +206,7 @@ public interface FrameStore {
    */
     void executeQuery(Query query, QueryCallback callback);
 
-    Set getReferences(Object object);
+    Set<Reference> getReferences(Object object);
 
     Set getMatchingReferences(String string, int maxMatches);
 

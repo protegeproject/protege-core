@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import edu.stanford.smi.protege.event.ClsEvent;
 import edu.stanford.smi.protege.event.FrameEvent;
@@ -26,7 +27,6 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
-import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class EventGeneratorFrameStore extends ModificationFrameStore {
     private List<AbstractEvent> _events = new ArrayList<AbstractEvent>();
@@ -84,15 +84,6 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     public void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
         generateSetDirectOwnSlotValuesEvents(frame, slot, values);
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
-    }
-
-    private void generateReplaceFrameEvents(Frame original, Frame replacement) {
-        String oldName = original.getName();
-        generateFrameEvent(FrameEvent.REPLACE_FRAME, original, oldName, replacement);
-        generateFrameEvent(FrameEvent.BROWSER_TEXT_CHANGED, original);
-        generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, original, _systemFrames.getNameSlot());
-        generateKbEvent(KnowledgeBaseEvent.FRAME_REPLACED, original, oldName, replacement);
-
     }
 
     private void generateSetDirectOwnSlotValuesEvents(Frame frame, Slot slot, Collection values) {
@@ -294,6 +285,57 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
             generateClsEvent(ClsEvent.DIRECT_INSTANCE_ADDED, directType, newFrame);
             generateOwnSlotValuesChangedEvent(directType, _systemFrames.getDirectInstancesSlot());
         }
+    }
+    
+    private void generateReplacedFrameEvents(Frame original, Frame replacement) {
+        String oldName = original.getName();
+        generateFrameEvent(FrameEvent.REPLACE_FRAME, original, oldName, replacement);
+        generateFrameEvent(FrameEvent.BROWSER_TEXT_CHANGED, original);
+        generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, original, _systemFrames.getNameSlot());
+        generateKbEvent(KnowledgeBaseEvent.FRAME_REPLACED, original, oldName, replacement);
+    }
+    
+    private void generateReplacingFrameEvents(Frame replacement, Frame original) {
+    	generateReplacingFrameSlotValueEvents(replacement);
+    	generateReplacingFrameAsValueEvents(replacement, original);
+    	if (replacement instanceof Slot) {
+    		generateReplacingSlotEvents((Slot) replacement);
+    	}
+    }
+    
+    private void generateReplacingFrameSlotValueEvents(Frame frame) {
+    	for (Slot slot : getDelegate().getOwnSlots(frame)) {
+    		Collection values = getDelegate().getOwnSlotValues(frame, slot);
+    		if (values != null && !values.isEmpty()) {
+    			generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, slot);
+    		}
+    	}
+    }
+    
+    private void generateReplacingFrameAsValueEvents(Frame replacement, Frame original) {
+    	Set<Reference> references = getDelegate().getReferences(replacement);
+    	if (references == null) return;
+    	for (Reference reference : references) {
+    		if (!reference.isTemplate()) {
+    			Frame sourceFrame = reference.getFrame();
+    			Slot sourceSlot = reference.getSlot();
+    			Collection values = getDelegate().getOwnSlotValues(sourceFrame, sourceSlot);
+    			if (values == null) continue;
+    			Collection oldValues = new ArrayList(values);
+    			oldValues.remove(replacement);
+    			oldValues.add(original);
+    			generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, sourceFrame, sourceSlot, oldValues);
+    		}
+    	}
+    }
+    
+    private void generateReplacingSlotEvents(Slot replacement) {
+    	Set frames = getDelegate().getFramesWithAnyDirectOwnSlotValue(replacement);
+    	if (frames == null) return;
+    	for (Object o : frames) {
+    		Frame frame = (Frame) o;
+    		generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, replacement);
+    	}
     }
 
     private void generateKbEvent(int type, Frame frame) {
@@ -567,7 +609,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
       if (getFrame(newName) != null) {
           return;
       }
-      generateReplaceFrameEvents(original, replacement);
+      generateReplacedFrameEvents(original, replacement);
       try {
           if (original instanceof Cls) {
               generateDeleteClsEvents((Cls) original);
@@ -598,6 +640,6 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
       if (original instanceof SimpleInstance) {
         generateCreateSimpleInstanceEvents((SimpleInstance) replacement, directTypes);
       }
-      
+      generateReplacingFrameEvents(replacement, original);
     }
 }

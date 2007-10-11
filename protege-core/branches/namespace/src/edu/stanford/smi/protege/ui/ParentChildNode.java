@@ -52,10 +52,17 @@ public class ParentChildNode extends LazyTreeNode {
     };
 
     private FrameListener _frameListener = new FrameAdapter() {
+    	@Override
+    	public void frameReplaced(FrameEvent event) {
+
+    	}
+    	
+    	@Override
         public void browserTextChanged(FrameEvent event) {
             notifyNodeChanged();
         }
 
+    	@Override
         public void ownSlotValueChanged(FrameEvent event) {
             if (event.getSlot().getName().equals(Model.Slot.DIRECT_TYPES)) {
                 // refresh the stale cls reference

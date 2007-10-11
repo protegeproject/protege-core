@@ -141,8 +141,8 @@ public class SimpleFrameStore implements FrameStore {
         _helper.deleteFrame(frame);
     }
 
-    public Set getReferences(Object value) {
-        Set references = _helper.getReferences(value);
+    public Set<Reference> getReferences(Object value) {
+        Set<Reference> references = _helper.getReferences(value);
         return unmodifiableSet(references);
     }
 
@@ -372,9 +372,8 @@ public class SimpleFrameStore implements FrameStore {
         return unmodifiableSet(types);
     }
 
-    private static Set unmodifiableSet(Set set) {
+    private static <X> Set<X> unmodifiableSet(Set<X> set) {
         return set == null ? Collections.EMPTY_SET : Collections.unmodifiableSet(set);
-        // return set == null ? Collections.EMPTY_SET : set;
     }
 
     private static List unmodifiableList(List list) {
@@ -425,11 +424,11 @@ public class SimpleFrameStore implements FrameStore {
          * we want frame, slot -> non-empty value  to imply that slot is 
          * in frame.getOwnSlots(). 
          */
-        Set subSlots = new HashSet();
+        Set<Slot> subSlots = new HashSet<Slot>();
         for (Object o : ownSlots) {
         	if (o instanceof Slot) {
         		Slot slot = (Slot) o;
-        		Set addSlots = getSubslots(slot);
+        		Set<Slot> addSlots = getSubslots(slot);
         		if (addSlots != null) subSlots.addAll(addSlots);
         	}
         }
