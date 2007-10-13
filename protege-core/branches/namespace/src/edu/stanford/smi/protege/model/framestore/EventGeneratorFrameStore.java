@@ -36,6 +36,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     private SystemFrames _systemFrames;
     private boolean generateEventsOnDeletingFrames = false;
     private boolean serverMode = false;
+    private boolean inReplaceFrameOperation = false;
 
     public EventGeneratorFrameStore(KnowledgeBase kb) {
         _kb = (DefaultKnowledgeBase) kb;
@@ -44,6 +45,13 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     
     public void serverMode() {
       serverMode = true;
+    }
+    
+    private void addEvent(AbstractEvent event) {
+    	if (inReplaceFrameOperation) {
+    		event.setReplacementEvent(true);
+    	}
+    	_events.add(event);
     }
 
     public void reinitialize() {
@@ -290,25 +298,13 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     private void generateReplacedFrameEvents(Frame original, Frame replacement) {
         String oldName = original.getName();
         generateFrameEvent(FrameEvent.REPLACE_FRAME, original, oldName, replacement);
-        generateFrameEvent(FrameEvent.BROWSER_TEXT_CHANGED, original);
-        generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, original, _systemFrames.getNameSlot());
         generateKbEvent(KnowledgeBaseEvent.FRAME_REPLACED, original, oldName, replacement);
     }
     
     private void generateReplacingFrameEvents(Frame replacement, Frame original) {
-    	generateReplacingFrameSlotValueEvents(replacement);
     	generateReplacingFrameAsValueEvents(replacement, original);
     	if (replacement instanceof Slot) {
     		generateReplacingSlotEvents((Slot) replacement);
-    	}
-    }
-    
-    private void generateReplacingFrameSlotValueEvents(Frame frame) {
-    	for (Slot slot : getDelegate().getOwnSlots(frame)) {
-    		Collection values = getDelegate().getOwnSlotValues(frame, slot);
-    		if (values != null && !values.isEmpty()) {
-    			generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, slot);
-    		}
     	}
     }
     
@@ -320,10 +316,11 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     			Frame sourceFrame = reference.getFrame();
     			Slot sourceSlot = reference.getSlot();
     			Collection values = getDelegate().getOwnSlotValues(sourceFrame, sourceSlot);
-    			if (values == null) continue;
+    			if (values == null || !values.contains(replacement)) continue;
     			Collection oldValues = new ArrayList(values);
     			oldValues.remove(replacement);
-    			oldValues.add(original);
+    			oldValues.add(original);  //TODO you need to add inferred events here + junits.
+    			 					      //     inverse slots and super-slots.
     			generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, sourceFrame, sourceSlot, oldValues);
     		}
     	}
@@ -333,21 +330,21 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     	Set frames = getDelegate().getFramesWithAnyDirectOwnSlotValue(replacement);
     	if (frames == null) return;
     	for (Object o : frames) {
-    		Frame frame = (Frame) o;
+    		Frame frame = (Frame) o;  // there is no need to do any inference in this case.
     		generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, replacement);
     	}
     }
 
     private void generateKbEvent(int type, Frame frame) {
-        _events.add(new KnowledgeBaseEvent(_kb, type, frame));
+        addEvent(new KnowledgeBaseEvent(_kb, type, frame));
     }
 
     private void generateKbEvent(int type, Frame frame, String s) {
-        _events.add(new KnowledgeBaseEvent(_kb, type, frame, s));
+        addEvent(new KnowledgeBaseEvent(_kb, type, frame, s));
     }
     
     private void generateKbEvent(int type, Frame frame, String s, Frame oldFrame) {
-        _events.add(new KnowledgeBaseEvent(_kb, type, frame, s, oldFrame));
+        addEvent(new KnowledgeBaseEvent(_kb, type, frame, s, oldFrame));
     }
 
     private boolean generateEvent(Frame frame) {
@@ -364,13 +361,13 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
 
     private void generateFrameEvent(int type, Frame frame, Object o2, Object o3) {
         if (generateEvent(frame)) {
-            _events.add(new FrameEvent(frame, type, o2, o3));
+            addEvent(new FrameEvent(frame, type, o2, o3));
         }
     }
 
     private void generateClsEvent(int type, Cls cls, Frame frame1, Frame frame2) {
         if (generateEvent(cls)) {
-            _events.add(new ClsEvent(cls, type, frame1, frame2));
+            addEvent(new ClsEvent(cls, type, frame1, frame2));
         }
     }
 
@@ -380,13 +377,13 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
 
     private void generateSlotEvent(int type, Slot slot, Frame frame) {
         if (generateEvent(slot)) {
-            _events.add(new SlotEvent(slot, type, frame));
+            addEvent(new SlotEvent(slot, type, frame));
         }
     }
 
     private void generateInstanceEvent(int type, Instance instance, Frame frame) {
         if (generateEvent(instance)) {
-            _events.add(new InstanceEvent(instance, type, frame));
+            addEvent(new InstanceEvent(instance, type, frame));
         }
     }
 
@@ -571,7 +568,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     }
     
     private void generateTransactionEvent(int type, String name) {
-        _events.add(new TransactionEvent(_kb, type, name));
+        addEvent(new TransactionEvent(_kb, type, name));
     }
 
     public boolean commitTransaction() {
@@ -603,43 +600,54 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         generateEventsOnDeletingFrames = b;
         return oldValue;
     }
-
+    
+    /*
+     * This is complicated...
+	 */
     public void replaceFrame(Frame original, Frame replacement) {
-      String newName = replacement.getFrameID().getName(); 
-      if (getFrame(newName) != null) {
-          return;
-      }
-      generateReplacedFrameEvents(original, replacement);
-      try {
-          if (original instanceof Cls) {
-              generateDeleteClsEvents((Cls) original);
-          }
-          else if (original instanceof Slot) {
-              generateDeleteSlotEvents((Slot) original);
-          }
-          else if (original instanceof Facet) {
-              generateDeleteFacetEvents((Facet) original);
-          }
-          else if (original instanceof SimpleInstance) {
-              generateDeleteSimpleInstanceEvents((SimpleInstance) original);
-          }
-      }
-      finally {
-          getDelegate().replaceFrame(original, replacement);
-      }
-      Collection directTypes = getDelegate().getDirectTypes((Instance) replacement);
-      if (original instanceof Cls) {
-        generateCreateClsEvents((Cls) replacement, directTypes); 
-      }
-      if (original instanceof Slot) {
-        generateCreateSlotEvents((Slot) replacement, directTypes);
-      }
-      if (original instanceof Facet) {
-        generateCreateFacetEvents((Facet) replacement, directTypes);
-      }
-      if (original instanceof SimpleInstance) {
-        generateCreateSimpleInstanceEvents((SimpleInstance) replacement, directTypes);
-      }
-      generateReplacingFrameEvents(replacement, original);
+    	String newName = replacement.getFrameID().getName(); 
+    	if (getFrame(newName) != null) {
+    		return;
+    	}
+    	try {
+    		generateReplacedFrameEvents(original, replacement);
+    		inReplaceFrameOperation = true;
+    		if (original instanceof Cls) {
+    			generateDeleteClsEvents((Cls) original);
+    		}
+    		else if (original instanceof Slot) {
+    			generateDeleteSlotEvents((Slot) original);
+    		}
+    		else if (original instanceof Facet) {
+    			generateDeleteFacetEvents((Facet) original);
+    		}
+    		else if (original instanceof SimpleInstance) {
+    			generateDeleteSimpleInstanceEvents((SimpleInstance) original);
+    		}
+    	}
+    	finally {
+    		inReplaceFrameOperation=false;
+    		getDelegate().replaceFrame(original, replacement);
+    	}
+    	try {
+    		inReplaceFrameOperation = true;
+    		Collection directTypes = getDelegate().getDirectTypes((Instance) replacement);
+    		if (original instanceof Cls) {
+    			generateCreateClsEvents((Cls) replacement, directTypes); 
+    		}
+    		if (original instanceof Slot) {
+    			generateCreateSlotEvents((Slot) replacement, directTypes);
+    		}
+    		if (original instanceof Facet) {
+    			generateCreateFacetEvents((Facet) replacement, directTypes);
+    		}
+    		if (original instanceof SimpleInstance) {
+    			generateCreateSimpleInstanceEvents((SimpleInstance) replacement, directTypes);
+    		}
+    		generateReplacingFrameEvents(replacement, original);
+    	}
+    	finally {
+    		inReplaceFrameOperation = false;
+    	}
     }
 }

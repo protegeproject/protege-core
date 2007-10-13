@@ -1,12 +1,11 @@
 package edu.stanford.smi.protege.util;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.Collection;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.server.RemoteClientProject;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 
 /**
@@ -22,6 +21,7 @@ public abstract class AbstractEvent extends SessionEvent implements Localizable 
     private Object _argument3;
     private long _timeStamp;
     private String _userName;
+    private boolean replacementEvent = false;
 
     protected AbstractEvent(Object source, int type) {
         this(source, type, null, null, null);
@@ -148,4 +148,36 @@ public abstract class AbstractEvent extends SessionEvent implements Localizable 
 		
 		return _userName;
 	}
+
+	/**
+	 * This call tells whether this event was generated as a result of a replaceFrame operation.
+	 * 
+	 * The replaceFrame events are a special case.  For the smoothest user interaction
+	 * widgets will want to simply replace the frame that they are referencing with the new frame.
+	 * But we need to properly support legacy widgets that only know about frames changing name we need to 
+	 * generate the full set of events.  Widgets that work by simply replacing the frame can then filter
+	 * out these replace frame events because they  have already done the work on the first call.
+	 * 
+	 * @return true if and only if the event was generated during a replaceFrame operation.
+	 */
+	public boolean isReplacementEvent() {
+		return replacementEvent;
+	}
+
+	/**
+	 * This call allows the caller to indicate that this event was generated during a replaceFrame operation.
+	 * This method should only be called in the EventGeneratorFrameStore.
+	 * 
+	 * The replaceFrame events are a special case.  For the smoothest user interaction
+	 * widgets will want to simply replace the frame that they are referencing with the new frame.
+	 * But we need to properly support legacy widgets that only know about frames changing name we need to 
+	 * generate the full set of events.  Widgets that work by simply replacing the frame can then filter
+	 * out these replace frame events because they  have already done the work on the first call.
+	 * 
+	 */
+	public void setReplacementEvent(boolean replacementEvent) {
+		this.replacementEvent = replacementEvent;
+	}
+	
+
 }

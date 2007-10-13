@@ -1,15 +1,43 @@
 package edu.stanford.smi.protege.widget;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.border.Border;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.ClsAdapter;
+import edu.stanford.smi.protege.event.ClsEvent;
+import edu.stanford.smi.protege.event.ClsListener;
+import edu.stanford.smi.protege.event.KnowledgeBaseAdapter;
+import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.ValueType;
+import edu.stanford.smi.protege.model.WidgetDescriptor;
+import edu.stanford.smi.protege.resource.Colors;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.AllowableAction;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.DoubleClickListener;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.ShowInstanceListener;
+import edu.stanford.smi.protege.util.StringUtilities;
 
 /**
  * Base class for all SlotWidgets. 
@@ -42,14 +70,38 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
 
     private ClsListener _clsListener = new ClsAdapter() {
         public void templateFacetValueChanged(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             if (AbstractWidget.equals(event.getSlot(), getSlot())) {
                 updateBorder(getValues());
             }
         }
     };
+    
+    private boolean _kbListenerInstalled = false;
+    private KnowledgeBaseListener _kbListener = new KnowledgeBaseAdapter() {
+    	public void frameReplaced(edu.stanford.smi.protege.event.KnowledgeBaseEvent event) {
+    		Frame oldFrame = event.getFrame();
+    		Frame newFrame = event.getNewFrame();
+    		if (_cls != null && _cls.equals(oldFrame)) {
+    			_cls = (Cls) newFrame;
+    		}
+    		if (_slot != null && _slot.equals(oldFrame)) {
+    			_slot = (Slot) newFrame;
+    		}
+    		if (_instance != null && _instance.equals(oldFrame)) {
+    			_instance = (Instance) newFrame;
+    		}
+    		if (_associatedCls != null && _associatedCls.equals(oldFrame)) {
+    			_associatedCls = (Cls) newFrame;
+    		}
+    		loadValues();
+    	};
+    };
 
     private ClsListener _associatedClsListener = new ClsAdapter() {
+
         public void templateFacetValueChanged(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             if (AbstractWidget.equals(event.getFacet(), _slot.getAssociatedFacet())) {
                 loadValues();
             }
@@ -70,10 +122,21 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     protected AbstractSlotWidget() {
         setNormalBorder();
     }
+    
+    private void installKBListener() {
+    	if (!_kbListenerInstalled)  {
+    		_kbListenerInstalled = true;
+    		getKnowledgeBase().addKnowledgeBaseListener(_kbListener);
+    	}
+    }
 
     public void dispose() {
         super.dispose();
         getCls().removeClsListener(_clsListener);
+        getKnowledgeBase().removeKnowledgeBaseListener(_kbListener);
+        if (getAssociatedCls() != null)  {
+        	getAssociatedCls().removeClsListener(_associatedClsListener);
+        }
     }
 
     protected Action getDoubleClickAction() {
@@ -365,6 +428,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     }
 
     public void setInstance(Instance newInstance) {
+    	installKBListener();
         _instance = newInstance;
         loadValues();
     }
@@ -442,6 +506,7 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         _cls = cls;
         _slot = slot;
         _cls.addClsListener(_clsListener);
+        getKnowledgeBase().addKnowledgeBaseListener(_kbListener);
 
         Dimension d = getSize();
         if (d.width > 0 && d.height > 0) {

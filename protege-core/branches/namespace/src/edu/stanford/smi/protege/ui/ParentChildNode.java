@@ -14,18 +14,21 @@ import edu.stanford.smi.protege.util.*;
 public class ParentChildNode extends LazyTreeNode {
     private ClsListener _clsListener = new ClsAdapter() {
         public void directSubclassAdded(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             if (event.getSubclass().isVisible()) {
                 childAdded(event.getSubclass());
             }
         }
 
         public void directSubclassRemoved(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             if (event.getSubclass().isVisible()) {
                 childRemoved(event.getSubclass());
             }
         }
 
         public void directSubclassMoved(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             Cls subclass = event.getSubclass();
             int index = (new ArrayList(getChildObjects())).indexOf(subclass);
             if (index != -1) {
@@ -35,18 +38,22 @@ public class ParentChildNode extends LazyTreeNode {
         }
 
         public void directInstanceAdded(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             notifyNodeChanged();
         }
 
         public void directInstanceRemoved(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             notifyNodeChanged();
         }
 
         public void templateFacetValueChanged(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             notifyNodeChanged();
         }
 
         public void directSuperclassAdded(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             notifyNodeChanged();
         }
     };
@@ -54,16 +61,23 @@ public class ParentChildNode extends LazyTreeNode {
     private FrameListener _frameListener = new FrameAdapter() {
     	@Override
     	public void frameReplaced(FrameEvent event) {
-
+    		Frame oldFrame = event.getFrame();
+    		Frame newFrame = event.getNewFrame();
+    		Cls cls = getCls();
+    		if (cls != null && cls.equals(oldFrame)) {
+    			reload(newFrame);
+    		}
     	}
     	
     	@Override
         public void browserTextChanged(FrameEvent event) {
+        	if (event.isReplacementEvent()) return;
             notifyNodeChanged();
         }
 
     	@Override
         public void ownSlotValueChanged(FrameEvent event) {
+        	if (event.isReplacementEvent()) return;
             if (event.getSlot().getName().equals(Model.Slot.DIRECT_TYPES)) {
                 // refresh the stale cls reference
                 Cls cls = getCls().getKnowledgeBase().getCls(getCls().getName());
@@ -74,6 +88,7 @@ public class ParentChildNode extends LazyTreeNode {
         }
 
         public void visibilityChanged(FrameEvent event) {
+        	if (event.isReplacementEvent()) return;
             notifyNodeChanged();
         }
     };

@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -840,5 +841,29 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     public void replaceFrame(Frame original, Frame replacement) {
       getDelegate().replaceFrame(original, replacement);
       dispatchEvents();
+      replaceListeners(original, replacement);
+    }
+    
+    private void replaceListeners(Frame original, Frame replacement) {
+    	for (Map<Object,  Collection<EventListener>> map : _listeners.values()) {
+    		Collection<EventListener> listeners = map.remove(original);
+    		if (listeners != null) {
+    			map.put(replacement, listeners);
+    		}
+    	}
+    }
+    
+    public void printListenersByHashCode(int hash) {
+    	System.out.println("Printing out FrameListeners that have hash code " + hash);
+    	for (java.util.Map.Entry<Object, Collection<EventListener>> entry : _listeners.get(FrameListener.class).entrySet()) {
+    		Object o  = entry.getKey();
+    		Collection<EventListener> listeners = entry.getValue();
+    		for (EventListener listener :  listeners) {
+    			if (listener.hashCode() == hash) {
+    			   System.out.println("Found listener " + listener + " at " + o);
+    			}
+    		}
+    	}
+    	
     }
 }

@@ -66,7 +66,7 @@ public class KnowledgeBaseEvent extends AbstractEvent {
         return (Slot) getArgument1();
     }
     
-    public Frame getOldFrame() {
+    public Frame getNewFrame() {
         return (Frame) getArgument3();
     }
 

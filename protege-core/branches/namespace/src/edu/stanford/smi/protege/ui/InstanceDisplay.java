@@ -12,6 +12,7 @@ import javax.swing.border.*;
 
 import edu.stanford.smi.protege.event.*;
 import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
 import edu.stanford.smi.protege.widget.*;
@@ -39,27 +40,33 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     private boolean resizeVertically;
 
     private ClsListener _clsListener = new ClsAdapter() {
+    	
         public void directSuperclassAdded(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             reloadForm();
         }
 
         public void directSuperclassRemoved(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             reloadForm();
         }
 
         public void templateSlotAdded(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             if (shouldDisplaySlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
         }
 
         public void templateSlotRemoved(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             if (isDisplayingSlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
         }
 
         public void templateFacetValueChanged(ClsEvent event) {
+        	if (event.isReplacementEvent()) return;
             if (isDisplayingSlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
@@ -67,11 +74,26 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     };
     private FrameListener _frameListener = new FrameAdapter() {
         public void ownSlotValueChanged(FrameEvent event) {
+        	if (event.isReplacementEvent()) return;
             Slot slot = event.getSlot();
             if (slot.hasSuperslot(_templateSlotsSlot)) {
                 reloadForm();
             }
         }
+    };
+    
+    private KnowledgeBaseListener _kbListener = new KnowledgeBaseAdapter() {
+    	public void frameReplaced(KnowledgeBaseEvent event) {
+    		Frame oldFrame = event.getFrame();
+    		Frame newFrame = event.getNewFrame();
+    		if (_currentInstance != null && _currentInstance.equals(oldFrame)) {
+    			_currentInstance = (Instance) newFrame;
+    		}
+    		if (_currentAssociatedCls != null && _currentAssociatedCls.equals(oldFrame)) {
+    			_currentAssociatedCls = (Cls) newFrame;
+    		}
+    		reloadForm();
+    	}
     };
 
     private WidgetListener _widgetListener = new WidgetAdapter() {
@@ -141,6 +163,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
         _project = project;
         _templateSlotsSlot = project.getKnowledgeBase().getSlot(Model.Slot.DIRECT_TEMPLATE_SLOTS);
+    	project.getKnowledgeBase().addKnowledgeBaseListener(_kbListener);
         project.addProjectListener(_projectListener);
         _scrollPane = makeInstanceScrollPane();
         _child.add(_scrollPane, BorderLayout.CENTER);
@@ -331,6 +354,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     }
 
     public void dispose() {
+    	_project.getKnowledgeBase().removeKnowledgeBaseListener(_kbListener);
         _project.removeProjectListener(_projectListener);
         if (_currentInstance != null) {
             _currentInstance.removeInstanceListener(_instanceListener);

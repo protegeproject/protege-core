@@ -60,7 +60,7 @@ public class FrameEvent extends AbstractEvent {
         return (Slot) getArgument1();
     }
     
-    public Frame getOldFrame() {
+    public Frame getNewFrame() {
         return (Frame) getArgument2();
     }
     

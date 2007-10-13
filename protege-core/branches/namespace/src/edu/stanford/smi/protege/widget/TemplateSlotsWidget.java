@@ -195,7 +195,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         return _addAction;
     }
 
-    private Cls getBaseAllowedSlotMetaCls() {
+    @SuppressWarnings("unchecked")
+	private Cls getBaseAllowedSlotMetaCls() {
         Collection allowedClses = getBoundCls().getDirectType().getTemplateSlotAllowedClses(getSlot());
         return (Cls) CollectionUtilities.getFirstItem(allowedClses);
     }
