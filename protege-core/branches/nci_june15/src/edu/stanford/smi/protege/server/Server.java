@@ -396,9 +396,14 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Collections.sort(names);
         return names;
     }
+    
+    public Collection<ServerProject> getCurrentProjects(RemoteSession session) {
+        return _sessionToProjectsMap.get(session);
+    }
 
-    public Collection getCurrentSessions(String projectName, RemoteSession session) {
-        Collection currentSessions;
+    @SuppressWarnings("unchecked")
+    public Collection<RemoteSession> getCurrentSessions(String projectName, RemoteSession session) {
+        Collection<RemoteSession> currentSessions;
         RemoteServerProject project = getServerProject(projectName);
         if (project == null) {
             currentSessions = Collections.EMPTY_LIST;
@@ -408,12 +413,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return currentSessions;
     }
 
-    public Collection getCurrentSessions(RemoteServerProject project) {
-        Collection sessions = new ArrayList();
-        Iterator i = _sessionToProjectsMap.entrySet().iterator();
+    public Collection<RemoteSession> getCurrentSessions(RemoteServerProject project) {
+        Collection<RemoteSession> sessions = new ArrayList<RemoteSession>();
+        Iterator<Map.Entry<RemoteSession, Collection<ServerProject>>> i = _sessionToProjectsMap.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry entry = (Map.Entry) i.next();
-            Collection projects = (Collection) entry.getValue();
+            Map.Entry<RemoteSession, Collection<ServerProject>> entry = (Map.Entry) i.next();
+            Collection<ServerProject> projects = entry.getValue();
             if (projects.contains(project)) {
                 Session session = (Session) entry.getKey();
                 if (isCurrent(session)) {
