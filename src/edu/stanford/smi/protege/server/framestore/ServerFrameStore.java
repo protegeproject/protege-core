@@ -212,6 +212,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         if (transactionMonitor != null) {
           results.put(session, transactionMonitor.getNesting(session) > 0);
         }
+        else {
+            results.put(session, Boolean.FALSE);
+        }
       }
       return results;
     }
