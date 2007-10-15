@@ -12,9 +12,9 @@ public interface RemoteServer extends Remote {
     
     void closeSession(RemoteSession session) throws RemoteException;
 
-    Collection getAvailableProjectNames(RemoteSession session) throws RemoteException;
+    Collection<String> getAvailableProjectNames(RemoteSession session) throws RemoteException;
 
-    Collection getCurrentSessions(String projectName, RemoteSession session) throws RemoteException;
+    Collection<RemoteSession> getCurrentSessions(String projectName, RemoteSession session) throws RemoteException;
 
     RemoteServerProject openProject(String projectName, RemoteSession session) throws RemoteException;
 

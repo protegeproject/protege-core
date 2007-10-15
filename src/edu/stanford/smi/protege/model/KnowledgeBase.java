@@ -718,7 +718,7 @@ public interface KnowledgeBase extends Disposable {
      * Returns a list of FrameStores available to the system.  This includes both enabled and disabled frame stores.
      * @return List of #FrameStore
      */
-    List getFrameStores();
+    List<FrameStore> getFrameStores();
 
     FrameFactory getFrameFactory();
     SystemFrames getSystemFrames();
