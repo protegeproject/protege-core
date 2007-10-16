@@ -4,4 +4,6 @@ public interface RemoteSession {
     String getUserName();
 
     String getUserIpAddress();
+    
+    int getSessionGroup();
 }
