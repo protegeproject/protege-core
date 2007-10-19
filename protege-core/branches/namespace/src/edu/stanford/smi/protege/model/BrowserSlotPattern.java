@@ -10,7 +10,7 @@ import edu.stanford.smi.protege.util.*;
  */
 
 public class BrowserSlotPattern {
-    private List elements;
+    private List elements; // a list of strings and slots
 
     public BrowserSlotPattern(Slot slot) {
         this.elements = new ArrayList();
@@ -125,6 +125,21 @@ public class BrowserSlotPattern {
             }
         }
         return slots;
+    }
+    
+    public void replaceSlot(Slot oldSlot, Slot newSlot) {
+        if (elements.contains(oldSlot)) {
+            List newElements = new ArrayList();
+            for (Object o : elements) {
+                if (oldSlot.equals(o)) {
+                    newElements.add(newSlot);
+                }
+                else {
+                    newElements.add(o);
+                }
+            }
+            elements = newElements;
+        }
     }
 
     public String getBrowserText(Instance instance) {
