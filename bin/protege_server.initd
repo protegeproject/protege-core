@@ -1,0 +1,117 @@
+#!/bin/sh
+#
+# Script to put in the init.d directory.
+#
+
+#=========================================================
+# Set the following information for your environment
+#
+
+#
+# Set the JAVA_PATH to a directory where the 
+# java and rmiregistry jars live.
+#
+JAVA_PATH=/opt/jdk1.5.0_06/bin
+#
+# Set PROTEGE_HOME to the directory where Protege
+# lives
+#
+PROTEGE_HOME=/home/tredmond/dev/Protege
+#
+# Memory to allocate to the server
+#
+MAX_MEMORY=-Xmx200M
+#
+# Sometimes the hostname parameter is not set correctly (e.g. localhost)
+#
+#HOSTNAME=smi-tredmond-li.stanford.edu
+#
+# Transaction isolation Level
+#
+TX="-Dtransaction.level=READ_COMMITTED"
+#
+# The port that the user uses to access the server from his machine.
+# All relevant firewalls need to let this port through.
+#
+RMI_REGISTRY_PORT=5200
+#
+# The port used by the client to access the server.
+# All relevant firewalls need to let this port through. 
+#
+SERVER_PORT=5300
+
+#
+# Tells the server to save projects periodically after any change.
+#
+SAVE_INTERVAL=-saveIntervalSec=120
+#
+# The location of the meta-project.
+METAPROJECT=examples/server/metaproject.pprj
+
+#=========================================================
+# End of User customizations
+#
+
+
+
+if [ ! -e $JAVA_BIN ]; then
+	echo Java VM could not be found. Please check settings in the init.d script
+	exit 1
+fi
+
+CLASSPATH=protege.jar:looks-2.1.3.jar:unicode_panel.jar:driver.jar:driver0.jar:driver1.jar:driver2.jar:plugins/edu.stanford.smi.protegex.changes/change-model.jar
+
+
+start() {
+   echo "Starting server: " `date` >> ${PROTEGE_HOME}/logs/server.log
+   # ------------------- JVM Options ------------------- 
+   HEADLESS=-Djava.awt.headless=true
+   CODEBASE_URL=file:${PROTEGE_HOME}/protege.jar
+   CODEBASE=-Djava.rmi.server.codebase=$CODEBASE_URL
+   HOSTNAME_PARAM=-Djava.rmi.server.hostname=$HOSTNAME
+
+
+   OPTIONS="$MAX_MEMORY $HEADLESS $CODEBASE $HOSTNAME_PARAM ${TX}"
+
+   PORTOPTS="-Dprotege.rmi.server.port=${SERVER_PORT} -Dprotege.rmi.registry.port=${RMI_REGISTRY_PORT}"
+
+   OPTIONS="${OPTIONS} ${PORTOPTS}"
+   # ------------------- JVM Options ------------------- 
+
+   cd ${PROTEGE_HOME}
+   nohup ${JAVA_PATH}/rmiregistry ${RMI_REGISTRY_PORT} \
+                                 > logs/rmiregistry.log 2>&1 &
+   echo $! > logs/rmiregistry.pid
+   nohup ${JAVA_PATH}/java -cp ${CLASSPATH} $TX $OPTIONS \
+     edu.stanford.smi.protege.server.Server \
+     $SAVE_INTERVAL $METAPROJECT >> logs/server.log 2>&1 &
+}
+
+stop() {
+   cd ${PROTEGE_HOME}
+   $JAVA_PATH/java -cp $CLASSPATH  \
+         edu.stanford.smi.protege.server.Shutdown \
+         localhost:${RMI_REGISTRY_PORT}
+   kill `cat logs/rmiregistry.pid`      
+   echo "Server Stopped: " `date` >> logs/server.log
+}
+
+
+case "$1" in 
+   start)
+     start
+     ;;
+   stop)
+     stop
+     ;;
+   restart)
+     stop
+     sleep 5
+     start
+     ;;
+   *)
+   echo "Usage: $prog {start|stop|restart}"
+   exit 1
+esac
+
+exit $?
