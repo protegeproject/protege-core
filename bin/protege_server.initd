@@ -83,7 +83,7 @@ start() {
    OPTIONS="${OPTIONS} ${PORTOPTS}"
    # ------------------- JVM Options ------------------- 
 
-   su ${PROTEGE_USER} <<-EOF
+   su ${PROTEGE_USER}<<EOF
       cd ${PROTEGE_HOME}
       nohup ${JAVA_PATH}/rmiregistry ${RMI_REGISTRY_PORT} \
                                  > logs/rmiregistry.log 2>&1 &
@@ -91,18 +91,18 @@ start() {
       nohup ${JAVA_PATH}/java -cp ${CLASSPATH} $TX $OPTIONS \
         edu.stanford.smi.protege.server.Server \
         $SAVE_INTERVAL $METAPROJECT >> logs/server.log 2>&1 &
-   EOF
+EOF
 }
 
 stop() {
-   su ${PROTEGE_USER} <<-EOF
+   su ${PROTEGE_USER} <<EOF2
      cd ${PROTEGE_HOME}
      $JAVA_PATH/java -cp $CLASSPATH  \
          edu.stanford.smi.protege.server.Shutdown \
          localhost:${RMI_REGISTRY_PORT}
      kill `cat logs/rmiregistry.pid`      
      echo "Server Stopped: " `date` >> logs/server.log
-   EOF
+EOF2
 }
 
 
