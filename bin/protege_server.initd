@@ -8,6 +8,11 @@
 #
 
 #
+# The user running the protege server.  Required for now.
+#
+PROTEGE_USER=tredmond
+
+#
 # Set the JAVA_PATH to a directory where the 
 # java and rmiregistry jars live.
 #
@@ -78,22 +83,26 @@ start() {
    OPTIONS="${OPTIONS} ${PORTOPTS}"
    # ------------------- JVM Options ------------------- 
 
-   cd ${PROTEGE_HOME}
-   nohup ${JAVA_PATH}/rmiregistry ${RMI_REGISTRY_PORT} \
+   su ${PROTEGE_USER} <<-EOF
+      cd ${PROTEGE_HOME}
+      nohup ${JAVA_PATH}/rmiregistry ${RMI_REGISTRY_PORT} \
                                  > logs/rmiregistry.log 2>&1 &
-   echo $! > logs/rmiregistry.pid
-   nohup ${JAVA_PATH}/java -cp ${CLASSPATH} $TX $OPTIONS \
-     edu.stanford.smi.protege.server.Server \
-     $SAVE_INTERVAL $METAPROJECT >> logs/server.log 2>&1 &
+      echo $! > logs/rmiregistry.pid
+      nohup ${JAVA_PATH}/java -cp ${CLASSPATH} $TX $OPTIONS \
+        edu.stanford.smi.protege.server.Server \
+        $SAVE_INTERVAL $METAPROJECT >> logs/server.log 2>&1 &
+   EOF
 }
 
 stop() {
-   cd ${PROTEGE_HOME}
-   $JAVA_PATH/java -cp $CLASSPATH  \
+   su ${PROTEGE_USER} <<-EOF
+     cd ${PROTEGE_HOME}
+     $JAVA_PATH/java -cp $CLASSPATH  \
          edu.stanford.smi.protege.server.Shutdown \
          localhost:${RMI_REGISTRY_PORT}
-   kill `cat logs/rmiregistry.pid`      
-   echo "Server Stopped: " `date` >> logs/server.log
+     kill `cat logs/rmiregistry.pid`      
+     echo "Server Stopped: " `date` >> logs/server.log
+   EOF
 }
 
 
