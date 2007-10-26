@@ -16,12 +16,14 @@ PROTEGE_USER=tredmond
 # Set the JAVA_PATH to a directory where the 
 # java and rmiregistry jars live.
 #
-JAVA_PATH=/opt/jdk1.5.0_06/bin
+#JAVA_PATH=/opt/jdk1.5.0_06/bin
+JAVA_PATH=/usr/bin
+
 #
 # Set PROTEGE_HOME to the directory where Protege
 # lives
 #
-PROTEGE_HOME=/home/tredmond/dev/Protege
+PROTEGE_HOME=/Users/tredmond/dev/Protege
 #
 # Memory to allocate to the server
 #
@@ -54,13 +56,22 @@ SAVE_INTERVAL=-saveIntervalSec=120
 METAPROJECT=examples/server/metaproject.pprj
 
 #=========================================================
+# Commands
+#
+ECHO=/bin/echo
+SU=/usr/bin/su
+NOHUP=/usr/bin/nohup
+KILL=/bin/kill
+SLEEP=/bin/sleep
+
+#=========================================================
 # End of User customizations
 #
 
 
 
 if [ ! -e $JAVA_BIN ]; then
-	echo Java VM could not be found. Please check settings in the init.d script
+	${ECHO} Java VM could not be found. Please check settings in the init.d script
 	exit 1
 fi
 
@@ -68,7 +79,6 @@ CLASSPATH=protege.jar:looks-2.1.3.jar:unicode_panel.jar:driver.jar:driver0.jar:d
 
 
 start() {
-   echo "Starting server: " `date` >> ${PROTEGE_HOME}/logs/server.log
    # ------------------- JVM Options ------------------- 
    HEADLESS=-Djava.awt.headless=true
    CODEBASE_URL=file:${PROTEGE_HOME}/protege.jar
@@ -83,25 +93,27 @@ start() {
    OPTIONS="${OPTIONS} ${PORTOPTS}"
    # ------------------- JVM Options ------------------- 
 
-   su ${PROTEGE_USER}<<EOF
+   ${SU} ${PROTEGE_USER}<<EOF
       cd ${PROTEGE_HOME}
-      nohup ${JAVA_PATH}/rmiregistry ${RMI_REGISTRY_PORT} \
-                                 > logs/rmiregistry.log 2>&1 &
-      echo $! > logs/rmiregistry.pid
-      nohup ${JAVA_PATH}/java -cp ${CLASSPATH} $TX $OPTIONS \
+      ${ECHO} "Starting server: " `date` >> logs/server.log
+      ${JAVA_PATH}/rmiregistry ${RMI_REGISTRY_PORT} > /dev/null  2>&1 &
+      ${NOHUP} ${JAVA_PATH}/java -cp ${CLASSPATH} $TX $OPTIONS \
         edu.stanford.smi.protege.server.Server \
         $SAVE_INTERVAL $METAPROJECT >> logs/server.log 2>&1 &
 EOF
+   echo "Server starting..."
 }
 
 stop() {
-   su ${PROTEGE_USER} <<EOF2
+   echo -n  Stopping server...
+   ${SU} ${PROTEGE_USER} <<EOF2
      cd ${PROTEGE_HOME}
      $JAVA_PATH/java -cp $CLASSPATH  \
          edu.stanford.smi.protege.server.Shutdown \
-         localhost:${RMI_REGISTRY_PORT}
-     kill `cat logs/rmiregistry.pid`      
-     echo "Server Stopped: " `date` >> logs/server.log
+         localhost:${RMI_REGISTRY_PORT} >> logs/shutdown.log 2>&1
+     # killing the rmiregistry is tricky - let it go for now.
+     ${ECHO} "Server Stopped: " `date` >> logs/server.log
+     echo OK.
 EOF2
 }
 
@@ -115,7 +127,7 @@ case "$1" in
      ;;
    restart)
      stop
-     sleep 5
+     ${SLEEP} 5
      start
      ;;
    *)
