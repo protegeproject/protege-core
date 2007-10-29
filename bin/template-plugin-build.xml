@@ -13,12 +13,17 @@
    <property name = "pluginName"      value = "OWLViz"/>
    <property name = "owl.path"         value = "edu.stanford.smi.protegex.owl"/>
 
+   <target name="checkProtegeHome">
+       <condition property="protege.home.set">
+           <available file="${protege.home}/protege.jar" type="file"/>
+       </condition>
+   </target>
 
-    <target name="useProtegeHome">
-      <echo message="Using Protege Home = ${protege.home} to find protege jars"/>
-      <property name="protege.lib" value="${protege.home}/protege.jar"/>
-      <property name="protege.owl.lib" value="${protege.home}/plugins/${owl.path}/protege-owl.jar"/>
-    </target>
+   <target name="useProtegeHome" depends="checkProtegeHome" if="protege.home.set">
+       <echo message="Using Protege Home = ${protege.home} to find protege jars"/>
+       <property name="protege.lib" value="${protege.home}/protege.jar"/>
+       <property name="protege.owl.lib" value="${protege.home}/plugins/${owl.path}/protege-owl.jar"/>
+   </target>
     
 
     <target name = "checkProtegeLibs" depends="useProtegeHome">
@@ -44,6 +49,7 @@
       <echo message="appropriate plugins have been installed."/>
       <echo message="Alternatively set the jar libs in local.properties (protege.lib=...)"/>
       <echo message="Use the -v option to ant to see what jars are missing."/>
+      <fail message = "missing protege libraries"/>
     </target>
       
    <!-- 
@@ -113,7 +119,7 @@
             todir="${protege.home}/plugins/${plugin_dist}"/>
    </target>
 
-   <target name = "install" depends = "dist">
+   <target name = "install" depends = "checkProtegeHome, dist">
       <fail message = "set the protege.home variable to do an install">
          <condition>
             <not>
