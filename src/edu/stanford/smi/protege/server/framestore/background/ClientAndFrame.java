@@ -29,7 +29,7 @@ public class ClientAndFrame {
   }
   
   public int hashCode() {
-    return session.hashCode() + 3 * frame.hashCode();
+    return (session == null ? 10 : session.hashCode()) + 3 * frame.hashCode();
   }
   
   public boolean equals(Object o) {
