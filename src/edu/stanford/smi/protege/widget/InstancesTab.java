@@ -126,4 +126,9 @@ public class InstancesTab extends AbstractTabWidget {
     protected void transmitSelection(Collection selection) {
         _directInstancesList.setClses(selection);
     }
+    
+    public DirectInstancesList getDirectInstancesList() {
+    	return _directInstancesList;
+    }
+    
 }
