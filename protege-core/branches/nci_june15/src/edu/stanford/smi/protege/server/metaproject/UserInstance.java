@@ -9,5 +9,9 @@ public interface UserInstance {
   String getPassword();
   
   Set<GroupInstance> getGroups();
+  
+  void setName(String name);
+  
+  void setPassword(String password);
 
 }
