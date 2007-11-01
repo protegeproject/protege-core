@@ -459,6 +459,16 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         _copyAction.setAllowed(allowed);
     }
 
+    
+    public void setListRenderer(ListCellRenderer renderer) {
+    	_list.setCellRenderer(renderer);
+    	
+    	if (renderer instanceof FrameRenderer) {
+    		((FrameRenderer)renderer).setDisplayType(_showSubclassInstances);
+    	}
+    }
+    
+    
     /**
      * Does nothing anymore. This functionality moved to the menu button.
      * 
