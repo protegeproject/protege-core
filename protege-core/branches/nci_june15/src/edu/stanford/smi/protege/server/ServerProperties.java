@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.server;
 import java.util.HashSet;
 import java.util.Set;
 
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 
@@ -29,6 +30,8 @@ public class ServerProperties {
   public static final String MIN_PRELOAD_FRAMES = "preload.frame.limit";
   public static final String DISABLE_HEARTBEAT = "server.disable.heartbeat";
   public static final String TX_LEVEL = "transaction.level";
+  public final static String SERVER_ALLOW_CREATE_USERS = "server.allow.create.users";
+  public final static String SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY = "server.newproject.save.directory";
 
   public static Set<String> preloadUserFrames() {
     return getStringSet(ServerProperties.USER_PRELOAD);
@@ -75,6 +78,16 @@ public class ServerProperties {
     }
     Log.getLogger().warning("transaction level " + levelAsString + " does not match any of the available levels");
     return null;
+  }
+  
+  public static boolean getAllowsCreateUsers() {
+	  return ApplicationProperties.getBooleanProperty(SERVER_ALLOW_CREATE_USERS, false);
+  }
+  
+  public static String getDefaultNewProjectSaveDirectory() {
+      String defaultSaveDir = ApplicationProperties.getApplicationDirectory().getAbsolutePath();
+      
+      return ApplicationProperties.getApplicationOrSystemProperty(SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY, defaultSaveDir);
   }
   
 }
