@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 
@@ -44,6 +45,11 @@ public class WrappedProtegeInstanceImpl {
       results.add(mp.wrapInstance(rangeCls, (Instance) o));
     }
     return results;
+  }
+  
+  protected void setSlotValue(SlotEnum slot, Object value) {
+      Slot protege_slot = mp.getSlot(slot);
+      i.setDirectOwnSlotValue(protege_slot, value);
   }
   
   public boolean equals(Object o) {
