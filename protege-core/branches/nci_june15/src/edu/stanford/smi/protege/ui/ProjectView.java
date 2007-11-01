@@ -53,6 +53,8 @@ import edu.stanford.smi.protege.widget.WidgetUtilities;
 
 interface TabbedPaneInterface {
     void addChangeListener(ChangeListener listener);
+    
+    void removeChangeListener(ChangeListener listener);
 
     Component[] getComponents();
 
@@ -89,6 +91,10 @@ class MyCardPanel extends JPanel implements TabbedPaneInterface {
 
     public void addChangeListener(ChangeListener listener) {
         this.changeListener = listener;
+    }
+    
+    public void removeChangeListener(ChangeListener listener) {
+    	this.changeListener = null;    	
     }
 
     public void setSelectedComponent(Component component) {
@@ -313,6 +319,10 @@ public class ProjectView extends JComponent {
 
     public void addChangeListener(ChangeListener listener) {
         _viewHolder.addChangeListener(listener);
+    }
+    
+    public void removeChangeListener(ChangeListener listener) {
+    	_viewHolder.removeChangeListener(listener);
     }
     
     public void addProjectViewListener(ProjectViewListener pvl) {
