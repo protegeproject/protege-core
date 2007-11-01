@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.server.metaproject;
 
+import java.util.Collection;
 import java.util.Set;
 
 import edu.stanford.smi.protege.model.Cls;
@@ -30,6 +31,12 @@ public interface MetaProject {
   Policy getPolicy();
   
   KnowledgeBase getKnowledgeBase();
+  
+  MetaProjectInstance createMetaProjectInstance(String name);
+  
+  UserInstance createUserInstance(String name, String password);
+  
+  boolean save(Collection errors);
   
 }
 
