@@ -68,7 +68,7 @@ public abstract class APITestCase extends AbstractTestCase {
         _isFileProject = true;
     }
 
-    public final void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         super.tearDown();
         if (_scratchProject != null) {
             // careful here in case there is an error
