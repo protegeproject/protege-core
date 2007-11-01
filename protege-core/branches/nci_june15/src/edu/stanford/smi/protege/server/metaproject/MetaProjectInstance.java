@@ -15,4 +15,8 @@ public interface MetaProjectInstance {
   Instance getProtegeInstance();
   
   MetaProject getMetaProject();
+  
+  void setName(String name);
+  
+  void setLocation(String location);
 }
