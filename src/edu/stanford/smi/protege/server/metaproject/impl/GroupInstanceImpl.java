@@ -1,18 +1,13 @@
 package edu.stanford.smi.protege.server.metaproject.impl;
 
-import java.util.HashSet;
 import java.util.Set;
-
-import sun.security.jca.GetInstance;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.GroupInstance;
-import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.UserInstance;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
-import edu.stanford.smi.protege.util.Log;
 
 public class GroupInstanceImpl extends WrappedProtegeInstanceImpl implements GroupInstance {
   public static final String WORLD = "World";
