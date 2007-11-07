@@ -243,3 +243,11 @@ Create-Project-Plugin: True
 Name: edu/stanford/smi/protege/widget/ProtegePropertiesTab.class
 Tab-widget: True
 
+Name: edu/stanford/smi/protege/widget/EditorPaneWidget.class
+Slot-Widget: True
+
+Name: edu/stanford/smi/protege/widget/EditorPanePlainWidget.class
+Slot-Widget: True
+
+
+
