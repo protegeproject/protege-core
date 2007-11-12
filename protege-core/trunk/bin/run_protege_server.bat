@@ -15,7 +15,8 @@ set METAPROJECT=examples\server\metaproject.pprj
 set MAX_MEMORY=-Xmx200M 
 set HEADLESS=-Djava.awt.headless=true
 set CODEBASE=-Djava.rmi.server.codebase=%CODEBASE_URL%
+set LOG4J_OPT=-Dlog4j.configuration=file:log4j.xml
 
-set OPTIONS=%MAX_MEMORY% %CODEBASE% %HEADLESS%
+set OPTIONS=%MAX_MEMORY% %CODEBASE% %HEADLESS% %LOG4J_OPT%
 
 %JDKBIN%\java %OPTIONS% -cp %CLASSPATH% %MAINCLASS% %METAPROJECT%  
