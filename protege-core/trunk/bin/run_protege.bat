@@ -10,10 +10,9 @@ set JAVA_PATH=.\jre\bin
 set JARS=protege.jar;looks-2.1.3.jar;unicode_panel.jar;driver.jar;driver1.jar;driver2.jar;plugins/edu.stanford.smi.protegex.changes/change-model.jar
 set MAIN_CLASS=edu.stanford.smi.protege.Application
 
-
-rem ------------------- JVM Options ------------------- 
+rem --- JVM Options --- 
 set MAXIMUM_MEMORY=-Xmx200M
-OPTIONS=%MAXIMUM_MEMORY%
+set OPTIONS=%MAXIMUM_MEMORY%
 
 rem Possible instrumentation options - debug, etc.
 rem set DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8100,server=y,suspend=n"
@@ -24,7 +23,6 @@ set LOG4J_OPT=-Dlog4j.configuration=file:log4j.xml
 
 set OPTIONS=%OPTIONS% %DEBUG_OPT% %PORT_OPTS% %SSLOPTS% %LOG4J_OPT%
 
-rem ------------------- JVM Options ------------------- 
-
+rem --- JVM Options --- 
 
 %JAVA_PATH%\java %OPTIONS% -cp %JARS% %MAIN_CLASS% %1
