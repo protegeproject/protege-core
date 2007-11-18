@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +65,7 @@ public class FrameCalculator {
   private FifoWriter<ValueUpdate> updates;
   private ServerFrameStore server;
   private RemoteSession effectiveClient;
+  private Set<Thread> disabledThreads = new HashSet<Thread>();
   
   FrameCalculatorThread innerThread;
   
@@ -392,13 +394,27 @@ public class FrameCalculator {
     return requestLock;
   }
   
-  public boolean inFrameCalculatorThread() {
+  public boolean setCachingEnabled(boolean enabled) {
+      Thread currentThread = Thread.currentThread();
+      boolean previousValue = !disabledThreads.contains(currentThread);
+      if (enabled) {
+          disabledThreads.remove(currentThread);
+      }
+      else {
+          disabledThreads.add(currentThread);
+      }
+      return previousValue;
+  }
+  
+  public boolean inDisabledThread() {
       synchronized (requestLock) {
-          if (innerThread == null) {
+          Thread currentThread = Thread.currentThread();
+          if (disabledThreads.contains(currentThread)) {
+              return true;
+          } if (innerThread == null) {
               return false;
-          }
-          else {
-              return Thread.currentThread().equals(innerThread);
+          } else {
+              return currentThread.equals(innerThread);
           }
       }
   }
