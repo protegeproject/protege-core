@@ -247,12 +247,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             remove(map, slot, facet, isTemplate);
         } else {
             List valueList = lookup(map, slot, facet, isTemplate);
-            if (valueList == null) {
-                map.put(new Sft(slot, facet, isTemplate), new ArrayList(values));
-            } else {
-                valueList.clear();
-                valueList.addAll(values);
-            }
+            map.put(new Sft(slot, facet, isTemplate), new ArrayList(values));
         }
     }
 
