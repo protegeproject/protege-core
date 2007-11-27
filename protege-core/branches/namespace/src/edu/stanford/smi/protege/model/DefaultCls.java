@@ -450,4 +450,8 @@ public class DefaultCls extends DefaultInstance implements Cls {
     public Icon getIcon() {
         return Icons.getClsIcon(isClsMetaCls(), isAbstract(), !isEditable(), !isVisible());
     }
+    
+    public Cls rename(String name) {
+        return (Cls) super.rename(name);
+    }
 }

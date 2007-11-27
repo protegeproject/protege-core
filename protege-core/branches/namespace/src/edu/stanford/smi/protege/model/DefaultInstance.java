@@ -123,5 +123,4 @@ public abstract class DefaultInstance extends DefaultFrame implements Instance {
     public void moveDirectType(Cls type, int index) {
         getDefaultKnowledgeBase().moveDirectType(this, type, index);
     }
-
 }

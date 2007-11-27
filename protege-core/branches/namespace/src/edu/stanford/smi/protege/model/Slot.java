@@ -133,4 +133,6 @@ public interface Slot extends Instance {
     void setValues(Collection values);
 
     void setValueType(ValueType type);
+    
+    Slot rename(String name);
 }
