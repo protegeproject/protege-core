@@ -746,4 +746,6 @@ public interface KnowledgeBase extends Disposable {
     void removeTransactionListener(TransactionListener listener);
     
     public Set<Frame> executeQuery(Query q);
+    
+    Frame rename(Frame frame, String name);
 }

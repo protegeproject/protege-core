@@ -420,7 +420,6 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
     }
     
     public Frame rename(String name) {
-      FrameFactory ff = knowledgeBase.getFrameFactory();
-      return ff.rename(this, name);
+        return getKnowledgeBase().rename(this, name);
     }
 }

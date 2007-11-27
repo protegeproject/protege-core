@@ -2308,4 +2308,8 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         cacheMachine = machine;
     }
 
+    public Frame rename(Frame frame, String name) {
+        FrameFactory ff = getFrameFactory();
+        return ff.rename(frame, name);
+    }
 }
