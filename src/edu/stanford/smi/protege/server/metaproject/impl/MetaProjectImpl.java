@@ -14,114 +14,161 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.server.metaproject.Group;
+import edu.stanford.smi.protege.server.metaproject.GroupOperation;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
-import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
-import edu.stanford.smi.protege.server.metaproject.UserInstance;
+import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.MessageError;
 
 public class MetaProjectImpl implements MetaProject {
-  private KnowledgeBase kb;
-  private Policy policy;
-  
-  public MetaProjectImpl(URI metaprojectURI) {
-    Collection errors = new ArrayList();
-    Project project = Project.loadProjectFromURI(metaprojectURI, errors);
-    if (!errors.isEmpty()) {
-        throw new RuntimeException(errors.iterator().next().toString());
-    }
-    kb = project.getKnowledgeBase();
-  }
+	
+	private KnowledgeBase kb;
+	private Policy policy;
 
-  
-  public Cls getCls(ClsEnum cls) throws OntologyException {
-    Cls frameCls = kb.getCls(cls.toString());
-    if (frameCls == null) {
-      throw new OntologyException("Metaproject Ontology should contain a class " + cls);
-    }
-    return frameCls;
-  }
-  
-  public Slot getSlot(SlotEnum slot) throws OntologyException {
-    Slot frameSlot = kb.getSlot(slot.toString());
-    if (frameSlot == null) {
-      throw new OntologyException("Metaproject Ontology should contain a slot " + slot);
-    }
-    return frameSlot;
-  }
-  
-  protected WrappedProtegeInstanceImpl wrapInstance(ClsEnum cls, Instance i) {
-    if (!i.hasType(getCls(cls))) {
-      throw new IllegalArgumentException("" + i + " should be a " + cls + " instance");
-    }
-    switch (cls) {
-    case GroupOperation:
-      return new GroupAndOperationImpl(this, i);
-    case Group:
-      return new GroupInstanceImpl(this, i);
-    case Project:
-      return new MetaProjectInstanceImpl(this, i);
-    case Operation:
-      return new OperationImpl(this, i);
-    case User:
-      return new UserInstanceImpl(this, i);
-    default:
-      throw new UnsupportedOperationException("Unexpected cls " + cls);
-    }
-  }
-  
-  @SuppressWarnings("unchecked")
-  protected Set getWrappedInstances(ClsEnum cls) {
-    Set instances = new HashSet();
-    for (Instance i : kb.getInstances(getCls(cls))) {
-      instances.add(wrapInstance(cls, i));
-    }
-    return instances;
-  }
-  
-  @SuppressWarnings("unchecked")
-  public Set<MetaProjectInstance> getProjectInstances() {
-    return (Set<MetaProjectInstance>) getWrappedInstances(ClsEnum.Project);
-  }
-  
-  public MetaProjectInstance getProjectInstance(String name) {
-    Collection frames = kb.getFramesWithValue(getSlot(SlotEnum.name), null, false, name);
-    if (frames == null || frames.isEmpty()) {
-      return null;
-    }
-    Frame frame = (Frame) frames.iterator().next();
-    if (!(frame instanceof Frame)) {
-      return null;
-    }
-    return new MetaProjectInstanceImpl(this, (Instance) frame);
-  }
- 
-  @SuppressWarnings("unchecked")
-  public Set<UserInstance> getUserInstances() {
-    return (Set<UserInstance>) getWrappedInstances(ClsEnum.User);
-  }
-  
-  @SuppressWarnings("unchecked")
-  public Set<Operation> getOperations() {
-    return (Set<Operation>) getWrappedInstances(ClsEnum.Operation);
-  }
-  
-  public Policy getPolicy() {
-    if (policy == null) {
-      policy = new  PolicyImpl(this);
-    }
-    return policy;
-  }
-  
-  public KnowledgeBase getKnowledgeBase() {
-      return kb;
-  }
-  
+	public MetaProjectImpl(URI metaprojectURI) {
+		Collection errors = new ArrayList();
+		Project project = Project.loadProjectFromURI(metaprojectURI, errors);
+		if (!errors.isEmpty()) {
+			throw new RuntimeException(errors.iterator().next().toString());
+		}
+		kb = project.getKnowledgeBase();
+	}
+
+
+	public Cls getCls(ClsEnum cls) throws OntologyException {
+		Cls frameCls = kb.getCls(cls.toString());
+		if (frameCls == null) {
+			throw new OntologyException("Metaproject Ontology should contain a class " + cls);
+		}
+		return frameCls;
+	}
+
+	public Slot getSlot(SlotEnum slot) throws OntologyException {
+		Slot frameSlot = kb.getSlot(slot.toString());
+		if (frameSlot == null) {
+			throw new OntologyException("Metaproject Ontology should contain a slot " + slot);
+		}
+		return frameSlot;
+	}
+
+	protected WrappedProtegeInstanceImpl wrapInstance(ClsEnum cls, Instance i) {
+		if (!i.hasType(getCls(cls))) {
+			throw new IllegalArgumentException("" + i + " should be a " + cls + " instance");
+		}
+		switch (cls) {
+		case GroupOperation:
+			return new GroupOperationImpl(this, i);
+		case Group:
+			return new GroupImpl(this, i);
+		case Project:
+			return new ProjectInstanceImpl(this, i);
+		case Operation:
+			return new OperationImpl(this, i);
+		case User:
+			return new UserImpl(this, i);
+		default:
+			throw new UnsupportedOperationException("Unexpected cls " + cls);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	protected Set getWrappedInstances(ClsEnum cls) {
+		Set instances = new HashSet();
+		for (Instance i : kb.getInstances(getCls(cls))) {
+			instances.add(wrapInstance(cls, i));
+		}
+		return instances;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Set<ProjectInstance> getProjects() {
+		return (Set<ProjectInstance>) getWrappedInstances(ClsEnum.Project);
+	}
+
+	public ProjectInstance getProject(String name) {
+		Collection frames = kb.getFramesWithValue(getSlot(SlotEnum.name), null, false, name);
+		if (frames == null || frames.isEmpty()) {
+			return null;
+		}
+		Frame frame = (Frame) frames.iterator().next();
+		if (!(frame instanceof Frame)) {
+			return null;
+		}
+		return new ProjectInstanceImpl(this, (Instance) frame);
+	}
+
+	@SuppressWarnings("unchecked")
+	public Set<User> getUsers() {
+		return (Set<User>) getWrappedInstances(ClsEnum.User);
+	}
+
+	public User getUser(String name) {
+		Collection frames = kb.getFramesWithValue(getSlot(SlotEnum.name), null, false, name);
+		if (frames == null || frames.isEmpty()) {
+			return null;
+		}
+		Frame frame = (Frame) frames.iterator().next();
+		if (!(frame instanceof Frame)) {
+			return null;
+		}
+		return new UserImpl(this, (Instance) frame);
+	}
+	
+	public Operation getOperation(String name) {
+		Collection frames = kb.getFramesWithValue(getSlot(SlotEnum.name), null, false, name);
+		if (frames == null || frames.isEmpty()) {
+			return null;
+		}
+		Frame frame = (Frame) frames.iterator().next();
+		if (!(frame instanceof Frame)) {
+			return null;
+		}
+		return new OperationImpl(this, (Instance) frame);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Set<Operation> getOperations() {
+		return (Set<Operation>) getWrappedInstances(ClsEnum.Operation);
+	}
+
+	
+	public Group getGroup(String name) {
+		Collection frames = kb.getFramesWithValue(getSlot(SlotEnum.name), null, false, name);
+		if (frames == null || frames.isEmpty()) {
+			return null;
+		}
+		Frame frame = (Frame) frames.iterator().next();
+		if (!(frame instanceof Frame)) {
+			return null;
+		}
+		return new GroupImpl(this, (Instance) frame);
+	}
+
+
+	@SuppressWarnings("unchecked")
+	public Set<Group> getGroups() {
+		return (Set<Group>) getWrappedInstances(ClsEnum.Group);
+	}
+	
+	
+	
+	public Policy getPolicy() {
+		if (policy == null) {
+			policy = new  PolicyImpl(this);
+		}
+		return policy;
+	}
+
+	public KnowledgeBase getKnowledgeBase() {
+		return kb;
+	}
+
 	public boolean save(Collection errors) {
 		ArrayList saveErrors = new ArrayList();
-		
+
 		try {			
 			kb.getProject().save(saveErrors);
 
@@ -136,24 +183,56 @@ public class MetaProjectImpl implements MetaProject {
 			errors.add(e);
 			return false;
 		}
-		
+
 		Log.getLogger().info("SERVER: Saved metaproject.");
 		return true;
 	}
 
-	public MetaProjectInstance createMetaProjectInstance(String name) {
-	    Instance pi = kb.createInstance(name, getCls(ClsEnum.Project));
-        return new MetaProjectInstanceImpl(this, pi);
-	}
-	
-	public UserInstance createUserInstance(String name, String password) {
-		Instance ui = kb.createInstance(null, getCls(ClsEnum.User));
+	public ProjectInstance createProject(String name) {
+		Instance pi = kb.createInstance(name, getCls(ClsEnum.Project));
 		
-		UserInstance userInstance = new UserInstanceImpl(this, ui);
+		ProjectInstance project = new ProjectInstanceImpl(this, pi);
+		
+		project.setName(name);
+		return project;
+	}
+
+	public User createUser(String name, String password) {
+		Instance ui = kb.createInstance(null, getCls(ClsEnum.User));
+
+		User userInstance = new UserImpl(this, ui);
 		userInstance.setName(name);
 		userInstance.setPassword(password);
-		
+
 		return userInstance;
 	}
- 
+	
+	public Group createGroup(String name) {
+		Instance pi = kb.createInstance(name, getCls(ClsEnum.Group));
+		
+		Group group = new GroupImpl(this, pi);
+		
+		group.setName(name);
+		return group;
+	}
+	
+
+	public Operation createOperation(String name) {
+		Instance pi = kb.createInstance(name, getCls(ClsEnum.Operation));
+		
+		Operation op = new OperationImpl(this, pi);
+		
+		op.setName(name);
+		return op;
+	}
+	
+	
+	public GroupOperation createGroupOperation() {
+		Instance pi = kb.createInstance(null, getCls(ClsEnum.GroupOperation));
+		
+		GroupOperation groupOp = new GroupOperationImpl(this, pi);
+		
+		return groupOp;
+	}
+
 }
