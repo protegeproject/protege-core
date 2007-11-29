@@ -235,6 +235,7 @@
     <target name="install" depends="jar">
        <copy file="dist/protege.jar" todir="${protege.home}"/>
        <copy file="logging.properties" todir="${protege.home}"/>
+       <copy file="log4j.xml" todir="${protege.home}"/>
        <copy todir="${protege.home}">
           <fileset dir="./lib" includes="*.jar" excludes="junit.jar"/>
           <fileset dir="bin">
