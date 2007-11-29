@@ -5,16 +5,14 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 
-import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
-import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
-import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.narrowframestore.RemoteServerNarrowFrameStore;
 import edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore;
 
@@ -40,7 +38,7 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         return _project.getInternalProjectKnowledgeBase().getKnowledgeBaseFactory().getClass().getName();
     }
 
-    public ServerProject(Server server, URI uri, MetaProjectInstance projectInstance, Project project) throws RemoteException {
+    public ServerProject(Server server, URI uri, ProjectInstance projectInstance, Project project) throws RemoteException {
         _server = server;
         _uri = uri;
         _project = project;
