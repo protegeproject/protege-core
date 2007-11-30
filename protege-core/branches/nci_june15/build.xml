@@ -323,11 +323,13 @@
         <target name = "junit" 
                 description = "test the system"
                 depends="jar, buildDbScratchProject">
+          <property file="junit.properties"/>
           <junit  printsummary="withOutAndErr" 
-                  haltonerror="on" 
-                  haltonfailure="on" 
+                  haltonerror="${junit.haltonerror}"
+                  haltonfailure="${junit.haltonfailure}"
                   fork="yes"
-                  showoutput="yes">
+                  filtertrace="${junit.filtertrace}"
+                  showoutput="${junit.showoutput}">
             <classpath refid="project.classpath"/>
             <classpath refid="database.drivers"/>
             <classpath>
@@ -339,7 +341,7 @@
 
             <batchtest>
               <fileset dir="${junit}">
-                <include name="**/*Test.java"/>
+                <include name="${junit.includes}"/>
                 <!-- Exclude the graphics tests -->
                 <exclude name="**/*Package_Test.java"/>
                 <!-- what's the story with this one? -->
