@@ -19,4 +19,11 @@ set LOG4J_OPT=-Dlog4j.configuration=file:log4j.xml
 
 set OPTIONS=%MAX_MEMORY% %CODEBASE% %HEADLESS% %LOG4J_OPT%
 
-%JDKBIN%\java %OPTIONS% -cp %CLASSPATH% %MAINCLASS% %METAPROJECT%  
+rem ------------------- Cmd Options -------------------
+rem If you want automatic saving of the project, 
+rem setup the number of seconds in SAVE_INTERVAL_VALUE
+set SAVE_INTERVAL=-saveIntervalSec=120
+rem ------------------- Cmd Options -------------------
+
+
+%JDKBIN%\java %OPTIONS% -cp %CLASSPATH% %MAINCLASS% %SAVE_INTERVAL% %METAPROJECT%  
