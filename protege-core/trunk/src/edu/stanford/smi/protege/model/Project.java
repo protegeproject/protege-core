@@ -119,8 +119,8 @@ public class Project {
     private static final String CHANGE_TRACKING_ACTIVE = "change_tracking_active";
     private static final String SUPRESS_INSTANCE_COUNT_DISPLAY = "suppress_instance_counting";
 
-    private static final String CLASS_MAP = "Map";
-    private static final String SLOT_PROPERTY_MAP = "property_map";
+    protected static final String CLASS_MAP = "Map";
+    protected static final String SLOT_PROPERTY_MAP = "property_map";
 
     private static final int WINDOW_OFFSET_PIXELS = 25;
 
@@ -130,15 +130,15 @@ public class Project {
     private Instance _projectInstance;
     private KnowledgeBase _domainKB;
     private String _defaultClsWidgetClassName;
-    private Map _activeClsWidgetDescriptors = new HashMap(); // <Cls,
-    // WidgetDescriptor>
-    private Map _cachedDesignTimeClsWidgets = new HashMap(); // Cls -> ClsWidget
+    private Map<Cls, WidgetDescriptor> _activeClsWidgetDescriptors = new HashMap<Cls, WidgetDescriptor>();
+    private Map<Cls, ClsWidget> _cachedDesignTimeClsWidgets = new HashMap<Cls, ClsWidget>(); 
+    
     private Map _frames = new HashMap(); // <Instance or FrameSlotPair, JFrame>
     private Map _objects = new HashMap(); // <JFrame, Instance or FrameSlotPair>
+    
     private WidgetMapper _widgetMapper;
 
-    // private Collection _cachedIncludedProjectURIs = new ArrayList();
-    private Tree projectURITree = new Tree();
+    private Tree<URI> projectURITree = new Tree<URI>();
     private URI activeRootURI;
 
     private Point _lastLocation;
@@ -151,15 +151,16 @@ public class Project {
     private Boolean _updateModificationSlots;
     private Boolean prettyPrintSlotWidgetLabels;
     private Boolean _isUndoEnabled;
-    private Map _includedBrowserSlotPatterns = new HashMap(); // <Cls,
-    // BrowserSlotPattern>
-    private Map _directBrowserSlotPatterns = new HashMap(); // <Cls,
-    // BrowserSlotPattern>
-    private Set _hiddenFrames = new HashSet();
-    private Set _includedHiddenFrames = new HashSet();
+    private Map<Cls, BrowserSlotPattern> _includedBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>();
+    private Map<Cls, BrowserSlotPattern> _directBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>(); 
+    private Set<Frame> _hiddenFrames = new HashSet<Frame>();
+    private Set<Frame> _includedHiddenFrames = new HashSet<Frame>();
     private boolean _hasChanged;
-    private Collection _tabWidgetDescriptors;
+    private Collection<WidgetDescriptor> _tabWidgetDescriptors;
+    
     private Map _clientInformation = new HashMap();
+    private Map _includedClientInformation = new HashMap();
+        
     private FrameCountsImpl _frameCounts = new FrameCountsImpl();
     private boolean isMultiUserServer;
     private Class _instanceDisplayClass;
@@ -230,6 +231,10 @@ public class Project {
         }
     };
 
+	private Set<Frame> _includedClientInformationKeys;
+
+	private Instance _includedClientInfoInstance;
+
 	
     static {
         SystemUtilities.initialize();
@@ -255,6 +260,8 @@ public class Project {
         if (_projectKB != null) {
             _projectInstance = getProjectInstance(_projectKB);
         }
+        
+        //Multi-user client won't go in there
         if (_projectInstance != null && createDomainKB) {
             boolean load = uri != null;
             createDomainKnowledgeBase(factory, errors, load);
@@ -517,8 +524,12 @@ public class Project {
         _objects = null;
         
         //_widgetMapper = null;
-                       
+        
         _directBrowserSlotPatterns = null;
+        _includedBrowserSlotPatterns = null;
+        
+        _clientInformation = null;
+        _includedClientInformation = null;
         
         PropertyMapUtil.dispose();
     }
@@ -585,7 +596,7 @@ public class Project {
     }
 
     /**
-     * @deprecated
+     * @deprecated Use {@link #getInheritedBrowserSlotPattern(Cls)}
      */
     public Slot getInheritedBrowserSlot(Cls cls) {
         return getPatternSlot(getInheritedBrowserSlotPattern(cls));
@@ -814,7 +825,7 @@ public class Project {
         return instance;
     }
 
-    private static Object getOwnSlotValue(Frame frame, String slotName) {
+    protected static Object getOwnSlotValue(Frame frame, String slotName) {
         return ModelUtilities.getDirectOwnSlotValue(frame, slotName);
     }
 
@@ -1107,42 +1118,55 @@ public class Project {
     }
 
     public void loadBrowserSlots(Instance projectInstance) {
-        PropertyList browserSlots = getPropertyList(projectInstance, SLOT_BROWSER_SLOTS);
-        Iterator i = browserSlots.getNames().iterator();
-        while (i.hasNext()) {
-            String clsName = (String) i.next();
-            if (clsName == null) {
-                Log.getLogger().warning("null class name");
-            } else {
-                Cls cls = _domainKB.getCls(clsName);
-                String patternText = browserSlots.getString(clsName);
-                BrowserSlotPattern slotPattern = BrowserSlotPattern.createFromSerialization(
-                        _domainKB, patternText);
-                if (cls != null && slotPattern != null) {
-                    recordDirectBrowserSlotPattern(cls, slotPattern);
-                    if (projectInstance != _projectInstance) {
-                        _includedBrowserSlotPatterns.put(cls, slotPattern);
-                    }
-                } else {
-                    // Log.warning("Bad frame properties: " + clsName + " " +
-                    // slotName, this, "loadFrameProperties");
-                    browserSlots.remove(clsName);
-                }
-            }
-        }
-        // TODO this needs to be handled more cleanly
-        Slot nameSlot = _domainKB.getSlot(Model.Slot.NAME);
-        Cls rootMetaCls = _domainKB.getCls(Model.Cls.ROOT_META_CLASS);
-        if (rootMetaCls == null) {
-            Cls classCls = _domainKB.getCls(Model.Cls.CLASS);
-            recordDirectBrowserSlotPattern(classCls, new BrowserSlotPattern(nameSlot));
-            Cls slotCls = _domainKB.getCls(Model.Cls.SLOT);
-            recordDirectBrowserSlotPattern(slotCls, new BrowserSlotPattern(nameSlot));
-        } else {
-            recordDirectBrowserSlotPattern(rootMetaCls, new BrowserSlotPattern(nameSlot));
-        }
+    	PropertyList browserSlots = getPropertyList(projectInstance, SLOT_BROWSER_SLOTS);
+    	Iterator i = browserSlots.getNames().iterator();
+    	while (i.hasNext()) {
+    		String clsName = (String) i.next();
+    		if (clsName == null) {
+    			Log.getLogger().warning("null class name");
+    		} else {
+    			Cls cls = _domainKB.getCls(clsName);
+    			String patternText = browserSlots.getString(clsName);
+    			BrowserSlotPattern slotPattern = BrowserSlotPattern.createFromSerialization(_domainKB, patternText);
+    			
+    			if (cls != null && slotPattern != null) {
+    				recordDirectBrowserSlotPattern(cls, slotPattern);
+    				if (isIncluded(projectInstance)) {
+    					_includedBrowserSlotPatterns.put(cls, slotPattern);
+    					
+    					//TT - do only if server - should not be saved because they are part of _includedBrowserSlotPattern
+    					if (isMultiUserServer()) {
+    						copyIncludedBrowserSlot(projectInstance, clsName, patternText);
+    					}
+    					
+    				}
+    			} else {
+    				// Log.warning("Bad frame properties: " + clsName + " " + slotName, this, "loadFrameProperties");
+    				browserSlots.remove(clsName);
+    			}
+    		}
+    	}
+
+    	// TODO this needs to be handled more cleanly
+    	Slot nameSlot = _domainKB.getSlot(Model.Slot.NAME);
+    	Cls rootMetaCls = _domainKB.getCls(Model.Cls.ROOT_META_CLASS);
+    	if (rootMetaCls == null) {
+    		Cls classCls = _domainKB.getCls(Model.Cls.CLASS);
+    		recordDirectBrowserSlotPattern(classCls, new BrowserSlotPattern(nameSlot));
+    		Cls slotCls = _domainKB.getCls(Model.Cls.SLOT);
+    		recordDirectBrowserSlotPattern(slotCls, new BrowserSlotPattern(nameSlot));
+    	} else {
+    		recordDirectBrowserSlotPattern(rootMetaCls, new BrowserSlotPattern(nameSlot));
+    	}
     }
 
+    
+    private void copyIncludedBrowserSlot(Instance projectInstance, String clsName, String patternText) {
+    	PropertyList browserSlots = getPropertyList(_projectInstance, SLOT_BROWSER_SLOTS);
+    	browserSlots.setString(clsName, patternText);    	
+    }
+    
+    
     private void loadCachedKnowledgeBaseObjects(Instance projectInstance) {
         loadClientInformation(projectInstance);
         loadNextFrameNumber(projectInstance);
@@ -1363,61 +1387,138 @@ public class Project {
     }
 
     /*
-     * This method doesn't merge the client information from included projects.
-     * It is unclear how to even do this. The included project client
-     * information shouldn't be written out into the including project file.
-     * This means that not only must the information from multiple project be
-     * merged there must be a way to separate it back out on save. I'm not
-     * really sure how to do this.
-     *
-     * For the moment the client information is just the information from the
-     * last loaded (outermost) project.
+     * This method merges the client information from the including projects.
+     * It also saves the included client info in an instance, so that at
+     * save time it can remove the included information.     
      */
-    private void loadClientInformation(Instance projectInstance) {
-        Instance instance = (Instance) getOwnSlotValue(projectInstance, SLOT_PROPERTY_MAP);
-        if (instance == null) {
-            _clientInformation = new HashMap();
-        } else {
-            _clientInformation = PropertyMapUtil.load(instance, _domainKB);
-        }
+    private void loadClientInformation(Instance projectInstance) {   		
+   		
+   		Map clientInfoMap = getClientInfoMap(projectInstance);
+   		
+   		if (isIncluded(projectInstance)) {
+   			_includedClientInformation.putAll(clientInfoMap);   		
+   		}
+   		
+   		_clientInformation.putAll(clientInfoMap);
+   		
+   		/* 
+   		 * This is executed only once. Need to make a copy of the included client info in an instance
+   		 * otherwise the included client info is modified when the content of the map changes.
+   		 * (This happens esp. with the GraphWidget when it saves the positions of the nodes)
+   		 * 
+   		 */
+   		if (!isIncluded(projectInstance)) {
+   			PropertyMapUtil.store(_clientInformation, getClientInfoInstance(projectInstance));
+   			
+   			//store included client info in a map instance
+   			Cls cls = projectInstance.getKnowledgeBase().getCls(CLASS_MAP);
+            _includedClientInfoInstance = projectInstance.getKnowledgeBase().createInstance(null, cls);
+   			
+            PropertyMapUtil.store(_includedClientInformation, _includedClientInfoInstance);
+   		}
     }
+        
+
+    private Instance getClientInfoInstance(Instance projectInstance) {
+    	Instance clientInfoInstance = (Instance) getOwnSlotValue(projectInstance, SLOT_PROPERTY_MAP);
+    	
+    	if (clientInfoInstance == null) {
+            Cls cls = projectInstance.getKnowledgeBase().getCls(CLASS_MAP);
+            clientInfoInstance = projectInstance.getKnowledgeBase().createInstance(null, cls);
+            ModelUtilities.addOwnSlotValue(projectInstance, SLOT_PROPERTY_MAP,  clientInfoInstance);
+    	}
+    	
+    	return clientInfoInstance;
+    }
+    
+    
+	private Map getClientInfoMap(Instance projectInstance) {    	
+    	Instance clientInfoInstance = (Instance) getOwnSlotValue(projectInstance, SLOT_PROPERTY_MAP);
+    	
+    	if (clientInfoInstance == null) {
+    		return new HashMap();
+    	}
+    	
+    	return PropertyMapUtil.load(clientInfoInstance, _domainKB);
+    }
+    
+
+    /**
+     * Utility method that copies the client information from the source project KB to a target project KB. 
+     * @param sourceKb - the source project KB
+     * @param targetKb - the target project KB
+     * @param domainKb - the target domain KB
+     * @param appendInfo - if true, it appends the source client information to the target client information. 
+     * If false, the target client info is overridden by the copied source client information
+     */
+    protected static void copyClientInformation(KnowledgeBase sourceKb, KnowledgeBase targetKb, KnowledgeBase domainKb, boolean appendInfo) {
+    	//source info
+    	Instance sourceProjectInstance = getProjectInstance(sourceKb);
+    	Instance sourceClientInfoInstance = (Instance) getOwnSlotValue(sourceProjectInstance, SLOT_PROPERTY_MAP);
+    	Map clientInformation = PropertyMapUtil.load(sourceClientInfoInstance, domainKb);
+    	
+    	//target info
+    	Instance targetProjectInstance = getProjectInstance(targetKb);
+    	Instance targetClientInfoInstance = (Instance) getOwnSlotValue(targetProjectInstance, SLOT_PROPERTY_MAP);
+    	
+    	if (targetClientInfoInstance != null) {
+    		if (appendInfo) {
+    			Map targetClientInformation = PropertyMapUtil.load(targetClientInfoInstance, domainKb);
+    			clientInformation.putAll(targetClientInformation);
+    		}
+    		targetClientInfoInstance.delete();
+    	}
+    	
+        Cls cls = targetKb.getCls(CLASS_MAP);
+        targetClientInfoInstance = targetKb.createInstance(null, cls);
+        ModelUtilities.addOwnSlotValue(targetProjectInstance, SLOT_PROPERTY_MAP,  targetClientInfoInstance);
+        
+        PropertyMapUtil.store(clientInformation, targetClientInfoInstance);
+	}
+        
 
     private void loadWidgetDescriptors(Instance projectInstance) {
-        Iterator i = new ArrayList(getProjectSlotValues(projectInstance,
-                SLOT_CUSTOMIZED_INSTANCE_WIDGETS)).iterator();
-        while (i.hasNext()) {
-            Instance instance = (Instance) i.next();
+    	Iterator i = new ArrayList(getProjectSlotValues(projectInstance, SLOT_CUSTOMIZED_INSTANCE_WIDGETS)).iterator();
 
-            // duplicate included widget descriptors into main project
-            if (isIncluded(projectInstance)) {
-                instance = (Instance) instance.deepCopy(_projectKB, null);
-            }
+    	while (i.hasNext()) {
+    		Instance instance = (Instance) i.next();
 
-            WidgetDescriptor d = WidgetDescriptor.create(instance);
-            if (d == null) {
-                Log.getLogger().severe("Invalid widget instance: " + instance);
-                removeProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, instance);
-            } else {
-                Cls cls = _domainKB.getCls(d.getName());
-                if (cls == null) {
-                    Log.getLogger().warning("unknown class: " + d.getName());
-                    removeProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, instance);
-                } else {
-                    if (isIncluded(projectInstance)) {
-                        d.setIncluded(true);
-                    }
-                    d.setDirectlyCustomizedByUser(true);
-                    // Log.getLogger().info("**" + cls + " " + d.getWidgetClassName());
-                    // be careful not to overwrite widgets on an "include"
-                    // command.
-                    WidgetDescriptor existingDescriptor = (WidgetDescriptor) _activeClsWidgetDescriptors
-                            .get(cls);
-                    if (existingDescriptor == null || existingDescriptor.isIncluded()) {
-                        _activeClsWidgetDescriptors.put(cls, d);
-                    }
-                }
-            }
-        }
+			// duplicate included widget descriptors into main project
+    		if (isIncluded(projectInstance)) {
+    			Instance  includingInstance = (Instance) instance.deepCopy(_projectKB, null);
+    			
+    			//support forms inclusion in client-server
+    			if (isMultiUserServer()) {
+    				_projectInstance.addOwnSlotValue(_projectKB.getSlot(SLOT_CUSTOMIZED_INSTANCE_WIDGETS), includingInstance);
+    			}
+    			
+    			instance = includingInstance;
+    		}
+
+    		WidgetDescriptor d = WidgetDescriptor.create(instance);
+    		if (d == null) {
+    			Log.getLogger().severe("Invalid widget instance: " + instance);
+    			removeProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, instance);
+    		} else {
+    			Cls cls = _domainKB.getCls(d.getName());
+    			if (cls == null) {
+    				Log.getLogger().warning("Unknown class: " + d.getName());
+    				removeProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, instance);
+    			} else {
+    				if (isIncluded(projectInstance)) {
+    					d.setIncluded(true);
+    				}
+    				d.setDirectlyCustomizedByUser(true);
+    				// Log.getLogger().info("**" + cls + " " + d.getWidgetClassName());
+    				// be careful not to overwrite widgets on an "include"
+    				// command.
+    				WidgetDescriptor existingDescriptor = _activeClsWidgetDescriptors.get(cls);
+    				if (existingDescriptor == null || existingDescriptor.isIncluded()) {
+    					_activeClsWidgetDescriptors.put(cls, d);
+    				}
+    			}
+    		}
+    	}
     }
     
     private void loadWidgetMapper(Instance projectInstance) {
@@ -1665,7 +1766,8 @@ public class Project {
     }
 
     private void saveProjectKB(Collection errors) {
-    	/* This happens in OWL mode, if the owl model is opened with the JenaOWLModel calls
+    	/* 
+    	 * This happens in OWL mode, if the owl model is opened with the JenaOWLModel calls
     	 * and not with the project calls.
     	 */
     	if (_uri == null) {
@@ -1676,17 +1778,47 @@ public class Project {
         new ClipsKnowledgeBaseFactory().saveKnowledgeBase(_projectKB, null, s, errors);
     }
 
+    /**
+     * This method saves the client information in a property map instance.
+     * The included client information is filtered out from the save by
+     * comparing the keys and values of the client info with the ones from
+     * the _includedClientInformation map. If the included value has changed, \
+     * then the change is saved, otherwise not.  
+     */
     private void saveClientInformation() {
         if (!_clientInformation.isEmpty()) {
-            Instance propertyMapInstance = (Instance) getOwnSlotValue(_projectInstance,
-                    SLOT_PROPERTY_MAP);
+            Instance propertyMapInstance = (Instance) getOwnSlotValue(_projectInstance, SLOT_PROPERTY_MAP);
             if (propertyMapInstance == null) {
                 Cls cls = _projectKB.getCls(CLASS_MAP);
                 propertyMapInstance = _projectKB.createInstance(null, cls);
-                ModelUtilities.addOwnSlotValue(_projectInstance, SLOT_PROPERTY_MAP,
-                        propertyMapInstance);
+                ModelUtilities.addOwnSlotValue(_projectInstance, SLOT_PROPERTY_MAP, propertyMapInstance);
             }
-            PropertyMapUtil.store(_clientInformation, propertyMapInstance);
+            
+            /* 
+             * TT - don't save in the including project the included client info unless it has been modified.
+             * This is not a perfect algorithm, but it seems to work well.
+             * Don't modify the _clientInformation, because the user might have just saved but not exited the project
+             */ 
+            
+            Map copyClientInfo = new HashMap();
+            copyClientInfo.putAll(_clientInformation);
+            
+            _includedClientInformation = PropertyMapUtil.load(_includedClientInfoInstance, _domainKB);
+            
+            for (Iterator iterator = copyClientInfo.keySet().iterator(); iterator.hasNext();) {
+				Object key = iterator.next();
+				Object value = copyClientInfo.get(key);
+									
+				if (value != null) {
+					Object includedValue = _includedClientInformation.get(key);
+					
+					if (includedValue != null && value.equals(includedValue)) {
+						iterator.remove();
+					}
+				}
+			}
+            
+            PropertyMapUtil.store(copyClientInfo, propertyMapInstance);
         }
     }
 
@@ -1784,7 +1916,6 @@ public class Project {
     }
 
     private void setOption(String slotName, boolean value) {
-        //setOwnSlotValue(getOptionsInstance(), slotName, Boolean.valueOf(value));
         ModelUtilities.setOwnSlotValue(getOptionsInstance(), slotName, Boolean.valueOf(value));
     }
 
@@ -1991,15 +2122,12 @@ public class Project {
      *
      * <pre><code>
      *
-     *
      *        a.equals(new MyClass(a.toString());
-     *
      *
      * </pre></code>
      *
      * <br>
-     * <br>
-     *
+     * 
      * A typical use of "client information" is the following:
      *
      * <pre><code>
