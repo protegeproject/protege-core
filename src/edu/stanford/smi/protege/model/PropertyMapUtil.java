@@ -1,11 +1,17 @@
 package edu.stanford.smi.protege.model;
 
-import java.awt.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.awt.Rectangle;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
  * Utilities for working with the PropertyMap
