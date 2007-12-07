@@ -8,14 +8,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
+import edu.stanford.smi.protege.model.ModelUtilities;
 import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.PropertyMapUtil;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
@@ -63,7 +67,7 @@ public class RemoteClientProject extends Project {
                                                       serverProject.getDomainKbNarrowFrameStore(),
                                                       serverProject.getProjectKbFactoryClassName(), 
                                                       session, true);
-        projectKb = copyKb(projectKb);
+        projectKb = copyKb(projectKb, domainKb);
         setKnowledgeBases(domainKb, projectKb);
         if (pollForEvents) {
             domainKb.setPollForEvents(true);
@@ -71,14 +75,20 @@ public class RemoteClientProject extends Project {
         installShutdownHook();
     }
 
-    private static KnowledgeBase copyKb(KnowledgeBase remoteKb) {
+    private static KnowledgeBase copyKb(KnowledgeBase remoteKb, KnowledgeBase domainKb) {
         Collection errors = new ArrayList();
         KnowledgeBase localKb = loadProjectKB(null, null, errors);
         localKb.deleteInstance(getProjectInstance(localKb));
         Instance projectInstance = getProjectInstance(remoteKb);
         projectInstance.deepCopy(localKb, null);
+        
+        // to support included forms - esp. location of nodes in GraphWidget
+        copyClientInformation(remoteKb, localKb, domainKb, false);
+        
         return localKb;
     }
+    
+     
 
     private static KnowledgeBase createKnowledgeBase(RemoteServer server,
                                                      RemoteServerFrameStore serverFrameStore, 
