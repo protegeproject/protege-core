@@ -63,6 +63,7 @@ public class DatabaseWizardPage extends WizardPage {
     private boolean hasValidDriver() {
         boolean isValid = false;
         String text = driverField.getText();
+        text = text.trim();
         if (text.length() == 0) {
             setErrorText("Driver class required");
         } else {
@@ -78,6 +79,7 @@ public class DatabaseWizardPage extends WizardPage {
     private boolean hasValidUrl() {
         boolean isValid = false;
         String url = urlField.getText();
+        url = url.trim();
         String username = usernameField.getText();
         String password = passwordField.getText();
         if (url.length() == 0) {
