@@ -195,7 +195,7 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
 
     private void deleteFrameFromCache(Frame frame) {
         removeFrameFromSft(frame);
-        Iterator<Sft> i = _sftToFrameToClosureMap.getKeys().iterator();
+        Iterator<Sft> i = _sftToFrameToClosureMap.keySet().iterator();
         while (i.hasNext()) {
             Sft sft = i.next();
             Map<Frame, Set> frameToClosureMap =  _sftToFrameToClosureMap.get(sft);
@@ -219,7 +219,7 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     private void removeFrameFromSft(Frame frame) {
         if (frame instanceof Slot || frame instanceof Facet) {
             boolean isSlot = frame instanceof Slot;
-            Iterator<Sft> i = _sftToFrameToClosureMap.getKeys().iterator();
+            Iterator<Sft> i = _sftToFrameToClosureMap.keySet().iterator();
             while (i.hasNext()) {
                 Sft sft = i.next();
                 if (isSlot) {
