@@ -82,6 +82,27 @@ public abstract class TransactionMonitor {
       return nesting;
     }
   }
+  
+  public static boolean updatesSeenByUntransactedClients(TransactionMonitor tm) {
+      return tm == null || tm.updatesSeenByUntransactedClients();
+  }
+  
+  public static boolean updatesSeenByUntransactedClients(TransactionMonitor tm,
+                                                         TransactionIsolationLevel level) {
+      return tm == null || tm.updatesSeenByUntransactedClients(level);
+  }
+  
+  public boolean updatesSeenByUntransactedClients() {
+      TransactionIsolationLevel level = getTransationIsolationLevel();
+      return updatesSeenByUntransactedClients(level);
+  }
+  
+  public boolean updatesSeenByUntransactedClients(TransactionIsolationLevel level) {
+    return !inTransaction() || 
+      (level != null && level.compareTo(TransactionIsolationLevel.READ_UNCOMMITTED) <= 0);
+  }
+  
+
 
   public synchronized Set<RemoteSession> getSessions() {
     return transactionsInProgress.keySet();
