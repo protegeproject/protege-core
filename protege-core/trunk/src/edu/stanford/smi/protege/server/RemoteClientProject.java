@@ -111,6 +111,10 @@ public class RemoteClientProject extends Project {
         if (log.isLoggable(Level.FINE)) {
           log.fine("created kb=" + kb);
         }
+        
+        kb.setGenerateEventsEnabled(false);
+        kb.setCallCachingEnabled(false);
+        
         FrameStore clientFrameStore
                = new RemoteClientFrameStore(server, serverFrameStore, session, kb, preloadAll);
         RemoteClientInvocationHandler rcif
@@ -128,8 +132,7 @@ public class RemoteClientProject extends Project {
                                                    userNarrowFrameStore, 
                                                    kb);
         }
-        kb.setGenerateEventsEnabled(false);
-        kb.setCallCachingEnabled(false);
+
 
         return kb;
     }
