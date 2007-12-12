@@ -16,18 +16,18 @@ import edu.stanford.smi.protege.model.*;
  */
 public class PropertyList implements Cloneable {
     public static final String CLASS_PROPERTY_LIST = "Property_List";
-    private static final String CLASS_WIDGET_DESCRIPTOR = "Widget";
-    private static final String CLASS_STRING = "String";
-    private static final String CLASS_INTEGER = "Integer";
-    private static final String CLASS_BOOLEAN = "Boolean";
-    private static final String CLASS_RECTANGLE = "Rectangle";
-    private static final String SLOT_NAME = "name";
-    private static final String SLOT_BOOLEAN_VALUE = "boolean_value";
-    private static final String SLOT_INTEGER_VALUE = "integer_value";
-    private static final String SLOT_STRING_VALUE = "string_value";
-    private static final String SLOT_PROPERTIES = "properties";
+    public static final String CLASS_WIDGET_DESCRIPTOR = "Widget";
+    public static final String CLASS_STRING = "String";
+    public static final String CLASS_INTEGER = "Integer";
+    public static final String CLASS_BOOLEAN = "Boolean";
+    public static final String CLASS_RECTANGLE = "Rectangle";
+    public static final String SLOT_NAME = "name";
+    public static final String SLOT_BOOLEAN_VALUE = "boolean_value";
+    public static final String SLOT_INTEGER_VALUE = "integer_value";
+    public static final String SLOT_STRING_VALUE = "string_value";
+    public static final String SLOT_PROPERTIES = "properties";
 
-    private Map nameToSlotMap = new HashMap();
+    private Map<String, Slot> nameToSlotMap = new HashMap<String, Slot>();
 
     private Instance _instance;
 
@@ -265,7 +265,7 @@ public class PropertyList implements Cloneable {
     }
 
     private Slot getSlot(String name) {
-        Slot slot = (Slot) nameToSlotMap.get(name);
+        Slot slot = nameToSlotMap.get(name);
         if (slot == null) {
             slot = _instance.getKnowledgeBase().getSlot(name);
             nameToSlotMap.put(name, slot);
