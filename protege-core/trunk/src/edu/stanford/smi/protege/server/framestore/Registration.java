@@ -21,7 +21,6 @@ public class Registration {
   
     private FifoReader<AbstractEvent> events;
     private FifoReader<ValueUpdate> updates;
-    private List<AbstractEvent> transactionEvents = new ArrayList<AbstractEvent>();
     private List<ValueUpdate> commits = new ArrayList<ValueUpdate>();
     private long lastHeartbeat = 0;
 
@@ -55,23 +54,11 @@ public class Registration {
       getCommits();
     }
 
-    public void addTransactionEvent(AbstractEvent event) {
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Saving event " + event + " for commit/rollback");
-      }
-      transactionEvents.add(event);
-    }
-
-    public List<AbstractEvent> getTransactionEvents() {
-      return transactionEvents;
-    }
-
     public void endTransaction() {
       if (cacheLog.isLoggable(Level.FINE)) {
         cacheLog.fine("Ending transaction: clearing transaction local events and updates");
       }
       commits = new ArrayList<ValueUpdate>();
-      transactionEvents = new ArrayList<AbstractEvent>();
     }
     
     public long getLastHeartbeat() {
