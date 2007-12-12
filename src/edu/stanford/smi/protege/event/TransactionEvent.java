@@ -8,8 +8,8 @@ public class TransactionEvent extends AbstractEvent {
     public static final int TRANSACTION_BEGIN = BASE + 1;
     public static final int TRANSACTION_END = BASE + 2;
     
-    public TransactionEvent(KnowledgeBase kb, int type, String name) {
-        super(kb, type, name);
+    public TransactionEvent(KnowledgeBase kb, int type, String name, Boolean committed) {
+        super(kb, type, name, committed);
     }
     
     public KnowledgeBase getKnowledgeBase() {
@@ -18,6 +18,10 @@ public class TransactionEvent extends AbstractEvent {
     
     public String getBeginString() {
         return (String) getArgument();
+    }
+    
+    public Boolean isCommitted() {
+        return (Boolean) getArgument2();
     }
 
 }
