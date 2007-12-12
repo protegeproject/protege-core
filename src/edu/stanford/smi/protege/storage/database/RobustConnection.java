@@ -339,7 +339,7 @@ public class RobustConnection {
         if (_driverBitTypeName == null) {
             _driverBitTypeName = _driverTinyIntTypeName;
         }
-        if (_driverVarcharTypeName == null || isPostgres()) {
+        if (_driverVarcharTypeName == null || isPostgres() || isSqlServer()) {
             _driverVarcharTypeName = "VARCHAR";
         }
         if (isOracle()) { 
