@@ -24,11 +24,11 @@ import edu.stanford.smi.protege.util.PropertyList;
  */
 public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
     public static final String DESCRIPTION = Text.getProgramName() + " Database";
-    static final String USERNAME_PROPERTY = "username";
-    static final String PASSWORD_PROPERTY = "password";
-    static final String URL_PROPERTY = "url";
-    static final String DRIVER_PROPERTY = "driver";
-    static final String TABLENAME_PROPERTY = "table";
+    public static final String USERNAME_PROPERTY = "username";
+    public static final String PASSWORD_PROPERTY = "password";
+    public static final String URL_PROPERTY = "url";
+    public static final String DRIVER_PROPERTY = "driver";
+    public static final String TABLENAME_PROPERTY = "table";
 
     /*
      * This variable indicates tells the routines that handle the 
