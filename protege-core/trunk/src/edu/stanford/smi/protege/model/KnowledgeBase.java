@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.event.KnowledgeBaseListener;
 import edu.stanford.smi.protege.event.SlotListener;
 import edu.stanford.smi.protege.event.TransactionListener;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.util.Disposable;
 
@@ -255,6 +256,8 @@ public interface KnowledgeBase extends Disposable {
     String getFrameNamePrefix();
 
     Collection<Frame> getFrames();
+    
+    FrameStoreManager getFrameStoreManager();
 
     /**
      * Gets frames with a particular own/template slot/facet value.
