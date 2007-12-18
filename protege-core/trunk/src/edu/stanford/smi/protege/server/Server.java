@@ -33,8 +33,8 @@ import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
-import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.Policy;
+import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
@@ -601,7 +601,13 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
          */
         synchronized (project.getKnowledgeBase()) {
             synchronized (project.getInternalProjectKnowledgeBase()) {
-                project.save(errors);
+            	/* TT: Save only the domain kb, not the prj kb.
+            	 * Saving the prj kb while a client opens a
+            	 * remote project can corrupt the client prj kb.
+            	 */
+            	KnowledgeBase kb = project.getKnowledgeBase();
+            	KnowledgeBaseFactory factory = kb.getKnowledgeBaseFactory();
+            	factory.saveKnowledgeBase(kb, project.getSources(), errors);
                 serverInstance._projectPluginManager.afterSave(project);
             }
         }
