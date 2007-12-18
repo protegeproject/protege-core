@@ -47,7 +47,8 @@ OPTIONS=$MAXIMUM_MEMORY
 #JCONSOLE=-Dcom.sun.management.jmxremote
 #PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100 -Dprotege.rmi.server.local.port=2388"
 #SSLOPTS="-Dprotege.rmi.usessl=true -Djavax.net.ssl.trustStore=protegeca -Djavax.net.ssl.trustStorePassword=protege"
-OPTIONS="${OPTIONS} ${DEBUG_OPT} ${PORT_OPTS} ${SSLOPTS}"
+LOG4J_OPT="-Dlog4j.configuration=file:log4j.xml"
+OPTIONS="${OPTIONS} ${DEBUG_OPT} ${PORT_OPTS} ${SSLOPTS} ${LOG4J_OPT}"
 # ------------------- JVM Options ------------------- 
 
 # Run Protege

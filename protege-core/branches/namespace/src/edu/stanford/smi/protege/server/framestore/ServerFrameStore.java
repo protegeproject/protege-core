@@ -28,7 +28,6 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.EventDispatchFrameStore;
-import edu.stanford.smi.protege.model.framestore.EventGeneratorFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.query.Query;
@@ -40,10 +39,10 @@ import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.framestore.background.WorkInfo;
-import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
-import edu.stanford.smi.protege.server.metaproject.impl.UserInstanceImpl;
+import edu.stanford.smi.protege.server.metaproject.impl.UserImpl;
 import edu.stanford.smi.protege.server.update.FrameRead;
 import edu.stanford.smi.protege.server.update.FrameWrite;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
@@ -112,7 +111,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     
     private TransactionMonitor transactionMonitor;
     
-    private MetaProjectInstance projectInstance;
+    private ProjectInstance projectInstance;
     
     private FifoWriter<AbstractEvent> _eventWriter = new FifoWriter<AbstractEvent>();
     {
@@ -150,10 +149,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
         else {
             EventDispatchFrameStore dispatcher = (EventDispatchFrameStore) fsm.getFrameStoreFromClass(EventDispatchFrameStore.class);
-            dispatcher.setServerMode(true);
+            dispatcher.setPassThrough(true);
             requiresEventDispatch.remove(kb);
         }
-        serverMode();
         valuesFacet = _kb.getSystemFrames().getValuesFacet();
         frameCalculator = new FrameCalculator(fsm.getHeadFrameStore(), 
                                               ((DefaultKnowledgeBase) _kb).getCacheMachine(),
@@ -212,6 +210,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         if (transactionMonitor != null) {
           results.put(session, transactionMonitor.getNesting(session) > 0);
         }
+        else {
+            results.put(session, Boolean.FALSE);
+        }
       }
       return results;
     }
@@ -223,14 +224,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     private FrameStore getDelegate() {
         return _delegate;
-    }
-    
-    private void serverMode() {
-      for (FrameStore fs = _delegate; fs != null; fs = fs.getDelegate()) {
-        if (fs instanceof EventGeneratorFrameStore) {
-          ((EventGeneratorFrameStore) fs).serverMode();
-        }
-      }
     }
 
     private static int nDelayedCalls = 0;
@@ -887,11 +880,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         log.finer("Server Processing event " + eo);
       }
       processEvent(session, registration, level, eo);
-      if (updatesSeenByUntransactedClients(level)) {
-        _eventWriter.write(eo);
-      } else {
-        registration.addTransactionEvent(eo);
-      }
+      _eventWriter.write(eo);
     }
   
     private List<ValueUpdate> getValueUpdates(RemoteSession session) {
@@ -1033,9 +1022,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           TransactionIsolationLevel level = getTransactionIsolationLevel();
           if (success && level != null && 
               level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0) {
-            for (AbstractEvent eo : registration.getTransactionEvents()) {
-              addEvent(session, registration, level, eo);
-            }
             for (ValueUpdate vu : registration.getCommits()) {
               _updateWriter.write(vu);
             }
@@ -1079,9 +1065,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           TransactionIsolationLevel level = getTransactionIsolationLevel();
           if (success && (level != null ||
                           level.compareTo(TransactionIsolationLevel.READ_COMMITTED) < 0)) {
-            for (AbstractEvent eo : registration.getTransactionEvents()) {
-              addEvent(session, registration, level, eo);
-            }
             for (ValueUpdate vu : registration.getCommits()) {
               ValueUpdate invalid = vu.getInvalidatingVariant();
               if (invalid != null) {
@@ -1114,19 +1097,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         _updateWriter.write(remove);
       }
       RemoveFrameCache remove = new RemoveFrameCache(frame);
-      if (!updatesSeenByUntransactedClients(level)) {
+      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
         remove.setClient(session);
         remove.setTransactionScope(true);
       }
       _updateWriter.write(remove);
-      if (!updatesSeenByUntransactedClients(level)) {
+      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
         registration.addCommittableUpdate(new RemoveFrameCache(frame));
       }
-    }
-
-    public boolean updatesSeenByUntransactedClients(TransactionIsolationLevel level) {
-      return !inTransaction() || 
-        (level != null && level.compareTo(TransactionIsolationLevel.READ_UNCOMMITTED) <= 0);
     }
     
   /**
@@ -1432,7 +1410,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return;
       }
       SftUpdate vu = new FrameWrite(frame, slot, facet, isTemplate, values);
-      if (!updatesSeenByUntransactedClients(level)) {
+      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
         if (cacheLog.isLoggable(Level.FINE)) {
           cacheLog.fine("Update is transaction scope and specific to this client");
         }
@@ -1440,7 +1418,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         vu.setTransactionScope(true);
       }
       _updateWriter.write(vu);
-      if (!updatesSeenByUntransactedClients(level)) {
+      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
         registration.addCommittableUpdate(new FrameWrite(frame, slot, facet, isTemplate, values));
       }
     }
@@ -1471,7 +1449,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return;
       }
       SftUpdate vu = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
-      if (!updatesSeenByUntransactedClients(level)) {
+      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
         if (cacheLog.isLoggable(Level.FINE)) {
           log.fine("Update is transaction scope and is only seen by the session");
         }
@@ -1479,22 +1457,22 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         vu.setTransactionScope(true);
       }
       _updateWriter.write(vu);
-      if (!updatesSeenByUntransactedClients(level)) {
+      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
         registration.addCommittableUpdate(new InvalidateCacheUpdate(frame,slot, facet, isTemplate));
       }
     }
     
-    public void setMetaProjectInstance(MetaProjectInstance projectInstance) {
+    public void setMetaProjectInstance(ProjectInstance projectInstance) {
       this.projectInstance = projectInstance;
     }
     
-    public MetaProjectInstance getMetaProjectInstance() {
+    public ProjectInstance getMetaProjectInstance() {
       return projectInstance;
     }
     
     public Set<Operation> getAllowedOperations(RemoteSession session) {
       Policy policy = Server.getPolicy();
-      return policy.getAllowedOperations(new UserInstanceImpl(session.getUserName()), 
+      return policy.getAllowedOperations(new UserImpl(session.getUserName()), 
                                          projectInstance);
     }
     

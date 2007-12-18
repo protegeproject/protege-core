@@ -204,7 +204,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                      " isTemplate = " + isTemplate);
         }
         List values = _delegate.getValues(frame, slot, facet, isTemplate);
-        insert(map, slot, null, false, values);
+        insert(map, slot, null, false, new ArrayList(values));
         return values;
     }
 
@@ -230,29 +230,22 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         Map sftToValuesMap = lookup(frame);
         TransactionMonitor transactionMonitor = getTransactionStatusMonitor();
         if (sftToValuesMap != null) {
-            insert(sftToValuesMap, slot, facet, isTemplate, values);
+            insert(sftToValuesMap, slot, facet, isTemplate, new ArrayList(values));
         }
     }
 
     private void insert(Map<Sft, List> map, Slot slot, Facet facet, boolean isTemplate, 
-                        Collection values) {
+                        List values) {
         if (log.isLoggable(Level.FINE)) {
             log.fine("Inserting cache values for " +
                      " slot = " + slot.getFrameID() +
                      " facet = " + (facet != null ? facet.getFrameID() : null) + 
                      " isTemplate = " + isTemplate);
         }
-        // if (values == null || values.size() == 0) {
         if (values == null) {
             remove(map, slot, facet, isTemplate);
         } else {
-            List valueList = lookup(map, slot, facet, isTemplate);
-            if (valueList == null) {
-                map.put(new Sft(slot, facet, isTemplate), new ArrayList(values));
-            } else {
-                valueList.clear();
-                valueList.addAll(values);
-            }
+            map.put(new Sft(slot, facet, isTemplate), values);
         }
     }
 
@@ -282,41 +275,55 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             List list = lookup(sftToValuesMap, slot, facet, isTemplate);
             if (list == null) {
                 if (!isSpecial(slot, facet, isTemplate)) {
-                    insert(sftToValuesMap, slot, facet, isTemplate, values);
+                    insert(sftToValuesMap, slot, facet, isTemplate, new ArrayList(values));
                 }
             } else {
+                list = new ArrayList(list);
                 list.addAll(values);
+                insert(sftToValuesMap, slot, facet, isTemplate, list);
             }
         }
     }
 
     private void removeCacheValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
-        List list = lookup(frame, slot, facet, isTemplate);
-        if (list != null) {
-            list.remove(value);
+        Map<Sft, List> map = lookup(frame);
+        if (map != null) {
+            List list = lookup(map, slot, facet, isTemplate);
+            if (list != null) {
+                list = new ArrayList(list);
+                list.remove(value);
+                insert(map, slot, facet, isTemplate, list);
+            }
         }
     }
     
     private void moveCacheValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to) {
-        List list = lookup(frame, slot, facet, isTemplate);
-        if (list != null) {
-            Object value = list.remove(from);
-            list.add(to, value);
+        Map<Sft, List> map = lookup(frame);
+        if (map != null) {
+            List list = lookup(map, slot, facet, isTemplate);
+            if (list != null) {
+                list = new ArrayList(list);
+                Object value = list.remove(from);
+                list.add(to, value);
+                insert(map, slot, facet, isTemplate, list);
+            }
         }
     }
     
     private void deleteCacheFrame(Frame frame) {
         getFrameToSftToValuesMap().remove(frame);
-        for (Frame frameKey : getFrameToSftToValuesMap().getKeys()) {
+        for (Frame frameKey : getFrameToSftToValuesMap().keySet()) {
             Map<Sft, List> sftToValuesMap =  getFrameToSftToValuesMap().get(frameKey);
             if (sftToValuesMap != null) {
                 for ( Map.Entry<Sft,List> entry : sftToValuesMap.entrySet()) {
                     Sft sft = entry.getKey();
+                    List values = (List) entry.getValue();
                     if (contains(sft, frame)) {
                         getFrameToSftToValuesMap().remove(frameKey);
-                    } else {
-                        List values = (List) entry.getValue();
+                    } else if (values.contains(frame)) {
+                        values = new ArrayList(values);
                         values.remove(frame);
+                        insert(sftToValuesMap, sft.getSlot(), sft.getFacet(), sft.isTemplateSlot(), values);
                     }
                 }
             }

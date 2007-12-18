@@ -327,9 +327,10 @@ public class PluginUtilities {
     }
 
     private static boolean isSet(Attributes attributes, String name) {
-        boolean isSet = false;
-        String s = attributes.getValue(name);
+        boolean isSet = false;        
+        String s = attributes.getValue(name);        
         if (s != null) {
+        	s = s.trim();
             isSet = s.equalsIgnoreCase("true");
         }
         return isSet;

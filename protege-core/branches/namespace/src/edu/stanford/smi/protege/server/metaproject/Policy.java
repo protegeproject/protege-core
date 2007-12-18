@@ -4,9 +4,9 @@ import java.util.Set;
 
 public interface Policy {
   
-  public boolean isOperationAuthorized(UserInstance user, Operation op, MetaProjectInstance project);
+  public boolean isOperationAuthorized(User user, Operation op, ProjectInstance project);
   
-  Set<Operation> getAllowedOperations(UserInstance user, MetaProjectInstance project);
+  Set<Operation> getAllowedOperations(User user, ProjectInstance project);
   
   Set<Operation> getKnownOperations();
 

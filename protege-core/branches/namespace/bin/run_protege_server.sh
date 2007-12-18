@@ -46,8 +46,9 @@ CODEBASE_URL=file:$PWD/protege.jar
 CODEBASE=-Djava.rmi.server.codebase=$CODEBASE_URL
 HOSTNAME_PARAM=-Djava.rmi.server.hostname=$HOSTNAME
 TX="-Dtransaction.level=READ_COMMITTED"
+LOG4J_OPT="-Dlog4j.configuration=file:log4j.xml"
 
-OPTIONS="$MAX_MEMORY $HEADLESS $CODEBASE $HOSTNAME_PARAM ${TX}"
+OPTIONS="$MAX_MEMORY $HEADLESS $CODEBASE $HOSTNAME_PARAM ${TX} ${LOG4J_OPT}"
 
 #
 # Instrumentation debug, delay simulation,  etc

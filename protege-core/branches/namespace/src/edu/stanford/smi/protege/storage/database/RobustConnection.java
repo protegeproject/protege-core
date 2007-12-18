@@ -339,8 +339,11 @@ public class RobustConnection {
         if (_driverBitTypeName == null) {
             _driverBitTypeName = _driverTinyIntTypeName;
         }
-        if (_driverVarcharTypeName == null || isPostgres()) {
+        if (_driverVarcharTypeName == null || isPostgres() || isSqlServer()) {
             _driverVarcharTypeName = "VARCHAR";
+        }
+        if (isOracle()) { 
+            _driverLongvarcharTypeName = "CLOB";  // can't search on the default LONG.
         }
     }
 
@@ -351,6 +354,7 @@ public class RobustConnection {
 
     public String getLongvarcharTypeName() {
         String name = SystemUtilities.getSystemProperty(OLD_PROPERTY_LONGVARCHAR_TYPE_NAME);
+        name = name;
         if (name == null || name.length() == 0) {
             name = getName(PROPERTY_LONGVARCHAR_TYPE_NAME, _driverLongvarcharTypeName);
         }

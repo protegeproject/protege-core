@@ -1,12 +1,14 @@
 package edu.stanford.smi.protege.action;
 
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.net.URL;
+import javax.swing.JComponent;
 
-import javax.swing.*;
-
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.ui.AboutBox;
+import edu.stanford.smi.protege.util.ModalDialog;
 
 /**
  * Display the "About Box" for the application.
@@ -24,6 +26,12 @@ public class ShowAboutBox extends ProjectAction {
     public void actionPerformed(ActionEvent event) {
         JComponent pane = getProjectManager().getMainPanel();
         String title = LocalizedText.getText(ResourceKey.ABOUT_APPLICATION_DIALOG_TITLE, Text.getProgramName());
-        ModalDialog.showDialog(pane, new AboutBox(), title, ModalDialog.MODE_CLOSE);
+        URL url = Text.getAboutURL();
+        
+        // Passing in null as second parameter because default dialog size 
+        // is fine. Do not need to adjust preferred size.
+        AboutBox aboutProtege = new AboutBox(url, null);
+
+        ModalDialog.showDialog(pane, aboutProtege, title, ModalDialog.MODE_CLOSE);
     }
 }

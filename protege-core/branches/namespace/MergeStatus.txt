@@ -9,4 +9,5 @@ New branch created at trunk revision 7573
        Path: .URL: http://smi-protege/repos/protege/protege-core/trunk
        Revision: 7573
 
+Merged to trunk revision 8452
 

@@ -4,7 +4,7 @@ rem Note that a space character in the following path must be replaced with '%%2
 rem a batch file.  If you are typing directly on the command line, a space must be
 rem replaced with '%20'.
 
-set CODEBASE_URL=file:/c:/program%%20files/protege_3.3.1/protege.jar
+set CODEBASE_URL=file:/c:/program%%20files/protege_3.4_beta/protege.jar
 
 start /min %JDKBIN%\rmiregistry
 
@@ -15,7 +15,15 @@ set METAPROJECT=examples\server\metaproject.pprj
 set MAX_MEMORY=-Xmx200M 
 set HEADLESS=-Djava.awt.headless=true
 set CODEBASE=-Djava.rmi.server.codebase=%CODEBASE_URL%
+set LOG4J_OPT=-Dlog4j.configuration=file:log4j.xml
 
-set OPTIONS=%MAX_MEMORY% %CODEBASE% %HEADLESS%
+set OPTIONS=%MAX_MEMORY% %CODEBASE% %HEADLESS% %LOG4J_OPT%
 
-%JDKBIN%\java %OPTIONS% -cp %CLASSPATH% %MAINCLASS% %METAPROJECT%  
+rem ------------------- Cmd Options -------------------
+rem If you want automatic saving of the project, 
+rem setup the number of seconds in SAVE_INTERVAL_VALUE
+set SAVE_INTERVAL=-saveIntervalSec=120
+rem ------------------- Cmd Options -------------------
+
+
+%JDKBIN%\java %OPTIONS% -cp %CLASSPATH% %MAINCLASS% %SAVE_INTERVAL% %METAPROJECT%  

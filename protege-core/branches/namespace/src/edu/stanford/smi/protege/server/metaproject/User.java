@@ -2,13 +2,17 @@ package edu.stanford.smi.protege.server.metaproject;
 
 import java.util.Set;
 
-public interface UserInstance {
+public interface User {
   
   String getName();
   
   String getPassword();
   
-  Set<GroupInstance> getGroups();
+  Set<Group> getGroups();
+  
+  String getDescription();
+  
+  void setDescription(String description);
   
   void setName(String name);
   

@@ -43,6 +43,9 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         if (_testFrameStore != null && _modifiableFrameStore != null) {
           _initialized = true;
         }
+        if (_testFrameStore instanceof RemoteClientFrameStore) {
+            _kb.setGenerateEventsEnabled(false);
+        }
         _kb.setTerminalFrameStore(_testFrameStore);
     }
 

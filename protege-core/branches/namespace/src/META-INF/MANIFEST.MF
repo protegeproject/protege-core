@@ -243,3 +243,6 @@ Create-Project-Plugin: True
 Name: edu/stanford/smi/protege/widget/ProtegePropertiesTab.class
 Tab-widget: True
 
+
+
+

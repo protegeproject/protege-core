@@ -5,6 +5,7 @@ import java.util.Set;
 
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 
 /**
@@ -33,16 +34,20 @@ public class ServerProperties {
   public final static String SERVER_ALLOW_CREATE_USERS = "server.allow.create.users";
   public final static String SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY = "server.newproject.save.directory";
 
+  
+  public static boolean skipPreload() {
+	  return SystemUtilities.getSystemBooleanProperty(SKIP_PRELOAD, false);
+  }
+  
   public static Set<String> preloadUserFrames() {
     return getStringSet(ServerProperties.USER_PRELOAD);
   }
-  
-  
+    
   private static Set<String> getStringSet(String property) {
     Set<String> values = new HashSet<String>();
     boolean noMoreValues = false;
     for (int i = 0; !noMoreValues; i++) {
-      String value = System.getProperty(property + i);
+      String value = SystemUtilities.getSystemProperty(property + i);
       if (value == null) {
         noMoreValues = true;
       } else {
@@ -59,11 +64,11 @@ public class ServerProperties {
   }
   
   public static int delayInMilliseconds() {
-    return Integer.getInteger(DELAY_MSEC , 0).intValue();
+    return SystemUtilities.getSystemIntegerProperty(DELAY_MSEC , 0);
   }
   
   public static int minimumPreloadedFrames() {
-    return Integer.getInteger(MIN_PRELOAD_FRAMES, 5000).intValue();
+    return SystemUtilities.getSystemIntegerProperty(MIN_PRELOAD_FRAMES, 5000);
   }
   
   public static TransactionIsolationLevel getDefaultTransactionIsolationLevel() {

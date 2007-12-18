@@ -104,6 +104,55 @@ public class SystemUtilities {
         return value;
     }
 
+    public static boolean getSystemBooleanProperty(String property) {
+        boolean value = false;
+        try {
+            value = Boolean.getBoolean(property);
+        } catch (SecurityException e) {
+            //do nothing
+        } catch (Throwable t) {
+        	//do nothing
+        }
+        return value;
+    }
+    
+    public static boolean getSystemBooleanProperty(String property, boolean defaultValue) {
+        boolean value = defaultValue;
+        try {
+            value = Boolean.getBoolean(property);
+        } catch (SecurityException e) {
+            //do nothing
+        } catch (Throwable t) {
+        	//do nothing
+        }
+        return value;
+    }
+    
+    public static int getSystemIntegerProperty(String property) {
+        int value = 0;
+        try {
+            value = Integer.getInteger(property).intValue();
+        } catch (SecurityException e) {
+            //do nothing
+        } catch (Throwable t) {
+        	//do nothing
+        }
+        return value;
+    }
+    
+    public static int getSystemIntegerProperty(String property, int defaultValue) {
+        int value = defaultValue;
+        try {
+            value = Integer.getInteger(property).intValue();
+        } catch (SecurityException e) {
+            //do nothing
+        } catch (Throwable t) {
+        	//do nothing
+        }
+        return value;
+    }
+    
+    
     public static String getUserDirectory() {
         return getSystemProperty("user.dir");
     }

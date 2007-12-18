@@ -33,9 +33,9 @@ import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
-import edu.stanford.smi.protege.server.metaproject.MetaProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.Policy;
-import edu.stanford.smi.protege.server.metaproject.UserInstance;
+import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
@@ -260,7 +260,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (!_sessions.contains(session)) {
             return null;
         }
-        session =  new Session(session.getUserName(), session.getUserIpAddress());
+        session =  new Session(session.getUserName(), session.getUserIpAddress(), session.getSessionGroup());
         _sessions.add(session);
         return session;
     }
@@ -330,7 +330,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private ServerProject createServerProject(String name, Project p) {
         ServerProject impl = null;
         try {
-            impl = new ServerProject(this, getURI(name), metaproject.getProjectInstance(name), p);
+            impl = new ServerProject(this, getURI(name), metaproject.getProject(name), p);
         } catch (RemoteException e) {
             Log.getLogger().severe(Log.toString(e));
         }
@@ -370,7 +370,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private Project createProject(String name) {
         Project project = null;
         
-        for (MetaProjectInstance instance : metaproject.getProjectInstances()) {
+        for (ProjectInstance instance : metaproject.getProjects()) {
           String projectName = instance.getName();
           if (projectName.equals(name)) {
             String projectLocation = instance.getLocation();
@@ -388,7 +388,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 	public RemoteServerProject createProject(String newProjectName, RemoteSession session, KnowledgeBaseFactory kbfactory, boolean saveToMetaProject) throws RemoteException {
         Project project = null;
         
-        for (MetaProjectInstance instance : metaproject.getProjectInstances()) {
+        for (ProjectInstance instance : metaproject.getProjects()) {
             String projectName = instance.getName();
             if (projectName.equals(newProjectName)) {              
               	Log.getLogger().warning("Server: Attempting to create server project with existing project name. No server project created.");
@@ -438,12 +438,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         _nameToOpenProjectMap.put(newProjectName, project);
         
         if (saveToMetaProject) {
-        	//TT: Tim, can you please implement this method? Thanks!
-        	//this
-        	MetaProjectInstance newProjectInstance = metaproject.createMetaProjectInstance(newProjectName);
-        	//and this
-        	newProjectInstance.setLocation(newProjectsDir + File.separator + newProjectName + ".pprj");
-        	        	
+        	ProjectInstance newProjectInstance = metaproject.createProject(newProjectName);
+        	newProjectInstance.setLocation(newProjectsDir + File.separator + newProjectName + ".pprj");        	        	
         	metaproject.save(errors);
         }
         
@@ -464,7 +460,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     public Collection<String> getAvailableProjectNames(RemoteSession session) {
         List<String> names = new ArrayList<String>();
-        for (MetaProjectInstance instance : metaproject.getProjectInstances()) {
+        for (ProjectInstance instance : metaproject.getProjects()) {
           String fileName = instance.getLocation();
           File file = new File(fileName);
           if (file.exists() && file.isFile()) {
@@ -476,9 +472,18 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Collections.sort(names);
         return names;
     }
+    
+    public Collection<ServerProject> getCurrentProjects(RemoteSession session) {
+        return _sessionToProjectsMap.get(session);
+    }
+    
+    public  Collection<RemoteSession> getCurrentSessions() {
+        return _sessions;
+    }
 
-    public Collection getCurrentSessions(String projectName, RemoteSession session) {
-        Collection currentSessions;
+    @SuppressWarnings("unchecked")
+    public Collection<RemoteSession> getCurrentSessions(String projectName, RemoteSession session) {
+        Collection<RemoteSession> currentSessions;
         RemoteServerProject project = getServerProject(projectName);
         if (project == null) {
             currentSessions = Collections.EMPTY_LIST;
@@ -488,12 +493,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return currentSessions;
     }
 
-    public Collection getCurrentSessions(RemoteServerProject project) {
-        Collection sessions = new ArrayList();
-        Iterator i = _sessionToProjectsMap.entrySet().iterator();
+    public Collection<RemoteSession> getCurrentSessions(RemoteServerProject project) {
+        Collection<RemoteSession> sessions = new ArrayList<RemoteSession>();
+        Iterator<Map.Entry<RemoteSession, Collection<ServerProject>>> i = _sessionToProjectsMap.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry entry = (Map.Entry) i.next();
-            Collection projects = (Collection) entry.getValue();
+            Map.Entry<RemoteSession, Collection<ServerProject>> entry = i.next();
+            Collection<ServerProject> projects = entry.getValue();
             if (projects.contains(project)) {
                 Session session = (Session) entry.getKey();
                 if (isCurrent(session)) {
@@ -515,7 +520,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     
 	public boolean createUser(String userName, String password) {
 		List<String> names = new ArrayList<String>();
-		for (UserInstance instance : metaproject.getUserInstances()) {
+		for (User instance : metaproject.getUsers()) {
 			String existingUserName = instance.getName();
 			if (existingUserName.equals(userName)) {
 				Log.getLogger().warning(
@@ -524,7 +529,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 				return false;
 			}
 		}
-		UserInstance newUserInstance = metaproject.createUserInstance(userName,
+		User newUserInstance = metaproject.createUser(userName,
 				password);
 
 		ArrayList errors = new ArrayList();
@@ -535,7 +540,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private boolean isValid(String name, String password) {
       boolean isValid = false;
-      for (UserInstance ui : metaproject.getUserInstances()) {
+      for (User ui : metaproject.getUsers()) {
         String username = ui.getName();
         if (username.equals(name)) {
           String userpassword = ui.getPassword();
@@ -596,7 +601,13 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
          */
         synchronized (project.getKnowledgeBase()) {
             synchronized (project.getInternalProjectKnowledgeBase()) {
-                project.save(errors);
+            	/* TT: Save only the domain kb, not the prj kb.
+            	 * Saving the prj kb while a client opens a
+            	 * remote project can corrupt the client prj kb.
+            	 */
+            	KnowledgeBase kb = project.getKnowledgeBase();
+            	KnowledgeBaseFactory factory = kb.getKnowledgeBaseFactory();
+            	factory.saveKnowledgeBase(kb, project.getSources(), errors);
                 serverInstance._projectPluginManager.afterSave(project);
             }
         }
