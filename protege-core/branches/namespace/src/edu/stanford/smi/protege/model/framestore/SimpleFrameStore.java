@@ -398,8 +398,7 @@ public class SimpleFrameStore implements FrameStore {
     public Frame getFrame(String name) {
         Frame frame = (Frame) nameToFrameMap.get(name);
         if (frame == null) {
-            Collection c = getFramesWithDirectOwnSlotValue(_systemFrames.getNameSlot(), name);
-            frame = (Frame) CollectionUtilities.getFirstItem(c);
+        	frame = getFrame(new FrameID(name));
             if (frame != null) {
                 nameToFrameMap.put(name, frame);
             }
@@ -408,10 +407,6 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public Frame getFrame(FrameID id) {
-        /*
-         * Frame frame = (Frame) frameIdToFrameMap.get(id); if (frame == null) { frame = _helper.getFrame(id);
-         * frameIdToFrameMap.put(id, frame); } return frame;
-         */
         return _helper.getFrame(id);
     }
 
