@@ -24,20 +24,16 @@ public class SystemFrames {
         createFrames();
     }
 
-    public void replaceFrame(Frame frame) {
-        _frameIdToFrameMap.put(frame.getFrameID(), frame);
-    }
-
     public Collection<Frame> getFrames() {
-        return new ArrayList(_frameIdToFrameMap.values());
+        return new ArrayList<Frame>(_frameIdToFrameMap.values());
     }
 
     public Collection<FrameID> getFrameIDs() {
-        return new ArrayList(_frameIdToFrameMap.keySet());
+        return new ArrayList<FrameID>(_frameIdToFrameMap.keySet());
     }
 
     public Collection<String> getFrameNames() {
-      List names = new ArrayList<String>();
+      List<String> names = new ArrayList<String>();
       for (FrameID id : _frameIdToFrameMap.keySet()) {
         names.add(id.getName());
       }
@@ -88,7 +84,7 @@ public class SystemFrames {
         addFrame(id, facet);
     }
 
-    private void addFrame(FrameID id, Frame frame) {
+    protected void addFrame(FrameID id, Frame frame) {
         Object value = _frameIdToFrameMap.put(id, frame);
         if (value != null) {
             throw new IllegalStateException("duplicate add: " + id + " " + id.getName());
