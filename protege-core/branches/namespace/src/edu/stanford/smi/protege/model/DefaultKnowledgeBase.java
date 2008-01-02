@@ -2312,4 +2312,8 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         FrameFactory ff = getFrameFactory();
         return ff.rename(frame, name);
     }
+    
+    public void assertFrameName(Frame frame) {
+    	setDirectOwnSlotValue(frame, _systemFrames.getNameSlot(), frame.getName());
+    }
 }

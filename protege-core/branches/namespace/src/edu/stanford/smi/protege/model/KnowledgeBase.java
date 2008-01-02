@@ -748,4 +748,5 @@ public interface KnowledgeBase extends Disposable {
     public Set<Frame> executeQuery(Query q);
     
     Frame rename(Frame frame, String name);
+    void assertFrameName(Frame frame);
 }

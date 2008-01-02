@@ -422,4 +422,8 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
     public Frame rename(String name) {
         return getKnowledgeBase().rename(this, name);
     }
+    
+    public void assertFrameName() {
+    	getKnowledgeBase().assertFrameName(this);
+    }
 }
