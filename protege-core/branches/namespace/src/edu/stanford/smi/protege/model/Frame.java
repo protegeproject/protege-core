@@ -215,4 +215,13 @@ public interface Frame extends Comparable {
      *
      */
     Frame rename(String name);
+    
+    /**
+     * This call ensures that the name slot for the frame has the frame name as its value.
+     * This can be important when constructing a frame from scratch and then trying to ensure that the frame
+     * actually appears in the knowledge base.  The frame will not appear in the knowledge base until the knowledge
+     * base has an assertion about the frame.  Sometimes frames are created without any type information and then later the
+     * needed assertions are added.
+     */
+    void assertFrameName();
 }
