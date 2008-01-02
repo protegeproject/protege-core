@@ -17,6 +17,10 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
+/*
+ * svn revision 8468 had code that did not rely on the frame name being set correctly in the 
+ * delegate.  But this code is pretty trivial to add...
+ */
 public class ImmutableNamesNarrowFrameStore implements NarrowFrameStore {
 
 	private String name;
@@ -75,9 +79,6 @@ public class ImmutableNamesNarrowFrameStore implements NarrowFrameStore {
 	}
 
 	public Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-		if (isNameSft(slot, facet, isTemplate)) {
-			return Collections.singleton(frame.getName());
-		}
 		return delegate.getClosure(frame, slot, facet, isTemplate);
 	}
 
@@ -105,50 +106,20 @@ public class ImmutableNamesNarrowFrameStore implements NarrowFrameStore {
 		return delegate.getFrames();
 	}
 
-	public Set<Frame> getFrames(Slot slot, Facet facet, boolean isTemplate,
-								Object value) {
-		if (!isNameSft(slot, facet, isTemplate)) {
-			return delegate.getFrames(slot, facet, isTemplate, value);
-		}
-		if (value == null || !(value instanceof String)) {
-			return Collections.emptySet();
-		}
-		Frame frame = getFrame(new FrameID((String) value));
-		if (frame == null) {
-			return Collections.emptySet();
-		}
-		else {
-			return Collections.singleton(frame);
-		}
+	public Set<Frame> getFrames(Slot slot, Facet facet, boolean isTemplate, Object value) {
+		return delegate.getFrames(slot, facet, isTemplate, value);
 	}
 
 	public Set<Frame> getFramesWithAnyValue(Slot slot, Facet facet, boolean isTemplate) {
-		if (isNameSft(slot, facet, isTemplate)) {
-			return getFrames();
-		}
 		return delegate.getFramesWithAnyValue(slot, facet, isTemplate);
 	}
 
 	public Set<Frame> getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
-		if (!isNameSft(slot, facet, isTemplate)) {
-			return delegate.getMatchingFrames(slot, facet, isTemplate, value, maxMatches);
-		}
-		Frame frame = getFrame(new FrameID((String) value));
-		if (frame == null) {
-			return Collections.emptySet();
-		}
-		else {
-			return Collections.singleton(frame);
-		}
+		return delegate.getMatchingFrames(slot, facet, isTemplate, value, maxMatches);
 	}
 
 	public Set<Reference> getMatchingReferences(String value, int maxMatches) {
-		Set<Reference> references = delegate.getMatchingReferences(value, maxMatches);
-		Frame frame = getFrame(new FrameID(value));
-		if (frame != null) {
-			references.add(new ReferenceImpl(frame, nameSlot, null, false));
-		}
-		return references;
+		return delegate.getMatchingReferences(value, maxMatches);
 	}
 
 	public String getName() {
@@ -156,14 +127,7 @@ public class ImmutableNamesNarrowFrameStore implements NarrowFrameStore {
 	}
 
 	public Set<Reference> getReferences(Object value) {
-		Set<Reference> references = delegate.getReferences(value);
-		if (value instanceof String) {
-			Frame frame = getFrame(new FrameID((String) value));
-			if (frame != null) {
-				references.add(new ReferenceImpl(frame, nameSlot, null, false));
-			}
-		}
-		return references;
+		return delegate.getReferences(value);
 	}
 
 	public int getSimpleInstanceCount() {
@@ -179,19 +143,11 @@ public class ImmutableNamesNarrowFrameStore implements NarrowFrameStore {
 	}
 
 	public List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-		if (isNameSft(slot, facet, isTemplate)) {
-			return Collections.singletonList(frame.getFrameID().getName());
-		}
 		return delegate.getValues(frame, slot, facet, isTemplate);
 	}
 
 	public int getValuesCount(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-		if (isNameSft(slot, facet, isTemplate)) {
-			return 1;
-		}
-		else {
-			return delegate.getValuesCount(frame, slot, facet, isTemplate);
-		}
+		return delegate.getValuesCount(frame, slot, facet, isTemplate);
 	}
 
 	public void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to) {
@@ -225,7 +181,11 @@ public class ImmutableNamesNarrowFrameStore implements NarrowFrameStore {
 	}
 
 	public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
-		checkNotNameSft(slot, facet, isTemplate);
+		if (isNameSft(slot, facet, isTemplate)) {
+			if (values == null || values.size() != 1 || !frame.getName().equals(values.iterator().next())) {
+				throw new IllegalArgumentException("Attempt to change the name of a frame");
+			}
+		}
 		delegate.setValues(frame, slot, facet, isTemplate, values);
 	}
 
