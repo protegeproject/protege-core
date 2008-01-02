@@ -1,8 +1,8 @@
 package edu.stanford.smi.protege.model;
 
-import java.util.*;
+import java.util.Collection;
 
-import edu.stanford.smi.protege.event.*;
+import edu.stanford.smi.protege.event.SlotListener;
 
 /**
  * A top level slot object.  Note that this object does not have "facet overrides" by itself.  If you want to get facet
