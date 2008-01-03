@@ -1251,10 +1251,19 @@ public class Project {
                 recordHidden(frame, true);
                 if (isIncluded(projectInstance)) {
                     _includedHiddenFrames.add(frame);
+                    
+                  //TT - do only if server - should not be saved because they are part of _includedHiddenFrames
+                    if (isMultiUserServer()) {
+                    	copyIncludedHiddenFrameFlag(projectInstance, name);
+                    }
                 }
             }
         }
     }
+
+    private void copyIncludedHiddenFrameFlag(Instance projectInstance, String includedFrameName) {
+		addProjectSlotValue(SLOT_HIDDEN_FRAMES, includedFrameName);
+	}
 
     private boolean isIncluded(Instance projectInstance) {
         return _projectInstance != projectInstance;
