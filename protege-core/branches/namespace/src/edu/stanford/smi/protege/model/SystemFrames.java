@@ -41,7 +41,7 @@ public class SystemFrames {
     }
 
     public synchronized Frame getFrame(FrameID id) {
-        Frame frame = (Frame) _frameIdToFrameMap.get(id);
+        Frame frame = _frameIdToFrameMap.get(id);
         if (frame == null) {
             Log.getLogger().severe("Missing system frame: " + id);
         }
@@ -85,10 +85,17 @@ public class SystemFrames {
     }
 
     protected void addFrame(FrameID id, Frame frame) {
-        Object value = _frameIdToFrameMap.put(id, frame);
+        Frame value = _frameIdToFrameMap.put(id, frame);
         if (value != null) {
             throw new IllegalStateException("duplicate add: " + id + " " + id.getName());
         }
+    }
+    
+    protected void replaceFrame(FrameID id, Frame frame) {
+    	Frame value = _frameIdToFrameMap.put(id, frame);
+    	if (value == null) {
+    		throw new IllegalStateException("illegal replace: " + id);
+    	}
     }
 
     private void createClses() {
@@ -457,11 +464,11 @@ public class SystemFrames {
     }
 
     private void addFrames(FrameStore fs) {
-        Iterator i = _frameIdToFrameMap.entrySet().iterator();
+        Iterator<Map.Entry<FrameID, Frame>> i = _frameIdToFrameMap.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry entry = (Map.Entry) i.next();
-            FrameID id = (FrameID) entry.getKey();
-            Frame frame = (Frame) entry.getValue();
+            Map.Entry<FrameID, Frame> entry = i.next();
+            FrameID id = entry.getKey();
+            Frame frame = entry.getValue();
             if (frame instanceof Cls) {
                 addSystemCls(fs, id);
             } else if (frame instanceof Slot) {
