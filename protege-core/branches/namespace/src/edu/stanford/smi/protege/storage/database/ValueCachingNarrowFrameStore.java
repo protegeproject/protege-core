@@ -152,38 +152,12 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                 }
             }
         }
-        return values;
+        if (values != null) {
+            return new ArrayList(values);
+        } else {
+            return null;
+        }
     }
-
-    private List lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("finding values for frame = " + frame.getFrameID() +
-                     "and slot = " + slot.getFrameID() +
-                     " facet = " + (facet != null ? facet.getFrameID() : null) +
-                     " isTemplate = " + isTemplate);
-        }
-        List values = null;
-        Map<Sft, List> sftToValuesMap = lookup(frame);
-        if (sftToValuesMap != null) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Trying cache");
-            }
-            values = lookup(sftToValuesMap, slot, facet, isTemplate);
-        }
-        if (log.isLoggable(Level.FINE)) {
-            if (values == null) log.finest("null found");
-            else {
-                for (Object o : values) {
-                    if (o instanceof Frame) {
-                        log.finest("\tFrame Value = " + ((Frame) o).getFrameID());
-                    }
-                    else log.finest("Value = " + o);
-                }
-            }
-        }
-        return values;
-    }
-
 
     private static boolean isSpecial(Slot slot, Facet facet, boolean isTemplate) {
         return facet == null
@@ -278,7 +252,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                     insert(sftToValuesMap, slot, facet, isTemplate, new ArrayList(values));
                 }
             } else {
-                list = new ArrayList(list);
                 list.addAll(values);
                 insert(sftToValuesMap, slot, facet, isTemplate, list);
             }
@@ -290,7 +263,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         if (map != null) {
             List list = lookup(map, slot, facet, isTemplate);
             if (list != null) {
-                list = new ArrayList(list);
                 list.remove(value);
                 insert(map, slot, facet, isTemplate, list);
             }
@@ -302,7 +274,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         if (map != null) {
             List list = lookup(map, slot, facet, isTemplate);
             if (list != null) {
-                list = new ArrayList(list);
                 Object value = list.remove(from);
                 list.add(to, value);
                 insert(map, slot, facet, isTemplate, list);
@@ -317,7 +288,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             if (sftToValuesMap != null) {
                 for ( Map.Entry<Sft,List> entry : sftToValuesMap.entrySet()) {
                     Sft sft = entry.getKey();
-                    List values = (List) entry.getValue();
+                    List values = entry.getValue();
                     if (contains(sft, frame)) {
                         getFrameToSftToValuesMap().remove(frameKey);
                     } else if (values.contains(frame)) {
