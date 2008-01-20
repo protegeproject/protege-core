@@ -571,6 +571,9 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     	}
 	}
 
-
+	@Override
+    public String toString() {
+	    return "ValueCachingFrameStore(" + getName() + ")";
+	}
 }
 

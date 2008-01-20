@@ -95,7 +95,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     protected RobustConnection getCurrentConnection() throws SQLException {
         RemoteSession currentSession = getCurrentSession();
-        RobustConnection connection = (RobustConnection) _connections.get(currentSession);
+        RobustConnection connection = _connections.get(currentSession);
         if (connection == null) {
             connection = createConnection();
             _connections.put(currentSession, connection);
@@ -419,7 +419,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }       
         ResultSet ret = stmt.executeQuery();
         if (log.isLoggable(Level.FINER)) {
-          log.finer("Query took " + ((float) (System.nanoTime() - startTime))/1000000.0 
+          log.finer("Query took " + ((System.nanoTime() - startTime))/1000000.0 
                       + " milliseconds (more or less)");
         }       
         return ret;
@@ -439,7 +439,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         ResultSet ret = statement.executeQuery(text);
         if (log.isLoggable(Level.FINER)) {
-          log.finer("Query took " + ((float) (System.nanoTime() - startTime))/1000000.0
+          log.finer("Query took " + ((System.nanoTime() - startTime))/1000000.0
                       + " milliseconds (more or less)");
         }
         return ret;
@@ -1471,6 +1471,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         transactionMonitor = new TransactionMonitor() {
 
             
+            @Override
             public TransactionIsolationLevel getTransationIsolationLevel() 
               throws TransactionException {
               int jdbcLevel = Connection.TRANSACTION_NONE;
@@ -1548,10 +1549,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         DatabaseUtils.setFrame(stmt, 2, frame);
         // DatabaseUtils.setValueType(stmt, 3, currentTypeId);
         executeUpdate(stmt);
-    }
-
-    public String toString() {
-        return "DatabaseFrameDb";
     }
 
     public int getClsCount() {
@@ -1776,5 +1773,10 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     	catch (SQLException sqle) {
     		createRuntimeException(sqle);
     	}
+    }
+    
+    @Override
+    public String toString() {
+        return "DatabaseFrameDb(" + getName() + ")";
     }
 }
