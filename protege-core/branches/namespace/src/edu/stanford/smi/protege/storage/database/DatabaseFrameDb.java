@@ -95,7 +95,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     protected RobustConnection getCurrentConnection() throws SQLException {
         RemoteSession currentSession = getCurrentSession();
-        RobustConnection connection = _connections.get(currentSession);
+        RobustConnection connection =  _connections.get(currentSession);
         if (connection == null) {
             connection = createConnection();
             _connections.put(currentSession, connection);
@@ -111,7 +111,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
                 Map.Entry entry = (Map.Entry) i.next();
                 Object session = entry.getKey();
                 RobustConnection connection = (RobustConnection) entry.getValue();
-                connection.close();
+                connection.dispose();
                 Log.getLogger().info("Closed connection for session: " + session);
             }
             _connections.clear();
@@ -163,7 +163,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             if (isDead(session)) {
                 RobustConnection connection = (RobustConnection) entry.getValue();
                 // Log.getLogger().info("Clearing dead connection: " + session);
-                connection.close();
+                connection.dispose();
                 i.remove();
             }
         }
@@ -1709,9 +1709,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     public NarrowFrameStore getDelegate() {
         return null;
-    }
-    
-    public void reinitialize() {
     }
     
     private String _updateFrameFieldText;
