@@ -1771,6 +1771,10 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     		createRuntimeException(sqle);
     	}
     }
+
+    public void reinitialize()  {
+    }
+
     
     @Override
     public String toString() {
