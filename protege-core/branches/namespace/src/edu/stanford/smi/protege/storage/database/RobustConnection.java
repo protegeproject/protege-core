@@ -572,6 +572,7 @@ public class RobustConnection {
     	
     	public void startThread() {
     		thread = new Thread(this, "Database Connection Reaper");
+    		thread.setDaemon(true);
     		thread.start();
     	}
     	
