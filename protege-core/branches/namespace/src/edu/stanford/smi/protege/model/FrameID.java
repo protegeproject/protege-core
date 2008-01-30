@@ -6,7 +6,7 @@ import java.io.Serializable;
 /**
  
  */
-public class FrameID implements Serializable {
+public class FrameID implements Serializable, Localizable {
   private String name;
   
   public FrameID(String name) {
@@ -31,5 +31,8 @@ public class FrameID implements Serializable {
   
   public String toString() {
     return "FrameID(" + name + ")";
+  }
+
+  public void localize(KnowledgeBase kb) {
   }
 }
