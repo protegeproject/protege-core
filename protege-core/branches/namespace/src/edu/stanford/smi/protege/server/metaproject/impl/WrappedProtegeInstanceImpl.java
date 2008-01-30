@@ -53,7 +53,12 @@ public class WrappedProtegeInstanceImpl {
 
 	protected Object getSlotValue(SlotEnum slot, ClsEnum rangeCls) {
 		Object o = i.getOwnSlotValue(mp.getSlot(slot));
-		return mp.wrapInstance(rangeCls, (Instance) o);
+		
+		if (o != null) {
+			return mp.wrapInstance(rangeCls, (Instance) o);
+		}
+		
+		return null;
 	}
 
 
