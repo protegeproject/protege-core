@@ -1,18 +1,28 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
-import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
 
 public class MergingNarrowFrameStore_Test extends FrameStore_Test {
 
+    @Override
     protected FrameStore createFrameStore(DefaultKnowledgeBase kb) {
         return new InMemoryFrameStore(kb);
     }
 
     private MergingNarrowFrameStore getMergingFrameStore() {
         InMemoryFrameStore fs = (InMemoryFrameStore) getModifiableFrameStore(null);
-        return (MergingNarrowFrameStore) fs.getHelper().getDelegate();
+        NarrowFrameStore nfs = fs.getHelper().getDelegate();
+        while (!(nfs instanceof MergingNarrowFrameStore)) {
+            nfs = nfs.getDelegate();
+        }
+        return (MergingNarrowFrameStore) nfs;
     }
     
 
