@@ -39,10 +39,11 @@ import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.framestore.background.WorkInfo;
-import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
-import edu.stanford.smi.protege.server.metaproject.impl.UserImpl;
+import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.User;
+import edu.stanford.smi.protege.server.metaproject.impl.UnbackedOperationImpl;
 import edu.stanford.smi.protege.server.update.FrameRead;
 import edu.stanford.smi.protege.server.update.FrameWrite;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
@@ -177,7 +178,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private void startHeartbeatThread(String name) {
       if (!ServerProperties.heartbeatDisabled()) {
         new Thread("Heartbeat checker [" + name + "]") {
-          public void run() {
+          @Override
+        public void run() {
             try {
               while (true) {
                 Thread.sleep(RemoteServerFrameStore.HEARTBEAT_POLL_INTERVAL);
@@ -842,6 +844,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
+    @Override
     public String toString() {
         return "ServerFrameStore[" + _kb + "]";
     }
@@ -1209,7 +1212,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       LocalizeUtils.localize(missing, _kb);
       for (Frame value : missing) {
-        frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+        frameCalculator.addRequest(value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
       }
       return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
@@ -1230,7 +1233,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       LocalizeUtils.localize(missing,  _kb);
       for (Frame value : missing) {
-        frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+        frameCalculator.addRequest(value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
       }
       return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
@@ -1472,12 +1475,20 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     
     public Set<Operation> getAllowedOperations(RemoteSession session) {
       Policy policy = Server.getPolicy();
-      return policy.getAllowedOperations(new UserImpl(session.getUserName()), 
-                                         projectInstance);
+      User user = policy.getUserByName(session.getUserName());
+      return unbackOperations(policy.getAllowedOperations(user, projectInstance));
     }
     
     public Set<Operation> getKnownOperations(RemoteSession session) {
-      return Server.getPolicy().getKnownOperations();
+      return unbackOperations(Server.getPolicy().getKnownOperations());
+    }
+    
+    private static Set<Operation> unbackOperations(Set<Operation> operations) {
+        Set<Operation> unbacked = new HashSet<Operation>();
+        for (Operation op : operations) {
+            unbacked.add(new UnbackedOperationImpl(op));
+        }
+        return unbacked;
     }
 
 }
