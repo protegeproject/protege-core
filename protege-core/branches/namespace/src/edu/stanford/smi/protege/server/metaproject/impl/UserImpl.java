@@ -15,19 +15,12 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 
 	private String name;
 	private String password;
-	private Set<Group> groups;
-
 
 	@SuppressWarnings("unchecked")
 	protected UserImpl(MetaProjectImpl mp, Instance ui) {
 		super(mp, ui, ClsEnum.User);
 		name = (String) ui.getOwnSlotValue(mp.getSlot(SlotEnum.name));
 		password = (String) ui.getOwnSlotValue(mp.getSlot(SlotEnum.password));
-		groups = (Set<Group>) getSlotValues(SlotEnum.group, ClsEnum.Group);
-	}
-
-	public UserImpl(String name) {
-		this.name = name;
 	}
 
 	public String getName() {
@@ -38,11 +31,13 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 		return password;
 	}
 
-	public Set<Group> getGroups() {
-		return groups;
+	@SuppressWarnings("unchecked")
+    public Set<Group> getGroups() {
+		return getSlotValues(SlotEnum.group, ClsEnum.Group);
 	}
 
-	public boolean equals(Object o) { 
+	@Override
+    public boolean equals(Object o) { 
 		if (!(o instanceof User)) {
 			return false;
 		}
@@ -50,11 +45,13 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 		return name.equals(other.getName());
 	}
 
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		return name.hashCode();
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return name;
 	}
 
