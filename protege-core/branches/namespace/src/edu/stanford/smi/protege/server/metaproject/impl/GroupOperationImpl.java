@@ -4,15 +4,16 @@ import java.util.Collection;
 import java.util.Set;
 
 import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.server.metaproject.GroupOperation;
 import edu.stanford.smi.protege.server.metaproject.Group;
+import edu.stanford.smi.protege.server.metaproject.GroupOperation;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 
 public class GroupOperationImpl extends WrappedProtegeInstanceImpl implements GroupOperation {
+    private static final long serialVersionUID = -3306223096316205528L;
 
-	public GroupOperationImpl(MetaProjectImpl mp, Instance goi) {
+    public GroupOperationImpl(MetaProjectImpl mp, Instance goi) {
 		super(mp, goi, ClsEnum.GroupOperation);
 	}
 
@@ -22,10 +23,11 @@ public class GroupOperationImpl extends WrappedProtegeInstanceImpl implements Gr
 
 	@SuppressWarnings("unchecked")
 	public Set<Operation> getAllowedOperations() {
-		return (Set<Operation>) getSlotValues(SlotEnum.allowedOperation, ClsEnum.Operation);                                                        
+		return getSlotValues(SlotEnum.allowedOperation, ClsEnum.Operation);                                                        
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return "[Operations For " + getAllowedGroup() + "]";
 	}
 
