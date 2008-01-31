@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.server.metaproject.impl;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.metaproject.Group;
@@ -23,10 +25,11 @@ import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.util.Log;
 
-public class MetaProjectImpl implements MetaProject {
-	
-	private KnowledgeBase kb;
-	private Policy policy;
+public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
+    private static final long serialVersionUID = -7866511885264147967L;
+    
+    private transient KnowledgeBase kb;
+	private transient Policy policy;
 
 	public MetaProjectImpl(URI metaprojectURI) {
 		Collection errors = new ArrayList();
@@ -85,7 +88,7 @@ public class MetaProjectImpl implements MetaProject {
 
 	@SuppressWarnings("unchecked")
 	public Set<ProjectInstance> getProjects() {
-		return (Set<ProjectInstance>) getWrappedInstances(ClsEnum.Project);
+		return getWrappedInstances(ClsEnum.Project);
 	}
 
 	public ProjectInstance getProject(String name) {
@@ -102,7 +105,7 @@ public class MetaProjectImpl implements MetaProject {
 
 	@SuppressWarnings("unchecked")
 	public Set<User> getUsers() {
-		return (Set<User>) getWrappedInstances(ClsEnum.User);
+		return getWrappedInstances(ClsEnum.User);
 	}
 
 	public User getUser(String name) {
@@ -131,7 +134,7 @@ public class MetaProjectImpl implements MetaProject {
 	
 	@SuppressWarnings("unchecked")
 	public Set<Operation> getOperations() {
-		return (Set<Operation>) getWrappedInstances(ClsEnum.Operation);
+		return getWrappedInstances(ClsEnum.Operation);
 	}
 
 	
@@ -150,7 +153,7 @@ public class MetaProjectImpl implements MetaProject {
 
 	@SuppressWarnings("unchecked")
 	public Set<Group> getGroups() {
-		return (Set<Group>) getWrappedInstances(ClsEnum.Group);
+		return getWrappedInstances(ClsEnum.Group);
 	}
 	
 	
@@ -234,5 +237,11 @@ public class MetaProjectImpl implements MetaProject {
 		
 		return groupOp;
 	}
+
+
+    public void localize(KnowledgeBase kb) {
+        this.kb = kb;
+        policy = null;
+    }
 
 }
