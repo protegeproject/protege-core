@@ -433,23 +433,39 @@ public class SystemFrames {
         }
     }
 
-    private Cls addSystemCls(FrameStore fs, FrameID id) {
+    private void addSystemCls(FrameStore fs, Cls cls) {
         Collection types = CollectionUtilities.createCollection(getStandardClsMetaCls());
-        return fs.createCls(id, types, Collections.EMPTY_SET, false);
+        assertTypeAndName(fs, cls, types);
     }
 
-    private void addSystemSlot(FrameStore fs, FrameID id) {
+    private void addSystemSlot(FrameStore fs, Slot slot) {
         Collection types = CollectionUtilities.createCollection(getStandardSlotMetaCls());
-        fs.createSlot(id, types, Collections.EMPTY_SET, false);
+        assertTypeAndName(fs, slot, types);
     }
 
-    private void addSystemFacet(FrameStore fs, FrameID id, FacetConstraint constraint) {
+    private void addSystemFacet(FrameStore fs, Facet facet, FacetConstraint constraint) {
         Collection types = CollectionUtilities.createCollection(getStandardFacetMetaCls());
-        Facet facet = fs.createFacet(id, types, false);
+        assertTypeAndName(fs, facet, types);
         if (constraint != null) {
             facet.setConstraint(constraint);
         }
     }
+    
+    /*
+     * Note that I don't use the more convenient FrameStore methods to set the type because
+     * the knowledge base is not yet ready to start swizzling instances.
+     */
+    public void assertTypeAndName(FrameStore fs, Frame frame, Collection<Cls> types) {
+        String name = frame.getFrameID().getName();
+        fs.setDirectOwnSlotValues(frame, getNameSlot(), Collections.singleton(name));
+        fs.setDirectOwnSlotValues(frame, getDirectTypesSlot(), types);
+        for (Cls type : types) {
+            Collection framesOfType = new ArrayList(fs.getDirectOwnSlotValues(type, getDirectInstancesSlot()));
+            framesOfType.add(frame);
+            fs.setDirectOwnSlotValues(type, getDirectInstancesSlot(), framesOfType);
+        }
+    }
+
 
     private void addInverseSlot(FrameStore fs, Slot slota, Slot slotb) {
         setOwnSlotValue(fs, slota, getInverseSlotSlot(), slotb);
@@ -470,11 +486,11 @@ public class SystemFrames {
             FrameID id = entry.getKey();
             Frame frame = entry.getValue();
             if (frame instanceof Cls) {
-                addSystemCls(fs, id);
+                addSystemCls(fs, (Cls) frame);
             } else if (frame instanceof Slot) {
-                addSystemSlot(fs, id);
+                addSystemSlot(fs, (Slot) frame);
             } else if (frame instanceof Facet) {
-                addSystemFacet(fs, id, ((Facet) frame).getConstraint());
+                addSystemFacet(fs, (Facet) frame, ((Facet) frame).getConstraint());
             }
         }
     }
