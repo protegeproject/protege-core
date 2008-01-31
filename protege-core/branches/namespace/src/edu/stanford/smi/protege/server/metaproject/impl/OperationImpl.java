@@ -19,15 +19,12 @@ public class OperationImpl extends WrappedProtegeInstanceImpl implements Operati
 		name = (String) op.getOwnSlotValue(mp.getSlot(SlotEnum.name));
 	}
 
-	public OperationImpl(String name) {
-		this.name = name;
-	}
-
 	public String getName() {
 		return name;
 	}
 
-	public boolean equals(Object o) {
+	@Override
+    public boolean equals(Object o) {
 		if (!(o instanceof Operation))  {
 			return false;
 		}
@@ -35,11 +32,13 @@ public class OperationImpl extends WrappedProtegeInstanceImpl implements Operati
 		return name.equals(other.getName());
 	}
 
-	public int hashCode() {
+	@Override
+    public int hashCode() {
 		return name.hashCode();
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return name;
 	}
 
@@ -50,7 +49,7 @@ public class OperationImpl extends WrappedProtegeInstanceImpl implements Operati
 	
 	public String getDescription() {
 		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(SlotEnum.description));
-		if (!(value instanceof String)) {
+		if (value != null && !(value instanceof String)) {
 			throw new OntologyException("The " + SlotEnum.name + " slot should take on string values");
 		}
 		return (String) value;		
@@ -66,37 +65,37 @@ public class OperationImpl extends WrappedProtegeInstanceImpl implements Operati
 	 * @deprecated - Use constants from {@link MetaProjectConstants}
 	 */
 	@Deprecated
-	public final static OperationImpl READ = MetaProjectConstants.OPERATION_READ;
+	public final static Operation READ = MetaProjectConstants.OPERATION_READ;
 	
 	/**
 	 * @deprecated - Use constants from {@link MetaProjectConstants}
 	 */
 	@Deprecated 
-	public final static OperationImpl WRITE = MetaProjectConstants.OPERATION_WRITE;
+	public final static Operation WRITE = MetaProjectConstants.OPERATION_WRITE;
 
 	/**
 	 * @deprecated - Use constants from {@link MetaProjectConstants}
 	 */
 	@Deprecated
-	public final static OperationImpl PROPERTY_TAB_READ = MetaProjectConstants.OPERATION_PROPERTY_TAB_READ;
+	public final static Operation PROPERTY_TAB_READ = MetaProjectConstants.OPERATION_PROPERTY_TAB_READ;
 	
 	/**
 	 * @deprecated - Use constants from {@link MetaProjectConstants}
 	 */
 	@Deprecated
-	public final static OperationImpl PROPERTY_TAB_WRITE = MetaProjectConstants.OPERATION_ONTOLOGY_TAB_WRITE;
+	public final static Operation PROPERTY_TAB_WRITE = MetaProjectConstants.OPERATION_ONTOLOGY_TAB_WRITE;
 	
 	/**
 	 * @deprecated - Use constants from {@link MetaProjectConstants}
 	 */
 	@Deprecated
-	public final static OperationImpl ONTOLOGY_TAB_READ = MetaProjectConstants.OPERATION_ONTOLOGY_TAB_READ;
+	public final static Operation ONTOLOGY_TAB_READ = MetaProjectConstants.OPERATION_ONTOLOGY_TAB_READ;
 	
 	/**
 	 * @deprecated - Use constants from {@link MetaProjectConstants}
 	 */
 	@Deprecated
-	public final static OperationImpl ONTOLOGY_TAB_WRITE = MetaProjectConstants.OPERATION_ONTOLOGY_TAB_WRITE;
+	public final static Operation ONTOLOGY_TAB_WRITE = MetaProjectConstants.OPERATION_ONTOLOGY_TAB_WRITE;
 
 	
 }
