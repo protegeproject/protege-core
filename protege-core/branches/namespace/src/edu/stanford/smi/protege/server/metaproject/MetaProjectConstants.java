@@ -1,17 +1,17 @@
 package edu.stanford.smi.protege.server.metaproject;
 
-import edu.stanford.smi.protege.server.metaproject.impl.OperationImpl;
+import edu.stanford.smi.protege.server.metaproject.impl.UnbackedOperationImpl;
 
 public class MetaProjectConstants {
 		
-	public final static OperationImpl OPERATION_READ = new OperationImpl("Read");
-	public final static OperationImpl OPERATION_WRITE = new OperationImpl("Write");
+	public final static Operation OPERATION_READ = new UnbackedOperationImpl("Read", null);
+	public final static Operation OPERATION_WRITE = new UnbackedOperationImpl("Write", null);
 
-	public final static OperationImpl OPERATION_PROPERTY_TAB_READ = new OperationImpl("PropertyTabRead");
-	public final static OperationImpl OPERATION_PROPERTY_TAB_WRITE = new OperationImpl("PropertyTabWrite");
+	public final static Operation OPERATION_PROPERTY_TAB_READ = new UnbackedOperationImpl("PropertyTabRead", null);
+	public final static Operation OPERATION_PROPERTY_TAB_WRITE = new UnbackedOperationImpl("PropertyTabWrite", null);
 
-	public final static OperationImpl OPERATION_ONTOLOGY_TAB_READ = new OperationImpl("OntologyTabRead");
-	public final static OperationImpl OPERATION_ONTOLOGY_TAB_WRITE = new OperationImpl("OntologyTabWrite");
+	public final static Operation OPERATION_ONTOLOGY_TAB_READ = new UnbackedOperationImpl("OntologyTabRead", null);
+	public final static Operation OPERATION_ONTOLOGY_TAB_WRITE = new UnbackedOperationImpl("OntologyTabWrite", null);
 
 	public static final String USER_WORLD = "World";
 	
