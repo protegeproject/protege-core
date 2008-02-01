@@ -56,8 +56,6 @@ import edu.stanford.smi.protege.server.update.RemoveCacheUpdate;
 import edu.stanford.smi.protege.server.update.RemoveFrameCache;
 import edu.stanford.smi.protege.server.update.SftUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
-import edu.stanford.smi.protege.ui.ProjectManager;
-import edu.stanford.smi.protege.ui.ProjectView;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
@@ -77,12 +75,9 @@ public class RemoteClientFrameStore implements FrameStore {
     private static transient Logger log = Log.getLogger(RemoteClientFrameStore.class);
     private static transient Logger cacheLog = ServerFrameStore.cacheLog;
     
-    private static Method getEventsMethod;
     private static Method executeProtegeJobMethod;
     static {
       try {
-        getEventsMethod = RemoteServerFrameStore.class.getDeclaredMethod("getEvents", 
-                                                                         new Class[] { RemoteSession.class });
         executeProtegeJobMethod = RemoteServerFrameStore.class.getDeclaredMethod("executeProtegeJob",
                                                                                  new Class[] {ProtegeJob.class, RemoteSession.class});
       } catch (NoSuchMethodException nsme) {
