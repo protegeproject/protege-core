@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
@@ -165,7 +166,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
     }
 
-    public Set getReferences(Object value) {
+    public Set<Reference> getReferences(Object value) {
         return getDelegate().getReferences(value);
     }
 
