@@ -188,7 +188,7 @@ public class Project {
     private KnowledgeBaseListener _knowledgeBaseListener = new KnowledgeBaseAdapter() {
         public void clsDeleted(KnowledgeBaseEvent event) {
             if (log.isLoggable(Level.FINE)) {
-              log.fine("clsDeleted for project " + this + " event = " + event);
+              log.fine("cls eleted for project " + this + " event = " + event);
             }
             Cls cls = event.getCls();
             _activeClsWidgetDescriptors.remove(cls);
@@ -197,27 +197,35 @@ public class Project {
                 ComponentUtilities.dispose((Component) widget);
             }
             _directBrowserSlotPatterns.remove(cls);
-            removeDisplay(cls);
+            if (!event.isReplacementEvent()) {
+            	removeDisplay(cls);
+            }
             _hiddenFrames.remove(cls);
         }
-
+    
         public void frameReplaced(KnowledgeBaseEvent event) {
+        	//TODO - maybe it should remove the old cached widget... check this..
             Frame frame = event.getFrame();
             WidgetDescriptor d = _activeClsWidgetDescriptors.get(frame);
             if (d != null) {
                 d.setName(frame.getName());
             }
+            
         }
 
         public void facetDeleted(KnowledgeBaseEvent event) {
             Frame facet = event.getFrame();
-            removeDisplay(facet);
+            if (!event.isReplacementEvent()) {
+            	removeDisplay(facet);
+            }
             _hiddenFrames.remove(facet);
         }
 
         public void slotDeleted(KnowledgeBaseEvent event) {
             Slot slot = (Slot) event.getFrame();
-            removeDisplay(slot);
+            if (!event.isReplacementEvent()) {
+            	removeDisplay(slot);
+            }
             Iterator<Map.Entry<Cls, BrowserSlotPattern>> i = _directBrowserSlotPatterns.entrySet().iterator();
             while (i.hasNext()) {
                 Map.Entry<Cls, BrowserSlotPattern> entry = i.next();
@@ -233,7 +241,9 @@ public class Project {
             super.instanceDeleted(event);
             // Log.enter(this, "instanceDeleted");
             Frame frame = event.getFrame();
-            removeDisplay(frame);
+            if (!event.isReplacementEvent()) {
+            	removeDisplay(frame);
+            }
             _hiddenFrames.remove(frame);
         }
     };
