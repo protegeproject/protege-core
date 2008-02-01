@@ -62,7 +62,7 @@ public class FrameStoreManager {
         return headFrameStore;
     }
     
-    public FrameStore getFrameStoreFromClass(Class clazz) {
+    public<X extends FrameStore> X getFrameStoreFromClass(Class<? extends X> clazz) {
       for (FrameStore fs = headFrameStore;  fs != null ; fs = fs.getDelegate()) {
         Class fsClass = fs.getClass();
         if (Proxy.isProxyClass(fsClass)) {
@@ -70,7 +70,7 @@ public class FrameStoreManager {
           fsClass = invocationHandler.getClass();
         }
         if (clazz.isAssignableFrom(fsClass)) {
-          return fs;
+          return (X) fs;
         }
       }
       return null;
