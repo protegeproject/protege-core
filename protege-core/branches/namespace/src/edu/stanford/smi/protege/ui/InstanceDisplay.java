@@ -86,13 +86,13 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     	public void frameReplaced(KnowledgeBaseEvent event) {
     		Frame oldFrame = event.getFrame();
     		Frame newFrame = event.getNewFrame();
+    		
     		if (_currentInstance != null && _currentInstance.equals(oldFrame)) {
-    			_currentInstance = (Instance) newFrame;
+    			 setInstance((Instance)newFrame);
     		}
-    		if (_currentAssociatedCls != null && _currentAssociatedCls.equals(oldFrame)) {
-    			_currentAssociatedCls = (Cls) newFrame;
+    		if (_currentAssociatedCls != null && _currentAssociatedCls.equals(oldFrame)) {    		
+    			 setInstance(_currentInstance);    			
     		}
-    		reloadForm();
     	}
     };
 
