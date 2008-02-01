@@ -13,10 +13,22 @@ import edu.stanford.smi.protege.util.*;
  */
 public class SlotSubslotNode extends LazyTreeNode {
     private FrameListener _frameListener = new FrameAdapter() {
+    	@Override
+    	public void frameReplaced(FrameEvent event) {
+    		Frame oldFrame = event.getFrame();
+    		Frame newFrame = event.getNewFrame();
+    		Slot slot = getSlot();
+    		if (slot != null && slot.equals(oldFrame)) {
+    			reload(newFrame);
+    		}
+    	}
+    	
         public void browserTextChanged(FrameEvent event) {
+        	if (event.isReplacementEvent()) return;
             notifyNodeChanged();
         }
         public void ownSlotValueChanged(FrameEvent event) {
+        	if (event.isReplacementEvent()) return;
             String slotName = event.getSlot().getName();
             if (slotName.equals(Model.Slot.DIRECT_SUBSLOTS)) {
                 reload();
