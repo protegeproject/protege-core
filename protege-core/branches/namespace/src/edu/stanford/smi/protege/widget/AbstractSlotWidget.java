@@ -82,19 +82,21 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     	public void frameReplaced(edu.stanford.smi.protege.event.KnowledgeBaseEvent event) {
     		Frame oldFrame = event.getFrame();
     		Frame newFrame = event.getNewFrame();
+    		//TODO: check this!!!!
+    		
     		if (_cls != null && _cls.equals(oldFrame)) {
-    			_cls = (Cls) newFrame;
+    			setInstance(_instance);
     		}
     		if (_slot != null && _slot.equals(oldFrame)) {
-    			_slot = (Slot) newFrame;
+    			setInstance(_instance);
     		}
     		if (_instance != null && _instance.equals(oldFrame)) {
-    			_instance = (Instance) newFrame;
+    			setInstance((Instance) newFrame);
     		}
     		if (_associatedCls != null && _associatedCls.equals(oldFrame)) {
-    			_associatedCls = (Cls) newFrame;
+    			setInstance(_instance);
     		}
-    		loadValues();
+    		
     	};
     };
 
