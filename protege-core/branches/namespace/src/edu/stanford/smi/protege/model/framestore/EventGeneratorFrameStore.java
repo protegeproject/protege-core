@@ -30,6 +30,7 @@ import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class EventGeneratorFrameStore extends ModificationFrameStore {
+    
     private List<AbstractEvent> _events = new ArrayList<AbstractEvent>();
     private DefaultKnowledgeBase _kb;
     private SystemFrames _systemFrames;
@@ -163,6 +164,11 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
                                           TransactionIsolationLevel level) {
         generateDeleteFrameKbEvent(KnowledgeBaseEvent.SLOT_DELETED, slot, level);
         /** @todo other slot events */
+        for (Object  o : getDelegate().getFramesWithDirectOwnSlotValue(_systemFrames.getDirectTemplateSlotsSlot(), slot)) {
+            if (o instanceof Cls) {
+                generateClsEvent(ClsEvent.TEMPLATE_SLOT_REMOVED, (Cls) o, slot, level);
+            }
+        }
         generateDeleteInstanceEvents(slot, level);
     }
 
@@ -279,6 +285,11 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     private void generateCreateSlotEvents(Slot newSlot, Collection directTypes,
                                           TransactionIsolationLevel level) {
         generateCreateInstanceEvents(KnowledgeBaseEvent.SLOT_CREATED, newSlot, directTypes, level);
+        for (Object  o : getDelegate().getFramesWithDirectOwnSlotValue(_systemFrames.getDirectTemplateSlotsSlot(), newSlot)) {
+            if (o instanceof Cls) {
+                generateClsEvent(ClsEvent.TEMPLATE_SLOT_ADDED, (Cls) o, newSlot, level);
+            }
+        }
         Iterator i = newSlot.getDirectSuperslots().iterator();
         while (i.hasNext()) {
             Slot superslot = (Slot) i.next();
