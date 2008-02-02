@@ -254,6 +254,10 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
         execute(new RemoveDirectTemplateFacetOverridesCommand(getDelegate(), cls, slot));
     }
+    
+    public void replaceFrame(Frame original, Frame replacement) {
+        execute(new ReplaceFrameCommand(getDelegate(), original, replacement));
+    }
 
     public boolean beginTransaction(String name) {
         // Log.enter(this, "beginTransaction", name);
@@ -344,8 +348,5 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         return commands;
     }
 
-    public void replaceFrame(Frame original, Frame replacement) {
-      Log.getLogger().warning("Undoing rename operations not implemented yet");
-      getDelegate().replaceFrame(original, replacement);
-    }
+
 }
