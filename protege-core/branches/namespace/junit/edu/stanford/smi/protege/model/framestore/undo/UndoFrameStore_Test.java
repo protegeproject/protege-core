@@ -100,7 +100,6 @@ public class UndoFrameStore_Test extends FrameStore_Test {
         assertEquals("sixth count", count, newCount);
         Frame frame = _frameStore.getFrame(clsAName);
         assertNotNull("clsA", frame);
-
     }
 
     public void testUndoSimpleTransaction() {
@@ -130,7 +129,20 @@ public class UndoFrameStore_Test extends FrameStore_Test {
     public void testUndoDeleteFacet() {
     }
 
-    public void testUndoDeleteSimpleInstance() {
+    /*
+     * ToDo This test should pass but currently the undo manager is broken.
+     * 
+     */
+    public void badTestUndoDeleteSimpleInstance() {
+        String value = "hello";
+        Cls clsA = createCls();
+        Slot slotA = createSlot();
+        Instance i1 = clsA.createDirectInstance("i1");
+        i1.setDirectOwnSlotValue(slotA, value);
+        assertEquals(value, i1.getDirectOwnSlotValue(slotA));
+        _frameStore.deleteSimpleInstance((SimpleInstance) i1);
+        _frameStore.undo();
+        assertEquals(value, i1.getDirectOwnSlotValue(slotA));
     }
 
     public void testUndoSetDirectOwnSlotValues() {
