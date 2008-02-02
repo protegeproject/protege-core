@@ -151,8 +151,8 @@ public class FormWidget extends AbstractClsWidget {
                 Slot slot = (Slot) frame;
                 WidgetDescriptor d = getPropertyList().getWidgetDescriptor(event.getOldName());
                 if (d != null) {
-                    d.setName(frame.getName());
-                    updateWidget(slot);
+                    d.setName(event.getNewFrame().getName());
+                	reload();
                 }
             }
         }
