@@ -138,7 +138,6 @@ public class Project {
     
     private Map<Object, JFrame> _frames = new HashMap<Object, JFrame>(); // <Instance or FrameSlotPair, JFrame>
     private Map<JFrame, Object> _objects = new HashMap<JFrame, Object>(); // <JFrame, Instance or FrameSlotPair>
-
     
     private WidgetMapper _widgetMapper;
 
@@ -156,7 +155,6 @@ public class Project {
     private Boolean prettyPrintSlotWidgetLabels;
     private Boolean _isUndoEnabled;
 
-
     private Map<Cls, BrowserSlotPattern> _includedBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>();
     private Map<Cls, BrowserSlotPattern> _directBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>(); 
     private Set<Frame> _hiddenFrames = new HashSet<Frame>();
@@ -171,7 +169,9 @@ public class Project {
     private FrameCountsImpl _frameCounts = new FrameCountsImpl();
     private boolean isMultiUserServer;
     private Class _instanceDisplayClass;
-
+	
+	private Instance _includedClientInfoInstance;
+    
 
     private WindowListener _closeListener = new WindowAdapter() {
         public void windowClosing(WindowEvent event) {
@@ -203,14 +203,8 @@ public class Project {
             _hiddenFrames.remove(cls);
         }
     
-        public void frameReplaced(KnowledgeBaseEvent event) {
-        	//TODO - maybe it should remove the old cached widget... check this..
-            Frame frame = event.getFrame();
-            WidgetDescriptor d = _activeClsWidgetDescriptors.get(frame);
-            if (d != null) {
-                d.setName(frame.getName());
-            }
-            
+        public void frameReplaced(KnowledgeBaseEvent event) {        
+            onFrameReplace(event.getFrame(), event.getNewFrame());
         }
 
         public void facetDeleted(KnowledgeBaseEvent event) {
@@ -247,12 +241,59 @@ public class Project {
             _hiddenFrames.remove(frame);
         }
     };
-
-	private Set<Frame> _includedClientInformationKeys;
-
-	private Instance _includedClientInfoInstance;
-
 	
+    protected void onFrameReplace(Frame oldFrame, Frame newFrame) {
+    	try {    		
+	    	if (oldFrame instanceof Cls) {	    		
+	            Cls oldCls = (Cls) oldFrame;
+	            
+	            //keep class form customizations
+	            WidgetDescriptor widgetDesc = _activeClsWidgetDescriptors.get(oldCls);
+	            if (widgetDesc != null) {
+	            	widgetDesc.setName(newFrame.getName());
+	            }
+	            
+	            //clear cached old class widget
+	            ClsWidget widget = _cachedDesignTimeClsWidgets.remove(oldCls);
+	            if (widget != null) {
+	                ComponentUtilities.dispose((Component) widget);
+	            }
+	            
+	            //replace the browser slot patterns
+	            BrowserSlotPattern bsp = _directBrowserSlotPatterns.get(oldCls);
+	            if (bsp != null) {
+	            	_directBrowserSlotPatterns.put((Cls) newFrame, bsp);
+	            }
+	            _directBrowserSlotPatterns.remove(oldCls);
+	     
+	    	} else if (oldFrame instanceof Slot) {
+	    		 Slot oldSlot = (Slot) oldFrame;
+	    		 
+	    		 //replace browser slot patterns
+	             Iterator<Map.Entry<Cls, BrowserSlotPattern>> i = _directBrowserSlotPatterns.entrySet().iterator();
+	             while (i.hasNext()) {
+	                 Map.Entry<Cls, BrowserSlotPattern> entry = i.next();
+	                 BrowserSlotPattern pattern = (BrowserSlotPattern) entry.getValue();
+	                 if (pattern.contains(oldSlot)) {
+	                	pattern.replaceSlot(oldSlot, (Slot) newFrame);
+	                 }
+	             }
+	    	}
+	    	//TODO: client information
+	    	
+            //update hidden frames
+            if (_hiddenFrames.contains(oldFrame)) {
+            	_hiddenFrames.add(newFrame);
+            }
+            _hiddenFrames.remove(oldFrame);
+
+	    	
+    	} catch (Throwable t) {
+    		Log.getLogger().log(Level.WARNING, "Error at replacing project information (Old: " + 
+    				oldFrame + " , New: " + newFrame + ")", t);
+    	}
+    }
+    
     static {
         SystemUtilities.initialize();
     }
