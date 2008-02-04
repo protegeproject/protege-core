@@ -38,7 +38,7 @@ import edu.stanford.smi.protege.event.FrameListener;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public interface Frame extends Comparable {
+public interface Frame extends Comparable<Frame> {
 
     void addFrameListener(FrameListener listener);
 
@@ -128,7 +128,7 @@ public interface Frame extends Comparable {
 
     Project getProject();
 
-    Collection getReferences();
+    Collection<Reference> getReferences();
 
     Collection getReferences(int maxReferences);
 
