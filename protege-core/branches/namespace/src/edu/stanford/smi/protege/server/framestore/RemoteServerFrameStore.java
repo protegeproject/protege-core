@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
@@ -149,23 +150,23 @@ public interface RemoteServerFrameStore extends Remote {
     RemoteResponse<List<AbstractEvent>> getEvents(RemoteSession session) throws RemoteException;
 
     // arbitrary queries
-    Set getReferences(Object object, RemoteSession session) throws RemoteException;
+    Set<Reference> getReferences(Object object, RemoteSession session) throws RemoteException;
 
     Set getClsesWithMatchingBrowserText(String text, Collection superclasses, int maxMatches, RemoteSession session)
             throws RemoteException;
 
-    Set getMatchingReferences(String string, int maxMatches, RemoteSession session) throws RemoteException;
+    Set<Reference> getMatchingReferences(String string, int maxMatches, RemoteSession session) throws RemoteException;
 
-    Set getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) throws RemoteException;
+    Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) throws RemoteException;
 
-    Set getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws RemoteException;
+    Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws RemoteException;
 
     Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches, RemoteSession session)
             throws RemoteException;
 
     Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value, RemoteSession session) throws RemoteException;
 
-    Set getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) throws RemoteException;
+    Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) throws RemoteException;
 
     Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches, RemoteSession session)
             throws RemoteException;
