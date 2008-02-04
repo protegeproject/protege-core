@@ -155,21 +155,16 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
      * result = -1; } else { result = compareStrings(t1, t2); } } else { result = 0; } return result; }
      */
 
-    public int compareTo(Object o) {
+    public int compareTo(Frame f2) {
         int result;
-        if (o instanceof Frame) {
-            Frame f2 = (Frame) o;
-            String t1 = this.getBrowserText();
-            String t2 = f2.getBrowserText();
-            if (isSpecialName(t1)) {
-                result = isSpecialName(t2) ? compareStrings(t1, t2) : +1;
-            } else if (isSpecialName(t2)) {
-                result = -1;
-            } else {
-                result = compareStrings(t1, t2);
-            }
+        String t1 = this.getBrowserText();
+        String t2 = f2.getBrowserText();
+        if (isSpecialName(t1)) {
+            result = isSpecialName(t2) ? compareStrings(t1, t2) : +1;
+        } else if (isSpecialName(t2)) {
+            result = -1;
         } else {
-            result = 0;
+            result = compareStrings(t1, t2);
         }
         return result;
     }
@@ -318,11 +313,11 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
         return knowledgeBase.getProject();
     }
 
-    public Collection getReferences() {
+    public Collection<Reference> getReferences() {
         return getReferences(0);
     }
 
-    public Collection getReferences(int maxReferences) {
+    public Collection<Reference> getReferences(int maxReferences) {
         return getDefaultKnowledgeBase().getReferences(this, maxReferences);
     }
 
