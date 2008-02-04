@@ -208,19 +208,19 @@ public interface FrameStore {
 
     Set<Reference> getReferences(Object object);
 
-    Set getMatchingReferences(String string, int maxMatches);
+    Set<Reference> getMatchingReferences(String string, int maxMatches);
 
     Set getClsesWithMatchingBrowserText(String string, Collection superclasses, int maxMatches);
 
-    Set getFramesWithDirectOwnSlotValue(Slot slot, Object value);
+    Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value);
 
-    Set getFramesWithAnyDirectOwnSlotValue(Slot slot);
+    Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot);
 
     Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches);
 
     Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value);
 
-    Set getClsesWithAnyDirectTemplateSlotValue(Slot slot);
+    Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot);
 
     Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches);
 
