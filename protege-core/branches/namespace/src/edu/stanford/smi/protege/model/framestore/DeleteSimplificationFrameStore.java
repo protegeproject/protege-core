@@ -223,9 +223,9 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
     }
 
     private void deleteReferences(Frame frame) {
-        Iterator i = new ArrayList(getReferences(frame)).iterator();
+        Iterator<Reference> i = new ArrayList<Reference>(getReferences(frame)).iterator();
         while (i.hasNext()) {
-            Reference ref = (Reference) i.next();
+            Reference ref = i.next();
             if (ref.getFacet() == null) {
                 if (ref.isTemplate()) {
                     removeTemplateSlotValue((Cls) ref.getFrame(), ref.getSlot(), frame);
