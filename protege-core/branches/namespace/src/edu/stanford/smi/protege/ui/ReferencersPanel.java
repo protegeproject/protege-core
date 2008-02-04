@@ -89,11 +89,11 @@ public class ReferencersPanel extends SelectableContainer {
         model.addColumn("Facet");
         // model.addColumn("Kind");
         KnowledgeBase kb = instance.getKnowledgeBase();
-        ArrayList references = new ArrayList(kb.getReferences(instance, 1000));
+        ArrayList<Reference> references = new ArrayList<Reference>(kb.getReferences(instance, 1000));
         Collections.sort(references, new ReferenceComparator());
-        Iterator i = references.iterator();
+        Iterator<Reference> i = references.iterator();
         while (i.hasNext()) {
-            Reference ref = (Reference) i.next();
+            Reference ref = i.next();
             model.addRow(new Object[] { ref.getFrame(), ref.getSlot(), ref });
         }
         return model;
