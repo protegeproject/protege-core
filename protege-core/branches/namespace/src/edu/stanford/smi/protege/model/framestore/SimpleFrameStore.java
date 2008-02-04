@@ -153,7 +153,7 @@ public class SimpleFrameStore implements FrameStore {
         _helper = null;
     }
 
-    public Set getMatchingReferences(String value, int maxMatches) {
+    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
         return _helper.getMatchingReferences(value, maxMatches);
     }
 
@@ -935,20 +935,20 @@ public class SimpleFrameStore implements FrameStore {
         setValues(cls, slot, facet, true, values);
     }
 
-    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+    public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         return _helper.getFrames(slot, null, false, value);
     }
 
-    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         return _helper.getFramesWithAnyValue(slot, null, false);
     }
 
     public Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value) {
-        return _helper.getFrames(slot, null, true, value);
+        return _helper.getFrames(slot, _systemFrames.getValuesFacet(), true, value);
     }
 
-    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
-        return _helper.getFramesWithAnyValue(slot, null, true);
+    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+        return (Set) _helper.getFramesWithAnyValue(slot, _systemFrames.getValuesFacet(), true);
     }
 
     public Set getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value) {
