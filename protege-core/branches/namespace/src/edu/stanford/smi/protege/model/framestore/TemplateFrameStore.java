@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
@@ -260,7 +261,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
       getDelegate().executeQuery(query, callback);
     }
 
-    public Set getReferences(Object object) {
+    public Set<Reference> getReferences(Object object) {
         return getDelegate().getReferences(object);
     }
 
@@ -268,15 +269,15 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getClsesWithMatchingBrowserText(text, superclasses, maxMatches);
     }
 
-    public Set getMatchingReferences(String string, int maxMatches) {
+    public Set<Reference> getMatchingReferences(String string, int maxMatches) {
         return getDelegate().getMatchingReferences(string, maxMatches);
     }
 
-    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+    public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
     }
 
-    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
     }
 
@@ -288,7 +289,7 @@ public final class TemplateFrameStore extends AbstractFrameStore {
         return getDelegate().getClsesWithDirectTemplateSlotValue(slot, value);
     }
 
-    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
     }
 
