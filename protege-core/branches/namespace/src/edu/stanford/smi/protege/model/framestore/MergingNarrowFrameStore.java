@@ -20,6 +20,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
@@ -514,8 +515,8 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return limit != FrameStore.UNLIMITED_MATCHES && size >= limit;
     }
 
-    public Set getReferences(Object value) {
-        Set references = new HashSet();
+    public Set<Reference> getReferences(Object value) {
+        Set references = new HashSet<Reference>();
         Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
             NarrowFrameStore fs = i.next();
@@ -524,7 +525,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return references;
     }
 
-    public Set getMatchingReferences(String value, int maxMatches) {
+    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
         Set references = new HashSet();
         Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext() && !hasEnoughMatches(references.size(), maxMatches)) {
