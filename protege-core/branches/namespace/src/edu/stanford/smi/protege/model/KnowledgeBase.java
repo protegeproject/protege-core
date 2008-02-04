@@ -308,8 +308,8 @@ public interface KnowledgeBase extends Disposable {
     /**
      * @return A collection of #Reference instances.
      */
-    Collection getReferences(Object o, int maxReferences);
-    Collection getMatchingReferences(String s, int maxReferences);
+    Collection<Reference> getReferences(Object o, int maxReferences);
+    Collection<Reference> getMatchingReferences(String s, int maxReferences);
 
     Collection getClsesWithMatchingBrowserText(String s, Collection superclasses, int maxMatches);
     Cls getRootCls();
