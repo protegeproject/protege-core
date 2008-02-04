@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.ValueType;
@@ -971,7 +972,7 @@ public abstract class FrameStore_Test extends SimpleTestCase {
         assertEqualsSet("slots", results, _testFrameStore.getFacets());
     }
 
-    private Set getMatchingReferences(String text) {
+    private Set<Reference> getMatchingReferences(String text) {
         return _testFrameStore.getMatchingReferences(text, FrameStore.UNLIMITED_MATCHES);
     }
 
