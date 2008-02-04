@@ -10,6 +10,7 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
@@ -437,12 +438,12 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         getDelegate().executeQuery(query, callback);
     }
 
-    public Set getReferences(Object object) {
+    public Set<Reference> getReferences(Object object) {
         checkValue(object);
         return getDelegate().getReferences(object);
     }
 
-    public Set getMatchingReferences(String string, int maxMatches) {
+    public Set<Reference> getMatchingReferences(String string, int maxMatches) {
         checkString(string);
         return getDelegate().getMatchingReferences(string, maxMatches);
     }
@@ -453,13 +454,13 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         return getDelegate().getClsesWithMatchingBrowserText(text, superclasses, maxMatches);
     }
 
-    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+    public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         checkSlot(slot);
         checkValue(value);
         return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
     }
 
-    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         checkSlot(slot);
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
     }
@@ -476,7 +477,7 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         return getDelegate().getClsesWithDirectTemplateSlotValue(slot, value);
     }
 
-    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         checkSlot(slot);
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
     }
