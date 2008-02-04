@@ -25,6 +25,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.EventDispatchFrameStore;
@@ -394,7 +395,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
 
 
-    public synchronized Set getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) 
+    public synchronized Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) 
     throws ServerSessionLost {
         recordCall(session);
         synchronized(_kbLock) {
@@ -705,14 +706,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set getReferences(Object value, RemoteSession session) throws ServerSessionLost {
+    public Set<Reference> getReferences(Object value, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getReferences(value);
       }
     }
 
-    public Set getMatchingReferences(String value, int maxMatches, RemoteSession session) throws ServerSessionLost {
+    public Set<Reference> getMatchingReferences(String value, int maxMatches, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getMatchingReferences(value, maxMatches);
@@ -1187,14 +1188,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws ServerSessionLost {
+    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
       }
     }
 
-    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) throws ServerSessionLost {
+    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
