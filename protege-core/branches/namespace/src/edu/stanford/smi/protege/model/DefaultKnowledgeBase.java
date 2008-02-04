@@ -267,7 +267,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getTemplateSlots(cls);
     }
 
-    public synchronized Collection getReferences(Frame frame) {
+    public synchronized Collection<Reference> getReferences(Frame frame) {
         return getHeadFrameStore().getReferences(frame);
     }
 
@@ -768,7 +768,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getReferences(object);
     }
 
-    public synchronized Collection getMatchingReferences(String s, int maxRefs) {
+    public synchronized Collection<Reference> getMatchingReferences(String s, int maxRefs) {
         return getHeadFrameStore().getMatchingReferences(s, maxRefs);
     }
 
@@ -1846,11 +1846,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    private Collection getFramesWithAnyOwnSlotValue(Slot slot) {
+    private Collection<Frame> getFramesWithAnyOwnSlotValue(Slot slot) {
         return getHeadFrameStore().getFramesWithAnyDirectOwnSlotValue(slot);
     }
 
-    private Collection getClsesWithAnyTemplateSlotValue(Slot slot) {
+    private Collection<Cls> getClsesWithAnyTemplateSlotValue(Slot slot) {
         return getHeadFrameStore().getClsesWithAnyDirectTemplateSlotValue(slot);
     }
 
