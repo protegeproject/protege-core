@@ -30,6 +30,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
@@ -940,9 +941,9 @@ public class RemoteClientFrameStore implements FrameStore {
       }.start();
     }
 
-    public synchronized Set getReferences(Object object) {
+    public synchronized Set<Reference> getReferences(Object object) {
         try {
-            Set references = getRemoteDelegate().getReferences(object, session);
+            Set<Reference> references = getRemoteDelegate().getReferences(object, session);
             localize(references);
             return references;
         } catch (RemoteException e) {
@@ -963,7 +964,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     }
 
-    public Set getMatchingReferences(String string, int maxMatches) {
+    public Set<Reference> getMatchingReferences(String string, int maxMatches) {
         try {
             Set references = getRemoteDelegate().getMatchingReferences(string, maxMatches, session);
             localize(references);
@@ -973,7 +974,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+    public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         try {
             Set frames = getRemoteDelegate().getFramesWithDirectOwnSlotValue(slot, value, session);
             localize(frames);
@@ -983,7 +984,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         try {
             Set frames = getRemoteDelegate().getFramesWithAnyDirectOwnSlotValue(slot, session);
             localize(frames);
@@ -1013,7 +1014,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         try {
             Set clses = getRemoteDelegate().getClsesWithAnyDirectTemplateSlotValue(slot, session);
             localize(clses);
