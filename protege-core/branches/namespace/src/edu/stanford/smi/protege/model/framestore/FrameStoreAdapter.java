@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
@@ -82,11 +83,11 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getInstances(cls);
     }
 
-    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+    public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
     }
 
-    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
     }
 
@@ -106,7 +107,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getClsesWithDirectTemplateSlotValue(slot, value);
     }
 
-    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
     }
 
@@ -288,7 +289,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().removeDirectType(instance, directType);
     }
 
-    public Set getReferences(Object value) {
+    public Set<Reference> getReferences(Object value) {
         return getDelegate().getReferences(value);
     }
 
@@ -296,7 +297,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getClsesWithMatchingBrowserText(value, superclasses, maxMatches);
     }
 
-    public Set getMatchingReferences(String value, int maxMatches) {
+    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
         return getDelegate().getMatchingReferences(value, maxMatches);
     }
 
