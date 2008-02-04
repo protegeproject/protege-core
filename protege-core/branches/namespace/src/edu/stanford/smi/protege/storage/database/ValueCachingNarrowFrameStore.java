@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
@@ -446,11 +447,11 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         return _delegate.getMatchingFrames(slot, facet, isTemplate, value, maxMatches);
     }
 
-    public Set getReferences(Object value) {
+    public Set<Reference> getReferences(Object value) {
         return _delegate.getReferences(value);
     }
 
-    public Set getMatchingReferences(String value, int maxMatches) {
+    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
         return _delegate.getMatchingReferences(value, maxMatches);
     }
 
