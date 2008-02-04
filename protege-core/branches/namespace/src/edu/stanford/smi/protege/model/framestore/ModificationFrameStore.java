@@ -174,7 +174,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getClsesWithMatchingBrowserText(value, superclasses, maxMatches);
     }
 
-    public Set getMatchingReferences(String value, int maxMatches) {
+    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
         return getDelegate().getMatchingReferences(value, maxMatches);
     }
 
@@ -186,11 +186,11 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         getDelegate().executeQuery(query, callback);
     }
 
-    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+    public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
     }
 
-    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
     }
 
@@ -202,7 +202,7 @@ public abstract class ModificationFrameStore extends AbstractFrameStore {
         return getDelegate().getClsesWithDirectTemplateSlotValue(slot, value);
     }
 
-    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
     }
 
