@@ -174,17 +174,22 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     public void deleteCls(Cls cls) {
         execute(new DeleteClsCommand(getDelegate(), cls));
     }
+    
+    /*
+     * There is a problem with both delete Slot and delete facet.  I don't know how to save and restore 
+     * deleted facet values.  So some information is lost on the undo.
+     */
 
     public void deleteSlot(Slot slot) {
         execute(new DeleteSlotCommand(getDelegate(), slot));
     }
 
     public void deleteFacet(Facet facet) {
-        execute(new DeleteFacetCommand(getDelegate(), facet));
+        execute(new DeleteFrameCommand(getDelegate(), facet));
     }
 
     public void deleteSimpleInstance(SimpleInstance simpleInstance) {
-        execute(new DeleteSimpleInstanceCommand(getDelegate(), simpleInstance));
+        execute(new DeleteFrameCommand(getDelegate(), simpleInstance));
     }
 
     public void addDirectTemplateSlot(Cls cls, Slot slot) {
