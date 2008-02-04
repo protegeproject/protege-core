@@ -7,6 +7,7 @@ import edu.stanford.smi.protege.model.DefaultKnowledgeBase_Test;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.ValueType;
 import edu.stanford.smi.protege.test.APITestCase;
@@ -104,8 +105,8 @@ public class DatabaseKnowledgeBase_Test extends APITestCase {
       Collection frames = getDomainKB().getMatchingFrames(nameSlot, null, false, name1, -1);
       assertEquals("matching size", 1, frames.size());
 
-      frames = getDomainKB().getReferences(name1, -1);
-      assertEquals("references size", 1, frames.size());
+      Collection<Reference> references = getDomainKB().getReferences(name1, -1);
+      assertEquals("references size", 1, references.size());
     }
   }
   
@@ -124,8 +125,8 @@ public class DatabaseKnowledgeBase_Test extends APITestCase {
       Collection frames = getDomainKB().getMatchingFrames(nameSlot, null, false, name1, -1);
       assertEquals("matching size", 1, frames.size());
 
-      frames = getDomainKB().getReferences(name1, -1);
-      assertEquals("references size", 1, frames.size());
+      Collection<Reference> references = getDomainKB().getReferences(name1, -1);
+      assertEquals("references size", 1, references.size());
     }
   }
   
