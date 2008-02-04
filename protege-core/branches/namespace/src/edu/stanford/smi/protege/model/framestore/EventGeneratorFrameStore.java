@@ -180,9 +180,9 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
 
     private void generateDeleteInstanceEvents(Instance instance, TransactionIsolationLevel level) {
         generateRemoveDirectInstanceEvents(instance, level);
-        Iterator i = getReferences(instance).iterator();
+        Iterator<Reference> i = getReferences(instance).iterator();
         while (i.hasNext()) {
-            Reference ref = (Reference) i.next();
+            Reference ref = i.next();
             removeReference(ref, instance, level);
         }
         generateFrameEvent(FrameEvent.DELETED, instance, instance.getName(), level);
@@ -345,10 +345,9 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     }
     
     private void generateReplacingSlotEvents(Slot replacement, TransactionIsolationLevel level) {
-    	Set frames = getDelegate().getFramesWithAnyDirectOwnSlotValue(replacement);
+    	Set<Frame> frames = getDelegate().getFramesWithAnyDirectOwnSlotValue(replacement);
     	if (frames == null) return;
-    	for (Object o : frames) {
-    		Frame frame = (Frame) o;  // there is no need to do any inference in this case.
+    	for (Frame frame : frames) {
     		generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, replacement, level);
     	}
     }
