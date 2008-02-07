@@ -44,6 +44,7 @@ import edu.stanford.smi.protege.event.WidgetEvent;
 import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.plugin.PluginUtilities;
+import edu.stanford.smi.protege.plugin.ProjectFixupsPluginManager;
 import edu.stanford.smi.protege.resource.Files;
 import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 import edu.stanford.smi.protege.ui.InstanceDisplay;
@@ -1428,7 +1429,7 @@ public class Project {
             	clipsFactory.loadKnowledgeBase(kb, clsesReader, instancesReader, false, errors);
             	
                 if (errors.size() == 0) {
-                    BackwardsCompatibilityProjectFixups.fix(kb);
+                   ProjectFixupsPluginManager.fixProject(kb);
                 }
 
                 /*

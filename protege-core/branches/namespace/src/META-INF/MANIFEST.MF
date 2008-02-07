@@ -243,6 +243,8 @@ Create-Project-Plugin: True
 Name: edu/stanford/smi/protege/widget/ProtegePropertiesTab.class
 Tab-widget: True
 
+Name: edu.stanford.smi.protege.util.Frames1_8_BackwardsCompatibilityProjectFixups.class
+ProjectFixupPlugin: True
 
 
 

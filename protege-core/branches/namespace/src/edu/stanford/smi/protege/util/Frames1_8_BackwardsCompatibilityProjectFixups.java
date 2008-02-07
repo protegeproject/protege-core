@@ -1,12 +1,22 @@
-package edu.stanford.smi.protege.model;
+package edu.stanford.smi.protege.util;
 //ESCA*JAVA0037
 
-import java.io.*;
-import java.util.*;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.storage.clips.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.ModelUtilities;
+import edu.stanford.smi.protege.model.WidgetDescriptor;
+import edu.stanford.smi.protege.plugin.ProjectFixupPlugin;
+import edu.stanford.smi.protege.resource.Files;
+import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 
 /** 
  * Fix backwards compatibility problems in the .pprj files.  Methods in this class are called automatically when a project
@@ -17,7 +27,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 
-class BackwardsCompatibilityProjectFixups {
+public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFixupPlugin {
 
     private static void addWidgetDescriptor(Instance formWidgetInstance, String slotName) {
         // Log.enter(BackwardsCompatibilityProjectFixups.class, "addWidgetDescriptor", formWidgetInstance, slotName);
@@ -89,13 +99,14 @@ class BackwardsCompatibilityProjectFixups {
         }
     }
 
+    //TODO: change condition!!!
     private static boolean shouldUpdate(KnowledgeBase kb) {
         return !isCurrentBuild(kb) && !isOwl(kb);
     }
 
     private static boolean isOwl(KnowledgeBase kb) {
         Instance instance = kb.getInstance("PROJECT");
-        Slot slot = kb.getSlot("default_cls_metaclass");
+        edu.stanford.smi.protege.model.Slot slot = kb.getSlot("default_cls_metaclass");
         String value = (String) instance.getOwnSlotValue(slot);
         return value.indexOf("owl:") != -1;
     }
@@ -376,4 +387,17 @@ class BackwardsCompatibilityProjectFixups {
             }
         }
     }
+
+	public void fixProject(KnowledgeBase internalKB) {
+		fix(internalKB);		
+	}
+
+	public String getName() {		
+		return "Frames 1.8 Project Backwards Compatibility Fix";
+	}
+
+	public void dispose() {
+		// TODO Auto-generated method stub
+		
+	}
 }

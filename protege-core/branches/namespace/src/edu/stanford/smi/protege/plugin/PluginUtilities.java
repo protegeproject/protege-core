@@ -159,7 +159,8 @@ public class PluginUtilities {
             }
             //ESCA-JAVA0170 
         } catch (Throwable e) {
-            Log.getLogger().warning(e.getMessage());
+        	//TT - for testing
+            Log.getLogger().log(Level.WARNING, e.getMessage(), e);
         }
         setContextClassLoader(oldLoader);
         if (log.isLoggable(Level.FINEST)) {
