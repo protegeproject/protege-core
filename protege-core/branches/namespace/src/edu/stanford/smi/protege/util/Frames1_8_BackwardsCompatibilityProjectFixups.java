@@ -29,6 +29,8 @@ import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 
 public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFixupPlugin {
 
+	private static final String MIN_VERSION = "1.9";
+	
     private static void addWidgetDescriptor(Instance formWidgetInstance, String slotName) {
         // Log.enter(BackwardsCompatibilityProjectFixups.class, "addWidgetDescriptor", formWidgetInstance, slotName);
         Instance propertyList = (Instance) ModelUtilities.getDirectOwnSlotValue(formWidgetInstance, "property_list");
@@ -95,11 +97,11 @@ public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFix
 
     public static void fix(KnowledgeBase kb) {
         if (shouldUpdate(kb)) {
+        	Log.getLogger().info(" ** !! ** Frames Project Fixup");
             updateStandardForms(kb);
         }
     }
 
-    //TODO: change condition!!!
     private static boolean shouldUpdate(KnowledgeBase kb) {
         return !isCurrentBuild(kb) && !isOwl(kb);
     }
@@ -108,7 +110,7 @@ public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFix
         Instance instance = kb.getInstance("PROJECT");
         edu.stanford.smi.protege.model.Slot slot = kb.getSlot("default_cls_metaclass");
         String value = (String) instance.getOwnSlotValue(slot);
-        return value.indexOf("owl:") != -1;
+        return value.contains("owl:") || value.contains("/owl#");
     }
 
     private static Instance getClsWidgetInstance(String name, KnowledgeBase kb) {
@@ -188,9 +190,9 @@ public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFix
     }
 
     private static boolean isCurrentBuild(KnowledgeBase kb) {
-        String currentBuild = Text.getBuildInfo();
+    	String currentVersion = Text.getVersion();        
         String kbBuild = kb.getBuildString();
-        return currentBuild.equals(kbBuild) || kbBuild == null;
+        return kbBuild == null || currentVersion.compareTo(MIN_VERSION) >= 0;
     }
 
     /*
