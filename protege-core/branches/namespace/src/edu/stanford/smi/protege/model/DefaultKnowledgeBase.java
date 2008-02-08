@@ -27,6 +27,7 @@ import edu.stanford.smi.protege.event.SlotListener;
 import edu.stanford.smi.protege.event.TransactionListener;
 import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.model.framestore.DefaultFrameFactory;
+import edu.stanford.smi.protege.model.framestore.DeleteSimplificationFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
@@ -286,6 +287,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use #setGenerateEventsEnabled(boolean)
      */
+    @Deprecated
     public synchronized boolean setEventsEnabled(boolean b) {
         return setGenerateEventsEnabled(b);
     }
@@ -293,6 +295,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use #getGenerateEventsEnabled(boolean)
      */
+    @Deprecated
     public synchronized boolean getEventsEnabled() {
         return getGenerateEventsEnabled();
     }
@@ -442,6 +445,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated no longer needed
      */
+    @Deprecated
     public String createUniqueFrameName(String name) {
         return null;
     }
@@ -673,6 +677,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated
      */
+    @Deprecated
     public synchronized Collection<Instance> getInstances(Cls cls) {
         return getHeadFrameStore().getInstances(cls);
     }
@@ -723,6 +728,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated No longer implemented
      */
+    @Deprecated
     public synchronized int getNextFrameNumber() {
         return 0;
     }
@@ -823,6 +829,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated this functionality is no longer available
      */
+    @Deprecated
     public synchronized String getSlotValueLastModificationTimestamp(Frame frame, Slot slot, boolean isTemplate) {
         return null;
     }
@@ -830,6 +837,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated this functionality is no longer available
      */
+    @Deprecated
     public synchronized String getSlotValueLastModifier(Frame frame, Slot slot, boolean isTemplate) {
         return null;
     }
@@ -856,7 +864,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         Project p = getProject();
         if (p != null && p.isMultiUserClient()) {
             FrameStoreManager fsm = getFrameStoreManager();
-            RemoteClientFrameStore fs = (RemoteClientFrameStore) fsm.getFrameStoreFromClass(RemoteClientFrameStore.class);
+            RemoteClientFrameStore fs = fsm.getFrameStoreFromClass(RemoteClientFrameStore.class);
             return _userName = fs.getSession().getUserName();
         }
         else if (p != null && p.isMultiUserServer()) {
@@ -941,6 +949,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use setModificationRecordUpdatingEnabled
      */
+    @Deprecated
     public synchronized void setAutoUpdateFacetValues(boolean autoUpdate) {
         setModificationRecordUpdatingEnabled(autoUpdate);
     }
@@ -1005,16 +1014,27 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated This functionality is no longer available
      */
+    @Deprecated
     public synchronized void setNextFrameNumber(int number) {
     }
 
     public synchronized void setProject(Project project) {
         _project = project;
+        if (project.isMultiUserClient()) {
+            adjustClientFrameStores();
+        }
+    }
+
+    protected void adjustClientFrameStores() {
+        DeleteSimplificationFrameStore dsfs 
+                = _frameStoreManager.getFrameStoreFromClass(DeleteSimplificationFrameStore.class);
+        _frameStoreManager.setEnabled(dsfs, false);
     }
 
     /**
      * @deprecated Use #setFacetCheckingEnabled(boolean)
      */
+    @Deprecated
     public synchronized void setValueChecking(boolean checking) {
         setFacetCheckingEnabled(checking);
     }
@@ -1042,6 +1062,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated use #addDirectOwnSlotValues */
+    @Deprecated
     public synchronized void addOwnSlotValue(Frame frame, Slot slot, Object value) {
         List values = new ArrayList(getDirectOwnSlotValues(frame, slot));
         values.add(value);
@@ -1058,6 +1079,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated use getOwnSlotValues */
+    @Deprecated
     public synchronized Collection getOwnSlotAndSubslotValues(Frame frame, Slot slot) {
         return getOwnSlotValues(frame, slot);
     }
@@ -1073,11 +1095,13 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #getOwnFacets */
+    @Deprecated
     public synchronized Collection getOwnSlotFacets(Frame frame, Slot slot) {
         return getOwnFacets(frame, slot);
     }
 
     /** @deprecated renamed to #getOwnFacetValues */
+    @Deprecated
     public synchronized Collection getOwnSlotFacetValues(Frame frame, Slot slot, Facet facet) {
         return getOwnFacetValues(frame, slot, facet);
     }
@@ -1113,6 +1137,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated use #setDirectOwnSlotValues */
+    @Deprecated
     public synchronized void removeOwnSlotValue(Frame frame, Slot slot, Object value) {
         List values = new ArrayList(getDirectOwnSlotValues(frame, slot));
         values.remove(value);
@@ -1128,6 +1153,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #setDirectOwnSlotValue */
+    @Deprecated
     public synchronized void setOwnSlotValue(Frame frame, Slot slot, Object value) {
         setDirectOwnSlotValue(frame, slot, value);
     }
@@ -1138,6 +1164,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to setDirectOwnSlotValues */
+    @Deprecated
     public synchronized void setOwnSlotValues(Frame frame, Slot slot, Collection values) {
         setDirectOwnSlotValues(frame, slot, values);
     }
@@ -1185,6 +1212,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated use #setDirectTemplateFacetValues */
+    @Deprecated
     public synchronized void addTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
         Collection values = new ArrayList(getDirectTemplateFacetValues(cls, slot, facet));
         values.add(value);
@@ -1192,6 +1220,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated use #setDirectTemplateSlotValues */
+    @Deprecated
     public synchronized void addTemplateSlotValue(Cls cls, Slot slot, Object value) {
         Collection values = new ArrayList(getHeadFrameStore().getDirectTemplateSlotValues(cls, slot));
         values.add(value);
@@ -1384,6 +1413,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #removeDirectTemplateFacetOverrides */
+    @Deprecated
     public synchronized void removeTemplateFacetOverrides(Cls cls, Slot slot) {
         removeDirectTemplateFacetOverrides(cls, slot);
     }
@@ -1458,6 +1488,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #setDirectTemplateFacetValue */
+    @Deprecated
     public synchronized void setTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
         setDirectTemplateFacetValue(cls, slot, facet, value);
     }
@@ -1468,6 +1499,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #setDirectTemplateFacetValues */
+    @Deprecated
     public synchronized void setTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
         setDirectTemplateFacetValues(cls, slot, facet, values);
     }
@@ -1547,6 +1579,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #setDirectTemplateSlotValues */
+    @Deprecated
     public synchronized void setTemplateSlotValues(Cls cls, Slot slot, Collection values) {
         setDirectTemplateSlotValues(cls, slot, values);
     }
@@ -2103,6 +2136,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         _frameStoreManager.removeListener(c, o, listener);
     }
 
+    @Override
     public String toString() {
         return StringUtilities.getClassName(this) + "(" + getName() + ")";
     }
@@ -2133,6 +2167,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use #commitTransaction or #rollbackTransaction
      */
+    @Deprecated
     public synchronized boolean endTransaction(boolean doCommit) {
         boolean committed;
         if (doCommit) {
@@ -2146,6 +2181,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use #commitTransaction
      */
+    @Deprecated
     public synchronized boolean endTransaction() {
     	return commitTransaction();
     }
@@ -2183,6 +2219,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @param cls
      * @param slot
      */
+    @Deprecated
     public synchronized void setDirectBrowserSlot(Cls cls, Slot slot) {
         setDirectBrowserSlotPattern(cls, new BrowserSlotPattern(slot));
     }
@@ -2250,6 +2287,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use #getFacetCheckingEnabled
      */
+    @Deprecated
     public boolean getValueChecking() {
         return getFacetCheckingEnabled();
     }
