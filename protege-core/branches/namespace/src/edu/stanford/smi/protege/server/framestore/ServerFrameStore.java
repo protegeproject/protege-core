@@ -139,10 +139,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     
     //ESCA-JAVA0160 
-    public ServerFrameStore(KnowledgeBase kb,
-                            Object kbLock) throws RemoteException {
+    public ServerFrameStore(KnowledgeBase kb) throws RemoteException {
         _kb = kb;
-        _kbLock = kbLock;
+        _kbLock = kb;
         
         FrameStoreManager fsm = ((DefaultKnowledgeBase) kb).getFrameStoreManager();
         
