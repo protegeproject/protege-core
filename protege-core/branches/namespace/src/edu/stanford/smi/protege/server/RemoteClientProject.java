@@ -8,25 +8,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
-import edu.stanford.smi.protege.model.ModelUtilities;
 import edu.stanford.smi.protege.model.Project;
-import edu.stanford.smi.protege.model.PropertyMapUtil;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
-import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
-import edu.stanford.smi.protege.server.narrowframestore.RemoteClientInvocationHandler;
-import edu.stanford.smi.protege.server.narrowframestore.RemoteServerNarrowFrameStore;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
 
@@ -57,14 +50,10 @@ public class RemoteClientProject extends Project {
         serverProject.getDomainKbFrameStore(session);
         KnowledgeBase domainKb = createKnowledgeBase(server,
                                                      serverProject.getDomainKbFrameStore(session), 
-                                                     serverProject.getSystemNarrowFrameStore(),
-                                                     serverProject.getDomainKbNarrowFrameStore(),
                                                      serverProject.getDomainKbFactoryClassName(), 
                                                      session, false);
         KnowledgeBase projectKb = createKnowledgeBase(server,
                                                       serverProject.getProjectKbFrameStore(session),
-                                                      serverProject.getSystemNarrowFrameStore(),
-                                                      serverProject.getDomainKbNarrowFrameStore(),
                                                       serverProject.getProjectKbFactoryClassName(), 
                                                       session, true);
         projectKb = copyKb(projectKb, domainKb);
@@ -92,8 +81,6 @@ public class RemoteClientProject extends Project {
 
     private static KnowledgeBase createKnowledgeBase(RemoteServer server,
                                                      RemoteServerFrameStore serverFrameStore, 
-                                                     RemoteServerNarrowFrameStore systemNfs,
-                                                     RemoteServerNarrowFrameStore userNfs,
                                                      String factoryClassName,
                                                      RemoteSession session, 
                                                      boolean preloadAll) {
@@ -117,23 +104,7 @@ public class RemoteClientProject extends Project {
         
         FrameStore clientFrameStore
                = new RemoteClientFrameStore(server, serverFrameStore, session, kb, preloadAll);
-        RemoteClientInvocationHandler rcif
-             = new RemoteClientInvocationHandler(kb, systemNfs, session);
-        NarrowFrameStore systemNarrowFrameStore = rcif.getNarrowFrameStore();
-        rcif = new RemoteClientInvocationHandler(kb, userNfs, session);
-        NarrowFrameStore userNarrowFrameStore = rcif.getNarrowFrameStore();
-
         kb.setTerminalFrameStore(clientFrameStore);
-        if (factory instanceof ClientInitializerKnowledgeBaseFactory) {
-          ClientInitializerKnowledgeBaseFactory clientInit;
-          clientInit = (ClientInitializerKnowledgeBaseFactory) factory;
-          clientInit.initializeClientKnowledgeBase(clientFrameStore, 
-                                                   systemNarrowFrameStore,
-                                                   userNarrowFrameStore, 
-                                                   kb);
-        }
-
-
         return kb;
     }
     
@@ -145,6 +116,7 @@ public class RemoteClientProject extends Project {
       return _server;
     }
 
+    @Override
     public URI getProjectURI() {
         URI uri = null;
         try {
@@ -165,6 +137,7 @@ public class RemoteClientProject extends Project {
         return url;
     }
 
+    @Override
     public Collection getCurrentUsers() {
         Collection users = new ArrayList();
         try {
@@ -180,10 +153,12 @@ public class RemoteClientProject extends Project {
         return users;
     }
 
+    @Override
     public String getLocalUser() {
         return _session.getUserName();
     }
 
+    @Override
     public void dispose() {
         Log.getLogger().info("remote project dispose");
         super.dispose();
@@ -201,16 +176,19 @@ public class RemoteClientProject extends Project {
         }
     }
 
+    @Override
     public KnowledgeBaseFactory getKnowledgeBaseFactory() {
         return null;
     }
 
+    @Override
     public boolean isMultiUserClient() {
         return true;
     }
 
     private void installShutdownHook() {
         shutdownHook = new Thread("Remote Project ShutdownHook") {
+            @Override
             public void run() {
               try {
                 attemptClose();
@@ -236,6 +214,7 @@ public class RemoteClientProject extends Project {
 		}
     }
 
+    @Override
     public boolean isDirty() {
         // changes are committed automatically so we are never dirty.
         return false;
