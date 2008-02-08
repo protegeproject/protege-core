@@ -39,9 +39,9 @@ import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.framestore.background.WorkInfo;
-import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
+import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.impl.UserImpl;
 import edu.stanford.smi.protege.server.update.FrameRead;
 import edu.stanford.smi.protege.server.update.FrameWrite;
@@ -137,10 +137,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     
     //ESCA-JAVA0160 
-    public ServerFrameStore(KnowledgeBase kb,
-                            Object kbLock) throws RemoteException {
+    public ServerFrameStore(KnowledgeBase kb) throws RemoteException {
         _kb = kb;
-        _kbLock = kbLock;
+        _kbLock = kb;
         
         FrameStoreManager fsm = ((DefaultKnowledgeBase) kb).getFrameStoreManager();
         
