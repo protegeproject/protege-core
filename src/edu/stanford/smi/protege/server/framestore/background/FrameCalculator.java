@@ -104,7 +104,9 @@ public class FrameCalculator {
     effectiveClient = wi.getClient();
     ServerFrameStore.setCurrentSession(effectiveClient);
     if (log.isLoggable(Level.FINE)) {
-      log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
+        synchronized (kbLock) {
+            log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
+        }
     }
     try {
       stats.startWork();
@@ -259,17 +261,19 @@ public class FrameCalculator {
       ClientAndFrame cwf = new ClientAndFrame(session, frame);
       WorkInfo wi = requestMap.get(cwf);
       if (wi == null) {
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("Added " + fs.getFrameName(frame) + " in state " + state + 
-                   " with reason " + reason + " to head of frames to precalculate");
-        }
+          if (log.isLoggable(Level.FINE)) {
+              log.fine("Added " + frame.getFrameID() + " in state " + state + 
+                       " with reason " + reason + " to head of frames to precalculate");
+          }
         wi = new WorkInfo();
         wi.setClient(session);
         wi.setFrame(frame);
         requestMap.put(cwf, wi);
       } else {
         if (log.isLoggable(Level.FINE)) {
-          log.fine("Updating state for " + fs.getFrameName(frame) + " to include " + state);
+            synchronized (kbLock) {
+                log.fine("Updating state for " + frame.getFrameID() + " to include " + state);
+            }
         }
         requests.remove(wi);
       }
@@ -338,22 +342,26 @@ public class FrameCalculator {
   public void logRequests() {
       if (log.isLoggable(Level.FINE)) {
           try {
-              synchronized (requestLock) {
-                  log.fine("Request queue has length " + requests.size());
-                  if (log.isLoggable(Level.FINER)) {
-                      for (WorkInfo wi : requests) {
-                          log.fine("Request for frame" + wi.getFrame());
-                          log.fine("\tClient = " + wi.getClient());
-                          log.fine("\tStates = " + wi.getStates());
-                          log.fine("\tReasons = " + wi.getReasons());
-                      }
-                  } else {
-                      Map<CacheRequestReason, Integer> reasonCounts
-                          = new EnumMap<CacheRequestReason, Integer>(CacheRequestReason.class);
-                      Map<ServerCachedState, Integer> stateCounts = new HashMap<ServerCachedState, Integer>();
-                      for (CacheRequestReason reason : CacheRequestReason.values()) {
-                          reasonCounts.put(reason, 0);
-                      }
+              if (log.isLoggable(Level.FINER)) {
+                  SortedSet<WorkInfo> requestsCopy; 
+                  synchronized (requestLock) {
+                      requestsCopy = new TreeSet<WorkInfo>(requests);
+                  }
+                  log.fine("Request queue has size " + requestsCopy.size());
+                  for (WorkInfo wi : requestsCopy) {
+                      log.finer("Request for frame" + wi.getFrame());
+                      log.finer("\tClient = " + wi.getClient());
+                      log.finer("\tStates = " + wi.getStates());
+                      log.finer("\tReasons = " + wi.getReasons());
+                  }
+              } else {
+                  Map<CacheRequestReason, Integer> reasonCounts = new EnumMap<CacheRequestReason, Integer>(CacheRequestReason.class);
+                  Map<ServerCachedState, Integer> stateCounts = new HashMap<ServerCachedState, Integer>();
+                  for (CacheRequestReason reason : CacheRequestReason.values()) {
+                      reasonCounts.put(reason, 0);
+                  }
+                  synchronized (requestLock) {
+                      log.fine("Request queue has size " + requests.size());
                       for (WorkInfo wi : requests) {
                           for (ServerCachedState state : wi.getStates()) {
                               Integer counts = stateCounts.get(state);
@@ -368,19 +376,19 @@ public class FrameCalculator {
                               reasonCounts.put(reason, reasonCounts.get(reason) + 1);
                           }
                       }
-                      for (ServerCachedState state : stateCounts.keySet()) {
-                          if (stateCounts.get(state) != null) {
-                              log.fine("\tCount for state " + state + " = " + stateCounts.get(state));
-                          }
-                      }
-                      for (CacheRequestReason reason : CacheRequestReason.values()) {
-                          if (reasonCounts.get(reason) != 0) {
-                              log.fine("\tCount for reason " + reason + " = " + reasonCounts.get(reason));
-                          }
+                  }
+                  for (ServerCachedState state : stateCounts.keySet()) {
+                      if (stateCounts.get(state) != null) {
+                          log.fine("\tCount for state " + state + " = " + stateCounts.get(state));
                       }
                   }
-
+                  for (CacheRequestReason reason : CacheRequestReason.values()) {
+                      if (reasonCounts.get(reason) != 0) {
+                          log.fine("\tCount for reason " + reason + " = " + reasonCounts.get(reason));
+                      }
+                  }
               }
+
           }
           catch (Throwable t) {
               log.log(Level.FINE, "Could not log requests", t);
