@@ -1,15 +1,28 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
-import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Reference;
+import edu.stanford.smi.protege.model.SimpleInstance;
+import edu.stanford.smi.protege.model.Slot;
 
 /**
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
-    private final Set fixedIds = new HashSet();
+    private final Set<FrameID> fixedIds = new HashSet<FrameID>();
 
     {
         fixedIds.add(Model.SlotID.NAME);
@@ -21,6 +34,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
         fixedIds.add(Model.SlotID.DIRECT_INSTANCES);
     }
 
+    @Override
     public void removeDirectTemplateSlot(Cls cls, Slot slot) {
         // beginTransaction("Remove template slot " + slot.getBrowserText() + " from " + cls.getBrowserText());
         beginTransaction("Remove template slot");
@@ -61,6 +75,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
         return getTypes(instance).contains(cls);
     }
 
+    @Override
     public void removeDirectSuperclass(Cls cls, Cls superclass) {
         // beginTransaction("Remove superclass " + superclass.getBrowserText() + " from " + cls.getBrowserText());
         beginTransaction("Remove superclass ");
@@ -91,6 +106,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
         getDelegate().removeDirectSuperclass(cls, superclass);
     }
 
+    @Override
     public void removeDirectSuperslot(Slot slot, Slot superslot) {
         // beginTransaction("Remove superslot " + superslot.getBrowserText() + " from " + slot.getBrowserText());
         beginTransaction("Remove superslot ");
@@ -98,6 +114,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
         commitTransaction();
     }
 
+    @Override
     public void deleteCls(Cls cls) {
         // beginTransaction("Delete class " + cls.getBrowserText());
         beginTransaction("Delete class ");
@@ -106,6 +123,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
         commitTransaction();
     }
 
+    @Override
     public void deleteSlot(Slot slot) {
         // beginTransaction("Delete slot " + slot.getBrowserText());
         beginTransaction("Delete slot ");
@@ -114,6 +132,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
         commitTransaction();
     }
 
+    @Override
     public void deleteFacet(Facet facet) {
         // beginTransaction("Delete facet " + facet.getBrowserText());
         beginTransaction("Delete facet ");
@@ -122,6 +141,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
         commitTransaction();
     }
 
+    @Override
     public void deleteSimpleInstance(SimpleInstance simpleInstance) {
         // beginTransaction("Delete simple instance  " + simpleInstance.getBrowserText());
         beginTransaction("Delete simple instance  ");
