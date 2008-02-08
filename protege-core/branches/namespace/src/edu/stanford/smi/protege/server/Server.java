@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.server;
 
 //ESCA*JAVA0100
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -209,7 +210,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         while (i.hasNext()) {
             String name = (String) i.next();
             if (preload) {
-                Log.getLogger().info("Loading project " + name);
                 try {
                 	createProject(name);
                 } catch (Exception e) {
@@ -375,6 +375,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
           if (projectName.equals(name)) {
             String projectLocation = instance.getLocation();
             URI uri = URIUtilities.createURI(projectLocation);
+            Log.getLogger().info("Loading project " + name + " from " + uri);
             project = Project.loadProjectFromURI(uri, new ArrayList(), true);
             if (serverInstance != null) _projectPluginManager.afterLoad(project);
             localizeProject(project);
@@ -462,11 +463,23 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         List<String> names = new ArrayList<String>();
         for (ProjectInstance instance : metaproject.getProjects()) {
           String fileName = instance.getLocation();
-          File file = new File(fileName);
-          if (file.exists() && file.isFile()) {
-              names.add(instance.getName());
+          URI uri = URIUtilities.createURI(fileName);
+          String scheme = uri.getScheme();
+          if (scheme != null && scheme.contains("http")) {
+        	  BufferedReader reader = URIUtilities.createBufferedReader(uri);
+        	  if (reader != null) {
+        		  names.add(instance.getName());
+        		  FileUtilities.close(reader);
+        	  } else {
+        		  Log.getLogger().warning("Missing project at " + fileName);
+        	  }
           } else {
-              Log.getLogger().warning("Missing project at " + fileName);
+        	  File file = new File(fileName);
+        	  if (file.exists() && file.isFile()) {
+        		  names.add(instance.getName());
+        	  } else {
+        		  Log.getLogger().warning("Missing project at " + fileName);
+        	  }
           }
         }
         Collections.sort(names);
