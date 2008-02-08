@@ -16,7 +16,7 @@ public class ProjectFixupsPluginManager {
 	private final static String PROJECT_FIXUP_PLUGIN = "ProjectFixupPlugin";
 
 	private static final String IS_SUITABLE_METHOD_NAME = "isSuitable";
-	private static final Class<?>[] IS_SUITABLE_METHOD_ARGS = new Class[] {String.class, Collection.class}; 
+	private static final Class<?>[] IS_SUITABLE_METHOD_ARGS = new Class[] {KnowledgeBase.class, Collection.class}; 
 
 	public static Collection<Class> getAvailableProjectFixupPluginClasses() {
 		return PluginUtilities.getClassesWithAttribute(PROJECT_FIXUP_PLUGIN, "True");
