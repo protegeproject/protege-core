@@ -17,6 +17,8 @@ import edu.stanford.smi.protege.server.narrowframestore.RemoteServerNarrowFrameS
 import edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore;
 
 public class ServerProject extends UnicastRemoteObject implements RemoteServerProject {
+    private static final long serialVersionUID = 7320382402535936929L;
+    
     private URI _uri;
     private Server _server;
     private Project _project;
@@ -24,7 +26,6 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     private ServerFrameStore _projectKbFrameStore;
     private ServerNarrowFrameStore _domainKbNarrowFrameStore;
     private ServerNarrowFrameStore _systemNarrowFrameStore;
-    private final Object _kbLock;
 
     public URI getURI(RemoteSession session) {
         return _uri;
@@ -42,17 +43,16 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         _server = server;
         _uri = uri;
         _project = project;
-        _kbLock = _project.getKnowledgeBase();
-        _domainKbFrameStore = createServerFrameStore(_project.getKnowledgeBase(), _kbLock);
+        _domainKbFrameStore = createServerFrameStore(_project.getKnowledgeBase());
         _domainKbFrameStore.setMetaProjectInstance(projectInstance);
-        _projectKbFrameStore = createServerFrameStore(_project.getInternalProjectKnowledgeBase(), _kbLock);
+        _projectKbFrameStore = createServerFrameStore(_project.getInternalProjectKnowledgeBase());
         _domainKbNarrowFrameStore = createServerNarrowFrameStore();
         _systemNarrowFrameStore = createServerSystemNarrowFrameStore();
     }
 
 
-    private static ServerFrameStore createServerFrameStore(KnowledgeBase kb, Object kbLock) throws RemoteException {
-        ServerFrameStore sfs = new ServerFrameStore(kb, kbLock);
+    private static ServerFrameStore createServerFrameStore(KnowledgeBase kb) throws RemoteException {
+        ServerFrameStore sfs = new ServerFrameStore(kb);
         return sfs;
     }
     
@@ -60,14 +60,14 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
       KnowledgeBase kb = _project.getKnowledgeBase();
       MergingNarrowFrameStore merging = MergingNarrowFrameStore.get(kb);
       NarrowFrameStore nfs = merging.getActiveFrameStore();
-      return new ServerNarrowFrameStore(nfs, kb, _kbLock);
+      return new ServerNarrowFrameStore(nfs, kb);
     }
     
     private ServerNarrowFrameStore createServerSystemNarrowFrameStore() throws RemoteException {
       KnowledgeBase kb = _project.getKnowledgeBase();
       MergingNarrowFrameStore merging = MergingNarrowFrameStore.get(kb);
       NarrowFrameStore nfs = merging.getSystemFrameStore();
-      return new ServerNarrowFrameStore(nfs, kb, _kbLock); 
+      return new ServerNarrowFrameStore(nfs, kb); 
     }
 
     public RemoteServerFrameStore getDomainKbFrameStore(RemoteSession session) {
