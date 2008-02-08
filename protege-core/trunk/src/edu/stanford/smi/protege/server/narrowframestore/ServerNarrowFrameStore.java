@@ -37,15 +37,12 @@ public class ServerNarrowFrameStore
   private NarrowFrameStore delegate;
   private NarrowFrameStore fixedDelegate;
   private KnowledgeBase kb;
-  private final Object kbLock;
 
   
   public ServerNarrowFrameStore(NarrowFrameStore delegate, 
-                                KnowledgeBase kb,
-                                Object kbLock) throws RemoteException {
+                                KnowledgeBase kb) throws RemoteException {
     this.delegate = delegate;
     this.kb = kb;
-    this.kbLock = kbLock;
     fixedDelegate 
       = (NarrowFrameStore) Proxy.newProxyInstance(kb.getClass().getClassLoader(),
                                                   new Class[] {NarrowFrameStore.class},
@@ -77,7 +74,7 @@ public class ServerNarrowFrameStore
       }
       localize(args);
       try {
-        synchronized (kbLock) {
+        synchronized (kb) {
           return method.invoke(delegate, args);
         }
       } catch (InvocationTargetException ite) {
@@ -257,7 +254,7 @@ public class ServerNarrowFrameStore
 
   public Set<Frame> executeQuery(Query query, RemoteSession session) throws RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
-    final SynchronizeQueryCallback callback = new SynchronizeQueryCallback(kbLock);
+    final SynchronizeQueryCallback callback = new SynchronizeQueryCallback(kb);
     fixedDelegate.executeQuery(query, callback);
     return callback.waitForResults();
   }
