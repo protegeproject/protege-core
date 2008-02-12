@@ -1018,17 +1018,29 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     public synchronized void setNextFrameNumber(int number) {
     }
 
+    private boolean clientServerAdjusted = false;
+    
     public synchronized void setProject(Project project) {
         _project = project;
-        if (project.isMultiUserClient()) {
-            adjustClientFrameStores();
+        if (!clientServerAdjusted) {
+            if (project.isMultiUserClient()) {
+                adjustForClient();
+            }
+            if (project.isMultiUserServer()) {
+                adjustForServer();
+            }
+            clientServerAdjusted = true;
         }
     }
 
-    protected void adjustClientFrameStores() {
+    protected void adjustForClient() {
         DeleteSimplificationFrameStore dsfs 
                 = _frameStoreManager.getFrameStoreFromClass(DeleteSimplificationFrameStore.class);
         _frameStoreManager.setEnabled(dsfs, false);
+    }
+    
+    protected void adjustForServer() {
+        
     }
 
     /**
