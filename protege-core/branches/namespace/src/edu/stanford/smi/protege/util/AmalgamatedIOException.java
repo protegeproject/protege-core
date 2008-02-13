@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 
-public class AmalgamatedIOException extends IOException {
+public class AmalgamatedIOException extends IOException implements AmalgamatedException {
     private static final long serialVersionUID = -974893021619055417L;
     
     @SuppressWarnings("unchecked")
@@ -16,6 +16,16 @@ public class AmalgamatedIOException extends IOException {
     public  AmalgamatedIOException(Collection errors) {
         super();
         this.errors = errors;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void addError(Object error) {
+        errors.add(error);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void addErrors(Collection errors) {
+        this.errors.addAll(errors);
     }
     
     
