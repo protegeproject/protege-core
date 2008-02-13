@@ -7,27 +7,27 @@ package edu.stanford.smi.protege.util;
  *
  */
 public class MessageError {
-	private Exception exception;
+	private Throwable exception;
 	private String message;
 	
 	public MessageError(String message) {
 		this(null, message);
 	}
 	
-	public MessageError(Exception ex) {
+	public MessageError(Throwable ex) {
 		this(ex,null);
 	}
 	
-	public MessageError(Exception ex, String message) {
+	public MessageError(Throwable ex, String message) {
 		this.exception = ex;
 		this.message = message;
 	}
 
-	public Exception getException() {
+	public Throwable getException() {
 		return exception;
 	}
 
-	public void setException(Exception exception) {
+	public void setException(Throwable exception) {
 		this.exception = exception;
 	}
 
