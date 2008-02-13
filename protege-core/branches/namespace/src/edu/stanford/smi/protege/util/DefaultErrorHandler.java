@@ -20,17 +20,28 @@ import java.util.logging.Level;
  * @param <X>
  */
 public class DefaultErrorHandler<X extends Throwable> implements ErrorHandler<X> {
+    private boolean error = false;
 
 	public void warning(X e) throws X {
 		Log.getLogger().log(Level.WARNING, "Warning:  " + e.getMessage(), e);		
 	}
 
 	public void error(X e) throws X {
+	    error = true;
 		Log.getLogger().log(Level.WARNING, "Error: " + e.getMessage(), e);		
 	}
 
 	public void fatalError(X e) throws X {
+	    error = true;
 		throw e;		
+	}
+	
+	public void clear() {
+	    error = false;
+	}
+	
+	public boolean hasError() {
+	    return error;
 	}
 	
 	
