@@ -71,7 +71,7 @@ public class ParseErrorPanel extends JComponent {
 		if (error.getMessage() != null) 
 			message = message + error.getMessage() + "\n";			
 				
-		Exception ex = error.getException();
+		Throwable ex = error.getException();
 		if (ex != null)
 			message = message + "    " + "Exception " + ex.getClass().toString() + 
 				(ex.getMessage() == null ? "" : ".  Message: " + ex.getMessage());
