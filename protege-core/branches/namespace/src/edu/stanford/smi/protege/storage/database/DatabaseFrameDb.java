@@ -207,15 +207,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         runtimeEx.initCause(e);        
         return runtimeEx;
     }
-    
-    public void createNewTableAndIndices() {
-        try {
-            ensureEmptyTableExists();
-            createIndices();
-        } catch (SQLException e) {
-            throw createRuntimeException(e);
-        }
-    }
 
     private void ensureEmptyTableExists() throws SQLException {
         dropTableIfItExists();
