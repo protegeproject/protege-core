@@ -19,7 +19,7 @@ public class CreateProjectWizard extends Wizard {
     public CreateProjectWizard(JComponent owner) {
         super(owner, "Create New Project");
         addPage(new SelectProjectTypeWizardPage(this));
-        setSize(new Dimension(400, 400));
+        setSize(new Dimension(400, 500));
     }
     
     public void setPlugin(CreateProjectPlugin plugin) {
