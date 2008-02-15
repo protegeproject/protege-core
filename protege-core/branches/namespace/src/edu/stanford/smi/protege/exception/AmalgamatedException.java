@@ -1,4 +1,4 @@
-package edu.stanford.smi.protege.util;
+package edu.stanford.smi.protege.exception;
 
 import java.util.Collection;
 import java.util.Collections;
