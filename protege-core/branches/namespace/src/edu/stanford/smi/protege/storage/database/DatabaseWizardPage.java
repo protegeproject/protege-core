@@ -193,7 +193,7 @@ public class DatabaseWizardPage extends WizardPage {
         plugin.setURL(getFieldText(URL_PROPERTY));
     }
     
-    private String getFieldText(DatabaseProperty property)  {
+    protected String getFieldText(DatabaseProperty property)  {
         return fields.get(property).getText();
     }
 
