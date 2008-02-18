@@ -97,6 +97,10 @@ public class SystemFrames {
     		throw new IllegalStateException("illegal replace: " + id);
     	}
     }
+    
+    protected void removeFrame(FrameID id) {
+        _frameIdToFrameMap.remove(id);
+    }
 
     private void createClses() {
         createCls(Model.ClsID.THING);
