@@ -89,18 +89,18 @@ public class SimpleFrameStore implements FrameStore {
      * 
      * @return Collection of Clses
      */
-    public static Collection getClsesToBeDeleted(Cls cls, FrameStore fs) {
-        Collection subclasses = fs.getSubclasses(cls);
-        Collection clsesToBeDeleted = new HashSet(subclasses);
+    public static Collection<Cls> getClsesToBeDeleted(Cls cls, FrameStore fs) {
+        Collection<Cls> subclasses = fs.getSubclasses(cls);
+        Collection<Cls> clsesToBeDeleted = new HashSet<Cls>(subclasses);
         clsesToBeDeleted.add(cls);
 
-        Iterator i = subclasses.iterator();
+        Iterator<Cls> i = subclasses.iterator();
         while (i.hasNext()) {
-            Cls subclass = (Cls) i.next();
+            Cls subclass = i.next();
             // take care with recursive inheritance situations!
             if (!subclass.equals(cls) && reachableByAnotherRoute(subclass, clsesToBeDeleted, fs)) {
                 clsesToBeDeleted.remove(subclass);
-                Collection subsubclasses = new HashSet(fs.getSubclasses(subclass));
+                Collection<Cls> subsubclasses = new HashSet<Cls>(fs.getSubclasses(subclass));
                 subsubclasses.remove(cls);
                 clsesToBeDeleted.removeAll(subsubclasses);
             }
@@ -396,7 +396,7 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public Frame getFrame(String name) {
-        Frame frame = (Frame) nameToFrameMap.get(name);
+        Frame frame = nameToFrameMap.get(name);
         if (frame == null) {
         	frame = getFrame(new FrameID(name));
             if (frame != null) {
@@ -412,7 +412,7 @@ public class SimpleFrameStore implements FrameStore {
 
     public Set<Slot> getOwnSlots(Frame frame) {
         Collection types = getTypes((Instance) frame);
-        Set<Slot> ownSlots = (Set<Slot>) collectOwnSlotValues(types, _systemFrames.getDirectTemplateSlotsSlot());
+        Set<Slot> ownSlots = collectOwnSlotValues(types, _systemFrames.getDirectTemplateSlotsSlot());
         /*
          * Meaningful Comment:
          * new code to add subslots of the direct slots.  This is necessary if
@@ -1171,6 +1171,7 @@ public class SimpleFrameStore implements FrameStore {
         return null;
     }
 
+    @Override
     public String toString() {
         return StringUtilities.getClassName(this);
     }
