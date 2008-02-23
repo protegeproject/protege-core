@@ -403,24 +403,26 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         }
     }
 
-    private void replaceFrameValues(Frame frame) {
+    private void replaceRecordFrameReferences(Frame frame) {
+        for (Record record : referenceToRecordMap.values()) {
+            record.replaceFrameReference(frame);
+        }
         Set<Record> records = valueToRecordsMap.remove(frame);
         if (records != null) {
             valueToRecordsMap.put(frame, records);
-            Iterator i = records.iterator();
-            while (i.hasNext()) {
-                Record record = (Record) i.next();
+            for (Record record : records) {
                 record.replaceFrameValue(frame);
             }
         }
     }
 
     public void replaceFrame(Frame frame) {
+        idToFrameMap.put(frame.getFrameID(), frame);
         replaceFrameKey(frameToRecordsMap, frame);
         replaceFrameKey(slotToRecordsMap, frame);
         replaceFrameKey(facetToRecordsMap, frame);
         replaceFrameKey(valueToRecordsMap, frame);
-        replaceFrameValues(frame);
+        replaceRecordFrameReferences(frame);
     }
 
     public int getClsCount() {
