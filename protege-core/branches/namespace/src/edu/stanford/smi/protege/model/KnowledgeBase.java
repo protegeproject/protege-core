@@ -367,6 +367,8 @@ public interface KnowledgeBase extends Disposable {
     boolean isLoading();
 
     boolean isSlotMetaCls(Cls cls);
+    
+    boolean isUndoEnabled();
 
     boolean isValidOwnSlotValue(Frame frame, Slot slot, Object value);
 
