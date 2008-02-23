@@ -172,7 +172,7 @@ public class FrameStoreManager {
         return wasEnabled;
     }
 
-    private static boolean isEnabled(FrameStore frameStore) {
+    public static boolean isEnabled(FrameStore frameStore) {
         return frameStore.getDelegate() != null;
     }
 
