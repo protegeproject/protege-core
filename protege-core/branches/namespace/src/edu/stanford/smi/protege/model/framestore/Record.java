@@ -84,6 +84,7 @@ public class Record {
         values.add(to, value);
     }
 
+    @SuppressWarnings("unchecked")
     public void replaceFrameReference(Frame replacementFrame) {
         if (replacementFrame.equals(frame)) {
             frame = replacementFrame;
