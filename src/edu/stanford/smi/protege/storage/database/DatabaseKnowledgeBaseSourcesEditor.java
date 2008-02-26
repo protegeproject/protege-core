@@ -16,9 +16,9 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DatabaseKnowledgeBaseSourcesEditor extends KnowledgeBaseSourcesEditor {
-    private static final String DEFAULT_DRIVER = "sun.jdbc.odbc.JdbcOdbcDriver";
-    private static final String DEFAULT_URL = "jdbc:odbc:ProtegeDB";
-    private static final String DEFAULT_TABLE_NAME = "ProtegeTable";
+    public static final String DEFAULT_DRIVER = "sun.jdbc.odbc.JdbcOdbcDriver";
+    public static final String DEFAULT_URL = "jdbc:odbc:ProtegeDB";
+    public static final String DEFAULT_TABLE_NAME = "ProtegeTable";
 
     private JTextField _driverComponent;
     private JTextField _urlComponent;
