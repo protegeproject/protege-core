@@ -310,7 +310,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         }
     }
     
-    private void deleteCacheFrame(Frame frame) {
+    @SuppressWarnings("unchecked")
+	private void deleteCacheFrame(Frame frame) {
         getFrameToSftToValuesMap().remove(frame);
         for (Frame frameKey : getFrameToSftToValuesMap().keySet()) {
             Map<Sft, List> sftToValuesMap =  getFrameToSftToValuesMap().get(frameKey);
@@ -320,10 +321,12 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                     List values = (List) entry.getValue();
                     if (contains(sft, frame)) {
                         getFrameToSftToValuesMap().remove(frameKey);
+                        markWritten(frameKey);
                     } else if (values.contains(frame)) {
                         values = new ArrayList(values);
                         values.remove(frame);
                         insert(sftToValuesMap, sft.getSlot(), sft.getFacet(), sft.isTemplateSlot(), values);
+                        markWritten(frameKey);
                     }
                 }
             }
@@ -390,7 +393,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         return getDelegate().getFrames();
     }
 
-    public List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+    @SuppressWarnings("unchecked")
+	public List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         TransactionMonitor transactionMonitor = getTransactionStatusMonitor();
         Map<Sft, List> sftToValuesMap = lookup(frame);
         if (sftToValuesMap == null) {
