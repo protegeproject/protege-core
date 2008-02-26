@@ -1,5 +1,8 @@
 package edu.stanford.smi.protege.util.transaction;
 
+import java.util.Iterator;
+import java.util.Map;
+
 
 /**
  * This interface represents a simple cache mechanism for storing cached  
@@ -28,8 +31,8 @@ package edu.stanford.smi.protege.util.transaction;
  * higher then the cache must not return a value for read even if the right value is known because
  * the underlying mechanism needs to be informed of the read.
  * 
- * The third issue is that we want it to be possible to garbage collect.  This  could be inconsistent with 
- * the need to have a complete cache.
+ * The third issue is that we want it to be possible to garbage collect.  This requires a little
+ * care because we have to be aware if the cache is complete.
  * 
  * @author tredmond
  *
@@ -70,7 +73,9 @@ public interface Cache<S, V, R> {
      * This as viewed as a value read.  The session is important for two reasons.
      * First, if the transaction isolation level is repeatable read, a session must
      * not use the cache on the first read during a transaction even if the correct
-     * value is known.  The underlying mechanism must be invoked so that it can record that a 
+     * value is known.  The underlying mechanism must be invoked so that it can record 
+     * that a read has occurred. Second the session is important to determine if the value
+     * being read might be visible only in the single 
      * 
      * @param session the session making the change
      * @param var
@@ -97,6 +102,16 @@ public interface Cache<S, V, R> {
      * @param value the new value for the variable
      */
     void modifyCache(S session, V var, R value);
+    
+    /**
+     * Creates an iterator over the entry set.  It is assumed that
+     * calls to remove on the iterator or setValue on the Entry 
+     * are done as a result of changes made by the user in session.
+     * 
+     * @param session
+     * @return iterator
+     */
+    Iterator<Map.Entry<V, R>> iterator(S session);
 
     /**
      * The startCompleteCache and the finishCompleteCache are part of a protocol.  In the 
