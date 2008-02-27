@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class TextComponentWidget extends AbstractSlotWidget {
+	
     private static final Color INVALID_COLOR = Color.red;
     private JTextComponent _textComponent;
     private Color _defaultColor;
@@ -97,13 +98,18 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
     }
 
     public void initialize(boolean isStretchable, int nColumns, int nRows) {
+    	initialize(isStretchable, false, nColumns, nRows);
+    }
+    
+    public void initialize(boolean isStretchable, boolean isSwappedHeader, int nColumns, int nRows) {
         _textComponent = createTextComponent();
         _textComponent.getDocument().addDocumentListener(_documentListener);
         _textComponent.addFocusListener(_focusListener);
         _textComponent.addKeyListener(_keyListener);
+        this.setEditable(true);
         _defaultColor = _textComponent.getForeground();
         JComponent centerComponent = createCenterComponent(_textComponent);
-        LabeledComponent labeledComponent = new LabeledComponent(getLabel(), centerComponent, isStretchable);
+        LabeledComponent labeledComponent = new LabeledComponent(getLabel(), centerComponent, isStretchable, isSwappedHeader);
         Iterator i = createActions().iterator();
         while (i.hasNext()) {
             Action action = (Action) i.next();
@@ -148,6 +154,7 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
     public void setEditable(boolean b) {
         _textComponent.setEditable(b);
     }
+  
 
     public void setText(String text) {
         // _isDirty = false;
@@ -186,4 +193,7 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
         }
         return errorDescription == null;
     }
+    
+    
+    
 }
