@@ -959,6 +959,8 @@ public class ProjectManager {
                     closeCurrentProject();
                     _currentProject = newProject;
                     displayCurrentProject();
+                } else {
+                	ModalDialog.showMessageDialog(getMainPanel(), "Could not revert to archived project version.\nSee console for details.", "Revert to version", ModalDialog.MODE_CLOSE);
                 }
             }
         }

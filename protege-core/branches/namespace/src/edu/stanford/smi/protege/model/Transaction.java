@@ -32,9 +32,16 @@ public abstract class Transaction {
     public static final String APPLY_TO_TRAILER_STRING = " -- Apply to: ";
 
     private KnowledgeBase _knowledgeBase;
+    
+    private String transactionName = "transaction";
 
     protected Transaction(KnowledgeBase kb) {
         _knowledgeBase = kb;
+    }
+    
+    protected Transaction(KnowledgeBase kb, String transactionName) {
+        _knowledgeBase = kb;
+        this.transactionName = transactionName;
     }
     
     public KnowledgeBase getKnowledgeBase() {
@@ -55,19 +62,14 @@ public abstract class Transaction {
         synchronized (_knowledgeBase) {
             boolean transactionComplete = false;
             try {
-                boolean inTransaction = _knowledgeBase.beginTransaction("transaction");
+                _knowledgeBase.beginTransaction(transactionName);
                 boolean doCommit = doOperations();
-                if (inTransaction) {
-                  if (doCommit) {
+                if (doCommit) {
                     commited = _knowledgeBase.commitTransaction();
-                  } else {
+                } else {
                     /* how to handle an error here? */
                     _knowledgeBase.rollbackTransaction();
                     commited = false;
-                  }
-                } else if (!doCommit) {
-                    Log.getLogger().warning("Unable to rollback, transaction committed");
-                    commited = true;
                 }
                 transactionComplete = true;
             } finally {

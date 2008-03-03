@@ -35,6 +35,9 @@ import edu.stanford.smi.protege.util.SystemUtilities;
  */
 public class DatabaseKnowledgeBaseSourcesEditor extends KnowledgeBaseSourcesEditor {
     private static final long serialVersionUID = -1850928285684275958L;
+
+    public static final String DEFAULT_TABLE_NAME = "ProtegeTable";
+
     private JTextField _driverComponent;
     private JTextField _urlComponent;
     private JTextField _tableNameComponent;

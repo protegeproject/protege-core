@@ -13,6 +13,11 @@
    <property name = "pluginName"      value = "OWLViz"/>
    <property name = "owl.path"         value = "edu.stanford.smi.protegex.owl"/>
 
+
+   <!-- 
+     #  ********** Finding Protege Libraries. *************
+     -->
+
    <target name="checkProtegeHome">
        <condition property="protege.home.set">
            <available file="${protege.home}/protege.jar" type="file"/>
