@@ -533,7 +533,7 @@ public class SimpleFrameStore implements FrameStore {
         swizzleInstance(instance);
     }
 
-    private void swizzleInstance(Instance instance) {
+    public void swizzleInstance(Instance instance) {
         // Log.enter(this, "swizzleInstance", instance);
         FrameFactory factory = getFrameFactory();
         Collection types = getDirectTypes(instance);
