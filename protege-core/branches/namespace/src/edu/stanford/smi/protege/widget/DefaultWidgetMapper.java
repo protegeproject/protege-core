@@ -61,7 +61,7 @@ public class DefaultWidgetMapper implements WidgetMapper {
         }
         // This logic should probably be transfered to PluginUtilities
         String className = PluginUtilities.getDefaultWidgetClassName(isMultiple, type, allowedCls, slot);
-        if (!isSuitable(cls, slot, facet, className)) {
+        if (className != null && !isSuitable(cls, slot, facet, className)) {
             className = PluginUtilities.getDefaultWidgetClassName(isMultiple, type, allowedCls);
         }
         return className;
