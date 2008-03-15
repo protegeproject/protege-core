@@ -255,6 +255,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
 
     public void localize(KnowledgeBase kb) {
         knowledgeBase = kb;
+        id.localize(kb);
     }
 
     public String getName() {
