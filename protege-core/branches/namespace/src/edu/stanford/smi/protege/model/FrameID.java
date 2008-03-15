@@ -9,10 +9,15 @@ import java.io.Serializable;
 public class FrameID implements Serializable, Localizable {
     private static final long serialVersionUID = -3804918126573053937L;
     private String name;
+    private int hashCode;
 
     public FrameID(String name) {
         if (name != null) {
             name = name.intern();
+            hashCode = name.hashCode() + 42;
+        }
+        else {
+        	hashCode = 0;
         }
         this.name = name;
     }
@@ -27,12 +32,12 @@ public class FrameID implements Serializable, Localizable {
             return false;
         }
         FrameID other = (FrameID) o;
-        return name.equals(other.name);
+        return name == other.name;
     }
 
     @Override
     public final int hashCode() {
-        return name.hashCode() + 42;
+        return hashCode;
     }
 
     @Override
