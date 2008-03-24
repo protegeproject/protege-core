@@ -463,13 +463,14 @@ public class SystemFrames {
         String name = frame.getFrameID().getName();
         fs.setDirectOwnSlotValues(frame, getNameSlot(), Collections.singleton(name));
         fs.setDirectOwnSlotValues(frame, getDirectTypesSlot(), types);
-        /*
         for (Cls type : types) {
-            Collection framesOfType = new ArrayList(fs.getDirectOwnSlotValues(type, getDirectInstancesSlot()));
-            framesOfType.add(frame);
-            fs.setDirectOwnSlotValues(type, getDirectInstancesSlot(), framesOfType);
+        	Collection framesOfType = new ArrayList(fs.getDirectOwnSlotValues(type, getDirectInstancesSlot()));
+        	if (!framesOfType.contains(frame)) {
+        		framesOfType.add(frame);
+        		fs.setDirectOwnSlotValues(type, getDirectInstancesSlot(), framesOfType);
+        	}
         }
-        */
+
     }
 
 
