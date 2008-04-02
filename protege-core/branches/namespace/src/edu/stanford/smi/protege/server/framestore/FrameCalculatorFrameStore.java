@@ -35,6 +35,10 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
         this.frameCalculator = frameCalculator;
     }
     
+    public FrameCalculator getFrameCalculator() {
+        return frameCalculator;
+    }
+    
     @Override
     public List getDirectTemplateSlotValues(Cls cls, Slot slot) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
