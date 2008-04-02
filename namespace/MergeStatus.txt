@@ -1,0 +1,22 @@
+New branch created at trunk revision 7573
+  Done by merging the diff between the old trunk and the old namespace branch
+  Merge Details:
+     svn merge 
+      http://smi-protege/repos/protege/protege-core/trunk@2783 
+      http://smi-protege/repos/protege/protege-core/branches/namespace .
+
+     svn info
+       Path: .URL: http://smi-protege/repos/protege/protege-core/trunk
+       Revision: 7573
+
+Merged to trunk revision 8452
+
+Merged to trunk revision 8540
+
+Merged to trunk revision 8768
+
+Merged to trunk revision 8921
+
+Merged to trunk revision 9173
+
+Merged to trunk revision 9393
