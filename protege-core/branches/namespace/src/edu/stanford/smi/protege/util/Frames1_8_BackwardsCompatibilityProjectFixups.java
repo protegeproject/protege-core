@@ -97,7 +97,7 @@ public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFix
 
     public static void fix(KnowledgeBase kb) {
         if (shouldUpdate(kb)) {
-        	Log.getLogger().info(" ** !! ** Frames Project Fixup");
+        	Log.getLogger().info("Backwards compatibility fixup for frames project file");
             updateStandardForms(kb);
         }
     }
