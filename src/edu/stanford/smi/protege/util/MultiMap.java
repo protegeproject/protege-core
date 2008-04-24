@@ -8,19 +8,19 @@ import java.util.*;
  *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public abstract class MultiMap<X,Y> {
-    private Map<X,Collection<Y>> _map;
+public abstract class MultiMap {
+    private Map _map;
 
     protected MultiMap() {
         this(11);
     }
 
     protected MultiMap(int initSize) {
-        _map = new HashMap<X, Collection<Y>>(initSize);
+        _map = new HashMap(initSize);
     }
 
-    public void addValue(X key, Y value) {
-        Collection<Y> c =  _map.get(key);
+    public void addValue(Object key, Object value) {
+        Collection c = (Collection) _map.get(key);
         if (c == null) {
             c = createCollection();
             _map.put(key, c);
@@ -28,31 +28,27 @@ public abstract class MultiMap<X,Y> {
         c.add(value);
     }
 
-    public void addValues(X key, Collection<Y> values) {
-        Collection<Y> c = _map.get(key);
-        if (c == null) {
-            c = createCollection();
-            _map.put(key, c);
-        }
+    public void addValues(Object key, Collection values) {
+        Collection c = (Collection) _map.get(key);
         c.addAll(values);
     }
 
-    public abstract Collection<Y> createCollection();
+    public abstract Collection createCollection();
 
-    public Collection<X> getKeys() {
+    public Collection getKeys() {
         return _map.keySet();
     }
 
-    public Collection<Y> getValues(X key) {
-        return _map.get(key);
+    public Collection getValues(Object key) {
+        return (Collection) _map.get(key);
     }
 
-    public Collection<Y> removeKey(X key) {
-        return _map.remove(key);
+    public Collection removeKey(Object key) {
+        return (Collection) _map.remove(key);
     }
 
-    public void removeValue(X key, Y value) {
-        Collection<Y> c =  _map.get(key);
+    public void removeValue(Object key, Object value) {
+        Collection c = (Collection) _map.get(key);
         if (c == null) {
             // Log.trace("key not found", this, "removeValue", key, value);
         } else {
@@ -63,12 +59,8 @@ public abstract class MultiMap<X,Y> {
         }
     }
 
-    public void removeValues(X key, Collection<Y> values) {
-        Collection<Y> c = _map.get(key);
+    public void removeValues(Object key, Collection values) {
+        Collection c = (Collection) _map.get(key);
         c.removeAll(values);
-    }
-    
-    public void clear() {
-        _map.clear();
     }
 }

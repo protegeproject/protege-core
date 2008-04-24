@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 
@@ -44,7 +45,6 @@ import edu.stanford.smi.protege.event.WidgetEvent;
 import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.plugin.PluginUtilities;
-import edu.stanford.smi.protege.plugin.ProjectFixupsPluginManager;
 import edu.stanford.smi.protege.resource.Files;
 import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 import edu.stanford.smi.protege.ui.InstanceDisplay;
@@ -108,22 +108,17 @@ public class Project {
 
     private static final String CLASS_OPTIONS = "Options";
     private static final String SLOT_OPTIONS = "options";
-    private static final String SLOT_OPTIONS_INSTANCE_NAME = "option_instance";
     private static final String SLOT_DISPLAY_HIDDEN_FRAMES = "display_hidden_classes";
     private static final String SLOT_DISPLAY_ABSTRACT_CLASS_ICON = "display_abstract_class_icon";
     private static final String SLOT_DISPLAY_MULTI_PARENT_CLASS_ICON = "display_multi_parent_class_icon";
     private static final String SLOT_DISPLAY_REMOVE_CONFIRMATION_DIALOG = "confirm_on_remove";
     private static final String SLOT_UPDATE_MODIFICATION_SLOTS = "update_modification_slots";
     private static final String SLOT_TABBED_INSTANCE_FORM_LAYOUT = "tabbed_instance_form_layout";
-    private static final String SLOT_IS_UNDO_ENABLED = "undo_enabled";
-
     private static final String CLIENT_PROPERTY_ADD_NAME_ON_INSTANCE_FORM = "add_name_on_instance_form";
     private static final String CHANGE_TRACKING_ACTIVE = "change_tracking_active";
-    private static final String SUPRESS_INSTANCE_COUNT_DISPLAY = "suppress_instance_counting";
-
-    protected static final String CLASS_MAP = "Map";
-    protected static final String SLOT_PROPERTY_MAP = "property_map";
-    private static final String SLOT_PROPERTY_MAP_INSTANCE_NAME = "property_map_instance";
+    
+    private static final String CLASS_MAP = "Map";
+    private static final String SLOT_PROPERTY_MAP = "property_map";
 
     private static final int WINDOW_OFFSET_PIXELS = 25;
 
@@ -133,16 +128,15 @@ public class Project {
     private Instance _projectInstance;
     private KnowledgeBase _domainKB;
     private String _defaultClsWidgetClassName;
-
-    private Map<Cls, WidgetDescriptor> _activeClsWidgetDescriptors = new HashMap<Cls, WidgetDescriptor>();
-    private Map<Cls, ClsWidget> _cachedDesignTimeClsWidgets = new HashMap<Cls, ClsWidget>(); 
-    
-    private Map<Object, JFrame> _frames = new HashMap<Object, JFrame>(); // <Instance or FrameSlotPair, JFrame>
-    private Map<JFrame, Object> _objects = new HashMap<JFrame, Object>(); // <JFrame, Instance or FrameSlotPair>
-    
+    private Map _activeClsWidgetDescriptors = new HashMap(); // <Cls,
+    // WidgetDescriptor>
+    private Map _cachedDesignTimeClsWidgets = new HashMap(); // Cls -> ClsWidget
+    private Map _frames = new HashMap(); // <Instance or FrameSlotPair, JFrame>
+    private Map _objects = new HashMap(); // <JFrame, Instance or FrameSlotPair>
     private WidgetMapper _widgetMapper;
 
-    private Tree<URI> projectURITree = new Tree<URI>();
+    // private Collection _cachedIncludedProjectURIs = new ArrayList();
+    private Tree projectURITree = new Tree();
     private URI activeRootURI;
 
     private Point _lastLocation;
@@ -154,25 +148,18 @@ public class Project {
     private Boolean _isReadonly;
     private Boolean _updateModificationSlots;
     private Boolean prettyPrintSlotWidgetLabels;
-    private Boolean _isUndoEnabled;
-
-    private Map<Cls, BrowserSlotPattern> _includedBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>();
-    private Map<Cls, BrowserSlotPattern> _directBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>(); 
-    private Set<Frame> _hiddenFrames = new HashSet<Frame>();
-    private Set<Frame> _includedHiddenFrames = new HashSet<Frame>();
+    private Map _includedBrowserSlotPatterns = new HashMap(); // <Cls,
+    // BrowserSlotPattern>
+    private Map _directBrowserSlotPatterns = new HashMap(); // <Cls,
+    // BrowserSlotPattern>
+    private Set _hiddenFrames = new HashSet();
+    private Set _includedHiddenFrames = new HashSet();
     private boolean _hasChanged;
-
-    private Collection<WidgetDescriptor> _tabWidgetDescriptors;
-
+    private Collection _tabWidgetDescriptors;
     private Map _clientInformation = new HashMap();
-    private Map _includedClientInformation = new HashMap();
-        
     private FrameCountsImpl _frameCounts = new FrameCountsImpl();
     private boolean isMultiUserServer;
     private Class _instanceDisplayClass;
-	
-	private Instance _includedClientInfoInstance;
-    
 
     private WindowListener _closeListener = new WindowAdapter() {
         public void windowClosing(WindowEvent event) {
@@ -189,41 +176,39 @@ public class Project {
     private KnowledgeBaseListener _knowledgeBaseListener = new KnowledgeBaseAdapter() {
         public void clsDeleted(KnowledgeBaseEvent event) {
             if (log.isLoggable(Level.FINE)) {
-              log.fine("cls eleted for project " + this + " event = " + event);
+              log.fine("clsDeleted for project " + this + " event = " + event);
             }
             Cls cls = event.getCls();
             _activeClsWidgetDescriptors.remove(cls);
-            ClsWidget widget = _cachedDesignTimeClsWidgets.remove(cls);
+            ClsWidget widget = (ClsWidget) _cachedDesignTimeClsWidgets.remove(cls);
             if (widget != null) {
                 ComponentUtilities.dispose((Component) widget);
             }
             _directBrowserSlotPatterns.remove(cls);
-            if (!event.isReplacementEvent()) {
-            	removeDisplay(cls);
-            }
+            removeDisplay(cls);
             _hiddenFrames.remove(cls);
         }
-    
-        public void frameReplaced(KnowledgeBaseEvent event) {        
-            onFrameReplace(event.getFrame(), event.getNewFrame());
+
+        public void frameNameChanged(KnowledgeBaseEvent event) {
+            Frame frame = event.getFrame();
+            WidgetDescriptor d = (WidgetDescriptor) _activeClsWidgetDescriptors.get(frame);
+            if (d != null) {
+                d.setName(frame.getName());
+            }
         }
 
         public void facetDeleted(KnowledgeBaseEvent event) {
             Frame facet = event.getFrame();
-            if (!event.isReplacementEvent()) {
-            	removeDisplay(facet);
-            }
+            removeDisplay(facet);
             _hiddenFrames.remove(facet);
         }
 
         public void slotDeleted(KnowledgeBaseEvent event) {
             Slot slot = (Slot) event.getFrame();
-            if (!event.isReplacementEvent()) {
-            	removeDisplay(slot);
-            }
-            Iterator<Map.Entry<Cls, BrowserSlotPattern>> i = _directBrowserSlotPatterns.entrySet().iterator();
+            removeDisplay(slot);
+            Iterator i = _directBrowserSlotPatterns.entrySet().iterator();
             while (i.hasNext()) {
-                Map.Entry<Cls, BrowserSlotPattern> entry = i.next();
+                Map.Entry entry = (Map.Entry) i.next();
                 BrowserSlotPattern pattern = (BrowserSlotPattern) entry.getValue();
                 if (pattern.contains(slot)) {
                     i.remove();
@@ -236,65 +221,11 @@ public class Project {
             super.instanceDeleted(event);
             // Log.enter(this, "instanceDeleted");
             Frame frame = event.getFrame();
-            if (!event.isReplacementEvent()) {
-            	removeDisplay(frame);
-            }
+            removeDisplay(frame);
             _hiddenFrames.remove(frame);
         }
     };
-	
-    protected void onFrameReplace(Frame oldFrame, Frame newFrame) {
-    	try {    		
-	    	if (oldFrame instanceof Cls) {	    		
-	            Cls oldCls = (Cls) oldFrame;
-	            
-	            //keep class form customizations
-	            WidgetDescriptor widgetDesc = _activeClsWidgetDescriptors.get(oldCls);
-	            if (widgetDesc != null) {
-	            	widgetDesc.setName(newFrame.getName());
-	            }
-	            
-	            //clear cached old class widget
-	            ClsWidget widget = _cachedDesignTimeClsWidgets.remove(oldCls);
-	            if (widget != null) {
-	                ComponentUtilities.dispose((Component) widget);
-	            }
-	            
-	            //replace the browser slot patterns
-	            BrowserSlotPattern bsp = _directBrowserSlotPatterns.get(oldCls);
-	            if (bsp != null) {
-	            	_directBrowserSlotPatterns.put((Cls) newFrame, bsp);
-	            }
-	            _directBrowserSlotPatterns.remove(oldCls);
-	     
-	    	} else if (oldFrame instanceof Slot) {
-	    		 Slot oldSlot = (Slot) oldFrame;
-	    		 
-	    		 //replace browser slot patterns
-	             Iterator<Map.Entry<Cls, BrowserSlotPattern>> i = _directBrowserSlotPatterns.entrySet().iterator();
-	             while (i.hasNext()) {
-	                 Map.Entry<Cls, BrowserSlotPattern> entry = i.next();
-	                 BrowserSlotPattern pattern = (BrowserSlotPattern) entry.getValue();
-	                 if (pattern.contains(oldSlot)) {
-	                	pattern.replaceSlot(oldSlot, (Slot) newFrame);
-	                 }
-	             }
-	    	}
-	    	//TODO: client information
-	    	
-            //update hidden frames
-            if (_hiddenFrames.contains(oldFrame)) {
-            	_hiddenFrames.add(newFrame);
-            }
-            _hiddenFrames.remove(oldFrame);
 
-	    	
-    	} catch (Throwable t) {
-    		Log.getLogger().log(Level.WARNING, "Error at replacing project information (Old: " + 
-    				oldFrame + " , New: " + newFrame + ")", t);
-    	}
-    }
-    
     static {
         SystemUtilities.initialize();
     }
@@ -319,8 +250,6 @@ public class Project {
         if (_projectKB != null) {
             _projectInstance = getProjectInstance(_projectKB);
         }
-        
-        //Multi-user client won't go in there
         if (_projectInstance != null && createDomainKB) {
             boolean load = uri != null;
             createDomainKnowledgeBase(factory, errors, load);
@@ -360,9 +289,9 @@ public class Project {
     }
 
     public void clearCachedWidgets() {
-        Iterator<ClsWidget> i = _cachedDesignTimeClsWidgets.values().iterator();
+        Iterator i = _cachedDesignTimeClsWidgets.values().iterator();
         while (i.hasNext()) {
-            ClsWidget widget = i.next();
+            ClsWidget widget = (ClsWidget) i.next();
             ComponentUtilities.dispose((Component)widget);
         }
         _cachedDesignTimeClsWidgets.clear();
@@ -581,21 +510,11 @@ public class Project {
         _cachedDesignTimeClsWidgets = null;
         _frames = null;
         _objects = null;
-        
-        //_widgetMapper = null;
-        
-        _directBrowserSlotPatterns = null;
-        _includedBrowserSlotPatterns = null;
-        
-        _clientInformation = null;
-        _includedClientInformation = null;
-        
-        PropertyMapUtil.dispose();
     }
 
     private void clearWidgets() {
         if (_cachedDesignTimeClsWidgets != null) {
-            Iterator<ClsWidget> i = _cachedDesignTimeClsWidgets.values().iterator();
+            Iterator i = _cachedDesignTimeClsWidgets.values().iterator();
             while (i.hasNext()) {
                 JComponent widget = (JComponent) i.next();
                 ComponentUtilities.dispose(widget);
@@ -634,16 +553,16 @@ public class Project {
         return getBrowserSlotPattern(cls).getSlots();
     }
 
-    public Collection<Cls> getClsesWithDirectBrowserSlots() {
+    public Collection getClsesWithDirectBrowserSlots() {
         return _directBrowserSlotPatterns.keySet();
     }
 
-    public Collection<Cls> getClsesWithCustomizedForms() {
+    public Collection getClsesWithCustomizedForms() {
         return _activeClsWidgetDescriptors.keySet();
     }
 
-    public Collection<Frame> getHiddenFrames() {
-        return new HashSet<Frame>(_hiddenFrames);
+    public Collection getHiddenFrames() {
+        return new HashSet(_hiddenFrames);
     }
 
     public BrowserSlotPattern getBrowserSlotPattern(Cls cls) {
@@ -655,7 +574,7 @@ public class Project {
     }
 
     /**
-     * @deprecated Use {@link #getInheritedBrowserSlotPattern(Cls)}
+     * @deprecated
      */
     public Slot getInheritedBrowserSlot(Cls cls) {
         return getPatternSlot(getInheritedBrowserSlotPattern(cls));
@@ -689,7 +608,7 @@ public class Project {
     }
 
     public ClsWidget getDesignTimeClsWidget(Cls cls) {
-        ClsWidget widget = _cachedDesignTimeClsWidgets.get(cls);
+        ClsWidget widget = (ClsWidget) _cachedDesignTimeClsWidgets.get(cls);
         if (widget == null) {
             // Log.enter(this, "createClsWidget", cls, new Boolean(designTime));
             WidgetDescriptor d = getClsWidgetDescriptor(cls);
@@ -713,7 +632,7 @@ public class Project {
     }
 
     public BrowserSlotPattern getDirectBrowserSlotPattern(Cls cls) {
-        return _directBrowserSlotPatterns.get(cls);
+        return (BrowserSlotPattern) _directBrowserSlotPatterns.get(cls);
     }
 
     public boolean getDisplayAbstractClassIcon() {
@@ -861,30 +780,26 @@ public class Project {
         return URIUtilities.getBaseName(_uri);
     }
 
-    public Collection<JFrame> getOpenWindows() {
+    public Collection getOpenWindows() {
         return Collections.unmodifiableCollection(_frames.values());
     }
 
     private boolean getOption(String slotName, boolean defaultValue) {
-        Object b = getOwnSlotValue(getOptionsInstance(), slotName);
-        
-        if (b != null && b instanceof Boolean)
-        	return ((Boolean)b).booleanValue();
-        
-        return defaultValue;
+        Boolean b = (Boolean) getOwnSlotValue(getOptionsInstance(), slotName);
+        return (b == null) ? defaultValue : b.booleanValue();
     }
 
     private Instance getOptionsInstance() {
         Instance instance = (Instance) getProjectSlotValue(SLOT_OPTIONS);
         if (instance == null) {
             Cls optionsCls = _projectKB.getCls(CLASS_OPTIONS);
-            instance = _projectKB.createInstance(SLOT_OPTIONS_INSTANCE_NAME, optionsCls);
+            instance = _projectKB.createInstance(null, optionsCls);
             setProjectSlotValue(SLOT_OPTIONS, instance);
         }
         return instance;
     }
 
-    protected static Object getOwnSlotValue(Frame frame, String slotName) {
+    private static Object getOwnSlotValue(Frame frame, String slotName) {
         return ModelUtilities.getDirectOwnSlotValue(frame, slotName);
     }
 
@@ -938,7 +853,7 @@ public class Project {
         if (cls == null) {
             Log.getLogger().severe("no project class");
         } else {
-            Collection<Instance> instances = cls.getDirectInstances();
+            Collection instances = cls.getDirectInstances();
             // Assert.areEqual(instances.size(), 1);
             result = (Instance) CollectionUtilities.getFirstItem(instances);
         }
@@ -1037,11 +952,11 @@ public class Project {
         return descriptor;
     }
 
-    public Collection<WidgetDescriptor> getTabWidgetDescriptors() {
+    public Collection getTabWidgetDescriptors() {
         if (_tabWidgetDescriptors == null) {
             Set availableTabNames = new HashSet(PluginUtilities.getAvailableTabWidgetClassNames());
 
-            _tabWidgetDescriptors = new ArrayList<WidgetDescriptor>();
+            _tabWidgetDescriptors = new ArrayList();
             Iterator i = getProjectSlotValues(SLOT_TABS).iterator();
             while (i.hasNext()) {
                 Instance instance = (Instance) i.next();
@@ -1087,7 +1002,7 @@ public class Project {
     }
 
     public boolean hasCustomizedDescriptor(Cls cls) {
-        WidgetDescriptor d = _activeClsWidgetDescriptors.get(cls);
+        WidgetDescriptor d = (WidgetDescriptor) _activeClsWidgetDescriptors.get(cls);
         if (d != null && !d.isDirectlyCustomizedByUser()) {
             d = null;
         }
@@ -1177,55 +1092,42 @@ public class Project {
     }
 
     public void loadBrowserSlots(Instance projectInstance) {
-    	PropertyList browserSlots = getPropertyList(projectInstance, SLOT_BROWSER_SLOTS);
-    	Iterator i = browserSlots.getNames().iterator();
-    	while (i.hasNext()) {
-    		String clsName = (String) i.next();
-    		if (clsName == null) {
-    			Log.getLogger().warning("null class name");
-    		} else {
-    			Cls cls = _domainKB.getCls(clsName);
-    			String patternText = browserSlots.getString(clsName);
-    			BrowserSlotPattern slotPattern = BrowserSlotPattern.createFromSerialization(_domainKB, patternText);
-    			
-    			if (cls != null && slotPattern != null) {
-    				recordDirectBrowserSlotPattern(cls, slotPattern);
-    				if (isIncluded(projectInstance)) {
-    					_includedBrowserSlotPatterns.put(cls, slotPattern);
-    					
-    					//TT - do only if server - should not be saved because they are part of _includedBrowserSlotPattern
-    					if (isMultiUserServer()) {
-    						copyIncludedBrowserSlot(projectInstance, clsName, patternText);
-    					}
-    					
-    				}
-    			} else {
-    				// Log.warning("Bad frame properties: " + clsName + " " + slotName, this, "loadFrameProperties");
-    				browserSlots.remove(clsName);
-    			}
-    		}
-    	}
-
-    	// TODO this needs to be handled more cleanly
-    	Slot nameSlot = _domainKB.getSlot(Model.Slot.NAME);
-    	Cls rootMetaCls = _domainKB.getCls(Model.Cls.ROOT_META_CLASS);
-    	if (rootMetaCls == null) {
-    		Cls classCls = _domainKB.getCls(Model.Cls.CLASS);
-    		recordDirectBrowserSlotPattern(classCls, new BrowserSlotPattern(nameSlot));
-    		Cls slotCls = _domainKB.getCls(Model.Cls.SLOT);
-    		recordDirectBrowserSlotPattern(slotCls, new BrowserSlotPattern(nameSlot));
-    	} else {
-    		recordDirectBrowserSlotPattern(rootMetaCls, new BrowserSlotPattern(nameSlot));
-    	}
+        PropertyList browserSlots = getPropertyList(projectInstance, SLOT_BROWSER_SLOTS);
+        Iterator i = browserSlots.getNames().iterator();
+        while (i.hasNext()) {
+            String clsName = (String) i.next();
+            if (clsName == null) {
+                Log.getLogger().warning("null class name");
+            } else {
+                Cls cls = _domainKB.getCls(clsName);
+                String patternText = browserSlots.getString(clsName);
+                BrowserSlotPattern slotPattern = BrowserSlotPattern.createFromSerialization(
+                        _domainKB, patternText);
+                if (cls != null && slotPattern != null) {
+                    recordDirectBrowserSlotPattern(cls, slotPattern);
+                    if (projectInstance != _projectInstance) {
+                        _includedBrowserSlotPatterns.put(cls, slotPattern);
+                    }
+                } else {
+                    // Log.warning("Bad frame properties: " + clsName + " " +
+                    // slotName, this, "loadFrameProperties");
+                    browserSlots.remove(clsName);
+                }
+            }
+        }
+        // TODO this needs to be handled more cleanly
+        Slot nameSlot = _domainKB.getSlot(Model.Slot.NAME);
+        Cls rootMetaCls = _domainKB.getCls(Model.Cls.ROOT_META_CLASS);
+        if (rootMetaCls == null) {
+            Cls classCls = _domainKB.getCls(Model.Cls.CLASS);
+            recordDirectBrowserSlotPattern(classCls, new BrowserSlotPattern(nameSlot));
+            Cls slotCls = _domainKB.getCls(Model.Cls.SLOT);
+            recordDirectBrowserSlotPattern(slotCls, new BrowserSlotPattern(nameSlot));
+        } else {
+            recordDirectBrowserSlotPattern(rootMetaCls, new BrowserSlotPattern(nameSlot));
+        }
     }
 
-    
-    private void copyIncludedBrowserSlot(Instance projectInstance, String clsName, String patternText) {
-    	PropertyList browserSlots = getPropertyList(_projectInstance, SLOT_BROWSER_SLOTS);
-    	browserSlots.setString(clsName, patternText);    	
-    }
-    
-    
     private void loadCachedKnowledgeBaseObjects(Instance projectInstance) {
         loadClientInformation(projectInstance);
         loadNextFrameNumber(projectInstance);
@@ -1303,19 +1205,10 @@ public class Project {
                 recordHidden(frame, true);
                 if (isIncluded(projectInstance)) {
                     _includedHiddenFrames.add(frame);
-                    
-                  //TT - do only if server - should not be saved because they are part of _includedHiddenFrames
-                    if (isMultiUserServer()) {
-                    	copyIncludedHiddenFrameFlag(projectInstance, name);
-                    }
                 }
             }
         }
     }
-
-    private void copyIncludedHiddenFrameFlag(Instance projectInstance, String includedFrameName) {
-		addProjectSlotValue(SLOT_HIDDEN_FRAMES, includedFrameName);
-	}
 
     private boolean isIncluded(Instance projectInstance) {
         return _projectInstance != projectInstance;
@@ -1429,7 +1322,7 @@ public class Project {
             	clipsFactory.loadKnowledgeBase(kb, clsesReader, instancesReader, false, errors);
             	
                 if (errors.size() == 0) {
-                   ProjectFixupsPluginManager.fixProject(kb);
+                    BackwardsCompatibilityProjectFixups.fix(kb);
                 }
 
                 /*
@@ -1455,138 +1348,61 @@ public class Project {
     }
 
     /*
-     * This method merges the client information from the including projects.
-     * It also saves the included client info in an instance, so that at
-     * save time it can remove the included information.     
+     * This method doesn't merge the client information from included projects.
+     * It is unclear how to even do this. The included project client
+     * information shouldn't be written out into the including project file.
+     * This means that not only must the information from multiple project be
+     * merged there must be a way to separate it back out on save. I'm not
+     * really sure how to do this.
+     *
+     * For the moment the client information is just the information from the
+     * last loaded (outermost) project.
      */
-    private void loadClientInformation(Instance projectInstance) {   		
-   		
-   		Map clientInfoMap = getClientInfoMap(projectInstance);
-   		
-   		if (isIncluded(projectInstance)) {
-   			_includedClientInformation.putAll(clientInfoMap);   		
-   		}
-   		
-   		_clientInformation.putAll(clientInfoMap);
-   		
-   		/* 
-   		 * This is executed only once. Need to make a copy of the included client info in an instance
-   		 * otherwise the included client info is modified when the content of the map changes.
-   		 * (This happens esp. with the GraphWidget when it saves the positions of the nodes)
-   		 * 
-   		 */
-   		if (!isIncluded(projectInstance)) {
-   			PropertyMapUtil.store(_clientInformation, getClientInfoInstance(projectInstance));
-   			
-   			//store included client info in a map instance
-   			Cls cls = projectInstance.getKnowledgeBase().getCls(CLASS_MAP);
-            _includedClientInfoInstance = projectInstance.getKnowledgeBase().createInstance(null, cls);
-   			
-            PropertyMapUtil.store(_includedClientInformation, _includedClientInfoInstance);
-   		}
+    private void loadClientInformation(Instance projectInstance) {
+        Instance instance = (Instance) getOwnSlotValue(projectInstance, SLOT_PROPERTY_MAP);
+        if (instance == null) {
+            _clientInformation = new HashMap();
+        } else {
+            _clientInformation = PropertyMapUtil.load(instance, _domainKB);
+        }
     }
-        
-
-    private Instance getClientInfoInstance(Instance projectInstance) {
-    	Instance clientInfoInstance = (Instance) getOwnSlotValue(projectInstance, SLOT_PROPERTY_MAP);
-    	
-    	if (clientInfoInstance == null) {
-            Cls cls = projectInstance.getKnowledgeBase().getCls(CLASS_MAP);
-            clientInfoInstance = projectInstance.getKnowledgeBase().createInstance(null, cls);
-            ModelUtilities.addOwnSlotValue(projectInstance, SLOT_PROPERTY_MAP,  clientInfoInstance);
-    	}
-    	
-    	return clientInfoInstance;
-    }
-    
-    
-	private Map getClientInfoMap(Instance projectInstance) {    	
-    	Instance clientInfoInstance = (Instance) getOwnSlotValue(projectInstance, SLOT_PROPERTY_MAP);
-    	
-    	if (clientInfoInstance == null) {
-    		return new HashMap();
-    	}
-    	
-    	return PropertyMapUtil.load(clientInfoInstance, _domainKB);
-    }
-    
-
-    /**
-     * Utility method that copies the client information from the source project KB to a target project KB. 
-     * @param sourceKb - the source project KB
-     * @param targetKb - the target project KB
-     * @param domainKb - the target domain KB
-     * @param appendInfo - if true, it appends the source client information to the target client information. 
-     * If false, the target client info is overridden by the copied source client information
-     */
-    protected static void copyClientInformation(KnowledgeBase sourceKb, KnowledgeBase targetKb, KnowledgeBase domainKb, boolean appendInfo) {
-    	//source info
-    	Instance sourceProjectInstance = getProjectInstance(sourceKb);
-    	Instance sourceClientInfoInstance = (Instance) getOwnSlotValue(sourceProjectInstance, SLOT_PROPERTY_MAP);
-    	Map clientInformation = PropertyMapUtil.load(sourceClientInfoInstance, domainKb);
-    	
-    	//target info
-    	Instance targetProjectInstance = getProjectInstance(targetKb);
-    	Instance targetClientInfoInstance = (Instance) getOwnSlotValue(targetProjectInstance, SLOT_PROPERTY_MAP);
-    	
-    	if (targetClientInfoInstance != null) {
-    		if (appendInfo) {
-    			Map targetClientInformation = PropertyMapUtil.load(targetClientInfoInstance, domainKb);
-    			clientInformation.putAll(targetClientInformation);
-    		}
-    		targetClientInfoInstance.delete();
-    	}
-    	
-        Cls cls = targetKb.getCls(CLASS_MAP);
-        targetClientInfoInstance = targetKb.createInstance(null, cls);
-        ModelUtilities.addOwnSlotValue(targetProjectInstance, SLOT_PROPERTY_MAP,  targetClientInfoInstance);
-        
-        PropertyMapUtil.store(clientInformation, targetClientInfoInstance);
-	}
-        
 
     private void loadWidgetDescriptors(Instance projectInstance) {
-    	Iterator i = new ArrayList(getProjectSlotValues(projectInstance, SLOT_CUSTOMIZED_INSTANCE_WIDGETS)).iterator();
+        Iterator i = new ArrayList(getProjectSlotValues(projectInstance,
+                SLOT_CUSTOMIZED_INSTANCE_WIDGETS)).iterator();
+        while (i.hasNext()) {
+            Instance instance = (Instance) i.next();
 
-    	while (i.hasNext()) {
-    		Instance instance = (Instance) i.next();
+            // duplicate included widget descriptors into main project
+            if (isIncluded(projectInstance)) {
+                instance = (Instance) instance.deepCopy(_projectKB, null);
+            }
 
-			// duplicate included widget descriptors into main project
-    		if (isIncluded(projectInstance)) {
-    			Instance  includingInstance = (Instance) instance.deepCopy(_projectKB, null);
-    			
-    			//support forms inclusion in client-server
-    			if (isMultiUserServer()) {
-    				_projectInstance.addOwnSlotValue(_projectKB.getSlot(SLOT_CUSTOMIZED_INSTANCE_WIDGETS), includingInstance);
-    			}
-    			
-    			instance = includingInstance;
-    		}
-
-    		WidgetDescriptor d = WidgetDescriptor.create(instance);
-    		if (d == null) {
-    			Log.getLogger().severe("Invalid widget instance: " + instance);
-    			removeProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, instance);
-    		} else {
-    			Cls cls = _domainKB.getCls(d.getName());
-    			if (cls == null) {
-    				Log.getLogger().warning("Unknown class: " + d.getName());
-    				removeProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, instance);
-    			} else {
-    				if (isIncluded(projectInstance)) {
-    					d.setIncluded(true);
-    				}
-    				d.setDirectlyCustomizedByUser(true);
-    				// Log.getLogger().info("**" + cls + " " + d.getWidgetClassName());
-    				// be careful not to overwrite widgets on an "include"
-    				// command.
-    				WidgetDescriptor existingDescriptor = _activeClsWidgetDescriptors.get(cls);
-    				if (existingDescriptor == null || existingDescriptor.isIncluded()) {
-    					_activeClsWidgetDescriptors.put(cls, d);
-    				}
-    			}
-    		}
-    	}
+            WidgetDescriptor d = WidgetDescriptor.create(instance);
+            if (d == null) {
+                Log.getLogger().severe("Invalid widget instance: " + instance);
+                removeProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, instance);
+            } else {
+                Cls cls = _domainKB.getCls(d.getName());
+                if (cls == null) {
+                    Log.getLogger().warning("unknown class: " + d.getName());
+                    removeProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, instance);
+                } else {
+                    if (isIncluded(projectInstance)) {
+                        d.setIncluded(true);
+                    }
+                    d.setDirectlyCustomizedByUser(true);
+                    // Log.getLogger().info("**" + cls + " " + d.getWidgetClassName());
+                    // be careful not to overwrite widgets on an "include"
+                    // command.
+                    WidgetDescriptor existingDescriptor = (WidgetDescriptor) _activeClsWidgetDescriptors
+                            .get(cls);
+                    if (existingDescriptor == null || existingDescriptor.isIncluded()) {
+                        _activeClsWidgetDescriptors.put(cls, d);
+                    }
+                }
+            }
+        }
     }
     
     private void loadWidgetMapper(Instance projectInstance) {
@@ -1604,9 +1420,9 @@ public class Project {
     }
 
     private void makeTemporaryWidgetsIncluded(boolean b) {
-        Iterator<WidgetDescriptor> i = _activeClsWidgetDescriptors.values().iterator();
+        Iterator i = _activeClsWidgetDescriptors.values().iterator();
         while (i.hasNext()) {
-            WidgetDescriptor d = i.next();
+            WidgetDescriptor d = (WidgetDescriptor) i.next();
             if (d.isTemporary()) {
                 d.setIncluded(b);
             }
@@ -1679,28 +1495,28 @@ public class Project {
     }
 
     private void removeDisplay(Frame frame) {
-        JFrame jframe = _frames.get(frame);
+        JFrame jframe = (JFrame) _frames.get(frame);
         if (jframe != null) {
             ComponentUtilities.closeWindow(jframe);
         }
     }
 
     public void removeIncludedProjectReferences() {
-        Map<Cls, BrowserSlotPattern> browserSlots = new HashMap<Cls, BrowserSlotPattern>();
+        Map browserSlots = new HashMap();
         browserSlots.putAll(_includedBrowserSlotPatterns);
         browserSlots.putAll(_directBrowserSlotPatterns);
         _directBrowserSlotPatterns = browserSlots;
         _includedBrowserSlotPatterns.clear();
 
-        Iterator<WidgetDescriptor> i = _activeClsWidgetDescriptors.values().iterator();
+        Iterator i = _activeClsWidgetDescriptors.values().iterator();
         while (i.hasNext()) {
-            WidgetDescriptor d = i.next();
+            WidgetDescriptor d = (WidgetDescriptor) i.next();
             if (d.isIncluded()) {
                 d.setIncluded(false);
             }
         }
 
-        projectURITree = new Tree<URI>(getProjectURI());
+        projectURITree = new Tree(getProjectURI());
         setProjectSlotValue(SLOT_INCLUDED_PROJECTS, null);
 
         _hiddenFrames.addAll(_includedHiddenFrames);
@@ -1771,9 +1587,9 @@ public class Project {
     private void saveBrowserSlots() {
         PropertyList browserSlots = getPropertyList(SLOT_BROWSER_SLOTS);
         browserSlots.clear();
-        Iterator<Map.Entry<Cls, BrowserSlotPattern>> i = _directBrowserSlotPatterns.entrySet().iterator();
+        Iterator i = _directBrowserSlotPatterns.entrySet().iterator();
         while (i.hasNext()) {
-            Map.Entry<Cls, BrowserSlotPattern> entry = i.next();
+            Map.Entry entry = (Map.Entry) i.next();
             Cls cls = (Cls) entry.getKey();
             BrowserSlotPattern slotPattern = (BrowserSlotPattern) entry.getValue();
             if (!isIncludedBrowserSlotPattern(cls, slotPattern)) {
@@ -1784,9 +1600,9 @@ public class Project {
 
     private void saveCustomizedWidgets() {
         setProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, null);
-        Iterator<WidgetDescriptor> i = _activeClsWidgetDescriptors.values().iterator();
+        Iterator i = _activeClsWidgetDescriptors.values().iterator();
         while (i.hasNext()) {
-            WidgetDescriptor d = i.next();
+            WidgetDescriptor d = (WidgetDescriptor) i.next();
             if (!d.isTemporary() && !d.isIncluded()) {
                 addProjectSlotValue(SLOT_CUSTOMIZED_INSTANCE_WIDGETS, d.getInstance());
             }
@@ -1812,10 +1628,10 @@ public class Project {
     }
 
     private void saveHiddenFrameFlags() {
-        Collection<String> hiddenFrames = new ArrayList<String>();
-        Iterator<Frame> i = _hiddenFrames.iterator();
+        Collection hiddenFrames = new ArrayList();
+        Iterator i = _hiddenFrames.iterator();
         while (i.hasNext()) {
-            Frame frame = i.next();
+            Frame frame = (Frame) i.next();
             if (!_includedHiddenFrames.contains(frame)) {
                 String name = frame.getName();
                 if (name == null) {
@@ -1834,67 +1650,29 @@ public class Project {
     }
 
     private void saveProjectKB(Collection errors) {
-    	/* 
-    	 * This happens in OWL mode, if the owl model is opened with the JenaOWLModel calls
-    	 * and not with the project calls.
-    	 */
-    	if (_uri == null) {
-    		return;
-    	}
-    	
         String s = new File(_uri).toString();
         new ClipsKnowledgeBaseFactory().saveKnowledgeBase(_projectKB, null, s, errors);
     }
 
-    /**
-     * This method saves the client information in a property map instance.
-     * The included client information is filtered out from the save by
-     * comparing the keys and values of the client info with the ones from
-     * the _includedClientInformation map. If the included value has changed, \
-     * then the change is saved, otherwise not.  
-     */
     private void saveClientInformation() {
         if (!_clientInformation.isEmpty()) {
-            Instance propertyMapInstance = (Instance) getOwnSlotValue(_projectInstance, SLOT_PROPERTY_MAP);
+            Instance propertyMapInstance = (Instance) getOwnSlotValue(_projectInstance,
+                    SLOT_PROPERTY_MAP);
             if (propertyMapInstance == null) {
                 Cls cls = _projectKB.getCls(CLASS_MAP);
-                propertyMapInstance = _projectKB.createInstance(SLOT_PROPERTY_MAP_INSTANCE_NAME, cls);
-                ModelUtilities.addOwnSlotValue(_projectInstance, SLOT_PROPERTY_MAP, propertyMapInstance);
+                propertyMapInstance = _projectKB.createInstance(null, cls);
+                ModelUtilities.addOwnSlotValue(_projectInstance, SLOT_PROPERTY_MAP,
+                        propertyMapInstance);
             }
-            
-            /* 
-             * TT - don't save in the including project the included client info unless it has been modified.
-             * This is not a perfect algorithm, but it seems to work well.
-             * Don't modify the _clientInformation, because the user might have just saved but not exited the project
-             */ 
-            
-            Map copyClientInfo = new HashMap();
-            copyClientInfo.putAll(_clientInformation);
-            
-            _includedClientInformation = PropertyMapUtil.load(_includedClientInfoInstance, _domainKB);
-            
-            for (Iterator iterator = copyClientInfo.keySet().iterator(); iterator.hasNext();) {
-				Object key = iterator.next();
-				Object value = copyClientInfo.get(key);
-									
-				if (value != null) {
-					Object includedValue = _includedClientInformation.get(key);
-					
-					if (includedValue != null && value.equals(includedValue)) {
-						iterator.remove();
-					}
-				}
-			}
-            
-            PropertyMapUtil.store(copyClientInfo, propertyMapInstance);
+            PropertyMapUtil.store(_clientInformation, propertyMapInstance);
         }
     }
 
     private void saveTabWidgetInstances() {
-        Collection<Instance> instances = new ArrayList<Instance>();
-        Iterator<WidgetDescriptor> i = _tabWidgetDescriptors.iterator();
+        Collection instances = new ArrayList();
+        Iterator i = _tabWidgetDescriptors.iterator();
         while (i.hasNext()) {
-            WidgetDescriptor d = i.next();
+            WidgetDescriptor d = (WidgetDescriptor) i.next();
             String clsName = d.getWidgetClassName();
             if (SystemUtilities.forName(clsName) != null) {
                 instances.add(d.getInstance());
@@ -1984,7 +1762,7 @@ public class Project {
     }
 
     private void setOption(String slotName, boolean value) {
-        ModelUtilities.setOwnSlotValue(getOptionsInstance(), slotName, Boolean.valueOf(value));
+        setOwnSlotValue(getOptionsInstance(), slotName, Boolean.valueOf(value));
     }
 
     private static void setOwnSlotValue(Frame frame, String slotName, Object value) {
@@ -2067,7 +1845,7 @@ public class Project {
     }
 
     public void setTabWidgetDescriptorOrder(Collection c) {
-        _tabWidgetDescriptors = new ArrayList<WidgetDescriptor>(c);
+        _tabWidgetDescriptors = new ArrayList(c);
         saveTabWidgetInstances();
     }
 
@@ -2086,7 +1864,7 @@ public class Project {
 
     public JFrame show(Cls cls, Slot slot) {
         FrameSlotCombination combination = new FrameSlotCombination(cls, slot);
-        JFrame frame = _frames.get(combination);
+        JFrame frame = (JFrame) _frames.get(combination);
         if (frame == null) {
             frame = createFrame(cls, slot);
             setIconImage(frame, slot);
@@ -2099,7 +1877,7 @@ public class Project {
 
     public JFrame show(Instance instance) {
         Assert.assertNotNull("instance", instance);
-        JFrame frame = _frames.get(instance);
+        JFrame frame = (JFrame) _frames.get(instance);
         if (frame == null) {
             frame = createFrame(instance);
             setIconImage(frame, instance);
@@ -2155,7 +1933,7 @@ public class Project {
     }
 
     private WidgetDescriptor getClsWidgetDescriptor(Cls cls) {
-        WidgetDescriptor d = _activeClsWidgetDescriptors.get(cls);
+        WidgetDescriptor d = (WidgetDescriptor) _activeClsWidgetDescriptors.get(cls);
         if (d == null) {
             d = WidgetDescriptor.create(_projectKB);
             d.setWidgetClassName(_defaultClsWidgetClassName);
@@ -2190,12 +1968,15 @@ public class Project {
      *
      * <pre><code>
      *
+     *
      *        a.equals(new MyClass(a.toString());
+     *
      *
      * </pre></code>
      *
      * <br>
-     * 
+     * <br>
+     *
      * A typical use of "client information" is the following:
      *
      * <pre><code>
@@ -2292,19 +2073,6 @@ public class Project {
     public void setTabbedInstanceFormLayout(boolean b) {
         setOption(SLOT_TABBED_INSTANCE_FORM_LAYOUT, b);
     }
-
-    
-	public boolean isUndoOptionEnabled() {	
-		if (_isUndoEnabled == null) {
-			_isUndoEnabled = loadOption(SLOT_IS_UNDO_ENABLED, !isMultiUserClient());			
-		}
-		return _isUndoEnabled.booleanValue();
-	}
-
-	public void setUndoOption(boolean enabled) {
-		_isUndoEnabled = Boolean.valueOf(enabled);
-		setOption(SLOT_IS_UNDO_ENABLED, enabled);		
-	}
     
     public boolean getAddNameOnInstanceForm() {
     	String addNameOnInstanceForm = (String) getClientInformation(CLIENT_PROPERTY_ADD_NAME_ON_INSTANCE_FORM);
@@ -2333,19 +2101,5 @@ public class Project {
     public void setChangeTrackingActive(boolean b) {    	
         setClientInformation(CHANGE_TRACKING_ACTIVE, b ? "true" : "false");
     }
-    
-    public boolean getSuppressInstanceCounting() {
-        String suppressInstanceCounting = (String) getClientInformation(SUPRESS_INSTANCE_COUNT_DISPLAY);
-        
-        if (suppressInstanceCounting == null || !suppressInstanceCounting.equals("true")) {
-            return false;
-        }
-        
-        return true;
-    }
-
-    public void setSuppressInstanceCounting(boolean b) {        
-        setClientInformation(SUPRESS_INSTANCE_COUNT_DISPLAY, b ? "true" : "false");
-    }
-
+   
 }

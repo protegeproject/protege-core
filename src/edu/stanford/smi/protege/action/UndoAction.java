@@ -17,25 +17,20 @@ public class UndoAction extends ProjectAction {
 
     public UndoAction(boolean large) {
         super(ResourceKey.UNDO_ACTION, large);
-        CommandManager manager = getCommandManager();        
-        if (manager == null || isUndoEnabled()) {
+        CommandManager manager = getCommandManager();
+        if (manager == null) {
             setEnabled(false);
         } else {
-            setEnabled(isUndoEnabled() & manager.canUndo());
+            setEnabled(manager.canUndo());
             manager.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent event) {
-                    setEnabled(isUndoEnabled() & getCommandManager().canUndo());
+                    setEnabled(getCommandManager().canUndo());
                 }
             });
         }
     }
 
-    private boolean isUndoEnabled() {
-    	KnowledgeBase kb = getKnowledgeBase();    	
-    	return (kb!=null && kb instanceof DefaultKnowledgeBase && ((DefaultKnowledgeBase)kb).isUndoEnabled() && kb.getProject().isUndoOptionEnabled());
-	}
-
-	public Object getValue(String key) {
+    public Object getValue(String key) {
         Object value = super.getValue(key);
         if (key.equals(NAME)) {
             // Log.stack("", this, "getValue", key);

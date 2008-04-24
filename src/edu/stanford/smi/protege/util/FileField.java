@@ -19,8 +19,6 @@ public class FileField extends JComponent {
     private JTextField _textField;
     private String _description;
     private String _extension;
-    //FIXME: later: TT - remove the _description and the _extension and use only the _extension Filter 
-    private ExtensionFilter _extensionFilter;
     private ChangeListener _changeListener;
     private int _fileMode;
     private int _dialogType = JFileChooser.OPEN_DIALOG;
@@ -30,20 +28,13 @@ public class FileField extends JComponent {
         this(label, path, extension, description, JFileChooser.FILES_ONLY);
     }
 
-    /** Constructor for selecting a file with multiple extension filters */
-    public FileField(String label, String path, ExtensionFilter extensionFilter) {
-        this(label, path, "", "", JFileChooser.FILES_ONLY);
-        _extensionFilter = extensionFilter;
-    }
-
-    
     /** Constructor for selecting a directory */
     public FileField(String label, String path, String description) {
         this(label, path, "", description, JFileChooser.DIRECTORIES_ONLY);
     }
     
     public void setDialogType(int dialogType) {
-        //Log.getLogger().info("setting dialog type to : " + dialogType);
+        Log.getLogger().info("setting dialog type to : " + dialogType);
         _dialogType = dialogType;
     }
 
@@ -67,10 +58,7 @@ public class FileField extends JComponent {
     }
 
     protected void browse() {
-    	//FIXME: Use only the _extensionFilter
-        JFileChooser chooser = _extensionFilter == null ? 
-        			ComponentFactory.createFileChooser(_description, _extension) : 
-        			ComponentFactory.createFileChooser(null, _extensionFilter);
+        JFileChooser chooser = ComponentFactory.createFileChooser(_description, _extension);
         chooser.setApproveButtonText("Select");
         chooser.setFileSelectionMode(_fileMode);
         chooser.setDialogType(_dialogType);

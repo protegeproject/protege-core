@@ -48,7 +48,7 @@ import edu.stanford.smi.protege.widget.TabWidget;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class PluginUtilities {
-    private static Logger log = Log.getLogger(PluginUtilities.class);
+	private static transient Logger log = Log.getLogger(PluginUtilities.class);
 	
     private static final String TAB_WIDGET = "Tab-Widget";
     private static final String SLOT_WIDGET = "Slot-Widget";
@@ -144,28 +144,20 @@ public class PluginUtilities {
             setContextClassLoader(loader);
             clas = Class.forName(className, true, loader);
         } catch (ClassNotFoundException e) {
-          // This is the empty catch block situation but I don't
-          // think logging is helpful here - it is normal and it happens
-          // too often.
-            if (log.isLoggable(Level.FINEST)) {
-                log.log(Level.FINEST, "Standard Exception Ignored", e);
-                log.finest("Promiscuous = " + promiscuous);
+          // use the default logger because this is an empty catch 
+          // block situation
+            if (Log.getLogger().isLoggable(Level.FINE)) {
+              Log.getLogger().fine("class not found " + e);
+              Log.getLogger().fine("probably just a probe for the class...");
             }
             if (promiscuous) {
                 clas = promiscuousForName(className);
-                if (log.isLoggable(Level.FINEST)) {
-                    log.finest("Promiscuous found = " + clas);
-                }
             }
             //ESCA-JAVA0170 
         } catch (Throwable e) {
-        	//TT - for testing
-            Log.getLogger().log(Level.WARNING, e.getMessage(), e);
+            Log.getLogger().warning(e.getMessage());
         }
         setContextClassLoader(oldLoader);
-        if (log.isLoggable(Level.FINEST)) {
-            log.finest("Class loader found " + clas);
-        }
         return clas;
     }
 
@@ -178,21 +170,11 @@ public class PluginUtilities {
             try {
                 clas = Class.forName(className, true, loader);
             } catch (ClassNotFoundException e) {
-             // The dreaded empty catch block - as above I don't think
-             // logging helps.
-                if (log.isLoggable(Level.FINEST)) {
-                    log.log(Level.FINEST, "Standard Exception Ignored by loader " + loader, e);
-                }
+              Log.getLogger().fine("Class not found " + e);
+              Log.getLogger().fine("probably just a probe for the class...");
             } catch (NoClassDefFoundError error) {
-            	// The dreaded empty  catch block - as above I don't think 
-                // logging helps.
-                if (log.isLoggable(Level.FINEST)) {
-                    log.log(Level.FINEST, "Standard Exception Ignored by loader" + loader, error);
-                }
+            	Log.emptyCatchBlock(error);
             }
-        }
-        if (log.isLoggable(Level.FINEST)) {
-            log.finest("Promiscuous mode returned class = " + clas);
         }
         return clas;
     }
@@ -328,10 +310,9 @@ public class PluginUtilities {
     }
 
     private static boolean isSet(Attributes attributes, String name) {
-        boolean isSet = false;        
-        String s = attributes.getValue(name);        
+        boolean isSet = false;
+        String s = attributes.getValue(name);
         if (s != null) {
-        	s = s.trim();
             isSet = s.equalsIgnoreCase("true");
         }
         return isSet;
@@ -824,22 +805,6 @@ public class PluginUtilities {
             }
         }
         return false;
-    }
-    
-    // ------------------------------------------------------------------------------------
-    
-    public static boolean isPluginAvailable(String javaClassName) {
-    	boolean found = false;
-    	
-    	try {
-    		Class pluginClass = forName(javaClassName, true);
-    		
-    		found = (pluginClass != null);
-		} catch (Exception e) {
-			// An exception should never be thrown here..
-		}
-    	    	
-    	return found;
     }
 
 }

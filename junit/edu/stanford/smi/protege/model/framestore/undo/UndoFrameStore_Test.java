@@ -1,7 +1,5 @@
 package edu.stanford.smi.protege.model.framestore.undo;
 
-import java.util.Collections;
-
 import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.model.framestore.*;
 
@@ -20,7 +18,7 @@ public class UndoFrameStore_Test extends FrameStore_Test {
         _frameStore = null;
     }
 
-    public void testUndocreateCls() {
+    public void testUndoCreateCls() {
         Cls cls = createCls();
         String name = cls.getName();
         assertNotNull("name", name);
@@ -102,6 +100,7 @@ public class UndoFrameStore_Test extends FrameStore_Test {
         assertEquals("sixth count", count, newCount);
         Frame frame = _frameStore.getFrame(clsAName);
         assertNotNull("clsA", frame);
+
     }
 
     public void testUndoSimpleTransaction() {
@@ -126,47 +125,12 @@ public class UndoFrameStore_Test extends FrameStore_Test {
     }
 
     public void testUndoDeleteSlot() {
-        String templateSlotValue = "restricted";
-        String slotValue = "something";
-        Cls cls = createCls();
-        Slot slot = createSlot();
-        cls.addDirectTemplateSlot(slot);
-        _frameStore.setDirectTemplateSlotValues(cls, slot, Collections.singleton(templateSlotValue));
-        SimpleInstance i = createSimpleInstance(cls);
-        i.setDirectOwnSlotValue(slot, slotValue);
-        
-        assertTrue(_frameStore.getTemplateSlotValues(cls, slot).size() == 1);
-        assertTrue(_frameStore.getTemplateSlotValues(cls, slot).contains(templateSlotValue));
-        assertTrue(i.getDirectOwnSlotValues(slot).size() == 1);
-        assertTrue(i.getDirectOwnSlotValue(slot).equals(slotValue));
-        
-        _frameStore.deleteSlot(slot);
-        _frameStore.undo();
-        
-        assertTrue(_frameStore.getTemplateSlotValues(cls, slot).size() == 1);
-        assertTrue(_frameStore.getTemplateSlotValues(cls, slot).contains(templateSlotValue));
-        assertTrue(i.getDirectOwnSlotValues(slot).size() == 1);
-        assertTrue(i.getDirectOwnSlotValue(slot).equals(slotValue));
     }
 
     public void testUndoDeleteFacet() {
     }
 
-    /*
-     * ToDo This test should pass but currently the undo manager is broken.
-     * 
-     */
     public void testUndoDeleteSimpleInstance() {
-        String value = "hello";
-        Cls clsA = createCls();
-        Slot slotA = createSlot();
-        clsA.addDirectTemplateSlot(slotA);
-        Instance i1 = clsA.createDirectInstance("i1");
-        i1.setDirectOwnSlotValue(slotA, value);
-        assertEquals(value, i1.getDirectOwnSlotValue(slotA));
-        _frameStore.deleteSimpleInstance((SimpleInstance) i1);
-        _frameStore.undo();
-        assertEquals(value, i1.getDirectOwnSlotValue(slotA));
     }
 
     public void testUndoSetDirectOwnSlotValues() {

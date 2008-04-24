@@ -1,59 +1,78 @@
-; Thu Sep 14 11:02:16 PDT 2006
+; Thu Apr 13 09:29:26 PDT 2006
 ; 
 ;+ (version "3.2")
-;+ (build "Build 331")
+;+ (build "Build 316")
 
-([metaproject_Instance_0] of  Group
+([metaproject_Instance_0] of  User
 
-	(name "World"))
+	(description "Hey - we know who we are...")
+	(groups
+		[projects_00016]
+		[projects_00018])
+	(name "Timothy Redmond")
+	(password "turtle"))
 
-([metaproject_Instance_10001] of  Project
+([metaproject_Instance_2] of  User
 
-	(allowedGroupOperation [metaproject_Instance_10008])
-	(location "junit/pprj/scratch.pprj")
-	(name "scratch"))
-
-([metaproject_Instance_10002] of  User
-
-	(name "Guest")
-	(password "guest"))
-
-([metaproject_Instance_10003] of  User
-
-	(name "Jennifer Vendetti")
-	(password "jenny"))
-
-([metaproject_Instance_10004] of  User
-
-	(name "Natasha Noy")
-	(password "natalia"))
-
-([metaproject_Instance_10005] of  User
-
-	(name "Ray Fergerson")
-	(password "claudia"))
-
-([metaproject_Instance_10006] of  User
-
+	(groups
+		[projects_00016]
+		[projects_00018])
 	(name "Tania Tudorache")
 	(password "tania"))
 
-([metaproject_Instance_10007] of  User
+([projects_00014] of  User
 
-	(name "Timothy Redmond")
-	(password "troglodyte"))
+	(groups [projects_00016])
+	(name "Ray Fergerson")
+	(password "claudia"))
 
-([metaproject_Instance_10008] of  GroupOperation
+([projects_00015] of  User
 
-	(allowedGroup [metaproject_Instance_0])
-	(allowedOperation
-		[nci_metaproject_Instance_60009]
-		[nci_metaproject_Instance_60010]))
+	(groups [projects_00018])
+	(name "Jennifer Vendetti")
+	(password "jenny"))
 
-([nci_metaproject_Instance_60009] of  Operation
+([projects_00016] of  Group
 
-	(name "Read"))
+	(members
+		[projects_00019]
+		[projects_00014]
+		[metaproject_Instance_2]
+		[metaproject_Instance_0])
+	(name "Developers"))
 
-([nci_metaproject_Instance_60010] of  Operation
+([projects_00018] of  Group
 
-	(name "Write"))
+	(members
+		[projects_00019]
+		[projects_00015]
+		[metaproject_Instance_2]
+		[metaproject_Instance_0])
+	(name "Staff"))
+
+([projects_00019] of  User
+
+	(groups
+		[projects_00018]
+		[projects_00016])
+	(name "Natasha Noy")
+	(password "natalia"))
+
+([projects_00020] of  Project
+
+	(location "junit/pprj/scratch.pprj")
+	(name "scratch")
+	(owner [metaproject_Instance_0])
+	(readers [projects_00022])
+	(writers [projects_00022]))
+
+([projects_00022] of  Group
+
+	(description "A special group that implicitly contains all people")
+	(name "World"))
+
+([projects_00023] of  User
+
+	(description "Special user that is only a member of world.")
+	(name "Guest")
+	(password "guest"))

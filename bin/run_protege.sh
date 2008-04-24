@@ -5,7 +5,6 @@
 # Change to the script' working directory, should be the Protege root directory 
 cd $(dirname $0)
 
-
 DARWIN="false"
 
 if [  -x /usr/bin/uname ]
@@ -35,7 +34,7 @@ if [ ! -e $JAVA_PATH/java ]; then
 fi
 # ------------------- Where is Java? ------------------- 
 
-JARS=protege.jar:driver.jar:driver1.jar:looks-2.1.3.jar:unicode_panel.jar:plugins/edu.stanford.smi.protegex.changes/change-model.jar
+JARS=protege.jar:looks-2.1.3.jar:unicode_panel.jar:driver.jar:driver0.jar:driver1.jar:driver2.jar:plugins/edu.stanford.smi.protegex.changes/change-model.jar
 MAIN_CLASS=edu.stanford.smi.protege.Application
 
 # ------------------- JVM Options ------------------- 
@@ -44,11 +43,9 @@ OPTIONS=$MAXIMUM_MEMORY
 
 #Possible instrumentation options - debug, etc.
 #DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8100,server=y,suspend=n"
-#JCONSOLE=-Dcom.sun.management.jmxremote
 #PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100 -Dprotege.rmi.server.local.port=2388"
 #SSLOPTS="-Dprotege.rmi.usessl=true -Djavax.net.ssl.trustStore=protegeca -Djavax.net.ssl.trustStorePassword=protege"
-LOG4J_OPT="-Dlog4j.configuration=file:log4j.xml"
-OPTIONS="${OPTIONS} ${DEBUG_OPT} ${PORT_OPTS} ${SSLOPTS} ${LOG4J_OPT}"
+OPTIONS="${OPTIONS} ${DEBUG_OPT} ${PORT_OPTS} ${SSLOPTS}"
 # ------------------- JVM Options ------------------- 
 
 # Run Protege

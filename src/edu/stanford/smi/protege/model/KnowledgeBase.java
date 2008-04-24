@@ -1,21 +1,11 @@
 package edu.stanford.smi.protege.model;
 
-import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.net.*;
+import java.util.*;
 
-import edu.stanford.smi.protege.event.ClsListener;
-import edu.stanford.smi.protege.event.FacetListener;
-import edu.stanford.smi.protege.event.FrameListener;
-import edu.stanford.smi.protege.event.InstanceListener;
-import edu.stanford.smi.protege.event.KnowledgeBaseListener;
-import edu.stanford.smi.protege.event.SlotListener;
-import edu.stanford.smi.protege.event.TransactionListener;
-import edu.stanford.smi.protege.model.framestore.FrameStore;
-import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
-import edu.stanford.smi.protege.model.query.Query;
-import edu.stanford.smi.protege.util.Disposable;
+import edu.stanford.smi.protege.event.*;
+import edu.stanford.smi.protege.model.framestore.*;
+import edu.stanford.smi.protege.util.*;
 
 /**
  *  A container for frames.  Frame creation is funneled through here.
@@ -59,6 +49,13 @@ public interface KnowledgeBase extends Disposable {
 
     boolean areValidOwnSlotValues(Frame frame, Slot slot, Collection values);
 
+    /**
+     * @deprecated Renamed to #setFrameName(Frame, String)
+     */
+    void changeFrameName(Frame oldFrame, String newFrameName);
+
+    void setFrameName(Frame oldFrame, String newFrameName);
+
     boolean containsFrame(String name);
 
     /**
@@ -80,7 +77,7 @@ public interface KnowledgeBase extends Disposable {
      * @param id Pass null to cause the system to generate an id
      * @param name Pass null to cause the system to generate a name
      */
-    Cls createCls(FrameID id, Collection parents, Collection metaClses, boolean initializeDefaults);
+    Cls createCls(FrameID id, String name, Collection parents, Collection metaClses, boolean initializeDefaults);
 
     /**
      * @param name Pass null to cause the system to generate a name
@@ -96,6 +93,7 @@ public interface KnowledgeBase extends Disposable {
      * @param name Pass null to cause the system to generate a name
      */
     Facet createFacet(String name, Cls metaCls, boolean initializeDefaults);
+    // Facet createFacet(FrameID id, String name, Collection metaClses, boolean initializeDefaults);
 
     /**
      * @param name Pass null to cause the system to generate a name
@@ -116,19 +114,19 @@ public interface KnowledgeBase extends Disposable {
      * @param id Pass null to cause the system to generate an id
      * @param name Pass null to cause the system to generate a name
      */
-    Instance createInstance(FrameID id, Cls directType, boolean initializeDefaults);
+    Instance createInstance(FrameID id, String name, Cls directType, boolean initializeDefaults);
 
     /**
      * @param id Pass null to cause the system to generate an id
      * @param name Pass null to cause the system to generate a name
      */
-    Instance createInstance(FrameID id, Collection directTypes, boolean initializeDefaults);
+    Instance createInstance(FrameID id, String name, Collection directTypes, boolean initializeDefaults);
 
     /**
      * @param id Pass null to cause the system to generate an id
      * @param name Pass null to cause the system to generate a name
      */
-    SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean initializeDefaults);
+    SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean initializeDefaults);
 
     /**
      * @param name Pass null to cause the system to generate a name
@@ -149,6 +147,7 @@ public interface KnowledgeBase extends Disposable {
      * @param name Pass null to cause the system to generate a name
      */
     Slot createSlot(String name, Cls metaCls, Collection superslots, boolean initializeDefaults);
+    // Slot createSlot(FrameID id, String name, Collection metaClses, Collection superslots, boolean initializeDefaults);
 
     /**
      *
@@ -247,8 +246,6 @@ public interface KnowledgeBase extends Disposable {
     String getFrameNamePrefix();
 
     Collection<Frame> getFrames();
-    
-    FrameStoreManager getFrameStoreManager();
 
     /**
      * Gets frames with a particular own/template slot/facet value.
@@ -264,9 +261,9 @@ public interface KnowledgeBase extends Disposable {
 
     Instance getInstance(String fullname);
 
-    Collection<Instance> getInstances();
+    Collection getInstances();
 
-    Collection<Instance> getInstances(Cls cls);
+    Collection getInstances(Cls cls);
 
     String getInvalidOwnSlotValuesText(Frame frame, Slot slot, Collection values);
 
@@ -308,8 +305,8 @@ public interface KnowledgeBase extends Disposable {
     /**
      * @return A collection of #Reference instances.
      */
-    Collection<Reference> getReferences(Object o, int maxReferences);
-    Collection<Reference> getMatchingReferences(String s, int maxReferences);
+    Collection getReferences(Object o, int maxReferences);
+    Collection getMatchingReferences(String s, int maxReferences);
 
     Collection getClsesWithMatchingBrowserText(String s, Collection superclasses, int maxMatches);
     Cls getRootCls();
@@ -367,8 +364,6 @@ public interface KnowledgeBase extends Disposable {
     boolean isLoading();
 
     boolean isSlotMetaCls(Cls cls);
-    
-    boolean isUndoEnabled();
 
     boolean isValidOwnSlotValue(Frame frame, Slot slot, Object value);
 
@@ -458,7 +453,7 @@ public interface KnowledgeBase extends Disposable {
     Collection getOwnSlotDefaultValues(Frame frame, Slot slot);
     Collection getOwnSlotFacets(Frame frame, Slot slot);
     Collection getOwnSlotFacetValues(Frame frame, Slot slot, Facet facet);
-    Collection<Slot> getOwnSlots(Frame frame);
+    Collection getOwnSlots(Frame frame);
     Collection getOwnSlotValues(Frame frame, Slot slot);
     Object getDirectOwnSlotValue(Frame frame, Slot slot);
     List getDirectOwnSlotValues(Frame frame, Slot slot);
@@ -499,11 +494,11 @@ public interface KnowledgeBase extends Disposable {
     void addTemplateSlotValue(Cls cls, Slot slot, Object value);
     Slot getNameSlot();
     int getDirectInstanceCount(Cls cls);
-    Collection<Instance> getDirectInstances(Cls cls);
+    Collection getDirectInstances(Cls cls);
     int getDirectSubclassCount(Cls cls);
     Collection getDirectSubclasses(Cls cls);
     int getDirectSuperclassCount(Cls cls);
-    Collection<Cls> getDirectSuperclasses(Cls cls);
+    Collection getDirectSuperclasses(Cls cls);
     List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet);
     Collection getDirectTemplateSlots(Cls cls);
     List getDirectTemplateSlotValues(Cls cls, Slot slot);
@@ -624,63 +619,10 @@ public interface KnowledgeBase extends Disposable {
 
     Collection getCurrentUsers();
 
-        
-    /**
-     * Tells the system that one or more edit actions will follow which should
-     * be handled as a unit for undo.  Editing components should wrap set/add/remove
-     * calls to any resource in a 
-     * <CODE>beginTransaction() - commitTransaction() or rollbackTransaction()</CODE>
-     * block.
-     *
-     * @param name the human-readable name of the following transaction
-     * @return true
-     * @see #endTransaction()
-     */
     boolean beginTransaction(String name);
-    
-    boolean beginTransaction(String name, String appliedToFrameName);
-    
-    /**
-     * @deprecated Use #commitTransaction()
-     * Ends the recently opened transaction and commits the state.
-     *  
-     * @return 	true - if commit succeeds
-     * 			false - otherwise
-     * @see #beginTransaction
-     */
-    boolean endTransaction();
-    
-    
-    /**
-     * @deprecated Use #commitTransaction or #rollbackTransaction()
-     * Ends the recently opened transaction and commits or rollback based on
-     * doCommit value
-     *  
-     * @param doCommit 	true: commits transaction
-     * 					false: rolls back transaction
-     * @return true - if operation succeeded
-     * 		   false - if operation failed
-     */
     boolean endTransaction(boolean doCommit);
-    
-    /**
-     * Commits the recently opened transaction
-     * @return 	true - if commit suceeded
-     * 			false - otherwise
-     * @see #beginTransaction
-     */
-    boolean commitTransaction();
-    
-    
-    /**
-     * Rolls back the recently opened transaction
-     * @return	true - if rollback succeeded
-     * 			false - otherwise
-     * @see #beginTransaction
-     */
-    boolean rollbackTransaction();
 
-    
+    //
     void addDirectType(Instance instance, Cls directType);
     void removeDirectType(Instance instance, Cls directType);
     void moveDirectType(Instance instance, Cls directType, int index);
@@ -714,7 +656,7 @@ public interface KnowledgeBase extends Disposable {
      * Returns a list of FrameStores available to the system.  This includes both enabled and disabled frame stores.
      * @return List of #FrameStore
      */
-    List<FrameStore> getFrameStores();
+    List getFrameStores();
 
     FrameFactory getFrameFactory();
     SystemFrames getSystemFrames();
@@ -749,9 +691,4 @@ public interface KnowledgeBase extends Disposable {
     
     void addTransactionListener(TransactionListener listener);
     void removeTransactionListener(TransactionListener listener);
-    
-    public Set<Frame> executeQuery(Query q);
-    
-    Frame rename(Frame frame, String name);
-    void assertFrameName(Frame frame);
 }

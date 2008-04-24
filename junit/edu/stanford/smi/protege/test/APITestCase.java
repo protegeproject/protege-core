@@ -103,7 +103,6 @@ public abstract class APITestCase extends AbstractTestCase {
           return _dbType;
         }
       }
-      _dbType = null;
       return null;
     }
 
@@ -179,7 +178,7 @@ public abstract class APITestCase extends AbstractTestCase {
         return _isFileProject && _scratchProject != null;
     }
 
-    public static void closeProject() {
+    private static void closeProject() {
         if (_scratchProject != null) {
             _scratchProject.dispose();
             _scratchProject = null;

@@ -6,9 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -118,9 +116,6 @@ public class SetDisplaySlotPanel extends JComponent implements Disposable {
         Collection values = new ArrayList();
         if (shouldEnable) {
             Collection slots = _cls.getVisibleTemplateSlots();
-            
-            Collections.sort((List) slots, new FrameComparator());
-            
             Iterator i = slots.iterator();
             while (i.hasNext()) {
                 Slot slot = (Slot) i.next();
@@ -134,7 +129,6 @@ public class SetDisplaySlotPanel extends JComponent implements Disposable {
                 values.add(MULTISLOT);
             }
         }
-        
         DefaultComboBoxModel model = new DefaultComboBoxModel(values.toArray());
         _displaySlotComboBox.removeActionListener(_actionListener);
         _displaySlotComboBox.setModel(model);

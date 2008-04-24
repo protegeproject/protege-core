@@ -10,7 +10,6 @@ import java.util.Map;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.DefaultCls;
 import edu.stanford.smi.protege.model.DefaultFacet;
-import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.DefaultSimpleInstance;
 import edu.stanford.smi.protege.model.DefaultSlot;
 import edu.stanford.smi.protege.model.Facet;
@@ -19,8 +18,6 @@ import edu.stanford.smi.protege.model.FrameFactory;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
-import edu.stanford.smi.protege.model.Model;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.CollectionUtilities;
@@ -273,17 +270,4 @@ public class DefaultFrameFactory implements FrameFactory {
     public Collection getSimpleInstanceJavaClassIds() {
         return createRange(DEFAULT_SIMPLE_INSTANCE_JAVA_CLASS_ID);
     }
-
-    @SuppressWarnings("unchecked")
-    public Frame rename(Frame original, String name) {
-      if (original.getFrameID().getName().equals(name)) {
-        return original;
-      }
-      int javaClassId = getJavaClassId(original);                                   // somewhat
-      Frame newFrame = createFrameFromClassId(javaClassId, new FrameID(name));      //   wasteful...
-      DefaultKnowledgeBase kb = (DefaultKnowledgeBase) original.getKnowledgeBase();
-      kb.getHeadFrameStore().replaceFrame(original, newFrame);
-      return newFrame;
-    }
-
 }

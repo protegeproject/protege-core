@@ -20,7 +20,6 @@ import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -279,16 +278,14 @@ public class ProjectManager {
         boolean displayHidden = p.getDisplayHiddenClasses();
         boolean displayTabbedInstanceForm = p.getTabbedInstanceFormLayout();
         boolean addNameOnInstanceForm = p.getAddNameOnInstanceForm();
-        boolean supressInstancesCountDisplay = p.getSuppressInstanceCounting();
         if (p != null) {
            ConfigureProjectPanel panel = new ConfigureProjectPanel(p);
            String title = "Configure " + p.getProjectURI();
            int result = ModalDialog.showDialog(_rootPane, panel, title, ModalDialog.MODE_OK_CANCEL);
            if (result == ModalDialog.OPTION_OK) {
                 boolean needToRegenerate = (displayHidden != p.getDisplayHiddenClasses()) || 
-                    (displayTabbedInstanceForm != p.getTabbedInstanceFormLayout()) || 
-                    (addNameOnInstanceForm != p.getAddNameOnInstanceForm()) ||
-                    (supressInstancesCountDisplay != p.getSuppressInstanceCounting());
+                (displayTabbedInstanceForm != p.getTabbedInstanceFormLayout()) || 
+                (addNameOnInstanceForm != p.getAddNameOnInstanceForm());
                 reloadUI(needToRegenerate);
             }
         }
@@ -531,7 +528,7 @@ public class ProjectManager {
         long t2 = System.currentTimeMillis();
 
         //TODO: reimplement this when exception handling is improved. Handle here invalid project files
-        if (_currentProject != null && _currentProject.getProjectInstance() == null) {
+        if (_currentProject.getProjectInstance() == null) {
         	String errorMsg = "Unable to load file: " + uri
         			+ "\nPossible reasons:\n- The file has an unsupported file format\n- The file is not well-formed\n- The project file is corrupt";
         	Log.getLogger().severe(errorMsg);
@@ -842,21 +839,15 @@ public class ProjectManager {
         _headerPanel = new JPanel(new BorderLayout());
         _headerPanel.setBackground(Color.WHITE);
         _mainToolBar = new ProjectToolBar();
-        
         JComponent panel = Box.createHorizontalBox();
         panel.setOpaque(false);
-        panel.add(_mainToolBar);      
+        panel.add(_mainToolBar);
+
         _headerPanel.add(panel, BorderLayout.WEST);
-        
         _menuBar = new ProjectMenuBar();
-        JComponent panel2 = Box.createHorizontalBox();
-        panel2.setOpaque(false);
-        
         JLabel icon = ComponentFactory.createLabel(Icons.getLogo());
-        icon.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
-        
-        panel2.add(icon);     
-        _headerPanel.add(panel2, BorderLayout.EAST);
+        icon.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+        _headerPanel.add(icon, BorderLayout.EAST);
 
         _toolBarHolder = Box.createHorizontalBox();
         _toolBarHolder.setOpaque(false);
@@ -959,8 +950,6 @@ public class ProjectManager {
                     closeCurrentProject();
                     _currentProject = newProject;
                     displayCurrentProject();
-                } else {
-                	ModalDialog.showMessageDialog(getMainPanel(), "Could not revert to archived project version.\nSee console for details.", "Revert to version", ModalDialog.MODE_CLOSE);
                 }
             }
         }

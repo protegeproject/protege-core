@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
-import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 
@@ -22,27 +21,17 @@ public class RemoteClientInvocationHandler implements InvocationHandler {
   
   private KnowledgeBase kb;
   private RemoteServerNarrowFrameStore delegate;
-  private RemoteSession session;
-  
   private static Map<Method, Method> methodMap = new HashMap<Method, Method>();
   static {
     Method [] methods = NarrowFrameStore.class.getMethods();
     for (Method method : methods) {
       try {
-        if (method.getName().equals("executeQuery") || method.getName().equals("reinitialize")) {
-          continue;
-        }
-        Class[] nfsCallParams = (Class []) method.getParameterTypes();
-        Class[] rnfsCallParams = new Class[nfsCallParams.length + 1];
-        for (int index = 0; index < nfsCallParams.length; index++) {
-          rnfsCallParams[index] = nfsCallParams[index];
-        }
-        rnfsCallParams[nfsCallParams.length] = RemoteSession.class;
         Method remoteMethod = 
-            RemoteServerNarrowFrameStore.class.getMethod(method.getName(), rnfsCallParams);
+            RemoteServerNarrowFrameStore.class.getMethod(method.getName(), 
+                                                         (Class []) method.getParameterTypes());
         methodMap.put(method, remoteMethod);
-        if (log.isLoggable(Level.FINER)) {
-          log.finer("Mapped " + method + " to " + remoteMethod);
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("Mapped " + method + " to " + remoteMethod);
         }
       } catch (Exception e) {
         log.warning("NarrowFrameStore method " + method + " not found in RemoteServerNarrowFrameStore");
@@ -53,11 +42,9 @@ public class RemoteClientInvocationHandler implements InvocationHandler {
   
   
   public RemoteClientInvocationHandler(KnowledgeBase kb,
-                                       RemoteServerNarrowFrameStore delegate,
-                                       RemoteSession session) {
+                                       RemoteServerNarrowFrameStore delegate) {
     this.kb = kb;
     this.delegate = delegate;
-    this.session = session;
   }
   
   public NarrowFrameStore getNarrowFrameStore() {
@@ -78,16 +65,6 @@ public class RemoteClientInvocationHandler implements InvocationHandler {
         log.fine("No arguments");
       }
     }
-    if (log.isLoggable(Level.FINEST)) {
-        log.log(Level.FINEST, "Invoking the Narrow Frame Store with stack", new Exception());
-    }
-    int argslength = (args == null ? 0 : args.length);
-    Object [] remoteArgs = new Object[argslength + 1];
-    for (int index = 0; index < argslength; index++) {
-      remoteArgs[index] = args[index];
-    }
-    remoteArgs[argslength] = session;
-    
     ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
     ClassLoader correctLoader = kb.getClass().getClassLoader();
     if (currentLoader != correctLoader) {
@@ -98,7 +75,7 @@ public class RemoteClientInvocationHandler implements InvocationHandler {
     }
     try {
       Method remoteMethod = methodMap.get(method);
-      Object o =  remoteMethod.invoke(delegate, remoteArgs);
+      Object o =  remoteMethod.invoke(delegate, args);
       
       LocalizeUtils.localize(o, kb);
       return o;

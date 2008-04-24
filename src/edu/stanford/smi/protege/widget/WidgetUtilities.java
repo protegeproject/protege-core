@@ -1,24 +1,15 @@
 package edu.stanford.smi.protege.widget;
 
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Iterator;
+import java.awt.*;
+import java.lang.reflect.*;
+import java.util.*;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 
-import edu.stanford.smi.protege.model.Cls;
-import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.Project;
-import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.model.WidgetDescriptor;
+import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.plugin.ExportPlugin;
-import edu.stanford.smi.protege.ui.InstanceDisplay;
-import edu.stanford.smi.protege.util.Assert;
-import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.SystemUtilities;
-
+import edu.stanford.smi.protege.plugin.ProjectPlugin;
+import edu.stanford.smi.protege.util.*;
 
 /**
  * A collection of utilities useful for creating and working with widgets.
@@ -128,36 +119,6 @@ public class WidgetUtilities {
         }
         return isSuitable;
     }
-
-    
-    /**
-     * Sets all the widgets of an instance form to enabled/disabled according to the enabled argument. 
-     * @param instanceDisplay
-     * @param enabled
-     */
-    public static void setEnabledInstanceDisplay(InstanceDisplay instanceDisplay, boolean enabled) {
-    	if (instanceDisplay == null)
-    		return;
-    	
-    	Instance inst = instanceDisplay.getCurrentInstance();
-    	
-    	if (inst == null)
-    		return;
-    	
-    	ClsWidget clsWidget = instanceDisplay.getFirstClsWidget();
-    	
-    	if (clsWidget == null)
-    		return;
-    	
-    	for (Iterator iter = inst.getOwnSlots().iterator(); iter.hasNext();) {
-			Slot slot = (Slot) iter.next();			
-			SlotWidget slotWidget = clsWidget.getSlotWidget(slot);
-			if (slotWidget != null) {
-				((AbstractSlotWidget)slotWidget).setEnabled(enabled);
-				//((AbstractSlotWidget)slotWidget).setEditable(enabled);
-			}
-		}    	
-    }
     
     private static final String IS_EXPORT_SUITABLE_METHOD_NAME = "isSuitable";
     //private static final Class[] IS_EXPORT_SUITABLE_METHODS_ARGS = new Class[] { Project.class, Collection.class };
@@ -179,5 +140,4 @@ public class WidgetUtilities {
         // Log.getLogger().info("is suitable=" + isSuitable + " " + projectPlugin);
         return isSuitable;
     }
-
 }

@@ -88,7 +88,7 @@
 	<!-- COMPILE -->
 	<!-- =================================================================== -->
 	<target name = "compile" depends = "javacc">
-		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "true" debuglevel = "lines" optimize = "${optimize}" includeAntRuntime = "no" source = "${source}">
+		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "on" debuglevel = "lines" optimize = "${optimize}" includeAntRuntime = "no" source = "${source}">
 			<classpath>
 				<fileset dir = "${lib.dir}">
 					<include name = "**/*.jar"/>
@@ -128,21 +128,18 @@
 	<target name = "javadoc" depends = "init">
 		<property file = "${build.dir}/src/edu/stanford/smi/protege/resource/files/build.properties"/>
 		<mkdir dir = "${build.javadoc}"/>
-		
-		<javadoc packagenames = "${packages}" sourcepath = "${build.src}" destdir = "${build.javadoc}" doctitle = "${Name} ${build.status}" header = "${Name} ${build.status}" footer = "${Name} ${build.status}" windowtitle = "${Name} ${build.status}" author = "true" source = "1.5" linksource = "yes">
+		<javadoc packagenames = "${packages}" sourcepath = "${build.src}" destdir = "${build.javadoc}" doctitle = "${Name} ${build.status}" header = "${Name} ${build.status}" footer = "${Name} ${build.status}" windowtitle = "${Name} ${build.status}" author = "true" source = "1.5">
 			<bottom><![CDATA[
 					<small>
 					<a href=mailto:protege-discussion@lists.stanford.edu>Submit a bug report or feature request</a><br>
 					${trademark}<br>
 					${copyright}
 					</small>]]></bottom>
-
 			<link href = "${jdk.javadoc}"/>
 			<link href = "http://www.junit.org/junit/javadoc/3.8/"/>
-
 			<classpath>
 				<pathelement location = "${lib.dir}/junit.jar"/>
-				<pathelement location = "${looks.jar}"/>
+				<pathelement location = "${lib.dir}/looks.jar"/>
 				<pathelement location = "${lib.dir}/unicode_panel.jar"/>
 			</classpath>
 		</javadoc>
@@ -163,7 +160,7 @@
 		</zip>
 		<zip zipfile = "${dist.dir}/protege-bin-${version}.zip" update = "no">
 			<zipfileset dir = "${dist.dir}" includes = "protege.jar"/>
-			<zipfileset dir = "${lib.dir}" includes = "*.jar" excludes = "junit.jar"/>
+			<zipfileset dir = "${lib.dir}" includes = "looks.jar,unicode_panel.jar"/>
 		</zip>
 	</target>
 	

@@ -1,16 +1,12 @@
 package edu.stanford.smi.protege.util;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.DateFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import java.io.*;
+import java.text.*;
+import java.util.*;
+import java.util.logging.*;
 import java.util.logging.Formatter;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
-import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.*;
 
 /**
  * TODO Class Comment

@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.util;
 
-import javax.swing.JComponent;
-import javax.swing.JTree;
+import javax.swing.*;
 
 /**
  * A "right mouse" popup listener for a JTree.

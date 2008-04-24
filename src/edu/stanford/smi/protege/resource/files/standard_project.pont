@@ -108,11 +108,6 @@
         (type SYMBOL)
         (allowed-values TRUE FALSE)
         (default TRUE)
-        (create-accessor read-write))
-    (single-slot undo_enabled
-        (type SYMBOL)
-        (allowed-values TRUE FALSE)
-        (default TRUE)
         (create-accessor read-write)))
 
 (defclass Property

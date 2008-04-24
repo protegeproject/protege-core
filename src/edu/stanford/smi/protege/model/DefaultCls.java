@@ -104,7 +104,7 @@ public class DefaultCls extends DefaultInstance implements Cls {
         return getDefaultKnowledgeBase().getDirectInstanceCount(this);
     }
 
-    public Collection<Instance> getDirectInstances() {
+    public Collection getDirectInstances() {
         return getDefaultKnowledgeBase().getDirectInstances(this);
     }
 
@@ -120,7 +120,7 @@ public class DefaultCls extends DefaultInstance implements Cls {
         return getDefaultKnowledgeBase().getDirectSuperclassCount(this);
     }
 
-    public Collection<Cls> getDirectSuperclasses() {
+    public Collection getDirectSuperclasses() {
         return getDefaultKnowledgeBase().getDirectSuperclasses(this);
     }
 
@@ -140,7 +140,7 @@ public class DefaultCls extends DefaultInstance implements Cls {
         return getDefaultKnowledgeBase().getInstanceCount(this);
     }
 
-    public Collection<Instance> getInstances() {
+    public Collection getInstances() {
         return getDefaultKnowledgeBase().getInstances(this);
     }
 
@@ -443,15 +443,13 @@ public class DefaultCls extends DefaultInstance implements Cls {
         StringBuffer buffer = new StringBuffer();
         buffer.append("Cls(");
         buffer.append(getName());
+        buffer.append(", ");
+        buffer.append(getFrameID());
         buffer.append(")");
         return buffer.toString();
     }
 
     public Icon getIcon() {
         return Icons.getClsIcon(isClsMetaCls(), isAbstract(), !isEditable(), !isVisible());
-    }
-    
-    public Cls rename(String name) {
-        return (Cls) super.rename(name);
     }
 }

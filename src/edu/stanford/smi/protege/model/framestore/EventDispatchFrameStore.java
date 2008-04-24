@@ -1,18 +1,17 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,12 +36,8 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.util.AbstractEvent;
-import edu.stanford.smi.protege.util.ArrayListMultiMap;
 import edu.stanford.smi.protege.util.Assert;
 import edu.stanford.smi.protege.util.Log;
 
@@ -51,163 +46,33 @@ import edu.stanford.smi.protege.util.Log;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class EventDispatchFrameStore extends ModificationFrameStore {
-    private static transient Logger log = Log.getLogger(EventDispatchFrameStore.class);
+    private static final Logger log = Log.getLogger(EventDispatchFrameStore.class);
     //ESCA-JAVA0077 
-    public static final int DELAY_MSEC = 5 * 1000;
-    private Map<Class<?>, Map<Object, Collection<EventListener>>> _listeners 
-    			= new HashMap<Class<?>, Map<Object, Collection<EventListener>>>();
+    private static final int DELAY_MSEC = 5 * 1000;
+    private Map _listeners = new HashMap();
     private Thread _eventThread;
-    private Object lock;
-    
-    private boolean passThrough = false;
-    private List<AbstractEvent> savedEvents = new ArrayList<AbstractEvent>();
-    private ArrayListMultiMap<RemoteSession, AbstractEvent> transactedEvents = new ArrayListMultiMap<RemoteSession, AbstractEvent>();
+    private boolean serverMode = false;
+    private List<EventObject> savedEvents = new ArrayList<EventObject>();
 
-    public EventDispatchFrameStore(KnowledgeBase kb) {
-    	lock = kb;
-    }
-    
-
-    
     public void reinitialize() {
-	    // do nothing. In particular we do not clear the listeners. Dispatch can
-	    // be turned off and then back on and
-	    // the listeners to not get lost.
-	}
-
-	public void close() {
-	    super.close();
-	    _listeners = null;
-	    stopEventThread();
-	}
-
-    /*------------------------------------------------------------------------------
-     * Event Logic
-     */
-	public void setPassThrough(boolean passThrough) {
-		this.passThrough = passThrough;
-	}
-
-	private List<AbstractEvent> getDispatchableEvents() {
-		List<AbstractEvent> results = new ArrayList<AbstractEvent>();
-		for (AbstractEvent event : getDelegate().getEvents()) {
-			if (passThrough) {
-				savedEvents.add(event);
-			}
-			if (event.isHiddenByTransaction()) {
-				RemoteSession session = event.getSession();
-				transactedEvents.addValue(session, event);
-				continue;
-			}
-			if (event instanceof TransactionEvent &&
-					((TransactionEvent) event).isCommitted()) {
-				RemoteSession session = event.getSession();
-				List<AbstractEvent> deferred = transactedEvents.removeKey(session);
-				if (deferred != null) {
-				    results.addAll(deferred);
-				}
-			}
-			results.add(event);
-		}
-		return results;
-	}
-
-	/**
-	 * When pass through is set for the event dispatch frame store it is the callers responsibility to avoid 
-	 * deadlock situations.  Deadlock really shouldn't be an issue for the server  but this would
-	 * be important if there was ever another caller.
-	 * 
-	 * @see edu.stanford.smi.protege.model.framestore.ModificationFrameStore#getEvents()
-	 */
-	public List<AbstractEvent> getEvents() {
-		if (passThrough) {
-			dispatchEvents();
-			List<AbstractEvent> results = savedEvents;
-			savedEvents = new ArrayList<AbstractEvent>();
-			return results;
-		}
-		else {
-			return new ArrayList<AbstractEvent>();
-		}
-	}
-
-	public void setPollForEvents(boolean b) {
-        // Log.enter(this, "setPollForEvents", Boolean.valueOf(b));
-        if (b) {
-            if (_eventThread == null) {
-                startEventThread();
-            } else {
-                throw new IllegalStateException("Already polling");
-            }
-        } else {
-            stopEventThread();
-        }
-    }
-    
-    private void startEventThread() {
-        _eventThread = new Thread("EventDispatchFrameStoreHandler.startEventThread") {
-          public void run() {
-            while (true) {
-              try {
-                synchronized (lock) {
-                  if (_eventThread != this) {
-                    return;
-                  }
-                }
-                flushEvents();
-                synchronized (lock) {
-                  lock.wait(DELAY_MSEC);
-                }
-              } catch (Exception e) {
-                Log.getLogger().warning(e.toString());
-                log.log(Level.FINE, "Exception caught", e);
-              }
-            }
-          }
-        };
-        _eventThread.setPriority(Thread.MIN_PRIORITY);
-        _eventThread.setDaemon(true);
-        _eventThread.start();
-    }
-    
-    private void stopEventThread() {
-        _eventThread = null;
-    }
-    
-    public void flushEvents() throws InterruptedException {
-        try {
-            if (EventQueue.isDispatchThread()) {
-                dispatchEvents();
-            }
-            else {  // careful - deadlock territory...
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        dispatchEvents();
-                    }
-                });
-            }
-        } catch (InvocationTargetException ite) {
-            Log.getLogger().warning("Exception caught " + ite);
-        }
+        // do nothing. In particular we do not clear the listeners. Dispatch can
+        // be turned off and then back on and
+        // the listeners to not get lost.
     }
 
+    public void clearListeners() {
+        _listeners.clear();
+    }
 
-   
+    public void close() {
+        super.close();
+        _listeners = null;
+        stopEventThread();
+    }
+
     private void dispatchEvents() {
         dispatchEvents(false);
     }
-    
-    @SuppressWarnings("unchecked")
-    private void dispatchEvents(boolean ignoreExceptions) {
-    	synchronized (lock) {
-    		Collection<AbstractEvent> events = getDispatchableEvents();
-    		if (!events.isEmpty()) {
-    			dispatchEvents(events, ignoreExceptions);
-    		}
-    	}
-    }
-
-
 
     /*
      * We ignore exceptions in the multiuser server client because they are an almost unavoidable side-effect of event
@@ -215,26 +80,36 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
      */
     private void dispatchEvents(Collection events, boolean ignoreExceptions) {
         // Log.trace("found events: " + events, this, "dispatchEvents");
-        Iterator<AbstractEvent> i = events.iterator();
+        Iterator i = events.iterator();
         while (i.hasNext()) {
-            AbstractEvent event = i.next();
+            EventObject event = (EventObject) i.next();
             try {
                 dispatchEvent(event);
             } catch (Exception e) {
                 if (!ignoreExceptions) {
                   if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "Exception caught", e);
+                    Log.getLogger().warning("Exception caught during event dispatch - see the log for details - " + e);
+                  } else {
+                    Log.getLogger().warning("Exception caught " + e.toString());
+                    Log.getLogger().warning("use fine logging for more details");
                   }
-                  Log.getLogger().warning("Exception caught " + e.toString());
-                  Log.getLogger().warning("use fine logging for more details");
                 }
             }
         }
     }
 
+    private void dispatchEvents(boolean ignoreExceptions) {
+        Collection<EventObject> events = getDelegate().getEvents();
+        if (serverMode) {
+        	this.savedEvents.addAll(events);
+        }
+        if (!events.isEmpty()) {
+            dispatchEvents(events, ignoreExceptions);
+        }
+    }
 
-
-    private void dispatchEvent(AbstractEvent event) {
+    private void dispatchEvent(EventObject event) {
         if (event instanceof KnowledgeBaseEvent) {
             dispatchKbEvent((KnowledgeBaseEvent) event);
         } else if (event instanceof ClsEvent) {
@@ -309,7 +184,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                 case KnowledgeBaseEvent.INSTANCE_DELETED:
                     listener.instanceDeleted(event);
                     break;
-                case KnowledgeBaseEvent.FRAME_REPLACED:
+                case KnowledgeBaseEvent.FRAME_NAME_CHANGED:
                     listener.frameNameChanged(event);
                     break;
                 case KnowledgeBaseEvent.DEFAULT_CLS_METACLASS_CHANGED:
@@ -381,9 +256,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 
     private void dispatchClsEventToSubclasses(ClsEvent event) {
         if (doDispatchToSubclasses(event)) {
-            Iterator<Cls> i = getListenedToSubclasses(ClsListener.class, event.getCls()).iterator();
+            Iterator i = getListenedToSubclasses(ClsListener.class, event.getCls()).iterator();
             while (i.hasNext()) {
-                Cls cls = i.next();
+                Cls cls = (Cls) i.next();
                 ClsEvent subclassEvent = new ClsEvent(cls, event.getEventType(), event.getArgument1(), event
                         .getArgument2());
                 dispatchClsEvent(subclassEvent);
@@ -498,7 +373,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         while (i.hasNext()) {
             FrameListener listener = (FrameListener) i.next();
             switch (event.getEventType()) {
-                case FrameEvent.REPLACE_FRAME:
+                case FrameEvent.NAME_CHANGED:
                     listener.nameChanged(event);
                     break;
                 case FrameEvent.VISIBILITY_CHANGED:
@@ -534,36 +409,23 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             }
         }
     }
-    
-    @SuppressWarnings("unchecked")
 
-    
-    /*-----------------------------------------------------------------------------------------
-     * Listener Logic
-     */
-    
-    public Collection<EventListener> getListeners(Class<?> c, Object o) {
-        Collection<EventListener> allListeners = null;
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
+    public Collection getListeners(Class c, Object o) {
+        Collection allListeners = null;
+        Map listeners = (Map) _listeners.get(c);
         if (listeners != null) {
-            Collection<EventListener> objectListeners = listeners.get(o);
+            Collection objectListeners = (Collection) listeners.get(o);
             allListeners = addListeners(objectListeners, allListeners);
-            Collection<EventListener> globalListeners = listeners.get(null);
+            Collection globalListeners = (Collection) listeners.get(null);
             allListeners = addListeners(globalListeners, allListeners);
         }
-        if (allListeners == null) {
-        	return Collections.emptyList();
-        }
-        else {
-        	return allListeners;
-        }
+        return allListeners == null ? Collections.EMPTY_LIST : allListeners;
     }
 
-    private static Collection<EventListener> addListeners(Collection<EventListener> listenersToAdd, 
-    									   			      Collection<EventListener> listeners) {
+    private static Collection addListeners(Collection listenersToAdd, Collection listeners) {
         if (listenersToAdd != null) {
             if (listeners == null) {
-                listeners = new ArrayList<EventListener>(listenersToAdd);
+                listeners = new ArrayList(listenersToAdd);
             } else {
                 listeners.addAll(listenersToAdd);
             }
@@ -571,12 +433,8 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         return listeners;
     }
 
-    public void clearListeners() {
-	    _listeners.clear();
-	}
-
-	private void removeListeners(Class<?> listenerType, Frame frame) {
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(listenerType);
+    private void removeListeners(Class listenerType, Frame frame) {
+        Map listeners = (Map) _listeners.get(listenerType);
         if (listeners != null) {
             listeners.remove(frame);
         }
@@ -611,21 +469,21 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
 
     public void notifyInstancesOfBrowserTextChange(Cls cls) {
-        Collection<Instance> relevantInstances = getListenedToInstances(FrameListener.class, cls);
-        Iterator<Instance> i = relevantInstances.iterator();
+        Collection relevantInstances = getListenedToInstances(FrameListener.class, cls);
+        Iterator i = relevantInstances.iterator();
         while (i.hasNext()) {
-            Frame frame = i.next();
+            Frame frame = (Frame) i.next();
             FrameEvent event = new FrameEvent(frame, FrameEvent.BROWSER_TEXT_CHANGED);
             dispatchFrameEvent(event);
         }
     }
 
-    private Collection<Cls> getListenedToSubclasses(Class<?> c, Cls cls) {
-        Set<Cls> listenedToSubclasses = new HashSet<Cls>();
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
+    private Collection getListenedToSubclasses(Class c, Cls cls) {
+        Set listenedToSubclasses = new HashSet();
+        Map listeners = (Map) _listeners.get(c);
         if (listeners != null) {
-            Set<Object> listenedToObjects = listeners.keySet();
-            Iterator<Object> i = listenedToObjects.iterator();
+            Set listenedToObjects = listeners.keySet();
+            Iterator i = listenedToObjects.iterator();
             while (i.hasNext()) {
                 Object o = i.next();
                 if (o instanceof Cls) {
@@ -639,12 +497,12 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         return listenedToSubclasses;
     }
 
-    private Collection<Instance> getListenedToInstances(Class<?> c, Cls cls) {
-        Set<Instance> listenedToInstances = new HashSet<Instance>();
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
+    private Collection getListenedToInstances(Class c, Cls cls) {
+        Set listenedToInstances = new HashSet();
+        Map listeners = (Map) _listeners.get(c);
         if (listeners != null) {
-            Set<Object> listenedToObjects = listeners.keySet();
-            Iterator<Object> i = listenedToObjects.iterator();
+            Set listenedToObjects = listeners.keySet();
+            Iterator i = listenedToObjects.iterator();
             while (i.hasNext()) {
                 Object o = i.next();
                 if (o instanceof Instance) {
@@ -658,37 +516,32 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         return listenedToInstances;
     }
 
-    public void addListener(Class<?> c, Object o, EventListener listener) {
+    public void addListener(Class c, Object o, EventListener listener) {
         // Log.enter(this, "addListener", c, o, listener);
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
+        Map listeners = (Map) _listeners.get(c);
         if (listeners == null) {
-            listeners = new HashMap<Object, Collection<EventListener>>();
+            listeners = new HashMap();
             _listeners.put(c, listeners);
         }
-        Collection<EventListener> objectListeners = listeners.get(o);
+        Collection objectListeners = (Collection) listeners.get(o);
         if (objectListeners == null) {
-            objectListeners = new ArrayList<EventListener>();
+            objectListeners = new ArrayList();
             listeners.put(o, objectListeners);
         }
         objectListeners.add(listener);
     }
 
-    public void removeListener(Class<?> c, Object o, EventListener listener) {
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
+    public void removeListener(Class c, Object o, EventListener listener) {
+        Map listeners = (Map) _listeners.get(c);
         if (listeners != null) {
-            Collection<EventListener> objectListeners = listeners.get(o);
+            Collection objectListeners = (Collection) listeners.get(o);
             if (objectListeners != null) {
                 objectListeners.remove(listener);
             }
         }
     }
 
-
-    /*------------------------------------------------------------------------
-	 * Basic Frame Store responsibilities.
-     */
-    
-    
+    // --------------------------------------
     public void addDirectSuperclass(Cls cls, Cls superclass) {
         getDelegate().addDirectSuperclass(cls, superclass);
         dispatchEvents();
@@ -721,26 +574,26 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         return succeeded;
     }
 
-    public Cls createCls(FrameID id, Collection types, Collection superclasses, boolean loadDefaults) {
-        Cls cls = getDelegate().createCls(id, types, superclasses, loadDefaults);
+    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses, boolean loadDefaults) {
+        Cls cls = getDelegate().createCls(id, name, types, superclasses, loadDefaults);
         dispatchEvents();
         return cls;
     }
 
-    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
-        Facet facet = getDelegate().createFacet(id, directTypes, loadDefaultValues);
+    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
+        Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaultValues);
         dispatchEvents();
         return facet;
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, Collection types, boolean loadDefaultValues) {
-        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, types, loadDefaultValues);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types, boolean loadDefaultValues) {
+        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, types, loadDefaultValues);
         dispatchEvents();
         return simpleInstance;
     }
 
-    public Slot createSlot(FrameID id, Collection types, Collection superslots, boolean loadDefaults) {
-        Slot slot = getDelegate().createSlot(id, types, superslots, loadDefaults);
+    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots, boolean loadDefaults) {
+        Slot slot = getDelegate().createSlot(id, name, types, superslots, loadDefaults);
         dispatchEvents();
         return slot;
     }
@@ -767,6 +620,22 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         getDelegate().deleteSlot(slot);
         removeSlotListeners(slot);
         dispatchEvents();
+    }
+    
+    public void setServerMode(boolean serverMode) {
+    	this.serverMode = serverMode;
+    }
+    
+    public List<EventObject> getEvents() {
+    	if (serverMode) {
+    		dispatchEvents();
+    		List<EventObject>  events = savedEvents;
+    		savedEvents = new ArrayList<EventObject>();
+    		return events;
+    	}
+    	else {
+    		return super.getEvents();
+    	}
     }
 
     public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
@@ -840,35 +709,61 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         dispatchEvents();
     }
 
-
-
-
-    public void replaceFrame(Frame original, Frame replacement) {
-      getDelegate().replaceFrame(original, replacement);
-      dispatchEvents();
-      replaceListeners(original, replacement);
+    public void setFrameName(Frame frame, String name) {
+        getDelegate().setFrameName(frame, name);
+        dispatchEvents();
     }
-    
-    private void replaceListeners(Frame original, Frame replacement) {
-    	for (Map<Object,  Collection<EventListener>> map : _listeners.values()) {
-    		Collection<EventListener> listeners = map.remove(original);
-    		if (listeners != null) {
-    			map.put(replacement, listeners);
-    		}
-    	}
+
+    private void startEventThread() {
+        _eventThread = new Thread("EventDispatchFrameStoreHandler.startEventThread") {
+            public void run() {
+              try {
+                while (_eventThread == this) {
+                    try {
+                        pollForEvents();
+                        //ESCA-JAVA0087 
+                        Thread.sleep(DELAY_MSEC);
+                    } catch (Exception e) {
+                        Log.getLogger().warning(e.toString());
+                    }
+                }
+              } catch (Throwable t) {
+                Log.getLogger().log(Level.INFO, "Exception caught", t);
+              }
+            }
+        };
+        _eventThread.setPriority(Thread.MIN_PRIORITY);
+        _eventThread.setDaemon(true);
+        _eventThread.start();
     }
-    
-    public void printListenersByHashCode(int hash) {
-    	System.out.println("Printing out FrameListeners that have hash code " + hash);
-    	for (java.util.Map.Entry<Object, Collection<EventListener>> entry : _listeners.get(FrameListener.class).entrySet()) {
-    		Object o  = entry.getKey();
-    		Collection<EventListener> listeners = entry.getValue();
-    		for (EventListener listener :  listeners) {
-    			if (listener.hashCode() == hash) {
-    			   System.out.println("Found listener " + listener + " at " + o);
-    			}
-    		}
-    	}
-    	
+
+    private void pollForEvents() throws InvocationTargetException, InterruptedException {
+        final Collection events = getDelegate().getEvents();
+        if (!events.isEmpty()) {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    if (getDelegate() != null) {
+                        dispatchEvents(events, true);
+                    }
+                }
+            });
+        }
+    }
+
+    private void stopEventThread() {
+        _eventThread = null;
+    }
+
+    public void setPollForEvents(boolean b) {
+        // Log.enter(this, "setPollForEvents", Boolean.valueOf(b));
+        if (b) {
+            if (_eventThread == null) {
+                startEventThread();
+            } else {
+                throw new IllegalStateException("Already polling");
+            }
+        } else {
+            stopEventThread();
+        }
     }
 }

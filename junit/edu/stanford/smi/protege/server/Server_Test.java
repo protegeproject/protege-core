@@ -1,6 +1,5 @@
 package edu.stanford.smi.protege.server;
 
-import java.io.File;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -14,7 +13,6 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.framestore.SimpleTestCase;
 import edu.stanford.smi.protege.test.APITestCase;
-import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
 
@@ -39,8 +37,6 @@ public class Server_Test extends SimpleTestCase {
     public static  final String JAR_PROPERTY="junit.server.protege.jar";
     
     private static boolean serverRunning = false;
-    
-    private static String protegeJarLocation = "dist/protege.jar";
 
     private RemoteServer _server;
     
@@ -62,17 +58,16 @@ public class Server_Test extends SimpleTestCase {
     private static boolean informedServerNotConfigured = false;
     
     public static boolean startServer() throws Exception {
-      File appDir = ApplicationProperties.getApplicationDirectory();
-      File jar = new File(appDir, protegeJarLocation);
-      if (!jar.exists()) {
-          jar = new File(protegeJarLocation);
-          if (!jar.exists()) {
-              System.out.println("Need to compile to a jar file before running server tests");
-              System.out.println("System tests not configured");
-              return false;
-          }
+      Properties jup = APITestCase.getJunitProperties();
+      String jar_uri = jup.getProperty(JAR_PROPERTY);
+      if (jar_uri == null) {
+        if (!informedServerNotConfigured) {
+          System.out.println("Server Tests Not Configured");
+          informedServerNotConfigured = true;
+        }
+        return false;
       }
-      System.setProperty("java.rmi.server.codebase", jar.toURL().toString());
+      System.setProperty("java.rmi.server.codebase", jar_uri);
       String [] serverArgs = {"", metaproject};
       if (!serverRunning) {
         if (log.isLoggable(Level.FINE)) {
@@ -145,9 +140,5 @@ public class Server_Test extends SimpleTestCase {
       assertNotNull(cls);
       p.dispose();
   }
-    
-    public static void setProtegeJarLocation(String location) {
-        protegeJarLocation = location;
-    }
 
 }

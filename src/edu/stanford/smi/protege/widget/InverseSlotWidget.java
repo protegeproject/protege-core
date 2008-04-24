@@ -32,7 +32,7 @@ public class InverseSlotWidget extends AbstractSlotWidget {
         Slot inverseSlot = null;
         try {
             Slot forwardSlot = (Slot) getInstance();
-            beginTransaction("create inverse slot for " + forwardSlot.getName(), (forwardSlot == null ? null : "inverse_of_" + forwardSlot.getName()));
+            beginTransaction("create inverse slot for " + forwardSlot.getName());
             String slotName = "inverse_of_" + forwardSlot.getName();
             while (getKnowledgeBase().getFrame(slotName) != null) {
                 slotName += "_";
@@ -46,11 +46,9 @@ public class InverseSlotWidget extends AbstractSlotWidget {
             setDomain(inverseSlot, range);
             inverseSlot.setAllowsMultipleValues(true);
             setInverseSlot(inverseSlot);
-            commitTransaction();
-        } catch (Exception e) {
-        	rollbackTransaction();
-			Log.getLogger().warning("Could not create inverse slot for: " + getInstance());
-		}
+        } finally {
+            endTransaction();
+        }
         return inverseSlot;
     }
 

@@ -19,12 +19,7 @@ public class KnowledgeBaseEvent extends AbstractEvent {
     public static final int FACET_DELETED = BASE + 6;
     public static final int INSTANCE_CREATED = BASE + 7;
     public static final int INSTANCE_DELETED = BASE + 8;
-    /*
-     * @deprecated Use KnowledgeBaseEvent.FRAME_REPLACED instead.
-     */
-    @Deprecated
     public static final int FRAME_NAME_CHANGED = FrameEvent.NAME_CHANGED;
-    public static final int FRAME_REPLACED = FrameEvent.REPLACE_FRAME;
 
     public static final int DEFAULT_CLS_METACLASS_CHANGED = BASE + 10;
     public static final int DEFAULT_SLOT_METACLASS_CHANGED = BASE + 11;
@@ -64,10 +59,6 @@ public class KnowledgeBaseEvent extends AbstractEvent {
 
     public Slot getSlot() {
         return (Slot) getArgument1();
-    }
-    
-    public Frame getNewFrame() {
-        return (Frame) getArgument3();
     }
 
     public void localize(KnowledgeBase kb) {

@@ -9,20 +9,15 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
-import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.SystemUtilities;
-import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
-import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * @author Ray Fergerson
@@ -30,12 +25,12 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
  * Description of this class
  */
 public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
-    private static Logger log = Log.getLogger(ClosureCachingBasicFrameStore.class);
+	private static Logger log = Log.getLogger(ClosureCachingBasicFrameStore.class);
 	
     private NarrowFrameStore _delegate;
 
-    private CacheMap<Sft, Map<Frame,Set>> _sftToFrameToClosureMap 
-      = new CacheMap<Sft, Map<Frame, Set>>();
+    private final Sft _lookupSft = new Sft();
+    private CacheMap _sftToFrameToClosureMap = new CacheMap();
 
     public ClosureCachingBasicFrameStore(NarrowFrameStore delegate) {
     	if (log.isLoggable(Level.FINEST)) {
@@ -60,6 +55,9 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         return _delegate.getFrame(id);
     }
 
+    public FrameID generateFrameID() {
+        return _delegate.generateFrameID();
+    }
 
     public List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         return _delegate.getValues(frame, slot, facet, isTemplate);
@@ -124,11 +122,11 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         return _delegate.getMatchingFrames(slot, facet, isTemplate, value, maxMatches);
     }
 
-    public Set<Reference> getReferences(Object value) {
+    public Set getReferences(Object value) {
         return _delegate.getReferences(value);
     }
 
-    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
+    public Set getMatchingReferences(String value, int maxMatches) {
         return _delegate.getMatchingReferences(value, maxMatches);
     }
 
@@ -137,8 +135,8 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         deleteFrameFromCache(frame);
     }
 
-    public void executeQuery(Query query, QueryCallback callback) {
-        _delegate.executeQuery(query, callback);
+    public Set executeQuery(Query query) {
+        return _delegate.executeQuery(query);
     }
 
     public void close() {
@@ -150,35 +148,30 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         Set closure = lookup(frame, slot, facet, isTemplate);
         if (closure == null) {
             closure = ClosureUtils.calculateClosure(this, frame, slot, facet, isTemplate);
-            TransactionMonitor transactionMonitor = getTransactionStatusMonitor();
-            if (transactionMonitor == null || !transactionMonitor.existsTransaction()) {
-              insert(frame, slot, facet, isTemplate, closure);
-            }
+            insert(frame, slot, facet, isTemplate, closure);
         } else {
-          if (log.isLoggable(Level.FINER)) {
-            log.finer("closure cache hit for frame = " + frame + " slot = " + slot + 
-                      "facet = " + facet + " isTemplate = " + isTemplate);
-          }
+            // Log.trace("closure cache hit", this, "getClosure", frame, slot,
+            // facet);
         }
         return closure;
     }
 
-    private Map<Frame,Set> lookup(Slot slot, Facet facet, boolean isTemplate) {
-        Sft lookupSft = new Sft(slot, facet, isTemplate);
-        return _sftToFrameToClosureMap.get(lookupSft);
+    private Map lookup(Slot slot, Facet facet, boolean isTemplate) {
+        _lookupSft.set(slot, facet, isTemplate);
+        return (Map) _sftToFrameToClosureMap.get(_lookupSft);
     }
 
     private Set lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         Set closure = null;
-        Map<Frame,Set> frameToClosureMap = lookup(slot, facet, isTemplate);
+        Map frameToClosureMap = lookup(slot, facet, isTemplate);
         if (frameToClosureMap != null) {
-            closure = frameToClosureMap.get(frame);
+            closure = (Set) frameToClosureMap.get(frame);
         }
         return closure;
     }
 
     private void insert(Frame frame, Slot slot, Facet facet, boolean isTemplate, Set closure) {
-        Map<Frame, Set> frameToClosureMap = lookup(slot, facet, isTemplate);
+        Map frameToClosureMap = lookup(slot, facet, isTemplate);
         if (frameToClosureMap == null) {
             frameToClosureMap = new HashMap();
             _sftToFrameToClosureMap.put(new Sft(slot, facet, isTemplate), frameToClosureMap);
@@ -187,16 +180,16 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     }
 
     private void updateClosureCache(Slot slot, Facet facet, boolean isTemplate) {
-        Sft lookupSft = new Sft(slot, facet, isTemplate);
-        _sftToFrameToClosureMap.remove(lookupSft);
+        _lookupSft.set(slot, facet, isTemplate);
+        _sftToFrameToClosureMap.remove(_lookupSft);
     }
 
     private void deleteFrameFromCache(Frame frame) {
         removeFrameFromSft(frame);
-        Iterator<Sft> i = _sftToFrameToClosureMap.keySet().iterator();
+        Iterator i = _sftToFrameToClosureMap.getKeys().iterator();
         while (i.hasNext()) {
-            Sft sft = i.next();
-            Map<Frame, Set> frameToClosureMap =  _sftToFrameToClosureMap.get(sft);
+            Sft sft = (Sft) i.next();
+            Map frameToClosureMap = (Map) _sftToFrameToClosureMap.get(sft);
             if (frameToClosureMap != null) {
                 frameToClosureMap.remove(frame);
                 removeFrameAsValueFromMap(frame, frameToClosureMap);
@@ -205,7 +198,7 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     }
 
     private static void removeFrameAsValueFromMap(Frame frame, Map frameToClosureMap) {
-        Iterator<Sft> i = frameToClosureMap.values().iterator();
+        Iterator i = frameToClosureMap.values().iterator();
         while (i.hasNext()) {
             Set closure = (Set) i.next();
             if (closure.contains(frame)) {
@@ -217,9 +210,9 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     private void removeFrameFromSft(Frame frame) {
         if (frame instanceof Slot || frame instanceof Facet) {
             boolean isSlot = frame instanceof Slot;
-            Iterator<Sft> i = _sftToFrameToClosureMap.keySet().iterator();
+            Iterator i = _sftToFrameToClosureMap.getKeys().iterator();
             while (i.hasNext()) {
-                Sft sft = i.next();
+                Sft sft = (Sft) i.next();
                 if (isSlot) {
                     if (equals(frame, sft.getSlot())) {
                         _sftToFrameToClosureMap.remove(sft);
@@ -232,38 +225,16 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     }
 
     public boolean beginTransaction(String name) {
-      TransactionMonitor monitor = getTransactionStatusMonitor();
-      /*
-       * Ensure that if the transaction isolation level is serializable then the database
-       * is aware of all reads.
-       */
-      try {
-        if (monitor != null && !monitor.existsTransaction() && 
-            monitor.getTransationIsolationLevel() == TransactionIsolationLevel.SERIALIZABLE) {
-          clearCache();
-        }
-      } catch (TransactionException te) {
-        clearCache();
-      }
-      return _delegate.beginTransaction(name);
+        return _delegate.beginTransaction(name);
     }
 
     public boolean commitTransaction() {
-        boolean ret = _delegate.commitTransaction();
-        if (!ret) {
-          clearCache();
-        }
-        return ret;
+        return _delegate.commitTransaction();
     }
 
     public boolean rollbackTransaction() {
         return _delegate.rollbackTransaction();
     }
-
-    public TransactionMonitor getTransactionStatusMonitor() {
-      return _delegate.getTransactionStatusMonitor();
-    }
-
 
     private void clearCache() {
         _sftToFrameToClosureMap.clear();
@@ -276,18 +247,6 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
 
     public static boolean equals(Object o1, Object o2) {
         return SystemUtilities.equals(o1, o2);
-    }
-    
-    public void reinitialize() {
-    	clearCache();
-    	if (getDelegate() != null) {
-    		getDelegate().reinitialize();
-    	}
-    }
-    
-    public void replaceFrame(Frame original, Frame replacement) {
-      clearCache();
-      _delegate.replaceFrame(original, replacement);
     }
 
 }

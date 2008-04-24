@@ -1,27 +1,20 @@
 package edu.stanford.smi.protege.model;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import javax.swing.Icon;
+import javax.swing.*;
 
-import edu.stanford.smi.protege.event.FrameListener;
-import edu.stanford.smi.protege.util.Assert;
-import edu.stanford.smi.protege.util.CollectionUtilities;
-import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.event.*;
+import edu.stanford.smi.protege.util.*;
 
 /**
  * Default implementation of Frame interface. Forwards all method calls to its DefaultKnowledgeBase.
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public abstract class DefaultFrame implements Frame, Localizable, Serializable {
+public abstract class DefaultFrame implements Frame, Localizable, Externalizable {
     private static final char SPECIAL_NAME_CHAR = ':';
 
     private transient KnowledgeBase knowledgeBase;
@@ -38,7 +31,6 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
     private static final int DELETED_MASK = 1 << 3;
     private int state;
 
-    /* from Externalizable Interface
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         id = (FrameID) in.readObject();
         state = in.readInt();
@@ -48,7 +40,6 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
         out.writeObject(id);
         out.writeInt(state);
     }
-    */
 
     protected DefaultFrame() {
 
@@ -155,16 +146,21 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
      * result = -1; } else { result = compareStrings(t1, t2); } } else { result = 0; } return result; }
      */
 
-    public int compareTo(Frame f2) {
+    public int compareTo(Object o) {
         int result;
-        String t1 = this.getBrowserText();
-        String t2 = f2.getBrowserText();
-        if (isSpecialName(t1)) {
-            result = isSpecialName(t2) ? compareStrings(t1, t2) : +1;
-        } else if (isSpecialName(t2)) {
-            result = -1;
+        if (o instanceof Frame) {
+            Frame f2 = (Frame) o;
+            String t1 = this.getBrowserText();
+            String t2 = f2.getBrowserText();
+            if (isSpecialName(t1)) {
+                result = isSpecialName(t2) ? compareStrings(t1, t2) : +1;
+            } else if (isSpecialName(t2)) {
+                result = -1;
+            } else {
+                result = compareStrings(t1, t2);
+            }
         } else {
-            result = compareStrings(t1, t2);
+            result = 0;
         }
         return result;
     }
@@ -255,11 +251,21 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
 
     public void localize(KnowledgeBase kb) {
         knowledgeBase = kb;
-        id.localize(kb);
     }
 
     public String getName() {
-        return getFrameID().getName();
+        String name;
+        if (isDeleted()) {
+            name = "<<deleted>>";
+        } else {
+            KnowledgeBase kb = getDefaultKnowledgeBase();
+            if (kb == null) {
+                name = "<<missing kb, frameid=" + id + ">>";
+            } else {
+                name = kb.getName(this);
+            }
+        }
+        return name;
     }
 
     public boolean getOwnSlotAllowsMultipleValues(Slot slot) {
@@ -282,7 +288,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
         return getDefaultKnowledgeBase().getOwnSlotFacetValues(this, slot, facet);
     }
 
-    public Collection<Slot> getOwnSlots() {
+    public Collection getOwnSlots() {
         return getDefaultKnowledgeBase().getOwnSlots(this);
     }
 
@@ -314,11 +320,11 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
         return knowledgeBase.getProject();
     }
 
-    public Collection<Reference> getReferences() {
+    public Collection getReferences() {
         return getReferences(0);
     }
 
-    public Collection<Reference> getReferences(int maxReferences) {
+    public Collection getReferences(int maxReferences) {
         return getDefaultKnowledgeBase().getReferences(this, maxReferences);
     }
 
@@ -339,7 +345,7 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
     }
 
     public boolean isSystem() {
-        return knowledgeBase.getSystemFrames().isSystem(this);
+        return (id == null) ? false : id.isSystem();
     }
 
     public boolean isValidOwnSlotValue(Slot slot, Object o) {
@@ -378,6 +384,10 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
         setState(INCLUDED_MASK, b);
     }
 
+    public void setName(String newName) {
+        getDefaultKnowledgeBase().setFrameName(this, newName);
+    }
+
     public void setOwnFacetValue(Slot slot, Facet facet, Object value) {
         Assert.fail("not implemented");
     }
@@ -413,13 +423,5 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
 
     public Icon getIcon() {
         return null;
-    }
-    
-    public Frame rename(String name) {
-        return getKnowledgeBase().rename(this, name);
-    }
-    
-    public void assertFrameName() {
-    	getKnowledgeBase().assertFrameName(this);
     }
 }

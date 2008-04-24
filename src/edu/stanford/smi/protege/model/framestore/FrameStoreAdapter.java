@@ -1,21 +1,9 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import edu.stanford.smi.protege.model.Cls;
-import edu.stanford.smi.protege.model.Facet;
-import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.model.FrameID;
-import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.Reference;
-import edu.stanford.smi.protege.model.SimpleInstance;
-import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.model.query.Query;
-import edu.stanford.smi.protege.model.query.QueryCallback;
-import edu.stanford.smi.protege.util.AbstractEvent;
-import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
+import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.query.*;
 
 public class FrameStoreAdapter extends AbstractFrameStore {
 
@@ -75,19 +63,19 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getSuperslots(slot);
     }
 
-    public Set<Slot> getOwnSlots(Frame frame) {
+    public Set getOwnSlots(Frame frame) {
         return getDelegate().getOwnSlots(frame);
     }
 
-    public Set<Instance> getInstances(Cls cls) {
+    public Set getInstances(Cls cls) {
         return getDelegate().getInstances(cls);
     }
 
-    public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
     }
 
-    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
     }
 
@@ -107,7 +95,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getClsesWithDirectTemplateSlotValue(slot, value);
     }
 
-    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
     }
 
@@ -115,7 +103,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getClsesWithMatchingDirectTemplateSlotValue(slot, value, maxMatches);
     }
 
-    public List<Cls> getDirectSuperclasses(Cls cls) {
+    public List getDirectSuperclasses(Cls cls) {
         return getDelegate().getDirectSuperclasses(cls);
     }
 
@@ -147,11 +135,11 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getSimpleInstanceCount();
     }
 
-    public Set<Cls> getClses() {
+    public Set getClses() {
         return getDelegate().getClses();
     }
 
-    public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
+    public Set getTemplateFacets(Cls cls, Slot slot) {
         return getDelegate().getTemplateFacets(cls, slot);
     }
 
@@ -175,15 +163,15 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
     }
 
-    public List<Instance> getDirectInstances(Cls cls) {
+    public List getDirectInstances(Cls cls) {
         return getDelegate().getDirectInstances(cls);
     }
 
-    public Set<Cls> getSubclasses(Cls cls) {
+    public Set getSubclasses(Cls cls) {
         return getDelegate().getSubclasses(cls);
     }
 
-    public Set<Slot> getSlots() {
+    public Set getSlots() {
         return getDelegate().getSlots();
     }
 
@@ -199,15 +187,15 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
     }
 
-    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaults) {
-        return getDelegate().createFacet(id, directTypes, loadDefaults);
+    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
+        return getDelegate().createFacet(id, name, directTypes, loadDefaults);
     }
 
-    public List<Cls> getDirectSubclasses(Cls cls) {
+    public List getDirectSubclasses(Cls cls) {
         return getDelegate().getDirectSubclasses(cls);
     }
 
-    public Set<Frame> getFrames() {
+    public Set getFrames() {
         return getDelegate().getFrames();
     }
 
@@ -243,9 +231,9 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
-    public Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
+    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
             boolean loadDefaults) {
-        return getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaults);
+        return getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
     }
 
     public List getDirectTypes(Instance instance) {
@@ -260,7 +248,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().addDirectSuperslot(slot, superslot);
     }
 
-    public List<AbstractEvent> getEvents() {
+    public List<EventObject> getEvents() {
         return getDelegate().getEvents();
     }
 
@@ -272,24 +260,24 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
     }
 
-    public Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
+    public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaults) {
-        return getDelegate().createCls(id, directTypes, directSuperclasses, loadDefaults);
+        return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
     }
 
-    public Set<Facet> getFacets() {
+    public Set getFacets() {
         return getDelegate().getFacets();
     }
 
-    public void executeQuery(Query query, QueryCallback callback) {
-      getDelegate().executeQuery(query, callback);
+    public Set executeQuery(Query query) {
+        return getDelegate().executeQuery(query);
     }
 
     public void removeDirectType(Instance instance, Cls directType) {
         getDelegate().removeDirectType(instance, directType);
     }
 
-    public Set<Reference> getReferences(Object value) {
+    public Set getReferences(Object value) {
         return getDelegate().getReferences(value);
     }
 
@@ -297,12 +285,12 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getClsesWithMatchingBrowserText(value, superclasses, maxMatches);
     }
 
-    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
+    public Set getMatchingReferences(String value, int maxMatches) {
         return getDelegate().getMatchingReferences(value, maxMatches);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaults) {
-        return getDelegate().createSimpleInstance(id, directTypes, loadDefaults);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
+        return getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
     }
 
     public void addDirectType(Instance instance, Cls type) {
@@ -319,6 +307,10 @@ public class FrameStoreAdapter extends AbstractFrameStore {
 
     public String getFrameName(Frame frame) {
         return getDelegate().getFrameName(frame);
+    }
+
+    public void setFrameName(Frame frame, String name) {
+        getDelegate().setFrameName(frame, name);
     }
 
     public Set getOwnFacets(Frame frame, Slot slot) {
@@ -363,13 +355,5 @@ public class FrameStoreAdapter extends AbstractFrameStore {
 
     public boolean rollbackTransaction() {
         return getDelegate().rollbackTransaction();
-    }
-
-    public TransactionMonitor getTransactionStatusMonitor()  {
-      return getDelegate().getTransactionStatusMonitor();
-    }
-
-    public void replaceFrame(Frame original, Frame replacement) {
-      getDelegate().replaceFrame(original, replacement);
     }
 }

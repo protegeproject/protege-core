@@ -1,15 +1,9 @@
 package edu.stanford.smi.protege.model.framestore.cleandispatch;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.model.Model;
-import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.model.framestore.FrameStore;
-import edu.stanford.smi.protege.model.framestore.FrameStoreAdapter;
+import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.framestore.*;
 
 public class CleanDispatchFrameStore extends FrameStoreAdapter {
     private Map _slotToDispatchMap = new HashMap();
@@ -43,6 +37,7 @@ public class CleanDispatchFrameStore extends FrameStoreAdapter {
 
     private void loadDispatches() {
         _defaultDispatch = new DefaultDispatch();
+        addDispatch(Model.Slot.NAME, new NameDispatch());
         addDispatch(Model.Slot.DIRECT_INSTANCES, new DirectInstancesDispatch());
         addDispatch(Model.Slot.DIRECT_TYPES, new DirectTypesDispatch());
         addDispatch(Model.Slot.DIRECT_SUBCLASSES, new DirectSubclassesDispatch());

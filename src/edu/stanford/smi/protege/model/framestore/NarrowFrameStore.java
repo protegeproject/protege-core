@@ -10,8 +10,6 @@ import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
-import edu.stanford.smi.protege.model.query.QueryCallback;
-import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public interface NarrowFrameStore {
 
@@ -38,6 +36,8 @@ public interface NarrowFrameStore {
     void setName(String name);
 
     NarrowFrameStore getDelegate();
+
+    FrameID generateFrameID();
 
     int getFrameCount();
 
@@ -113,20 +113,7 @@ public interface NarrowFrameStore {
 
     Set<Reference> getMatchingReferences(String value, int maxMatches);
 
-  /**
-   * The executeQuery method allows for complex queries.  It is asynchronous 
-   * so that in server-client mode the server knowledge base lock will not be
-   * held for an excessive amount of time.
-   *
-   * The contract specifies that the implementor must call one of the 
-   * QueryCallback methods in a separate thread.  This makes it possible 
-   * for the caller to know how to retrieve the results in a synchronous way
-   * without worrying about deadlock.
-   * 
-   * @param Query  the query to be executed.
-   * @param QueryCallback the callback that receives the results of the query.
-   */
-    void executeQuery(Query query, QueryCallback callback);
+    Set executeQuery(Query query);
 
     void deleteFrame(Frame frame);
 
@@ -144,28 +131,4 @@ public interface NarrowFrameStore {
     boolean commitTransaction();
 
     boolean rollbackTransaction();
-
-    /**
-     * Retrieves a transaction status monitor for transactions.  If this call returns null
-     * then it means that transactions are not supported.
-     * 
-     * @return A TransactionMonitor object that tracks the status of transactions.
-     */
-    TransactionMonitor getTransactionStatusMonitor();
-    
-    void reinitialize();
-    
-    /**
-     * Replace all references of the frame original with the frame replacement.
-     * 
-     * This (somewhat expensive) routine is used when the user wants to change the name
-     * of a frame.  The result of this call is that the original frame is deleted and 
-     * the replacement frame takes over in each position where the original frame occured.
-     * When the name of a frame is being changed, the caller will create a new frame (the
-     * replacement) with the new name and will then delete the original frame.
-     *  
-     * @param original the frame in the database being replaced
-     * @param replacement the replacement frame that does not exist in the database before the call.
-     */
-    void replaceFrame(Frame original, Frame replacement);
 }

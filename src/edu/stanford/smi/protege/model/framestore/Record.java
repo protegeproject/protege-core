@@ -84,7 +84,6 @@ public class Record {
         values.add(to, value);
     }
 
-    @SuppressWarnings("unchecked")
     public void replaceFrameReference(Frame replacementFrame) {
         if (replacementFrame.equals(frame)) {
             frame = replacementFrame;
@@ -109,12 +108,6 @@ public class Record {
 
     public boolean isEmpty() {
         return values.isEmpty();
-    }
-    
-    public String toString() {
-      return "<Record " + frame.getFrameID().getName() + ":" + slot.getFrameID().getName()
-                 + ":" + (facet == null ? "null" : facet.getFrameID().getName())
-                 + ":" + isTemplate + ">";
     }
 
     public boolean equals(Object o) {

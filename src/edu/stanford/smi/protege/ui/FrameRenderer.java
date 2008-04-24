@@ -2,18 +2,11 @@ package edu.stanford.smi.protege.ui;
 
 //ESCA*JAVA0100
 
-import javax.swing.Icon;
+import javax.swing.*;
 
-import edu.stanford.smi.protege.model.Cls;
-import edu.stanford.smi.protege.model.Facet;
-import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.Project;
-import edu.stanford.smi.protege.model.SimpleInstance;
-import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.resource.Colors;
-import edu.stanford.smi.protege.util.Assert;
-import edu.stanford.smi.protege.util.DefaultRenderer;
+import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.util.*;
 
 /**
  * Renderer for frames. This class has logic to render all type of frames: classes, slots, facet, simple instances.
@@ -25,11 +18,11 @@ import edu.stanford.smi.protege.util.DefaultRenderer;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameRenderer extends DefaultRenderer implements Cloneable {
-    public enum InstanceCountType {
-        NONE, DIRECT, ALL;
-    }
+    protected static final int NONE = 0;
+    protected static final int DIRECT = 1;
+    protected static final int ALL = 2;
 
-    protected InstanceCountType _instanceCountType = InstanceCountType.NONE;
+    protected int _instanceCountType = NONE;
     protected boolean _hasLoadedIconFlags = false;
     protected boolean _displayFrameTypeIcon = true;
     protected boolean _displayAbstractIcon = true;
@@ -39,7 +32,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
 
     protected boolean _displayType = false;
 
-    private static FrameRenderer _frameRendererPrototype = new FrameRenderer();
+    protected static FrameRenderer _frameRendererPrototype = new FrameRenderer();
 
     public static FrameRenderer createInstance() {
         FrameRenderer renderer;
@@ -65,19 +58,19 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     protected String getInstanceCountString(Cls cls) {
         int count;
         switch (_instanceCountType) {
-        case NONE:
-            count = 0;
-            break;
-        case DIRECT:
-            count = cls.getDirectInstanceCount();
-            break;
-        case ALL:
-            count = cls.getInstanceCount();
-            break;
-        default:
-            Assert.fail("bad type: " + _instanceCountType);
-        count = 0;
-        break;
+            case NONE:
+                count = 0;
+                break;
+            case DIRECT:
+                count = cls.getDirectInstanceCount();
+                break;
+            case ALL:
+                count = cls.getInstanceCount();
+                break;
+            default:
+                Assert.fail("bad type: " + _instanceCountType);
+                count = 0;
+                break;
         }
         String s;
         if (count > 0) {
@@ -99,7 +92,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
 
     public void load(Object value) {
         ensureIconFlagsLoaded();
-        
+
         if (value instanceof Frame) {
             Frame frameValue = (Frame) value;
             if (!(frameValue.isEditable())) {
@@ -123,7 +116,6 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
         }
     }
 
-    
     //ESCA-JAVA0130 
     protected Icon getIcon(Cls cls) {
         return cls.getIcon();
@@ -171,7 +163,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     }
 
     public void setDisplayDirectInstanceCount(boolean b) {
-        _instanceCountType = b ? InstanceCountType.DIRECT : InstanceCountType.NONE;
+        _instanceCountType = b ? DIRECT : NONE;
     }
 
     public void setDisplayFrameTypeIcon(boolean b) {
@@ -183,7 +175,7 @@ public class FrameRenderer extends DefaultRenderer implements Cloneable {
     }
 
     public void setDisplayInstanceCount(boolean b) {
-        _instanceCountType = b ? InstanceCountType.ALL : InstanceCountType.NONE;
+        _instanceCountType = b ? ALL : NONE;
     }
 
     public void setDisplayTrailingIcons(boolean b) {

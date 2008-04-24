@@ -50,8 +50,4 @@ public class DefaultSimpleInstance extends DefaultInstance implements SimpleInst
     public Icon getIcon() {
         return Icons.getInstanceIcon(!isEditable(), !isVisible());
     }
-    
-    public SimpleInstance rename(String name) {
-        return (SimpleInstance) getKnowledgeBase().rename(this, name);
-    }
 }

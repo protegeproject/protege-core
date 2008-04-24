@@ -14,8 +14,6 @@ import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.exception.ProtegeException;
-import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.cleandispatch.CleanDispatchFrameStore;
@@ -28,8 +26,8 @@ import edu.stanford.smi.protege.util.Log;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameStoreManager {
-    private static transient Logger log = Log.getLogger(FrameStoreManager.class);
-    private FrameStore immutableNamesFrameStore;
+  private static transient Logger log = Log.getLogger(FrameStoreManager.class);
+  
     private FrameStore deleteSimplificationFrameStore;
     private FrameStore argumentCheckingFrameStore;
     private FrameStore cachingFrameStore;
@@ -62,7 +60,7 @@ public class FrameStoreManager {
         return headFrameStore;
     }
     
-    public<X extends FrameStore> X getFrameStoreFromClass(Class<? extends X> clazz) {
+    public FrameStore getFrameStoreFromClass(Class clazz) {
       for (FrameStore fs = headFrameStore;  fs != null ; fs = fs.getDelegate()) {
         Class fsClass = fs.getClass();
         if (Proxy.isProxyClass(fsClass)) {
@@ -70,7 +68,7 @@ public class FrameStoreManager {
           fsClass = invocationHandler.getClass();
         }
         if (clazz.isAssignableFrom(fsClass)) {
-          return (X) fs;
+          return fs;
         }
       }
       return null;
@@ -112,7 +110,6 @@ public class FrameStoreManager {
         add(changeMonitorFrameStore, true);
         add(cleanDispatchFrameStore, true);
         add(deleteSimplificationFrameStore, true);
-        add(immutableNamesFrameStore, true);
 
         // for testing
         add(traceFrameStore, false);
@@ -172,7 +169,7 @@ public class FrameStoreManager {
         return wasEnabled;
     }
 
-    public static boolean isEnabled(FrameStore frameStore) {
+    private static boolean isEnabled(FrameStore frameStore) {
         return frameStore.getDelegate() != null;
     }
 
@@ -181,7 +178,6 @@ public class FrameStoreManager {
         closeFrameStores();
         frameStores = null;
         kb = null;
-        immutableNamesFrameStore = null;
         deleteSimplificationFrameStore = null;
         argumentCheckingFrameStore = null;
         cachingFrameStore = null;
@@ -333,14 +329,6 @@ public class FrameStoreManager {
         eventDispatchFrameStore.setPollForEvents(b);
     }
     
-    public void flushEvents() throws ProtegeException {
-      try {
-        eventDispatchFrameStore.flushEvents();
-      } catch (InterruptedException e) {
-        throw new ProtegeIOException(e);  // arguable - who interrupted this?
-      }
-    }
-
     public void removeListener(Class c, Object o, EventListener listener) {
         eventDispatchFrameStore.removeListener(c, o, listener);
     }
@@ -358,7 +346,6 @@ public class FrameStoreManager {
     }
 
     private void createSystemFrameStores() {
-        immutableNamesFrameStore = create(ImmutableNamesFrameStore.class);
         deleteSimplificationFrameStore = create(DeleteSimplificationFrameStore.class);
         argumentCheckingFrameStore = create(ArgumentCheckingFrameStore.class);
         cachingFrameStore = create(CallCachingFrameStore.class);

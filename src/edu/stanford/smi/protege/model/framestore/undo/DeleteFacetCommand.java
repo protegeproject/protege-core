@@ -7,12 +7,14 @@ import edu.stanford.smi.protege.model.framestore.*;
 
 class DeleteFacetCommand extends SimpleCommand {
     private Facet facet;
+    private String name;
     private FrameID id;
     private Collection directTypes;
 
     DeleteFacetCommand(FrameStore delegate, Facet facet) {
         super(delegate);
         this.facet = facet;
+        this.name = facet.getName();
         this.id = facet.getFrameID();
         this.directTypes = new ArrayList(facet.getDirectTypes());
         setDescription("Delete facet " + getText(facet));
@@ -25,7 +27,7 @@ class DeleteFacetCommand extends SimpleCommand {
     }
 
     public void undoIt() {
-        getDelegate().createFacet(id, directTypes, false);
+        getDelegate().createFacet(id, name, directTypes, false);
         facet.markDeleted(false);
     }
 }

@@ -1,67 +1,18 @@
 package edu.stanford.smi.protege.ui;
 //ESCA*JAVA0100
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
-import edu.stanford.smi.protege.action.DeleteInstancesAction;
-import edu.stanford.smi.protege.action.MakeCopiesAction;
-import edu.stanford.smi.protege.action.ReferencersAction;
-import edu.stanford.smi.protege.event.ClsAdapter;
-import edu.stanford.smi.protege.event.ClsEvent;
-import edu.stanford.smi.protege.event.ClsListener;
-import edu.stanford.smi.protege.event.FrameAdapter;
-import edu.stanford.smi.protege.event.FrameEvent;
-import edu.stanford.smi.protege.event.FrameListener;
-import edu.stanford.smi.protege.model.BrowserSlotPattern;
-import edu.stanford.smi.protege.model.Cls;
-import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.KnowledgeBase;
-import edu.stanford.smi.protege.model.Project;
-import edu.stanford.smi.protege.model.SimpleInstance;
-import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.resource.Colors;
-import edu.stanford.smi.protege.resource.LocalizedText;
-import edu.stanford.smi.protege.resource.ResourceKey;
-import edu.stanford.smi.protege.util.AbstractEvent;
-import edu.stanford.smi.protege.util.AllowableAction;
-import edu.stanford.smi.protege.util.ApplicationProperties;
-import edu.stanford.smi.protege.util.CollectionUtilities;
-import edu.stanford.smi.protege.util.ComponentFactory;
-import edu.stanford.smi.protege.util.ComponentUtilities;
-import edu.stanford.smi.protege.util.ConcurrentListModel;
-import edu.stanford.smi.protege.util.CreateAction;
-import edu.stanford.smi.protege.util.Disposable;
-import edu.stanford.smi.protege.util.LabeledComponent;
-import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.ModalDialog;
-import edu.stanford.smi.protege.util.SelectableContainer;
-import edu.stanford.smi.protege.util.SelectableList;
-import edu.stanford.smi.protege.util.ViewAction;
+import edu.stanford.smi.protege.action.*;
+import edu.stanford.smi.protege.event.*;
+import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.util.*;
 
 /**
  * The panel that holds the list of direct instances of one or more classes. If
@@ -71,50 +22,51 @@ import edu.stanford.smi.protege.util.ViewAction;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DirectInstancesList extends SelectableContainer implements Disposable {
-
-    private static final long serialVersionUID = 3123829893591425192L;
-    
-    public final static String SORT_LIMIT_PROPERTY = "ui.DirectInstancesList.sort_limit";
-    public static final int SORT_LIMIT;
-    static {
-        SORT_LIMIT = ApplicationProperties.getIntegerProperty(SORT_LIMIT_PROPERTY, 1000);
-    }
-    
-    private Collection<Cls> _clses = Collections.EMPTY_LIST;
+    // private static final String SHOW_SUBCLASS_INSTANCES = DirectInstancesList.class.getName()
+    //        + ".show_subclass_instances";
+    private Collection _clses = Collections.EMPTY_LIST;
     private SelectableList _list;
     private Project _project;
     private AllowableAction _createAction;
     private AllowableAction _copyAction;
     private AllowableAction _deleteAction;
     private HeaderComponent _header;
+    private Collection listenedToInstances = new ArrayList();
+    private static final int SORT_LIMIT;
     private boolean _showSubclassInstances;
     private LabeledComponent _labeledComponent;
-    
-    private AddInstancesRunner background;
 
+    static {
+        SORT_LIMIT = ApplicationProperties.getIntegerProperty("ui.DirectInstancesList.sort_limit", 1000);
+    }
 
     private ClsListener _clsListener = new ClsAdapter() {
         public void directInstanceAdded(ClsEvent event) {
-            synchronized (DirectInstancesList.this) {
-                if (background != null) {
-                    background.addChange(event);
-                }
+            Instance instance = event.getInstance();
+            if (!getModel().contains(instance)) {
+                ComponentUtilities.addListValue(_list, instance);
+                instance.addFrameListener(_instanceFrameListener);
             }
         }
 
         public void directInstanceRemoved(ClsEvent event) {
-            synchronized (DirectInstancesList.this) {
-                if (background != null) {
-                    background.addChange(event);
-                }
-            }
+            removeInstance(event.getInstance());
         }
     };
 
     private FrameListener _clsFrameListener = new FrameAdapter() {
         public void ownSlotValueChanged(FrameEvent event) {
             super.ownSlotValueChanged(event);
-            background.addChange(event);
+            updateButtons();
+        }
+    };
+
+    private FrameListener _instanceFrameListener = new FrameAdapter() {
+        public void browserTextChanged(FrameEvent event) {
+            super.browserTextChanged(event);
+            // Log.enter(this, "browserTextChanged", event);
+            sort();
+            repaint();
         }
     };
 
@@ -124,7 +76,6 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
         _list = ComponentFactory.createSelectableList(viewAction);
         _list.setCellRenderer(FrameRenderer.createInstance());
-        _list.setModel(new ConcurrentListModel());
 
         _labeledComponent = new LabeledComponent(null, ComponentFactory.createScrollPane(_list));
         addButtons(viewAction, _labeledComponent);
@@ -180,12 +131,37 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     }
 
     private void addClsListeners() {
-        Iterator<Cls> i = _clses.iterator();
+        Iterator i = _clses.iterator();
         while (i.hasNext()) {
-            Cls cls = i.next();
+            Cls cls = (Cls) i.next();
             cls.addClsListener(_clsListener);
             cls.addFrameListener(_clsFrameListener);
         }
+    }
+
+    private void addInstanceListeners() {
+        ListModel model = _list.getModel();
+        int start = _list.getFirstVisibleIndex();
+        int stop = _list.getLastVisibleIndex();
+        for (int i = start; i < stop; ++i) {
+            Instance instance = (Instance) model.getElementAt(i);
+            addInstanceListener(instance);
+
+        }
+    }
+
+    private void removeInstanceListeners() {
+        Iterator i = listenedToInstances.iterator();
+        while (i.hasNext()) {
+            Instance instance = (Instance) i.next();
+            instance.removeFrameListener(_instanceFrameListener);
+        }
+        listenedToInstances.clear();
+    }
+
+    private void addInstanceListener(Instance instance) {
+        instance.addFrameListener(_instanceFrameListener);
+        listenedToInstances.add(instance);
     }
 
     protected Action createCreateAction() {
@@ -200,11 +176,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                             newCls.addDirectSuperclass(kb.getRootCls());
                         }
                     }
-                    synchronized (DirectInstancesList.this) {
-                        if (background != null) {
-                            background.setDeferredSelection(instance);
-                        }
-                    }
+                    _list.setSelectedValue(instance, true);
                 }
             }
         };
@@ -341,18 +313,15 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     public void dispose() {
         removeClsListeners();
-        if (background != null) {
-            background.cancel();
-            background = null;
-        }
+        removeInstanceListeners();
     }
 
     public JComponent getDragComponent() {
         return _list;
     }
 
-    private ConcurrentListModel getModel() {
-        return (ConcurrentListModel) _list.getModel();
+    private SimpleListModel getModel() {
+        return (SimpleListModel) _list.getModel();
     }
 
     private boolean isSelectionEditable() {
@@ -375,64 +344,58 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         updateButtons();
     }
 
+    private void removeInstance(Instance instance) {
+        ComponentUtilities.removeListValue(_list, instance);
+        instance.removeFrameListener(_instanceFrameListener);
+    }
 
     private void removeClsListeners() {
-        Iterator<Cls> i = _clses.iterator();
+        Iterator i = _clses.iterator();
         while (i.hasNext()) {
-            Cls cls = i.next();
+            Cls cls = (Cls) i.next();
             cls.removeClsListener(_clsListener);
             cls.removeFrameListener(_clsFrameListener);
         }
     }
 
-    public void setClses(Collection<Cls> newClses) {
+    public void setClses(Collection newClses) {
         removeClsListeners();
-        _clses = new ArrayList<Cls>(newClses);
+        _clses = new ArrayList(newClses);
         reload();
         updateButtons();
         addClsListeners();
     }
 
     public void reload() {
-        synchronized (this) {
-            if (background != null) {
-                background.cancel();
-                background = null;
-            }
-        }
+        removeInstanceListeners();
         Object selectedValue = _list.getSelectedValue();
-        Set<Instance> instanceSet = new LinkedHashSet<Instance>();
-        Iterator<Cls> i = _clses.iterator();
+        Set instanceSet = new LinkedHashSet();
+        Iterator i = _clses.iterator();
         while (i.hasNext()) {
-            Cls cls = i.next();
+            Cls cls = (Cls) i.next();
             instanceSet.addAll(getInstances(cls));
         }
-        getModel().clear();
-        synchronized (this) {
-            if (background != null) {
-                background.cancel();
-            }
-            background = new AddInstancesRunner(new ArrayList<Instance>(instanceSet));
-            Thread th = new Thread(background, "Calculate Instances For Panel");
-            th.start();
-            if (instanceSet.contains(selectedValue) && selectedValue instanceof Instance) {
-                background.setDeferredSelection((Instance) selectedValue);
-            }
+        List instances = new ArrayList(instanceSet);
+        if (instances.size() <= SORT_LIMIT) {
+            Collections.sort(instances, new FrameComparator());
         }
-
-        if (!instanceSet.isEmpty()) {
+        getModel().setValues(instances);
+        if (instances.contains(selectedValue)) {
+            _list.setSelectedValue(selectedValue, true);
+        } else if (!instances.isEmpty()) {
             _list.setSelectedIndex(0);
         }
+        addInstanceListeners();
         reloadHeader(_clses);
         updateLabel();
     }
 
-    private void reloadHeader(Collection<Cls> clses) {
+    private void reloadHeader(Collection clses) {
         StringBuffer text = new StringBuffer();
         Icon icon = null;
-        Iterator<Cls> i = clses.iterator();
+        Iterator i = clses.iterator();
         while (i.hasNext()) {
-            Cls cls = i.next();
+            Cls cls = (Cls) i.next();
             if (icon == null) {
                 icon = cls.getIcon();
             }
@@ -446,8 +409,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         label.setIcon(icon);
     }
 
-    private Collection<Instance> getInstances(Cls cls) {
-        Collection<Instance> instances;
+    private Collection getInstances(Cls cls) {
+        Collection instances;
         if (_showSubclassInstances) {
             instances = cls.getInstances();
         } else {
@@ -459,11 +422,11 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         return instances;
     }
 
-    private static Collection<Instance> removeHiddenInstances(Collection<Instance> instances) {
-        Collection<Instance> visibleInstances = new ArrayList<Instance>(instances);
-        Iterator<Instance> i = visibleInstances.iterator();
+    private static Collection removeHiddenInstances(Collection instances) {
+        Collection visibleInstances = new ArrayList(instances);
+        Iterator i = visibleInstances.iterator();
         while (i.hasNext()) {
-            Instance instance = i.next();
+            Instance instance = (Instance) i.next();
             if (!instance.isVisible()) {
                 i.remove();
             }
@@ -471,10 +434,21 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         return visibleInstances;
     }
 
-    public synchronized void setSelectedInstance(Instance instance) {
-        if (background != null) {
-            background.setDeferredSelection(instance);
+    public void sort() {
+        _list.setListenerNotificationEnabled(false);
+        Object selectedValue = _list.getSelectedValue();
+        List instances = new ArrayList(getModel().getValues());
+        if (instances.size() <= SORT_LIMIT) {
+            Collections.sort(instances, new FrameComparator());
         }
+        getModel().setValues(instances);
+        _list.setSelectedValue(selectedValue);
+        _list.setListenerNotificationEnabled(true);
+    }
+
+    public void setSelectedInstance(Instance instance) {
+        _list.setSelectedValue(instance, true);
+        updateButtons();
     }
 
     private void updateButtons() {
@@ -500,185 +474,5 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
      */
     public void setShowDisplaySlotPanel(boolean b) {
 
-    }
-    
-    
-    
-    private class AddInstancesRunner implements Runnable {
-        private List<Instance> instances;
-        private List<AbstractEvent> changes = new ArrayList<AbstractEvent>();
-        private Instance deferredSelection;
-        private boolean sorted;
-        
-        private boolean cancelled = false;
-        
-        public AddInstancesRunner(List<Instance> instances) {
-            this.instances = instances;
-            sorted = (SORT_LIMIT < 0  || instances.size() < SORT_LIMIT);
-        }
-
-        public void run() {
-            while (true) {
-                waitToProcessEvents();
-                addOneInstance(getNextInstance());
-                synchronized (this) {
-                    if (cancelled) return;
-                }
-                handleChanges();
-            }
-        }
-        
-        private void waitToProcessEvents() {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                   public void run() {
-                       ;
-                   }
-                });
-            } catch (InterruptedException e) {
-                Log.getLogger().log(Level.SEVERE, "Interrupt caught - why?", e);
-            } catch (InvocationTargetException e) {
-                Log.getLogger().log(Level.SEVERE, "Programmer error", e);
-            }
-        }
-        
-        private void addOneInstance(final Instance instance) {
-            if (instance == null) {
-                return;
-            }
-            if (!getModel().contains(instance)) {
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            /* Since I am writing you a message - you know it is not good.
-                             * 
-                             * If AddInstanceRunner.cancel is called in the AWT event queue thread
-                             * then it will happen either before or after the following.  Therefore
-                             * we won't get a cancel in the middle of the addValue operation.
-                             */
-                            if (!cancelled) {
-                                insertInstanceInList(instance);
-                            }
-                        }
-                    });
-                } catch (InterruptedException e) {
-                    Log.getLogger().log(Level.SEVERE, "Exception caught talking to swing", e);
-                } catch (InvocationTargetException e) {
-                    Log.getLogger().log(Level.SEVERE, "Exception caught talking to swing", e);
-                }
-            }
-        }
-        
-        private synchronized Instance getNextInstance() {
-            if (instances.isEmpty() && !cancelled) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    Log.getLogger().log(Level.SEVERE, "Interrupted thread - why?", e);
-                }
-            }
-            if (instances.isEmpty() || cancelled)  {
-                return null;
-            }
-            Instance instance = instances.get(0);
-            instances.remove(0);
-            return instance;
-        }
-        
-        private void handleChanges() {
-            final List<AbstractEvent> localChanges = new ArrayList<AbstractEvent>();
-            final Instance localDeferredSelection;
-            boolean noChanges;
-            synchronized (this) {
-                noChanges = changes.isEmpty();
-                localChanges.addAll(changes);
-                changes.clear();
-                localDeferredSelection = deferredSelection;
-                deferredSelection = null;
-            }
-            /* Another warning comment
-             * I need to get into the swing thread so that I can be synchronized with the cancel method.
-             */
-            if (!noChanges || localDeferredSelection != null) {
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            if (cancelled) {
-                                return;
-                            }
-                            for (AbstractEvent event : localChanges) {
-                                if (event instanceof ClsEvent) {
-                                    ClsEvent clsEvent = (ClsEvent) event;
-                                    if (clsEvent.getEventType() == ClsEvent.DIRECT_INSTANCE_ADDED) {
-                                        Instance instance = clsEvent.getInstance();
-                                        insertInstanceInList(instance);
-                                        instances.remove(instance);
-                                    }
-                                    else if (clsEvent.getEventType() == ClsEvent.DIRECT_INSTANCE_REMOVED) {
-                                        Instance instance = clsEvent.getInstance();
-                                        getModel().removeValue(instance);
-                                        instances.remove(instance);
-                                    }
-                                }
-                                else if (event instanceof FrameEvent) {
-                                    FrameEvent frameEvent = (FrameEvent) event;
-                                    Frame frame = frameEvent.getFrame();
-                                    if (frameEvent.getEventType() == FrameEvent.OWN_SLOT_VALUE_CHANGED &&
-                                            getModel().contains(frame) &&
-                                            frame instanceof Instance) {
-                                        getModel().removeValue(frame);
-                                        insertInstanceInList((Instance) frame);
-                                        updateButtons();
-                                    }
-                                }
-                            }
-                            if (localDeferredSelection != null) {
-                                if (instances.contains(localDeferredSelection)) {
-                                    insertInstanceInList(localDeferredSelection);
-                                    instances.remove(localDeferredSelection);
-                                }
-                                _list.setSelectedValue(localDeferredSelection, true);
-                                updateButtons();
-                            }
-                        }
-                    });
-                } catch (InterruptedException e) {
-                    Log.getLogger().log(Level.SEVERE, "Interrupted Thread - why?", e);
-                } catch (InvocationTargetException e) {
-                    Log.getLogger().log(Level.WARNING, "Exception processing updates to instance list", e);
-                }
-            }
-        }
-        
-        private void insertInstanceInList(Instance instance) {
-            if (sorted) {
-                List list = getModel().toList();
-                int index = Collections.binarySearch(list, instance, new FrameComparator());
-                if (index >= 0) {
-                    getModel().addValue(instance, index);
-                }
-                else if (index < 0) {
-                    getModel().addValue(instance, -index - 1);
-                }
-            }
-            else {
-                getModel().addValue(instance);
-            }
-        }
-        
-        public synchronized void addChange(AbstractEvent event) {
-            changes.add(event);
-            notifyAll();
-        }
-        
-        public synchronized void setDeferredSelection(Instance instance) {
-            deferredSelection = instance;
-        }
-        
-        public synchronized void cancel() {
-            cancelled = true;
-            notifyAll();
-        }
-        
     }
 }

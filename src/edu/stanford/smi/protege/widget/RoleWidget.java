@@ -37,9 +37,9 @@ public class RoleWidget extends ComboBoxWidget {
             text += "Do you really want to make this change?";
             int response = ModalDialog.showMessageDialog(RoleWidget.this, text, ModalDialog.MODE_YES_NO);
             if (response == ModalDialog.OPTION_YES) {
-                Iterator<Instance> i = new ArrayList<Instance>(cls.getDirectInstances()).iterator();
+                Iterator i = new ArrayList(cls.getDirectInstances()).iterator();
                 while (i.hasNext()) {
-                    Instance instance = i.next();
+                    Instance instance = (Instance) i.next();
                     instance.delete();
                 }
                 valueChanged();

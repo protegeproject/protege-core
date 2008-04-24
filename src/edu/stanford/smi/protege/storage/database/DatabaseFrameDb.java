@@ -2,7 +2,6 @@ package edu.stanford.smi.protege.storage.database;
 
 //ESCA*JAVA0100
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,8 +18,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.exception.ProtegeError;
-import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
@@ -30,24 +27,24 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.ReferenceImpl;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
-import edu.stanford.smi.protege.model.query.QueryCallback;
-import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.Session;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
-import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class DatabaseFrameDb implements NarrowFrameStore {
   private static Logger log = Log.getLogger(DatabaseFrameDb.class);
-
+  
+  public enum Column {
+    frame, frame_type, slot, facet, is_template, value_index, value_type, short_value, long_value
+  }
+  
+  int projectId = FrameID.allocateMemoryProjectPart();
 	
     private static final String FRAME_COLUMN = "frame";
     private static final String FRAME_TYPE_COLUMN = "frame_type";
@@ -59,8 +56,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private static final String SHORT_VALUE_COLUMN = "short_value";
     private static final String LONG_VALUE_COLUMN = "long_value";
 
-    private final Map<RemoteSession, RobustConnection> _connections 
-                              = new HashMap<RemoteSession, RobustConnection>();
+    private final Map _connections = new HashMap();
     private String _table;
     private String _driver;
     private String _url;
@@ -70,11 +66,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private FrameFactory _frameFactory;
     private static boolean _isModifiable = true;
 
-    private static int lastReturnedFrameID;
+    private static int lastReturnedFrameID = FrameID.INITIAL_USER_FRAME_ID - 1;
 
     private String frameDbName;
-
-    private TransactionMonitor transactionMonitor;
 
     public String getName() {
         return frameDbName;
@@ -89,13 +83,13 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     // Returns the current remote session.  In standalone mode it returns null.
-    private RemoteSession getCurrentSession() {
+    private Object getCurrentSession() {
         return ServerFrameStore.getCurrentSession();
     }
 
     protected RobustConnection getCurrentConnection() throws SQLException {
-        RemoteSession currentSession = getCurrentSession();
-        RobustConnection connection =  _connections.get(currentSession);
+        Object currentSession = getCurrentSession();
+        RobustConnection connection = (RobustConnection) _connections.get(currentSession);
         if (connection == null) {
             connection = createConnection();
             _connections.put(currentSession, connection);
@@ -111,7 +105,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
                 Map.Entry entry = (Map.Entry) i.next();
                 Object session = entry.getKey();
                 RobustConnection connection = (RobustConnection) entry.getValue();
-                connection.dispose();
+                connection.close();
                 Log.getLogger().info("Closed connection for session: " + session);
             }
             _connections.clear();
@@ -124,6 +118,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
       
     }
     
+    protected void setMemoryProjectId(int memoryProjectId) {
+      projectId = memoryProjectId;
+    }
 
     public void initialize(FrameFactory factory, 
                            String driver, 
@@ -163,7 +160,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             if (isDead(session)) {
                 RobustConnection connection = (RobustConnection) entry.getValue();
                 // Log.getLogger().info("Clearing dead connection: " + session);
-                connection.dispose();
+                connection.close();
                 i.remove();
             }
         }
@@ -175,9 +172,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private RobustConnection createConnection() throws SQLException {
         clearDeadConnections();
-        RemoteSession currentSession = getCurrentSession();
-        RobustConnection connection = new RobustConnection(_driver, _url, _user, _password, 
-                                                           getTransactionStatusMonitor(), currentSession);
+        Object currentSession = getCurrentSession();
+        RobustConnection connection = new RobustConnection(_driver, _url, _user, _password);
         _connections.put(currentSession, connection);
         if (log.isLoggable(Level.FINE)) {
           log.fine("Created connection for " + currentSession);  
@@ -202,10 +198,40 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             // do nothing
         }
         Log.getLogger().info(Log.toString(e));
-        
-        RuntimeException runtimeEx = new RuntimeException(e.getMessage());
-        runtimeEx.initCause(e);        
-        return runtimeEx;
+        return new RuntimeException(e.getMessage());
+    }
+
+    /*
+     * Using the database metadata to decide if a table exists turns out to be unreliable. Instead we just do a select
+     * of something fast and make sure that the table isn't completely empty. If this succeeds the table is assumed to
+     * be ok.
+     */
+
+    public boolean tableExists() {
+        boolean exists = false;
+        String command = "SELECT " + FRAME_COLUMN + ", " + FRAME_TYPE_COLUMN + " FROM " + _table;
+        command += " WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME);
+        command += " AND " + SHORT_VALUE_COLUMN + " = '" + Model.Cls.THING + "'";
+        try {
+            ResultSet rs = executeQuery(command);
+            while (rs.next()) {
+                exists = true;
+                break;
+            }
+            rs.close();
+        } catch (SQLException e) {
+            // do nothing
+        }
+        return exists;
+    }
+
+    public void createNewTableAndIndices() {
+        try {
+            ensureEmptyTableExists();
+            createIndices();
+        } catch (SQLException e) {
+            throw createRuntimeException(e);
+        }
     }
 
     private void ensureEmptyTableExists() throws SQLException {
@@ -257,7 +283,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private String getFrameDataType() throws SQLException {
-      return getCurrentConnection().getVarcharTypeName() + "(" + getCurrentConnection().getMaxVarcharSize() + ")";
+        return getCurrentConnection().getIntegerTypeName();
     }
 
     private String getFrameTypeDataType() throws SQLException {
@@ -410,7 +436,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }       
         ResultSet ret = stmt.executeQuery();
         if (log.isLoggable(Level.FINER)) {
-          log.finer("Query took " + ((System.nanoTime() - startTime))/1000000.0 
+          log.finer("Query took " + ((float) (System.nanoTime() - startTime))/1000000.0 
                       + " milliseconds (more or less)");
         }       
         return ret;
@@ -430,7 +456,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         ResultSet ret = statement.executeQuery(text);
         if (log.isLoggable(Level.FINER)) {
-          log.finer("Query took " + ((System.nanoTime() - startTime))/1000000.0
+          log.finer("Query took " + ((float) (System.nanoTime() - startTime))/1000000.0
                       + " milliseconds (more or less)");
         }
         return ret;
@@ -730,18 +756,13 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         setValues(frame, slot, facet, isTemplate, values);
     }
 
-    public void executeQuery(Query query, final QueryCallback callback) {
-      new Thread(new Runnable() {
-          public void run() {
-              callback.handleError(new ProtegeError("Not implemented yet"));
-          }
-        },
-                 "Vacuous Callback Results Thread");
+    public Set executeQuery(Query query) {
+        return null;
     }
 
     public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
         try {
-            return getMatchingFramesSQL(slot, facet, isTemplate, value, maxMatches);
+            return getMatchingFramesSQL(slot, facet, isTemplate, value);
         } catch (SQLException e) {
             throw createRuntimeException(e);
         }
@@ -756,54 +777,32 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         return matchColumn;
     }
-    
-    /*
-     * Ok the maxMatches code below is clearly broken.  Here is some explanation:
-     * 
-     * 1. There is no portable way of limiting a database search to some number of matches.
-     *    In mysql and postgres, there is a limit keyword.  Oracle uses a nested select and a rownum variable.
-     *    Microsoft uses a "top 10" syntax.  Some database only restrict how many results you get but require you to start from
-     *    the beginning if you want more.  Etc...  It is hard to accomodate this neatly.
-     * 2. In real live queries on the Thesaurus using the "*" query (which returned 888,497 rows) the database query itself 
-     *    only took about 15-20 seconds (!) on a dual 1.42Mhz PowerMac (e.g. a slow machine).  Indeed returning the result did not take 
-     *    that long either.  What did take a tremendous amount of time was processing the returned data in the gui.
-     * 3. On the other hand any time spent in this routine is painful because the knowledge base is locked for the duration.
-     *    In the client-server mode this is awkward.
-     * 4. I am not sure why the desired slot and isTemplate values are not in the database query.  Changing this 
-     *    would help but there may be a reason why Ray didn't put them in there.  This would be a good thing to
-     *    investigate later.
-     *    
-     * Good enough for today.
-     */
-     private Set<Frame> getMatchingFramesSQL(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) throws SQLException {
+
+    private Set getMatchingFramesSQL(Slot slot, Facet facet, boolean isTemplate, String value) throws SQLException {
         String text = "SELECT " + FRAME_COLUMN + ", " + FRAME_TYPE_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN
                 + ", " + IS_TEMPLATE_COLUMN;
         text += " FROM " + _table;
         text += " WHERE " + VALUE_TYPE_COLUMN + " = " + DatabaseUtils.getStringValueType();
-        text += " AND (" + getShortValueMatchColumn() + " LIKE '" + getMatchString(value) + "' " + getEscapeClause();
-        text +=        " OR " + LONG_VALUE_COLUMN + " LIKE '" + getMatchString(value) + "' " + getEscapeClause()  + " )";
+        text += " AND " + getShortValueMatchColumn() + " LIKE '" + getMatchString(value) + "' " + getEscapeClause();
 
-        Set<Frame> results = new HashSet<Frame>();
+        Set results = new HashSet();
         ResultSet rs = executeQuery(text);
         while (rs.next()) {
             Frame frame = getFrame(rs, 1, 2);
-            String returnedSlot = rs.getString(3);
-            String returnedFacet = rs.getString(4);
+            int returnedSlot = rs.getInt(3);
+            int returnedFacet = rs.getInt(4);
             boolean returnedIsTemplate = rs.getBoolean(5);
             if (equals(returnedSlot, slot) && equals(returnedFacet, facet) && returnedIsTemplate == isTemplate) {
                 results.add(frame);
-                if (--maxMatches == 0) break;
             }
         }
         rs.close();
         return results;
     }
 
-    private static boolean equals(String frameIDValue, Frame frame) {
-      if (frame == null) {
-        return frameIDValue.equals("");
-      }
-      return frame.getName().equals(frameIDValue);
+    private static boolean equals(int frameIDValue, Frame frame) {
+        int value = (frame == null) ? FrameID.NULL_FRAME_ID_VALUE : getValue(frame.getFrameID());
+        return frameIDValue == value;
     }
 
     private String getMatchString(String value) throws SQLException {
@@ -991,7 +990,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return count;
     }
 
-    public CacheMap<Frame, Map<Sft,List>> getFrameValues() {
+    public CacheMap getFrameValues() {
         try {
             return getFrameValuesSQL();
         } catch (SQLException e) {
@@ -999,7 +998,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
     }
 
-    public Map<Sft,List> getFrameValues(Frame frame) {
+    public Map getFrameValues(Frame frame) {
         try {
             // Log.trace("call=" + ++call, this, "getFrameValues",
             // frame.getFrameID());
@@ -1009,13 +1008,13 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
     }
 
-    private static String getValue(FrameID id) {
+    private static int getValue(FrameID id) {
         return DatabaseUtils.getValue(id);
     }
 
     private String _frameValuesText;
 
-    private Map<Sft,List> getFrameValuesSQL(Frame frame) throws SQLException {
+    private Map getFrameValuesSQL(Frame frame) throws SQLException {
         if (_frameValuesText == null) {
             /*
              * We only select the frame for performance reasons. The order by clause can use an index if the frame is
@@ -1026,7 +1025,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             _frameValuesText += SHORT_VALUE_COLUMN + ", " + VALUE_TYPE_COLUMN + ", " + VALUE_INDEX_COLUMN;
             _frameValuesText += " FROM " + _table;
             _frameValuesText += " WHERE " + FRAME_COLUMN + " = ?";
-            _frameValuesText += " AND " + SLOT_COLUMN + " <> '" + getValue(Model.SlotID.DIRECT_INSTANCES) +"'";
+            _frameValuesText += " AND " + SLOT_COLUMN + " <> " + getValue(Model.SlotID.DIRECT_INSTANCES);
             _frameValuesText += " ORDER BY " + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", "
                     + IS_TEMPLATE_COLUMN + ", " + VALUE_INDEX_COLUMN;
         }
@@ -1034,7 +1033,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
         setFrame(stmt, 1, frame);
 
-        Map<Sft,List> sftToValueMap = new HashMap<Sft,List>();
+        Map sftToValueMap = new HashMap();
         ResultSet rs = executeQuery(stmt);
         while (rs.next()) {
             // Ignore the returned frame
@@ -1057,7 +1056,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String _allFrameValuesText;
 
-    private CacheMap<Frame, Map<Sft, List>> getFrameValuesSQL() throws SQLException {
+    private CacheMap getFrameValuesSQL() throws SQLException {
         if (_allFrameValuesText == null) {
             _allFrameValuesText = "SELECT " + FRAME_COLUMN + ", " + FRAME_TYPE_COLUMN;
             _allFrameValuesText += ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN;
@@ -1069,7 +1068,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_allFrameValuesText);
 
-        CacheMap<Frame, Map<Sft,List>> frameToSftToValueMap = new CacheMap<Frame, Map<Sft, List>>();
+        CacheMap frameToSftToValueMap = new CacheMap();
         ResultSet rs = executeQuery(stmt);
         while (rs.next()) {
             Frame frame = getFrame(rs, 1, 2);
@@ -1091,9 +1090,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return frameToSftToValueMap;
     }
 
-    private static void addToMap(Map<Sft,List> map, Slot slot, Facet facet, boolean isTemplate, Object value) {
+    private static void addToMap(Map map, Slot slot, Facet facet, boolean isTemplate, Object value) {
         Sft sft = new Sft(slot, facet, isTemplate);
-        List values = map.get(sft);
+        Collection values = (Collection) map.get(sft);
         if (values == null) {
             values = new ArrayList();
             map.put(sft, values);
@@ -1101,9 +1100,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         values.add(value);
     }
 
-    private static void addToMap(CacheMap<Frame, Map<Sft,List>> map,
-                                 Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
-        Map<Sft,List> sftToValueMap = map.get(frame);
+    private static void addToMap(CacheMap map, Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
+        Map sftToValueMap = (Map) map.get(frame);
         if (sftToValueMap == null) {
             sftToValueMap = createInitialMap(frame);
             map.put(frame, sftToValueMap);
@@ -1111,8 +1109,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         addToMap(sftToValueMap, slot, facet, isTemplate, value);
     }
 
-    private static Map<Sft,List> createInitialMap(Frame frame) {
-        Map<Sft,List> map = new HashMap<Sft,List>();
+    private static Map createInitialMap(Frame frame) {
+        Map map = new HashMap();
         if (frame instanceof Cls) {
             Slot directInstancesSlot = frame.getKnowledgeBase().getSystemFrames().getDirectInstancesSlot();
             map.put(new Sft(directInstancesSlot, null, false), new ArrayList());
@@ -1192,15 +1190,16 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private Frame getFrame(ResultSet rs, int frameIndex, int typeIndex) throws SQLException {
         return DatabaseUtils.getFrame(rs, 
                                       frameIndex, typeIndex,
-                                      _frameFactory, _isInclude);
+                                      _frameFactory, projectId,
+                                      _isInclude);
     }
 
     private Slot getSlot(ResultSet rs, int index) throws SQLException {
-        return DatabaseUtils.getSlot(rs, index, _frameFactory, _isInclude);
+        return DatabaseUtils.getSlot(rs, index, _frameFactory, projectId, _isInclude);
     }
 
     private Facet getFacet(ResultSet rs, int index) throws SQLException {
-        return DatabaseUtils.getFacet(rs, index, _frameFactory, _isInclude);
+        return DatabaseUtils.getFacet(rs, index, _frameFactory, projectId, _isInclude);
     }
 
     private static int getIndex(ResultSet rs, int index) throws SQLException {
@@ -1214,7 +1213,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private Object getShortValue(ResultSet rs, int index, int valueTypeIndex) throws SQLException {
       return DatabaseUtils.getShortValue(rs, 
                                          index, valueTypeIndex, 
-                                         _frameFactory, 0, 
+                                         _frameFactory, projectId, 
                                          _isInclude);
     }
 
@@ -1255,35 +1254,26 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private static final Map slotToFacetsCacheMap = new HashMap();
-    
+
     protected void saveFrames(KnowledgeBase kb) throws SQLException {
         nFrames = kb.getFrameCount();
         loopcount = 0;
         previousTime = System.currentTimeMillis();
-        
-        MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(kb);
-        NarrowFrameStore nfs = null;
-        if (mnfs != null) {
-            nfs = mnfs.getActiveFrameStore();
-        }
 
         if (nFrames > LOOP_SIZE) {
             Log.getLogger().info("Getting " + nFrames + " frames, please be patient, " + new Date());
         }
-        Collection<Frame> frames;
-        if (nfs == null) {
-            frames = kb.getFrames();
-        }
-        else {
-            frames = nfs.getFrames();
-        }
-        for (Frame frame : frames) {
+        Iterator i = kb.getFrames().iterator();
+        while (i.hasNext()) {
+            Frame frame = (Frame) i.next();
             printTraceMessage();
-            saveDirectOwnSlotValues(frame, nfs);
+            saveDirectOwnSlotValues(frame);
             if (frame instanceof Cls) {
                 Cls cls = (Cls) frame;
-                saveDirectTemplateSlotInformation(cls, nfs);
+                saveDirectTemplateSlotInformation(cls);
             }
+            // do this just in case it helps with caching
+            i.remove();
         }
     }
 
@@ -1362,48 +1352,30 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         getCurrentConnection().commit();
     }
 
-    private void saveDirectOwnSlotValues(Frame frame, NarrowFrameStore nfs) throws SQLException {
+    private void saveDirectOwnSlotValues(Frame frame) throws SQLException {
         Iterator i = frame.getOwnSlots().iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();
-            Collection values;
-            if (nfs == null) {
-                values = frame.getDirectOwnSlotValues(slot);
-            }
-            else {
-                values = nfs.getValues(frame, slot, null, false);
-            }
+            Collection values = frame.getDirectOwnSlotValues(slot);
             saveValues(frame, slot, null, false, values);
         }
     }
 
-    private void saveDirectTemplateSlotInformation(Cls cls, NarrowFrameStore nfs) throws SQLException {
+    private void saveDirectTemplateSlotInformation(Cls cls) throws SQLException {
         Iterator i = cls.getTemplateSlots().iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();
-            Collection values;
-            if (nfs == null) {
-                values = cls.getDirectTemplateSlotValues(slot);
-            }
-            else {
-                values  = nfs.getValues(cls, slot, null, true);
-            }
+            Collection values = cls.getDirectTemplateSlotValues(slot);
             saveValues(cls, slot, null, true, values);
-            saveDirectTemplateFacetValues(cls, slot, nfs);
+            saveDirectTemplateFacetValues(cls, slot);
         }
     }
 
-    private void saveDirectTemplateFacetValues(Cls cls, Slot slot, NarrowFrameStore nfs) throws SQLException {
+    private void saveDirectTemplateFacetValues(Cls cls, Slot slot) throws SQLException {
         Iterator i = getTemplateFacets(cls, slot).iterator();
         while (i.hasNext()) {
             Facet facet = (Facet) i.next();
-            Collection values;
-            if (nfs == null) {
-                values = cls.getDirectTemplateFacetValues(slot, facet);
-            }
-            else {
-                values = nfs.getValues(cls, slot, facet, true);
-            }
+            Collection values = cls.getDirectTemplateFacetValues(slot, facet);
             saveValues(cls, slot, facet, true, values);
         }
     }
@@ -1418,13 +1390,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     public boolean beginTransaction(String name) {
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("begin transaction " + name);
-        }
         checkModifiability();
         try {
-           boolean success = getCurrentConnection().beginTransaction();
-           return success;
+            return getCurrentConnection().beginTransaction();
         } catch (SQLException e) {
             throw createRuntimeException(e);
         }
@@ -1432,9 +1400,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     public boolean commitTransaction() {
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("commit transaction");
-        }
         checkModifiability();
         try {
             return getCurrentConnection().commitTransaction();
@@ -1445,9 +1410,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     public boolean rollbackTransaction() {
-        if (log.isLoggable(Level.FINE)) {
-          log.fine("roll back transaction");
-        }
         checkModifiability();
         try {
             return getCurrentConnection().rollbackTransaction();
@@ -1455,43 +1417,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             throw createRuntimeException(e);
         }
 
-    }
-
-    public TransactionMonitor getTransactionStatusMonitor() {
-      if (transactionMonitor == null) {
-        transactionMonitor = new TransactionMonitor() {
-
-            
-            @Override
-            public TransactionIsolationLevel getTransationIsolationLevel() 
-              throws TransactionException {
-              int jdbcLevel = Connection.TRANSACTION_NONE;
-              try {
-                RobustConnection connection = getCurrentConnection();
-                jdbcLevel = connection.getTransactionIsolationLevel();
-              } catch (SQLException sqle) {
-                throw new TransactionException(sqle);
-              }
-              return TransactionIsolationLevel.getTransactionLevel(jdbcLevel);
-            }
-            
-            @Override
-            public void setTransactionIsolationLevel(TransactionIsolationLevel level) 
-              throws TransactionException {
-              int jdbcLevel = level.getJdbcLevel();
-              try {
-                RobustConnection connection = getCurrentConnection();
-                if (connection != null) {
-                  connection.setTransactionIsolationLevel(jdbcLevel);
-                }
-              } catch (SQLException e) {
-                throw new TransactionException(e);
-              }
-            }
-            
-          };
-      }
-      return transactionMonitor;
     }
 
     private static void checkModifiability() {
@@ -1510,7 +1435,30 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
     }
 
+    private String queryFrameTypeIdCommand;
 
+    private int getFrameTypeIdSQL(Frame frame) {
+        try {
+            if (queryFrameTypeIdCommand == null) {
+                queryFrameTypeIdCommand = "SELECT " + FRAME_TYPE_COLUMN;
+                queryFrameTypeIdCommand += " FROM " + _table;
+                queryFrameTypeIdCommand += " WHERE " + FRAME_COLUMN + " = ?"; // Fixed by Holger
+            }
+            int id = -1;
+            PreparedStatement stmt = getCurrentConnection().getPreparedStatement(queryFrameTypeIdCommand);
+            setFrame(stmt, 1, frame);
+            stmt.setMaxRows(1);
+            ResultSet rs = executeQuery(stmt);
+            while (rs.next()) {
+                id = rs.getInt(1);
+                break;
+            }
+            rs.close();
+            return id;
+        } catch (SQLException e) {
+            throw createRuntimeException(e);
+        }
+    }
 
     private String replaceFrameTypeCommand;
 
@@ -1540,6 +1488,10 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         DatabaseUtils.setFrame(stmt, 2, frame);
         // DatabaseUtils.setValueType(stmt, 3, currentTypeId);
         executeUpdate(stmt);
+    }
+
+    public String toString() {
+        return "DatabaseFrameDb";
     }
 
     public int getClsCount() {
@@ -1588,8 +1540,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private int countFramesSQL(Collection types) throws SQLException {
         StringBuffer command = new StringBuffer();
         command.append("SELECT COUNT(*) FROM " + _table);
-        command.append(" WHERE " + SLOT_COLUMN + " = '" + getValue(Model.SlotID.NAME));
-        command.append("' AND " + FACET_COLUMN + " = \"\"");
+        command.append(" WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME));
+        command.append(" AND " + FACET_COLUMN + " = " + FrameID.NULL_FRAME_ID_VALUE);
         command.append(" AND " + IS_TEMPLATE_COLUMN + " = ?");
         command.append(" AND (");
         boolean isFirst = true;
@@ -1631,8 +1583,8 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private int countFramesSQL() throws SQLException {
         if (_countFramesText == null) {
             _countFramesText = "SELECT COUNT(*) FROM " + _table;
-            _countFramesText += " WHERE " + SLOT_COLUMN + " = '" + getValue(Model.SlotID.NAME) + "'";
-            _countFramesText += " AND " + FACET_COLUMN + " = ''";
+            _countFramesText += " WHERE " + SLOT_COLUMN + " = " + getValue(Model.SlotID.NAME);
+            _countFramesText += " AND " + FACET_COLUMN + " = " + FrameID.NULL_FRAME_ID_VALUE;
             _countFramesText += " AND " + IS_TEMPLATE_COLUMN + " = ?";
         }
         PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_countFramesText);
@@ -1682,7 +1634,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             if (id != null) {
                 // get the prepared statement and set the id value
                 PreparedStatement getFrameStmt = getCurrentConnection().getPreparedStatement(_getFrameFromIdText);
-                DatabaseUtils.setFrameId(getFrameStmt, 1, id);
+                getFrameStmt.setInt(1, id.getLocalPart());
 
                 // execute the query and retrieve the result frame
                 ResultSet rs = executeQuery(getFrameStmt);
@@ -1698,77 +1650,26 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return returnFrame;
     }
 
+    public FrameID generateFrameID() {
+        return FrameID.createLocal(projectId, getNextFrameID());
+    }
+
+    private int getNextFrameID() {
+        try {
+            int maxID = 0;
+            String text = "SELECT MAX(" + FRAME_COLUMN + ") FROM " + _table;
+            ResultSet rs = executeQuery(text);
+            while (rs.next()) {
+                maxID = rs.getInt(1);
+            }
+            lastReturnedFrameID = Math.max(maxID + 1, lastReturnedFrameID + 1);
+        } catch (SQLException e) {
+            createRuntimeException(e);
+        }
+        return lastReturnedFrameID;
+    }
+
     public NarrowFrameStore getDelegate() {
-        return null;
-    }
-    
-    private String _updateFrameFieldText;
-    private String _updateSlotFieldText;
-    private String _updateFacetFieldText;
-    private String _updateValueFieldText;
-    private String _replaceNameText;
-    
-    public void replaceFrame(Frame original, Frame replacement) {
-    	try {
-    		if (_updateFrameFieldText == null) {
-    			_updateFrameFieldText = "UPDATE " + _table + " SET " + FRAME_COLUMN + " = ? WHERE ";
-    			_updateFrameFieldText = _updateFrameFieldText + FRAME_COLUMN + " = ?";
-    		}
-    		PreparedStatement updateFrameFieldStatement = getCurrentConnection().getPreparedStatement(_updateFrameFieldText);
-    		setFrame(updateFrameFieldStatement, 1, replacement);
-    		setFrame(updateFrameFieldStatement, 2, original);
-    		executeUpdate(updateFrameFieldStatement);
-    		
-    		if (_updateSlotFieldText == null) {
-    			_updateSlotFieldText = "UPDATE " + _table + " SET " + SLOT_COLUMN + " = ? WHERE ";
-    			_updateSlotFieldText = _updateSlotFieldText + SLOT_COLUMN + " = ?";
-    		}
-    		PreparedStatement updateSlotFieldStatement = getCurrentConnection().getPreparedStatement(_updateSlotFieldText);
-    		setFrame(updateSlotFieldStatement, 1, replacement);
-    		setFrame(updateSlotFieldStatement, 2, original);
-    		executeUpdate(updateSlotFieldStatement);
-    		
-    		if (_updateFacetFieldText == null) {
-    			_updateFacetFieldText = "UPDATE " + _table + " SET " + FACET_COLUMN + " = ? WHERE ";
-    			_updateFacetFieldText = _updateFacetFieldText + FACET_COLUMN + " = ?";
-    		}
-    		PreparedStatement updateFacetFieldStatement = getCurrentConnection().getPreparedStatement(_updateFacetFieldText);
-    		setFrame(updateFacetFieldStatement, 1, replacement);
-    		setFrame(updateFacetFieldStatement, 2, original);
-    		executeUpdate(updateFacetFieldStatement);
-    		
-    		if (_updateValueFieldText == null) {
-    			_updateValueFieldText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ? WHERE ";
-    			_updateValueFieldText = _updateValueFieldText + SHORT_VALUE_COLUMN + " = ? AND ";
-    			_updateValueFieldText = _updateValueFieldText + VALUE_TYPE_COLUMN + " >= " + DatabaseUtils.BASE_FRAME_TYPE_VALUE;
-    		}
-    		PreparedStatement updateValueFieldStatement = getCurrentConnection().getPreparedStatement(_updateValueFieldText);
-    		setFrame(updateValueFieldStatement, 1, replacement);
-    		setFrame(updateValueFieldStatement, 2, original);
-    		executeUpdate(updateValueFieldStatement);
-    		
-    		if (_replaceNameText == null) {
-    			_replaceNameText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ?," +  VALUE_TYPE_COLUMN + " = ? WHERE ";
-    			_replaceNameText = _replaceNameText + FRAME_COLUMN + " = ? AND ";
-    			_replaceNameText = _replaceNameText + SLOT_COLUMN + " = '" + getValue(Model.SlotID.NAME) + "'";
-    		}
-    		PreparedStatement replaceNameStatement = getCurrentConnection().getPreparedStatement(_replaceNameText);
-    		setShortValue(replaceNameStatement, 1, 2, replacement.getFrameID().getName());
-    		setFrame(replaceNameStatement, 3, replacement);
-    		executeUpdate(replaceNameStatement);
-    		original.markDeleted(true);
-    	}
-    	catch (SQLException sqle) {
-    		createRuntimeException(sqle);
-    	}
-    }
-
-    public void reinitialize()  {
-    }
-
-    
-    @Override
-    public String toString() {
-        return "DatabaseFrameDb(" + getName() + ")";
+        throw new UnsupportedOperationException();
     }
 }

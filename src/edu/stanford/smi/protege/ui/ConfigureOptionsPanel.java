@@ -1,15 +1,11 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.BorderLayout;
+import java.awt.*;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
+import javax.swing.*;
 
-import edu.stanford.smi.protege.model.Project;
-import edu.stanford.smi.protege.util.AbstractValidatableComponent;
-import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.util.*;
 
 /**
  * A panel to display the global options for the application and allow the user to set them.
@@ -24,15 +20,11 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
     private JCheckBox _confirmOnRemoveComponent;
     private JCheckBox _isEditableComponent;
     private JCheckBox _updateModificationSlotsComponent;
-
     private JCheckBox _journalingEnabledCheckBox;
     private JCheckBox _prettyPrintSlotWidgetLabelsCheckBox;
     private JCheckBox _tabbedInstanceFormCheckBox;
-    private JCheckBox _enableUndoCheckBox;
     private JCheckBox _addNameOnInstanceFormCheckBox;
     private JCheckBox _trackChangesActiveComponent;
-    private JCheckBox _suppressInstanceCountDisplayComponent;
-    
     
     ConfigureOptionsPanel(Project project) {
         _project = project;
@@ -46,21 +38,12 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         c.add(createJournalingEnabledCheckBox());
         c.add(createPrettyPrintSlotWidgetLabelsCheckBox());
         c.add(createTabbedInstanceFormComponent());
-        c.add(createEnableUndoCheckBox());
         c.add(createNameOnInstanceFormComponent());
-        c.add(createSuppressInstanceCountingComponent());
         add(c);
 
     }
 
-    private JComponent createEnableUndoCheckBox() {
-    	_enableUndoCheckBox = ComponentFactory.createCheckBox();
-    	_enableUndoCheckBox.setText("Enable Undo/Redo of operations");
-    	_enableUndoCheckBox.setSelected(_project.isUndoOptionEnabled());
-        return _enableUndoCheckBox;
-	}
-
-	private JComponent createJournalingEnabledCheckBox() {
+    private JComponent createJournalingEnabledCheckBox() {
         _journalingEnabledCheckBox = ComponentFactory.createCheckBox();
         _journalingEnabledCheckBox.setText("Enable Journaling");
         _journalingEnabledCheckBox.setSelected(_project.isJournalingEnabled());
@@ -105,15 +88,6 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         return _trackChangesActiveComponent;
     }
 
-
-    /*
-     * supress suppress 
-     */
-    private JComponent createSuppressInstanceCountingComponent() {      
-        _suppressInstanceCountDisplayComponent = ComponentFactory.createCheckBox("Suppress Instance Count Display");
-        setValue(_suppressInstanceCountDisplayComponent, _project.getSuppressInstanceCounting());
-        return _suppressInstanceCountDisplayComponent;
-    }
     
     private JComponent createTabbedInstanceFormComponent() {
         _tabbedInstanceFormCheckBox = ComponentFactory.createCheckBox("Used Tabbed Forms for Multi-Type Instances");
@@ -142,8 +116,6 @@ class ConfigureOptionsPanel extends AbstractValidatableComponent {
         _project.setPrettyPrintSlotWidgetLabels(getValue(_prettyPrintSlotWidgetLabelsCheckBox));
         _project.setTabbedInstanceFormLayout(getValue(_tabbedInstanceFormCheckBox));
         _project.setAddNameOnInstanceForm(getValue(_addNameOnInstanceFormCheckBox));
-        _project.setUndoOption(getValue(_enableUndoCheckBox));
-        _project.setSuppressInstanceCounting(getValue(_suppressInstanceCountDisplayComponent));
     }
 
     private static void setValue(JCheckBox box, boolean value) {

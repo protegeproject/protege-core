@@ -27,8 +27,6 @@ public class ApplicationProperties {
     public static final String EXTRA_MANIFEST_PATH = PluginUtilities.EXTRA_MANIFEST_PATH;
     public static final String MRU_PROJECTS = "history.projects.reopen";
     public static final String WELCOME_DIALOG = "ui.welcomedialog.show";
-    public static final String WELCOME_DIALOG_START_IN_SERVER_PANEL = "ui.welcomedialog.start.in.server.panel";
-    
     public static final String MAIN_FRAME_RECTANGLE = "mainframe.rectangle";
     public static final String LOOK_AND_FEEL = "swing.defaultlaf";
     public static final String BROWSER = "browser.html";
@@ -103,14 +101,7 @@ public class ApplicationProperties {
             char sep = java.io.File.separatorChar;
             String exampleProjectName;
             URI uri;
-            
-            if (PluginUtilities.isPluginAvailable("edu.stanford.smi.protege.collab.projectPlugin.ProtegeCollabGUIProjectPlugin")) {
-                exampleProjectName = getApplicationDirectory().getPath() +
-                sep + "examples" + sep + "collaborativePizza" + sep + "collaborativePizza.owl.pprj";
-            uri = URIUtilities.createURI(exampleProjectName);
-            addProjectToMRUList(uri);
-            }
-            
+
             if (PluginUtilities.isOWLAvailable()) {
                 exampleProjectName = getApplicationDirectory().getPath() +
                     sep + "examples" + sep + "pizza" + sep + "pizza.owl.pprj";
@@ -121,9 +112,7 @@ public class ApplicationProperties {
             exampleProjectName = getApplicationDirectory().getPath() +
                 sep + "examples" + sep + "newspaper" + sep + "newspaper.pprj";
             uri = URIUtilities.createURI(exampleProjectName);
-            addProjectToMRUList(uri);            
-
-            
+            addProjectToMRUList(uri);
         }
     }
 
@@ -249,7 +238,7 @@ public class ApplicationProperties {
         }
         return rectangle;
     }
-    
+
     public static Properties getApplicationProperties() {
     	return PROPERTIES;
     }

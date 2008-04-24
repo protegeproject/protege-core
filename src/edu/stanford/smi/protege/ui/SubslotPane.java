@@ -190,17 +190,12 @@ public class SubslotPane extends SelectableContainer {
                 Collection superslots = SubslotPane.this.getSelection();
                 Slot firstSuperslot = (Slot) CollectionUtilities.getFirstItem(superslots);
                 if (firstSuperslot != null) {
-                	try {
-                        _knowledgeBase.beginTransaction("Create subslot of " + superslots);
-                        Cls metaCls = firstSuperslot.getDirectType();
-                        Slot slot = _knowledgeBase.createSlot(null, metaCls, superslots, true);
-                        createInverseSlot(slot, superslots);
-                        _knowledgeBase.commitTransaction();
-                        extendSelection(slot);
-					} catch (Exception e) {
-						_knowledgeBase.rollbackTransaction();					
-						Log.getLogger().warning("Error at creating subslot of " + firstSuperslot);
-					}                    
+                    _knowledgeBase.beginTransaction("Create subslot of " + superslots);
+                    Cls metaCls = firstSuperslot.getDirectType();
+                    Slot slot = _knowledgeBase.createSlot(null, metaCls, superslots, true);
+                    createInverseSlot(slot, superslots);
+                    _knowledgeBase.endTransaction(true);
+                    extendSelection(slot);
                 }
             }
         };
@@ -250,11 +245,9 @@ public class SubslotPane extends SelectableContainer {
                 Slot slot = (Slot) i.next();
                 _knowledgeBase.deleteSlot(slot);
             }
-            _knowledgeBase.commitTransaction();
-        } catch (Exception e) {
-        	_knowledgeBase.rollbackTransaction();
-        	Log.getLogger().warning("Error at deleting slots " + slots);
-		}
+        } finally {
+            _knowledgeBase.endTransaction(true);
+        }
     }
 
     public Slot getDisplayParent() {
@@ -361,12 +354,5 @@ public class SubslotPane extends SelectableContainer {
 
     public String toString() {
         return "SubclassPane";
-    }
-    
-    @Override
-    public void dispose() {
-       	super.dispose();
-    	_project = null;
-    	_knowledgeBase = null;
     }
 }

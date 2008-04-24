@@ -1,8 +1,8 @@
 package edu.stanford.smi.protege.model;
 
-import java.util.Collection;
+import java.util.*;
 
-import edu.stanford.smi.protege.event.SlotListener;
+import edu.stanford.smi.protege.event.*;
 
 /**
  * A top level slot object.  Note that this object does not have "facet overrides" by itself.  If you want to get facet
@@ -133,6 +133,4 @@ public interface Slot extends Instance {
     void setValues(Collection values);
 
     void setValueType(ValueType type);
-    
-    Slot rename(String name);
 }

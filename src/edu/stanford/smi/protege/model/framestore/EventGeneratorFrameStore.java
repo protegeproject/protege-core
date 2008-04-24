@@ -2,10 +2,13 @@ package edu.stanford.smi.protege.model.framestore;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+
+import com.sun.java_cup.internal.internal_error;
 
 import edu.stanford.smi.protege.event.ClsEvent;
 import edu.stanford.smi.protege.event.FrameEvent;
@@ -24,36 +27,25 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
-import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
-import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
-import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class EventGeneratorFrameStore extends ModificationFrameStore {
-    
-    private List<AbstractEvent> _events = new ArrayList<AbstractEvent>();
+    private List _events = new ArrayList<EventObject>();
+    private static final int NO_VALUE = -1;
+    private int _transactionStartSize = NO_VALUE;
     private DefaultKnowledgeBase _kb;
     private SystemFrames _systemFrames;
     private boolean generateEventsOnDeletingFrames = false;
-    private TransactionMonitor transactionMonitor;
-    private boolean inReplaceFrameOperation = false;
 
     public EventGeneratorFrameStore(KnowledgeBase kb) {
         _kb = (DefaultKnowledgeBase) kb;
         _systemFrames = _kb.getSystemFrames();
     }
-    
-    @Override
-    public void setDelegate(FrameStore delegate) {
-    	super.setDelegate(delegate);
-    	if (delegate != null) {
-    		transactionMonitor = delegate.getTransactionStatusMonitor();
-    	}
-    }
-    
 
     public void reinitialize() {
         _events.clear();
+        //_transactionStartSize = NO_VALUE;
+        resetTransactionStartSize();
     }
 
     public void close() {
@@ -68,36 +60,40 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         return getDelegate().getFrame(name);
     }
 
-    public Cls createCls(FrameID id, Collection directTypes, Collection superClasses, boolean loadDefaults) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        Cls cls = getDelegate().createCls(id, directTypes, superClasses, loadDefaults);
-        generateCreateClsEvents(cls, directTypes, level);
+    public Cls createCls(FrameID id, String name, Collection directTypes, Collection superClasses, boolean loadDefaults) {
+        Cls cls = getDelegate().createCls(id, name, directTypes, superClasses, loadDefaults);
+        generateCreateClsEvents(cls, directTypes);
         return cls;
     }
 
-    public Slot createSlot(FrameID id, Collection directTypes, Collection superslots, boolean loadDefaults) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        Slot slot = getDelegate().createSlot(id, directTypes, superslots, loadDefaults);
-        generateCreateSlotEvents(slot, directTypes, level);
+    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection superslots, boolean loadDefaults) {
+        Slot slot = getDelegate().createSlot(id, name, directTypes, superslots, loadDefaults);
+        generateCreateSlotEvents(slot, directTypes);
         return slot;
     }
 
-    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaults) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        Facet facet = getDelegate().createFacet(id, directTypes, loadDefaults);
-        generateCreateFacetEvents(facet, directTypes, level);
+    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
+        Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaults);
+        generateCreateFacetEvents(facet, directTypes);
         return facet;
     }
 
     public void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        generateSetDirectOwnSlotValuesEvents(frame, slot, values, level);
+        generateSetDirectOwnSlotValuesEvents(frame, slot, values);
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
     }
 
-    private void generateSetDirectOwnSlotValuesEvents(Frame frame, Slot slot, Collection values, TransactionIsolationLevel level) {
-        generateOwnSlotValuesChangedEvent(frame, slot, level);
-        generateFrameEvent(FrameEvent.BROWSER_TEXT_CHANGED, frame, level);
+    private void generateSetFrameNameEvents(Frame frame, String oldName, String newName) {
+        generateFrameEvent(FrameEvent.NAME_CHANGED, frame, oldName);
+        generateFrameEvent(FrameEvent.BROWSER_TEXT_CHANGED, frame);
+        generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, _systemFrames.getNameSlot());
+        generateKbEvent(KnowledgeBaseEvent.FRAME_NAME_CHANGED, frame, oldName);
+
+    }
+
+    private void generateSetDirectOwnSlotValuesEvents(Frame frame, Slot slot, Collection values) {
+        generateOwnSlotValuesChangedEvent(frame, slot);
+        generateFrameEvent(FrameEvent.BROWSER_TEXT_CHANGED, frame);
         Slot inverseSlot = (Slot) CollectionUtilities.getFirstItem(getDirectOwnSlotValues(slot, _systemFrames
                 .getInverseSlotSlot()));
         if (inverseSlot != null) {
@@ -107,7 +103,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
             while (i.hasNext()) {
                 Frame newValue = (Frame) i.next();
                 if (!oldValues.contains(newValue)) {
-                    generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, newValue, inverseSlot, level);
+                    generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, newValue, inverseSlot);
                     // if (cardinalitySingle) {
                     // current references to new values
                     // }
@@ -118,25 +114,25 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
             while (i.hasNext()) {
                 Frame oldValue = (Frame) i.next();
                 if (!values.contains(oldValue)) {
-                    generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, oldValue, inverseSlot, level);
+                    generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, oldValue, inverseSlot);
                 }
             }
         }
     }
 
-    private void generateDeleteFrameKbEvent(int type, Frame frame, TransactionIsolationLevel level) {
-        generateKbEvent(type, frame, frame.getName(), level);
+    private void generateDeleteFrameKbEvent(int type, Frame frame) {
+        generateKbEvent(type, frame, frame.getName());
     }
 
-    private void generateDeleteClsEvents(Cls cls, TransactionIsolationLevel level) {
+    private void generateDeleteClsEvents(Cls cls) {
         // generateDeleteSubclassEvents(cls);
-        generateDeleteFrameKbEvent(KnowledgeBaseEvent.CLS_DELETED, cls, level);
+        generateDeleteFrameKbEvent(KnowledgeBaseEvent.CLS_DELETED, cls);
         Iterator i = getDirectSuperclasses(cls).iterator();
         while (i.hasNext()) {
             Cls superCls = (Cls) i.next();
-            generateClsEvent(ClsEvent.DIRECT_SUBCLASS_REMOVED, superCls, cls, level);
+            generateClsEvent(ClsEvent.DIRECT_SUBCLASS_REMOVED, superCls, cls);
         }
-        generateDeleteInstanceEvents(cls, level);
+        generateDeleteInstanceEvents(cls);
     }
 
     /*
@@ -152,277 +148,225 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
      * 
      * For now though we hack it...
      */
+    /*
+     * private void generateDeleteSubclassEvents(Cls cls) { Iterator i = SimpleFrameStore.getClsesToBeDeleted(cls,
+     * this).iterator(); while (i.hasNext()) { Cls subclass = (Cls) i.next(); if (!subclass.equals(cls)) {
+     * generateLimitedDeleteEventsForCls(subclass); } } }
+     * 
+     * private void generateLimitedDeleteEventsForCls(Cls cls) {
+     * generateDeleteFrameKbEvent(KnowledgeBaseEvent.CLS_DELETED, cls); generateDeleteInstanceEvents(cls); }
+     */
 
-
-    private void generateDeleteSimpleInstanceEvents(SimpleInstance simpleInstance,
-                                                    TransactionIsolationLevel level) {
-        generateDeleteFrameKbEvent(KnowledgeBaseEvent.INSTANCE_DELETED, simpleInstance, level);
-        generateDeleteInstanceEvents(simpleInstance, level);
+    private void generateDeleteSimpleInstanceEvents(SimpleInstance simpleInstance) {
+        generateDeleteFrameKbEvent(KnowledgeBaseEvent.INSTANCE_DELETED, simpleInstance);
+        generateDeleteInstanceEvents(simpleInstance);
     }
 
-    private void generateDeleteSlotEvents(Slot slot, 
-                                          TransactionIsolationLevel level) {
-        generateDeleteFrameKbEvent(KnowledgeBaseEvent.SLOT_DELETED, slot, level);
+    private void generateDeleteSlotEvents(Slot slot) {
+        generateDeleteFrameKbEvent(KnowledgeBaseEvent.SLOT_DELETED, slot);
         /** @todo other slot events */
-        for (Object  o : getDelegate().getFramesWithDirectOwnSlotValue(_systemFrames.getDirectTemplateSlotsSlot(), slot)) {
-            if (o instanceof Cls) {
-                generateClsEvent(ClsEvent.TEMPLATE_SLOT_REMOVED, (Cls) o, slot, level);
-            }
-        }
-        generateDeleteInstanceEvents(slot, level);
+        generateDeleteInstanceEvents(slot);
     }
 
-    private void generateDeleteFacetEvents(Facet facet, TransactionIsolationLevel level) {
-        generateDeleteFrameKbEvent(KnowledgeBaseEvent.FACET_DELETED, facet, level);
+    private void generateDeleteFacetEvents(Facet facet) {
+        generateDeleteFrameKbEvent(KnowledgeBaseEvent.FACET_DELETED, facet);
         /** @todo other facet events */
-        generateDeleteInstanceEvents(facet, level);
+        generateDeleteInstanceEvents(facet);
     }
 
-    private void generateDeleteInstanceEvents(Instance instance, TransactionIsolationLevel level) {
-        generateRemoveDirectInstanceEvents(instance, level);
-        Iterator<Reference> i = getReferences(instance).iterator();
+    private void generateDeleteInstanceEvents(Instance instance) {
+        generateRemoveDirectInstanceEvents(instance);
+        Iterator i = getReferences(instance).iterator();
         while (i.hasNext()) {
-            Reference ref = i.next();
-            removeReference(ref, instance, level);
+            Reference ref = (Reference) i.next();
+            removeReference(ref, instance);
         }
-        generateFrameEvent(FrameEvent.DELETED, instance, instance.getName(), level);
+        generateFrameEvent(FrameEvent.DELETED, instance, instance.getName());
     }
 
-    private void generateRemoveDirectInstanceEvents(Instance instance,
-                                                    TransactionIsolationLevel level) {
+    private void generateRemoveDirectInstanceEvents(Instance instance) {
         Iterator i = getDirectTypes(instance).iterator();
         while (i.hasNext()) {
             Cls type = (Cls) i.next();
-            generateClsEvent(ClsEvent.DIRECT_INSTANCE_REMOVED, type, instance, level);
+            generateClsEvent(ClsEvent.DIRECT_INSTANCE_REMOVED, type, instance);
         }
     }
 
-    private void removeReference(Reference ref, Instance instance, TransactionIsolationLevel level) {
+    private void removeReference(Reference ref, Instance instance) {
         Frame frame = ref.getFrame();
         Slot slot = ref.getSlot();
         Facet facet = ref.getFacet();
         boolean isTemplate = ref.isTemplate();
-        removeReference(frame, slot, facet, isTemplate, instance, level);
+        removeReference(frame, slot, facet, isTemplate, instance);
     }
 
-    private void removeReference(Frame frame, Slot slot, Facet facet, boolean isTemplate, Instance instance,
-    							 TransactionIsolationLevel  level) {
+    private void removeReference(Frame frame, Slot slot, Facet facet, boolean isTemplate, Instance instance) {
         if (facet == null) {
             if (isTemplate) {
-                removeTemplateSlotValueReference(frame, slot, instance, level);
+                removeTemplateSlotValueReference(frame, slot, instance);
             } else {
-                removeOwnSlotValueReference(frame, slot, instance, level);
+                removeOwnSlotValueReference(frame, slot, instance);
             }
         } else {
             if (isTemplate) {
-                removeTemplateFacetValueReference(frame, slot, facet, instance, level);
+                removeTemplateFacetValueReference(frame, slot, facet, instance);
             } else {
                 // ???
             }
         }
     }
 
-    private void removeOwnSlotValueReference(Frame frame, Slot slot, Instance instance,
-    										 TransactionIsolationLevel level) {
-        generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, slot, level);
+    private void removeOwnSlotValueReference(Frame frame, Slot slot, Instance instance) {
+        generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, slot);
     }
 
-    private void removeTemplateSlotValueReference(Frame frame, Slot slot, Instance instance,
-    											  TransactionIsolationLevel level) {
+    private void removeTemplateSlotValueReference(Frame frame, Slot slot, Instance instance) {
         // TODO
     }
 
-    private void removeTemplateFacetValueReference(Frame frame, Slot slot, Facet facet, Instance instance,
-    											   TransactionIsolationLevel level) {
+    private void removeTemplateFacetValueReference(Frame frame, Slot slot, Facet facet, Instance instance) {
         // TODO
     }
 
     public void deleteCls(Cls cls) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        generateDeleteClsEvents(cls, level);
+        generateDeleteClsEvents(cls);
         getDelegate().deleteCls(cls);
     }
 
     public void deleteSlot(Slot slot) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        generateDeleteSlotEvents(slot, level);
+        generateDeleteSlotEvents(slot);
         getDelegate().deleteSlot(slot);
     }
 
     public void deleteFacet(Facet facet) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        generateDeleteFacetEvents(facet, level);
+        generateDeleteFacetEvents(facet);
         getDelegate().deleteFacet(facet);
     }
 
     public void deleteSimpleInstance(SimpleInstance simpleInstance) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        generateDeleteSimpleInstanceEvents(simpleInstance, level);
+        generateDeleteSimpleInstanceEvents(simpleInstance);
         getDelegate().deleteSimpleInstance(simpleInstance);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaults) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id,directTypes, loadDefaults);
-        generateCreateSimpleInstanceEvents(simpleInstance, directTypes, level);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
+        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
+        generateCreateSimpleInstanceEvents(simpleInstance, directTypes);
         return simpleInstance;
     }
 
-    private void generateCreateClsEvents(Cls newCls, Collection directTypes, TransactionIsolationLevel level) {
-        generateCreateInstanceEvents(KnowledgeBaseEvent.CLS_CREATED, newCls, directTypes, level);
+    private void generateCreateClsEvents(Cls newCls, Collection directTypes) {
+        generateCreateInstanceEvents(KnowledgeBaseEvent.CLS_CREATED, newCls, directTypes);
         Iterator i = newCls.getDirectSuperclasses().iterator();
         while (i.hasNext()) {
             Cls superclass = (Cls) i.next();
-            generateClsEvent(ClsEvent.DIRECT_SUBCLASS_ADDED, superclass, newCls, level);
-            generateOwnSlotValuesChangedEvent(superclass, _systemFrames.getDirectSubclassesSlot(), level);
+            generateClsEvent(ClsEvent.DIRECT_SUBCLASS_ADDED, superclass, newCls);
+            generateOwnSlotValuesChangedEvent(superclass, _systemFrames.getDirectSubclassesSlot());
         }
     }
 
-    private void generateCreateFacetEvents(Facet newFacet, Collection directTypes, TransactionIsolationLevel level) {
-        generateCreateInstanceEvents(KnowledgeBaseEvent.FACET_CREATED, newFacet, directTypes, level);
+    private void generateCreateFacetEvents(Facet newFacet, Collection directTypes) {
+        generateCreateInstanceEvents(KnowledgeBaseEvent.FACET_CREATED, newFacet, directTypes);
     }
 
-    private void generateCreateSlotEvents(Slot newSlot, Collection directTypes,
-                                          TransactionIsolationLevel level) {
-        generateCreateInstanceEvents(KnowledgeBaseEvent.SLOT_CREATED, newSlot, directTypes, level);
-        for (Object  o : getDelegate().getFramesWithDirectOwnSlotValue(_systemFrames.getDirectTemplateSlotsSlot(), newSlot)) {
-            if (o instanceof Cls) {
-                generateClsEvent(ClsEvent.TEMPLATE_SLOT_ADDED, (Cls) o, newSlot, level);
-            }
-        }
+    private void generateCreateSlotEvents(Slot newSlot, Collection directTypes) {
+        generateCreateInstanceEvents(KnowledgeBaseEvent.SLOT_CREATED, newSlot, directTypes);
         Iterator i = newSlot.getDirectSuperslots().iterator();
         while (i.hasNext()) {
             Slot superslot = (Slot) i.next();
-            generateSlotEvent(SlotEvent.DIRECT_SUBSLOT_ADDED, superslot, newSlot, level);
-            generateOwnSlotValuesChangedEvent(superslot, _systemFrames.getDirectSubslotsSlot(), level);
+            generateSlotEvent(SlotEvent.DIRECT_SUBSLOT_ADDED, superslot, newSlot);
+            generateOwnSlotValuesChangedEvent(superslot, _systemFrames.getDirectSubslotsSlot());
         }
     }
 
-    private void generateCreateSimpleInstanceEvents(SimpleInstance newFrame, Collection directTypes, TransactionIsolationLevel level) {
-        generateCreateInstanceEvents(KnowledgeBaseEvent.INSTANCE_CREATED, newFrame, directTypes, level);
+    private void generateCreateSimpleInstanceEvents(SimpleInstance newFrame, Collection directTypes) {
+        generateCreateInstanceEvents(KnowledgeBaseEvent.INSTANCE_CREATED, newFrame, directTypes);
     }
 
-    private void generateCreateInstanceEvents(int type, Frame newFrame, Collection directTypes,
-    										  TransactionIsolationLevel level) {
-        generateKbEvent(type, newFrame, level);
+    private void generateCreateInstanceEvents(int type, Frame newFrame, Collection directTypes) {
+        generateKbEvent(type, newFrame);
         Iterator i = directTypes.iterator();
         while (i.hasNext()) {
             Cls directType = (Cls) i.next();
-            generateClsEvent(ClsEvent.DIRECT_INSTANCE_ADDED, directType, newFrame, level);
-            generateOwnSlotValuesChangedEvent(directType, _systemFrames.getDirectInstancesSlot(), level);
+            generateClsEvent(ClsEvent.DIRECT_INSTANCE_ADDED, directType, newFrame);
+            generateOwnSlotValuesChangedEvent(directType, _systemFrames.getDirectInstancesSlot());
         }
     }
-    
-    private void generateReplacedFrameEvents(Frame original, Frame replacement, TransactionIsolationLevel level) {
-        String oldName = original.getName();
-        generateFrameEvent(FrameEvent.REPLACE_FRAME, original, oldName, replacement, level);
-        generateKbEvent(KnowledgeBaseEvent.FRAME_REPLACED, original, oldName, replacement);
-    }
-    
-    private void generateReplacingFrameEvents(Frame replacement, Frame original, TransactionIsolationLevel level) {
-    	generateReplacingFrameAsValueEvents(replacement, original, level);
-    	if (replacement instanceof Slot) {
-    		generateReplacingSlotEvents((Slot) replacement, level);
-    	}
-    }
-    
-    private void generateReplacingFrameAsValueEvents(Frame replacement, Frame original, TransactionIsolationLevel level) {
-    	Set<Reference> references = getDelegate().getReferences(replacement);
-    	if (references == null) return;
-    	for (Reference reference : references) {
-    		if (!reference.isTemplate()) {
-    			Frame sourceFrame = reference.getFrame();
-    			Slot sourceSlot = reference.getSlot();
-    			Collection values = getDelegate().getOwnSlotValues(sourceFrame, sourceSlot);
-    			if (values == null || !values.contains(replacement)) continue;
-    			Collection oldValues = new ArrayList(values);
-    			oldValues.remove(replacement);
-    			oldValues.add(original);  //TODO you need to add inferred events here + junits.
-    			 					      //     inverse slots and super-slots.
-    			generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, sourceFrame, sourceSlot, oldValues, level);
-    		}
-    	}
-    }
-    
-    private void generateReplacingSlotEvents(Slot replacement, TransactionIsolationLevel level) {
-    	Set<Frame> frames = getDelegate().getFramesWithAnyDirectOwnSlotValue(replacement);
-    	if (frames == null) return;
-    	for (Frame frame : frames) {
-    		generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, replacement, level);
-    	}
+
+    private void generateKbEvent(int type, Frame frame) {
+        _events.add(new KnowledgeBaseEvent(_kb, type, frame));
     }
 
-    private void generateKbEvent(int type, Frame frame, TransactionIsolationLevel level) {
-        addEvent(new KnowledgeBaseEvent(_kb, type, frame), level);
-    }
-
-    private void generateKbEvent(int type, Frame frame, String s, TransactionIsolationLevel level) {
-        addEvent(new KnowledgeBaseEvent(_kb, type, frame, s), level);
-    }
-    
-    private void generateKbEvent(int type, Frame frame, String s, Frame oldFrame) {
-        addEvent(new KnowledgeBaseEvent(_kb, type, frame, s, oldFrame));
+    private void generateKbEvent(int type, Frame frame, String s) {
+        _events.add(new KnowledgeBaseEvent(_kb, type, frame, s));
     }
 
     private boolean generateEvent(Frame frame) {
         return !frame.isBeingDeleted() || generateEventsOnDeletingFrames;
     }
 
-    private void generateFrameEvent(int type, Frame frame, TransactionIsolationLevel level) {
-        generateFrameEvent(type, frame, null, null, level);
+    private void generateFrameEvent(int type, Frame frame) {
+        generateFrameEvent(type, frame, null, null);
     }
 
-    private void generateFrameEvent(int type, Frame frame, Object o2, TransactionIsolationLevel level) {
-        generateFrameEvent(type, frame, o2, null, level);
+    private void generateFrameEvent(int type, Frame frame, Object o2) {
+        generateFrameEvent(type, frame, o2, null);
     }
 
-    private void generateFrameEvent(int type, Frame frame, Object o2, Object o3, 
-    								TransactionIsolationLevel level) {
+    private void generateFrameEvent(int type, Frame frame, Object o2, Object o3) {
         if (generateEvent(frame)) {
-            addEvent(new FrameEvent(frame, type, o2, o3), level);
+            _events.add(new FrameEvent(frame, type, o2, o3));
         }
     }
 
-    private void generateClsEvent(int type, Cls cls, Frame frame1, Frame frame2, 
-    							  TransactionIsolationLevel level) {
+    private void generateClsEvent(int type, Cls cls, Frame frame1, Frame frame2) {
         if (generateEvent(cls)) {
-            addEvent(new ClsEvent(cls, type, frame1, frame2), level);
+            _events.add(new ClsEvent(cls, type, frame1, frame2));
         }
     }
 
-    private void generateClsEvent(int type, Cls cls, Frame frame,
-    							  TransactionIsolationLevel level) {
-        generateClsEvent(type, cls, frame, null, level);
+    private void generateClsEvent(int type, Cls cls, Frame frame) {
+        generateClsEvent(type, cls, frame, null);
     }
 
-    private void generateSlotEvent(int type, Slot slot, Frame frame, TransactionIsolationLevel level) {
+    private void generateSlotEvent(int type, Slot slot, Frame frame) {
         if (generateEvent(slot)) {
-            addEvent(new SlotEvent(slot, type, frame), level);
+            _events.add(new SlotEvent(slot, type, frame));
         }
     }
 
-    private void generateInstanceEvent(int type, Instance instance, Frame frame, 
-                                       TransactionIsolationLevel level) {
+    private void generateInstanceEvent(int type, Instance instance, Frame frame) {
         if (generateEvent(instance)) {
-            addEvent(new InstanceEvent(instance, type, frame), level);
+            _events.add(new InstanceEvent(instance, type, frame));
         }
     }
 
-    public List<AbstractEvent> getEvents() {
-    	List<AbstractEvent> events = _events;
-    	_events = new ArrayList<AbstractEvent>();
-    	return events;
+    public List<EventObject> getEvents() {
+        List events;
+        if (isInTransaction()) {
+            events = Collections.EMPTY_LIST;
+        } else {
+            events = _events;
+            _events = new ArrayList<EventObject>();
+            return events;
+        }
+        return events;
+    }
+
+    private boolean isInTransaction() {
+        return _transactionStartSize != NO_VALUE;
+    }
+    
+    private void resetTransactionStartSize() {
+    	_transactionStartSize = NO_VALUE;
     }
 
     public void addDirectSuperclass(Cls cls, Cls superclass) {
         Collection addedSlots = getSlotsToBeAdded(cls, superclass);
         getDelegate().addDirectSuperclass(cls, superclass);
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-
-        generateClsEvent(ClsEvent.DIRECT_SUPERCLASS_ADDED, cls, superclass, level);
-        generateClsEvent(ClsEvent.DIRECT_SUBCLASS_ADDED, superclass, cls, level);
-        generateSuperclassTemplateSlotChangedEvents(cls, ClsEvent.TEMPLATE_SLOT_ADDED, addedSlots, level);
-        generateOwnSlotValuesChangedEvent(cls, superclass, _systemFrames.getDirectSuperclassesSlot(), level);
+        generateClsEvent(ClsEvent.DIRECT_SUPERCLASS_ADDED, cls, superclass);
+        generateClsEvent(ClsEvent.DIRECT_SUBCLASS_ADDED, superclass, cls);
+        generateSuperclassTemplateSlotChangedEvents(cls, ClsEvent.TEMPLATE_SLOT_ADDED, addedSlots);
+        generateOwnSlotValuesChangedEvent(cls, superclass, _systemFrames.getDirectSuperclassesSlot());
     }
 
     private Collection getSlotsToBeAdded(Cls cls, Cls superclass) {
@@ -431,32 +375,25 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         return slots;
     }
 
-    private void generateSuperclassTemplateSlotChangedEvents(Cls cls, 
-                                                             int type, 
-                                                             Collection addedSlots,
-                                                             TransactionIsolationLevel level) {
+    private void generateSuperclassTemplateSlotChangedEvents(Cls cls, int type, Collection addedSlots) {
         Iterator i = addedSlots.iterator();
         while (i.hasNext()) {
             Slot slot = (Slot) i.next();
-            generateClsEvent(type, cls, slot, level);
+            generateClsEvent(type, cls, slot);
         }
     }
 
-    private void generateOwnSlotValuesChangedEvent(Frame frame1, 
-                                                   Frame frame2, 
-                                                   Slot slot, 
-                                                   TransactionIsolationLevel level) {
-        generateOwnSlotValuesChangedEvent(frame1, slot, level);
-        generateOwnSlotValuesChangedEvent(frame2, slot.getInverseSlot(), level);
+    private void generateOwnSlotValuesChangedEvent(Frame frame1, Frame frame2, Slot slot) {
+        generateOwnSlotValuesChangedEvent(frame1, slot);
+        generateOwnSlotValuesChangedEvent(frame2, slot.getInverseSlot());
     }
 
-    private void generateOwnSlotValuesChangedEvent(Frame frame, Slot slot,
-                                                   TransactionIsolationLevel level) {
+    private void generateOwnSlotValuesChangedEvent(Frame frame, Slot slot) {
         Collection oldValues = null;
         if (getValues(frame, slot)) {
             oldValues = new ArrayList(getDirectOwnSlotValues(frame, slot));
         }
-        generateOwnSlotValuesChangedEvent(frame, slot, oldValues, level);
+        generateOwnSlotValuesChangedEvent(frame, slot, oldValues);
     }
 
     private boolean getValues(Frame frame, Slot slot) {
@@ -464,160 +401,151 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
                 && !slot.equals(_systemFrames.getDirectInstancesSlot());
     }
 
-    private void generateOwnSlotValuesChangedEvent(Frame frame, Slot slot, Collection oldValues,
-    											   TransactionIsolationLevel level) {
-        generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, slot, oldValues, level);
+    private void generateOwnSlotValuesChangedEvent(Frame frame, Slot slot, Collection oldValues) {
+        generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, slot, oldValues);
         Iterator i = slot.getSuperslots().iterator();
         while (i.hasNext()) {
             Slot superslot = (Slot) i.next();
-            generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, superslot, oldValues, level);
+            generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, superslot, oldValues);
         }
     }
 
     public void removeDirectSuperclass(Cls cls, Cls superclass) {
-    	TransactionIsolationLevel level = getTransactionIsolationLevel();
         HashSet removedSlots = new HashSet(cls.getTemplateSlots());
         getDelegate().removeDirectSuperclass(cls, superclass);
         removedSlots.removeAll(cls.getTemplateSlots());
-        generateClsEvent(ClsEvent.DIRECT_SUPERCLASS_REMOVED, cls, superclass, level);
-        generateClsEvent(ClsEvent.DIRECT_SUBCLASS_REMOVED, superclass, cls, level);
-        generateSuperclassTemplateSlotChangedEvents(cls, ClsEvent.TEMPLATE_SLOT_REMOVED, removedSlots, level);
-        generateOwnSlotValuesChangedEvent(cls, superclass, _systemFrames.getDirectSuperclassesSlot(), level);
+        generateClsEvent(ClsEvent.DIRECT_SUPERCLASS_REMOVED, cls, superclass);
+        generateClsEvent(ClsEvent.DIRECT_SUBCLASS_REMOVED, superclass, cls);
+        generateSuperclassTemplateSlotChangedEvents(cls, ClsEvent.TEMPLATE_SLOT_REMOVED, removedSlots);
+        generateOwnSlotValuesChangedEvent(cls, superclass, _systemFrames.getDirectSuperclassesSlot());
     }
 
     public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
         getDelegate().moveDirectOwnSlotValue(frame, slot, from, to);
-        generateOwnSlotValuesChangedEvent(frame, slot, level);
+        generateOwnSlotValuesChangedEvent(frame, slot);
     }
 
     public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-
         getDelegate().moveDirectSubclass(cls, subclass, index);
-        generateClsEvent(ClsEvent.DIRECT_SUBCLASS_MOVED, cls, subclass, level);
-        generateOwnSlotValuesChangedEvent(cls, _systemFrames.getDirectSubclassesSlot(), level);
+        generateClsEvent(ClsEvent.DIRECT_SUBCLASS_MOVED, cls, subclass);
+        generateOwnSlotValuesChangedEvent(cls, _systemFrames.getDirectSubclassesSlot());
     }
 
     public void moveDirectSubslot(Slot slot, Slot subslot, int index) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
         getDelegate().moveDirectSubslot(slot, subslot, index);
-        generateSlotEvent(SlotEvent.DIRECT_SUBSLOT_MOVED, slot, subslot, level);
-        generateOwnSlotValuesChangedEvent(slot, _systemFrames.getDirectSubslotsSlot(), level);
+        generateSlotEvent(SlotEvent.DIRECT_SUBSLOT_MOVED, slot, subslot);
+        generateOwnSlotValuesChangedEvent(slot, _systemFrames.getDirectSubslotsSlot());
     }
 
     public void addDirectSuperslot(Slot slot, Slot superslot) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
         getDelegate().addDirectSuperslot(slot, superslot);
-        generateSlotEvent(SlotEvent.DIRECT_SUPERSLOT_ADDED, slot, superslot, level);
-        generateSlotEvent(SlotEvent.DIRECT_SUBSLOT_ADDED, superslot, slot, level);
-        generateOwnSlotValuesChangedEvent(slot, superslot, _systemFrames.getDirectSuperslotsSlot(), level);
+        generateSlotEvent(SlotEvent.DIRECT_SUPERSLOT_ADDED, slot, superslot);
+        generateSlotEvent(SlotEvent.DIRECT_SUBSLOT_ADDED, superslot, slot);
+        generateOwnSlotValuesChangedEvent(slot, superslot, _systemFrames.getDirectSuperslotsSlot());
     }
 
     public void removeDirectSuperslot(Slot slot, Slot superslot) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
         getDelegate().removeDirectSuperslot(slot, superslot);
-        generateSlotEvent(SlotEvent.DIRECT_SUPERSLOT_REMOVED, slot, superslot, level);
-        generateSlotEvent(SlotEvent.DIRECT_SUBSLOT_REMOVED, superslot, slot, level);
-        generateOwnSlotValuesChangedEvent(slot, superslot, _systemFrames.getDirectSuperslotsSlot(), level);
+        generateSlotEvent(SlotEvent.DIRECT_SUPERSLOT_REMOVED, slot, superslot);
+        generateSlotEvent(SlotEvent.DIRECT_SUBSLOT_REMOVED, superslot, slot);
+        generateOwnSlotValuesChangedEvent(slot, superslot, _systemFrames.getDirectSuperslotsSlot());
     }
 
     public void addDirectType(Instance instance, Cls type) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
         getDelegate().addDirectType(instance, type);
-        generateInstanceEvent(InstanceEvent.DIRECT_TYPE_ADDED, instance, type, level);
-        generateClsEvent(ClsEvent.DIRECT_INSTANCE_ADDED, type, instance, level);
-        generateOwnSlotValuesChangedEvent(instance, type, _systemFrames.getDirectTypesSlot(), level);
+        generateInstanceEvent(InstanceEvent.DIRECT_TYPE_ADDED, instance, type);
+        generateClsEvent(ClsEvent.DIRECT_INSTANCE_ADDED, type, instance);
+        generateOwnSlotValuesChangedEvent(instance, type, _systemFrames.getDirectTypesSlot());
     }
 
     public void removeDirectType(Instance instance, Cls type) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-
         getDelegate().removeDirectType(instance, type);
-        generateInstanceEvent(InstanceEvent.DIRECT_TYPE_REMOVED, instance, type, level);
-        generateClsEvent(ClsEvent.DIRECT_INSTANCE_REMOVED, type, instance, level);
-        generateOwnSlotValuesChangedEvent(instance, type, _systemFrames.getDirectTypesSlot(), level);
+        generateInstanceEvent(InstanceEvent.DIRECT_TYPE_REMOVED, instance, type);
+        generateClsEvent(ClsEvent.DIRECT_INSTANCE_REMOVED, type, instance);
+        generateOwnSlotValuesChangedEvent(instance, type, _systemFrames.getDirectTypesSlot());
     }
 
     public void moveDirectType(Instance instance, Cls cls, int index) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-
         getDelegate().moveDirectType(instance, cls, index);
-        generateOwnSlotValuesChangedEvent(instance, _systemFrames.getDirectTypesSlot(), level);
+        generateOwnSlotValuesChangedEvent(instance, _systemFrames.getDirectTypesSlot());
     }
 
     public void addDirectTemplateSlot(Cls cls, Slot slot) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
         getDelegate().addDirectTemplateSlot(cls, slot);
-        generateClsEvent(ClsEvent.TEMPLATE_SLOT_ADDED, cls, slot, level);
-        generateSlotEvent(SlotEvent.TEMPLATE_SLOT_CLS_ADDED, slot, cls, level);
-        generateOwnSlotValuesChangedEvent(cls, slot, _systemFrames.getDirectTemplateSlotsSlot(), level);
+        generateClsEvent(ClsEvent.TEMPLATE_SLOT_ADDED, cls, slot);
+        generateSlotEvent(SlotEvent.TEMPLATE_SLOT_CLS_ADDED, slot, cls);
+        generateOwnSlotValuesChangedEvent(cls, slot, _systemFrames.getDirectTemplateSlotsSlot());
     }
 
     public void removeDirectTemplateSlot(Cls cls, Slot slot) {
-    	TransactionIsolationLevel level = getTransactionIsolationLevel();
         getDelegate().removeDirectTemplateSlot(cls, slot);
-        generateClsEvent(ClsEvent.TEMPLATE_SLOT_REMOVED, cls, slot, level);
-        generateSlotEvent(SlotEvent.TEMPLATE_SLOT_CLS_REMOVED, slot, cls, level);
-        generateOwnSlotValuesChangedEvent(cls, slot, _systemFrames.getDirectTemplateSlotsSlot(), level);
+        generateClsEvent(ClsEvent.TEMPLATE_SLOT_REMOVED, cls, slot);
+        generateSlotEvent(SlotEvent.TEMPLATE_SLOT_CLS_REMOVED, slot, cls);
+        generateOwnSlotValuesChangedEvent(cls, slot, _systemFrames.getDirectTemplateSlotsSlot());
     }
 
     public void moveDirectTemplateSlot(Cls cls, Slot slot, int index) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-
         getDelegate().moveDirectTemplateSlot(cls, slot, index);
         // generateClsEvent(ClsEvent.TEMPLATE_SLOT_MOVED, cls, slot);
-        generateOwnSlotValuesChangedEvent(cls, _systemFrames.getDirectTemplateSlotsSlot(), level);
+        generateOwnSlotValuesChangedEvent(cls, _systemFrames.getDirectTemplateSlotsSlot());
     }
 
     public void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
-        generateClsEvent(ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED, cls, slot, level);
+        generateClsEvent(ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED, cls, slot);
     }
 
     public void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
-        generateClsEvent(ClsEvent.TEMPLATE_FACET_VALUE_CHANGED, cls, slot, facet, level);
+        generateClsEvent(ClsEvent.TEMPLATE_FACET_VALUE_CHANGED, cls, slot, facet);
+    }
+
+    public void setFrameName(Frame frame, String name) {
+        String oldName = getDelegate().getFrameName(frame);
+        getDelegate().setFrameName(frame, name);
+        generateSetFrameNameEvents(frame, oldName, name);
     }
 
     public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-
         getDelegate().removeDirectTemplateFacetOverrides(cls, slot);
         Iterator i = getTemplateFacets(cls, slot).iterator();
         while (i.hasNext()) {
             Facet facet = (Facet) i.next();
-            generateClsEvent(ClsEvent.TEMPLATE_FACET_VALUE_CHANGED, cls, slot, facet, level);
+            generateClsEvent(ClsEvent.TEMPLATE_FACET_VALUE_CHANGED, cls, slot, facet);
         }
     }
 
     public boolean beginTransaction(String name) {
         boolean allowsTransactions = getDelegate().beginTransaction(name);
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        generateTransactionEvent(TransactionEvent.TRANSACTION_BEGIN, name, Boolean.FALSE, level);
+        generateTransactionEvent(TransactionEvent.TRANSACTION_BEGIN, name);
+        //TT: remember only the start index of the outer transaction
+        if (allowsTransactions && !isInTransaction()) {
+            _transactionStartSize = _events.size();
+        }        
         return allowsTransactions;
     }
     
-    private void generateTransactionEvent(int type, String name, Boolean commit, 
-                                          TransactionIsolationLevel level) {
-        addEvent(new TransactionEvent(_kb, type, name, commit), level);
+    private void generateTransactionEvent(int type, String name) {
+        _events.add(new TransactionEvent(_kb, type, name));
     }
 
     public boolean commitTransaction() {
-        boolean commitTransaction = getDelegate().commitTransaction();
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        generateTransactionEvent(TransactionEvent.TRANSACTION_END, null, commitTransaction, level);
+        boolean commitTransaction = getDelegate().commitTransaction();     
+        if (!commitTransaction && isInTransaction()) {
+      		_events.subList(_transactionStartSize, _events.size()).clear();
+        }
+        generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);       
+        resetTransactionStartSize();        
         return commitTransaction;
     }
 
     public boolean rollbackTransaction() {
-        boolean rollbackTransaction = getDelegate().rollbackTransaction();
-        TransactionIsolationLevel level = getTransactionIsolationLevel();
-        generateTransactionEvent(TransactionEvent.TRANSACTION_END, null, Boolean.FALSE, level);
+        boolean rollbackTransaction = getDelegate().rollbackTransaction();        
+        if (rollbackTransaction && isInTransaction()) {            		
+        	_events.subList(_transactionStartSize, _events.size()).clear();
+        }
+        generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);
+        resetTransactionStartSize();        
         return rollbackTransaction;
     }
 
@@ -626,80 +554,4 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         generateEventsOnDeletingFrames = b;
         return oldValue;
     }
-    
-    /*
-     * This is complicated...
-	 */
-    public void replaceFrame(Frame original, Frame replacement) {
-    	TransactionIsolationLevel level = getTransactionIsolationLevel();
-    	String newName = replacement.getFrameID().getName(); 
-    	if (getFrame(newName) != null) {
-    		return;
-    	}
-    	try {
-    		generateReplacedFrameEvents(original, replacement, level);
-    		inReplaceFrameOperation = true;
-    		if (original instanceof Cls) {
-    			generateDeleteClsEvents((Cls) original, level);
-    		}
-    		else if (original instanceof Slot) {
-    			generateDeleteSlotEvents((Slot) original, level);
-    		}
-    		else if (original instanceof Facet) {
-    			generateDeleteFacetEvents((Facet) original, level);
-    		}
-    		else if (original instanceof SimpleInstance) {
-    			generateDeleteSimpleInstanceEvents((SimpleInstance) original, level);
-    		}
-    	}
-    	finally {
-    		inReplaceFrameOperation=false;
-    		getDelegate().replaceFrame(original, replacement);
-    	}
-    	try {
-    		inReplaceFrameOperation = true;
-    		Collection directTypes = getDelegate().getDirectTypes((Instance) replacement);
-    		if (original instanceof Cls) {
-    			generateCreateClsEvents((Cls) replacement, directTypes, level); 
-    		}
-    		if (original instanceof Slot) {
-    			generateCreateSlotEvents((Slot) replacement, directTypes, level);
-    		}
-    		if (original instanceof Facet) {
-    			generateCreateFacetEvents((Facet) replacement, directTypes, level);
-    		}
-    		if (original instanceof SimpleInstance) {
-    			generateCreateSimpleInstanceEvents((SimpleInstance) replacement, directTypes, level);
-    		}
-    		generateReplacingFrameEvents(replacement, original, level);
-    	}
-    	finally {
-    		inReplaceFrameOperation = false;
-    	}
-    }
-    
-    private void addEvent(AbstractEvent event, TransactionIsolationLevel level) {
-    	if (inReplaceFrameOperation) {
-    		event.setReplacementEvent(true);
-    	}
-    	_events.add(event);
-    	boolean visible = TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level);
-    	event.setHiddenByTransaction(!visible);
-    }
-
-    private void addEvent(AbstractEvent event) {
-    	_events.add(event);
-    }
-
-    
-    private TransactionIsolationLevel getTransactionIsolationLevel() {
-    	if (transactionMonitor == null) {
-    		return TransactionIsolationLevel.NONE;
-    	}
-    	else {
-    		return transactionMonitor.getTransationIsolationLevel();
-    	}
-    }
-
-
 }

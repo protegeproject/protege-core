@@ -681,9 +681,9 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         saveAndReload();
         testCls = getCls(clsName);
         assertNotNull("after reload", testCls);
-        Iterator<Instance> i = testCls.getDirectInstances().iterator();
+        Iterator i = testCls.getDirectInstances().iterator();
         while (i.hasNext()) {
-            Instance inst = i.next();
+            Instance inst = (Instance) i.next();
             assertTrue("correct class: " + inst, testJavaClass.isInstance(instance));
         }
         getProject().removeJavaPackageName(packageName);
@@ -778,7 +778,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         SystemUtilities.sleepMsec(100);
         KnowledgeBase kb = getDomainKB();
         kb.setModificationRecordUpdatingEnabled(true);
-
+        
         Cls metaCls = createSubCls(getCls(Model.Cls.STANDARD_CLASS));
         metaCls.addDirectTemplateSlot(getSlot(Model.Slot.CREATOR));
         metaCls.addDirectTemplateSlot(getSlot(Model.Slot.CREATION_TIMESTAMP));
@@ -798,6 +798,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         a.addDirectTemplateSlot(slot);
         SystemUtilities.sleepMsec(100);
 
+        
         String modifier = kb.getFrameLastModifier(a);
         assertEquals("name", user_name, modifier);
         String modStamp = kb.getFrameLastModificationTimestamp(a);
@@ -1456,9 +1457,9 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         fired[0] = Boolean.FALSE;
         FrameStore originalHead = ((DefaultKnowledgeBase) getDomainKB()).getHeadFrameStore();
         FrameStore testFs = new FrameStoreAdapter() {
-            public Slot createSlot(FrameID id, Collection superslots, Collection types, boolean init) {
+            public Slot createSlot(FrameID id, String name, Collection superslots, Collection types, boolean init) {
                 fired[0] = Boolean.TRUE;
-                return getDelegate().createSlot(id, superslots, types, init);
+                return getDelegate().createSlot(id, name, superslots, types, init);
             }
         };
         getDomainKB().insertFrameStore(testFs);
@@ -1628,6 +1629,27 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         assertEventFired(FrameEvent.OWN_SLOT_VALUE_CHANGED);
     }
 
+    public void testSetFrameName() {
+        Frame frame = createFrame();
+        String name = frame.getName();
+        frame.setName(name); // do nothing
+        try {
+            frame.setName(null);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // ok
+        }
+        String name2 = name + Math.random();
+        frame.setName(name2);
+        assertEquals(name2, frame.getName());
+        Frame frame2 = createFrame();
+        try {
+            frame.setName(frame2.getName());
+            fail();
+        } catch (IllegalArgumentException e) {
+            // ok
+        }
+    }
 
     public void testSetAllowedClsesOverride() {
         Cls cls = createCls();
@@ -1718,14 +1740,6 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
         public Collection getSimpleInstanceJavaClassIds() {
             // TODO Auto-generated method stub
             return null;
-        }
-
-        public Frame replaceFrameWithFrameNamed(Frame original, String name) {
-          throw new UnsupportedOperationException();
-        }
-
-        public Frame rename(Frame original, String name) {
-          throw new UnsupportedOperationException();
         }
     }
 

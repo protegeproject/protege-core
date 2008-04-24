@@ -98,10 +98,6 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
     }
 
     public void initialize(boolean isStretchable, int nColumns, int nRows) {
-    	initialize(isStretchable, false, nColumns, nRows);
-    }
-    
-    public void initialize(boolean isStretchable, boolean isSwappedHeader, int nColumns, int nRows) {
         _textComponent = createTextComponent();
         _textComponent.getDocument().addDocumentListener(_documentListener);
         _textComponent.addFocusListener(_focusListener);
@@ -109,7 +105,7 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
         this.setEditable(true);
         _defaultColor = _textComponent.getForeground();
         JComponent centerComponent = createCenterComponent(_textComponent);
-        LabeledComponent labeledComponent = new LabeledComponent(getLabel(), centerComponent, isStretchable, isSwappedHeader);
+        LabeledComponent labeledComponent = new LabeledComponent(getLabel(), centerComponent, isStretchable);
         Iterator i = createActions().iterator();
         while (i.hasNext()) {
             Action action = (Action) i.next();

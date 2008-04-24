@@ -62,7 +62,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
     };
 
     private KnowledgeBaseListener _knowledgeBaseListener = new KnowledgeBaseAdapter() {
-        public void frameReplaced(KnowledgeBaseEvent event) {
+        public void frameNameChanged(KnowledgeBaseEvent event) {
             repaint();
         }
     };
@@ -195,8 +195,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         return _addAction;
     }
 
-    @SuppressWarnings("unchecked")
-	private Cls getBaseAllowedSlotMetaCls() {
+    private Cls getBaseAllowedSlotMetaCls() {
         Collection allowedClses = getBoundCls().getDirectType().getTemplateSlotAllowedClses(getSlot());
         return (Cls) CollectionUtilities.getFirstItem(allowedClses);
     }
@@ -309,18 +308,15 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     protected void handleRemoveCombinations(Collection combinations) {
         try {
-        	Cls cls = getCls();
-            beginTransaction("Remove slots from " + cls, (cls == null ? null : cls.getName()));
+            beginTransaction("Remove slots from " + getCls());
             Iterator i = combinations.iterator();
             while (i.hasNext()) {
                 FrameSlotCombination combination = (FrameSlotCombination) i.next();
                 handleRemoveCombination(combination);
             }
-            commitTransaction();
-        } catch (Exception e) {
-        	rollbackTransaction();
-        	Log.getLogger().warning("Problem at removing slots from " + getCls());
-		}
+        } finally {
+            endTransaction();
+        }
     }
 
     private static void handleRemoveCombination(FrameSlotCombination combination) {

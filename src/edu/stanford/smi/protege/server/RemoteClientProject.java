@@ -11,52 +11,50 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.model.ClientInitializerKnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
-import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
+import edu.stanford.smi.protege.server.narrowframestore.RemoteClientInvocationHandler;
+import edu.stanford.smi.protege.server.narrowframestore.RemoteServerNarrowFrameStore;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
 
 public class RemoteClientProject extends Project {
     private static Logger log = Log.getLogger(RemoteClientProject.class);
   
-    private RemoteServer _server;
     private RemoteServerProject _serverProject;
     private RemoteSession _session;
     private Thread shutdownHook;
 
-    public static Project createProject(RemoteServer server, 
-                                        RemoteServerProject serverProject, 
-                                        RemoteSession session, boolean pollForEvents)
+    public static Project createProject(RemoteServerProject serverProject, RemoteServer server, RemoteSession session, boolean pollForEvents)
             throws RemoteException {
-        return new RemoteClientProject(server, serverProject, session, pollForEvents);
+        return new RemoteClientProject(serverProject, server, session, pollForEvents);
     }
 
-    public RemoteClientProject(RemoteServer server,
-                               RemoteServerProject serverProject, 
-                               RemoteSession session, 
-                               boolean pollForEvents)
+    public RemoteClientProject(RemoteServerProject serverProject, RemoteServer server, RemoteSession session, boolean pollForEvents)
             throws RemoteException {
         super(null, null, new ArrayList(), false);
-        _server = server;
         _serverProject = serverProject;
         _session = session;
         serverProject.getDomainKbFrameStore(session);
         KnowledgeBase domainKb = createKnowledgeBase(server,
                                                      serverProject.getDomainKbFrameStore(session), 
+                                                     serverProject.getDomainKbNarrowFrameStore(),
                                                      serverProject.getDomainKbFactoryClassName(), 
                                                      session, false);
         KnowledgeBase projectKb = createKnowledgeBase(server,
                                                       serverProject.getProjectKbFrameStore(session),
+                                                      serverProject.getDomainKbNarrowFrameStore(),
                                                       serverProject.getProjectKbFactoryClassName(), 
                                                       session, true);
-        projectKb = copyKb(projectKb, domainKb);
+        projectKb = copyKb(projectKb);
         setKnowledgeBases(domainKb, projectKb);
         if (pollForEvents) {
             domainKb.setPollForEvents(true);
@@ -64,23 +62,18 @@ public class RemoteClientProject extends Project {
         installShutdownHook();
     }
 
-    private static KnowledgeBase copyKb(KnowledgeBase remoteKb, KnowledgeBase domainKb) {
+    private static KnowledgeBase copyKb(KnowledgeBase remoteKb) {
         Collection errors = new ArrayList();
         KnowledgeBase localKb = loadProjectKB(null, null, errors);
         localKb.deleteInstance(getProjectInstance(localKb));
         Instance projectInstance = getProjectInstance(remoteKb);
         projectInstance.deepCopy(localKb, null);
-        
-        // to support included forms - esp. location of nodes in GraphWidget
-        copyClientInformation(remoteKb, localKb, domainKb, false);
-        
         return localKb;
     }
-    
-     
 
     private static KnowledgeBase createKnowledgeBase(RemoteServer server,
                                                      RemoteServerFrameStore serverFrameStore, 
+                                                     RemoteServerNarrowFrameStore snfs,
                                                      String factoryClassName,
                                                      RemoteSession session, 
                                                      boolean preloadAll) {
@@ -98,25 +91,26 @@ public class RemoteClientProject extends Project {
         if (log.isLoggable(Level.FINE)) {
           log.fine("created kb=" + kb);
         }
-        
-        kb.setGenerateEventsEnabled(false);
-        kb.setCallCachingEnabled(false);
-        
         FrameStore clientFrameStore
                = new RemoteClientFrameStore(server, serverFrameStore, session, kb, preloadAll);
+        RemoteClientInvocationHandler rcif
+               = new RemoteClientInvocationHandler(kb, snfs);
+        NarrowFrameStore clientNarrowFrameStore = rcif.getNarrowFrameStore();
+
         kb.setTerminalFrameStore(clientFrameStore);
+        if (factory instanceof ClientInitializerKnowledgeBaseFactory) {
+          ClientInitializerKnowledgeBaseFactory clientInit;
+          clientInit = (ClientInitializerKnowledgeBaseFactory) factory;
+          clientInit.initializeClientKnowledgeBase(clientFrameStore, 
+                                                   clientNarrowFrameStore, 
+                                                   kb);
+        }
+        kb.setGenerateEventsEnabled(false);
+        kb.setCallCachingEnabled(true);
+
         return kb;
     }
-    
-    public RemoteSession getSession() {
-      return _session;
-    }
-    
-    public RemoteServer getServer() {
-      return _server;
-    }
 
-    @Override
     public URI getProjectURI() {
         URI uri = null;
         try {
@@ -137,7 +131,6 @@ public class RemoteClientProject extends Project {
         return url;
     }
 
-    @Override
     public Collection getCurrentUsers() {
         Collection users = new ArrayList();
         try {
@@ -153,14 +146,12 @@ public class RemoteClientProject extends Project {
         return users;
     }
 
-    @Override
     public String getLocalUser() {
         return _session.getUserName();
     }
 
-    @Override
     public void dispose() {
-        Log.getLogger().info("remote project dispose");
+        Log.getLogger().info("Remote project dispose. Project: " + getName() + " Session: " + _session);
         super.dispose();
         attemptClose();
         uninstallShutdownHook();
@@ -169,26 +160,21 @@ public class RemoteClientProject extends Project {
     private void attemptClose() {
         try {
             _serverProject.close(_session);
-        } catch (ServerSessionLost ssl) {
-          Log.getLogger().info("Session disconnected");
         } catch (java.rmi.RemoteException e) {
-            Log.getLogger().warning(e.toString());
+            Log.getLogger().log(Level.WARNING, "Errors at attempting to close remote project " + getName(), e);
         }
     }
 
-    @Override
     public KnowledgeBaseFactory getKnowledgeBaseFactory() {
         return null;
     }
 
-    @Override
     public boolean isMultiUserClient() {
         return true;
     }
 
     private void installShutdownHook() {
         shutdownHook = new Thread("Remote Project ShutdownHook") {
-            @Override
             public void run() {
               try {
                 attemptClose();
@@ -197,27 +183,31 @@ public class RemoteClientProject extends Project {
               }
             }
         };
+        
         try {
         	Runtime.getRuntime().addShutdownHook(shutdownHook);
-		} catch (Exception e) {
-			//this happens in applets
-			Log.getLogger().log(Level.WARNING, "Unable to install shutdown hook", e);			
-		}        
+        } catch (Throwable e) {
+        	Log.getLogger().warning("Error at installing shutdown hook. Message:" + e.getMessage());
+        }
     }
 
     private void uninstallShutdownHook() {
-        try {
-            Runtime.getRuntime().removeShutdownHook(shutdownHook);
-		} catch (Exception e) {
-			//this happens in applets
-			Log.getLogger().log(Level.WARNING, "Unable to remove shutdown hook", e);			
-		}
+    	try {
+    		Runtime.getRuntime().removeShutdownHook(shutdownHook);
+    	} catch (Throwable e) {
+    		Log.getLogger().warning("Error at uninstalling shutdown hook. Message: " + e.getMessage());
+    	}
     }
 
-    @Override
     public boolean isDirty() {
         // changes are committed automatically so we are never dirty.
         return false;
+    }
+    
+    public NarrowFrameStore getRemoteNarrowFrameStore() throws RemoteException {
+      RemoteServerNarrowFrameStore rnfs = _serverProject.getDomainKbNarrowFrameStore();
+      RemoteClientInvocationHandler rcih = new RemoteClientInvocationHandler(getKnowledgeBase(), rnfs);
+      return rcih.getNarrowFrameStore();
     }
 
 }

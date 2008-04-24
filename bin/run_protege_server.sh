@@ -5,6 +5,7 @@
 # Change to the script' working directory, should be the Protege root directory 
 cd $(dirname $0)
 
+
 DARWIN="false"
 
 if [  -x /usr/bin/uname ]
@@ -40,15 +41,12 @@ MAINCLASS=edu.stanford.smi.protege.server.Server
 
 
 # ------------------- JVM Options ------------------- 
-MAX_MEMORY=-Xmx200M
-HEADLESS=-Djava.awt.headless=true
+MAX_MEMORY=-Xmx100M
 CODEBASE_URL=file:$PWD/protege.jar
 CODEBASE=-Djava.rmi.server.codebase=$CODEBASE_URL
 HOSTNAME_PARAM=-Djava.rmi.server.hostname=$HOSTNAME
 TX="-Dtransaction.level=READ_COMMITTED"
-LOG4J_OPT="-Dlog4j.configuration=file:log4j.xml"
-
-OPTIONS="$MAX_MEMORY $HEADLESS $CODEBASE $HOSTNAME_PARAM ${TX} ${LOG4J_OPT}"
+OPTIONS="$MAX_MEMORY $CODEBASE $HOSTNAME_PARAM ${TX}"
 
 #
 # Instrumentation debug, delay simulation,  etc
@@ -57,16 +55,14 @@ OPTIONS="$MAX_MEMORY $HEADLESS $CODEBASE $HOSTNAME_PARAM ${TX} ${LOG4J_OPT}"
 #PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100"
 #DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
 
-OPTIONS="${OPTIONS} ${DELAY} ${PORTOPTS} ${DEBUG_OPT}"
-# ------------------- JVM Options ------------------- 
-
-# ------------------- Cmd Options -------------------
 # If you want automatic saving of the project, 
 # setup the number of seconds in SAVE_INTERVAL_VALUE
-# SAVE_INTERVAL=-saveIntervalSec=120
-# ------------------- Cmd Options -------------------
+# SAVE_INTERVAL=-DsaveIntervalSec=120
+OPTIONS="${OPTIONS} ${DELAY} ${PORTOPTS} ${DEBUG_OPT} ${SAVE_INTERVAL}"
+# ------------------- JVM Options ------------------- 
 
 METAPROJECT=examples/server/metaproject.pprj
 
+
 $JAVA_PATH/rmiregistry &
-$JAVA_PATH/java -cp $CLASSPATH $TX $OPTIONS $MAINCLASS $SAVE_INTERVAL $METAPROJECT
+$JAVA_PATH/java -cp $CLASSPATH $TX $OPTIONS $MAINCLASS $METAPROJECT

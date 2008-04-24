@@ -1,30 +1,14 @@
 package edu.stanford.smi.protege.model.framestore.undo;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.event.*;
 
-import edu.stanford.smi.protege.exception.TransactionException;
-import edu.stanford.smi.protege.model.Cls;
-import edu.stanford.smi.protege.model.CommandManager;
-import edu.stanford.smi.protege.model.Facet;
-import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.model.FrameID;
-import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.SimpleInstance;
-import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.model.framestore.ModificationFrameStore;
-import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
-import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
+import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.framestore.*;
+import edu.stanford.smi.protege.util.*;
 
 public class UndoFrameStore extends ModificationFrameStore implements CommandManager {
     Logger log = Log.getLogger(UndoFrameStore.class);
@@ -35,25 +19,6 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     private List _commands = new ArrayList();
     private int _lastExecutedCommand = NO_COMMAND;
     private LinkedList _macroCommandList = new LinkedList();
-    
-    /*
-     * If the delegate does not support transactions then the undo manager will do the
-     * best that it can at the task.
-     */
-    private TransactionMonitor transactionMonitor = new TransactionMonitor() {
-
-        @Override
-        public TransactionIsolationLevel getTransationIsolationLevel() throws TransactionException {
-            return TransactionIsolationLevel.READ_UNCOMMITTED;
-        }
-
-        @Override
-        public void setTransactionIsolationLevel(TransactionIsolationLevel level) throws TransactionException {
-            // TODO Auto-generated method stub
-            throw new TransactionException("Cannot set transaction isolation level using undo");
-        }
-        
-    };
 
     public void close() {
         super.close();
@@ -151,45 +116,40 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         }
     }
 
-    public Cls createCls(FrameID id, Collection types, Collection superclasses, boolean loadDefaults) {
-        Command cmd = new CreateClsCommand(getDelegate(), id, types, superclasses, loadDefaults);
+    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses, boolean loadDefaults) {
+        Command cmd = new CreateClsCommand(getDelegate(), id, name, types, superclasses, loadDefaults);
         return (Cls) execute(cmd);
     }
 
-    public Slot createSlot(FrameID id, Collection types, Collection superslots, boolean loadDefaults) {
-        Command cmd = new CreateSlotCommand(getDelegate(), id, types, superslots, loadDefaults);
+    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots, boolean loadDefaults) {
+        Command cmd = new CreateSlotCommand(getDelegate(), id, name, types, superslots, loadDefaults);
         return (Slot) execute(cmd);
     }
 
-    public Facet createFacet(FrameID id, Collection types, boolean loadDefaults) {
-        Command cmd = new CreateFacetCommand(getDelegate(), id, types, loadDefaults);
+    public Facet createFacet(FrameID id, String name, Collection types, boolean loadDefaults) {
+        Command cmd = new CreateFacetCommand(getDelegate(), id, name, types, loadDefaults);
         return (Facet) execute(cmd);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, Collection types, boolean loadDefaults) {
-        Command cmd = new CreateSimpleInstanceCommand(getDelegate(), id, types, loadDefaults);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types, boolean loadDefaults) {
+        Command cmd = new CreateSimpleInstanceCommand(getDelegate(), id, name, types, loadDefaults);
         return (SimpleInstance) execute(cmd);
     }
 
     public void deleteCls(Cls cls) {
         execute(new DeleteClsCommand(getDelegate(), cls));
     }
-    
-    /*
-     * There is a problem with both delete Slot and delete facet.  I don't know how to save and restore 
-     * deleted facet values.  So some information is lost on the undo.
-     */
 
     public void deleteSlot(Slot slot) {
         execute(new DeleteSlotCommand(getDelegate(), slot));
     }
 
     public void deleteFacet(Facet facet) {
-        execute(new DeleteFrameCommand(getDelegate(), facet));
+        execute(new DeleteFacetCommand(getDelegate(), facet));
     }
 
     public void deleteSimpleInstance(SimpleInstance simpleInstance) {
-        execute(new DeleteFrameCommand(getDelegate(), simpleInstance));
+        execute(new DeleteSimpleInstanceCommand(getDelegate(), simpleInstance));
     }
 
     public void addDirectTemplateSlot(Cls cls, Slot slot) {
@@ -218,6 +178,10 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
 
     public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
         execute(new MoveDirectOwnSlotValueCommand(getDelegate(), frame, slot, from, to));
+    }
+
+    public void setFrameName(Frame frame, String name) {
+        execute(new SetFrameNameCommand(getDelegate(), name, frame));
     }
 
     public void addDirectSuperclass(Cls cls, Cls superclass) {
@@ -259,15 +223,10 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
         execute(new RemoveDirectTemplateFacetOverridesCommand(getDelegate(), cls, slot));
     }
-    
-    public void replaceFrame(Frame original, Frame replacement) {
-        execute(new ReplaceFrameCommand(getDelegate(), original, replacement));
-    }
 
     public boolean beginTransaction(String name) {
         // Log.enter(this, "beginTransaction", name);
         boolean ok = getDelegate().beginTransaction(name);
-        transactionMonitor.beginTransaction();
         pushTransaction(new MacroCommand(name, getDelegate()));
         return ok;
     }
@@ -289,7 +248,6 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     public boolean commitTransaction() {
         popTransaction();
         boolean committed = getDelegate().commitTransaction();
-        transactionMonitor.commitTransaction();
         notifyListeners();
         return committed;
     }
@@ -297,23 +255,11 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
     public boolean rollbackTransaction() {
         popTransaction();
         boolean succeeded = getDelegate().rollbackTransaction();
-        transactionMonitor.rollbackTransaction();
         if (!succeeded) {
             undo();
             _commands.remove(_lastExecutedCommand + 1);
         }
         return succeeded;
-    }
-    
-    public TransactionMonitor getTransactionStatusMonitor() {
-        TransactionMonitor delegateMonitor = getDelegate().getTransactionStatusMonitor();
-        if (delegateMonitor == null || 
-                delegateMonitor.getTransationIsolationLevel() == TransactionIsolationLevel.NONE) {
-            return transactionMonitor;
-        }
-        else {
-            return getDelegate().getTransactionStatusMonitor();
-        }
     }
 
     private void notifyListeners() {
@@ -352,6 +298,4 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         }
         return commands;
     }
-
-
 }

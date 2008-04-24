@@ -10,16 +10,10 @@ import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.plaf.metal.*;
 
-import com.jgoodies.looks.FontPolicies;
-import com.jgoodies.looks.FontPolicy;
-import com.jgoodies.looks.FontSet;
-import com.jgoodies.looks.FontSets;
 import com.jgoodies.looks.plastic.*;
 
 import edu.stanford.smi.protege.plugin.*;
@@ -32,8 +26,6 @@ import edu.stanford.smi.protege.resource.*;
  * @author Joe Edelman (jxe@dartmouth.edu)
  */
 public class SystemUtilities {
-    private static final Logger  log = Log.getLogger(SystemUtilities.class);
-  
     private static final String OLD_PLASTIC_LAF_NAME = "com.jgoodies.plaf.plastic.PlasticLookAndFeel";
     private static final String NEW_PLASTIC_LAF_NAME = "com.jgoodies.looks.plastic.PlasticLookAndFeel";
     
@@ -44,13 +36,9 @@ public class SystemUtilities {
     static {
         init();
     }
-    
-    public static void initialize() {
-        // just to call the static initializers.
-    }
 
-    public static void initGraphics() {
-        loadLookAndFeel();
+    public static void initialize() {
+        // do nothing except ensure that the static initializer has run
     }
 
     public static void debugBreak() {
@@ -104,55 +92,6 @@ public class SystemUtilities {
         return value;
     }
 
-    public static boolean getSystemBooleanProperty(String property) {
-        boolean value = false;
-        try {
-            value = Boolean.getBoolean(property);
-        } catch (SecurityException e) {
-            //do nothing
-        } catch (Throwable t) {
-        	//do nothing
-        }
-        return value;
-    }
-    
-    public static boolean getSystemBooleanProperty(String property, boolean defaultValue) {
-        boolean value = defaultValue;
-        try {
-            value = Boolean.getBoolean(property);
-        } catch (SecurityException e) {
-            //do nothing
-        } catch (Throwable t) {
-        	//do nothing
-        }
-        return value;
-    }
-    
-    public static int getSystemIntegerProperty(String property) {
-        int value = 0;
-        try {
-            value = Integer.getInteger(property).intValue();
-        } catch (SecurityException e) {
-            //do nothing
-        } catch (Throwable t) {
-        	//do nothing
-        }
-        return value;
-    }
-    
-    public static int getSystemIntegerProperty(String property, int defaultValue) {
-        int value = defaultValue;
-        try {
-            value = Integer.getInteger(property).intValue();
-        } catch (SecurityException e) {
-            //do nothing
-        } catch (Throwable t) {
-        	//do nothing
-        }
-        return value;
-    }
-    
-    
     public static String getUserDirectory() {
         return getSystemProperty("user.dir");
     }
@@ -195,6 +134,7 @@ public class SystemUtilities {
 
             logSystemInfo();
             loadParameters();
+            loadLookAndFeel();
             PluginUtilities.initialize();
             loadUseAntialiasing();
             //ESCA-JAVA0170 
@@ -232,11 +172,6 @@ public class SystemUtilities {
                 PopupFactory.setSharedInstance(new PopupFactory());
                 PlasticLookAndFeel.setCurrentTheme(PlasticHack.createTheme());
                 PlasticLookAndFeel.setTabStyle(PlasticLookAndFeel.TAB_STYLE_METAL_VALUE);
-                
-                FontSet fontSet = FontSets.createDefaultFontSet(ProtegePlasticTheme.DEFAULT_FONT);
-                FontPolicy fixedPolicy = FontPolicies.createFixedPolicy(fontSet);
-                PlasticLookAndFeel.setFontPolicy(fixedPolicy);
-           
             } else if (lafName.indexOf("Metal") != -1) {
                 MetalLookAndFeel.setCurrentTheme(createDefaultMetalTheme());
             }
@@ -374,9 +309,7 @@ public class SystemUtilities {
             if (!url.startsWith("http:") && !url.startsWith("file:") && !url.startsWith("mailto:")) {
                 url = new File(url).toURI().toURL().toString();
             }
-            if (log.isLoggable(Level.FINE)) {
-              log.fine("showHTML " + url);
-            }
+            // Log.enter(SystemUtilities.class, "showHTML", url);
             BrowserLauncher.openURL(url);
         } catch (IOException e) {
             Log.getLogger().warning(e.toString());

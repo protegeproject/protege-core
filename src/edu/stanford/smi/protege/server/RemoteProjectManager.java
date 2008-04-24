@@ -2,19 +2,17 @@ package edu.stanford.smi.protege.server;
 
 //ESCA*JAVA0130
 
-import java.rmi.Naming;
-import java.rmi.server.RMISocketFactory;
+import java.io.*;
+import java.rmi.*;
+import java.rmi.server.*;
 import java.util.logging.Level;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 
-import edu.stanford.smi.protege.model.Project;
-import edu.stanford.smi.protege.resource.LocalizedText;
-import edu.stanford.smi.protege.resource.ResourceKey;
-import edu.stanford.smi.protege.ui.ProjectManager;
-import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.ModalDialog;
-import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.ui.*;
+import edu.stanford.smi.protege.util.*;
 
 public class RemoteProjectManager {
     private static RemoteProjectManager _theInstance;
@@ -24,7 +22,7 @@ public class RemoteProjectManager {
             try {
                 RMISocketFactory.setSocketFactory(new ClientRmiSocketFactory());
             } catch (Exception e) {
-                Log.getLogger().severe("Could not set socket factory " + e.getMessage());
+                Log.getLogger().log(Level.SEVERE, "Error at setting the socket factory.", e);                
             }
             _theInstance = new RemoteProjectManager();
         }
@@ -63,11 +61,8 @@ public class RemoteProjectManager {
         return project;
     }
 
-    public Project getProject(String serverName, 
-                              String username, 
-                              String password, 
-                              String projectName,
-                              boolean pollForEvents) {
+    public Project getProject(String serverName, String username, String password, String projectName,
+            boolean pollForEvents) {
         Project p = null;
         try {
             RemoteServer server = (RemoteServer) Naming.lookup("//" + serverName + "/" + Server.getBoundName());
@@ -76,7 +71,7 @@ public class RemoteProjectManager {
                 if (session != null) {
                     RemoteServerProject serverProject = server.openProject(projectName, session);
                     if (serverProject != null) {
-                        p = RemoteClientProject.createProject(server, serverProject, session, pollForEvents);
+                        p = RemoteClientProject.createProject(serverProject, server, session, pollForEvents);
                     }
                 }
             }
@@ -91,13 +86,13 @@ public class RemoteProjectManager {
         try {
             RemoteServerProject serverProject = server.openProject(name, session);
             if (serverProject == null) {
-            	Log.getLogger().warning("Could not open project " + name + " on server.");
+            	Log.getLogger().warning("Could not open project " + name + " on server " + server);
             	return null;
             }
-            p = RemoteClientProject.createProject(server, serverProject, session, true);
+            p = RemoteClientProject.createProject(serverProject, server, session, true);
         } catch (Exception e) {
             Log.getLogger().log(Level.WARNING, "Could not connect to remote project " + name, e);
         }
-        return p;    	
+        return p;
     }
 }

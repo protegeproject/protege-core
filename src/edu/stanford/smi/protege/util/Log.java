@@ -9,9 +9,9 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.LogManager;
 
 
 /**
@@ -132,138 +132,6 @@ public class Log {
 
     }
 
-    public static Logger getLogger() {
-        if (logger == null) {
-            logger = Logger.getLogger("protege.system");
-            if (!configuredByFile) {
-              try {            	 
-                logger.setUseParentHandlers(false);
-                logger.setLevel(Level.ALL);
-                addConsoleHandler();
-                addFileHandler();                
-              } catch (Throwable e) {
-            	  System.out.println("Exception configuring logger");
-              }
-            }
-        }
-        return logger;
-    }
-    
-    public static void emptyCatchBlock(Throwable t) {
-    	if (getLogger().isLoggable(Level.FINE)) {
-    		getLogger().log(Level.FINE, "Exception Caught", t);
-    	}
-    }
-    
-    public static Logger getLogger(Class c) {
-        Logger l = Logger.getLogger(c.getName());
-        if (!configuredByFile) {     
-          try {
-            l.addHandler(getFileHandler());
-            
-            Handler consoleHandler = getConsoleHandler(); 
-            if (l != null && consoleHandler != null) {
-          	  l.addHandler(consoleHandler);
-            }            
-            
-          } catch (Throwable e) {
-        	  if (!Log.displayedIOWarning) {        		  
-        		  System.err.println("Warning: IO exception getting logger. " + e.getMessage());
-        		  Log.displayedIOWarning = true;
-        	  }
-          }        
-        }
-        return l;
-    }
-    
-
-    /**
-     * This method is to ease  the debugging of junits.  It does allow reliable and 
-     * programatic setting of logging levels but it is probably only useful for debug.
-     */
-    public static void setLoggingLevel(Class<?> c, Level level) {
-        Logger.getLogger(c.getName()).setLevel(level);
-    }
-
-    public static String toString(Throwable t) {
-        Writer writer = new StringWriter();
-        PrintWriter printer = new PrintWriter(writer);
-        t.printStackTrace(printer);
-        printer.flush();
-        return writer.toString();
-    }
-
-    private static void addConsoleHandler() {
-        Handler consoleHandler = getConsoleHandler(); 
-        if (logger != null && consoleHandler != null) {
-      	  logger.addHandler(consoleHandler);
-        }        
-    }
-    
-    private static Handler getConsoleHandler() {
-    	try {
-    		if (consoleHandler == null) {
-    			consoleHandler = new ConsoleHandler();
-    			consoleHandler.setFormatter(new ConsoleFormatter());
-    			consoleHandler.setLevel(Level.ALL);
-    		}
-    		return consoleHandler;
-    	}catch (Throwable e) {
-    		// When does this happen?
-    		System.err.println("Warning: Cannot set console log debugger handler.");
-    	}
-    	
-    	return null;
-    }
-
-    private static void addFileHandler() {
-        try {
-            Handler handler = getFileHandler();
-            logger.addHandler(handler);
-            handler.publish(new LogRecord(Level.INFO, "*** SYSTEM START ***"));
-        } catch (Throwable e) {
-            System.err.println("Error adding file handler to logger");
-        }
-    }
-    
-    private static Handler getFileHandler() throws IOException {
-        if (fileHandler == null) {
-            String path;
-            File file = ApplicationProperties.getLogFileDirectory();
-            if (file == null) {
-                path = "%t"; // the temp directory. Better somewhere than
-                // nowhere!
-            } else {
-                path = file.getPath();
-            }
-            fileHandler = new FileHandler(path + File.separatorChar + "protege_%u.log", true);
-            fileHandler.setFormatter(new FileFormatter());
-            fileHandler.setLevel(Level.ALL);
-        }
-        return fileHandler;
-    }
-    
-   
-    private static File getApplicationDirectory() {
-        String dir = getSystemProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
-        if (dir == null) {
-            dir = getSystemProperty(ApplicationProperties.CURRENT_WORKING_DIRECTORY);
-        }
-        return dir == null ? null : new File(dir);
-    }
-    
-    
-    private static String getSystemProperty(String property) {
-        String value;
-        try {
-            value = System.getProperty(property);
-        } catch (SecurityException e) {
-            value = null;
-            // WARNING: Empty catch block
-        }
-        return value;
-    }
-    
     /**
      * Description of the Class
      * 
@@ -284,18 +152,6 @@ public class Log {
 
         void stack(String entry, Object object, String methodName, Object[] args);
     }
-
-
-    private static LegacyLogger getLegacyLogger() {
-        if (legacyLogger == null) {
-            legacyLogger = new LegacyLoggerImpl(getLogger());
-        }
-        return legacyLogger;
-    }
-    
-    /* --------------------------------------------------------------------------------------
-     * Deprecated Legacy Methods
-     */
 
     /**
      * Make an entry into the log with the message that <code>methodName
@@ -714,5 +570,139 @@ public class Log {
     public static void warning(String description, Object thisOrClass, String methodName, Object arg1, Object arg2,
             Object arg3, Object arg4) {
         getLegacyLogger().warning(description, thisOrClass, methodName, new Object[] { arg1, arg2, arg3, arg4 });
+    }
+
+    private static LegacyLogger getLegacyLogger() {
+        if (legacyLogger == null) {
+            legacyLogger = new LegacyLoggerImpl(getLogger());
+        }
+        return legacyLogger;
+    }
+
+    public static Logger getLogger() {
+        if (logger == null) {
+            logger = Logger.getLogger("protege.system");
+            if (!configuredByFile) {
+              try {            	 
+                logger.setUseParentHandlers(false);
+                logger.setLevel(Level.ALL);
+                addConsoleHandler();
+                addFileHandler();                
+              } catch (Throwable e) {
+            	  System.out.println("Exception configuring logger");
+                // do nothing, happens in applets
+                // NOTE - empty catch blocks are VERY DANGEROUS
+                // but this might be ok...
+              }
+            }
+        }
+        return logger;
+    }
+    
+    public static void emptyCatchBlock(Throwable t) {
+    	if (getLogger().isLoggable(Level.FINE)) {
+    		getLogger().log(Level.FINE, "Exception Caught", t);
+    	}
+    }
+    
+    public static Logger getLogger(Class c) {
+        Logger l = Logger.getLogger(c.getName());
+        if (!configuredByFile) {     
+          try {
+            l.addHandler(getFileHandler());
+            
+            Handler consoleHandler = getConsoleHandler(); 
+            if (l != null && consoleHandler != null) {
+          	  l.addHandler(consoleHandler);
+            }            
+            
+          } catch (Throwable e) {
+        	  if (!Log.displayedIOWarning) {        		  
+        		  System.err.println("Warning: IO exception getting logger. " + e.getMessage());
+        		  Log.displayedIOWarning = true;
+        	  }
+          }        
+        }
+        return l;
+    }
+
+    public static String toString(Throwable t) {
+        Writer writer = new StringWriter();
+        PrintWriter printer = new PrintWriter(writer);
+        t.printStackTrace(printer);
+        printer.flush();
+        return writer.toString();
+    }
+
+    private static void addConsoleHandler() {
+        Handler consoleHandler = getConsoleHandler(); 
+        if (logger != null && consoleHandler != null) {
+      	  logger.addHandler(consoleHandler);
+        }        
+    }
+    
+    private static Handler getConsoleHandler() {
+    	try {
+    		if (consoleHandler == null) {
+    			consoleHandler = new ConsoleHandler();
+    			consoleHandler.setFormatter(new ConsoleFormatter());
+    			consoleHandler.setLevel(Level.ALL);
+    		}
+    		return consoleHandler;
+    	}catch (Throwable e) {
+    		// When does this happen?
+    		System.err.println("Warning: Cannot set console log debugger handler.");
+    	}
+    	
+    	return null;
+    }
+
+    private static void addFileHandler() {
+        try {
+            Handler handler = getFileHandler();
+            logger.addHandler(handler);
+            handler.publish(new LogRecord(Level.INFO, "*** SYSTEM START ***"));
+        } catch (Throwable e) {
+            // do nothing, happens in applets
+          // NOTE - empty catch blocks are VERY DANGEROUS
+          // but this might be ok...
+        }
+    }
+    
+    private static Handler getFileHandler() throws IOException {
+        if (fileHandler == null) {
+            String path;
+            File file = ApplicationProperties.getLogFileDirectory();
+            if (file == null) {
+                path = "%t"; // the temp directory. Better somewhere than
+                // nowhere!
+            } else {
+                path = file.getPath();
+            }
+            fileHandler = new FileHandler(path + File.separatorChar + "protege_%u.log", true);
+            fileHandler.setFormatter(new FileFormatter());
+            fileHandler.setLevel(Level.ALL);
+        }
+        return fileHandler;
+    }
+    
+   
+    private static File getApplicationDirectory() {
+        String dir = getSystemProperty(ApplicationProperties.APPLICATION_INSTALL_DIRECTORY);
+        if (dir == null) {
+            dir = getSystemProperty(ApplicationProperties.CURRENT_WORKING_DIRECTORY);
+        }
+        return dir == null ? null : new File(dir);
+    }
+    
+    
+    private static String getSystemProperty(String property) {
+        String value;
+        try {
+            value = System.getProperty(property);
+        } catch (SecurityException e) {
+            value = null;
+        }
+        return value;
     }
 }

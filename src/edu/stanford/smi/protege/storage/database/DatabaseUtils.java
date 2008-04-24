@@ -16,7 +16,6 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.Assert;
 
 class DatabaseUtils {
-	public static final String NULL_FRAME_ID_STRING = "";
     /*
      * These constants are store in the database as a performance hack. When a frame is read out of the db we need to
      * make a java object from it. To do this we need to know if it is a class, a slot, or a simple instance. We could
@@ -28,16 +27,15 @@ class DatabaseUtils {
     private static final int VALUE_TYPE_FLOAT = 2;
     private static final int VALUE_TYPE_STRING = 3;
     private static final int VALUE_TYPE_BOOLEAN = 4;
-    /*
-     * The Frame type values start at 5.  This allow me to check or search for frames by
-     * checking if the value type is greater than BASE_FRAME_TYPE_VALUE.
-     */
-    public static final int BASE_FRAME_TYPE_VALUE = 5;
+    // private static final int VALUE_TYPE_SIMPLE_INSTANCE = 5;
+    // private static final int VALUE_TYPE_CLASS = 6;
+    // private static final int VALUE_TYPE_SLOT = 7;
+    // private static final int VALUE_TYPE_FACET = 8;
 
     private static final char SINGLE_QUOTE = '\'';
 
-    public static String getValue(FrameID id) {
-      return id == null ? "" : id.getName();
+    public static int getValue(FrameID id) {
+        return id.getLocalPart();
     }
 
     public static int getStringValueType() {
@@ -53,11 +51,12 @@ class DatabaseUtils {
     }
 
     private static void setId(PreparedStatement stmt, int index, FrameID id) throws SQLException {
-        stmt.setString(index, getValue(id));
+        int idValue = (id == null) ? FrameID.NULL_FRAME_ID_VALUE : getValue(id);
+        stmt.setInt(index, idValue);
     }
 
     private static String getFrameIDValueString(FrameID id) {
-        return (id == null) ? NULL_FRAME_ID_STRING : id.getName();
+        return (id == null) ? "0" : String.valueOf(id.getLocalPart());
     }
 
     public static void setValueType(PreparedStatement stmt, int index, Object o, FrameFactory factory)
@@ -88,10 +87,6 @@ class DatabaseUtils {
             type = factory.getJavaClassId((Frame) value);
         }
         return type;
-    }
-    
-    public static void setFrameId(PreparedStatement stmt, int index, FrameID frameId) throws SQLException {
-    	setId(stmt, index, frameId);
     }
 
     public static void setFrame(PreparedStatement stmt, int index, Frame frame) throws SQLException {
@@ -224,18 +219,15 @@ class DatabaseUtils {
 
     public static Frame getFrame(ResultSet rs, 
                                  int frameIndex, int typeIndex, 
-                                 FrameFactory factory,
+                                 FrameFactory factory, int projectId,
                                  boolean isInclude) throws SQLException {
-        FrameID id = getFrameId(rs, frameIndex);
+        FrameID id = getFrameId(rs, frameIndex, projectId);
         int type = rs.getInt(typeIndex);
         return getFrame(id, type, factory, isInclude);
     }
 
     private static Frame getFrame(FrameID id, int type, FrameFactory factory,
                                   boolean isInclude) {
-        if (id == null) {
-          return null;
-        }
         Frame frame = factory.createFrameFromClassId(type, id);
         if (isInclude) {
           frame.setIncluded(true);
@@ -243,19 +235,28 @@ class DatabaseUtils {
         return frame;
     }
 
-    private static FrameID getFrameId(ResultSet rs, int index) throws SQLException {
-        String value = rs.getString(index);
-        if (value.equals("")) {
-          return null;
+    private static FrameID createFrameID(int value, int projectId) {
+        FrameID id;
+        if (value == 0) {
+            id = null;
+        } else if (value < FrameID.INITIAL_USER_FRAME_ID) {
+            id = FrameID.createSystem(value);
+        } else {
+            id = FrameID.createLocal(projectId, value);
         }
-        return new FrameID(value);
+        return id;
+    }
+
+    private static FrameID getFrameId(ResultSet rs, int index, int projectId) throws SQLException {
+        int value = rs.getInt(index);
+        return createFrameID(value, projectId);
     }
 
     public static Slot getSlot(ResultSet rs, int index, 
-                               FrameFactory factory,
+                               FrameFactory factory, int projectId,
                                boolean isInclude) throws SQLException {
         Collection types = Collections.EMPTY_LIST;
-        FrameID id = getFrameId(rs, index);
+        FrameID id = getFrameId(rs, index, projectId);
         Slot slot = factory.createSlot(id, types);
         if (isInclude) {
           slot.setIncluded(isInclude);
@@ -264,11 +265,11 @@ class DatabaseUtils {
     }
 
     public static Facet getFacet(ResultSet rs, int index, 
-                                 FrameFactory factory,
+                                 FrameFactory factory, int projectId,
                                  boolean isInclude) throws SQLException {
         Collection types = Collections.EMPTY_LIST;
         Facet facet;
-        FrameID id = getFrameId(rs, index);
+        FrameID id = getFrameId(rs, index, projectId);
         if (id == null) {
             facet = null;
         } else {
@@ -306,7 +307,8 @@ class DatabaseUtils {
                 }
                 break;
             default:
-                FrameID id = new FrameID(valueString);
+                int valueInt = Integer.parseInt(valueString);
+                FrameID id = createFrameID(valueInt, projectId);
                 value = getFrame(id, type, factory, isInclude);
                 break;
         }

@@ -2,7 +2,7 @@ package edu.stanford.smi.protege.model;
 
 //ESCA*JAVA0037
 
-import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.*;
 
 /**
  * Encapsulation of method for executing a tranaction.
@@ -30,22 +30,11 @@ import edu.stanford.smi.protege.util.Log;
  */
 public abstract class Transaction {
     public static final String APPLY_TO_TRAILER_STRING = " -- Apply to: ";
-
-    private KnowledgeBase _knowledgeBase;
     
-    private String transactionName = "transaction";
+    private KnowledgeBase _knowledgeBase;
 
     protected Transaction(KnowledgeBase kb) {
         _knowledgeBase = kb;
-    }
-    
-    protected Transaction(KnowledgeBase kb, String transactionName) {
-        _knowledgeBase = kb;
-        this.transactionName = transactionName;
-    }
-    
-    public KnowledgeBase getKnowledgeBase() {
-        return _knowledgeBase;
     }
 
     /** returns true if the the results of this method should be committed */
@@ -62,29 +51,25 @@ public abstract class Transaction {
         synchronized (_knowledgeBase) {
             boolean transactionComplete = false;
             try {
-                _knowledgeBase.beginTransaction(transactionName);
+                boolean inTransaction = _knowledgeBase.beginTransaction("transaction");
                 boolean doCommit = doOperations();
-                if (doCommit) {
-                    commited = _knowledgeBase.commitTransaction();
-                } else {
-                    /* how to handle an error here? */
-                    _knowledgeBase.rollbackTransaction();
-                    commited = false;
+                if (inTransaction) {
+                    commited = _knowledgeBase.endTransaction(doCommit);
+                } else if (!doCommit) {
+                    Log.getLogger().warning("Unable to rollback, transaction committed");
+                    commited = true;
                 }
                 transactionComplete = true;
             } finally {
                 if (!transactionComplete) {
-                    _knowledgeBase.rollbackTransaction();
+                    _knowledgeBase.endTransaction(false);
                 }
             }
         }
         return commited;
     }
-    
-    public static String getApplyTo(String beginString) {
-        int index = beginString.indexOf(Transaction.APPLY_TO_TRAILER_STRING);
-        if (index < 0) return null;
-        index += Transaction.APPLY_TO_TRAILER_STRING.length();
-        return beginString.substring(index);
+
+    public KnowledgeBase getKnowledgeBase() {
+        return _knowledgeBase;
     }
 }

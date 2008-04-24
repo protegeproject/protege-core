@@ -4,13 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Level;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.MessageError;
 
 /**
@@ -36,7 +34,7 @@ public class ParseErrorPanel extends JComponent {
         StringBuffer buffer = new StringBuffer();        
         ArrayList errorsList = new ArrayList(errors);
         
-        buffer.append("Errors found performing operation.\n\n");
+        buffer.append("There were errors at performing operation.\n\n");
         
         for (int i = 0; i < errorsList.size(); i++) {;
 			Object o = errorsList.get(i);
@@ -50,8 +48,10 @@ public class ParseErrorPanel extends JComponent {
                 
     			text = text + "Exception " + ex.getClass().toString() + 
 				(ex.getMessage() == null ? "" : ". \nMessage: " + ex.getMessage());
-
-                Log.getLogger().log(Level.WARNING, "Exception caught", ex);
+                               
+                //StringWriter s = new StringWriter();
+                //e.printStackTrace(new PrintWriter(s));
+                //text = text + s.toString();
             } else {
                 text = text + ((o == null) ? "missing message" : o.toString());
             }
@@ -71,7 +71,7 @@ public class ParseErrorPanel extends JComponent {
 		if (error.getMessage() != null) 
 			message = message + error.getMessage() + "\n";			
 				
-		Throwable ex = error.getException();
+		Exception ex = error.getException();
 		if (ex != null)
 			message = message + "    " + "Exception " + ex.getClass().toString() + 
 				(ex.getMessage() == null ? "" : ".  Message: " + ex.getMessage());

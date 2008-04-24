@@ -1,32 +1,14 @@
 package edu.stanford.smi.protege.storage.database;
 
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.DRIVER_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.PASSWORD_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.TABLENAME_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.URL_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.USERNAME_PROPERTY;
+import java.awt.*;
+import java.net.*;
+import java.sql.*;
 
-import java.awt.Component;
-import java.awt.GridLayout;
-import java.net.URI;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import javax.swing.*;
 
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-import edu.stanford.smi.protege.model.KnowledgeBaseSourcesEditor;
-import edu.stanford.smi.protege.resource.LocalizedText;
-import edu.stanford.smi.protege.resource.ResourceKey;
-import edu.stanford.smi.protege.util.ComponentFactory;
-import edu.stanford.smi.protege.util.FileUtilities;
-import edu.stanford.smi.protege.util.LabeledComponent;
-import edu.stanford.smi.protege.util.ModalDialog;
-import edu.stanford.smi.protege.util.PropertyList;
-import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.util.*;
 
 /**
  *  Description of the class
@@ -34,16 +16,16 @@ import edu.stanford.smi.protege.util.SystemUtilities;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DatabaseKnowledgeBaseSourcesEditor extends KnowledgeBaseSourcesEditor {
-    private static final long serialVersionUID = -1850928285684275958L;
-
-    public static final String DEFAULT_TABLE_NAME = "ProtegeTable";
+    private static final String DEFAULT_DRIVER = "sun.jdbc.odbc.JdbcOdbcDriver";
+    private static final String DEFAULT_URL = "jdbc:odbc:ProtegeDB";
+    private static final String DEFAULT_TABLE_NAME = "ProtegeTable";
 
     private JTextField _driverComponent;
     private JTextField _urlComponent;
     private JTextField _tableNameComponent;
     private JTextField _usernameComponent;
     private JTextField _passwordComponent;
-    
+
     public DatabaseKnowledgeBaseSourcesEditor(String projectURIString, PropertyList sources) {
         super(projectURIString, sources);
         JPanel panel = new JPanel();
@@ -60,17 +42,17 @@ public class DatabaseKnowledgeBaseSourcesEditor extends KnowledgeBaseSourcesEdit
         _driverComponent = ComponentFactory.createTextField();
         String text = DatabaseKnowledgeBaseFactory.getDriver(getSources());
         if (text == null) {
-            text = DatabaseProperty.getProperty(DRIVER_PROPERTY);
+            text = getProperty(DatabaseKnowledgeBaseFactory.DRIVER_PROPERTY, DEFAULT_DRIVER);
         }
         _driverComponent.setText(text);
-        return new LabeledComponent(DRIVER_PROPERTY.getTitle(), _driverComponent);
+        return new LabeledComponent("JDBC Driver Class Name", _driverComponent);
     }
 
     private Component createPasswordComponent() {
         _passwordComponent = ComponentFactory.createPasswordField();
         String text = DatabaseKnowledgeBaseFactory.getPassword(getSources());
         _passwordComponent.setText(text);
-        return new LabeledComponent(PASSWORD_PROPERTY.getTitle(), _passwordComponent);
+        return new LabeledComponent("Password", _passwordComponent);
     }
 
     private Component createTableNameComponent() {
@@ -80,34 +62,34 @@ public class DatabaseKnowledgeBaseSourcesEditor extends KnowledgeBaseSourcesEdit
             text = getDefaultTableName();
         }
         _tableNameComponent.setText(text);
-        return new LabeledComponent(TABLENAME_PROPERTY.getTitle(), _tableNameComponent);
+        return new LabeledComponent("Table", _tableNameComponent);
     }
 
     private Component createURLComponent() {
         _urlComponent = ComponentFactory.createTextField();
         String text = DatabaseKnowledgeBaseFactory.getURL(getSources());
         if (text == null) {
-            text = DatabaseProperty.getProperty(URL_PROPERTY);
+            text = getProperty(DatabaseKnowledgeBaseFactory.URL_PROPERTY, DEFAULT_URL);
         }
         _urlComponent.setText(text);
-        return new LabeledComponent(URL_PROPERTY.getTitle(), _urlComponent);
+        return new LabeledComponent("JDBC URL", _urlComponent);
     }
 
     private Component createUsernameComponent() {
         _usernameComponent = ComponentFactory.createTextField();
         String text = DatabaseKnowledgeBaseFactory.getUsername(getSources());
         if (text == null) {
-            text = DatabaseProperty.getProperty(USERNAME_PROPERTY);
+            text = getProperty(DatabaseKnowledgeBaseFactory.USERNAME_PROPERTY, null);
         }
         if (text == null) {
             text = SystemUtilities.getUserName();
         }
         _usernameComponent.setText(text);
-        return new LabeledComponent(USERNAME_PROPERTY.getTitle(), _usernameComponent);
+        return new LabeledComponent("Username", _usernameComponent);
     }
 
     private String getDefaultTableName() {
-        String tableName = DatabaseProperty.getProperty(TABLENAME_PROPERTY);
+        String tableName = getProperty(DatabaseKnowledgeBaseFactory.TABLENAME_PROPERTY, null);
         if (tableName == null) {
             String path = getProjectPath();
             if (path != null) {
@@ -115,9 +97,17 @@ public class DatabaseKnowledgeBaseSourcesEditor extends KnowledgeBaseSourcesEdit
             }
         }
         if (tableName == null) {
-            tableName = TABLENAME_PROPERTY.getDefaultValue();
+            tableName = DEFAULT_TABLE_NAME;
         }
         return tableName;
+    }
+
+    private String getProperty(String name, String defaultValue) {
+        return ApplicationProperties.getString(getPropertyName(name), defaultValue);
+    }
+
+    private String getPropertyName(String baseName) {
+        return getClass().getName() + "." + baseName;
     }
 
     protected void onProjectURIChange(URI oldURI, URI newURI) {
@@ -127,24 +117,26 @@ public class DatabaseKnowledgeBaseSourcesEditor extends KnowledgeBaseSourcesEdit
     public void saveContents() {
         String driver = _driverComponent.getText();
         DatabaseKnowledgeBaseFactory.setDriver(getSources(), driver);
-        DatabaseProperty.setProperty(DRIVER_PROPERTY, driver);
+        setProperty(DatabaseKnowledgeBaseFactory.DRIVER_PROPERTY, driver);
 
         String url = _urlComponent.getText();
         DatabaseKnowledgeBaseFactory.setURL(getSources(), url);
-        DatabaseProperty.setProperty(URL_PROPERTY, url);
+        setProperty(DatabaseKnowledgeBaseFactory.URL_PROPERTY, url);
 
         String tableName = _tableNameComponent.getText();
         DatabaseKnowledgeBaseFactory.setTablename(getSources(), tableName);
-        DatabaseProperty.setProperty(TABLENAME_PROPERTY, tableName);
+        setProperty(DatabaseKnowledgeBaseFactory.TABLENAME_PROPERTY, tableName);
 
         String userName = _usernameComponent.getText();
         DatabaseKnowledgeBaseFactory.setUsername(getSources(), userName);
-        DatabaseProperty.setProperty(USERNAME_PROPERTY, userName);
+        setProperty(DatabaseKnowledgeBaseFactory.USERNAME_PROPERTY, userName);
 
         DatabaseKnowledgeBaseFactory.setPassword(getSources(), _passwordComponent.getText());
     }
-    
 
+    private void setProperty(String name, String value) {
+        ApplicationProperties.setString(getPropertyName(name), value);
+    }
 
     public boolean validateContents() {
         boolean isValid = true;

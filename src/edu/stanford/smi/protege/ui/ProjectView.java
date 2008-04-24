@@ -2,7 +2,6 @@ package edu.stanford.smi.protege.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -17,7 +16,6 @@ import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -52,8 +50,6 @@ import edu.stanford.smi.protege.widget.WidgetUtilities;
 
 interface TabbedPaneInterface {
     void addChangeListener(ChangeListener listener);
-    
-    void removeChangeListener(ChangeListener listener);
 
     Component[] getComponents();
 
@@ -90,10 +86,6 @@ class MyCardPanel extends JPanel implements TabbedPaneInterface {
 
     public void addChangeListener(ChangeListener listener) {
         this.changeListener = listener;
-    }
-    
-    public void removeChangeListener(ChangeListener listener) {
-    	this.changeListener = null;    	
     }
 
     public void setSelectedComponent(Component component) {
@@ -134,9 +126,7 @@ class MyCardPanel extends JPanel implements TabbedPaneInterface {
 
     public void setSelectedIndex(int index) {
         setSelectedComponent(getComponent(index));
-        if (changeListener != null) {
-        	changeListener.stateChanged(new ChangeEvent(this));
-        }
+        changeListener.stateChanged(new ChangeEvent(this));
     }
 
     public void addTab(String title, Icon icon, Component c, String helpText) {
@@ -152,9 +142,6 @@ class MyCardPanel extends JPanel implements TabbedPaneInterface {
 
 class MyJTabbedPane extends JTabbedPane implements TabbedPaneInterface {
 }
-
-
-
 
 public class ProjectView extends JComponent {
     static private Logger log = Log.getLogger(ProjectView.class);
@@ -195,11 +182,8 @@ public class ProjectView extends JComponent {
         setLayout(new BorderLayout());
         // add(createTabbedPane(), BorderLayout.CENTER); what does this change do? (bug fix?)
         add(BorderLayout.CENTER, createTabbedPane());
-        if (!project.isMultiUserClient()) {
-            project.getKnowledgeBase().setUndoEnabled(project.isUndoOptionEnabled());
-        }
+        project.getKnowledgeBase().setUndoEnabled(true);
     }
-  
 
     public TabWidget addTab(WidgetDescriptor widgetDescriptor) {
         if (log.isLoggable(Level.FINE)) {
@@ -309,11 +293,7 @@ public class ProjectView extends JComponent {
         while (i.hasNext()) {
             WidgetDescriptor d = (WidgetDescriptor) i.next();
             if (d.isVisible()) {
-            	try {
-            		addTab(d);
-				} catch (Throwable t) {
-					Log.getLogger().log(Level.WARNING,"Errors at adding tab " + d.getWidgetClassName(), t);
-				}
+                addTab(d);
             }
         }
         if (_viewHolder.getComponentCount() > 0)
@@ -324,10 +304,6 @@ public class ProjectView extends JComponent {
 
     public void addChangeListener(ChangeListener listener) {
         _viewHolder.addChangeListener(listener);
-    }
-    
-    public void removeChangeListener(ChangeListener listener) {
-    	_viewHolder.removeChangeListener(listener);
     }
     
     public void addProjectViewListener(ProjectViewListener pvl) {
@@ -543,10 +519,6 @@ public class ProjectView extends JComponent {
     }
 
     private void reattachTab(Component c) {
-    	if (_project == null) {
-    		return;
-    	}
-    	
         int index = getInsertionPoint(c);
         addTab((TabWidget) c, index);
         _viewHolder.setSelectedIndex(index);
@@ -554,7 +526,6 @@ public class ProjectView extends JComponent {
     }
 
     private int getInsertionPoint(Component c) {
-
         String classNameToMatch = c.getClass().getName();
         int insertionPoint = 0;
         Iterator i = _project.getTabWidgetDescriptors().iterator();

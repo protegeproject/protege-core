@@ -176,19 +176,11 @@ public class ModelUtilities {
     }
 
     public static void setOwnSlotValue(Frame frame, String slotName, Object value) {
-    	Slot slot = getSlot(frame, slotName);
-    	if (slot != null)
-    		frame.setOwnSlotValue(slot, value);
-    	else 
-    		Log.getLogger().warning("Cannot set value of slot " + slotName + " at frame " + frame + " to " + value + " Inexistent slot.");
+        frame.setOwnSlotValue(getSlot(frame, slotName), value);
     }
-    
+
     public static void setOwnSlotValues(Frame frame, String slotName, Collection values) {
-    	Slot slot = getSlot(frame, slotName);
-    	if (slot != null)
-    		frame.setOwnSlotValues(slot, values);
-    	else 
-    		Log.getLogger().warning("Cannot set values of slot " + slotName + " at frame " + frame + " to " + values + " Inexistent slot.");        
+        frame.setOwnSlotValues(getSlot(frame, slotName), values);
     }
 
     public static void setTemplateFacetValue(Cls cls, Slot slot, String facetName, Object value) {

@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.Collection;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Set;
 
@@ -10,13 +11,9 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
-import edu.stanford.smi.protege.model.query.QueryCallback;
-import edu.stanford.smi.protege.util.AbstractEvent;
-import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public interface FrameStore {
 
@@ -42,13 +39,13 @@ public interface FrameStore {
     int getFrameCount();
 
     // frame access
-    Set<Cls> getClses();
+    Set getClses();
 
-    Set<Slot> getSlots();
+    Set getSlots();
 
-    Set<Facet> getFacets();
+    Set getFacets();
 
-    Set<Frame> getFrames();
+    Set getFrames();
 
     Frame getFrame(FrameID id);
 
@@ -56,16 +53,18 @@ public interface FrameStore {
 
     String getFrameName(Frame frame);
 
+    void setFrameName(Frame frame, String name);
+
     // frame creation/deletion
-    Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
+    Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaultValues);
 
-    Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
+    Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues);
 
-    Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues);
+    Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues);
 
-    SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaultValues);
+    SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaultValues);
 
     /**
      * Delete a single leaf class. The operation fails if the class has subclasses or instances.
@@ -84,7 +83,7 @@ public interface FrameStore {
     void deleteSimpleInstance(SimpleInstance simpleInstance);
 
     // own slots
-    Set<Slot> getOwnSlots(Frame frame);
+    Set getOwnSlots(Frame frame);
 
     Collection getOwnSlotValues(Frame frame, Slot slot);
 
@@ -129,7 +128,7 @@ public interface FrameStore {
     void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values);
 
     // template facets
-    Set<Facet> getTemplateFacets(Cls cls, Slot slot);
+    Set getTemplateFacets(Cls cls, Slot slot);
 
     Set getOverriddenTemplateFacets(Cls cls, Slot slot);
 
@@ -144,13 +143,13 @@ public interface FrameStore {
     void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values);
 
     // class hierarchy
-    List<Cls> getDirectSuperclasses(Cls cls);
+    List getDirectSuperclasses(Cls cls);
 
     Set getSuperclasses(Cls cls);
 
-    List<Cls> getDirectSubclasses(Cls cls);
+    List getDirectSubclasses(Cls cls);
 
-    Set<Cls> getSubclasses(Cls cls);
+    Set getSubclasses(Cls cls);
 
     void addDirectSuperclass(Cls cls, Cls superclass);
 
@@ -178,9 +177,9 @@ public interface FrameStore {
 
     Set getTypes(Instance instance);
 
-    List<Instance> getDirectInstances(Cls cls);
+    List getDirectInstances(Cls cls);
 
-    Set<Instance> getInstances(Cls cls);
+    Set getInstances(Cls cls);
 
     void addDirectType(Instance instance, Cls type);
 
@@ -189,38 +188,26 @@ public interface FrameStore {
     void moveDirectType(Instance instance, Cls type, int index);
 
     // events
-    List<AbstractEvent> getEvents();
+    List<EventObject> getEvents();
 
-  /**
-   * The executeQuery method allows for complex queries.  It is asynchronous 
-   * so that in server-client mode the server knowledge base lock will not be
-   * held for an excessive amount of time.
-   *
-   * The contract specifies that the implementor must call one of the 
-   * QueryCallback methods in a separate thread.  This makes it possible 
-   * for the caller to know how to retrieve the results in a synchronous way
-   * without worrying about deadlock.
-   * 
-   * @param Query  the query to be executed.
-   * @param QueryCallback the callback that receives the results of the query.
-   */
-    void executeQuery(Query query, QueryCallback callback);
+    // arbitrary queries
+    Set executeQuery(Query query);
 
-    Set<Reference> getReferences(Object object);
+    Set getReferences(Object object);
 
-    Set<Reference> getMatchingReferences(String string, int maxMatches);
+    Set getMatchingReferences(String string, int maxMatches);
 
     Set getClsesWithMatchingBrowserText(String string, Collection superclasses, int maxMatches);
 
-    Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value);
+    Set getFramesWithDirectOwnSlotValue(Slot slot, Object value);
 
-    Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot);
+    Set getFramesWithAnyDirectOwnSlotValue(Slot slot);
 
     Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches);
 
     Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value);
 
-    Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot);
+    Set getClsesWithAnyDirectTemplateSlotValue(Slot slot);
 
     Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches);
 
@@ -238,16 +225,5 @@ public interface FrameStore {
 
     boolean rollbackTransaction();
 
-    /**
-     * Retrieves a transaction status monitor for transactions.  If this call returns null
-     * then it means that transactions are not supported.
-     * 
-     * @return A TransactionMonitor object that tracks the status of transactions.
-     */
-    public TransactionMonitor getTransactionStatusMonitor();
-
     void close();
-
-    
-    void replaceFrame(Frame original, Frame replacement);
 }

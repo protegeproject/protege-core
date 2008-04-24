@@ -1,17 +1,11 @@
 package edu.stanford.smi.protege.model;
 
-import java.awt.Rectangle;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.awt.*;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 
-import edu.stanford.smi.protege.util.Log;
-import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.util.*;
 
 /**
  * Utilities for working with the PropertyMap
@@ -306,11 +300,5 @@ public class PropertyMapUtil {
             ModelUtilities.setOwnSlotValue(entryInstance, VALUE_SLOT, valueEntry.value);
             ModelUtilities.setOwnSlotValue(entryInstance, VALUE_CLASS_SLOT, valueEntry.valueClass);
         }
-    }
-    
-    public static void dispose() {
-    	_valuesToMaps.clear();
-    	_domainKB = null;
-    	_projectKB = null;
     }
 }
