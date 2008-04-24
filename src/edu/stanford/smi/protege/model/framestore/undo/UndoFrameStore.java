@@ -151,45 +151,40 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         }
     }
 
-    public Cls createCls(FrameID id, Collection types, Collection superclasses, boolean loadDefaults) {
-        Command cmd = new CreateClsCommand(getDelegate(), id, types, superclasses, loadDefaults);
+    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses, boolean loadDefaults) {
+        Command cmd = new CreateClsCommand(getDelegate(), id, name, types, superclasses, loadDefaults);
         return (Cls) execute(cmd);
     }
 
-    public Slot createSlot(FrameID id, Collection types, Collection superslots, boolean loadDefaults) {
-        Command cmd = new CreateSlotCommand(getDelegate(), id, types, superslots, loadDefaults);
+    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots, boolean loadDefaults) {
+        Command cmd = new CreateSlotCommand(getDelegate(), id, name, types, superslots, loadDefaults);
         return (Slot) execute(cmd);
     }
 
-    public Facet createFacet(FrameID id, Collection types, boolean loadDefaults) {
-        Command cmd = new CreateFacetCommand(getDelegate(), id, types, loadDefaults);
+    public Facet createFacet(FrameID id, String name, Collection types, boolean loadDefaults) {
+        Command cmd = new CreateFacetCommand(getDelegate(), id, name, types, loadDefaults);
         return (Facet) execute(cmd);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, Collection types, boolean loadDefaults) {
-        Command cmd = new CreateSimpleInstanceCommand(getDelegate(), id, types, loadDefaults);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types, boolean loadDefaults) {
+        Command cmd = new CreateSimpleInstanceCommand(getDelegate(), id, name, types, loadDefaults);
         return (SimpleInstance) execute(cmd);
     }
 
     public void deleteCls(Cls cls) {
         execute(new DeleteClsCommand(getDelegate(), cls));
     }
-    
-    /*
-     * There is a problem with both delete Slot and delete facet.  I don't know how to save and restore 
-     * deleted facet values.  So some information is lost on the undo.
-     */
 
     public void deleteSlot(Slot slot) {
         execute(new DeleteSlotCommand(getDelegate(), slot));
     }
 
     public void deleteFacet(Facet facet) {
-        execute(new DeleteFrameCommand(getDelegate(), facet));
+        execute(new DeleteFacetCommand(getDelegate(), facet));
     }
 
     public void deleteSimpleInstance(SimpleInstance simpleInstance) {
-        execute(new DeleteFrameCommand(getDelegate(), simpleInstance));
+        execute(new DeleteSimpleInstanceCommand(getDelegate(), simpleInstance));
     }
 
     public void addDirectTemplateSlot(Cls cls, Slot slot) {
@@ -218,6 +213,10 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
 
     public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
         execute(new MoveDirectOwnSlotValueCommand(getDelegate(), frame, slot, from, to));
+    }
+
+    public void setFrameName(Frame frame, String name) {
+        execute(new SetFrameNameCommand(getDelegate(), name, frame));
     }
 
     public void addDirectSuperclass(Cls cls, Cls superclass) {
@@ -258,10 +257,6 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
 
     public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
         execute(new RemoveDirectTemplateFacetOverridesCommand(getDelegate(), cls, slot));
-    }
-    
-    public void replaceFrame(Frame original, Frame replacement) {
-        execute(new ReplaceFrameCommand(getDelegate(), original, replacement));
     }
 
     public boolean beginTransaction(String name) {
@@ -352,6 +347,4 @@ public class UndoFrameStore extends ModificationFrameStore implements CommandMan
         }
         return commands;
     }
-
-
 }

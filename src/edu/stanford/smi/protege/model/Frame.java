@@ -38,7 +38,7 @@ import edu.stanford.smi.protege.event.FrameListener;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public interface Frame extends Comparable<Frame> {
+public interface Frame extends Comparable {
 
     void addFrameListener(FrameListener listener);
 
@@ -128,7 +128,7 @@ public interface Frame extends Comparable<Frame> {
 
     Project getProject();
 
-    Collection<Reference> getReferences();
+    Collection getReferences();
 
     Collection getReferences(int maxReferences);
 
@@ -173,6 +173,8 @@ public interface Frame extends Comparable<Frame> {
 
     void setIncluded(boolean b);
 
+    void setName(String newName);
+
     /** See {@link Frame}for a description of the value type. */
     void setOwnFacetValue(Slot slot, Facet facet, Object value);
 
@@ -208,20 +210,4 @@ public interface Frame extends Comparable<Frame> {
     void setDirectOwnSlotValues(Slot slot, Collection values);
 
     void setVisible(boolean b);
-    
-    /**
-     * This is as close as we come to renaming a frame.  Creates a clone of this with the new
-     * name and deletes this.
-     *
-     */
-    Frame rename(String name);
-    
-    /**
-     * This call ensures that the name slot for the frame has the frame name as its value.
-     * This can be important when constructing a frame from scratch and then trying to ensure that the frame
-     * actually appears in the knowledge base.  The frame will not appear in the knowledge base until the knowledge
-     * base has an assertion about the frame.  Sometimes frames are created without any type information and then later the
-     * needed assertions are added.
-     */
-    void assertFrameName();
 }

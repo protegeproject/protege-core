@@ -37,6 +37,4 @@ public interface Facet extends Instance {
     void setConstraint(FacetConstraint constraint);
 
     Collection resolveValues(Collection originalValues, Collection newValues);
-    
-    Facet rename(String name);
 }

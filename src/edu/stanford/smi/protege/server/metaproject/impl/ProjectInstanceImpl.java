@@ -24,12 +24,20 @@ public class ProjectInstanceImpl extends WrappedProtegeInstanceImpl implements P
 
 	String location;
 
+	Set<GroupOperation> operations;
+
 	@SuppressWarnings("unchecked")
 	protected ProjectInstanceImpl(MetaProjectImpl mp, Instance pi) {
 		super(mp, pi, ClsEnum.Project);
 		location = (String) pi.getOwnSlotValue(mp.getSlot(SlotEnum.location));
 		localizeLocation(location);
 		name = (String) pi.getOwnSlotValue(mp.getSlot(SlotEnum.name));
+		operations = (Set<GroupOperation>) getSlotValues(
+				SlotEnum.allowedGroupOperation, ClsEnum.GroupOperation);
+	}
+
+	public ProjectInstanceImpl(String name) {
+		this.name = name;
 	}
 
 	public String getName() {
@@ -51,17 +59,15 @@ public class ProjectInstanceImpl extends WrappedProtegeInstanceImpl implements P
 		return location;
 	}
 
-	@SuppressWarnings("unchecked")
-    public Set<GroupOperation> getAllowedGroupOperations() {
-		return getSlotValues(SlotEnum.allowedGroupOperation, ClsEnum.GroupOperation);
+	public Set<GroupOperation> getAllowedGroupOperations() {
+		return operations;
 	}
 
 	public ProjectInstance getAnnotationProject() {
 		return (ProjectInstance) getSlotValue(SlotEnum.annotationProject, ClsEnum.Project);
 	}
 	
-	@Override
-    public boolean equals(Object o) {
+	public boolean equals(Object o) {
 		if (!(o instanceof ProjectInstance)) {
 			return false;
 		}
@@ -69,13 +75,11 @@ public class ProjectInstanceImpl extends WrappedProtegeInstanceImpl implements P
 		return name.equals(other.getName());
 	}
 
-	@Override
-    public int hashCode() {
+	public int hashCode() {
 		return name.hashCode();
 	}
 
-	@Override
-    public String toString() {
+	public String toString() {
 		return name;
 	}
 
@@ -98,6 +102,7 @@ public class ProjectInstanceImpl extends WrappedProtegeInstanceImpl implements P
 	}
 
 	public void addAllowedGroupOperations(GroupOperation groupOperation) {
+		operations.add(groupOperation);
 		addSlotValue(SlotEnum.allowedGroupOperation, groupOperation);		
 	}
 

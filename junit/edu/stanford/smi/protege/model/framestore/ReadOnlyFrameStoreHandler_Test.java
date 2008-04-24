@@ -25,7 +25,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
     public void testCreateCls() {
         boolean passed = false;
         try {
-            getTestFrameStore().createCls(new FrameID(createFrameName()), null, null, true);
+            getTestFrameStore().createCls(null, null, null, null, true);
         } catch (ModificationException e) {
             passed = true;
         }
@@ -35,7 +35,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
     public void testCreateSlot() {
         boolean passed = false;
         try {
-            getTestFrameStore().createSlot(new FrameID(createFrameName()), null, null, true);
+            getTestFrameStore().createSlot(null, null, null, null, true);
         } catch (ModificationException e) {
             passed = true;
         }
@@ -45,7 +45,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
     public void testCreateSimpleInstance() {
         boolean passed = false;
         try {
-            getTestFrameStore().createSimpleInstance(new FrameID(createFrameName()), null, true);
+            getTestFrameStore().createSimpleInstance(null, null, null, true);
         } catch (ModificationException e) {
             passed = true;
         }
@@ -55,7 +55,7 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
     public void testCreateFacet() {
         boolean passed = false;
         try {
-            getTestFrameStore().createFacet(new FrameID(createFrameName()), null, true);
+            getTestFrameStore().createFacet(null, null, null, true);
         } catch (ModificationException e) {
             passed = true;
         }
@@ -116,6 +116,16 @@ public class ReadOnlyFrameStoreHandler_Test extends FrameStore_Test {
         boolean passed = false;
         try {
             getTestFrameStore().setDirectOwnSlotValues(null, null, null);
+        } catch (ModificationException e) {
+            passed = true;
+        }
+        assertTrue(passed);
+    }
+
+    public void testSetFrameName() {
+        boolean passed = false;
+        try {
+            getTestFrameStore().setFrameName(null, null);
         } catch (ModificationException e) {
             passed = true;
         }

@@ -1,22 +1,12 @@
-package edu.stanford.smi.protege.util;
+package edu.stanford.smi.protege.model;
 //ESCA*JAVA0037
 
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.io.*;
+import java.util.*;
 
-import edu.stanford.smi.protege.model.Cls;
-import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.KnowledgeBase;
-import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
-import edu.stanford.smi.protege.model.Model;
-import edu.stanford.smi.protege.model.ModelUtilities;
-import edu.stanford.smi.protege.model.WidgetDescriptor;
-import edu.stanford.smi.protege.plugin.ProjectFixupPlugin;
-import edu.stanford.smi.protege.resource.Files;
-import edu.stanford.smi.protege.resource.Text;
-import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
+import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.storage.clips.*;
+import edu.stanford.smi.protege.util.*;
 
 /** 
  * Fix backwards compatibility problems in the .pprj files.  Methods in this class are called automatically when a project
@@ -27,10 +17,8 @@ import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 
-public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFixupPlugin {
+class BackwardsCompatibilityProjectFixups {
 
-	private static final String MIN_VERSION = "1.9";
-	
     private static void addWidgetDescriptor(Instance formWidgetInstance, String slotName) {
         // Log.enter(BackwardsCompatibilityProjectFixups.class, "addWidgetDescriptor", formWidgetInstance, slotName);
         Instance propertyList = (Instance) ModelUtilities.getDirectOwnSlotValue(formWidgetInstance, "property_list");
@@ -97,7 +85,6 @@ public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFix
 
     public static void fix(KnowledgeBase kb) {
         if (shouldUpdate(kb)) {
-        	Log.getLogger().info("Backwards compatibility fixup for frames project file");
             updateStandardForms(kb);
         }
     }
@@ -108,9 +95,9 @@ public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFix
 
     private static boolean isOwl(KnowledgeBase kb) {
         Instance instance = kb.getInstance("PROJECT");
-        edu.stanford.smi.protege.model.Slot slot = kb.getSlot("default_cls_metaclass");
+        Slot slot = kb.getSlot("default_cls_metaclass");
         String value = (String) instance.getOwnSlotValue(slot);
-        return value.contains("owl:") || value.contains("/owl#");
+        return value.indexOf("owl:") != -1;
     }
 
     private static Instance getClsWidgetInstance(String name, KnowledgeBase kb) {
@@ -190,9 +177,9 @@ public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFix
     }
 
     private static boolean isCurrentBuild(KnowledgeBase kb) {
-    	String currentVersion = Text.getVersion();        
+        String currentBuild = Text.getBuildInfo();
         String kbBuild = kb.getBuildString();
-        return kbBuild == null || currentVersion.compareTo(MIN_VERSION) >= 0;
+        return currentBuild.equals(kbBuild) || kbBuild == null;
     }
 
     /*
@@ -389,17 +376,4 @@ public class Frames1_8_BackwardsCompatibilityProjectFixups implements ProjectFix
             }
         }
     }
-
-	public void fixProject(KnowledgeBase internalKB) {
-		fix(internalKB);		
-	}
-
-	public String getName() {		
-		return "Frames 1.8 Project Backwards Compatibility Fix";
-	}
-
-	public void dispose() {
-		// TODO Auto-generated method stub
-		
-	}
 }

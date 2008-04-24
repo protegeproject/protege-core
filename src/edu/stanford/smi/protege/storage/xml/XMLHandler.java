@@ -107,7 +107,7 @@ public class XMLHandler extends DefaultHandler {
     private Cls getCls(String name) {
         Cls cls = kb.getCls(name);
         if (cls == null) {
-            cls = kb.createCls(new FrameID(name), Collections.EMPTY_LIST, Collections.EMPTY_LIST, false);
+            cls = kb.createCls(null, name, Collections.EMPTY_LIST, Collections.EMPTY_LIST, false);
         }
         return cls;
     }
@@ -131,7 +131,7 @@ public class XMLHandler extends DefaultHandler {
     private SimpleInstance getSimpleInstance(String name) {
         SimpleInstance simpleInstance = kb.getSimpleInstance(name);
         if (simpleInstance == null) {
-            simpleInstance = kb.createSimpleInstance(new FrameID(name), Collections.EMPTY_LIST, false);
+            simpleInstance = kb.createSimpleInstance(null, name, Collections.EMPTY_LIST, false);
         }
         return simpleInstance;
     }
@@ -276,7 +276,7 @@ public class XMLHandler extends DefaultHandler {
         Collection superclasses = getElementClsValues(root, XMLString.ElementName.SUPERCLASS);
         Cls cls = kb.getCls(name);
         if (cls == null) {
-            cls = kb.createCls(new FrameID(name), superclasses, types, false);
+            cls = kb.createCls(null, name, superclasses, types, false);
             setIncluded(cls);
         } else {
             addTypes(cls, types);
@@ -319,7 +319,7 @@ public class XMLHandler extends DefaultHandler {
     private SimpleInstance createSimpleInstance(String name, Collection types, Element root) {
         SimpleInstance simpleInstance = (SimpleInstance) kb.getInstance(name);
         if (simpleInstance == null) {
-            simpleInstance = kb.createSimpleInstance(new FrameID(name), types, false);
+            simpleInstance = kb.createSimpleInstance(null, name, types, false);
             setIncluded(simpleInstance);
         } else {
             addTypes(simpleInstance, types);

@@ -13,7 +13,6 @@ import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
@@ -60,6 +59,9 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         return _delegate.getFrame(id);
     }
 
+    public FrameID generateFrameID() {
+        return _delegate.generateFrameID();
+    }
 
     public List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         return _delegate.getValues(frame, slot, facet, isTemplate);
@@ -124,11 +126,11 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         return _delegate.getMatchingFrames(slot, facet, isTemplate, value, maxMatches);
     }
 
-    public Set<Reference> getReferences(Object value) {
+    public Set getReferences(Object value) {
         return _delegate.getReferences(value);
     }
 
-    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
+    public Set getMatchingReferences(String value, int maxMatches) {
         return _delegate.getMatchingReferences(value, maxMatches);
     }
 
@@ -283,11 +285,6 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     	if (getDelegate() != null) {
     		getDelegate().reinitialize();
     	}
-    }
-    
-    public void replaceFrame(Frame original, Frame replacement) {
-      clearCache();
-      _delegate.replaceFrame(original, replacement);
     }
 
 }

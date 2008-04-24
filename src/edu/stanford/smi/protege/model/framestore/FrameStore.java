@@ -10,7 +10,6 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
@@ -56,16 +55,18 @@ public interface FrameStore {
 
     String getFrameName(Frame frame);
 
+    void setFrameName(Frame frame, String name);
+
     // frame creation/deletion
-    Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
+    Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaultValues);
 
-    Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
+    Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues);
 
-    Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues);
+    Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues);
 
-    SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaultValues);
+    SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaultValues);
 
     /**
      * Delete a single leaf class. The operation fails if the class has subclasses or instances.
@@ -206,21 +207,21 @@ public interface FrameStore {
    */
     void executeQuery(Query query, QueryCallback callback);
 
-    Set<Reference> getReferences(Object object);
+    Set getReferences(Object object);
 
-    Set<Reference> getMatchingReferences(String string, int maxMatches);
+    Set getMatchingReferences(String string, int maxMatches);
 
     Set getClsesWithMatchingBrowserText(String string, Collection superclasses, int maxMatches);
 
-    Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value);
+    Set getFramesWithDirectOwnSlotValue(Slot slot, Object value);
 
-    Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot);
+    Set getFramesWithAnyDirectOwnSlotValue(Slot slot);
 
     Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches);
 
     Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value);
 
-    Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot);
+    Set getClsesWithAnyDirectTemplateSlotValue(Slot slot);
 
     Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches);
 
@@ -247,7 +248,4 @@ public interface FrameStore {
     public TransactionMonitor getTransactionStatusMonitor();
 
     void close();
-
-    
-    void replaceFrame(Frame original, Frame replacement);
 }

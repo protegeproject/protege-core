@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -309,7 +308,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                 case KnowledgeBaseEvent.INSTANCE_DELETED:
                     listener.instanceDeleted(event);
                     break;
-                case KnowledgeBaseEvent.FRAME_REPLACED:
+                case KnowledgeBaseEvent.FRAME_NAME_CHANGED:
                     listener.frameNameChanged(event);
                     break;
                 case KnowledgeBaseEvent.DEFAULT_CLS_METACLASS_CHANGED:
@@ -498,7 +497,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         while (i.hasNext()) {
             FrameListener listener = (FrameListener) i.next();
             switch (event.getEventType()) {
-                case FrameEvent.REPLACE_FRAME:
+                case FrameEvent.NAME_CHANGED:
                     listener.nameChanged(event);
                     break;
                 case FrameEvent.VISIBILITY_CHANGED:
@@ -534,8 +533,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             }
         }
     }
-    
-    @SuppressWarnings("unchecked")
+
 
     
     /*-----------------------------------------------------------------------------------------
@@ -721,26 +719,26 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         return succeeded;
     }
 
-    public Cls createCls(FrameID id, Collection types, Collection superclasses, boolean loadDefaults) {
-        Cls cls = getDelegate().createCls(id, types, superclasses, loadDefaults);
+    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses, boolean loadDefaults) {
+        Cls cls = getDelegate().createCls(id, name, types, superclasses, loadDefaults);
         dispatchEvents();
         return cls;
     }
 
-    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
-        Facet facet = getDelegate().createFacet(id, directTypes, loadDefaultValues);
+    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
+        Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaultValues);
         dispatchEvents();
         return facet;
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, Collection types, boolean loadDefaultValues) {
-        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, types, loadDefaultValues);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types, boolean loadDefaultValues) {
+        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, types, loadDefaultValues);
         dispatchEvents();
         return simpleInstance;
     }
 
-    public Slot createSlot(FrameID id, Collection types, Collection superslots, boolean loadDefaults) {
-        Slot slot = getDelegate().createSlot(id, types, superslots, loadDefaults);
+    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots, boolean loadDefaults) {
+        Slot slot = getDelegate().createSlot(id, name, types, superslots, loadDefaults);
         dispatchEvents();
         return slot;
     }
@@ -840,35 +838,11 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         dispatchEvents();
     }
 
-
-
-
-    public void replaceFrame(Frame original, Frame replacement) {
-      getDelegate().replaceFrame(original, replacement);
-      dispatchEvents();
-      replaceListeners(original, replacement);
+    public void setFrameName(Frame frame, String name) {
+        getDelegate().setFrameName(frame, name);
+        dispatchEvents();
     }
     
-    private void replaceListeners(Frame original, Frame replacement) {
-    	for (Map<Object,  Collection<EventListener>> map : _listeners.values()) {
-    		Collection<EventListener> listeners = map.remove(original);
-    		if (listeners != null) {
-    			map.put(replacement, listeners);
-    		}
-    	}
-    }
-    
-    public void printListenersByHashCode(int hash) {
-    	System.out.println("Printing out FrameListeners that have hash code " + hash);
-    	for (java.util.Map.Entry<Object, Collection<EventListener>> entry : _listeners.get(FrameListener.class).entrySet()) {
-    		Object o  = entry.getKey();
-    		Collection<EventListener> listeners = entry.getValue();
-    		for (EventListener listener :  listeners) {
-    			if (listener.hashCode() == hash) {
-    			   System.out.println("Found listener " + listener + " at " + o);
-    			}
-    		}
-    	}
-    	
-    }
+
+
 }

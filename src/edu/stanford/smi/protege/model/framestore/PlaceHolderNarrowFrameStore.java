@@ -8,7 +8,6 @@ import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
@@ -31,6 +30,10 @@ public class PlaceHolderNarrowFrameStore implements NarrowFrameStore {
 	}
 
 	public NarrowFrameStore getDelegate() {
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
+
+	public FrameID generateFrameID() {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
@@ -118,12 +121,12 @@ public class PlaceHolderNarrowFrameStore implements NarrowFrameStore {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-	public Set<Reference> getReferences(Object value) {
+	public Set getReferences(Object value) {
 
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-	public Set<Reference> getMatchingReferences(String value, int maxMatches) {
+	public Set getMatchingReferences(String value, int maxMatches) {
 
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
@@ -179,7 +182,4 @@ public class PlaceHolderNarrowFrameStore implements NarrowFrameStore {
 		public void reinitialize() {
 
 		}
-  public void replaceFrame(Frame original, Frame replacement) {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
 }

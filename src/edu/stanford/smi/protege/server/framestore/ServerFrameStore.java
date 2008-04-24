@@ -25,7 +25,6 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.EventDispatchFrameStore;
@@ -43,8 +42,7 @@ import edu.stanford.smi.protege.server.framestore.background.WorkInfo;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
-import edu.stanford.smi.protege.server.metaproject.User;
-import edu.stanford.smi.protege.server.metaproject.impl.UnbackedOperationImpl;
+import edu.stanford.smi.protege.server.metaproject.impl.UserImpl;
 import edu.stanford.smi.protege.server.update.FrameRead;
 import edu.stanford.smi.protege.server.update.FrameWrite;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
@@ -178,8 +176,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     private void startHeartbeatThread(String name) {
       if (!ServerProperties.heartbeatDisabled()) {
         new Thread("Heartbeat checker [" + name + "]") {
-          @Override
-        public void run() {
+          public void run() {
             try {
               while (true) {
                 Thread.sleep(RemoteServerFrameStore.HEARTBEAT_POLL_INTERVAL);
@@ -384,24 +381,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set<Slot> getOwnSlots(Frame frame, RemoteSession session) 
+    public Set getFramesWithDirectOwnSlotValue(Slot slot, 
+                                               Object value, 
+                                               RemoteSession session) 
     throws ServerSessionLost {
-        recordCall(session);
-        synchronized(_kbLock) {
-            return getDelegate().getOwnSlots(frame);
-        }
+      recordCall(session);
+      synchronized(_kbLock) {
+        return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
+      }
     }
-
-
-
-    public synchronized Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) 
-    throws ServerSessionLost {
-        recordCall(session);
-        synchronized(_kbLock) {
-            return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
-        }
-    }
-
 
     public Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
@@ -534,17 +522,17 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public RemoteResponse<Facet> createFacet(FrameID id, 
+                                             String name, 
                                              Collection directTypes, 
                                              boolean loadDefaults,
                                              RemoteSession session) throws ServerSessionLost {
-        recordCall(session);
-        synchronized(_kbLock) {
-            markDirty();
-            Facet facet = getDelegate().createFacet(id, directTypes, loadDefaults);
-            return new RemoteResponse<Facet>(facet, getValueUpdates(session));
-        }
+      recordCall(session);
+      synchronized(_kbLock) {
+        markDirty();
+        Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaults);
+        return new RemoteResponse<Facet>(facet, getValueUpdates(session));
+      }
     }
-
 
     public Set<Frame> getFrames(RemoteSession session) throws ServerSessionLost {
       recordCall(session);
@@ -611,13 +599,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-  public RemoteResponse<Slot> createSlot(FrameID id, Collection directTypes,
+  public RemoteResponse<Slot> createSlot(FrameID id, String name, Collection directTypes,
                                  Collection directSuperslots,
                                  boolean loadDefaults, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         markDirty();
-        Slot slot =  getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaults);
+        Slot slot =  getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaults);
         return new RemoteResponse<Slot>(slot, getValueUpdates(session));
       }
     }
@@ -666,6 +654,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public RemoteResponse<Cls> createCls(FrameID id, 
+                                         String name, 
                                          Collection directTypes, 
                                          Collection directSuperclasses,
                                          boolean loadDefaults, 
@@ -673,7 +662,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         markDirty();
-        Cls cls = getDelegate().createCls(id,directTypes, directSuperclasses, loadDefaults);
+        Cls cls = getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
         return new RemoteResponse(cls, getValueUpdates(session));
       }
     }
@@ -705,14 +694,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set<Reference> getReferences(Object value, RemoteSession session) throws ServerSessionLost {
+    public Set getReferences(Object value, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getReferences(value);
       }
     }
 
-    public Set<Reference> getMatchingReferences(String value, int maxMatches, RemoteSession session) throws ServerSessionLost {
+    public Set getMatchingReferences(String value, int maxMatches, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getMatchingReferences(value, maxMatches);
@@ -730,14 +719,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public RemoteResponse<SimpleInstance> createSimpleInstance(FrameID id, 
+                                                               String name, 
                                                                Collection directTypes,
                                                                boolean loadDefaults, 
                                                                RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
-        recordCall(session);
         markDirty();
-        SimpleInstance si = getDelegate().createSimpleInstance(id, directTypes, loadDefaults);
+        SimpleInstance si = getDelegate().createSimpleInstance(id, name, directTypes, loadDefaults);
         return new RemoteResponse<SimpleInstance>(si, getValueUpdates(session));
       }
     }
@@ -764,6 +753,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getFrameName(frame);
+      }
+    }
+
+    public OntologyUpdate setFrameName(Frame frame, String name, RemoteSession session) throws ServerSessionLost {
+      recordCall(session);
+      synchronized(_kbLock) {
+          getDelegate().setFrameName(frame, name);
+          markDirty();
+          return new OntologyUpdate(getValueUpdates(session));
       }
     }
 
@@ -844,7 +842,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    @Override
     public String toString() {
         return "ServerFrameStore[" + _kb + "]";
     }
@@ -1187,14 +1184,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws ServerSessionLost {
+    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
       }
     }
 
-    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) throws ServerSessionLost {
+    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
@@ -1212,7 +1209,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       LocalizeUtils.localize(missing, _kb);
       for (Frame value : missing) {
-        frameCalculator.addRequest(value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+        frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
       }
       return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
@@ -1233,7 +1230,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       LocalizeUtils.localize(missing,  _kb);
       for (Frame value : missing) {
-        frameCalculator.addRequest(value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+        frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
       }
       return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
@@ -1277,8 +1274,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
     
     private void addSystemClasses(Set<Frame> frames, Cls cls)  {
-      
-      if (!cls.isSystem() || frames.contains(cls)) {
+      if (!cls.getFrameID().isSystem() || frames.contains(cls)) {
         return;
       }
       List<Cls> subClasses = null;
@@ -1475,20 +1471,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     
     public Set<Operation> getAllowedOperations(RemoteSession session) {
       Policy policy = Server.getPolicy();
-      User user = policy.getUserByName(session.getUserName());
-      return unbackOperations(policy.getAllowedOperations(user, projectInstance));
+      return policy.getAllowedOperations(new UserImpl(session.getUserName()), 
+                                         projectInstance);
     }
     
     public Set<Operation> getKnownOperations(RemoteSession session) {
-      return unbackOperations(Server.getPolicy().getKnownOperations());
-    }
-    
-    private static Set<Operation> unbackOperations(Set<Operation> operations) {
-        Set<Operation> unbacked = new HashSet<Operation>();
-        for (Operation op : operations) {
-            unbacked.add(new UnbackedOperationImpl(op));
-        }
-        return unbacked;
+      return Server.getPolicy().getKnownOperations();
     }
 
 }

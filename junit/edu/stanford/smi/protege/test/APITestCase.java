@@ -103,7 +103,6 @@ public abstract class APITestCase extends AbstractTestCase {
           return _dbType;
         }
       }
-      _dbType = null;
       return null;
     }
 

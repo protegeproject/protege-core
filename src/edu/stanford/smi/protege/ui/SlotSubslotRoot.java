@@ -16,7 +16,6 @@ public class SlotSubslotRoot extends LazyTreeRoot {
 
     private KnowledgeBaseListener _listener = new KnowledgeBaseAdapter() {
         public void slotCreated(KnowledgeBaseEvent event) {
-        	if (event.isReplacementEvent()) return;
             super.slotCreated(event);
             Slot slot = event.getSlot();
             if (slot.getDirectSuperslots().isEmpty()) {
@@ -33,7 +32,6 @@ public class SlotSubslotRoot extends LazyTreeRoot {
         }
 
         public void slotDeleted(KnowledgeBaseEvent event) {
-        	if (event.isReplacementEvent()) return;
             super.slotDeleted(event);
             Slot slot = event.getSlot();
             List slots = (List) getUserObject();
@@ -46,7 +44,6 @@ public class SlotSubslotRoot extends LazyTreeRoot {
 
     private SlotListener _slotListener = new SlotAdapter() {
         public void directSuperslotAdded(SlotEvent event) {
-        	if (event.isReplacementEvent()) return;
             Slot slot = event.getSlot();
             if (slot.getDirectSuperslotCount() == 1) {
                 removeChild(slot);
@@ -54,7 +51,6 @@ public class SlotSubslotRoot extends LazyTreeRoot {
         }
 
         public void directSuperslotRemoved(SlotEvent event) {
-        	if (event.isReplacementEvent()) return;
             Slot slot = event.getSlot();
             if (slot.getDirectSuperslotCount() == 0) {
                 addChild(slot);

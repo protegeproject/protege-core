@@ -45,7 +45,7 @@ public interface Storage extends Disposable {
     Collection getFramesWithValue(Slot slot, Facet facet, boolean isTemplate, Object o);
 
     // back references
-    Collection<Reference> getReferences(Object o, int maxReferences);
+    Collection getReferences(Object o, int maxReferences);
 
     Object getValue(Frame frame, Slot slot, Facet facet, boolean isTemplate);
 

@@ -1,6 +1,6 @@
 package edu.stanford.smi.protege.model;
 
-import java.util.Collection;
+import java.util.*;
 
 /**
  * 
@@ -52,6 +52,4 @@ public interface FrameFactory {
      * @return all java class ids which correspond to simple instances
      */
     Collection getSimpleInstanceJavaClassIds();
-    
-    Frame rename(Frame original, String name);
 }

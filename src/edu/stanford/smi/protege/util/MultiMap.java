@@ -67,8 +67,4 @@ public abstract class MultiMap<X,Y> {
         Collection<Y> c = _map.get(key);
         c.removeAll(values);
     }
-    
-    public void clear() {
-        _map.clear();
-    }
 }

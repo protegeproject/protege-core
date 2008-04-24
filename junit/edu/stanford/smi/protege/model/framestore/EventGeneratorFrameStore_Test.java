@@ -15,7 +15,6 @@ import edu.stanford.smi.protege.util.AbstractEvent;
 
 public class EventGeneratorFrameStore_Test extends FrameStore_Test {
     private KnowledgeBase _kb;
-    private int nameCounter = 0;
 
     protected FrameStore createFrameStore(DefaultKnowledgeBase kb) {
         _kb = kb;
@@ -46,11 +45,6 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
             event2.setTimeStamp(((AbstractEvent) event1).getTimeStamp());
         }
         return event1.equals(event2);
-    }
-
-    
-    public String createName() {
-      return "frameName" + nameCounter++;
     }
 
     @SuppressWarnings("unchecked")

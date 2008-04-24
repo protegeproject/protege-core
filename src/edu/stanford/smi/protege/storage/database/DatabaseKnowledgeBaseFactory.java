@@ -1,11 +1,5 @@
 package edu.stanford.smi.protege.storage.database;
 
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.DRIVER_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.PASSWORD_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.TABLENAME_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.URL_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.USERNAME_PROPERTY;
-
 import java.net.URI;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -30,6 +24,12 @@ import edu.stanford.smi.protege.util.PropertyList;
  */
 public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
     public static final String DESCRIPTION = Text.getProgramName() + " Database";
+    public static final String USERNAME_PROPERTY = "username";
+    public static final String PASSWORD_PROPERTY = "password";
+    public static final String URL_PROPERTY = "url";
+    public static final String DRIVER_PROPERTY = "driver";
+    public static final String TABLENAME_PROPERTY = "table";
+
     /*
      * This variable indicates tells the routines that handle the 
      * inclusion of projects to ignore the isIncluded flag on frames.
@@ -63,11 +63,11 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
     }
 
     public static String getDriver(PropertyList sources) {
-        return sources.getString(DRIVER_PROPERTY.getName());
+        return sources.getString(DRIVER_PROPERTY);
     }
 
     public static String getPassword(PropertyList sources) {
-        return sources.getString(PASSWORD_PROPERTY.getName());
+        return sources.getString(PASSWORD_PROPERTY);
     }
 
     public String getProjectFilePath() {
@@ -75,15 +75,15 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
     }
 
     public static String getTableName(PropertyList sources) {
-        return sources.getString(TABLENAME_PROPERTY.getName());
+        return sources.getString(TABLENAME_PROPERTY);
     }
 
     public static String getURL(PropertyList sources) {
-        return sources.getString(URL_PROPERTY.getName());
+        return sources.getString(URL_PROPERTY);
     }
 
     public static String getUsername(PropertyList sources) {
-        return sources.getString(USERNAME_PROPERTY.getName());
+        return sources.getString(USERNAME_PROPERTY);
     }
     
     public void includeKnowledgeBase(KnowledgeBase kb, 
@@ -183,23 +183,23 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
     }
     
     public static void setDriver(PropertyList sources, String driver) {
-        sources.setString(DRIVER_PROPERTY.getName(), driver);
+        sources.setString(DRIVER_PROPERTY, driver);
     }
 
     public static void setPassword(PropertyList sources, String password) {
-        sources.setString(PASSWORD_PROPERTY.getName(), password);
+        sources.setString(PASSWORD_PROPERTY, password);
     }
 
     public static void setTablename(PropertyList sources, String tablename) {
-        sources.setString(TABLENAME_PROPERTY.getName(), tablename);
+        sources.setString(TABLENAME_PROPERTY, tablename);
     }
 
     public static void setURL(PropertyList sources, String url) {
-        sources.setString(URL_PROPERTY.getName(), url);
+        sources.setString(URL_PROPERTY, url);
     }
 
     public static void setUsername(PropertyList sources, String username) {
-        sources.setString(USERNAME_PROPERTY.getName(), username);
+        sources.setString(USERNAME_PROPERTY, username);
     }
 
     public static void setSources(PropertyList sources, String driver, String url, String table, String user,
@@ -215,7 +215,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
       return;
     }
 
-   public ValueCachingNarrowFrameStore createNarrowFrameStore(String name) {
+    public ValueCachingNarrowFrameStore createNarrowFrameStore(String name) {
       DatabaseFrameDb store = new DatabaseFrameDb();
       ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
       vcnfs.setName(name);
@@ -235,8 +235,6 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
         db.initialize(factory, driver, url, user, password, table, isInclude);
         kb.flushCache();
     }
-    
-
     
     private void copyKnowledgeBase(KnowledgeBase kb, PropertyList sources, Collection errors) {
       String driver = getDriver(sources);
@@ -278,7 +276,4 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
   public boolean owlMode() {
       return owlMode;
   }
-
-
-
 }

@@ -98,7 +98,7 @@ public abstract class FrameTreeFinder extends Finder {
         }
         StringMatcher matcher = getStringMatcher(text);
         Set matches = new LinkedHashSet();
-        Collection<Reference> matchingReferences = knowledgeBase.getMatchingReferences(text, maxMatches);
+        Collection matchingReferences = knowledgeBase.getMatchingReferences(text, maxMatches);
         Iterator i = matchingReferences.iterator();
         while (i.hasNext()) {
             Reference ref = (Reference) i.next();

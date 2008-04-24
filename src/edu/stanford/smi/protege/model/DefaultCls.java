@@ -443,15 +443,13 @@ public class DefaultCls extends DefaultInstance implements Cls {
         StringBuffer buffer = new StringBuffer();
         buffer.append("Cls(");
         buffer.append(getName());
+        buffer.append(", ");
+        buffer.append(getFrameID());
         buffer.append(")");
         return buffer.toString();
     }
 
     public Icon getIcon() {
         return Icons.getClsIcon(isClsMetaCls(), isAbstract(), !isEditable(), !isVisible());
-    }
-    
-    public Cls rename(String name) {
-        return (Cls) super.rename(name);
     }
 }

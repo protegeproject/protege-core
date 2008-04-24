@@ -531,7 +531,7 @@ public class ProjectManager {
         long t2 = System.currentTimeMillis();
 
         //TODO: reimplement this when exception handling is improved. Handle here invalid project files
-        if (_currentProject != null && _currentProject.getProjectInstance() == null) {
+        if (_currentProject.getProjectInstance() == null) {
         	String errorMsg = "Unable to load file: " + uri
         			+ "\nPossible reasons:\n- The file has an unsupported file format\n- The file is not well-formed\n- The project file is corrupt";
         	Log.getLogger().severe(errorMsg);

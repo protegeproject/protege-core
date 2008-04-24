@@ -34,6 +34,8 @@ public interface RemoteServerNarrowFrameStore extends Remote {
 
   NarrowFrameStore getDelegate(RemoteSession session) throws RemoteException;
 
+  FrameID generateFrameID(RemoteSession session) throws RemoteException;
+
   int getFrameCount(RemoteSession session) throws RemoteException;
 
   int getClsCount(RemoteSession session) throws RemoteException;
@@ -98,8 +100,4 @@ public interface RemoteServerNarrowFrameStore extends Remote {
   boolean rollbackTransaction(RemoteSession session) throws RemoteException;
 
   TransactionMonitor getTransactionStatusMonitor(RemoteSession session) throws RemoteException, TransactionException;
-
-   void replaceFrame(Frame original, Frame replacement, RemoteSession session) throws RemoteException;
-
-
 }

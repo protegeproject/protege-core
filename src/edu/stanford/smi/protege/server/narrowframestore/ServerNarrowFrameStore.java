@@ -113,6 +113,14 @@ public class ServerNarrowFrameStore
   }
 
 
+
+  public FrameID generateFrameID(RemoteSession session) throws RemoteException {
+    ServerFrameStore.recordCallNoCheck(session);
+    return fixedDelegate.generateFrameID();
+  }
+
+
+
   public int getFrameCount(RemoteSession session) throws RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
     return fixedDelegate.getFrameCount();
@@ -305,9 +313,4 @@ public class ServerNarrowFrameStore
     ServerFrameStore.recordCallNoCheck(session);
     return fixedDelegate.getTransactionStatusMonitor();
   }
-  
-  public void replaceFrame(Frame original, Frame replacement, RemoteSession session) throws RemoteException {
-    ServerFrameStore.recordCallNoCheck(session);
-    fixedDelegate.replaceFrame(original, replacement);
-  }  
 }

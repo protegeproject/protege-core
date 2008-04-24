@@ -1,6 +1,5 @@
 package edu.stanford.smi.protege.server.metaproject.impl;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,18 +8,18 @@ import java.util.Set;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.KnowledgeBase;
-import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
-import edu.stanford.smi.protege.util.LocalizeUtils;
 
-public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
-    private static final long serialVersionUID = -1976680694911360227L;
-    MetaProjectImpl mp;
+public class WrappedProtegeInstanceImpl {
+	MetaProjectImpl mp;
 	private Instance i;
 	private ClsEnum cls;
+
+	public WrappedProtegeInstanceImpl() {
+
+	}
 
 	public WrappedProtegeInstanceImpl(MetaProjectImpl mp, Instance i, ClsEnum cls) {
 		if (!i.hasType(mp.getCls(cls))) {
@@ -47,7 +46,6 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 	protected Set getSlotValues(SlotEnum slot, ClsEnum rangeCls) {
 		Set results = new HashSet();
 		for (Object o : i.getOwnSlotValues(mp.getSlot(slot))) {
-		    if (o instanceof Instance)
 			results.add(mp.wrapInstance(rangeCls, (Instance) o));
 		}
 		return results;
@@ -59,6 +57,7 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 		if (o != null) {
 			return mp.wrapInstance(rangeCls, (Instance) o);
 		}
+		
 		return null;
 	}
 
@@ -96,8 +95,7 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 	}
 
 
-	@Override
-    public boolean equals(Object o) {
+	public boolean equals(Object o) {
 		if (!(o instanceof WrappedProtegeInstanceImpl)) {
 			return false;
 		}
@@ -105,8 +103,7 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 		return mp == other.mp && getProtegeInstance().equals(other.getProtegeInstance());
 	}
 
-	@Override
-    public int hashCode() {
+	public int hashCode() {
 		return getProtegeInstance().hashCode();
 	}
 	
@@ -125,16 +122,6 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 		
 		return protegeColl;
 	}
-
-    public void localize(KnowledgeBase kb) {
-        mp.localize(kb);
-        LocalizeUtils.localize(i, kb);
-    }
-    
-    @Override
-    public String toString() {
-        return "[" + cls + ": " + i.getName() + "]";
-    }
 	
 
 }

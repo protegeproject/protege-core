@@ -20,7 +20,6 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
@@ -84,16 +83,6 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public static NarrowFrameStore getSystemFrameStore(KnowledgeBase kb) {
         return get(kb).getSystemFrameStore();
-    }
-    
-    public static NarrowFrameStore getNarrowFrameStore(KnowledgeBase kb, Class clazz) {
-      NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb);
-      while ((nfs = nfs.getDelegate()) != null) {
-        if (clazz.isAssignableFrom(nfs.getClass())) {
-          return nfs;
-        }
-      }
-      return null;
     }
 
     public NarrowFrameStore getSystemFrameStore() {
@@ -311,6 +300,9 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     // -----------------------------------------------------------
 
+    public FrameID generateFrameID() {
+        return getDelegate().generateFrameID();
+    }
 
     public int getFrameCount() {
         int count = 0;
@@ -515,8 +507,8 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return limit != FrameStore.UNLIMITED_MATCHES && size >= limit;
     }
 
-    public Set<Reference> getReferences(Object value) {
-        Set references = new HashSet<Reference>();
+    public Set getReferences(Object value) {
+        Set references = new HashSet();
         Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
             NarrowFrameStore fs = i.next();
@@ -525,7 +517,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return references;
     }
 
-    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
+    public Set getMatchingReferences(String value, int maxMatches) {
         Set references = new HashSet();
         Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext() && !hasEnoughMatches(references.size(), maxMatches)) {
@@ -613,11 +605,4 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 			nfs.reinitialize();
 		}
 	}
-
-    public void replaceFrame(Frame original, Frame replacement) {
-      for (NarrowFrameStore nfs : availableFrameStores) {
-        nfs.replaceFrame(original, replacement);
-      }
-    }
 }
-

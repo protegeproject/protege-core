@@ -1,31 +1,12 @@
 package edu.stanford.smi.protege.storage.database;
 
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.DRIVER_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.PASSWORD_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.TABLENAME_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.URL_PROPERTY;
-import static edu.stanford.smi.protege.storage.database.DatabaseProperty.USERNAME_PROPERTY;
+import java.awt.*;
+import java.awt.event.*;
+import java.sql.*;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.EnumMap;
-import java.util.Map;
+import javax.swing.*;
 
-import javax.swing.Box;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-
-import edu.stanford.smi.protege.util.ComponentFactory;
-import edu.stanford.smi.protege.util.LabeledComponent;
-import edu.stanford.smi.protege.util.SystemUtilities;
-import edu.stanford.smi.protege.util.Wizard;
-import edu.stanford.smi.protege.util.WizardPage;
-
+import edu.stanford.smi.protege.util.*;
 
 /**
  * TODO Class Comment
@@ -33,9 +14,11 @@ import edu.stanford.smi.protege.util.WizardPage;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DatabaseWizardPage extends WizardPage {
-    private static final long serialVersionUID = -6619215858750011057L;
-    
-    private Map<DatabaseProperty, JTextField> fields = new EnumMap<DatabaseProperty, JTextField>(DatabaseProperty.class);
+    private JTextField driverField;
+    private JTextField urlField;
+    private JTextField tableField;
+    private JTextField usernameField;
+    private JTextField passwordField;
     private JTextArea errorArea;
     private DatabasePlugin plugin;
 
@@ -48,55 +31,38 @@ public class DatabaseWizardPage extends WizardPage {
     }
 
     private void createComponents() {
-        for (DatabaseProperty property : DatabaseProperty.values()) {
-            if (property == PASSWORD_PROPERTY) {
-                fields.put(property, createPasswordTextField());
-            } else {
-                fields.put(property, createTextField(property));
-            }
-        }
-        
+        driverField = createTextField("database_wizard.driver");
+        urlField = createTextField("database_wizard.url");
+        tableField = createTextField("database_wizard.table");
+        usernameField = createTextField("database_wizard.username");
+        passwordField = createTextField("database_wizard.password");
+
         errorArea = ComponentFactory.createTextArea();
         errorArea.setEditable(false);
     }
 
-    private JTextField createTextField(final DatabaseProperty property) {
-        String value = DatabaseProperty.getProperty(property);
+    private JTextField createTextField(final String name) {
+        String value = ApplicationProperties.getString(name);
         final JTextField field = ComponentFactory.createTextField(value);
         field.addFocusListener(new FocusAdapter() {
-            @Override
             public void focusLost(FocusEvent event) {
                 updateSetPageComplete();
-                DatabaseProperty.setProperty(property, field.getText());
+                ApplicationProperties.setString(name, field.getText());
 
             }
         });
         return field;
     }
-    
-    private JTextField createPasswordTextField() {
-        final JTextField field = ComponentFactory.createPasswordField();
-        field.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent event) {
-                updateSetPageComplete();
-            }
-        });
-        return field;
-    }
 
-    protected void updateSetPageComplete() {
+    private void updateSetPageComplete() {
         setErrorText(null);
-        setPageComplete(isComplete());
-    }
-    
-    protected boolean isComplete() {
-        return hasValidDriver() && hasValidUrl() && hasValidTable();
+        boolean isComplete = hasValidDriver() && hasValidUrl() && hasValidTable();
+        setPageComplete(isComplete);
     }
 
     private boolean hasValidDriver() {
         boolean isValid = false;
-        String text = getFieldText(DRIVER_PROPERTY);
+        String text = driverField.getText();
         text = text.trim();
         if (text.length() == 0) {
             setErrorText("Driver class required");
@@ -112,10 +78,10 @@ public class DatabaseWizardPage extends WizardPage {
 
     private boolean hasValidUrl() {
         boolean isValid = false;
-        String url = getFieldText(URL_PROPERTY);
+        String url = urlField.getText();
         url = url.trim();
-        String username = getFieldText(USERNAME_PROPERTY);
-        String password = getFieldText(PASSWORD_PROPERTY);
+        String username = usernameField.getText();
+        String password = passwordField.getText();
         if (url.length() == 0) {
             setErrorText("URL is required");
         } else if (username.length() == 0) {
@@ -136,7 +102,7 @@ public class DatabaseWizardPage extends WizardPage {
 
     private boolean hasValidTable() {
         boolean isValid = false;
-        String text = getFieldText(TABLENAME_PROPERTY);
+        String text = tableField.getText();
         if (text.length() == 0) {
             setErrorText("Table name is required.");
         } else if (text.length() > MAX_TABLE_NAME_LENGTH) {
@@ -157,20 +123,18 @@ public class DatabaseWizardPage extends WizardPage {
         return isValid;
     }
 
-    protected void setErrorText(String text) {
+    private void setErrorText(String text) {
         errorArea.setText(text);
     }
 
     private void layoutComponents() {
         setLayout(new BorderLayout());
         Box panel = Box.createVerticalBox();
-        layoutComponents(panel);
-    }
-    
-    protected void layoutComponents(Box panel) {
-        for (DatabaseProperty property : DatabaseProperty.values()) {
-            addField(panel, property);
-        }
+        addField(panel, driverField, "JDBC Driver Class Name");
+        addField(panel, urlField, "JDBC Driver URL");
+        addField(panel, tableField, "Table");
+        addField(panel, usernameField, "Username");
+        addField(panel, passwordField, "Password");
 
         errorArea.setPreferredSize(new Dimension(10, 50));
         errorArea.setBackground(getBackground());
@@ -180,21 +144,16 @@ public class DatabaseWizardPage extends WizardPage {
         add(panel, BorderLayout.NORTH);
     }
 
-    private void addField(Box panel, DatabaseProperty property) {
-        panel.add(new LabeledComponent(property.getTitle(), fields.get(property)));
+    private static void addField(Box panel, JComponent component, String text) {
+        panel.add(new LabeledComponent(text, component));
     }
 
-    @Override
     public void onFinish() {
-        plugin.setDriver(getFieldText(DRIVER_PROPERTY));
-        plugin.setTable(getFieldText(TABLENAME_PROPERTY));
-        plugin.setUsername(getFieldText(USERNAME_PROPERTY));
-        plugin.setPassword(getFieldText(PASSWORD_PROPERTY));
-        plugin.setURL(getFieldText(URL_PROPERTY));
-    }
-    
-    protected String getFieldText(DatabaseProperty property)  {
-        return fields.get(property).getText();
+        plugin.setDriver(driverField.getText());
+        plugin.setTable(tableField.getText());
+        plugin.setUsername(usernameField.getText());
+        plugin.setPassword(passwordField.getText());
+        plugin.setURL(urlField.getText());
     }
 
 }

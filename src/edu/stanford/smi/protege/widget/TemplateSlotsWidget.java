@@ -62,7 +62,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
     };
 
     private KnowledgeBaseListener _knowledgeBaseListener = new KnowledgeBaseAdapter() {
-        public void frameReplaced(KnowledgeBaseEvent event) {
+        public void frameNameChanged(KnowledgeBaseEvent event) {
             repaint();
         }
     };
@@ -195,8 +195,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
         return _addAction;
     }
 
-    @SuppressWarnings("unchecked")
-	private Cls getBaseAllowedSlotMetaCls() {
+    private Cls getBaseAllowedSlotMetaCls() {
         Collection allowedClses = getBoundCls().getDirectType().getTemplateSlotAllowedClses(getSlot());
         return (Cls) CollectionUtilities.getFirstItem(allowedClses);
     }

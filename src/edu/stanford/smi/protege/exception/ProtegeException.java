@@ -10,22 +10,20 @@ package edu.stanford.smi.protege.exception;
  */
 
 public class ProtegeException extends RuntimeException {
+  
+  public ProtegeException() {
+    super();
+  }
 
-    private static final long serialVersionUID = 1309127978902548057L;
-
-    public ProtegeException() {
-        super();
-    }
-
-    public ProtegeException(String msg) {
-        super(msg);
-    }
-
-    public ProtegeException(String msg, Throwable t) {
-        super(msg, t);
-    }
-
-    public ProtegeException(Throwable t) {
-        super(t);
-    }
+  public ProtegeException(String msg) {
+    super(msg);
+  }
+  
+  public ProtegeException(String msg, Throwable t) {
+    super(msg, t);
+  }
+  
+  public ProtegeException(Throwable t) {
+    super(t);
+  }
 }

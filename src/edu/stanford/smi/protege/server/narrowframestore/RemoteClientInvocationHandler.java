@@ -41,8 +41,8 @@ public class RemoteClientInvocationHandler implements InvocationHandler {
         Method remoteMethod = 
             RemoteServerNarrowFrameStore.class.getMethod(method.getName(), rnfsCallParams);
         methodMap.put(method, remoteMethod);
-        if (log.isLoggable(Level.FINER)) {
-          log.finer("Mapped " + method + " to " + remoteMethod);
+        if (log.isLoggable(Level.FINE)) {
+          log.fine("Mapped " + method + " to " + remoteMethod);
         }
       } catch (Exception e) {
         log.warning("NarrowFrameStore method " + method + " not found in RemoteServerNarrowFrameStore");
@@ -77,9 +77,6 @@ public class RemoteClientInvocationHandler implements InvocationHandler {
       } else {
         log.fine("No arguments");
       }
-    }
-    if (log.isLoggable(Level.FINEST)) {
-        log.log(Level.FINEST, "Invoking the Narrow Frame Store with stack", new Exception());
     }
     int argslength = (args == null ? 0 : args.length);
     Object [] remoteArgs = new Object[argslength + 1];

@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 
 import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
+import edu.stanford.smi.protege.server.narrowframestore.RemoteServerNarrowFrameStore;
 
 public interface RemoteServerProject extends Remote {
     URI getURI(RemoteSession session) throws RemoteException;
@@ -17,6 +18,10 @@ public interface RemoteServerProject extends Remote {
     RemoteServerFrameStore getProjectKbFrameStore(RemoteSession session) throws RemoteException;
     
     String getProjectKbFactoryClassName() throws RemoteException;
+    
+    RemoteServerNarrowFrameStore getDomainKbNarrowFrameStore() throws RemoteException;
+    
+    RemoteServerNarrowFrameStore getSystemNarrowFrameStore() throws  RemoteException;
 
     Collection getCurrentSessions(RemoteSession session) throws RemoteException;
 

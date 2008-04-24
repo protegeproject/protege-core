@@ -89,18 +89,18 @@ public class SimpleFrameStore implements FrameStore {
      * 
      * @return Collection of Clses
      */
-    public static Collection<Cls> getClsesToBeDeleted(Cls cls, FrameStore fs) {
-        Collection<Cls> subclasses = fs.getSubclasses(cls);
-        Collection<Cls> clsesToBeDeleted = new HashSet<Cls>(subclasses);
+    public static Collection getClsesToBeDeleted(Cls cls, FrameStore fs) {
+        Collection subclasses = fs.getSubclasses(cls);
+        Collection clsesToBeDeleted = new HashSet(subclasses);
         clsesToBeDeleted.add(cls);
 
-        Iterator<Cls> i = subclasses.iterator();
+        Iterator i = subclasses.iterator();
         while (i.hasNext()) {
-            Cls subclass = i.next();
+            Cls subclass = (Cls) i.next();
             // take care with recursive inheritance situations!
             if (!subclass.equals(cls) && reachableByAnotherRoute(subclass, clsesToBeDeleted, fs)) {
                 clsesToBeDeleted.remove(subclass);
-                Collection<Cls> subsubclasses = new HashSet<Cls>(fs.getSubclasses(subclass));
+                Collection subsubclasses = new HashSet(fs.getSubclasses(subclass));
                 subsubclasses.remove(cls);
                 clsesToBeDeleted.removeAll(subsubclasses);
             }
@@ -141,8 +141,8 @@ public class SimpleFrameStore implements FrameStore {
         _helper.deleteFrame(frame);
     }
 
-    public Set<Reference> getReferences(Object value) {
-        Set<Reference> references = _helper.getReferences(value);
+    public Set getReferences(Object value) {
+        Set references = _helper.getReferences(value);
         return unmodifiableSet(references);
     }
 
@@ -153,7 +153,7 @@ public class SimpleFrameStore implements FrameStore {
         _helper = null;
     }
 
-    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
+    public Set getMatchingReferences(String value, int maxMatches) {
         return _helper.getMatchingReferences(value, maxMatches);
     }
 
@@ -268,7 +268,7 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
-        Collection<Slot> slots = getOwnSlots(slot);
+        Collection slots = getOwnSlots(slot);
         Set facets = collectOwnSlotValues(slots, _systemFrames.getAssociatedFacetSlot());
         return unmodifiableSet(facets);
     }
@@ -372,8 +372,9 @@ public class SimpleFrameStore implements FrameStore {
         return unmodifiableSet(types);
     }
 
-    private static <X> Set<X> unmodifiableSet(Set<X> set) {
+    private static Set unmodifiableSet(Set set) {
         return set == null ? Collections.EMPTY_SET : Collections.unmodifiableSet(set);
+        // return set == null ? Collections.EMPTY_SET : set;
     }
 
     private static List unmodifiableList(List list) {
@@ -396,9 +397,10 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public Frame getFrame(String name) {
-        Frame frame = nameToFrameMap.get(name);
+        Frame frame = (Frame) nameToFrameMap.get(name);
         if (frame == null) {
-        	frame = getFrame(new FrameID(name));
+            Collection c = getFramesWithDirectOwnSlotValue(_systemFrames.getNameSlot(), name);
+            frame = (Frame) CollectionUtilities.getFirstItem(c);
             if (frame != null) {
                 nameToFrameMap.put(name, frame);
             }
@@ -407,23 +409,27 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public Frame getFrame(FrameID id) {
+        /*
+         * Frame frame = (Frame) frameIdToFrameMap.get(id); if (frame == null) { frame = _helper.getFrame(id);
+         * frameIdToFrameMap.put(id, frame); } return frame;
+         */
         return _helper.getFrame(id);
     }
 
     public Set<Slot> getOwnSlots(Frame frame) {
         Collection types = getTypes((Instance) frame);
-        Set<Slot> ownSlots = collectOwnSlotValues(types, _systemFrames.getDirectTemplateSlotsSlot());
+        Set ownSlots = collectOwnSlotValues(types, _systemFrames.getDirectTemplateSlotsSlot());
         /*
          * Meaningful Comment:
          * new code to add subslots of the direct slots.  This is necessary if
          * we want frame, slot -> non-empty value  to imply that slot is 
          * in frame.getOwnSlots(). 
          */
-        Set<Slot> subSlots = new HashSet<Slot>();
+        Set subSlots = new HashSet();
         for (Object o : ownSlots) {
         	if (o instanceof Slot) {
         		Slot slot = (Slot) o;
-        		Set<Slot> addSlots = getSubslots(slot);
+        		Set addSlots = getSubslots(slot);
         		if (addSlots != null) subSlots.addAll(addSlots);
         	}
         }
@@ -533,7 +539,7 @@ public class SimpleFrameStore implements FrameStore {
         swizzleInstance(instance);
     }
 
-    public void swizzleInstance(Instance instance) {
+    private void swizzleInstance(Instance instance) {
         // Log.enter(this, "swizzleInstance", instance);
         FrameFactory factory = getFrameFactory();
         Collection types = getDirectTypes(instance);
@@ -656,52 +662,40 @@ public class SimpleFrameStore implements FrameStore {
         _helper.addValues(frame, slot, facet, isTemplate, values);
     }
 
-    public Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
+    public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaults) {
-        Cls cls = createCls(id, directTypes);
-        addCls(cls, directTypes, directSuperclasses, loadDefaults);
-        assertFrameName(cls);
+        Cls cls = createCls(id, name, directTypes);
+        addCls(cls, name, directTypes, directSuperclasses, loadDefaults);
         return cls;
     }
-    
-    public Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots, boolean loadDefaults) {
-        Slot slot = createSlot(id, directTypes);
-        addSlot(slot, directTypes, directSuperslots, loadDefaults);
-        assertFrameName(slot);
-        return slot;
-    }
 
-    public SimpleInstance createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaults) {
-        SimpleInstance simpleInstance = createSimpleInstance(id, directTypes);
-        addSimpleInstance(simpleInstance, directTypes, loadDefaults);
-        assertFrameName(simpleInstance);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
+        SimpleInstance simpleInstance = createSimpleInstance(id, name, directTypes);
+        addSimpleInstance(simpleInstance, name, directTypes, loadDefaults);
         return simpleInstance;
     }
 
-    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaults) {
-        Facet facet = createFacet(id, directTypes);
-        addFacet(facet, directTypes, loadDefaults);
-        assertFrameName(facet);
+    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaults) {
+        Facet facet = createFacet(id, name, directTypes);
+        addFacet(facet, name, directTypes, loadDefaults);
         return facet;
     }
-    
-    private void assertFrameName(Frame frame) {
-    	_helper.setValues(frame, _systemFrames.getNameSlot(), null, false, Collections.singleton(frame.getName()));
+
+    private void addSimpleInstance(SimpleInstance simpleInstance, String name, Collection directTypes,
+            boolean loadDefaults) {
+        name = uniqueName(name, "Instance_");
+        addInstance(simpleInstance, name, directTypes, loadDefaults);
     }
 
-    private void addSimpleInstance(SimpleInstance simpleInstance, Collection directTypes,
+    protected void addCls(Cls cls, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaults) {
-        addInstance(simpleInstance, directTypes, loadDefaults);
-    }
-    
-    protected void addCls(Cls cls, Collection directTypes, Collection directSuperclasses,
-            boolean loadDefaults) {
-        addInstance(cls, directTypes, loadDefaults);
+        name = uniqueName(name, "Class_");
+        addInstance(cls, name, directTypes, loadDefaults);
         addDirectOwnSlotValuePairs(cls, _systemFrames.getDirectSuperclassesSlot(), _systemFrames
                 .getDirectSubclassesSlot(), directSuperclasses);
     }
 
-    protected void addSlot(Slot slot, Collection directTypes, Collection directSuperslots,
+    protected void addSlot(Slot slot, String name, Collection directTypes, Collection directSuperslots,
             boolean loadDefaults) {
         // Default values interfere with inherited values from superslots. Thus
         // we disable defaults if any
@@ -709,7 +703,8 @@ public class SimpleFrameStore implements FrameStore {
         if (!directSuperslots.isEmpty()) {
             loadDefaults = false;
         }
-        addInstance(slot, directTypes, loadDefaults);
+        name = uniqueName(name, "Slot_");
+        addInstance(slot, name, directTypes, loadDefaults);
         if (!directSuperslots.isEmpty()) {
             addDirectOwnSlotValuePairs(slot, _systemFrames.getDirectSuperslotsSlot(), _systemFrames
                     .getDirectSubslotsSlot(), directSuperslots);
@@ -725,17 +720,61 @@ public class SimpleFrameStore implements FrameStore {
         }
     }
 
-    private void addFacet(Facet facet, Collection directTypes, boolean loadDefaults) {
-        addInstance(facet, directTypes, loadDefaults);
+    private void addFacet(Facet facet, String name, Collection directTypes, boolean loadDefaults) {
+        name = uniqueName(name, "Facet_");
+        addInstance(facet, name, directTypes, loadDefaults);
     }
 
+    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
+            boolean loadDefaults) {
+        Slot slot = createSlot(id, name, directTypes);
+        addSlot(slot, name, directTypes, directSuperslots, loadDefaults);
+        return slot;
+    }
 
-    private void addInstance(Instance instance, Collection directTypes, boolean loadDefaults) {
+    private void setDirectOwnSlotValue(Frame frame, Slot slot, Object value) {
+        Collection values = CollectionUtilities.createCollection(value);
+        setDirectOwnSlotValues(frame, slot, values);
+    }
+
+    private void addInstance(Instance instance, String name, Collection directTypes, boolean loadDefaults) {
+        addFrame(instance, name);
         addDirectOwnSlotValuePairs(instance, _systemFrames.getDirectTypesSlot(),
                 _systemFrames.getDirectInstancesSlot(), directTypes);
         if (loadDefaults) {
             addDefaults(instance, directTypes);
         }
+    }
+
+    protected String uniqueName(String name, String baseName) {
+        String uniqueName;
+        if (name == null) {
+            uniqueName = generateUniqueName(_kb.getName() + "_" + baseName);
+        } else {
+            Frame frame = getFrame(name);
+            if (frame != null) {
+                throw new IllegalArgumentException(name + " not unique: " + frame);
+            }
+            uniqueName = name;
+        }
+        return uniqueName;
+    }
+
+    private int nextName;
+
+    protected String generateUniqueName(String baseName) {
+        String uniqueName = null;
+
+        while (uniqueName == null) {
+            String s = baseName + nextName;
+            if (getFrame(s) == null) {
+                uniqueName = s;
+                ++nextName;
+            } else {
+                nextName += 10000;
+            }
+        }
+        return uniqueName;
     }
 
     private Slot getInverseSlot(Slot slot) {
@@ -935,20 +974,20 @@ public class SimpleFrameStore implements FrameStore {
         setValues(cls, slot, facet, true, values);
     }
 
-    public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         return _helper.getFrames(slot, null, false, value);
     }
 
-    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         return _helper.getFramesWithAnyValue(slot, null, false);
     }
 
     public Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value) {
-        return _helper.getFrames(slot, _systemFrames.getValuesFacet(), true, value);
+        return _helper.getFrames(slot, null, true, value);
     }
 
-    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
-        return (Set) _helper.getFramesWithAnyValue(slot, _systemFrames.getValuesFacet(), true);
+    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+        return _helper.getFramesWithAnyValue(slot, null, true);
     }
 
     public Set getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value) {
@@ -979,24 +1018,50 @@ public class SimpleFrameStore implements FrameStore {
         return name;
     }
 
+    public void setFrameName(Frame frame, String name) {
+        Frame frameWithName = getFrame(name);
+        if (name == null || (frameWithName != null && !frameWithName.equals(frame))) {
+            throw new IllegalArgumentException("Duplicate frame name: " + name);
+        }
+        nameToFrameMap.remove(getFrameName(frame));
+        setDirectOwnSlotValue(frame, _systemFrames.getNameSlot(), name);
+        nameToFrameMap.put(name, frame);
+    }
+
     protected void addSystemFrames() {
         _systemFrames.addSystemFrames(this);
     }
 
-    protected Cls createCls(FrameID id, Collection directTypes) {
+    private FrameID ensureValid(FrameID id, String name) {
+        if (id == null) {
+            id = _helper.generateFrameID();
+        }
+        return id;
+    }
+
+    protected Cls createCls(FrameID id, String name, Collection directTypes) {
+        id = ensureValid(id, name);
         return getFrameFactory().createCls(id, directTypes);
     }
 
-    protected Slot createSlot(FrameID id, Collection directTypes) {
+    protected Slot createSlot(FrameID id, String name, Collection directTypes) {
+        id = ensureValid(id, name);
         return getFrameFactory().createSlot(id, directTypes);
     }
 
-    protected Facet createFacet(FrameID id, Collection directTypes) {
+    protected Facet createFacet(FrameID id, String name, Collection directTypes) {
+        id = ensureValid(id, name);
         return getFrameFactory().createFacet(id, directTypes);
     }
 
-    protected SimpleInstance createSimpleInstance(FrameID id, Collection directTypes) {
+    protected SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes) {
+        id = ensureValid(id, name);
         return getFrameFactory().createSimpleInstance(id, directTypes);
+    }
+
+    private void addFrame(Frame frame, String name) {
+        addDirectOwnSlotValue(frame, _systemFrames.getNameSlot(), name);
+        // frameIdToFrameMap.put(frame.getFrameID(), frame);
     }
 
     private void addDefaults(Instance instance, Collection directTypes) {
@@ -1171,13 +1236,7 @@ public class SimpleFrameStore implements FrameStore {
         return null;
     }
 
-    @Override
     public String toString() {
         return StringUtilities.getClassName(this);
-    }
-
-    public void replaceFrame(Frame original, Frame replacement) {
-      nameToFrameMap.remove(original.getFrameID().getName());
-      _helper.replaceFrame(original, replacement);
     }
 }

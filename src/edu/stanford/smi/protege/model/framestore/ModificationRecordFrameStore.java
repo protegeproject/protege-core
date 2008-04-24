@@ -42,6 +42,11 @@ public class ModificationRecordFrameStore extends ModificationFrameStore {
         }
     }
 
+    public void setFrameName(Frame frame, String name) {
+        getDelegate().setFrameName(frame, name);
+        updateModificationRecord(frame);
+    }
+
     private void updateCreationRecord(Frame frame) {
         updateFrameRecord(frame, _creationAuthorSlot, _creationTimestampSlot);
     }
@@ -65,26 +70,26 @@ public class ModificationRecordFrameStore extends ModificationFrameStore {
         }
     }
 
-    public Cls createCls(FrameID id, Collection types, Collection superclasses, boolean loadDefaults) {
-        Cls cls = getDelegate().createCls(id, types, superclasses, loadDefaults);
+    public Cls createCls(FrameID id, String name, Collection types, Collection superclasses, boolean loadDefaults) {
+        Cls cls = getDelegate().createCls(id, name, types, superclasses, loadDefaults);
         updateCreationRecord(cls);
         return cls;
     }
 
-    public Slot createSlot(FrameID id, Collection types, Collection superslots, boolean loadDefaults) {
-        Slot slot = getDelegate().createSlot(id, types, superslots, loadDefaults);
+    public Slot createSlot(FrameID id, String name, Collection types, Collection superslots, boolean loadDefaults) {
+        Slot slot = getDelegate().createSlot(id, name, types, superslots, loadDefaults);
         updateCreationRecord(slot);
         return slot;
     }
 
-    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
-        Facet facet = getDelegate().createFacet(id, directTypes, loadDefaultValues);
+    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
+        Facet facet = getDelegate().createFacet(id, name, directTypes, loadDefaultValues);
         updateCreationRecord(facet);
         return facet;
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, Collection types, boolean loadDefaultValues) {
-        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, types, loadDefaultValues);
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection types, boolean loadDefaultValues) {
+        SimpleInstance simpleInstance = getDelegate().createSimpleInstance(id, name, types, loadDefaultValues);
         updateCreationRecord(simpleInstance);
         return simpleInstance;
     }
@@ -204,12 +209,6 @@ public class ModificationRecordFrameStore extends ModificationFrameStore {
 
     public boolean rollbackTransaction() {
         return getDelegate().rollbackTransaction();
-    }
-
-    public void replaceFrame(Frame original, Frame replacement) {
-      getDelegate().replaceFrame(original, replacement);
-      updateDeletionRecord(original);
-      updateCreationRecord(replacement);
     }
 
 }

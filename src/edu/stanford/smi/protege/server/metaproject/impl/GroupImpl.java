@@ -11,9 +11,8 @@ import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 
 public class GroupImpl extends WrappedProtegeInstanceImpl implements Group {
-    private static final long serialVersionUID = -6623180400376787848L;
 
-    protected GroupImpl(MetaProjectImpl mp, Instance group) 
+	protected GroupImpl(MetaProjectImpl mp, Instance group) 
 	throws OntologyException {
 		super(mp, group, ClsEnum.Group);
 
@@ -29,11 +28,10 @@ public class GroupImpl extends WrappedProtegeInstanceImpl implements Group {
 
 	@SuppressWarnings("unchecked")
 	public Set<User> getMembers() {
-		return getSlotValues(SlotEnum.member, ClsEnum.User);
+		return (Set<User>) getSlotValues(SlotEnum.member, ClsEnum.User);
 	}
 
-	@Override
-    public String toString() {
+	public String toString() {
 		return getName();
 	}
 

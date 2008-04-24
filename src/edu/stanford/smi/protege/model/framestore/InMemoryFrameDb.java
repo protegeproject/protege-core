@@ -45,8 +45,24 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     private Map<Object, Set<Record>> valueToRecordsMap = new LinkedHashMap<Object, Set<Record>>(INITIAL_MAP_SIZE);
 
     private Record lookupRecord = new Record();
+    private static int counter = FrameID.INITIAL_USER_FRAME_ID;
+    private int projectId = FrameID.allocateMemoryProjectPart();
+
     private String frameDBName;
 
+    public Collection<Record> getRecords() {
+        return new ArrayList<Record>(referenceToRecordMap.keySet());
+    }
+
+    public String getName() {
+        return frameDBName;
+    }
+
+    public void setName(String name) {
+        frameDBName = name;
+    }
+
+    
     public InMemoryFrameDb(String name) {
     	if (log.isLoggable(Level.FINE)) {
     		log.fine("Constructing InMemoryFrameDb with name " + name + " No delegate...");
@@ -54,37 +70,111 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         frameDBName = name;
     }
 
-
-    public static boolean equals(Object o1, Object o2) {
-        return SystemUtilities.equals(o1, o2);
+    public FrameID generateFrameID() {
+        return FrameID.createLocal(projectId, counter++);
     }
 
+    public void close() {
+        referenceToRecordMap = null;
+        frameToRecordsMap = null;
+        slotToRecordsMap = null;
+        facetToRecordsMap = null;
+        valueToRecordsMap = null;
+        lookupRecord = null;
+    }
 
-    private Slot cachedNameSlot;
+    private Record lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+        lookupRecord.set(frame, slot, facet, isTemplate);
+        return referenceToRecordMap.get(lookupRecord);
+    }
 
-    private Slot getNameSlot() {
-        if (cachedNameSlot == null) {
-            Iterator i = referenceToRecordMap.keySet().iterator();
-            if (i.hasNext()) {
-                Record record = (Record) i.next();
-                Frame frame = record.getFrame();
-                KnowledgeBase kb = frame.getKnowledgeBase();
-                cachedNameSlot = kb.getSlot(Model.Slot.NAME);
+    private static <X> void addRecord(Map<X, Set<Record>> map, X key, Record record) {
+        if (key != null) {
+            Set<Record> set = map.get(key);
+            if (set == null) {
+                set = new HashSet<Record>();
+                map.put(key, set);
+            }
+            set.add(record);
+        }
+    }
+
+    public static <X> void removeRecord(Map<X, Set<Record>> map, Object key, Record record) {
+        if (key != null) {
+            Set<Record> set = map.get(key);
+            if (set != null) {
+                set.remove(record);
             }
         }
-        return cachedNameSlot;
     }
 
-
-
-    public String toString() {
-        return StringUtilities.getClassName(this) + "(" + frameDBName + ")";
+    private void createRecord(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
+        Record record = new Record(frame, slot, facet, isTemplate, values);
+        addRecord(record);
     }
 
-    /*
-     * Search
-     */
+    private void addRecord(Record record) {
+        referenceToRecordMap.put(record, record);
+        idToFrameMap.put(record.getFrame().getFrameID(), record.getFrame());
+        addRecord(frameToRecordsMap, record.getFrame(), record);
+        addRecord(slotToRecordsMap, record.getSlot(), record);
+        addRecord(facetToRecordsMap, record.getFacet(), record);
+        Iterator i = record.getValues().iterator();
+        while (i.hasNext()) {
+            Object value = i.next();
+            addRecord(valueToRecordsMap, value, record);
+        }
+    }
 
+    private void removeRecord(Record record) {
+        referenceToRecordMap.remove(record);
+        removeRecord(frameToRecordsMap, record.getFrame(), record);
+        removeRecord(slotToRecordsMap, record.getSlot(), record);
+        removeRecord(facetToRecordsMap, record.getFacet(), record);
+        Iterator i = record.getValues().iterator();
+        while (i.hasNext()) {
+            Object value = i.next();
+            removeRecord(valueToRecordsMap, value, record);
+        }
+        Set<Record> records = lookupRecords(frameToRecordsMap, record.getFrame());
+        if (records == null || records.isEmpty()) {
+          idToFrameMap.remove(record.getFrame().getFrameID());
+        }
+
+    }
+
+    public void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
+        Record record = lookup(frame, slot, facet, isTemplate);
+        if (record != null) {
+            record.removeValue(value);
+            removeRecord(valueToRecordsMap, value, record);
+            if (record.isEmpty()) {
+                removeRecord(record);
+            }
+        }
+
+    }
+
+    public void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to) {
+        Record record = lookup(frame, slot, facet, isTemplate);
+        if (record != null) {
+            record.moveValue(from, to);
+        }
+    }
+
+    private static <X, Y>  Set<Y> lookupRecords(Map<X, Set<Y>> map, Object value) {
+        return map.get(value);
+    }
+
+    public Set<Reference> getReferences(Object value) {
+        Set<Record> records = lookupRecords(valueToRecordsMap, value);
+        return recordsToReferences(records);
+    }
+
+    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
+        Set<Record> records = getMatchingRecords(value, maxMatches);
+        return recordsToReferences(records);
+    }
 
     private Set<Record> getMatchingRecords(String value, int maxMatches) {
         if (maxMatches < 1) {
@@ -103,201 +193,6 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         }
         return matches;
     }
-
-    private static boolean matches(Record record, Slot slot, Facet facet, boolean isTemplate) {
-        boolean matches = equals(slot, record.getSlot()) && equals(facet, record.getFacet())
-                && isTemplate == record.isTemplate();
-        return matches;
-    }
-
-
-    private int countFrames(Class clas) {
-        int frameCount = 0;
-        Slot nameSlot = getNameSlot();
-        if (nameSlot != null) {
-            Collection records = (Collection) slotToRecordsMap.get(nameSlot);
-            Iterator i = records.iterator();
-            while (i.hasNext()) {
-                Record record = (Record) i.next();
-                if (clas.isInstance(record.getFrame())) {
-                    ++frameCount;
-                }
-            }
-        }
-        return frameCount;
-    }
-
-
-    private Record lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-        lookupRecord.set(frame, slot, facet, isTemplate);
-        return referenceToRecordMap.get(lookupRecord);
-    }
-
-
-    private static <X, Y>  Set<Y> lookupRecords(Map<X, Set<Y>> map, Object value) {
-        return map.get(value);
-    }
-
-    /*
-     * Creating, adding, removing records
-     */
-
-
-    public void addValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
-        Record record = lookup(frame, slot, facet, isTemplate);
-        if (record == null) {
-            createRecord(frame, slot, facet, isTemplate, CollectionUtilities.createList(value));
-        } else {
-            record.addValue(value);
-            addRecord(valueToRecordsMap, value, record);
-        }
-    }
-
-    private static <X> void removeFrameValue(Map<X, Set<Record>> map, Frame frame) {
-        Set<Record> records = lookupRecords(map, frame);
-        if (records != null) {
-            Iterator<Record> i = records.iterator();
-            while (i.hasNext()) {
-                Record record = i.next();
-                record.removeValue(frame);
-            }
-            map.remove(frame);
-        }
-    }
-
-
-    private void addRecordValues(Record record) {
-        Iterator i = record.getInternalValues().iterator();
-        while (i.hasNext()) {
-            Object value = i.next();
-            addRecord(valueToRecordsMap, value, record);
-        }
-    }
-
-
-    private void removeRecordValues(Record record) {
-        Iterator i = record.getInternalValues().iterator();
-        while (i.hasNext()) {
-            Object value = i.next();
-            removeRecord(valueToRecordsMap, value, record);
-        }
-    }
-
-
-    private void createRecord(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
-        Record record = new Record(frame, slot, facet, isTemplate, values);
-        addRecord(record);
-    }
-
-    private void addRecord(Record record) {
-        referenceToRecordMap.put(record, record);
-        idToFrameMap.put(record.getFrame().getFrameID(), record.getFrame());
-        addRecord(frameToRecordsMap, record.getFrame(), record);
-        addRecord(slotToRecordsMap, record.getSlot(), record);
-        addRecord(facetToRecordsMap, record.getFacet(), record);
-        for (Object value : record.getValues()) {
-            addRecord(valueToRecordsMap, value, record);
-        }
-    }
-
-    private static <X> void addRecord(Map<X, Set<Record>> map, X key, Record record) {
-        if (key != null) {
-            Set<Record> set = map.get(key);
-            if (set == null) {
-                set = new HashSet<Record>();
-                map.put(key, set);
-            }
-            set.add(record);
-        }
-    }
-
-    private void removeRecord(Record record) {
-        referenceToRecordMap.remove(record);
-        removeRecord(frameToRecordsMap, record.getFrame(), record);
-        removeRecord(slotToRecordsMap, record.getSlot(), record);
-        removeRecord(facetToRecordsMap, record.getFacet(), record);
-        for (Object value : record.getValues()) {
-            removeRecord(valueToRecordsMap, value, record);
-        }
-        Set<Record> records = lookupRecords(frameToRecordsMap, record.getFrame());
-        if (records == null || records.isEmpty()) {
-          idToFrameMap.remove(record.getFrame().getFrameID());
-        }
-    
-    }
-
-    public static <X> void removeRecord(Map<X, Set<Record>> map, Object key, Record record) {
-        if (key != null) {
-            Set<Record> set = map.get(key);
-            if (set != null) {
-                set.remove(record);
-            }
-        }
-    }
-
-
-
-    private <X> void removeRecords(Map<X, Set<Record>> map, Frame frame) {
-        Collection<Record> records = lookupRecords(map, frame);
-        if (records != null) {
-            records = new ArrayList<Record>(records);
-            Iterator i = records.iterator();
-            while (i.hasNext()) {
-                Record record = (Record) i.next();
-                removeRecord(record);
-            }
-            map.remove(frame);
-        }
-    }
-
-    /*
-     * Frame Replacement
-     */
-
-    @SuppressWarnings("unchecked")
-    private <X> void replaceFrameKey(Map<X, Set<Record>> map, Frame frame) {
-        Set<Record> records = map.remove(frame);
-        if (records != null) {
-            map.put((X) frame, records);
-            for (Record record : records) {
-                record.replaceFrameReference(frame);
-                referenceToRecordMap.remove(record);
-                referenceToRecordMap.put(record, record);
-            }
-        }
-    }
-
-
-    private void replaceRecords(Frame original, Frame replacement, Set<Record> records) {
-      for (Record r : records) {
-        Record newRecord = new Record(r.getFrame().equals(original) ? replacement : r.getFrame(),
-                                      r.getSlot().equals(original) ? (Slot) replacement : r.getSlot(),
-                                      (r.getFacet() != null && r.getFacet().equals(original)) ?
-                                          (Facet) replacement : r.getFacet(),
-                                      r.isTemplate(),
-                                      r.getValues());
-        if (newRecord.getFrame().equals(replacement) 
-            && newRecord.getSlot().getFrameID().equals(Model.SlotID.NAME)
-            && newRecord.getFacet() == null 
-            && !newRecord.isTemplate()) {
-          List values = Collections.singletonList(replacement.getName());
-          newRecord.setValues(values);
-        }
-        removeRecord(r);
-        addRecord(newRecord);
-      }
-      original.markDeleted(true);
-    }
-
-    /*
-     * Records and References
-     */
-
-
-    public Collection<Record> getRecords() {
-        return new ArrayList<Record>(referenceToRecordMap.keySet());
-    }
-
 
     private static Set<Reference> recordsToReferences(Set<Record> records) {
         Set<Reference> references;
@@ -322,60 +217,59 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return new ReferenceImpl(frame, slot, facet, isTemplate);
     }
 
-
-
-    /* ---------------------------------------------------------------
-     * Frame Store methods
-     */
-
-    public String getName() {
-        return frameDBName;
+    /** TODO implement executeQuery */
+    public void executeQuery(Query query, final QueryCallback callback) {
+      new Thread(new Runnable() {
+          public void run() {
+            callback.handleError(new ProtegeError("Not implemented yet"));
+          }
+        },
+                 "Vacuous In MemoryDb callback thread");
     }
 
-    public void setName(String name) {
-        frameDBName = name;
-    }
-
-    public NarrowFrameStore getDelegate() {
-        return null;
-    }
-
-    public int getFrameCount() {
-        int count = 0;
-        Slot slot = getNameSlot();
-        if (slot != null) {
-            Collection records = (Collection) slotToRecordsMap.get(slot);
-            if (records != null) {
-                count = records.size();
-            }
+    public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
+        Record record = lookup(frame, slot, facet, isTemplate);
+        if (record == null) {
+            createRecord(frame, slot, facet, isTemplate, values);
+        } else {
+            removeRecordValues(record);
+            record.setValues(values);
+            addRecordValues(record);
         }
-        return count;
     }
 
-
-    public int getClsCount() {
-        return countFrames(Cls.class);
+    private void removeRecordValues(Record record) {
+        Iterator i = record.getInternalValues().iterator();
+        while (i.hasNext()) {
+            Object value = i.next();
+            removeRecord(valueToRecordsMap, value, record);
+        }
     }
 
-
-    public int getSlotCount() {
-        return countFrames(Slot.class);
+    private void addRecordValues(Record record) {
+        Iterator i = record.getInternalValues().iterator();
+        while (i.hasNext()) {
+            Object value = i.next();
+            addRecord(valueToRecordsMap, value, record);
+        }
     }
 
-    public int getFacetCount() {
-        return countFrames(Facet.class);
+    public void addValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
+        Iterator i = values.iterator();
+        while (i.hasNext()) {
+            Object value = i.next();
+            addValue(frame, slot, facet, isTemplate, value);
+        }
     }
 
-    public int getSimpleInstanceCount() {
-        return countFrames(SimpleInstance.class);
-    }
-
-    public Set<Frame> getFrames() {
-        return new HashSet<Frame>(frameToRecordsMap.keySet());
-    }
-
-    public Frame getFrame(FrameID id) {
-      return idToFrameMap.get(id);
+    public void addValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
+        Record record = lookup(frame, slot, facet, isTemplate);
+        if (record == null) {
+            createRecord(frame, slot, facet, isTemplate, CollectionUtilities.createList(value));
+        } else {
+            record.addValue(value);
+            addRecord(valueToRecordsMap, value, record);
+        }
     }
 
     public List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
@@ -396,42 +290,46 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return count;
     }
 
-    public void addValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
-        Iterator i = values.iterator();
-        while (i.hasNext()) {
-            Object value = i.next();
-            addValue(frame, slot, facet, isTemplate, value);
-        }
+    public void deleteFrame(Frame frame) {
+        removeRecords(frameToRecordsMap, frame);
+        removeRecords(slotToRecordsMap, frame);
+        removeRecords(facetToRecordsMap, frame);
+        removeFrameValue(valueToRecordsMap, frame);
     }
 
-    public void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to) {
-        Record record = lookup(frame, slot, facet, isTemplate);
-        if (record != null) {
-            record.moveValue(from, to);
-        }
-    }
-
-    public void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
-        Record record = lookup(frame, slot, facet, isTemplate);
-        if (record != null) {
-            record.removeValue(value);
-            removeRecord(valueToRecordsMap, value, record);
-            if (record.isEmpty()) {
+    private <X> void removeRecords(Map<X, Set<Record>> map, Frame frame) {
+        Collection<Record> records = lookupRecords(map, frame);
+        if (records != null) {
+            records = new ArrayList<Record>(records);
+            Iterator i = records.iterator();
+            while (i.hasNext()) {
+                Record record = (Record) i.next();
                 removeRecord(record);
             }
+            map.remove(frame);
         }
-    
     }
 
-    public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
-        Record record = lookup(frame, slot, facet, isTemplate);
-        if (record == null) {
-            createRecord(frame, slot, facet, isTemplate, values);
-        } else {
-            removeRecordValues(record);
-            record.setValues(values);
-            addRecordValues(record);
+    private static <X> void removeFrameValue(Map<X, Set<Record>> map, Frame frame) {
+        Set<Record> records = lookupRecords(map, frame);
+        if (records != null) {
+            Iterator<Record> i = records.iterator();
+            while (i.hasNext()) {
+                Record record = i.next();
+                record.removeValue(frame);
+            }
+            map.remove(frame);
         }
+    }
+
+    public static boolean equals(Object o1, Object o2) {
+        return SystemUtilities.equals(o1, o2);
+    }
+
+    private static boolean matches(Record record, Slot slot, Facet facet, boolean isTemplate) {
+        boolean matches = equals(slot, record.getSlot()) && equals(facet, record.getFacet())
+                && isTemplate == record.isTemplate();
+        return matches;
     }
 
     public Set<Frame>getFrames(Slot slot, Facet facet, boolean isTemplate, Object value) {
@@ -448,7 +346,6 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         }
         return frames;
     }
-
 
     public Set<Frame> getFramesWithAnyValue(Slot slot, Facet facet, boolean isTemplate) {
         Set<Frame> frames = new HashSet<Frame>();
@@ -485,61 +382,6 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         return frames;
     }
 
-    public Set<Reference> getReferences(Object value) {
-        Set<Record> records = lookupRecords(valueToRecordsMap, value);
-        return recordsToReferences(records);
-    }
-
-    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
-        Set<Record> records = getMatchingRecords(value, maxMatches);
-        return recordsToReferences(records);
-    }
-
-    /** TODO implement executeQuery */
-    public void executeQuery(Query query, final QueryCallback callback) {
-      new Thread(new Runnable() {
-          public void run() {
-            callback.handleError(new ProtegeError("Not implemented yet"));
-          }
-        },
-                 "Vacuous In MemoryDb callback thread");
-    }
-
-    public void deleteFrame(Frame frame) {
-        removeRecords(frameToRecordsMap, frame);
-        removeRecords(slotToRecordsMap, frame);
-        removeRecords(facetToRecordsMap, frame);
-        removeFrameValue(valueToRecordsMap, frame);
-    }
-
-    public void close() {
-        referenceToRecordMap = null;
-        frameToRecordsMap = null;
-        slotToRecordsMap = null;
-        facetToRecordsMap = null;
-        valueToRecordsMap = null;
-        lookupRecord = null;
-    }
-
-    public Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-        return ClosureUtils.calculateClosure(this, frame, slot, facet, isTemplate);
-    }
-
-    public void replaceFrame(Frame frame) {
-        idToFrameMap.put(frame.getFrameID(), frame);
-        replaceFrameKey(frameToRecordsMap, frame);
-        replaceFrameKey(slotToRecordsMap, frame);
-        replaceFrameKey(facetToRecordsMap, frame);
-        replaceFrameKey(valueToRecordsMap, frame);
-        
-        Set<Record> records = valueToRecordsMap.get(frame);
-        if (records != null) {
-            for (Record record : records)  {
-                record.replaceFrameValue(frame);
-            }
-        }
-    }
-
     public boolean beginTransaction(String name) {
         return false;
     }
@@ -556,53 +398,118 @@ public class InMemoryFrameDb implements NarrowFrameStore {
       return null;
     }
 
+  private static <X> void replaceFrameKey(Map<X, Set<Record>> map, Frame frame) {
+        Set<Record> records = map.remove(frame);
+        if (records != null) {
+            map.put((X) frame, records);
+            Iterator<Record> i = records.iterator();
+            while (i.hasNext()) {
+                Record record = i.next();
+                record.replaceFrameReference(frame);
+            }
+        }
+    }
+
+    private void replaceFrameValues(Frame frame) {
+        Set<Record> records = valueToRecordsMap.remove(frame);
+        if (records != null) {
+            valueToRecordsMap.put(frame, records);
+            Iterator i = records.iterator();
+            while (i.hasNext()) {
+                Record record = (Record) i.next();
+                record.replaceFrameValue(frame);
+            }
+        }
+    }
+
+    public void replaceFrame(Frame frame) {
+        replaceFrameKey(frameToRecordsMap, frame);
+        replaceFrameKey(slotToRecordsMap, frame);
+        replaceFrameKey(facetToRecordsMap, frame);
+        replaceFrameKey(valueToRecordsMap, frame);
+        replaceFrameValues(frame);
+    }
+
+    public int getClsCount() {
+        return countFrames(Cls.class);
+    }
+
+    public int getSlotCount() {
+        return countFrames(Slot.class);
+    }
+
+    public int getFacetCount() {
+        return countFrames(Facet.class);
+    }
+
+    public int getFrameCount() {
+        int count = 0;
+        Slot slot = getNameSlot();
+        if (slot != null) {
+            Collection records = (Collection) slotToRecordsMap.get(slot);
+            if (records != null) {
+                count = records.size();
+            }
+        }
+        return count;
+    }
+
+    public Set<Frame> getFrames() {
+        return new HashSet<Frame>(frameToRecordsMap.keySet());
+    }
+
+    public int getSimpleInstanceCount() {
+        return countFrames(SimpleInstance.class);
+    }
+
+    private Slot cachedNameSlot;
+
+    private Slot getNameSlot() {
+        if (cachedNameSlot == null) {
+            Iterator i = referenceToRecordMap.keySet().iterator();
+            if (i.hasNext()) {
+                Record record = (Record) i.next();
+                Frame frame = record.getFrame();
+                KnowledgeBase kb = frame.getKnowledgeBase();
+                cachedNameSlot = kb.getSlot(Model.Slot.NAME);
+            }
+        }
+        return cachedNameSlot;
+    }
+
+    private int countFrames(Class clas) {
+        int frameCount = 0;
+        Slot nameSlot = getNameSlot();
+        if (nameSlot != null) {
+            Collection records = (Collection) slotToRecordsMap.get(nameSlot);
+            Iterator i = records.iterator();
+            while (i.hasNext()) {
+                Record record = (Record) i.next();
+                if (clas.isInstance(record.getFrame())) {
+                    ++frameCount;
+                }
+            }
+        }
+        return frameCount;
+    }
+
+    public Frame getFrame(FrameID id) {
+      return idToFrameMap.get(id);
+    }
+
+    public String toString() {
+        return StringUtilities.getClassName(this) + "(" + frameDBName + ")";
+    }
+
+    public Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+        return ClosureUtils.calculateClosure(this, frame, slot, facet, isTemplate);
+    }
+
+    public NarrowFrameStore getDelegate() {
+        return null;
+    }
+
 	public void reinitialize() {
 	}
-
-    @SuppressWarnings("unchecked")
-    public void replaceFrame(Frame original, Frame replacement) {
-      if (original.equals(replacement)) {
-        return;
-      }
-      if (idToFrameMap.containsKey(original.getFrameID())) {
-        idToFrameMap.remove(original.getFrameID());
-        idToFrameMap.put(replacement.getFrameID(),  replacement);
-      }
-      
-      Set<Record> recordsToChange = new HashSet<Record>();
-      if (frameToRecordsMap.get(original) != null) {
-        for (Record r : frameToRecordsMap.get(original)) {
-          recordsToChange.add(r);
-        }
-      }
-      if (slotToRecordsMap.get(original) != null) {
-        for (Record r : slotToRecordsMap.get(original)) {
-          recordsToChange.add(r);
-        }
-      }
-      if (facetToRecordsMap.get(original) != null) {
-        for (Record r : facetToRecordsMap.get(original)) {
-          recordsToChange.add(r);
-        }
-      }
-      replaceRecords(original, replacement, recordsToChange);
-      
-      if (valueToRecordsMap.get(original) != null) {
-        for (Record r : valueToRecordsMap.get(original)) {
-          List values = r.getValues();
-          int index;
-          while ((index = values.indexOf(original)) != -1) {
-            values.remove(index);
-            values.add(index, replacement);
-          }
-          r.setValues(values);
-        }
-        valueToRecordsMap.put(replacement, valueToRecordsMap.get(original));
-        valueToRecordsMap.remove(original);
-      }
-      deleteFrame(original);
-    }
-    
-
 
 }

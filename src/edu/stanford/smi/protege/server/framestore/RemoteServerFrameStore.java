@@ -16,13 +16,13 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.metaproject.Operation;
+import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.util.AbstractEvent;
@@ -59,18 +59,19 @@ public interface RemoteServerFrameStore extends Remote {
 
     String getFrameName(Frame frame, RemoteSession session) throws RemoteException;
 
+    OntologyUpdate setFrameName(Frame frame, String name, RemoteSession session) throws RemoteException;
+
     // frame creation/deletion
-
-    RemoteResponse<Cls> createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
+    RemoteResponse<Cls> createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaultValues, RemoteSession session) throws RemoteException;
 
-    RemoteResponse<Slot> createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
+    RemoteResponse<Slot> createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues, RemoteSession session) throws RemoteException;
 
-    RemoteResponse<Facet> createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues, RemoteSession session)
+    RemoteResponse<Facet> createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues, RemoteSession session)
             throws RemoteException;
 
-    RemoteResponse<SimpleInstance> createSimpleInstance(FrameID id, Collection directTypes, boolean loadDefaultValues,
+    RemoteResponse<SimpleInstance> createSimpleInstance(FrameID id, String name, Collection directTypes, boolean loadDefaultValues,
             RemoteSession session) throws RemoteException;
 
     OntologyUpdate deleteCls(Cls cls, RemoteSession session) throws RemoteException;
@@ -81,8 +82,6 @@ public interface RemoteServerFrameStore extends Remote {
 
     OntologyUpdate deleteSimpleInstance(SimpleInstance simpleInstance, RemoteSession session) throws RemoteException;
 
-    // own slots
-    Set<Slot> getOwnSlots(Frame frame, RemoteSession session) throws RemoteException;
 
     RemoteResponse<List> getDirectOwnSlotValues(Frame frame, Slot slot, RemoteSession session) throws RemoteException;
 
@@ -150,23 +149,23 @@ public interface RemoteServerFrameStore extends Remote {
     RemoteResponse<List<AbstractEvent>> getEvents(RemoteSession session) throws RemoteException;
 
     // arbitrary queries
-    Set<Reference> getReferences(Object object, RemoteSession session) throws RemoteException;
+    Set getReferences(Object object, RemoteSession session) throws RemoteException;
 
     Set getClsesWithMatchingBrowserText(String text, Collection superclasses, int maxMatches, RemoteSession session)
             throws RemoteException;
 
-    Set<Reference> getMatchingReferences(String string, int maxMatches, RemoteSession session) throws RemoteException;
+    Set getMatchingReferences(String string, int maxMatches, RemoteSession session) throws RemoteException;
 
-    Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) throws RemoteException;
+    Set getFramesWithDirectOwnSlotValue(Slot slot, Object value, RemoteSession session) throws RemoteException;
 
-    Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws RemoteException;
+    Set getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws RemoteException;
 
     Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches, RemoteSession session)
             throws RemoteException;
 
     Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value, RemoteSession session) throws RemoteException;
 
-    Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) throws RemoteException;
+    Set getClsesWithAnyDirectTemplateSlotValue(Slot slot, RemoteSession session) throws RemoteException;
 
     Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot, String value, int maxMatches, RemoteSession session)
             throws RemoteException;

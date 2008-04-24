@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.ServerProperties;
@@ -26,18 +25,13 @@ import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class RobustConnection {
-	private static final transient Logger log = Log.getLogger(RobustConnection.class);
-	
     private static final int ALLOWANCE = 100;
     private static final int ORACLE_MAX_VARCHAR_SIZE = 3166 - ALLOWANCE;
     private static final int SQLSERVER_MAX_VARCHAR_SIZE = 900 - ALLOWANCE;
     private static final int DEFAULT_MAX_VARCHAR_SIZE = 255;
 
-    private Map<String, PreparedStatement> _stringToPreparedStatementMap = new HashMap<String, PreparedStatement>();
-    private Object connectionLock = new Object();
+    private Map _stringToPreparedStatementMap = new HashMap();
     private Connection _connection;
-    private long lastAccessTime;
-    private ConnectionReaperAlgorithm connectionReaper;
     private Statement _genericStatement;
     private String _url;
     private String _username;
@@ -51,6 +45,7 @@ public class RobustConnection {
     private RemoteSession session;
     private TransactionMonitor transactionMonitor;
     
+    // private int _driverVarcharMaxSize;
     private String _driverLongvarcharTypeName;
     private String _driverTinyIntTypeName;
     private String _driverBitTypeName;
@@ -58,27 +53,15 @@ public class RobustConnection {
     private String _driverIntegerTypeName;
     private String _driverVarcharTypeName;
     private String _driverCharTypeName;
-    public static final String OLD_PROPERTY_LONGVARCHAR_TYPE_NAME = "SimpleJdbcDatabaseManager.longvarcharname";
-    public static final String PROPERTY_REFRESH_CONNECTIONS_TIME="Database.refresh.connections.interval";
-    public static final String PROPERTY_LONGVARCHAR_TYPE_NAME = "Database.typename.longvarchar";
-    public static final String PROPERTY_VARCHAR_TYPE_NAME = "Database.typename.varchar";
-    public static final String PROPERTY_INTEGER_TYPE_NAME = "Database.typename.integer";
-    public static final String PROPERTY_SMALL_INTEGER_TYPE_NAME = "Database.typename.small_integer";
+    private static final String OLD_PROPERTY_LONGVARCHAR_TYPE_NAME = "SimpleJdbcDatabaseManager.longvarcharname";
+    private static final String PROPERTY_LONGVARCHAR_TYPE_NAME = "Database.typename.longvarchar";
+    private static final String PROPERTY_VARCHAR_TYPE_NAME = "Database.typename.varchar";
+    private static final String PROPERTY_INTEGER_TYPE_NAME = "Database.typename.integer";
+    private static final String PROPERTY_SMALL_INTEGER_TYPE_NAME = "Database.typename.small_integer";
     // private final static String PROPERTY_TINY_INTEGER_TYPE_NAME =
     // "Database.typename.tiny_integer";
-    public static final String PROPERTY_BIT_TYPE_NAME = "Database.typename.bit";
-    public static final String PROPERTY_CHAR_TYPE_NAME = "Database.typename.char";
-    
-    /*
-     * This interval must be significantly longer than the length of time it takes to 
-     * make a query to the database.  Otherwise there will exist a risk that a connection
-     * or statement will be closed while a query is in progress.  
-     */
-    private static long connectionRefreshInterval;
-    static {
-    	int minutes = ApplicationProperties.getIntegerProperty(PROPERTY_REFRESH_CONNECTIONS_TIME, 60);
-    	connectionRefreshInterval = minutes * 60 * 1000;
-    }
+    private static final String PROPERTY_BIT_TYPE_NAME = "Database.typename.bit";
+    private static final String PROPERTY_CHAR_TYPE_NAME = "Database.typename.char";
     
     private Integer transactionIsolationLevel = null;
 
@@ -96,9 +79,7 @@ public class RobustConnection {
             throw new RuntimeException("class not found: " + driver);
         }
         // Log.trace("initializing connection", this, "RobustConnection");
-        lastAccessTime = System.currentTimeMillis();
         setupConnection();
-        initializeConnectionReaper();
         initializeMaxVarcharSize();
         initializeSupportsBatch();
         initializeSupportsEscapeSyntax();
@@ -107,17 +88,12 @@ public class RobustConnection {
         // dumpTypes();
     }
 
-    private void initializeConnectionReaper() {
-    	connectionReaper = new ConnectionReaperAlgorithm();
-    	connectionReaper.startThread();
-    }
-    
     public void setAutoCommit(boolean b) throws SQLException {
-        getConnection().setAutoCommit(b);
+        _connection.setAutoCommit(b);
     }
 
     public void commit() throws SQLException {
-        getConnection().commit();
+        _connection.commit();
     }
 
     private void setupConnection() throws SQLException {
@@ -128,34 +104,23 @@ public class RobustConnection {
         }
     }
 
-    public void dispose() throws SQLException {
-    	closeConnection();
-    	connectionReaper.stopThread();
-    }
-    
-    private void closeConnection() throws SQLException {
+    public void close() throws SQLException {
         closeStatements();
-        synchronized (connectionLock) {
-        	if (_connection != null) {
-                _connection.close();
-                _connection = null;
-        	}
-        }
+        _connection.close();
+        _connection = null;
     }
 
     public void closeStatements() throws SQLException {
-    	synchronized (connectionLock) {
-    		Iterator<PreparedStatement> i = _stringToPreparedStatementMap.values().iterator();
-    		while (i.hasNext()) {
-    			PreparedStatement stmt = i.next();
-    			stmt.close();
-    		}
-    		_stringToPreparedStatementMap.clear();
-    	}
-    	if (_genericStatement != null) {
-    		_genericStatement.close();
-    		_genericStatement = null;
-    	}
+        Iterator i = _stringToPreparedStatementMap.values().iterator();
+        while (i.hasNext()) {
+            PreparedStatement stmt = (PreparedStatement) i.next();
+            stmt.close();
+        }
+        _stringToPreparedStatementMap.clear();
+        if (_genericStatement != null) {
+            _genericStatement.close();
+            _genericStatement = null;
+        }
     }
 
     private void initializeMaxVarcharSize() throws SQLException {
@@ -172,7 +137,7 @@ public class RobustConnection {
     }
 
     private void initializeSupportsBatch() throws SQLException {
-        _supportsBatch = getConnection().getMetaData().supportsBatchUpdates();
+        _supportsBatch = _connection.getMetaData().supportsBatchUpdates();
         if (!_supportsBatch) {
             String s = "This JDBC driver does not support batch update.";
             s += " For much better performance try using a newer driver";
@@ -181,7 +146,7 @@ public class RobustConnection {
     }
 
     private void initializeSupportsTransactions() throws SQLException {
-        _supportsTransactions = getConnection().getMetaData().supportsTransactions();
+        _supportsTransactions = _connection.getMetaData().supportsTransactions();
         if (!_supportsTransactions) {
             Log.getLogger().warning("This database does not support transactions");
         }
@@ -190,7 +155,7 @@ public class RobustConnection {
     private void initializeSupportsEscapeSyntax() throws SQLException {
         _escapeChar = 0;
         _escapeClause = "";
-        boolean escapeSupported = getConnection().getMetaData().supportsLikeEscapeClause();
+        boolean escapeSupported = _connection.getMetaData().supportsLikeEscapeClause();
         if (escapeSupported) {
             if (isMySql()) {
                 _escapeChar = '\\';
@@ -217,33 +182,29 @@ public class RobustConnection {
     }
 
     public PreparedStatement getPreparedStatement(String text) throws SQLException {
-        synchronized (connectionLock) {
-        	PreparedStatement stmt = (PreparedStatement) _stringToPreparedStatementMap.get(text);
-        	lastAccessTime = System.currentTimeMillis();
-        	if (stmt == null) {
-        		stmt = getConnection().prepareStatement(text);
-        		_stringToPreparedStatementMap.put(text, stmt);
-        	}
-            return stmt;
+        PreparedStatement stmt = (PreparedStatement) _stringToPreparedStatementMap.get(text);
+        if (stmt == null) {
+            stmt = _connection.prepareStatement(text);
+            _stringToPreparedStatementMap.put(text, stmt);
         }
+        return stmt;
     }
 
     public Statement getStatement() throws SQLException {
         if (_genericStatement == null) {
-            _genericStatement = getConnection().createStatement();
+            _genericStatement = _connection.createStatement();
         }
         return _genericStatement;
     }
 
     public void checkConnection() throws SQLException {
-    	synchronized (connectionLock) {
-    		if (_connection == null) {
-    			setupConnection();
-    		} else if (_connection.isClosed()) {
-    			Log.getLogger().warning("Found closed connection, reinitializing...");
-    			closeConnection();
-    		}
-    	}
+        if (_connection == null) {
+            setupConnection();
+        } else if (_connection.isClosed()) {
+            Log.getLogger().warning("Found closed connection, reinitializing...");
+            close();
+            setupConnection();
+        }
     }
 
     public boolean isOracle() throws SQLException {
@@ -267,15 +228,15 @@ public class RobustConnection {
     }
 
     public String getDatabaseProductName() throws SQLException {
-        return getConnection().getMetaData().getDatabaseProductName();
+        return _connection.getMetaData().getDatabaseProductName();
     }
     
     public int getDatabaseMajorVersion() throws SQLException {
-      return getConnection().getMetaData().getDatabaseMajorVersion();
+      return _connection.getMetaData().getDatabaseMajorVersion();
     }
     
     public int getDatabaseMinorVersion() throws SQLException {
-      return getConnection().getMetaData().getDatabaseMinorVersion();
+      return _connection.getMetaData().getDatabaseMinorVersion();
     }
 
     public int getMaxVarcharSize() {
@@ -287,7 +248,7 @@ public class RobustConnection {
         String blobTypeName = null;
         String clobTypeName = null;
 
-        DatabaseMetaData md = getConnection().getMetaData();
+        DatabaseMetaData md = _connection.getMetaData();
         ResultSet rs = md.getTypeInfo();
         while (rs.next()) {
             String name = rs.getString("TYPE_NAME");
@@ -470,7 +431,7 @@ public class RobustConnection {
                     if (isMsAccess()) {
                         closeStatements();
                     }
-                    getConnection().setAutoCommit(false);
+                    _connection.setAutoCommit(false);
                 }
                 transactionMonitor.beginTransaction();
             }
@@ -490,8 +451,8 @@ public class RobustConnection {
             if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
                 transactionMonitor.commitTransaction();
                 if (transactionMonitor.getNesting() == 0) {
-                    getConnection().commit();
-                    getConnection().setAutoCommit(true);
+                    _connection.commit();
+                    _connection.setAutoCommit(true);
                 }
             }
             committed = true;
@@ -510,8 +471,8 @@ public class RobustConnection {
             if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
                 transactionMonitor.rollbackTransaction();
                  if (transactionMonitor.getNesting() == 0) {
-                    getConnection().rollback();
-                    getConnection().setAutoCommit(true);
+                    _connection.rollback();
+                    _connection.setAutoCommit(true);
                 }
             }
             rolledBack = true;
@@ -537,88 +498,19 @@ public class RobustConnection {
       if (transactionIsolationLevel != null) {
         return transactionIsolationLevel;
       }
-      return transactionIsolationLevel = getConnection().getTransactionIsolation();
+      return transactionIsolationLevel = _connection.getTransactionIsolation();
     }
 
 
     public void setTransactionIsolationLevel(int level) throws SQLException {
       transactionIsolationLevel = null;
       try {
-        getConnection().setTransactionIsolation(level);
+        _connection.setTransactionIsolation(level);
       } catch (SQLException sqle) {
         Log.getLogger().log(Level.WARNING, "Problem setting the transaction isolation level", sqle);
         transactionIsolationLevel = null;
         throw sqle;
       }
-    }
-    
-    private Connection getConnection() throws SQLException {
-    	synchronized (connectionLock) {
-    		lastAccessTime = System.currentTimeMillis();
-    		if (_connection == null) {
-    			setupConnection();
-    		}
-    		return _connection;
-    	}
-    }
-    
-    /*
-     * Thanks to Bob Dionne for this approach.
-     * 
-     */
-    private class ConnectionReaperAlgorithm implements Runnable {
-    	private boolean shuttingDown = false;
-    	private Thread thread;
-    	
-    	public void startThread() {
-    		thread = new Thread(this, "Database Connection Reaper");
-    		thread.setDaemon(true);
-    		thread.start();
-    	}
-    	
-		private void stopThread() {
-			synchronized (connectionLock) {
-				shuttingDown = true;
-			}
-			thread.interrupt();
-			thread = null;
-		}
-
-		public void run() {
-			synchronized (connectionLock) {
-				while (!shuttingDown) {
-					long now = System.currentTimeMillis();
-					if (_connection != null && now - lastAccessTime > connectionRefreshInterval) {
-						try {
-							closeConnection();
-						}
-						catch (Throwable t) {
-							if (log.isLoggable(Level.FINE)) {
-								log.log(Level.FINE, "Exception caught closing connection", t);
-							}
-						}
-						_connection = null;
-					}
-					try {
-						connectionLock.wait(connectionRefreshInterval);
-					}
-					catch (InterruptedException ie) {
-						if (log.isLoggable(Level.FINE)) {
-							log.log(Level.FINE, "Interrupted thread - hopefully because of a close operation", ie);
-						}
-						if (shuttingDown) {
-							return;
-						}
-						else {
-							log.warning("Unexpected interrupt to database connection reaper thread " + ie);
-						}
-					}
-				}
-			}
-		}
-		
-
-    	
     }
     
 }

@@ -27,7 +27,6 @@ import edu.stanford.smi.protege.event.SlotListener;
 import edu.stanford.smi.protege.event.TransactionListener;
 import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.model.framestore.DefaultFrameFactory;
-import edu.stanford.smi.protege.model.framestore.DeleteSimplificationFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
@@ -187,10 +186,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized Cls createCls(String name, Collection directSuperclasses, Collection directTypes,
             boolean loadDefaults) {
-      return createCls(new FrameID(name), directSuperclasses, directTypes, loadDefaults);
+        return createCls(null, name, directSuperclasses, directTypes, loadDefaults);
     }
 
-    public synchronized Cls createCls(FrameID id, Collection directSuperclasses, Collection directTypes,
+    public synchronized Cls createCls(FrameID id, String name, Collection directSuperclasses, Collection directTypes,
             boolean loadDefaults) {
         //        if (directTypes.isEmpty()) {
         //            Cls directType;
@@ -202,35 +201,35 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         //            }
         //            directTypes = CollectionUtilities.createCollection(directType);
         //        }
-        return getHeadFrameStore().createCls(id, directTypes, directSuperclasses, loadDefaults);
+        return getHeadFrameStore().createCls(id, name, directTypes, directSuperclasses, loadDefaults);
     }
 
     public synchronized Slot createSlot(String name, Cls directType, Collection superslots, boolean loadDefaults) {
-        return createSlot(new FrameID(name), CollectionUtilities.createCollection(directType), superslots, loadDefaults);
+        return createSlot(null, name, CollectionUtilities.createCollection(directType), superslots, loadDefaults);
     }
 
-    public synchronized Slot createSlot(FrameID id, Collection directTypes, Collection superslots,
+    public synchronized Slot createSlot(FrameID id, String name, Collection directTypes, Collection superslots,
             boolean loadDefaults) {
         //        if (directTypes.isEmpty()) {
         //            directTypes = new ArrayList();
         //            directTypes.add(_defaultSlotMetaCls);
         //        }
-        return getHeadFrameStore().createSlot(id, directTypes, superslots, loadDefaults);
+        return getHeadFrameStore().createSlot(id, name, directTypes, superslots, loadDefaults);
     }
 
     public synchronized SimpleInstance createSimpleInstance(String name, Cls directType, boolean loadDefaults) {
-        return createSimpleInstance(new FrameID(name), directType, loadDefaults);
+        return createSimpleInstance(null, name, directType, loadDefaults);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, Collection types,
+    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Collection types,
             boolean loadDefaults) {
-        return getHeadFrameStore().createSimpleInstance(id, types, loadDefaults);
+        return getHeadFrameStore().createSimpleInstance(id, name, types, loadDefaults);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, Cls directType,
+    public synchronized SimpleInstance createSimpleInstance(FrameID id, String name, Cls directType,
             boolean loadDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
-        return createSimpleInstance(id, types, loadDefaults);
+        return createSimpleInstance(id, name, types, loadDefaults);
     }
 
     public synchronized void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
@@ -260,7 +259,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return CollectionUtilities.getFirstItem(values);
     }
 
-    public synchronized Collection<Slot> getOwnSlots(Frame frame) {
+    public synchronized Collection getOwnSlots(Frame frame) {
         return getHeadFrameStore().getOwnSlots(frame);
     }
 
@@ -268,7 +267,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getTemplateSlots(cls);
     }
 
-    public synchronized Collection<Reference> getReferences(Frame frame) {
+    public synchronized Collection getReferences(Frame frame) {
         return getHeadFrameStore().getReferences(frame);
     }
 
@@ -287,7 +286,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use #setGenerateEventsEnabled(boolean)
      */
-    @Deprecated
     public synchronized boolean setEventsEnabled(boolean b) {
         return setGenerateEventsEnabled(b);
     }
@@ -295,7 +293,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use #getGenerateEventsEnabled(boolean)
      */
-    @Deprecated
     public synchronized boolean getEventsEnabled() {
         return getGenerateEventsEnabled();
     }
@@ -343,6 +340,21 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return result;
     }
 
+    /**
+     * @deprecated Renamed to #setFrameName(Frame, String)
+     */
+    public synchronized void changeFrameName(Frame frame, String newName) {
+        setFrameName(frame, newName);
+    }
+
+    public synchronized void setFrameName(Frame frame, String newName) {
+        if (isValidFrameName(newName, frame)) {
+            getHeadFrameStore().setFrameName(frame, newName);
+        } else {
+            throw new IllegalArgumentException("Invalid frame name: " + newName);
+        }
+    }
+
     public synchronized boolean containsFrame(String name) {
         return getFrame(name) != null;
     }
@@ -381,15 +393,15 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized Facet createFacet(String name, Cls directType, boolean initializeDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
-        return createFacet(new FrameID(name), types, initializeDefaults);
+        return createFacet(null, name, types, initializeDefaults);
     }
 
-    public synchronized Facet createFacet(FrameID id, Collection directTypes, boolean initializeDefaults) {
+    public synchronized Facet createFacet(FrameID id, String name, Collection directTypes, boolean initializeDefaults) {
         if (directTypes.isEmpty()) {
             directTypes = new ArrayList();
             directTypes.add(_defaultFacetMetaCls);
         }
-        return getHeadFrameStore().createFacet(id, directTypes, initializeDefaults);
+        return getHeadFrameStore().createFacet(id, name, directTypes, initializeDefaults);
     }
 
     public synchronized Instance createInstance(String name, Cls directType) {
@@ -397,34 +409,34 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized Instance createInstance(String name, Collection directTypes) {
-        return createInstance(new FrameID(name), directTypes, true);
+        return createInstance(null, name, directTypes, true);
     }
 
     public synchronized Instance createInstance(String name, Cls directType, boolean initializeDefaults) {
-        return createInstance(new FrameID(name), directType, initializeDefaults);
+        return createInstance(null, name, directType, initializeDefaults);
     }
 
-    public synchronized Instance createInstance(FrameID id, Cls directType, boolean initializeDefaults) {
+    public synchronized Instance createInstance(FrameID id, String name, Cls directType, boolean initializeDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
-        return createInstance(id, types, initializeDefaults);
+        return createInstance(id, name, types, initializeDefaults);
     }
 
-    public synchronized Instance createInstance(FrameID id, Collection directTypes,
+    public synchronized Instance createInstance(FrameID id, String name, Collection directTypes,
             boolean initializeDefaults) {
         Instance instance;
         // should do better than this
         Cls directType = (Cls) CollectionUtilities.getFirstItem(directTypes);
         if (directType == null) {
-            instance = createSimpleInstance(id, directType, initializeDefaults);
+            instance = createSimpleInstance(id, name, directType, initializeDefaults);
         } else {
             if (isClsMetaCls(directType)) {
-                instance = createCls(id, Collections.EMPTY_LIST, directTypes, initializeDefaults);
+                instance = createCls(id, name, Collections.EMPTY_LIST, directTypes, initializeDefaults);
             } else if (isSlotMetaCls(directType)) {
-                instance = createSlot(id, directTypes, Collections.EMPTY_LIST, initializeDefaults);
+                instance = createSlot(id, name, directTypes, Collections.EMPTY_LIST, initializeDefaults);
             } else if (isFacetMetaCls(directType)) {
-                instance = createFacet(id, directTypes, initializeDefaults);
+                instance = createFacet(id, name, directTypes, initializeDefaults);
             } else {
-                instance = createSimpleInstance(id, directTypes, initializeDefaults);
+                instance = createSimpleInstance(id, name, directTypes, initializeDefaults);
             }
         }
         return instance;
@@ -445,7 +457,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated no longer needed
      */
-    @Deprecated
     public String createUniqueFrameName(String name) {
         return null;
     }
@@ -677,7 +688,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated
      */
-    @Deprecated
     public synchronized Collection<Instance> getInstances(Cls cls) {
         return getHeadFrameStore().getInstances(cls);
     }
@@ -728,7 +738,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated No longer implemented
      */
-    @Deprecated
     public synchronized int getNextFrameNumber() {
         return 0;
     }
@@ -774,7 +783,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getReferences(object);
     }
 
-    public synchronized Collection<Reference> getMatchingReferences(String s, int maxRefs) {
+    public synchronized Collection getMatchingReferences(String s, int maxRefs) {
         return getHeadFrameStore().getMatchingReferences(s, maxRefs);
     }
 
@@ -829,7 +838,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated this functionality is no longer available
      */
-    @Deprecated
     public synchronized String getSlotValueLastModificationTimestamp(Frame frame, Slot slot, boolean isTemplate) {
         return null;
     }
@@ -837,7 +845,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated this functionality is no longer available
      */
-    @Deprecated
     public synchronized String getSlotValueLastModifier(Frame frame, Slot slot, boolean isTemplate) {
         return null;
     }
@@ -864,7 +871,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         Project p = getProject();
         if (p != null && p.isMultiUserClient()) {
             FrameStoreManager fsm = getFrameStoreManager();
-            RemoteClientFrameStore fs = fsm.getFrameStoreFromClass(RemoteClientFrameStore.class);
+            RemoteClientFrameStore fs = (RemoteClientFrameStore) fsm.getFrameStoreFromClass(RemoteClientFrameStore.class);
             return _userName = fs.getSession().getUserName();
         }
         else if (p != null && p.isMultiUserServer()) {
@@ -949,7 +956,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use setModificationRecordUpdatingEnabled
      */
-    @Deprecated
     public synchronized void setAutoUpdateFacetValues(boolean autoUpdate) {
         setModificationRecordUpdatingEnabled(autoUpdate);
     }
@@ -1014,39 +1020,16 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated This functionality is no longer available
      */
-    @Deprecated
     public synchronized void setNextFrameNumber(int number) {
     }
 
-    private boolean clientServerAdjusted = false;
-    
     public synchronized void setProject(Project project) {
         _project = project;
-        if (!clientServerAdjusted) {
-            if (project.isMultiUserClient()) {
-                adjustForClient();
-            }
-            if (project.isMultiUserServer()) {
-                adjustForServer();
-            }
-            clientServerAdjusted = true;
-        }
-    }
-
-    protected void adjustForClient() {
-        DeleteSimplificationFrameStore dsfs 
-                = _frameStoreManager.getFrameStoreFromClass(DeleteSimplificationFrameStore.class);
-        _frameStoreManager.setEnabled(dsfs, false);
-    }
-    
-    protected void adjustForServer() {
-        
     }
 
     /**
      * @deprecated Use #setFacetCheckingEnabled(boolean)
      */
-    @Deprecated
     public synchronized void setValueChecking(boolean checking) {
         setFacetCheckingEnabled(checking);
     }
@@ -1074,7 +1057,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated use #addDirectOwnSlotValues */
-    @Deprecated
     public synchronized void addOwnSlotValue(Frame frame, Slot slot, Object value) {
         List values = new ArrayList(getDirectOwnSlotValues(frame, slot));
         values.add(value);
@@ -1091,7 +1073,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated use getOwnSlotValues */
-    @Deprecated
     public synchronized Collection getOwnSlotAndSubslotValues(Frame frame, Slot slot) {
         return getOwnSlotValues(frame, slot);
     }
@@ -1107,13 +1088,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #getOwnFacets */
-    @Deprecated
     public synchronized Collection getOwnSlotFacets(Frame frame, Slot slot) {
         return getOwnFacets(frame, slot);
     }
 
     /** @deprecated renamed to #getOwnFacetValues */
-    @Deprecated
     public synchronized Collection getOwnSlotFacetValues(Frame frame, Slot slot, Facet facet) {
         return getOwnFacetValues(frame, slot, facet);
     }
@@ -1149,7 +1128,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated use #setDirectOwnSlotValues */
-    @Deprecated
     public synchronized void removeOwnSlotValue(Frame frame, Slot slot, Object value) {
         List values = new ArrayList(getDirectOwnSlotValues(frame, slot));
         values.remove(value);
@@ -1165,7 +1143,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #setDirectOwnSlotValue */
-    @Deprecated
     public synchronized void setOwnSlotValue(Frame frame, Slot slot, Object value) {
         setDirectOwnSlotValue(frame, slot, value);
     }
@@ -1176,7 +1153,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to setDirectOwnSlotValues */
-    @Deprecated
     public synchronized void setOwnSlotValues(Frame frame, Slot slot, Collection values) {
         setDirectOwnSlotValues(frame, slot, values);
     }
@@ -1224,7 +1200,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated use #setDirectTemplateFacetValues */
-    @Deprecated
     public synchronized void addTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
         Collection values = new ArrayList(getDirectTemplateFacetValues(cls, slot, facet));
         values.add(value);
@@ -1232,7 +1207,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated use #setDirectTemplateSlotValues */
-    @Deprecated
     public synchronized void addTemplateSlotValue(Cls cls, Slot slot, Object value) {
         Collection values = new ArrayList(getHeadFrameStore().getDirectTemplateSlotValues(cls, slot));
         values.add(value);
@@ -1425,7 +1399,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #removeDirectTemplateFacetOverrides */
-    @Deprecated
     public synchronized void removeTemplateFacetOverrides(Cls cls, Slot slot) {
         removeDirectTemplateFacetOverrides(cls, slot);
     }
@@ -1500,7 +1473,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #setDirectTemplateFacetValue */
-    @Deprecated
     public synchronized void setTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
         setDirectTemplateFacetValue(cls, slot, facet, value);
     }
@@ -1511,7 +1483,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #setDirectTemplateFacetValues */
-    @Deprecated
     public synchronized void setTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
         setDirectTemplateFacetValues(cls, slot, facet, values);
     }
@@ -1591,7 +1562,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     /** @deprecated renamed to #setDirectTemplateSlotValues */
-    @Deprecated
     public synchronized void setTemplateSlotValues(Cls cls, Slot slot, Collection values) {
         setDirectTemplateSlotValues(cls, slot, values);
     }
@@ -1891,11 +1861,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    private Collection<Frame> getFramesWithAnyOwnSlotValue(Slot slot) {
+    private Collection getFramesWithAnyOwnSlotValue(Slot slot) {
         return getHeadFrameStore().getFramesWithAnyDirectOwnSlotValue(slot);
     }
 
-    private Collection<Cls> getClsesWithAnyTemplateSlotValue(Slot slot) {
+    private Collection getClsesWithAnyTemplateSlotValue(Slot slot) {
         return getHeadFrameStore().getClsesWithAnyDirectTemplateSlotValue(slot);
     }
 
@@ -2148,7 +2118,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         _frameStoreManager.removeListener(c, o, listener);
     }
 
-    @Override
     public String toString() {
         return StringUtilities.getClassName(this) + "(" + getName() + ")";
     }
@@ -2179,7 +2148,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use #commitTransaction or #rollbackTransaction
      */
-    @Deprecated
     public synchronized boolean endTransaction(boolean doCommit) {
         boolean committed;
         if (doCommit) {
@@ -2193,7 +2161,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use #commitTransaction
      */
-    @Deprecated
     public synchronized boolean endTransaction() {
     	return commitTransaction();
     }
@@ -2231,7 +2198,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @param cls
      * @param slot
      */
-    @Deprecated
     public synchronized void setDirectBrowserSlot(Cls cls, Slot slot) {
         setDirectBrowserSlotPattern(cls, new BrowserSlotPattern(slot));
     }
@@ -2299,7 +2265,6 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * @deprecated Use #getFacetCheckingEnabled
      */
-    @Deprecated
     public boolean getValueChecking() {
         return getFacetCheckingEnabled();
     }
@@ -2358,12 +2323,4 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         cacheMachine = machine;
     }
 
-    public Frame rename(Frame frame, String name) {
-        FrameFactory ff = getFrameFactory();
-        return ff.rename(frame, name);
-    }
-    
-    public void assertFrameName(Frame frame) {
-    	setDirectOwnSlotValue(frame, _systemFrames.getNameSlot(), frame.getName());
-    }
 }

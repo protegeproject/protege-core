@@ -149,8 +149,4 @@ public class DefaultFacet extends DefaultInstance implements Facet {
     public Icon getIcon() {
         return Icons.getFacetIcon(!isEditable(), !isVisible());
     }
-    
-    public Facet rename(String name) {
-        return (Facet) super.rename(name);
-    }
 }

@@ -12,7 +12,6 @@ import javax.swing.border.*;
 
 import edu.stanford.smi.protege.event.*;
 import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.resource.*;
 import edu.stanford.smi.protege.util.*;
 import edu.stanford.smi.protege.widget.*;
@@ -27,7 +26,7 @@ import edu.stanford.smi.protege.widget.*;
 public class InstanceDisplay extends JDesktopPane implements Disposable {
     private Project _project;
     private JScrollPane _scrollPane;
-    private Collection<ClsWidget> _currentWidgets = new ArrayList<ClsWidget>();
+    private Collection _currentWidgets = new ArrayList();
     private Instance _currentInstance;
     private Cls _currentAssociatedCls;
     private HeaderComponent _header;
@@ -40,33 +39,27 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     private boolean resizeVertically;
 
     private ClsListener _clsListener = new ClsAdapter() {
-    	
         public void directSuperclassAdded(ClsEvent event) {
-        	if (event.isReplacementEvent()) return;
             reloadForm();
         }
 
         public void directSuperclassRemoved(ClsEvent event) {
-        	if (event.isReplacementEvent()) return;
             reloadForm();
         }
 
         public void templateSlotAdded(ClsEvent event) {
-        	if (event.isReplacementEvent()) return;
             if (shouldDisplaySlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
         }
 
         public void templateSlotRemoved(ClsEvent event) {
-        	if (event.isReplacementEvent()) return;
             if (isDisplayingSlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
         }
 
         public void templateFacetValueChanged(ClsEvent event) {
-        	if (event.isReplacementEvent()) return;
             if (isDisplayingSlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
@@ -74,26 +67,11 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     };
     private FrameListener _frameListener = new FrameAdapter() {
         public void ownSlotValueChanged(FrameEvent event) {
-        	if (event.isReplacementEvent()) return;
             Slot slot = event.getSlot();
             if (slot.hasSuperslot(_templateSlotsSlot)) {
                 reloadForm();
             }
         }
-    };
-    
-    private KnowledgeBaseListener _kbListener = new KnowledgeBaseAdapter() {
-    	public void frameReplaced(KnowledgeBaseEvent event) {
-    		Frame oldFrame = event.getFrame();
-    		Frame newFrame = event.getNewFrame();
-    		
-    		if (_currentInstance != null && _currentInstance.equals(oldFrame)) {
-    			 setInstance((Instance)newFrame);
-    		}
-    		if (_currentAssociatedCls != null && _currentAssociatedCls.equals(oldFrame)) {    		
-    			 setInstance(_currentInstance);    			
-    		}
-    	}
     };
 
     private WidgetListener _widgetListener = new WidgetAdapter() {
@@ -163,7 +141,6 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
         _project = project;
         _templateSlotsSlot = project.getKnowledgeBase().getSlot(Model.Slot.DIRECT_TEMPLATE_SLOTS);
-    	project.getKnowledgeBase().addKnowledgeBaseListener(_kbListener);
         project.addProjectListener(_projectListener);
         _scrollPane = makeInstanceScrollPane();
         _child.add(_scrollPane, BorderLayout.CENTER);
@@ -354,12 +331,13 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     }
 
     public void dispose() {
-    	_project.getKnowledgeBase().removeKnowledgeBaseListener(_kbListener);
         _project.removeProjectListener(_projectListener);
         if (_currentInstance != null) {
             _currentInstance.removeInstanceListener(_instanceListener);
         }
-        for (ClsWidget widget : _currentWidgets) {
+        Iterator i = _currentWidgets.iterator();
+        while (i.hasNext()) {
+            ClsWidget widget = (ClsWidget) i.next();
             widget.removeWidgetListener(_widgetListener);
             widget.getCls().removeClsListener(_clsListener);
             widget.getCls().removeFrameListener(_frameListener);
@@ -385,7 +363,9 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
 
     private ClsWidget getClsWidget(Cls cls) {
         ClsWidget widget = null;
-        for (ClsWidget clsWidget : _currentWidgets) {
+        Iterator i = _currentWidgets.iterator();
+        while (i.hasNext()) {
+            ClsWidget clsWidget = (ClsWidget) i.next();
             if (clsWidget.getCls().equals(cls)) {
                 widget = clsWidget;
                 break;
@@ -595,7 +575,9 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     }
 
     protected void removeCurrentWidgets() {
-        for (ClsWidget widget : _currentWidgets) {
+        Iterator i = _currentWidgets.iterator();
+        while (i.hasNext()) {
+            ClsWidget widget = (ClsWidget) i.next();
             widget.getCls().removeClsListener(_clsListener);
             widget.getCls().removeFrameListener(_frameListener);
             widget.removeWidgetListener(_widgetListener);
@@ -652,7 +634,9 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
                 addRuntimeWidgets(instance, associatedCls);
             } else {
                 if (typesMatchCurrentWidgets(instance)) {
-                    for (ClsWidget clsWidget : _currentWidgets) {
+                    Iterator i = _currentWidgets.iterator();
+                    while (i.hasNext()) {
+                        ClsWidget clsWidget = (ClsWidget) i.next();
                         clsWidget.setInstance(instance);
                         clsWidget.setAssociatedCls(associatedCls);
                     }
@@ -676,7 +660,9 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         Set types = new HashSet(instance.getDirectTypes());
         if (types.size() == _currentWidgets.size()) {
             typesMatch = true;
-            for (ClsWidget widget : _currentWidgets) {
+            Iterator i = _currentWidgets.iterator();
+            while (i.hasNext()) {
+                ClsWidget widget = (ClsWidget) i.next();
                 if (!types.contains(widget.getCls())) {
                     typesMatch = false;
                     break;

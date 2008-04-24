@@ -16,7 +16,6 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Model;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
@@ -153,12 +152,38 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                 }
             }
         }
-        if (values != null) {
-            return new ArrayList(values);
-        } else {
-            return null;
-        }
+        return values;
     }
+
+    private List lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("finding values for frame = " + frame.getFrameID() +
+                     "and slot = " + slot.getFrameID() +
+                     " facet = " + (facet != null ? facet.getFrameID() : null) +
+                     " isTemplate = " + isTemplate);
+        }
+        List values = null;
+        Map<Sft, List> sftToValuesMap = lookup(frame);
+        if (sftToValuesMap != null) {
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Trying cache");
+            }
+            values = lookup(sftToValuesMap, slot, facet, isTemplate);
+        }
+        if (log.isLoggable(Level.FINE)) {
+            if (values == null) log.finest("null found");
+            else {
+                for (Object o : values) {
+                    if (o instanceof Frame) {
+                        log.finest("\tFrame Value = " + ((Frame) o).getFrameID());
+                    }
+                    else log.finest("Value = " + o);
+                }
+            }
+        }
+        return values;
+    }
+
 
     private static boolean isSpecial(Slot slot, Facet facet, boolean isTemplate) {
         return facet == null
@@ -253,6 +278,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                     insert(sftToValuesMap, slot, facet, isTemplate, new ArrayList(values));
                 }
             } else {
+                list = new ArrayList(list);
                 list.addAll(values);
                 insert(sftToValuesMap, slot, facet, isTemplate, list);
             }
@@ -264,6 +290,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         if (map != null) {
             List list = lookup(map, slot, facet, isTemplate);
             if (list != null) {
+                list = new ArrayList(list);
                 list.remove(value);
                 insert(map, slot, facet, isTemplate, list);
             }
@@ -275,6 +302,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         if (map != null) {
             List list = lookup(map, slot, facet, isTemplate);
             if (list != null) {
+                list = new ArrayList(list);
                 Object value = list.remove(from);
                 list.add(to, value);
                 insert(map, slot, facet, isTemplate, list);
@@ -290,7 +318,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             if (sftToValuesMap != null) {
                 for ( Map.Entry<Sft,List> entry : sftToValuesMap.entrySet()) {
                     Sft sft = entry.getKey();
-                    List values = entry.getValue();
+                    List values = (List) entry.getValue();
                     if (contains(sft, frame)) {
                         getFrameToSftToValuesMap().remove(frameKey);
                         markWritten(frameKey);
@@ -339,6 +367,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
     public NarrowFrameStore getDelegate() {
         return _delegate;
+    }
+
+    public FrameID generateFrameID() {
+        return _delegate.generateFrameID();
     }
 
     public int getFrameCount() {
@@ -451,11 +483,11 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         return _delegate.getMatchingFrames(slot, facet, isTemplate, value, maxMatches);
     }
 
-    public Set<Reference> getReferences(Object value) {
+    public Set getReferences(Object value) {
         return _delegate.getReferences(value);
     }
 
-    public Set<Reference> getMatchingReferences(String value, int maxMatches) {
+    public Set getMatchingReferences(String value, int maxMatches) {
         return _delegate.getMatchingReferences(value, maxMatches);
     }
 
@@ -507,11 +539,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
           clearCache();
       }
       return getDelegate().beginTransaction(name);
-    }
-
-    public void replaceFrame(Frame original, Frame replacement) {
-      clearCache();
-      getDelegate().replaceFrame(original, replacement);
     }
 
     public boolean commitTransaction() {
@@ -576,9 +603,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     	}
 	}
 
-	@Override
-    public String toString() {
-	    return "ValueCachingFrameStore(" + getName() + ")";
-	}
+
 }
 

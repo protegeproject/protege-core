@@ -12,16 +12,10 @@ public class Transaction_Test extends APITestCase {
     public void setUp() throws Exception {
         super.setUp();
         chooseDBType();
-        if (getDBType() != null) {
-          setDatabaseProject();
-        }
+        setDatabaseProject();
     }
 
     public void testCommit() {
-        if (getDBType() == null) {
-          System.out.println("Transaction Test not configuured");
-          return;
-        }
 
         int initialFrameCount = getFrameCount();
         Transaction t = new Transaction(getDomainKB()) {
@@ -42,10 +36,6 @@ public class Transaction_Test extends APITestCase {
     }
 
     public void testRollback() {
-        if (getDBType() == null) {
-          System.out.println("Transaction Test not configured");
-          return;
-        }
         String clsName = createCls().getName();
 
         int initialFrameCount = getFrameCount();

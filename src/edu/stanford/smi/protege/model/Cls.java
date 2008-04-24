@@ -295,6 +295,4 @@ public interface Cls extends Instance {
     void setTemplateSlotValues(Slot slot, Collection c);
 
     void setTemplateSlotValueType(Slot slot, ValueType valueType);
-    
-    Cls rename(String name);
 }

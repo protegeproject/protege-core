@@ -228,8 +228,4 @@ public class DefaultSlot extends DefaultInstance implements Slot {
     public Icon getIcon() {
         return Icons.getSlotIcon(false, false, !isEditable(), !isVisible());
     }
-    
-    public Slot rename(String name) {
-        return (Slot) super.rename(name);
-    }
 }

@@ -30,7 +30,6 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
@@ -57,6 +56,8 @@ import edu.stanford.smi.protege.server.update.RemoveCacheUpdate;
 import edu.stanford.smi.protege.server.update.RemoveFrameCache;
 import edu.stanford.smi.protege.server.update.SftUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
+import edu.stanford.smi.protege.ui.ProjectManager;
+import edu.stanford.smi.protege.ui.ProjectView;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
@@ -76,9 +77,12 @@ public class RemoteClientFrameStore implements FrameStore {
     private static transient Logger log = Log.getLogger(RemoteClientFrameStore.class);
     private static transient Logger cacheLog = ServerFrameStore.cacheLog;
     
+    private static Method getEventsMethod;
     private static Method executeProtegeJobMethod;
     static {
       try {
+        getEventsMethod = RemoteServerFrameStore.class.getDeclaredMethod("getEvents", 
+                                                                         new Class[] { RemoteSession.class });
         executeProtegeJobMethod = RemoteServerFrameStore.class.getDeclaredMethod("executeProtegeJob",
                                                                                  new Class[] {ProtegeJob.class, RemoteSession.class});
       } catch (NoSuchMethodException nsme) {
@@ -395,12 +399,22 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
+    public synchronized void setFrameName(Frame frame, String name) {
+        try {
+            OntologyUpdate vu = getRemoteDelegate().setFrameName(frame, name, session);
+            processValueUpdate(vu);
+        } catch (RemoteException e) {
+            throw convertException(e);
+        }
+    }
+
     public synchronized Cls createCls(FrameID id, 
+                         String name, 
                          Collection directTypes, 
                          Collection directSuperclasses,
                          boolean loadDefaultValues) {
         try {
-            RemoteResponse<Cls> wrappedCls = getRemoteDelegate().createCls(id, directTypes, directSuperclasses, loadDefaultValues,
+            RemoteResponse<Cls> wrappedCls = getRemoteDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaultValues,
                     session);
             processValueUpdate(wrappedCls);
             return wrappedCls.getResponse();
@@ -410,12 +424,13 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public synchronized Slot createSlot(FrameID id, 
+                           String name, 
                            Collection directTypes, 
                            Collection directSuperslots,
                            boolean loadDefaultValues) {
         try {
             RemoteResponse<Slot> wrappedSlot 
-              = getRemoteDelegate().createSlot(id, 
+              = getRemoteDelegate().createSlot(id, name, 
                                                directTypes, directSuperslots, 
                                                loadDefaultValues,
                                                session);
@@ -426,11 +441,10 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-
-    public synchronized Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
+    public synchronized Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
         try {
             RemoteResponse<Facet> wrappedFacet 
-              = getRemoteDelegate().createFacet(id,
+              = getRemoteDelegate().createFacet(id, name, 
                                                 directTypes, 
                                                 loadDefaultValues, session);
             processValueUpdate(wrappedFacet);
@@ -441,11 +455,12 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public synchronized SimpleInstance createSimpleInstance(FrameID id, 
+                                               String name, 
                                                Collection directTypes,
                                                boolean loadDefaultValues) {
         try {
             RemoteResponse<SimpleInstance> wrappedSimpleInstance 
-              = getRemoteDelegate().createSimpleInstance(id, directTypes,
+              = getRemoteDelegate().createSimpleInstance(id, name, directTypes,
                                                          loadDefaultValues, 
                                                          session);
             processValueUpdate(wrappedSimpleInstance);
@@ -941,9 +956,9 @@ public class RemoteClientFrameStore implements FrameStore {
       }.start();
     }
 
-    public synchronized Set<Reference> getReferences(Object object) {
+    public synchronized Set getReferences(Object object) {
         try {
-            Set<Reference> references = getRemoteDelegate().getReferences(object, session);
+            Set references = getRemoteDelegate().getReferences(object, session);
             localize(references);
             return references;
         } catch (RemoteException e) {
@@ -964,7 +979,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     }
 
-    public Set<Reference> getMatchingReferences(String string, int maxMatches) {
+    public Set getMatchingReferences(String string, int maxMatches) {
         try {
             Set references = getRemoteDelegate().getMatchingReferences(string, maxMatches, session);
             localize(references);
@@ -974,7 +989,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         try {
             Set frames = getRemoteDelegate().getFramesWithDirectOwnSlotValue(slot, value, session);
             localize(frames);
@@ -984,7 +999,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         try {
             Set frames = getRemoteDelegate().getFramesWithAnyDirectOwnSlotValue(slot, session);
             localize(frames);
@@ -1014,7 +1029,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         try {
             Set clses = getRemoteDelegate().getClsesWithAnyDirectTemplateSlotValue(slot, session);
             localize(clses);
@@ -1418,16 +1433,16 @@ public class RemoteClientFrameStore implements FrameStore {
         return getTemplateFacetValues(cls, slot, getSystemFrames().getValuesFacet());
     }
 
-    private Set<Slot> getCacheOwnSlots(Frame frame) {
+    private Set getCacheOwnSlots(Frame frame) {
         Collection types = getTypes((Instance) frame);
-        Set<Slot> ownSlots = collectOwnSlotValues(types, getSystemFrames().getDirectTemplateSlotsSlot());
+        Set ownSlots = collectOwnSlotValues(types, getSystemFrames().getDirectTemplateSlotsSlot());
         ownSlots.add(getSystemFrames().getNameSlot());
         ownSlots.add(getSystemFrames().getDirectTypesSlot());
         return ownSlots;
     }
 
-    private Set<Slot> collectOwnSlotValues(Collection frames, Slot slot) {
-        Set<Slot> values = new LinkedHashSet<Slot>();
+    private Set collectOwnSlotValues(Collection frames, Slot slot) {
+        Set values = new LinkedHashSet();
         Object[] frameArray = frames.toArray();
         for (int i = 0; i < frameArray.length; ++i) {
             Frame frame = (Frame) frameArray[i];
@@ -1839,10 +1854,4 @@ public class RemoteClientFrameStore implements FrameStore {
     }
     
   }
-
-    public void replaceFrame(Frame original, Frame replacement) {
-      throw new UnsupportedOperationException("Server-client rename not implemented yet");
-    }
-    
-    
 }

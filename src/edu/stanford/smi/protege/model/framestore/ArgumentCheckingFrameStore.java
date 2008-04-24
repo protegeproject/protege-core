@@ -10,7 +10,6 @@ import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
@@ -112,29 +111,35 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         return getDelegate().getFrameName(frame);
     }
 
-    public Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
+    public void setFrameName(Frame frame, String name) {
+        checkFrame(frame);
+        checkString(name);
+        getDelegate().setFrameName(frame, name);
+    }
+
+    public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaultValues) {
         checkClses(directTypes);
         checkClses(directSuperclasses);
-        return getDelegate().createCls(id, directTypes, directSuperclasses, loadDefaultValues);
+        return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaultValues);
     }
 
-    public Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
+    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues) {
         checkClses(directTypes);
         checkSlots(directSuperslots);
-        return getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaultValues);
+        return getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaultValues);
     }
 
-    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
+    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
         checkClses(directTypes);
-        return getDelegate().createFacet(id, directTypes, loadDefaultValues);
+        return getDelegate().createFacet(id, name, directTypes, loadDefaultValues);
     }
 
-    public SimpleInstance createSimpleInstance(FrameID id, Collection directTypes,
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
             boolean loadDefaultValues) {
         checkClses(directTypes);
-        return getDelegate().createSimpleInstance(id, directTypes, loadDefaultValues);
+        return getDelegate().createSimpleInstance(id, name, directTypes, loadDefaultValues);
     }
 
     public void deleteCls(Cls cls) {
@@ -438,12 +443,12 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         getDelegate().executeQuery(query, callback);
     }
 
-    public Set<Reference> getReferences(Object object) {
+    public Set getReferences(Object object) {
         checkValue(object);
         return getDelegate().getReferences(object);
     }
 
-    public Set<Reference> getMatchingReferences(String string, int maxMatches) {
+    public Set getMatchingReferences(String string, int maxMatches) {
         checkString(string);
         return getDelegate().getMatchingReferences(string, maxMatches);
     }
@@ -454,13 +459,13 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         return getDelegate().getClsesWithMatchingBrowserText(text, superclasses, maxMatches);
     }
 
-    public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+    public Set getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         checkSlot(slot);
         checkValue(value);
         return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
     }
 
-    public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+    public Set getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         checkSlot(slot);
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
     }
@@ -477,7 +482,7 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
         return getDelegate().getClsesWithDirectTemplateSlotValue(slot, value);
     }
 
-    public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+    public Set getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         checkSlot(slot);
         return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
     }
@@ -568,11 +573,4 @@ public class ArgumentCheckingFrameStore extends AbstractFrameStore {
     public List<AbstractEvent> getEvents() {
         return getDelegate().getEvents();
     }
-
-    public void replaceFrame(Frame original, Frame replacement) {
-      checkFrame(original);
-      checkFrame(replacement);
-      getDelegate().replaceFrame(original, replacement);
-    }
-    
 }

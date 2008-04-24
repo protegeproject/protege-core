@@ -23,27 +23,32 @@ public class ChangeMonitorFrameStore extends ModificationFrameStore {
         changed = false;
     }
 
-    public Cls createCls(FrameID id, Collection directTypes, Collection directSuperclasses,
-            boolean loadDefaultValues) {
+    public void setFrameName(Frame frame, String name) {
         markChanged();
-        return getDelegate().createCls(id, directTypes, directSuperclasses, loadDefaultValues);
+        getDelegate().setFrameName(frame, name);
     }
 
-    public Slot createSlot(FrameID id, Collection directTypes, Collection directSuperslots,
+    public Cls createCls(FrameID id, String name, Collection directTypes, Collection directSuperclasses,
             boolean loadDefaultValues) {
         markChanged();
-        return getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaultValues);
+        return getDelegate().createCls(id, name, directTypes, directSuperclasses, loadDefaultValues);
     }
 
-    public Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
-        markChanged();
-        return getDelegate().createFacet(id, directTypes, loadDefaultValues);
-    }
-
-    public SimpleInstance createSimpleInstance(FrameID id, Collection directTypes,
+    public Slot createSlot(FrameID id, String name, Collection directTypes, Collection directSuperslots,
             boolean loadDefaultValues) {
         markChanged();
-        return getDelegate().createSimpleInstance(id, directTypes, loadDefaultValues);
+        return getDelegate().createSlot(id, name, directTypes, directSuperslots, loadDefaultValues);
+    }
+
+    public Facet createFacet(FrameID id, String name, Collection directTypes, boolean loadDefaultValues) {
+        markChanged();
+        return getDelegate().createFacet(id, name, directTypes, loadDefaultValues);
+    }
+
+    public SimpleInstance createSimpleInstance(FrameID id, String name, Collection directTypes,
+            boolean loadDefaultValues) {
+        markChanged();
+        return getDelegate().createSimpleInstance(id, name, directTypes, loadDefaultValues);
     }
 
     public void deleteCls(Cls cls) {
@@ -161,11 +166,6 @@ public class ChangeMonitorFrameStore extends ModificationFrameStore {
 
     public boolean rollbackTransaction() {
         return getDelegate().rollbackTransaction();
-    }
-
-    public void replaceFrame(Frame original, Frame replacement) {
-      markChanged();
-      getDelegate().replaceFrame(original, replacement);
     }
 
 }

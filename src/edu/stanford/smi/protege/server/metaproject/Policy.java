@@ -9,9 +9,5 @@ public interface Policy {
   Set<Operation> getAllowedOperations(User user, ProjectInstance project);
   
   Set<Operation> getKnownOperations();
-  
-  User getUserByName(String user);
-  
-  ProjectInstance getProjectInstanceByName(String projectName);
 
 }

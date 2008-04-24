@@ -7,7 +7,7 @@ import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.server.RemoteProjectManager;
 import edu.stanford.smi.protege.server.Server_Test;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
-import edu.stanford.smi.protege.server.metaproject.impl.UnbackedOperationImpl;
+import edu.stanford.smi.protege.server.metaproject.impl.OperationImpl;
 import edu.stanford.smi.protege.test.APITestCase;
 
 public class ServerPolicy_Test extends APITestCase {
@@ -15,8 +15,7 @@ public class ServerPolicy_Test extends APITestCase {
   private static final String PASSWORD1 = "paul";
   private static final String PROJECT_NAME = "Newspaper";
 
-  @Override
-public void setUp() throws Exception {
+  public void setUp() throws Exception {
     super.setUp();
     try {
       Server_Test.setMetaProject("junit/pprj/policy/metaproject.pprj");
@@ -30,11 +29,11 @@ public void setUp() throws Exception {
     Project p = RemoteProjectManager.getInstance().getProject(Server_Test.HOST, USER1, PASSWORD1, PROJECT_NAME, true);
     DefaultKnowledgeBase kb = (DefaultKnowledgeBase) p.getKnowledgeBase();
     
-    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new UnbackedOperationImpl("RestartServer", null)));
-    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, MetaProjectConstants.OPERATION_READ));
-    assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, MetaProjectConstants.OPERATION_WRITE));
+    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new OperationImpl("RestartServer")));
+    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, OperationImpl.READ));
+    assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, OperationImpl.WRITE));
     assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, Policy_Test.SELF_DESTRUCT));
-    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new UnbackedOperationImpl("someWeirdNotInOntology", null)));
+    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new OperationImpl("someWeirdNotInOntology")));
   }
 
 
