@@ -243,6 +243,8 @@
              <include name="*.sh"/>
              <include name="*.bat"/>
           </fileset>
+          <fileset dir="./src/edu/stanford/smi/protege/resource/files"
+                   includes="protege_text.properties*"/>
        </copy>
        <copy todir="${protege.home}/examples">
            <fileset dir="examples"/>
