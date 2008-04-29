@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -25,17 +26,18 @@ import java.util.logging.Logger;
  * 
  * <pre>
  * 
- *                                                  class Foo {
- *                                                      void bar(Object o) {
- *                                                          ...
- *                                                          Log.trace(&quot;my message&quot;, this, &quot;bar&quot;, o);
- *                                                          ...
- *                                                      }
- *                                                      void static baz(Object o1, String s1) {
- *                                                          ...
- *                                                          Log.trace(&quot;my message&quot;, Foo.class, &quot;baz&quot;, o1, s1);
- *                                                          ...
- *                                                      }
+ *    class Foo {
+ *       void bar(Object o) {
+ *             ...
+ *             Log.trace(&quot;my message&quot;, this, &quot;bar&quot;, o);
+ *             ...
+ *       }
+ *     
+ *       void static baz(Object o1, String s1) {
+ *            ...
+ *            Log.trace(&quot;my message&quot;, Foo.class, &quot;baz&quot;, o1, s1);
+ *            ...
+ *       }
  * </pre>
  * 
  * </blockquote>
@@ -176,8 +178,32 @@ public class Log {
         return l;
     }
     
+    
+    public static void makeInheritedLoggersLocal(Logger logger) {
+    	Handler[] inheritedHandlers = getInheritedHandlers(logger);
+    	
+    	logger.setUseParentHandlers(false);
+    	for (int i = 0; i < inheritedHandlers.length; i++) {    		
+			logger.addHandler(inheritedHandlers[i]);
+		}
+    }
+    
+    
+    private static Handler[] getInheritedHandlers(Logger logger) {
+    	Handler[] inheritedHandlers = logger.getHandlers();
+    	
+    	while (inheritedHandlers.length == 0) {
+    		Logger parentLogger = logger.getParent();
+    		if (parentLogger == null) { //root
+    			return inheritedHandlers;
+    		}
+    		inheritedHandlers = parentLogger.getHandlers();
+    	}
+    	
+		return inheritedHandlers;
+	}
 
-    /**
+	/**
      * This method is to ease  the debugging of junits.  It does allow reliable and 
      * programatic setting of logging levels but it is probably only useful for debug.
      */
