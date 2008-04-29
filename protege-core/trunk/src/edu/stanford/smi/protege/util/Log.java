@@ -253,6 +253,7 @@ public class Log {
     }
     
     private static Handler getFileHandler() throws IOException {
+    	
         if (fileHandler == null) {
             String path;
             File file = ApplicationProperties.getLogFileDirectory();
