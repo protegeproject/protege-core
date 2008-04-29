@@ -20,9 +20,14 @@ import edu.stanford.smi.protege.model.Frame;
 public abstract class AbstractFormatter extends Formatter {
     private static final String lineSeparator = SystemUtilities.getLineSeparator();
     private static final DateFormat dateFormat = new StandardDateFormat();
+       
 
-    //ESCA-JAVA0130 
     protected String format(LogRecord record, String user, boolean showDate, boolean showMethod) {
+    	return format(record, user, showDate, showMethod, true, true);
+    }
+    
+    //ESCA-JAVA0130 
+    protected String format(LogRecord record, String user, boolean showDate, boolean showMethod, boolean printLineSeparator, boolean showLevel) {
         StringBuffer buffer = new StringBuffer();
         if (showDate) {
             buffer.append(getDateString());
@@ -32,9 +37,12 @@ public abstract class AbstractFormatter extends Formatter {
             buffer.append(user);
             buffer.append(" ");
         }
-        Level level = record.getLevel();
-        buffer.append(level.toString());
-        buffer.append(": ");
+        
+        if (showLevel) {
+        	Level level = record.getLevel();
+        	buffer.append(level.toString());
+        	buffer.append(": ");
+        }
         buffer.append(record.getMessage());
         Throwable throwable = record.getThrown();
         if (throwable == null) {
@@ -62,7 +70,9 @@ public abstract class AbstractFormatter extends Formatter {
             throwable.printStackTrace(new PrintWriter(writer));
             buffer.append(writer.getBuffer());
         }
-        buffer.append(lineSeparator);
+        if (printLineSeparator) {
+        	buffer.append(lineSeparator);
+        }
         return buffer.toString();
     }
 
