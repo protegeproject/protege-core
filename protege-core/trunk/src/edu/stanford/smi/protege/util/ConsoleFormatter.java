@@ -10,8 +10,11 @@ import java.util.logging.*;
 public class ConsoleFormatter extends AbstractFormatter {
     
     public String format(LogRecord record) {
-        boolean showMethod = record.getLevel().intValue() >= Level.WARNING.intValue();
-        return format(record, null, false, showMethod);
+    	int level = record.getLevel().intValue();
+        boolean showMethod =  level >= Level.WARNING.intValue();
+        boolean showLevel = (level != Level.INFO.intValue()) &&
+        					(level != Level.CONFIG.intValue());
+        return format(record, null, false, showMethod, true, showLevel);
     }
 }
 
