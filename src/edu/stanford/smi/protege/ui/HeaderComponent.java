@@ -61,8 +61,13 @@ public class HeaderComponent extends JPanel {
     }
     
     public void setTitle(String title) {
-        titleLabel.setText(title.toUpperCase());
+        setTitle(title, true);
     }
+    
+    public void setTitle(String title, boolean toUpperCase) {    	
+        titleLabel.setText(toUpperCase == true ? title.toUpperCase() : title);
+    }
+    
     
     public void setComponentLabel(String label) {
         componentLabel.setText(label);
