@@ -197,6 +197,7 @@ public class Log {
     		if (parentLogger == null) { //root
     			return inheritedHandlers;
     		}
+    		logger = parentLogger;
     		inheritedHandlers = parentLogger.getHandlers();
     	}
     	
