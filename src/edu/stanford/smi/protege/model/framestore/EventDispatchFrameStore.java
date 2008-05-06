@@ -98,6 +98,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         while (i.hasNext()) {
             AbstractEvent event = (AbstractEvent) i.next();
             try {
+            	if (log.isLoggable(Level.FINER)) {
+            		log.finer("Dispatching event: " + event);
+            	}
                 dispatchEvent(event);
             } catch (Exception e) {
                 if (!ignoreExceptions) {
@@ -160,6 +163,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         Iterator i = getListeners(TransactionListener.class, event.getSource()).iterator();
         while (i.hasNext()) {
             TransactionListener listener = (TransactionListener) i.next();
+        	if (log.isLoggable(Level.FINEST)) {
+        		log.finest("\tdispatched to listener " + listener);
+        	}
             switch (event.getEventType()) {
                 case TransactionEvent.TRANSACTION_BEGIN:
                     listener.transactionBegin(event);
@@ -180,15 +186,14 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         Iterator i = getListeners(KnowledgeBaseListener.class, event.getSource()).iterator();
         while (i.hasNext()) {
             KnowledgeBaseListener listener = (KnowledgeBaseListener) i.next();
+        	if (log.isLoggable(Level.FINEST)) {
+        		log.finest("\tdispatched to listener " + listener);
+        	}
             switch (event.getEventType()) {
                 case KnowledgeBaseEvent.CLS_CREATED:
-                    // Log.trace("dispatched to " + listener, this,
-                    // "dispatchKbEvent", event);
                     listener.clsCreated(event);
                     break;
                 case KnowledgeBaseEvent.CLS_DELETED:
-                    // Log.trace("delete dispatched to " + listener, this,
-                    // "dispatchKbEvent", event);
                     listener.clsDeleted(event);
                     break;
                 case KnowledgeBaseEvent.SLOT_CREATED:
@@ -232,6 +237,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         Iterator i = getListeners(ClsListener.class, event.getSource()).iterator();
         while (i.hasNext()) {
             ClsListener listener = (ClsListener) i.next();
+        	if (log.isLoggable(Level.FINEST)) {
+        		log.finest("\tdispatched to listener " + listener);
+        	}
             switch (event.getEventType()) {
                 case ClsEvent.DIRECT_SUPERCLASS_ADDED:
                     listener.directSuperclassAdded(event);
@@ -325,6 +333,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         Iterator i = getListeners(SlotListener.class, event.getSource()).iterator();
         while (i.hasNext()) {
             SlotListener listener = (SlotListener) i.next();
+        	if (log.isLoggable(Level.FINEST)) {
+        		log.finest("\tdispatched to listener " + listener);
+        	}
             int type = event.getEventType();
             switch (type) {
                 case SlotEvent.TEMPLATE_SLOT_CLS_ADDED:
@@ -359,6 +370,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         Iterator i = getListeners(FacetListener.class, event.getSource()).iterator();
         while (i.hasNext()) {
             FacetListener listener = (FacetListener) i.next();
+        	if (log.isLoggable(Level.FINEST)) {
+        		log.finest("\tdispatched to listener " + listener);
+        	}
             int type = event.getEventType();
             switch (type) {
                 case FacetEvent.FRAME_SLOT_REFERENCE_ADDED:
@@ -378,6 +392,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         Iterator i = getListeners(InstanceListener.class, event.getSource()).iterator();
         while (i.hasNext()) {
             InstanceListener listener = (InstanceListener) i.next();
+        	if (log.isLoggable(Level.FINEST)) {
+        		log.finest("\tdispatched to listener " + listener);
+        	}
             int type = event.getEventType();
             switch (type) {
                 case InstanceEvent.DIRECT_TYPE_ADDED:
@@ -397,6 +414,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         Iterator i = getListeners(FrameListener.class, event.getSource()).iterator();
         while (i.hasNext()) {
             FrameListener listener = (FrameListener) i.next();
+        	if (log.isLoggable(Level.FINEST)) {
+        		log.finest("\tdispatched to listener " + listener);
+        	}
             switch (event.getEventType()) {
                 case FrameEvent.NAME_CHANGED:
                     listener.nameChanged(event);
