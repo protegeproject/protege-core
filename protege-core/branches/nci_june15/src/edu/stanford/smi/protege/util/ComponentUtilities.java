@@ -272,11 +272,27 @@ public class ComponentUtilities {
         return frame;
     }
 
-    public static Collection getListValues(JList list) {
-        return getModel(list).getValues();
+    public static Collection getListValues(JList list) {    	
+    	ListModel model = list.getModel();
+    	
+    	if (model instanceof SimpleListModel) {
+    		return ((SimpleListModel)model).getValues();
+    	}    	    	
+        return getGenericListValues(list);
     }
 
-    private static SimpleListModel getModel(JList list) {
+       
+    private static Collection getGenericListValues(JList list) {
+    	ArrayList values = new ArrayList();
+    	ListModel model = list.getModel();
+    	
+    	for (int i = 0; i < model.getSize(); i++) {
+    		values.add(model.getElementAt(i));
+		}    	
+		return values;	
+	}
+
+	private static SimpleListModel getModel(JList list) {
         ListModel model = list.getModel();
         if (!(model instanceof SimpleListModel)) {
             model = new SimpleListModel();
