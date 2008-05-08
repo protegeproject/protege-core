@@ -180,9 +180,12 @@ public class Log {
     
     
     public static void makeInheritedLoggersLocal(Logger logger) {
-    	Handler[] inheritedHandlers = getInheritedHandlers(logger);
+    	logger.setUseParentHandlers(false);    	
+    	if (logger.getHandlers() != null && logger.getHandlers().length > 0) {
+    		return;
+    	}    	
     	
-    	logger.setUseParentHandlers(false);
+    	Handler[] inheritedHandlers = getInheritedHandlers(logger);    	
     	for (int i = 0; i < inheritedHandlers.length; i++) {    		
 			logger.addHandler(inheritedHandlers[i]);
 		}
