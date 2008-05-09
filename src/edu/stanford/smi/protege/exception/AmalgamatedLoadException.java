@@ -7,14 +7,14 @@ import java.util.Collections;
 
 
 
-public class AmalgamatedIOException extends IOException implements AmalgamatedException {
+public class AmalgamatedLoadException extends OntologyLoadException implements AmalgamatedException {
     private static final long serialVersionUID = -974893021619055417L;
     
     @SuppressWarnings("unchecked")
     private Collection errors = new ArrayList();
     
     @SuppressWarnings("unchecked")
-    public  AmalgamatedIOException(Collection errors) {
+    public  AmalgamatedLoadException(Collection errors) {
         super();
         this.errors = errors;
     }
