@@ -177,7 +177,7 @@ public class ExportConfigurationPanel {
 			}
 		}
 		
-		Collections.sort(slots, new FrameComparator());
+		//Collections.sort(slots, new FrameComparator());
 	}
 	
 	private String getExportedFileName(){
