@@ -41,8 +41,10 @@ public class ApplicationProperties {
     public static final String REMOTE_CLIENT_PRELOAD = "remote.client.preload";
     
     public static final String URL_CONNECT_TIMEOUT = "url.connect.timeout";
-
     public static final String URL_CONNECT_READ_TIMEOUT = "url.connect.read.timeout";
+    
+    public static final String SORT_CLASS_TREE = "ui.sort.class.tree";    
+    public static final String SORT_SLOTS_TREE = "ui.sort.slot.tree";
     
     private static final Properties PROPERTIES = new Properties();
     private static File _propertyFile;
@@ -505,7 +507,20 @@ public class ApplicationProperties {
     	setInt(URL_CONNECT_READ_TIMEOUT, timeout);
     }
     
+    public static void setSortClassTreeOption(boolean classTreeSorted) {
+    	setBoolean(SORT_CLASS_TREE, classTreeSorted);
+    }
     
+    public static void setSortSlotTreeOption(boolean propertiesTreeSorted) {
+    	setBoolean(SORT_SLOTS_TREE, propertiesTreeSorted);
+    }
     
+    public static boolean getSortClassTreeOption() {
+    	return getBooleanProperty(SORT_CLASS_TREE, true);
+    }
+
+    public static boolean getSortSlotTreeOption() {
+    	return getBooleanProperty(SORT_SLOTS_TREE, true);
+    }
     
 }
