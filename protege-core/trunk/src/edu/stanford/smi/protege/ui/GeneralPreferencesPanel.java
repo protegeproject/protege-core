@@ -41,7 +41,7 @@ public class GeneralPreferencesPanel extends Box implements Validatable{
     private JTextField userNameField;
     private JRadioButton useLoginUserNameButton;
     private JRadioButton useSpecifiedUserNameButton;
-
+    
     private JRadioButton protegeDefaultLocaleButton;
     private JRadioButton systemDefaultLocaleButton;
     private JRadioButton otherLocaleButton;
@@ -49,21 +49,25 @@ public class GeneralPreferencesPanel extends Box implements Validatable{
 
     private JCheckBox showWelcomeDialogCheckBox;
     private JCheckBox prettyPrintLabelsCheckBox;
+    private JCheckBox sortClassTreeCheckBox;
+    private JCheckBox sortSlotTreeCheckBox;
 
     public GeneralPreferencesPanel() {
         super(BoxLayout.Y_AXIS);
         add(createShowWelcomeDialogCheckBox());
         add(createPrettyPrintLabelsCheckBox());
+        add(createSortClassTreeCheckBox());
+        add(createSortSlotTreeCheckBox());
         add(createUsernamePanel());
         add(createLocalePanel());
     }
 
-    private JComponent createUsernamePanel() {
+	private JComponent createUsernamePanel() {
         String applicationUserName = ApplicationProperties.getUserName();
         String systemUserName = SystemUtilities.getUserName();   
         
         Box box = Box.createVerticalBox();
-        box.setAlignmentX(Component.LEFT_ALIGNMENT);        
+        box.setAlignmentX(Component.LEFT_ALIGNMENT);
         box.setBorder(BorderFactory.createTitledBorder("User Name"));
                         
         Box useSpecifiedPanel = Box.createHorizontalBox();
@@ -180,11 +184,27 @@ public class GeneralPreferencesPanel extends Box implements Validatable{
         prettyPrintLabelsCheckBox.setSelected(ApplicationProperties.getPrettyPrintSlotWidgetLabels());
         return prettyPrintLabelsCheckBox;
     }
+   
 
+    private Component createSortSlotTreeCheckBox() {
+		sortSlotTreeCheckBox = ComponentFactory.createCheckBox("Sort slot tree (Slots Tab)");
+		sortSlotTreeCheckBox.setSelected(ApplicationProperties.getSortSlotTreeOption());
+		return sortSlotTreeCheckBox;    	
+	}
+
+	private Component createSortClassTreeCheckBox() {
+		sortClassTreeCheckBox = ComponentFactory.createCheckBox("Sort class tree (Classes Tab)");
+    	sortClassTreeCheckBox.setSelected(ApplicationProperties.getSortClassTreeOption());
+    	return sortClassTreeCheckBox;	
+	}    
+    
     public void saveContents() {
         ApplicationProperties.setUserName(userNameField.getText());
         ApplicationProperties.setWelcomeDialogShow(showWelcomeDialogCheckBox.isSelected());
         ApplicationProperties.setPrettyPrintSlotWidgetLabels(prettyPrintLabelsCheckBox.isSelected());
+        ApplicationProperties.setSortClassTreeOption(sortClassTreeCheckBox.isSelected());
+        ApplicationProperties.setSortSlotTreeOption(sortSlotTreeCheckBox.isSelected());
+        
         Locale locale;
         if (protegeDefaultLocaleButton.isSelected()) {
             locale = SystemUtilities.getProtegeSystemDefaultLocale();
