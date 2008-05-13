@@ -94,7 +94,7 @@ public class ParentChildNode extends LazyTreeNode {
     };
 
     public ParentChildNode(LazyTreeNode parentNode, Cls parentCls) {
-        super(parentNode, parentCls);
+        super(parentNode, parentCls, parentNode.isSorted());
         parentCls.addClsListener(_clsListener);
         parentCls.addFrameListener(_frameListener);
     }
@@ -122,7 +122,8 @@ public class ParentChildNode extends LazyTreeNode {
     }
 
     protected Comparator getComparator() {
-        return new LazyTreeNodeFrameComparator();
+        //return new LazyTreeNodeFrameComparator();
+    	return new ParentChildNodeComparator();
     }
 
     protected void notifyNodeChanged() {
