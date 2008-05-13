@@ -1,12 +1,20 @@
 package edu.stanford.smi.protege.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 
-import javax.swing.tree.*;
+import javax.swing.tree.TreeNode;
+
+import edu.stanford.smi.protege.model.Frame;
 
 /**
- * A tree node that doesn't check its children until it is asked for them. This lazy evaluation alls the system to do
+ * A tree node that doesn't check its children until it is asked for them. This lazy evaluation allows the system to do
  * "load on demand" from a database.
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
@@ -17,12 +25,18 @@ public abstract class LazyTreeNode implements TreeNode {
     private List _childNodes;
     private int _childCount = -1;
     private boolean _isLoaded;
-    private boolean isDuplicate;
+    private boolean _isDuplicate;
+    private boolean _isSorted = false;
 
     protected LazyTreeNode(LazyTreeNode parent, Object userObject) {
+    	this(parent, userObject, false);
+    }
+    
+    protected LazyTreeNode(LazyTreeNode parent, Object userObject, boolean isSorted) {
         _parent = parent;
         _userObject = userObject;
-        isDuplicate = isDuplicate(userObject, parent);
+        _isDuplicate = isDuplicate(userObject, parent);
+        _isSorted = isSorted;
     }
 
     private static boolean isDuplicate(Object userObject, LazyTreeNode parent) {
@@ -39,15 +53,75 @@ public abstract class LazyTreeNode implements TreeNode {
     }
 
     public boolean isDuplicate() {
-        return isDuplicate;
+        return _isDuplicate;
     }
 
     public void childAdded(Object o) {
-        int index = (_isLoaded) ? _childNodes.size() : -1;
+        //int index = (_isLoaded) ? _childNodes.size() : -1;
+    	int index = getAddToIndex(o);
         childAdded(o, index);
     }
+    
+    private int getAddToIndex(Object o) {
+    	if (!_isLoaded) {
+    		return -1; //load later
+    	}
+    	
+    	//children are already loaded, compute the right index to add    	
+    	if (!_isSorted) {
+    		return _childNodes.size();
+    	}
 
-    public void childAdded(Object o, int index) {
+    	//children are loaded and sorted
+    	//insertion should be in order 	
+    	return getSortedAddIndex(o);
+    }
+
+    private int getSortedAddIndex(Object o) {
+    	//assumes children loaded
+    	if (_childNodes == null) {
+    		return -1;
+    	}
+    	
+    	/*
+    	 * Unfortunately, we don't have at this point a 
+    	 * comparator for the object o and the user object
+    	 * of a node. So, as a workaround, we implement
+    	 * our own compareTo, that will work fine for 
+    	 * Frame objects and strings, and for the rest of
+    	 * node types it will just compare the toString()
+    	 * of each node.
+    	 */    
+        int nChildren = _childNodes.size();
+        int index = -1;
+        for (int i = 0; i < nChildren; ++i) {
+            LazyTreeNode node = (LazyTreeNode) _childNodes.get(i);
+            if (compareTo(node.getUserObject(), o) > 0) {
+            	return i;
+            }           
+        }
+        return nChildren;
+	}
+    
+
+	protected int compareTo(Object o1, Object o2) {
+		if (o1 == null) {
+			return (o2 == null) ? 0 : -1;
+		}		
+		if (o2 == null) {
+			return (o1 == null) ? 0 : 1;
+		}
+		
+		if (o1 instanceof Frame) {
+			return (o2 instanceof Frame) ?
+					((Frame)o1).compareTo((Frame)o2) :		
+					((Frame)o1).getBrowserText().compareTo(o2.toString());			
+		}
+		
+		return o1.toString().compareTo(o2.toString());
+	}
+
+	public void childAdded(Object o, int index) {
         if (_isLoaded) {
             LazyTreeNode child = createNode(o);
             _childNodes.add(index, child);
@@ -210,6 +284,13 @@ public abstract class LazyTreeNode implements TreeNode {
         } else {
             _childNodes.clear();
         }
+        
+        if (_isSorted) {
+        	ArrayList sortedChildObject = new ArrayList(childObjects);
+        	Collections.sort(sortedChildObject, getComparator());
+        	childObjects = sortedChildObject;
+        }
+        
         Iterator i = childObjects.iterator();
         while (i.hasNext()) {
             Object child = i.next();
@@ -287,4 +368,9 @@ public abstract class LazyTreeNode implements TreeNode {
     public static boolean equals(Object o1, Object o2) {
         return SystemUtilities.equals(o1, o2);
     }
+
+	public boolean isSorted() {
+		return _isSorted;
+	}
+
 }
