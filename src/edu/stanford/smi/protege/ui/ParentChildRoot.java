@@ -13,11 +13,19 @@ import edu.stanford.smi.protege.util.*;
 public class ParentChildRoot extends LazyTreeRoot {
 
     public ParentChildRoot(Cls root) {
-        super(root);
+        this(root, ApplicationProperties.getSortClassTreeOption());
     }
 
+    public ParentChildRoot(Cls root, boolean isSorted) {
+        super(root, isSorted);
+    }
+    
     public ParentChildRoot(Collection roots) {
-        super(filter(roots));
+        super(filter(roots), ApplicationProperties.getSortSlotTreeOption());
+    }
+    
+    public ParentChildRoot(Collection roots, boolean isSorted) {
+        super(filter(roots), isSorted);
     }
 
     public LazyTreeNode createNode(Object o) {
@@ -40,6 +48,7 @@ public class ParentChildRoot extends LazyTreeRoot {
     }
 
     public Comparator getComparator() {
-        return new LazyTreeNodeFrameComparator();
+        //return new LazyTreeNodeFrameComparator();
+    	return new ParentChildNodeComparator();
     }
 }
