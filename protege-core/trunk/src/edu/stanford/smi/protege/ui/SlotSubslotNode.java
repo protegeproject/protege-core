@@ -41,7 +41,7 @@ public class SlotSubslotNode extends LazyTreeNode {
     };
 
     public SlotSubslotNode(LazyTreeNode parentNode, Slot parentSlot) {
-        super(parentNode, parentSlot);
+        super(parentNode, parentSlot, parentNode.isSorted());
         parentSlot.addFrameListener(_frameListener);
     }
 

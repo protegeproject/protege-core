@@ -75,10 +75,10 @@ public class SlotSubslotRoot extends LazyTreeRoot {
     }
 
     public SlotSubslotRoot(KnowledgeBase kb) {
-        this(kb, getSlots(kb));
+        this(kb, getSlots(kb), ApplicationProperties.getSortSlotTreeOption());
     }
 
-    public SlotSubslotRoot(KnowledgeBase kb, Collection slots) {
+    public SlotSubslotRoot(KnowledgeBase kb, Collection slots, boolean isSorted) {
         super(slots);
         kb.addKnowledgeBaseListener(_listener);
         kb.addSlotListener(_slotListener);
@@ -108,7 +108,10 @@ public class SlotSubslotRoot extends LazyTreeRoot {
                 i.remove();
             }
         }
-        Collections.sort(results, new FrameComparator());
+        
+        if (ApplicationProperties.getSortSlotTreeOption()) {
+        	Collections.sort(results, new FrameComparator());
+        }
         return results;
     }
 }
