@@ -311,6 +311,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private void createIndices() throws SQLException {
         String indexString;
 
+        log.info("Creating database indicies:");
         /*
          * VALUE_INDEX is included in this index solely for its value as a side effect. It keeps the values ordered by
          * the VALUE_INDEX so that the ORDER_BY clause in the getValues SELECT statement does not cost anything.
@@ -318,24 +319,34 @@ public class DatabaseFrameDb implements NarrowFrameStore {
          * for a SELECT optimization.
          */
         // used for slot and facet value lookup
+        LapTimer timer = new LapTimer();
+        
         indexString = "CREATE INDEX " + _table + "_I1 ON " + _table;
         indexString += " (" + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN
                 + ", " + VALUE_INDEX_COLUMN + ")";
         executeUpdate(indexString);
-
+        log.info("\t..._I1 created (" + timer.lap() + "ms).");
+        
         // used for searching for values
         indexString = "CREATE INDEX " + _table + "_I2 ON " + _table;
         indexString += " (" + SHORT_VALUE_COLUMN + ")";
         executeUpdate(indexString);
+        log.info("\t..._I2 created (" + timer.lap() + "ms).");
 
         // used for getting slots with any value and for counting frames
         indexString = "CREATE INDEX " + _table + "_I3 ON " + _table;
         indexString += " (" + SLOT_COLUMN + ", " + FRAME_TYPE_COLUMN + ")";
-        executeUpdate(indexString);
+        executeUpdate(indexString);;
 
         if (needsIndexOnLowerValue()) {
+            log.info("\t..._I3 created (" + timer.lap() + "ms).");
             createIndexOnLowerValue();
+            log.info("\t..._IV created (" + timer.lap() + "ms).");
         }
+        else {
+            log.info("\t..._I3 created (" + timer.lap() + "ms).");
+        }
+        log.info("All database indexes created (" + timer.total() + "ms).");
     }
 
     private boolean needsIndexOnLowerValue() throws SQLException {
@@ -1770,5 +1781,26 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     @Override
     public String toString() {
         return "DatabaseFrameDb(" + getName() + ")";
+    }
+    
+    private class LapTimer {
+        private long start;
+        private long lapStart;
+        
+        public LapTimer() {
+            start = System.currentTimeMillis();
+            lapStart = start;
+        }
+        
+        public long lap() {
+            long lapEnd = System.currentTimeMillis();
+            long interval = lapEnd - lapStart;
+            lapStart = lapEnd;
+            return interval;
+        }
+        
+        public long total() {
+            return System.currentTimeMillis() - start;
+        }
     }
 }
