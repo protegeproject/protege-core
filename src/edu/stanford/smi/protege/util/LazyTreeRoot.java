@@ -1,6 +1,10 @@
 package edu.stanford.smi.protege.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
+import edu.stanford.smi.protege.ui.FrameComparator;
 
 /**
  * The Root node for a lazy tree.  Note that this root is never displayed.  Its child lazy tree nodes are the apparent
@@ -12,13 +16,31 @@ public abstract class LazyTreeRoot extends LazyTreeNode {
     private LazyTreeModel _model;
 
     protected LazyTreeRoot(Object o) {
-        super(null, CollectionUtilities.createCollection(o));
+        this(CollectionUtilities.createCollection(o), false);
     }
 
     protected LazyTreeRoot(Collection c) {
-        super(null, c);
+        this(c, false);
+    }
+    
+    protected LazyTreeRoot(Object o, boolean isSorted) {
+        super(null, CollectionUtilities.createCollection(o), isSorted);
     }
 
+    protected LazyTreeRoot(Collection c, boolean isSorted) {
+        super(null, getRootCollection(c, isSorted), isSorted);
+    }
+
+    private static Collection getRootCollection(Collection c, boolean isSorted) {
+    	if (isSorted) {
+    		ArrayList sortedList = new ArrayList(c);
+    		//TODO: how to get the comparator?
+    		Collections.sort(sortedList, new FrameComparator());
+    		c = sortedList;
+    	}
+    	return c;
+    }
+    
     protected int getChildObjectCount() {
         return getChildObjects().size();
     }
