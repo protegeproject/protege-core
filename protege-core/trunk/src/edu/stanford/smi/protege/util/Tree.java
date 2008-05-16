@@ -18,7 +18,7 @@ public class Tree<X> implements Cloneable {
     public Tree() {
     }
 
-    public Object clone() {
+    public Tree<X> clone() {
         Tree<X> tree = new Tree<X>(root);
         Iterator<Map.Entry<X,Set<X>>> i = nodeToChildrenMap.entrySet().iterator();
         while (i.hasNext()) {
