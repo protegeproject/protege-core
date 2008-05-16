@@ -762,12 +762,12 @@ public class Project {
      * @return the URIs of all included projects, including indirectly included
      *         ones
      */
-    public Collection getIncludedProjects() {
+    public Collection<URI> getIncludedProjects() {
         return projectURITree.getDescendents(projectURITree.getRoot());
     }
 
-    public Tree getProjectTree() {
-        return (Tree) projectURITree.clone();
+    public Tree<URI> getProjectTree() {
+        return projectURITree.clone();
     }
 
     public void setDirectIncludedProjectURIs(Collection projectURIs) {
