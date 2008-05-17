@@ -675,6 +675,11 @@ public class Project {
             Cls superclass = (Cls) i.next();
             slotPattern = getDirectBrowserSlotPattern(superclass);
         }
+        if (slotPattern == null) {
+        	//fall-back - should never happen
+        	slotPattern = new BrowserSlotPattern(getKnowledgeBase().getNameSlot());
+        	Log.getLogger().warning("Could not find browser slot pattern for: " + cls.getName() + ". Using 'name' slot" );
+        }
         return slotPattern;
     }
 
