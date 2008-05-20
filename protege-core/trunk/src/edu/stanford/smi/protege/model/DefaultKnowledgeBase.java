@@ -2051,6 +2051,10 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
             setValueTypeValues(slot, newType, Collections.EMPTY_LIST);
         }
     }
+    
+    public synchronized void setUserName(String userName) {
+		_userName = userName;
+	}
 
     public synchronized void addFrameListener(Frame frame, FrameListener listener) {
         addListener(FrameListener.class, frame, listener);
