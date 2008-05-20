@@ -26,7 +26,6 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
-import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class EventGeneratorFrameStore extends ModificationFrameStore {
     private List _events = new ArrayList<AbstractEvent>();
@@ -168,6 +167,11 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     private void generateDeleteSlotEvents(Slot slot) {
         generateDeleteFrameKbEvent(KnowledgeBaseEvent.SLOT_DELETED, slot);
         /** @todo other slot events */
+        Iterator i = getDirectSuperslots( slot ).iterator();
+        while (i.hasNext()) {
+        	Slot superSlot = (Slot) i.next();
+        	generateSlotEvent(SlotEvent.DIRECT_SUPERSLOT_REMOVED, superSlot, slot);
+        }
         generateDeleteInstanceEvents(slot);
     }
 
