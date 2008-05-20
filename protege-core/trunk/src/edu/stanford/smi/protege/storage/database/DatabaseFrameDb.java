@@ -257,7 +257,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private String getFrameDataType() throws SQLException {
-      return getCurrentConnection().getVarcharTypeName() + "(" + getCurrentConnection().getMaxVarcharSize() + ")";
+      return getCurrentConnection().getVarbinaryTypeName() + "(" + getCurrentConnection().getMaxVarBinarySize() + ")";
     }
 
     private String getFrameTypeDataType() throws SQLException {
