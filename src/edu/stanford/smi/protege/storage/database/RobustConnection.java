@@ -47,6 +47,7 @@ public class RobustConnection {
     private String _escapeClause;
     private boolean _supportsTransactions;
     private int _maxVarcharSize;
+    private int _maxVarbinarySize;
     
     private RemoteSession session;
     private TransactionMonitor transactionMonitor;
@@ -57,11 +58,13 @@ public class RobustConnection {
     private String _driverSmallIntTypeName;
     private String _driverIntegerTypeName;
     private String _driverVarcharTypeName;
+    private String _driverVarBinaryTypeName;
     private String _driverCharTypeName;
     public static final String OLD_PROPERTY_LONGVARCHAR_TYPE_NAME = "SimpleJdbcDatabaseManager.longvarcharname";
     public static final String PROPERTY_REFRESH_CONNECTIONS_TIME="Database.refresh.connections.interval";
     public static final String PROPERTY_LONGVARCHAR_TYPE_NAME = "Database.typename.longvarchar";
     public static final String PROPERTY_VARCHAR_TYPE_NAME = "Database.typename.varchar";
+    public static final String PROPERTY_VARBINARY_TYPE_NAME = "Database.typename.varbinary";
     public static final String PROPERTY_INTEGER_TYPE_NAME = "Database.typename.integer";
     public static final String PROPERTY_SMALL_INTEGER_TYPE_NAME = "Database.typename.small_integer";
     // private final static String PROPERTY_TINY_INTEGER_TYPE_NAME =
@@ -159,6 +162,8 @@ public class RobustConnection {
     }
 
     private void initializeMaxVarcharSize() throws SQLException {
+        _maxVarbinarySize = DEFAULT_MAX_VARCHAR_SIZE;
+
         String property = SystemUtilities.getSystemProperty("database.varcharsize");
         if (property != null && property.length() != 0) {
             _maxVarcharSize = Integer.parseInt(property);
@@ -169,7 +174,9 @@ public class RobustConnection {
         } else {
             _maxVarcharSize = DEFAULT_MAX_VARCHAR_SIZE;
         }
+
     }
+
 
     private void initializeSupportsBatch() throws SQLException {
         _supportsBatch = getConnection().getMetaData().supportsBatchUpdates();
@@ -281,6 +288,10 @@ public class RobustConnection {
     public int getMaxVarcharSize() {
         return _maxVarcharSize;
     }
+    
+    public int getMaxVarBinarySize() {
+        return _maxVarbinarySize;
+    }
 
     private void initializeDriverTypeNames() throws SQLException {
         String longvarbinaryTypeName = null;
@@ -341,6 +352,11 @@ public class RobustConnection {
                         _driverVarcharTypeName = name;
                     }
                     break;
+                case Types.VARBINARY:
+                    if (_driverVarBinaryTypeName == null) {
+                        _driverVarBinaryTypeName = name;
+                    }
+                    break;
                 case Types.CHAR:
                     if (_driverCharTypeName == null) {
                         _driverCharTypeName = name;
@@ -381,6 +397,9 @@ public class RobustConnection {
         if (_driverVarcharTypeName == null || isPostgres() || isSqlServer()) {
             _driverVarcharTypeName = "VARCHAR";
         }
+        if (_driverVarBinaryTypeName == null) {
+            _driverVarBinaryTypeName = "VARCHAR";
+        }
         if (isOracle()) { 
             _driverLongvarcharTypeName = "CLOB";  // can't search on the default LONG.
         }
@@ -420,6 +439,10 @@ public class RobustConnection {
 
     public String getVarcharTypeName() {
         return getName(PROPERTY_VARCHAR_TYPE_NAME, _driverVarcharTypeName);
+    }
+    
+    public String getVarbinaryTypeName() {
+        return getName(PROPERTY_VARBINARY_TYPE_NAME, _driverVarBinaryTypeName);
     }
 
     public String getCharTypeName() {
