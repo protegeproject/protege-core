@@ -170,7 +170,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         Iterator i = getDirectSuperslots( slot ).iterator();
         while (i.hasNext()) {
         	Slot superSlot = (Slot) i.next();
-        	generateSlotEvent(SlotEvent.DIRECT_SUPERSLOT_REMOVED, superSlot, slot);
+        	generateSlotEvent(SlotEvent.DIRECT_SUPERSLOT_REMOVED, slot, superSlot);
         }
         generateDeleteInstanceEvents(slot);
     }
