@@ -57,8 +57,14 @@ public abstract class LazyTreeNode implements TreeNode {
     }
 
     public void childAdded(Object o) {
-        //int index = (_isLoaded) ? _childNodes.size() : -1;
-    	int index = getAddToIndex(o);
+        int index = (_isLoaded) ? _childNodes.size() : -1;
+        /*
+         * Insertion is not in order right now.
+         * Uncomment the next line to find the 
+         * right index for the ordered insert index.
+         * The implementation is not yet complete.
+         */
+    	//int index = getAddToIndex(o);
         childAdded(o, index);
     }
     
