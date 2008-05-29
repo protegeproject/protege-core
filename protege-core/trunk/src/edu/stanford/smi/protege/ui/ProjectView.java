@@ -201,10 +201,25 @@ public class ProjectView extends JComponent {
     }
   
 
+    public TabWidget addTab(WidgetDescriptor widgetDescriptor, int index) {
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Adding tab " + widgetDescriptor);
+        }
+         
+        TabWidget widget = WidgetUtilities.createTabWidget(widgetDescriptor, _project);
+        addTab(widget, index);
+        projectViewListeners.postEvent(this, 
+        		                       ProjectViewEvent.Type.addTab.ordinal(), 
+        		                       widget);
+        return widget;
+    }
+    
+    
     public TabWidget addTab(WidgetDescriptor widgetDescriptor) {
         if (log.isLoggable(Level.FINE)) {
             log.fine("Adding tab " + widgetDescriptor);
         }
+         
         TabWidget widget = WidgetUtilities.createTabWidget(widgetDescriptor, _project);
         addTab(widget);
         projectViewListeners.postEvent(this, 
@@ -381,6 +396,15 @@ public class ProjectView extends JComponent {
         return _viewHolder instanceof JTabbedPane ? (JTabbedPane) _viewHolder : null;
     }
 
+    /**
+     * This method will reload all the tabs in the user interface.
+     * @param regenerate - if <i>true</i> - it will reinitialize all tabs
+     * in the interface (dispose the existing tabs, create a new instance of the tab,
+     * and call the initialize() method); <br>
+     * - if <i>false</i> - it will close the detached tabs, and if needed, it will resynchronize 
+     * the trees in the tabs (it will not create new instances of the tabs) 
+     * 
+     */
     public void reload(boolean regenerate) {
         if (regenerate) {
             reloadAll();
@@ -394,6 +418,57 @@ public class ProjectView extends JComponent {
         synchronizeTabbedPane();
     }
 
+    /**
+     * Reloads the tab widget given as argument.<br> 
+     * First, it will dispose the existing tab widget, and then it will 
+     * create a new instance of the tab (it will call the constructor and initialize()),
+     * and it will insert it in the same place in the tabbed pane. <br>
+     * This method is useful when the content of the tab needs to be updated. (e.g.
+     * after an import). The tab will lose any stored state (because a new instance of the 
+     * tab will be created.)
+     * 
+     * @param tabWidget - the tab widget to be reinitialized
+     */
+    public void reload(TabWidget tabWidget) {
+    	if (tabWidget == null) {
+    		return;
+    	}
+    	WidgetDescriptor widgetDescriptor = tabWidget.getDescriptor(); 
+    	try {    	
+    		int index = getTabIndex(widgetDescriptor);    	
+    		if (index < 0) {
+    			return; //tab is not loaded
+    		}
+    		_viewHolder.remove((Component) tabWidget);
+    		ComponentUtilities.dispose((Component) tabWidget);
+    		addTab(widgetDescriptor, index);
+    	} catch (Exception e) {
+    		Log.getLogger().log(Level.WARNING, "Errors at reloading tab " + widgetDescriptor, e);
+    	}
+    }
+    
+    
+    /**
+     * It will reload (i.e. recreate and reinitialize) all tabs in the
+     * user interface with the exception of the tab given as argument. <br>
+     * For more information see {@link #reload(TabWidget)}.
+     * @param exceptionTab - the tab that will <b>NOT</b> be reloaded. 
+     */
+    public void reloadAllTabsExcept(TabWidget exceptionTab) {
+    	 Iterator i = _project.getTabWidgetDescriptors().iterator();
+         while (i.hasNext()) {
+             WidgetDescriptor d = (WidgetDescriptor) i.next();
+             if (d.isVisible()) {
+                 String className = d.getWidgetClassName();
+                 TabWidget tabWidget = getTabByClassName(className);                
+                 if (tabWidget != null && d.isVisible()) {
+                	 reload(tabWidget);               
+                 }
+             }
+         }
+    }
+    
+    
     private void synchronizeTabbedPane() {
         removeDisabledTabs();
         addEnabledTabs();
@@ -417,7 +492,7 @@ public class ProjectView extends JComponent {
             WidgetDescriptor d = (WidgetDescriptor) i.next();
             if (d.isVisible()) {
                 String className = d.getWidgetClassName();
-                if (getTab(className) == null) {
+                if (getTabByClassName(className) == null) {
                     addTab(d);
                 }
             }
@@ -441,7 +516,7 @@ public class ProjectView extends JComponent {
     }
 
     private int getTabIndex(WidgetDescriptor d) {
-        return _viewHolder.indexOfComponent((Component) getTab(d.getWidgetClassName()));
+        return _viewHolder.indexOfComponent((Component) getTabByClassName(d.getWidgetClassName()));
     }
 
     public void reloadAll() {
