@@ -25,7 +25,7 @@ import edu.stanford.smi.protege.util.PropertyList;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class APITestCase extends AbstractTestCase {
-    private Collection _firedEvents = new ArrayList();
+    private Collection<AbstractEvent> _firedEvents = new ArrayList<AbstractEvent>();
     private static Properties _junitProperties = null;
     private static final String DB_PREFIX = "junit.db.";
 
@@ -51,14 +51,18 @@ public abstract class APITestCase extends AbstractTestCase {
 
     protected AbstractEvent getEventFired(int type) {
         AbstractEvent matchEvent = null;
-        Iterator i = _firedEvents.iterator();
+        Iterator<AbstractEvent> i = _firedEvents.iterator();
         while (i.hasNext() && matchEvent == null) {
-            AbstractEvent event = (AbstractEvent) i.next();
+            AbstractEvent event = i.next();
             if (event.getEventType() == type) {
                 matchEvent = event;
             }
         }
         return matchEvent;
+    }
+    
+    protected Collection<AbstractEvent> getFiredEvents() {
+        return _firedEvents;
     }
 
     public void setUp() throws Exception {
