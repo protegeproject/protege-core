@@ -99,12 +99,15 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 				transactedEvents.addValue(session, event);
 				continue;
 			}
-			if (event instanceof TransactionEvent &&
-					((TransactionEvent) event).isCommitted()) {
+			if (event instanceof TransactionEvent && 
+			        ((TransactionEvent) event).getEventType() == TransactionEvent.TRANSACTION_END) {
 				RemoteSession session = event.getSession();
 				List<AbstractEvent> deferred = transactedEvents.removeKey(session);
-				if (deferred != null) {
+				if (deferred != null && ((TransactionEvent) event).isCommitted()) {
 				    results.addAll(deferred);
+				}
+				else {
+				    continue;
 				}
 			}
 			results.add(event);
