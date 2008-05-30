@@ -31,8 +31,14 @@ import java.util.Map;
  * higher then the cache must not return a value for read even if the right value is known because
  * the underlying mechanism needs to be informed of the read.
  * 
- * The third issue is that we want it to be possible to garbage collect.  This requires a little
- * care because we have to be aware if the cache is complete.
+ * Some usage cases follow.  First, in many cases the cache will be a cache of frame values.  In 
+ * this case the caller will hold a weak hash map from Frames to a Cache from Slot-Facet-isTemplate objects
+ * to a list of values.  
+ * 
+ * Another example is the client who receives Cache updates from the server. The client will receive a
+ * cache update from the server only if either the update was made by the client itself or if the session 
+ * executing the update is not in a transaction.  Thus for this case the session type is a boolean indicating
+ * if the cache update came from the client itself.
  * 
  * @author tredmond
  *
@@ -102,6 +108,23 @@ public interface Cache<S, V, R> {
      * @param value the new value for the variable
      */
     void modifyCache(S session, V var, R value);
+    
+    /**
+     * This notifies the cache that the caller has made deleted the object
+     * that this cache represents.  If this change is outside a transaction or 
+     * gets committed, the cache enters the deleted state.  Once in the deleted 
+     * state all attempts to get a value return a value null value.  Attempts to 
+     * modify the cache after it has entered the deleted state will bring the 
+     * cache back.
+     * 
+     * @param session
+     */
+    void delete(S session);
+    
+    /**
+     * This informs the caller that the cache has entered the deleted state.
+     */
+    void isDeleted();
     
     /**
      * Creates an iterator over the entry set.  It is assumed that
