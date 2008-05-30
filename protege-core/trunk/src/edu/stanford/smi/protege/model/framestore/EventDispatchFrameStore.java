@@ -106,9 +106,6 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 				if (deferred != null && ((TransactionEvent) event).isCommitted()) {
 				    results.addAll(deferred);
 				}
-				else {
-				    continue;
-				}
 			}
 			results.add(event);
 		}

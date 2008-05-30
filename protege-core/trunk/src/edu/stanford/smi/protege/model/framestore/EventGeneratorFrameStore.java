@@ -596,9 +596,9 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     }
 
     public boolean beginTransaction(String name) {
-        boolean allowsTransactions = getDelegate().beginTransaction(name);
         TransactionIsolationLevel level = getTransactionIsolationLevel();
         generateTransactionEvent(TransactionEvent.TRANSACTION_BEGIN, name, Boolean.FALSE, level);
+        boolean allowsTransactions = getDelegate().beginTransaction(name);
         return allowsTransactions;
     }
     
