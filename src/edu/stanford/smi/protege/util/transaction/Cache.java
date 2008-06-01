@@ -50,12 +50,22 @@ public interface Cache<S, V, R> {
 
     /**
      * If  the variable var is cached then this returns the cached
-     * value.  It can be null in which case the isCached() method should
+     * value.  It can be null in which case the isValid() method should
      * be called to determine if this is just a missing cache element or 
-     * actually the correct value.
+     * actually the correct value.  This call is required to never return null
+     * so that the code sequence 
+     * <pre>
+     *    CacheResult result = cache.readCache(session, var);
+     *    if (result.isValid()) {
+     *       return result.getValue();
+     *    else {
+     *       go to the source to  find the right value
+     *    } 
+     * </pre>
+     * works and is the recommended approach.
      * 
      * @param var a variable
-     * @return the value in the cache for the variable var.
+     * @return the value in the cache for the variable var.  Never returns null.
      */
     CacheResult<R> readCache(S session, V var);
 
@@ -120,11 +130,6 @@ public interface Cache<S, V, R> {
      * @param session
      */
     void delete(S session);
-    
-    /**
-     * This informs the caller that the cache has entered the deleted state.
-     */
-    void isDeleted();
     
     /**
      * Creates an iterator over the entry set.  It is assumed that
