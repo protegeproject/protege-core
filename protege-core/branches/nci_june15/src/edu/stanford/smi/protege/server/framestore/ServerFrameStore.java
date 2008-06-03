@@ -153,7 +153,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             dispatcher.setServerMode(true);
             requiresEventDispatch.remove(kb);
         }
-        serverMode();
         valuesFacet = _kb.getSystemFrames().getValuesFacet();
         frameCalculator = new FrameCalculator(fsm.getHeadFrameStore(), 
                                               ((DefaultKnowledgeBase) _kb).getCacheMachine(),
@@ -163,6 +162,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                               _sessionToRegistrationMap);
         fsm.insertFrameStore(new FrameCalculatorFrameStore(frameCalculator));
         _delegate = fsm.getHeadFrameStore();
+        serverMode();
         transactionMonitor = _delegate.getTransactionStatusMonitor();
         if (ServerProperties.delayInMilliseconds() != 0) {
             Log.getLogger().config("Simulated delay of " + ServerProperties.delayInMilliseconds() + " msec/call");

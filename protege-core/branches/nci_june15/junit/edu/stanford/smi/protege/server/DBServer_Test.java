@@ -8,6 +8,10 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import edu.stanford.smi.protege.event.KnowledgeBaseAdapter;
+import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.event.TransactionAdapter;
+import edu.stanford.smi.protege.event.TransactionEvent;
 import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
@@ -15,6 +19,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.EventDispatchFrameStore;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.test.APITestCase;
@@ -552,5 +557,77 @@ public class DBServer_Test extends APITestCase {
     
     ls.waitForStage(Test06Stages.completed);
   }    
+  
+  public enum Test07Stages {
+      START, CLIENT_CONNECTED, LISTENERS_INSTALLED_GO, COMPLETED;
+  }
+  
+  public void testTransaction07() {
+      if (!configured) {
+          return;
+        }
+        final LockStepper<Test07Stages> ls = new LockStepper<Test07Stages>(Test07Stages.START);
+        
+
+        new Thread("Client Accessing the server") {
+            public void run() {
+              try {
+                KnowledgeBase kb = getKb();
+                RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
+                
+                Cls thing = kb.getSystemFrames().getRootCls();
+                
+                ls.stageAchieved(Test07Stages.CLIENT_CONNECTED, null);
+                ls.waitForStage(Test07Stages.LISTENERS_INSTALLED_GO);
+                kb.beginTransaction("Starting outer transaction");
+                kb.createCls("A", Collections.singleton(thing));
+                
+
+                
+                kb.beginTransaction("Starting inner transaction");
+                kb.createSlot("f");
+                assert(getEventFired(KnowledgeBaseEvent.SLOT_CREATED) == null);
+                kb.commitTransaction();
+                
+                assert(getEventFired(KnowledgeBaseEvent.SLOT_CREATED) == null);
+                assert(getEventFired(KnowledgeBaseEvent.CLS_CREATED) == null);
+                
+                kb.commitTransaction();
+                assertEventFired(TransactionEvent.TRANSACTION_BEGIN);  // a little weird but 
+                assert(getEventFired(KnowledgeBaseEvent.CLS_CREATED) == null); // this is detecting events on the server
+                assertEventFired(KnowledgeBaseEvent.CLS_CREATED);
+                assertEventFired(KnowledgeBaseEvent.SLOT_CREATED);
+                ls.stageAchieved(Test07Stages.COMPLETED, null);
+              } catch (Throwable e) {
+                  ls.exceptionOffMainThread(Test07Stages.COMPLETED, e);
+              }
+            }
+        }.start();
+        // Server work.
+        ls.waitForStage(Test07Stages.CLIENT_CONNECTED);
+        KnowledgeBase serverKb = Server.getInstance().getProject(clientProject).getKnowledgeBase();
+        serverKb.setDispatchEventsEnabled(true);
+        ((EventDispatchFrameStore) serverKb.getFrameStoreManager().getFrameStoreFromClass(EventDispatchFrameStore.class)).setServerMode(true);
+        clearEvents();
+        serverKb.addTransactionListener(new TransactionAdapter() {
+            @Override
+          public void transactionBegin(TransactionEvent event) {
+                recordEventFired(event);
+            }
+        });
+        serverKb.addKnowledgeBaseListener(new KnowledgeBaseAdapter() {
+           @Override
+           public void clsCreated(KnowledgeBaseEvent event) {
+               recordEventFired(event);
+           }
+           
+           @Override
+          public void slotCreated(KnowledgeBaseEvent event) {
+               recordEventFired(event);
+          }
+        });
+        ls.stageAchieved(Test07Stages.LISTENERS_INSTALLED_GO, null);
+        ls.waitForStage(Test07Stages.COMPLETED);
+  }
   
 }

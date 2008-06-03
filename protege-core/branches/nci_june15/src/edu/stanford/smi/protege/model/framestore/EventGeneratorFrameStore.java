@@ -31,6 +31,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     private List _events = new ArrayList<AbstractEvent>();
     private static final int NO_VALUE = -1;
     private int _transactionStartSize = NO_VALUE;
+    private int transactionNesting = 0;
     private DefaultKnowledgeBase _kb;
     private SystemFrames _systemFrames;
     private boolean generateEventsOnDeletingFrames = false;
@@ -363,7 +364,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
       if (serverMode) {
         throw new UnsupportedOperationException("can't determine transaction status here as a server");
       } else {
-        return _transactionStartSize != NO_VALUE;
+        return transactionNesting != 0 && _transactionStartSize != NO_VALUE;
       }
     }
 
@@ -526,6 +527,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         boolean allowsTransactions = getDelegate().beginTransaction(name);
         generateTransactionEvent(TransactionEvent.TRANSACTION_BEGIN, name);
         if (!serverMode) {
+          transactionNesting++;
           if (allowsTransactions) {
             _transactionStartSize = _events.size();
           }
@@ -538,13 +540,18 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     }
 
     public boolean commitTransaction() {
-        boolean commitTransaction = getDelegate().commitTransaction();
+        boolean commitTransaction = getDelegate().commitTransaction();;
         generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);
         if (!serverMode) {
-          if (!commitTransaction && _transactionStartSize != NO_VALUE) {
-            _events.subList(_transactionStartSize + 1, _events.size()).clear();
-          }
-          _transactionStartSize = NO_VALUE;
+            if (transactionNesting >= 0) {
+                transactionNesting--;
+            }
+            if (!isInTransaction()) {
+                if (!commitTransaction && _transactionStartSize != NO_VALUE) {
+                    _events.subList(_transactionStartSize + 1, _events.size()).clear();
+                }
+                _transactionStartSize = NO_VALUE;
+            }
         }
         return commitTransaction;
     }
@@ -553,10 +560,15 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         boolean rollbackTransaction = getDelegate().rollbackTransaction();
         generateTransactionEvent(TransactionEvent.TRANSACTION_END, null);
         if (!serverMode) {
-          if (rollbackTransaction && _transactionStartSize != NO_VALUE) {
-            _events.subList(_transactionStartSize + 1, _events.size()).clear();
+          if (transactionNesting >= 0) {
+              transactionNesting--;
           }
-          _transactionStartSize = NO_VALUE;
+          if (!isInTransaction()) {
+              if (rollbackTransaction && _transactionStartSize != NO_VALUE) {
+                  _events.subList(_transactionStartSize + 1, _events.size()).clear();
+              }
+              _transactionStartSize = NO_VALUE;
+          }
         }
         return rollbackTransaction;
     }
