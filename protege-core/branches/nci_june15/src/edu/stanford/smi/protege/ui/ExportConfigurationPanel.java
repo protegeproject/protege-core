@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
+import edu.stanford.smi.protege.action.ExportToCsvUtil;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.resource.Icons;
@@ -33,31 +34,18 @@ import edu.stanford.smi.protege.util.LabeledComponent;
 import edu.stanford.smi.protege.util.SelectableList;
 
 public class ExportConfigurationPanel {
-
-	public static final String EXPORT_FILE_PREFIX = "_exported";
 	
-	public static final String EXPORT_FILE_EXTENSION = "csv";
-
-	public static final String DEFAULT_SLOT_VALUES_DELIMITER = ",";
-
-	public static final String DEFAULT_SLOTS_DELIMITER = "\\t";
-		
 	private KnowledgeBase kb;
-
-	private JPanel configPanel;
 	
-	private JCheckBox exportTypesCheckBox;
-	
+	private JPanel configPanel;	
+	private JCheckBox exportTypesCheckBox;	
 	private JCheckBox exportHeaderCheckBox;
-	
-	private FileField fileField;
-	
-	private JTextField slotDelimiterTextField;
-	
+	private JCheckBox exportBrowserTextCheckBox;
+	private FileField fileField;	
+	private JTextField slotDelimiterTextField;	
 	private JTextField slotValuesDelimiterTextField;
 	
-	private List<Slot> slots = new ArrayList<Slot>();
-	
+	private List<Slot> slots = new ArrayList<Slot>();	
 	private Collection<Slot> possibleSlots = new ArrayList<Slot>();
 	
 
@@ -82,7 +70,7 @@ public class ExportConfigurationPanel {
 		configPanel = new JPanel();
 		configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
 			
-		fileField = new FileField("Exported file", getExportedFileName(), EXPORT_FILE_EXTENSION, "Exported result files" );
+		fileField = new FileField("Exported file", getExportedFileName(), ExportToCsvUtil.EXPORT_FILE_EXTENSION, "Exported result files" );
 		configPanel.add(fileField);
 		
 		LabeledComponent slotsListComp = getSlotsListComponent();
@@ -92,12 +80,12 @@ public class ExportConfigurationPanel {
 		
 		JPanel p1 = new JPanel(new GridLayout(2,2));
 		p1.add(new JLabel("Slot delimiter"));
-		slotDelimiterTextField = new JTextField(DEFAULT_SLOTS_DELIMITER, 10);
+		slotDelimiterTextField = new JTextField(ExportToCsvUtil.getSlotsDelimiter(), 10);
 		p1.add(slotDelimiterTextField);
 		configPanel.add(p1);
 		
 		p1.add(new JLabel("Slot values delimiter"));
-		slotValuesDelimiterTextField = new JTextField(DEFAULT_SLOT_VALUES_DELIMITER, 10);
+		slotValuesDelimiterTextField = new JTextField(ExportToCsvUtil.getSlotValuesDelimiter(), 10);
 		p1.add(slotValuesDelimiterTextField);		
 
 		configPanel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -108,9 +96,15 @@ public class ExportConfigurationPanel {
 		
 		configPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 		
-		exportTypesCheckBox = ComponentFactory.createCheckBox("Export instances type(s)");
+		exportTypesCheckBox = ComponentFactory.createCheckBox("Export instance type(s)");
 		exportTypesCheckBox.setSelected(false);	
 		configPanel.add(exportTypesCheckBox);
+		
+		configPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+		
+		exportBrowserTextCheckBox = ComponentFactory.createCheckBox("Export browser text (instead of name)");
+		exportBrowserTextCheckBox.setSelected(ExportToCsvUtil.isExportBrowserTextEnabled());	
+		configPanel.add(exportBrowserTextCheckBox);
 		
 		return configPanel;
 	}
@@ -176,10 +170,9 @@ public class ExportConfigurationPanel {
 				slots.add(slot);
 			}
 		}
-		
-		//Collections.sort(slots, new FrameComparator());
 	}
 	
+	@SuppressWarnings("deprecation")
 	private String getExportedFileName(){
 		String projPath = kb.getProject().getProjectFilePath();;
 		String projName = kb.getProject().getProjectName();
@@ -190,9 +183,8 @@ public class ExportConfigurationPanel {
 			projName = "query";
 		}			
 			
-		String filename = FileUtilities.replaceFileName(projPath, projName + EXPORT_FILE_PREFIX);
-			
-		filename = filename + "." + EXPORT_FILE_EXTENSION;
+		String filename = FileUtilities.replaceFileName(projPath, projName + ExportToCsvUtil.EXPORT_FILE_PREFIX);			
+		filename = filename + "." + ExportToCsvUtil.EXPORT_FILE_EXTENSION;
 		
 		return filename;
 	}
@@ -212,6 +204,10 @@ public class ExportConfigurationPanel {
 	
 	public boolean isExportHeaderEnabled() {
 		return exportHeaderCheckBox.isSelected();
+	}
+	
+	public boolean isExportBrowserTextEnabled(){
+		return exportBrowserTextCheckBox.isSelected();
 	}
 	
 	public String getSlotDelimiter() {
