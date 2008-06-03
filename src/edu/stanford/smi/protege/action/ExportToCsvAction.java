@@ -30,10 +30,10 @@ import edu.stanford.smi.protege.util.StandardAction;
 /**
  * This action class allows the export of an instance list to a CSV file. <br><br>
  * Delimiters between different slots and slots values can be configured
- * (see {@link #setSlotDelimiter(String)} and {@link #setSlotValueDelimiter(String)}).
+ * (see {@link #setSlotsDelimiter(String)} and {@link #setSlotValuesDelimiter(String)}).
  * Slots to be exported for each instance can be configured (see {@link #setSlotsToExport(Collection)}. 
  * <br><br>
- *  It works both with an UI and without. To use it witout a UI, call the setter methods to configure the
+ *  It works both with an UI and without. To use it without a UI, call the setter methods to configure the
  *  export action and then call {@link #export()}.
  *  
  * @author Tania Tudorache <tudorache@stanford.edu>
@@ -41,16 +41,14 @@ import edu.stanford.smi.protege.util.StandardAction;
  */
 public class ExportToCsvAction extends StandardAction {
 	
-	public static final Operation EXPORT_TO_CSV_OPERATION = new OperationImpl("ExportToCSV");
-
+	public static final Operation EXPORT_TO_CSV_OPERATION = new OperationImpl("ExportToCSV");	
+	
 	private KnowledgeBase kb;	
 	private Collection<Instance> instancesToExport = new ArrayList<Instance>();
 	private File exportFile;
 	private Collection<Slot> slotsToExport = new ArrayList<Slot>();
 	private boolean exportHeader;
 	private boolean exportTypes;
-	private String slotValueDelimiter = ExportConfigurationPanel.DEFAULT_SLOT_VALUES_DELIMITER;
-	private String slotDelimiter = ExportConfigurationPanel.DEFAULT_SLOTS_DELIMITER;
 
 	private ExportConfigurationPanel exportConfigurationPanel;
 	
@@ -69,7 +67,6 @@ public class ExportToCsvAction extends StandardAction {
 		exportConfigurationPanel.setPossibleSlots(getSlotsToExport());
 
 		int sel = ModalDialog.showDialog(ProjectManager.getProjectManager().getCurrentProjectView(), exportConfigurationPanel.getConfigPanel(), "Export configuration", ModalDialog.MODE_OK_CANCEL);
-
 		if (sel == ModalDialog.OPTION_CANCEL) {
 			return;
 		}
@@ -78,9 +75,12 @@ public class ExportToCsvAction extends StandardAction {
 		slotsToExport = exportConfigurationPanel.getExportedSlots();
 		exportHeader = exportConfigurationPanel.isExportHeaderEnabled();
 		exportTypes = exportConfigurationPanel.isExportTypesEnabled();
-		slotDelimiter = exportConfigurationPanel.getSlotDelimiter();
-		slotValueDelimiter = exportConfigurationPanel.getSlotValuesDelimiter();		
 
+		//write configuration to protege.properties 
+		setSlotsDelimiter(exportConfigurationPanel.getSlotDelimiter());
+		setSlotValuesDelimiter(exportConfigurationPanel.getSlotValuesDelimiter());
+		setExportBrowserText(exportConfigurationPanel.isExportBrowserTextEnabled());
+		
 		boolean success = export();
 
 		String messageText = success ? "Query results exported successfully to:\n" + exportFile.getAbsolutePath() :
@@ -111,7 +111,7 @@ public class ExportToCsvAction extends StandardAction {
 		return success;
 	}
 
-	private void printResults(Writer writer, Collection<Instance> instances, Collection slots) {
+	protected void printResults(Writer writer, Collection<Instance> instances, Collection<Slot> slots) {
 		PrintWriter output = new PrintWriter(writer);
 
 		if (exportHeader) {
@@ -126,73 +126,90 @@ public class ExportToCsvAction extends StandardAction {
 		output.close();
 	}
 
-	private void printHeader(PrintWriter writer, Collection slots) {
+	protected void printHeader(PrintWriter writer, Collection<Slot> slots) {
 		StringBuffer buffer = new StringBuffer();
 
 		buffer.append("Instance");
-		buffer.append(slotDelimiter);
+		buffer.append(getSlotsDelimiter());
 
 		if (exportTypes) {
 			buffer.append("Type(s)");
-			buffer.append(slotDelimiter);        	
+			buffer.append(getSlotsDelimiter());        	
 		}
 
 		for (Iterator iter = slots.iterator(); iter.hasNext();) {
 			Slot slot = (Slot) iter.next();
-			buffer.append(slot.getBrowserText());
-			buffer.append(slotDelimiter);
+			buffer.append(getExportName(slot));
+			buffer.append(getSlotsDelimiter());
 		}
 
 		writer.println(buffer.toString());
 	}
 
-	private void printInstance(PrintWriter writer, Instance instance) {
+	protected void printInstance(PrintWriter writer, Instance instance) {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append(instance.getBrowserText());
+		buffer.append(getExportName(instance));
 
 		if (exportTypes) {
-			buffer.append(slotDelimiter);
+			buffer.append(ExportToCsvUtil.getSlotsDelimiter());
 			Collection directTypes = instance.getDirectTypes();
 			Iterator i = directTypes.iterator();
 			while (i.hasNext()) {
 				Cls directType = (Cls) i.next();
-				buffer.append(directType.getBrowserText());
+				buffer.append(getExportName(directType));
 				if (i.hasNext()) {
-					buffer.append(slotValueDelimiter);
+					buffer.append(getSlotValuesDelimiter());
 				}
 			}
 		}
 
-		// Export the own slot values for each slot attached to the
-		// current instance.
-		if (!slotsToExport.isEmpty()) { 
-			// Loop through slots attached to instance.
+		// Export the own slot values for each slot attached to the current instance
+		if (!slotsToExport.isEmpty()) {
 			Iterator<Slot> j = slotsToExport.iterator();
 			while (j.hasNext()) {
 				Slot slot = (Slot) j.next();
-
-				Collection values = instance.getOwnSlotValues(slot);            	
-				buffer.append(slotDelimiter);            	
-
-				// Loop through values for particular slot.
-				Iterator k = values.iterator();
-				while (k.hasNext()) {
-					Object value = k.next();
-					if (value instanceof Frame) {
-						Frame frame = (Frame) value;
-						value = frame.getBrowserText();            		
-					}
-					buffer.append(value);
-
-					if (k.hasNext()) {
-						buffer.append(slotValueDelimiter);
-					}
-				}
+				buffer.append(getSlotsDelimiter());
+				buffer.append(getSlotValuesExportString(instance, slot));
 			}
 		}
 
 		writer.println(buffer.toString());
 	}
+	
+	
+	protected String getSlotValuesExportString(Instance instance, Slot slot) {
+		StringBuffer buffer = new StringBuffer();
+		
+		Collection values = instance.getOwnSlotValues(slot);            	
+		
+		// Loop through the values for a particular slot
+		Iterator i = values.iterator();
+		while (i.hasNext()) {
+			Object value = i.next();
+			if (value instanceof Frame) {
+				Frame frame = (Frame) value;
+				buffer.append(getExportName(frame));
+			} else {
+				buffer.append(getExportValueString(value));
+			}
+
+			if (i.hasNext()) {
+				buffer.append(getSlotValuesDelimiter());
+			}
+		}
+		
+		return buffer.toString();
+	}
+	
+		
+	protected String getExportName(Frame frame) {
+		return isExportBrowserTextEnabled() ? frame.getBrowserText() : frame.getName();		
+	}
+	
+	protected String getExportValueString(Object value) {
+		return value.toString();
+	}
+	
 
 	private ExportConfigurationPanel getExportConfigurationPanel() {
 		if (exportConfigurationPanel != null) {
@@ -248,20 +265,28 @@ public class ExportToCsvAction extends StandardAction {
 		this.exportTypes = exportTypes;
 	}
 
-	public String getSlotValueDelimiter() {
-		return slotValueDelimiter;
+	public String getSlotValuesDelimiter() {
+		return ExportToCsvUtil.getSlotValuesDelimiter();
 	}
 
-	public void setSlotValueDelimiter(String slotValueDelimiter) {
-		this.slotValueDelimiter = slotValueDelimiter;
+	public void setSlotValuesDelimiter(String slotValuesDelimiter) {
+		ExportToCsvUtil.setSlotValuesDelimiter(slotValuesDelimiter);
 	}
 
-	public String getSlotDelimiter() {
-		return slotDelimiter;
+	public String getSlotsDelimiter() {
+		return ExportToCsvUtil.getSlotsDelimiter();
 	}
 
-	public void setSlotDelimiter(String slotDelimiter) {
-		this.slotDelimiter = slotDelimiter;
+	public void setSlotsDelimiter(String slotsDelimiter) {
+		ExportToCsvUtil.setSlotsDelimiter(slotsDelimiter);
+	}
+	
+	public boolean isExportBrowserTextEnabled() {
+		return ExportToCsvUtil.isExportBrowserTextEnabled();
+	}
+	
+	public void setExportBrowserText(boolean exportBrowserText) {
+		ExportToCsvUtil.setExportBrowserText(exportBrowserText);
 	}
 
 }
