@@ -75,7 +75,11 @@ public class SlotSubslotRoot extends LazyTreeRoot {
     }
 
     public SlotSubslotRoot(KnowledgeBase kb) {
-        this(kb, getSlots(kb), ApplicationProperties.getSortSlotTreeOption());
+    	this(kb, getSlots(kb));
+    }
+    
+    public SlotSubslotRoot(KnowledgeBase kb, Collection slots) {
+    	this(kb, slots, ApplicationProperties.getSortSlotTreeOption());
     }
 
     public SlotSubslotRoot(KnowledgeBase kb, Collection slots, boolean isSorted) {
