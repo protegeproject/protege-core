@@ -43,6 +43,37 @@ public class DeletionHookFrameStore extends FrameStoreAdapter {
         }
     }
     
+    public void handleBeginTransaction(String name) {
+        for (DeletionHook hook : hooks) {
+            try {
+                hook.beginTransaction(name);
+            } catch (Throwable t) {
+                log.log(Level.WARNING, "hook (" + hook + ") on begin transaction operation failed", t);
+            }
+        } 
+    }
+    
+
+    public void handleCommitTransaction() {
+        for (DeletionHook hook : hooks) {
+            try {
+                hook.commitTransaction();
+            } catch (Throwable t) {
+                log.log(Level.WARNING, "hook (" + hook + ") on commit transaction operation failed", t);
+            }
+        } 
+    }
+    
+    
+    public void handleRollbackTransaction() {
+        for (DeletionHook hook : hooks) {
+            try {
+                hook.rollbackTransaction();
+            } catch (Throwable t) {
+                log.log(Level.WARNING, "hook (" + hook + ") on rollback transaction operation failed", t);
+            }
+        } 
+    }
  
     
     /* *********************************************************************
@@ -69,4 +100,24 @@ public class DeletionHookFrameStore extends FrameStoreAdapter {
         handleDelete(simpleInstance);
         super.deleteSimpleInstance(simpleInstance);
     }
+    
+    @Override
+    public boolean beginTransaction(String name) {
+        handleBeginTransaction(name);
+        return super.beginTransaction(name);
+    }
+    
+    @Override
+    public boolean commitTransaction() {
+        handleCommitTransaction();
+        return super.commitTransaction();
+    }
+
+    @Override
+    public boolean rollbackTransaction() {
+        handleRollbackTransaction();
+        return super.rollbackTransaction();
+    }
 }
+
+
