@@ -6,7 +6,7 @@ package edu.stanford.smi.protege.util;
  *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public interface UnaryFunction {
+public interface UnaryFunction<X,Y> {
 
-    Object apply(Object o);
+    Y apply(X o);
 }
