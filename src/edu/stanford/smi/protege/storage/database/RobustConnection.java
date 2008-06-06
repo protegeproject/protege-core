@@ -64,7 +64,7 @@ public class RobustConnection {
     public static final String PROPERTY_REFRESH_CONNECTIONS_TIME="Database.refresh.connections.interval";
     public static final String PROPERTY_LONGVARCHAR_TYPE_NAME = "Database.typename.longvarchar";
     public static final String PROPERTY_VARCHAR_TYPE_NAME = "Database.typename.varchar";
-    public static final String PROPERTY_VARBINARY_TYPE_NAME = "Database.typename.varbinary";
+    public static final String PROPERTY_VARCHAR_MIXED_CASE = "Database.typename.varchar.mixed.case";
     public static final String PROPERTY_INTEGER_TYPE_NAME = "Database.typename.integer";
     public static final String PROPERTY_SMALL_INTEGER_TYPE_NAME = "Database.typename.small_integer";
     // private final static String PROPERTY_TINY_INTEGER_TYPE_NAME =
@@ -289,18 +289,27 @@ public class RobustConnection {
         return _maxVarcharSize;
     }
     
-    public int getMaxVarBinarySize() {
-        return _maxVarbinarySize;
-    }
-
     private void initializeDriverTypeNames() throws SQLException {
         String longvarbinaryTypeName = null;
         String blobTypeName = null;
         String clobTypeName = null;
 
+
         DatabaseMetaData md = getConnection().getMetaData();
+        if (log.isLoggable(Level.FINE)) {
+            log.fine(" ----------------------- type information for "  +  md.getDatabaseProductName());
+            log.fine("See http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Types.html for a list of the sql types");
+        }
         ResultSet rs = md.getTypeInfo();
         while (rs.next()) {
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Info for type " + rs.getString("TYPE_NAME"));
+                log.fine("\tsql data type = " + rs.getInt("DATA_TYPE"));
+                short nullable = rs.getShort("NULLABLE");
+                log.fine("\tnullable = " + (nullable == DatabaseMetaData.typeNoNulls ? "false" : 
+                                               (nullable == DatabaseMetaData.typeNullable ? "true" : "maybe")));
+                log.fine("\tcase sensitive = " + rs.getBoolean("CASE_SENSITIVE"));
+            }
             String name = rs.getString("TYPE_NAME");
             int type = rs.getInt("DATA_TYPE");
             if (name.length() == 0) {
@@ -366,6 +375,9 @@ public class RobustConnection {
                     // do nothing
                     break;
             }
+        }
+        if (log.isLoggable(Level.FINE)) {
+            log.fine(" ----------------------- end of type information for "  +  md.getDatabaseProductName());
         }
         rs.close();
         if (_driverLongvarcharTypeName == null) {
@@ -441,8 +453,33 @@ public class RobustConnection {
         return getName(PROPERTY_VARCHAR_TYPE_NAME, _driverVarcharTypeName);
     }
     
-    public String getVarbinaryTypeName() {
-        return getName(PROPERTY_VARBINARY_TYPE_NAME, _driverVarBinaryTypeName);
+    public String getVarMixedCaseChar() {
+        String defaultResult = _driverVarBinaryTypeName;
+
+        try {
+            if (isSqlServer())  {
+                defaultResult = _driverVarcharTypeName;
+            }
+        }
+        catch (SQLException e) {
+            ; // just go to the default.
+        }
+       
+        return getName(PROPERTY_VARCHAR_MIXED_CASE, defaultResult);
+    }
+    
+    public int getMaxVarMixedCaseCharSize() {
+
+        try {
+            if  (isSqlServer()) {
+                return  getMaxVarcharSize();
+            }
+        }
+        catch (SQLException sqle) {
+            ; // ignore - use  the default
+        }
+       
+        return _maxVarbinarySize;
     }
 
     public String getCharTypeName() {

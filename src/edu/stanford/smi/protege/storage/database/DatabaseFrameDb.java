@@ -257,7 +257,11 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private String getFrameDataType() throws SQLException {
-      return getCurrentConnection().getVarbinaryTypeName() + "(" + getCurrentConnection().getMaxVarBinarySize() + ")";
+        String  dtype = getCurrentConnection().getVarMixedCaseChar() + "(" + getCurrentConnection().getMaxVarMixedCaseCharSize() + ")";
+        if (getCurrentConnection().isSqlServer()) {
+            dtype  = dtype + " COLLATE SQL_Latin1_General_CP1_CS_AS";
+        }
+        return dtype;
     }
 
     private String getFrameTypeDataType() throws SQLException {
