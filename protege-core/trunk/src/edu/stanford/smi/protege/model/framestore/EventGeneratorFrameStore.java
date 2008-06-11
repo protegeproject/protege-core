@@ -173,9 +173,9 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         Iterator i = getDirectSuperslots( slot ).iterator();
         while (i.hasNext()) {
         	Slot superSlot = (Slot) i.next();
-        	generateSlotEvent(SlotEvent.DIRECT_SUPERSLOT_REMOVED, slot, superSlot);
+        	generateSlotEvent(SlotEvent.DIRECT_SUPERSLOT_REMOVED, slot, superSlot, level);
         }
-        generateDeleteInstanceEvents(slot);
+        generateDeleteInstanceEvents(slot, level);
     }
 
     private void generateDeleteFacetEvents(Facet facet, TransactionIsolationLevel level) {
