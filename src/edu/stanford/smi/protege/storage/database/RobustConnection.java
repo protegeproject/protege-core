@@ -486,30 +486,7 @@ public class RobustConnection {
         return getName(PROPERTY_CHAR_TYPE_NAME, _driverCharTypeName);
     }
 
-    //    private void dumpTypes() throws SQLException {
-    //        ResultSet rs = _connection.getMetaData().getTypeInfo();
-    //        while (rs.next()) {
-    //            System.out.println("TYPE_NAME: " + rs.getString(1));
-    //            System.out.println("\tDATA_TYPE: " + rs.getInt(2));
-    //            System.out.println("\tPRECISION: " + rs.getLong(3));
-    //            System.out.println("\tLITERAL_PREFIX: " + rs.getString(4));
-    //            System.out.println("\tLITERAL_SUFFIX: " + rs.getString(5));
-    //            System.out.println("\tCREATE_PARAMS: " + rs.getString(6));
-    //            System.out.println("\tNULLABLE: " + rs.getShort(7));
-    //            System.out.println("\tCASE_SENSITIVE: " + rs.getBoolean(8));
-    //            System.out.println("\tSEARCHABLE: " + rs.getShort(9));
-    //            System.out.println("\tUNSIGNED_ATTRIBUTE: " + rs.getBoolean(10));
-    //            System.out.println("\tFIXED_PREC_SCALE: " + rs.getBoolean(11));
-    //            System.out.println("\tAUTO_INCREMENT: " + rs.getBoolean(12));
-    //            System.out.println("\tLOCAL_TYPE_NAME: " + rs.getString(13));
-    //            System.out.println("\tMINIMUM_SCALE: " + rs.getShort(14));
-    //            System.out.println("\tMAXIMUM_SCALE: " + rs.getShort(15));
-    //            System.out.println("\tSQL_DATA_TYPE: " + rs.getShort(16));
-    //            System.out.println("\tSQL_DATETIME_SUB: " + rs.getShort(17));
-    //            System.out.println("\tNUM_PREC_RADIX: " + rs.getInt(18));
-    //        }
-    //        rs.close();
-    //    }
+
 
     public boolean supportsCaseInsensitiveMatches() throws SQLException {
         return !(isOracle() || isPostgres());
@@ -679,6 +656,33 @@ public class RobustConnection {
 		
 
     	
+    }
+
+    // String driver, String url, String username, String password
+    public static void main(String[] args) throws SQLException {
+        RobustConnection connection = new RobustConnection(args[0], args[1], args[2], args[3], null, null);
+        ResultSet rs = connection._connection.getMetaData().getTypeInfo();
+        while (rs.next()) {
+            System.out.println("TYPE_NAME: " + rs.getString(1));
+            System.out.println("\tDATA_TYPE: " + rs.getInt(2));
+            System.out.println("\tPRECISION: " + rs.getLong(3));
+            System.out.println("\tLITERAL_PREFIX: " + rs.getString(4));
+            System.out.println("\tLITERAL_SUFFIX: " + rs.getString(5));
+            System.out.println("\tCREATE_PARAMS: " + rs.getString(6));
+            System.out.println("\tNULLABLE: " + rs.getShort(7));
+            System.out.println("\tCASE_SENSITIVE: " + rs.getBoolean(8));
+            System.out.println("\tSEARCHABLE: " + rs.getShort(9));
+            System.out.println("\tUNSIGNED_ATTRIBUTE: " + rs.getBoolean(10));
+            System.out.println("\tFIXED_PREC_SCALE: " + rs.getBoolean(11));
+            System.out.println("\tAUTO_INCREMENT: " + rs.getBoolean(12));
+            System.out.println("\tLOCAL_TYPE_NAME: " + rs.getString(13));
+            System.out.println("\tMINIMUM_SCALE: " + rs.getShort(14));
+            System.out.println("\tMAXIMUM_SCALE: " + rs.getShort(15));
+            System.out.println("\tSQL_DATA_TYPE: " + rs.getShort(16));
+            System.out.println("\tSQL_DATETIME_SUB: " + rs.getShort(17));
+            System.out.println("\tNUM_PREC_RADIX: " + rs.getInt(18));
+        }
+        rs.close();
     }
     
 }
