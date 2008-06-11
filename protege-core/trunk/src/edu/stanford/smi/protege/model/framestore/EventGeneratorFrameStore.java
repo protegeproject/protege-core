@@ -29,6 +29,7 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
+
 public class EventGeneratorFrameStore extends ModificationFrameStore {
     
     private List<AbstractEvent> _events = new ArrayList<AbstractEvent>();
@@ -169,7 +170,12 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
                 generateClsEvent(ClsEvent.TEMPLATE_SLOT_REMOVED, (Cls) o, slot, level);
             }
         }
-        generateDeleteInstanceEvents(slot, level);
+        Iterator i = getDirectSuperslots( slot ).iterator();
+        while (i.hasNext()) {
+        	Slot superSlot = (Slot) i.next();
+        	generateSlotEvent(SlotEvent.DIRECT_SUPERSLOT_REMOVED, slot, superSlot);
+        }
+        generateDeleteInstanceEvents(slot);
     }
 
     private void generateDeleteFacetEvents(Facet facet, TransactionIsolationLevel level) {
