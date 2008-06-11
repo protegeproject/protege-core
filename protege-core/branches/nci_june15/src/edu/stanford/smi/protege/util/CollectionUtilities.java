@@ -43,23 +43,23 @@ public class CollectionUtilities {
         return intersect;
     }
 
-    public static Collection createCollection(Object o) {
+    public static <X> Collection<X> createCollection(X o) {
         return createList(o);
     }
 
-    public static List createList(Object o) {
-        List c;
+    public static <X> List<X> createList(X o) {
+        List<X> c;
         if (o == null) {
-            c = Collections.EMPTY_LIST;
+            c = Collections.emptyList();
         } else {
-            c = new ArrayList(1);
+            c = new ArrayList<X>(1);
             c.add(o);
         }
         return c;
     }
 
-    public static Map createSmallMap() {
-        return new HashMap(11);
+    public static <X,Y> Map<X,Y> createSmallMap() {
+        return new HashMap<X,Y>(11);
     }
 
     public static boolean equalsSet(Collection c1, Collection c2) {
@@ -81,7 +81,7 @@ public class CollectionUtilities {
         return equals;
     }
 
-    public static boolean equalsList(Collection c1, Collection c2) {
+    public static boolean equalsList(Collection<?> c1, Collection<?> c2) {
         boolean equals;
         if (c1 == null) {
             equals = (c2 == null);
@@ -89,8 +89,8 @@ public class CollectionUtilities {
             equals = false;
         } else if (c1.size() == c2.size()) {
             equals = true;
-            Iterator iterC1 = c1.iterator();
-            Iterator iterC2 = c2.iterator();
+            Iterator<?> iterC1 = c1.iterator();
+            Iterator<?> iterC2 = c2.iterator();
             while (equals && iterC1.hasNext() && iterC2.hasNext()) {
                 Object o1 = iterC1.next();
                 Object o2 = iterC2.next();
@@ -105,12 +105,12 @@ public class CollectionUtilities {
     /**
      * Returns the first item in the collection or null if the collection is empty
      */
-    public static Object getFirstItem(Collection c) {
-        Object o;
+    public static <X> X getFirstItem(Collection<X> c) {
+        X o;
         if (c == null || c.isEmpty()) {
             o = null;
         } else if (c instanceof List) {
-            o = ((List) c).get(0);
+            o = ((List<X>) c).get(0);
         } else {
             o = c.iterator().next();
         }
@@ -123,17 +123,17 @@ public class CollectionUtilities {
      * get the first item of a collection if it is possible that there is either
      * 0 items or more than 1 item in the collection.
      */
-    public static Object getSoleItem(Collection c) {
+    public static <X> X getSoleItem(Collection<X> c) {
         Assert.assertEquals("size", c.size(), 1);
         return getFirstItem(c);
     }
 
-    public static Collection removeFirst(Collection c) {
-        List list;
+    public static <X> Collection<X> removeFirst(Collection<X> c) {
+        List<X> list;
         if (c == null || c.size() == 0) {
-            list = Collections.EMPTY_LIST;
+            list = Collections.emptyList();
         } else {
-            list = new ArrayList(c);
+            list = new ArrayList<X>(c);
             list.remove(0);
         }
         return list;
@@ -168,10 +168,10 @@ public class CollectionUtilities {
         return buffer.toString();
     }
     
-    public static void apply(Collection c, UnaryFunction function) {
-        Iterator i = c.iterator();
+    public static <X, Y> void apply(Collection<? extends X> c, UnaryFunction<X, Y> function) {
+        Iterator<? extends X> i = c.iterator();
         while (i.hasNext()) {
-            Object o = i.next();
+            X o = i.next();
             function.apply(o);
         }
     }
