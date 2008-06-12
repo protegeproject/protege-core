@@ -38,7 +38,9 @@ public class RobustConnection {
     private Connection _connection;
     private long lastAccessTime;
     private ConnectionReaperAlgorithm connectionReaper;
+    private KnownDatabase dbType;
     private Statement _genericStatement;
+    private String _driver;
     private String _url;
     private String _username;
     private String _password;
@@ -64,13 +66,11 @@ public class RobustConnection {
     public static final String PROPERTY_REFRESH_CONNECTIONS_TIME="Database.refresh.connections.interval";
     public static final String PROPERTY_LONGVARCHAR_TYPE_NAME = "Database.typename.longvarchar";
     public static final String PROPERTY_VARCHAR_TYPE_NAME = "Database.typename.varchar";
-    public static final String PROPERTY_VARCHAR_MIXED_CASE = "Database.typename.varchar.mixed.case";
+    public static final String PROPERTY_VARCHAR_TYPE_SIZE = "Database.type.varchar.maxsize";
+    public static final int DEFAULT_MAX_STRING_SIZE = 255;
     public static final String PROPERTY_INTEGER_TYPE_NAME = "Database.typename.integer";
     public static final String PROPERTY_SMALL_INTEGER_TYPE_NAME = "Database.typename.small_integer";
-    // private final static String PROPERTY_TINY_INTEGER_TYPE_NAME =
-    // "Database.typename.tiny_integer";
     public static final String PROPERTY_BIT_TYPE_NAME = "Database.typename.bit";
-    public static final String PROPERTY_CHAR_TYPE_NAME = "Database.typename.char";
     
     /*
      * This interval must be significantly longer than the length of time it takes to 
@@ -87,6 +87,7 @@ public class RobustConnection {
 
     public RobustConnection(String driver, String url, String username, String password,
                             TransactionMonitor transactionMonitor, RemoteSession session) throws SQLException {
+        _driver = driver;
         _url = url;
         _username = username;
         _password = password;
@@ -102,6 +103,7 @@ public class RobustConnection {
         lastAccessTime = System.currentTimeMillis();
         setupConnection();
         initializeConnectionReaper();
+        initializeDatabaseType();
         initializeMaxVarcharSize();
         initializeSupportsBatch();
         initializeSupportsEscapeSyntax();
@@ -113,6 +115,25 @@ public class RobustConnection {
     private void initializeConnectionReaper() {
     	connectionReaper = new ConnectionReaperAlgorithm();
     	connectionReaper.startThread();
+    }
+    
+    private void initializeDatabaseType() throws SQLException {
+        String  productName = getDatabaseProductName();
+        if (productName.equalsIgnoreCase("mysql")) {
+            dbType = KnownDatabase.MYSQL;
+        }
+        else if (productName.equalsIgnoreCase("PostgreSQL")) {
+            dbType = KnownDatabase.POSTGRESQL;
+        }
+        else if (productName.equalsIgnoreCase("Microsoft SQL Server")) {
+            dbType = KnownDatabase.SQLSERVER;
+        }
+        else if  (productName.equalsIgnoreCase("oracle")) {
+            dbType = KnownDatabase.ORACLE;
+        }
+        else {
+            dbType = null;
+        }
     }
     
     public void setAutoCommit(boolean b) throws SQLException {
@@ -252,13 +273,17 @@ public class RobustConnection {
     		}
     	}
     }
+    
+    public  KnownDatabase getKnownDatabaseType() {
+        return dbType;
+    }
 
     public boolean isOracle() throws SQLException {
-        return getDatabaseProductName().equalsIgnoreCase("oracle");
+        return dbType == KnownDatabase.ORACLE;
     }
 
     public boolean isSqlServer() throws SQLException {
-        return getDatabaseProductName().equalsIgnoreCase("Microsoft SQL Server");
+        return dbType == KnownDatabase.SQLSERVER;
     }
 
     public boolean isMsAccess() throws SQLException {
@@ -266,11 +291,11 @@ public class RobustConnection {
     }
 
     public boolean isMySql() throws SQLException {
-        return getDatabaseProductName().equalsIgnoreCase("mysql");
+        return dbType == KnownDatabase.MYSQL;
     }
 
     public boolean isPostgres() throws SQLException {
-        return getDatabaseProductName().equalsIgnoreCase("PostgreSQL");
+        return dbType == KnownDatabase.POSTGRESQL;
     }
 
     public String getDatabaseProductName() throws SQLException {
@@ -283,10 +308,6 @@ public class RobustConnection {
     
     public int getDatabaseMinorVersion() throws SQLException {
       return getConnection().getMetaData().getDatabaseMinorVersion();
-    }
-
-    public int getMaxVarcharSize() {
-        return _maxVarcharSize;
     }
     
     private void initializeDriverTypeNames() throws SQLException {
@@ -417,77 +438,90 @@ public class RobustConnection {
         }
     }
 
-    private static String getName(String typeName, String driverName) {
-        String userTypeName = ApplicationProperties.getApplicationOrSystemProperty(typeName);
+    private String getName(String typeName, String driverName) {
+        String userTypeName = ApplicationProperties.getApplicationOrSystemProperty(typeName + "." + _driver);
         return (userTypeName == null || userTypeName.length() == 0) ? driverName : userTypeName;
     }
 
-    public String getLongvarcharTypeName() {
-        String name = SystemUtilities.getSystemProperty(OLD_PROPERTY_LONGVARCHAR_TYPE_NAME);
-        name = name;
-        if (name == null || name.length() == 0) {
-            name = getName(PROPERTY_LONGVARCHAR_TYPE_NAME, _driverLongvarcharTypeName);
+    public String getBitTypeName() {
+        String defaultValue;
+        if (dbType != null) {
+            defaultValue = dbType.getBitType();
         }
-        if (name == null) {
-            // Better to use something here than nothing. At least the create
-            // table call will work
-            name = getVarcharTypeName();
-            Log.getLogger().warning("Using VARCHAR in place of LONGVARCHAR, long strings will be truncated.");
+        else  {
+            defaultValue = _driverBitTypeName;
         }
-        return name;
+        return getName(PROPERTY_BIT_TYPE_NAME, defaultValue);
     }
-
+    
     public String getSmallIntTypeName() {
-        return getName(PROPERTY_SMALL_INTEGER_TYPE_NAME, _driverSmallIntTypeName);
+        String defaultValue;
+        if (dbType != null) {
+            defaultValue = dbType.getSmallIntType();
+        }
+        else  {
+            defaultValue = _driverSmallIntTypeName;
+        }
+        return getName(PROPERTY_SMALL_INTEGER_TYPE_NAME, defaultValue);
     }
 
     public String getIntegerTypeName() {
-        return getName(PROPERTY_INTEGER_TYPE_NAME, _driverIntegerTypeName);
-    }
-
-    public String getBitTypeName() {
-        return getName(PROPERTY_BIT_TYPE_NAME, _driverBitTypeName);
+        String defaultValue;
+        if (dbType != null) {
+            defaultValue = dbType.getIntType();
+        }
+        else  {
+            defaultValue = _driverIntegerTypeName;
+        }
+        return getName(PROPERTY_INTEGER_TYPE_NAME, defaultValue);
     }
 
     public String getVarcharTypeName() {
-        return getName(PROPERTY_VARCHAR_TYPE_NAME, _driverVarcharTypeName);
+        String defaultValue;
+        if (dbType != null) {
+            defaultValue = dbType.getStringType();
+        }
+        else  {
+            defaultValue = _driverVarcharTypeName;
+        }
+        return getName(PROPERTY_VARCHAR_TYPE_NAME, defaultValue);
     }
     
-    public String getVarMixedCaseChar() {
-        String defaultResult = _driverVarBinaryTypeName;
-
-        try {
-            if (isSqlServer())  {
-                defaultResult = _driverVarcharTypeName;
+    public int getMaxVarcharSize() {
+        String propValue = ApplicationProperties.getApplicationOrSystemProperty(PROPERTY_VARCHAR_TYPE_SIZE + "." + _driver);
+        if (propValue  != null) {
+            try {
+                return Integer.parseInt(propValue);
+            }
+            catch (NumberFormatException nfe) {
+                ;
             }
         }
-        catch (SQLException e) {
-            ; // just go to the default.
+        if (dbType != null) {
+            return dbType.getMaxStringSize();
         }
-       
-        return getName(PROPERTY_VARCHAR_MIXED_CASE, defaultResult);
+        else {
+            return DEFAULT_MAX_STRING_SIZE;
+        }
     }
     
-    public int getMaxVarMixedCaseCharSize() {
-
-        try {
-            if  (isSqlServer()) {
-                return  getMaxVarcharSize();
+    public String getLongvarcharTypeName() {
+        String defaultValue;
+        if (dbType != null) {
+            defaultValue = dbType.getLongStringType();
+        }
+        else  {
+            defaultValue =  SystemUtilities.getSystemProperty(OLD_PROPERTY_LONGVARCHAR_TYPE_NAME + "." + _driver);
+            if (defaultValue == null || defaultValue.length() == 0) {
+                defaultValue = _driverLongvarcharTypeName;
+            }
+            if  (defaultValue == null) {
+                defaultValue = getVarcharTypeName();
+                Log.getLogger().warning("Using VARCHAR in place of LONGVARCHAR, long strings will be truncated.");
             }
         }
-        catch (SQLException sqle) {
-            ; // ignore - use  the default
-        }
-       
-        return _maxVarbinarySize;
+        return getName(PROPERTY_LONGVARCHAR_TYPE_NAME, defaultValue);
     }
-
-    public String getCharTypeName() {
-        return getName(PROPERTY_CHAR_TYPE_NAME, _driverCharTypeName);
-    }
-
-
-
     public boolean supportsCaseInsensitiveMatches() throws SQLException {
         return !(isOracle() || isPostgres());
     }
