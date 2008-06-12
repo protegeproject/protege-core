@@ -93,7 +93,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return ServerFrameStore.getCurrentSession();
     }
 
-    protected RobustConnection getCurrentConnection() throws SQLException {
+    public RobustConnection getCurrentConnection() throws SQLException {
         RemoteSession currentSession = getCurrentSession();
         RobustConnection connection =  _connections.get(currentSession);
         if (connection == null) {
@@ -208,7 +208,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         return runtimeEx;
     }
 
-    private void ensureEmptyTableExists() throws SQLException {
+    public void ensureEmptyTableExists() throws SQLException {
         dropTableIfItExists();
         createTable();
     }
@@ -223,7 +223,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
     }
 
-    private void createTable() throws SQLException {
+    public void createTable() throws SQLException {
         String createTableString = "CREATE TABLE " + _table + " (";
         createTableString += FRAME_COLUMN + " " + getFrameDataType() + " NOT NULL, ";
         createTableString += FRAME_TYPE_COLUMN + " " + getFrameTypeDataType() + " NOT NULL, ";
@@ -257,10 +257,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private String getFrameDataType() throws SQLException {
-        String  dtype = getCurrentConnection().getVarMixedCaseChar() + "(" + getCurrentConnection().getMaxVarMixedCaseCharSize() + ")";
-        if (getCurrentConnection().isSqlServer()) {
-            dtype  = dtype + " COLLATE SQL_Latin1_General_CP1_CS_AS";
-        }
+        String  dtype = getCurrentConnection().getVarcharTypeName();
         return dtype;
     }
 
@@ -270,7 +267,6 @@ public class DatabaseFrameDb implements NarrowFrameStore {
 
     private String getIsTemplateDataType() throws SQLException {
       return getCurrentConnection().getBitTypeName();
-      // return getCurrentConnection().getSmallIntTypeName();
     }
 
     private String getValueIndexDataType() throws SQLException {
@@ -278,7 +274,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private String getShortValueDataType() throws SQLException {
-        return getCurrentConnection().getVarcharTypeName() + "(" + getCurrentConnection().getMaxVarcharSize() + ")";
+        return getCurrentConnection().getVarcharTypeName();
     }
 
     private String getLongValueDataType() throws SQLException {
