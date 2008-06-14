@@ -99,6 +99,9 @@ public class RawDb_Test extends APITestCase {
                     else if (entry.equals(s3)) {
                         found3 = true;
                     }
+                    else {
+                        fail("shouldn't get " + entry);
+                    }
                 }
                 assertTrue(found1 && found2 && found3);
             }
