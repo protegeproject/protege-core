@@ -951,9 +951,9 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set getClsesWithMatchingBrowserText(String text, 
-                                               Collection superclasses, 
-                                               int maxMatches) {
+    public Set<Cls> getClsesWithMatchingBrowserText(String text, 
+                                                    Collection superclasses, 
+                                                    int maxMatches) {
         try {
             Set clses = getRemoteDelegate().getClsesWithMatchingBrowserText(text, superclasses, maxMatches, session);
             localize(clses);
@@ -994,9 +994,9 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
+    public Set<Frame> getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
         try {
-            Set frames = getRemoteDelegate().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches, session);
+            Set<Frame> frames = getRemoteDelegate().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches, session);
             localize(frames);
             return frames;
         } catch (RemoteException e) {
