@@ -157,9 +157,9 @@ public class SimpleFrameStore implements FrameStore {
         return _helper.getMatchingReferences(value, maxMatches);
     }
 
-    public Set getClsesWithMatchingBrowserText(String value, Collection superclasses, int maxMatches) {
+    public Set<Cls> getClsesWithMatchingBrowserText(String value, Collection superclasses, int maxMatches) {
         StringMatcher matcher = new SimpleStringMatcher(value);
-        Set clses = new HashSet();
+        Set<Cls> clses = new HashSet<Cls>();
         Set references = _helper.getMatchingReferences(value, FrameStore.UNLIMITED_MATCHES);
         Iterator i = references.iterator();
         while (i.hasNext()) {
@@ -955,7 +955,7 @@ public class SimpleFrameStore implements FrameStore {
         return _helper.getFrames(slot, facet, true, value);
     }
 
-    public Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
+    public Set<Frame> getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
         return _helper.getMatchingFrames(slot, null, false, value, maxMatches);
     }
 
