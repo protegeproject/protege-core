@@ -359,6 +359,16 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
+    
+    public OntologyUpdate replaceFrame(Frame original, Frame replacement, RemoteSession session)
+    throws ServerSessionLost {
+        recordCall(session);
+        synchronized(_kbLock) {
+            getDelegate().replaceFrame(original, replacement);
+            markDirty();
+            return new OntologyUpdate(getValueUpdates(session));
+        }
+    }
 
     public RemoteResponse<List> getDirectTemplateSlotValues(Cls cls, 
                                                             Slot slot, 

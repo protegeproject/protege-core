@@ -200,6 +200,8 @@ public interface RemoteServerFrameStore extends Remote {
 
     Frame getFrame(FrameID id, RemoteSession session) throws RemoteException;
 
+    OntologyUpdate replaceFrame(Frame original, Frame replacement, RemoteSession session) throws RemoteException;
+    
     OntologyUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) throws RemoteException;
     
     void requestValueCache(Set<Frame> frames, boolean skipDirectInstances, RemoteSession session) throws RemoteException;
