@@ -750,7 +750,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
                  "Vacuous Callback Results Thread");
     }
 
-    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
+    public Set<Frame> getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
         try {
             return getMatchingFramesSQL(slot, facet, isTemplate, value, maxMatches);
         } catch (SQLException e) {
