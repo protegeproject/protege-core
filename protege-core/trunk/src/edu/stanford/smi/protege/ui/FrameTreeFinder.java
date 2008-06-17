@@ -65,14 +65,14 @@ public abstract class FrameTreeFinder extends Finder {
 
     protected List getMatches(String text, int maxMatches) {
         Cls kbRoot = knowledgeBase.getRootCls();
-        Set matches = getMatchingFrames(text, maxMatches);
+        Set<Frame> matches = getMatchingFrames(text, maxMatches);
         LazyTreeRoot root = (LazyTreeRoot) tree.getModel().getRoot();
         Set rootNodes = new HashSet((Collection) root.getUserObject());
         if (rootNodes.size() != 1 || !equals(CollectionUtilities.getFirstItem(rootNodes), kbRoot)) {
             // Log.trace("removing bad matches", this, "getMatches");
-            Iterator i = matches.iterator();
+            Iterator<Frame> i = matches.iterator();
             while (i.hasNext()) {
-                Frame frame = (Frame) i.next();
+                Frame frame = i.next();
                 boolean isValid = rootNodes.contains(frame);
                 if (!isValid) {
                     Collection parents = new HashSet(getAncestors(frame));
@@ -92,12 +92,12 @@ public abstract class FrameTreeFinder extends Finder {
         return new SimpleStringMatcher(text);
     }
 
-    protected Set getMatchingFrames(String text, int maxMatches) {
+    protected Set<Frame> getMatchingFrames(String text, int maxMatches) {
         if (!text.endsWith("*")) {
             text += '*';
         }
         StringMatcher matcher = getStringMatcher(text);
-        Set matches = new LinkedHashSet();
+        Set<Frame> matches = new LinkedHashSet<Frame>();
         Collection<Reference> matchingReferences = knowledgeBase.getMatchingReferences(text, maxMatches);
         Iterator i = matchingReferences.iterator();
         while (i.hasNext()) {
