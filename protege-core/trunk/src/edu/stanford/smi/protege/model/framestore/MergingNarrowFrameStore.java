@@ -501,8 +501,8 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return frames;
     }
 
-    public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
-        Set frames = new HashSet();
+    public Set<Frame> getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
+        Set<Frame> frames = new HashSet<Frame>();
         Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext() && !hasEnoughMatches(frames.size(), maxMatches)) {
             NarrowFrameStore fs = i.next();

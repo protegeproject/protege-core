@@ -91,7 +91,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
     }
 
-    public Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
+    public Set<Frame> getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
         return getDelegate().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches);
     }
 
@@ -293,7 +293,7 @@ public class FrameStoreAdapter extends AbstractFrameStore {
         return getDelegate().getReferences(value);
     }
 
-    public Set getClsesWithMatchingBrowserText(String value, Collection superclasses, int maxMatches) {
+    public Set<Cls> getClsesWithMatchingBrowserText(String value, Collection superclasses, int maxMatches) {
         return getDelegate().getClsesWithMatchingBrowserText(value, superclasses, maxMatches);
     }
 

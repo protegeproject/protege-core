@@ -40,7 +40,7 @@ public interface Storage extends Disposable {
 
     Collection getFrames();
 
-    Collection getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String s, int maxMatches);
+    Collection<Frame> getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String s, int maxMatches);
 
     Collection getFramesWithValue(Slot slot, Facet facet, boolean isTemplate, Object o);
 
