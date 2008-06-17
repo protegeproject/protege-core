@@ -152,7 +152,7 @@ public interface RemoteServerFrameStore extends Remote {
     // arbitrary queries
     Set<Reference> getReferences(Object object, RemoteSession session) throws RemoteException;
 
-    Set getClsesWithMatchingBrowserText(String text, Collection superclasses, int maxMatches, RemoteSession session)
+    Set<Cls> getClsesWithMatchingBrowserText(String text, Collection superclasses, int maxMatches, RemoteSession session)
             throws RemoteException;
 
     Set<Reference> getMatchingReferences(String string, int maxMatches, RemoteSession session) throws RemoteException;
@@ -161,7 +161,7 @@ public interface RemoteServerFrameStore extends Remote {
 
     Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot, RemoteSession session) throws RemoteException;
 
-    Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches, RemoteSession session)
+    Set<Frame> getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches, RemoteSession session)
             throws RemoteException;
 
     Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value, RemoteSession session) throws RemoteException;
