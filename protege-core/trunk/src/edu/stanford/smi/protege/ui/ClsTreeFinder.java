@@ -53,11 +53,11 @@ public class ClsTreeFinder extends FrameTreeFinder {
         return slot;
     }
 
-    protected Set getMatchingFrames(String text, int maxMatches) {
+    protected Set<Frame> getMatchingFrames(String text, int maxMatches) {
         if (!text.endsWith("*")) {
             text += '*';
         }
-        return new HashSet(getKnowledgeBase().getClsesWithMatchingBrowserText(text, Collections.EMPTY_LIST, maxMatches));
+        return new HashSet<Frame>(getKnowledgeBase().getClsesWithMatchingBrowserText(text, Collections.EMPTY_LIST, maxMatches));
     }
 
 }
