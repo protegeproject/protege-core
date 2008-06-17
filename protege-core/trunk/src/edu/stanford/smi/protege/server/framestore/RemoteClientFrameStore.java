@@ -1841,7 +1841,12 @@ public class RemoteClientFrameStore implements FrameStore {
   }
 
     public void replaceFrame(Frame original, Frame replacement) {
-      throw new UnsupportedOperationException("Server-client rename not implemented yet");
+        try {
+            OntologyUpdate vu = getRemoteDelegate().replaceFrame(original, replacement, session);
+            processValueUpdate(vu);
+        } catch (RemoteException e) {
+            throw convertException(e);
+        }
     }
     
     
