@@ -112,7 +112,7 @@ public class PlaceHolderNarrowFrameStore implements NarrowFrameStore {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-	public Set getMatchingFrames(Slot slot, Facet facet, boolean isTemplate,
+	public Set<Frame> getMatchingFrames(Slot slot, Facet facet, boolean isTemplate,
 			String value, int maxMatches) {
 
 		throw new UnsupportedOperationException("Not implemented yet");

@@ -632,7 +632,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return (String) getOwnSlotValue(frame, _systemFrames.getModifierSlot());
     }
 
-    public synchronized Collection getFrameNameMatches(String name, int maxMatches) {
+    public synchronized Collection<Frame> getFrameNameMatches(String name, int maxMatches) {
         return getFramesWithMatchingDirectOwnSlotValue(_systemFrames.getNameSlot(), name, maxMatches);
     }
 
@@ -778,7 +778,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().getMatchingReferences(s, maxRefs);
     }
 
-    public synchronized Collection getClsesWithMatchingBrowserText(String s, Collection superclasses, int maxMatches) {
+    public synchronized Collection<Cls> getClsesWithMatchingBrowserText(String s, Collection superclasses, int maxMatches) {
         return getHeadFrameStore().getClsesWithMatchingBrowserText(s, superclasses, maxMatches);
     }
 
