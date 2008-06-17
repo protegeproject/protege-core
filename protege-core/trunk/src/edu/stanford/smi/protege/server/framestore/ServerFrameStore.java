@@ -430,10 +430,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, 
-                                                       String value, 
-                                                       int maxMatches,
-                                                       RemoteSession session) throws ServerSessionLost {
+    public Set<Frame> getFramesWithMatchingDirectOwnSlotValue(Slot slot, 
+                                                              String value, 
+                                                              int maxMatches,
+                                                              RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches);
@@ -729,10 +729,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public Set getClsesWithMatchingBrowserText(String value, 
-                                               Collection superclasses, 
-                                               int maxMatches,
-                                               RemoteSession session) throws ServerSessionLost {
+    public Set<Cls> getClsesWithMatchingBrowserText(String value, 
+                                                    Collection superclasses, 
+                                                    int maxMatches,
+                                                    RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       synchronized(_kbLock) {
         return getDelegate().getClsesWithMatchingBrowserText(value, superclasses, maxMatches);
