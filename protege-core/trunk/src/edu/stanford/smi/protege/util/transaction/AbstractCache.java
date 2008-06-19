@@ -1,10 +1,8 @@
 package edu.stanford.smi.protege.util.transaction;
 
-import static edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel.NONE;
-import static edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel.READ_UNCOMMITTED;
 import static edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel.READ_COMMITTED;
+import static edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel.READ_UNCOMMITTED;
 import static edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel.REPEATABLE_READ;
-import static edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel.SERIALIZABLE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -258,5 +256,8 @@ public abstract class AbstractCache<S, V, R> implements Cache<S,V,R> {
             transactedCacheMap.get(session).put(var, result);
         }
     }
+    
+    // remember to ignore transactions for READ_UNCOMITTED and below
+    // beginTransaction and endTransaction are the ones.
 
 }
