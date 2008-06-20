@@ -1,20 +1,55 @@
 package edu.stanford.smi.protege.util;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.net.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.event.WindowEvent;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
-
-import edu.stanford.smi.protege.ui.ProjectMenuBar;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.JViewport;
+import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 /**
  * Utility methods for dealing with various swing components.
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ComponentUtilities {
@@ -170,11 +205,11 @@ public class ComponentUtilities {
 
     public static void extendSelection(JTree tree, Object userObject) {
         LazyTreeNode selectedNode = (LazyTreeNode) tree.getLastSelectedPathComponent();
-        
+
         if (selectedNode == null) {
         	return;
         }
-        	
+
         int index = selectedNode.getUserObjectIndex(userObject);
         if (index == -1) {
             Log.getLogger().warning("object not found: " + userObject);
@@ -190,7 +225,7 @@ public class ComponentUtilities {
         for (int i = 0; i < count && nExpansions > 0; ++i) {
             TreeNode child = parent.getChildAt(i);
             TreePath childPath = parentPath.pathByAddingChild(child);
-            //ESCA-JAVA0119 
+            //ESCA-JAVA0119
             nExpansions = fullExpand(tree, childPath, nExpansions);
         }
         tree.expandPath(parentPath);
@@ -279,24 +314,24 @@ public class ComponentUtilities {
         return frame;
     }
 
-    public static Collection getListValues(JList list) {    	
+    public static Collection getListValues(JList list) {
     	ListModel model = list.getModel();
-    	
+
     	if (model instanceof SimpleListModel) {
     		return ((SimpleListModel)model).getValues();
-    	}    	    	
+    	}
         return getGenericListValues(list);
     }
 
-       
+
     private static Collection getGenericListValues(JList list) {
     	ArrayList values = new ArrayList();
     	ListModel model = list.getModel();
-    	
+
     	for (int i = 0; i < model.getSize(); i++) {
     		values.add(model.getElementAt(i));
-		}    	
-		return values;	
+		}
+		return values;
 	}
 
     private static SimpleListModel getModel(JList list) {
@@ -444,7 +479,8 @@ public class ComponentUtilities {
 
     public static void hide(final Component c, final int delayInMillisec) {
         Thread t = new Thread() {
-            public void run() {
+            @Override
+			public void run() {
                 try {
                     sleep(delayInMillisec);
                     Component topComponent = SwingUtilities.getRoot(c);
@@ -459,7 +495,7 @@ public class ComponentUtilities {
 
     public static boolean isDragAndDropEnabled(JComponent c) {
         Object o = c.getClientProperty(ComponentUtilities.class);
-        return (o == null) ? true : ((Boolean) o).booleanValue();
+        return o == null ? true : ((Boolean) o).booleanValue();
     }
 
     public static boolean listValuesContain(JList list, Object value) {
@@ -468,11 +504,11 @@ public class ComponentUtilities {
 
     /**
      * Loads a icon from either the file system or from a jar.
-     * 
+     *
      * @param clas A class used to resolve the icon's relative path name
      * @param iconPath the path relative to the clas in which to find the icon.
      * @return an image icon for the icon, or null if not found
-     * 
+     *
      * <pre>
      * for a directory structure like
      *  edu/
@@ -480,9 +516,9 @@ public class ComponentUtilities {
      * 			MyClass.class
      * 			images/
      * 				myicon.gif
-     * 
+     *
      * call loadImageIcon(MyClass.class, "images/myicon.gif");
-     * 
+     *
      * </pre>
      */
     public static ImageIcon loadImageIcon(Class clas, String iconPath) {
@@ -499,15 +535,15 @@ public class ComponentUtilities {
         window.pack();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension bounds = new Dimension();
-        bounds.width = Math.min(window.getWidth(), (screenSize.width * 8) / 10);
-        bounds.height = Math.min(window.getHeight(), (screenSize.height * 8) / 10);
+        bounds.width = Math.min(window.getWidth(), screenSize.width * 8 / 10);
+        bounds.height = Math.min(window.getHeight(), screenSize.height * 8 / 10);
         window.setSize(bounds);
     }
 
     public static Dimension getDefaultMainFrameSize() {
         Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-        size.width = (size.width * 8) / 10;
-        size.height = (size.height * 8) / 10;
+        size.width = size.width * 8 / 10;
+        size.height = size.height * 8 / 10;
         return size;
     }
 
@@ -754,8 +790,8 @@ public class ComponentUtilities {
     public static Border getAlignBorder() {
         return BorderFactory.createEmptyBorder(5, 0, 0, 0);
     }
-    
-    
+
+
     /**
      * Scrolls a table so that a certain cell becomes visible.
      * Source: http://javaalmanac.com/egs/javax.swing.table/Vis.html
@@ -768,51 +804,60 @@ public class ComponentUtilities {
             return;
         }
         JViewport viewport = (JViewport)table.getParent();
-    
+
         // This rectangle is relative to the table where the
         // northwest corner of cell (0,0) is always (0,0).
         Rectangle rect = table.getCellRect(rowIndex, vColIndex, true);
-    
+
         // The location of the viewport relative to the table
         Point pt = viewport.getViewPosition();
-    
+
         // Translate the cell location so that it is relative
         // to the view, assuming the northwest corner of the
         // view is (0,0)
         rect.setLocation(rect.x-pt.x, rect.y-pt.y);
-    
+
         table.scrollRectToVisible(rect);
-        
+
         // Scroll the area into view
         //viewport.scrollRectToVisible(rect);
     }
-    
-    
+
+
     public static JMenu getMenu(JMenuBar menuBar, String menuText) {
     	return getMenu(menuBar, menuText, false);
     }
-    
+
     public static JMenu getMenu(JMenuBar menuBar, String menuText, boolean create) {
     	return getMenu(menuBar, menuText, create, menuBar.getMenuCount());
     }
-    
+
 	public static JMenu getMenu(JMenuBar menuBar, String menuText, boolean create, int menuIndex) {
 		JMenu menu = null;
-		
+
 		for (int i = 0; i < menuBar.getMenuCount(); i++) {
 			menu = menuBar.getMenu(i);
 			if (menu.getText().equals(menuText)) {
 				return menu;
 			}
 		}
-		
+
 		if (create) {
 			menu = new JMenu(menuText);
 			menuBar.add(menu, menuIndex);
 		}
-		
+
 		return menu;
 	}
-	
-	
+
+	public static void removeMenuItem(JMenu menu, String menuItemText) {
+		for (int i = 0; i < menu.getItemCount(); i++) {
+			JMenuItem item = menu.getItem(i);
+			if (item != null && menuItemText.equals(item.getText())) {
+				menu.remove(item);
+			}
+		}
+	}
+
+
 }
