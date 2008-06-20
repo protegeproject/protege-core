@@ -48,7 +48,7 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 public class DatabaseFrameDb implements NarrowFrameStore {
   private static Logger log = Log.getLogger(DatabaseFrameDb.class);
 
-	
+
     private static final String FRAME_COLUMN = "frame";
     private static final String FRAME_TYPE_COLUMN = "frame_type";
     private static final String SLOT_COLUMN = "slot";
@@ -59,7 +59,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private static final String SHORT_VALUE_COLUMN = "short_value";
     private static final String LONG_VALUE_COLUMN = "long_value";
 
-    private final Map<RemoteSession, RobustConnection> _connections 
+    private final Map<RemoteSession, RobustConnection> _connections
                               = new HashMap<RemoteSession, RobustConnection>();
     private String _table;
     private String _driver;
@@ -119,14 +119,14 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             throw createRuntimeException(e);
         }
     }
-    
-    public DatabaseFrameDb() {
-      
-    }
-    
 
-    public void initialize(FrameFactory factory, 
-                           String driver, 
+    public DatabaseFrameDb() {
+
+    }
+
+
+    public void initialize(FrameFactory factory,
+                           String driver,
                            String url, String user, String pass, String table,
                            boolean isInclude) {
     	if (log.isLoggable(Level.FINE)) {
@@ -146,11 +146,11 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             throw createRuntimeException(e);
         }
     }
-    
+
     public FrameFactory getFrameFactory() {
       return _frameFactory;
     }
-    
+
     public String getTable() {
       return _table;
     }
@@ -176,11 +176,11 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private RobustConnection createConnection() throws SQLException {
         clearDeadConnections();
         RemoteSession currentSession = getCurrentSession();
-        RobustConnection connection = new RobustConnection(_driver, _url, _user, _password, 
+        RobustConnection connection = new RobustConnection(_driver, _url, _user, _password,
                                                            getTransactionStatusMonitor(), currentSession);
         _connections.put(currentSession, connection);
         if (log.isLoggable(Level.FINE)) {
-          log.fine("Created connection for " + currentSession);  
+          log.fine("Created connection for " + currentSession);
         }
         return connection;
     }
@@ -202,9 +202,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             // do nothing
         }
         Log.getLogger().info(Log.toString(e));
-        
+
         RuntimeException runtimeEx = new RuntimeException(e.getMessage());
-        runtimeEx.initCause(e);        
+        runtimeEx.initCause(e);
         return runtimeEx;
     }
 
@@ -243,6 +243,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             if (log.isLoggable(Level.FINE)) {
                 log.fine("Created table with command '" + createTableString + "'");
             }
+            createIndices();
         } catch (SQLException e) {
             StringBuffer buffer = new StringBuffer();
             buffer.append("Failed to create table on database ");
@@ -280,12 +281,12 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     private String getLongValueDataType() throws SQLException {
         return getCurrentConnection().getLongvarcharTypeName();
     }
-   
+
     /**
      * This routine checks for a bug in mysql.
-     * 
-     * MySQL hack - there is a bug in mysql where SELECT statements will fail to 
-     *              produce the correct result because of these index statements.  There is 
+     *
+     * MySQL hack - there is a bug in mysql where SELECT statements will fail to
+     *              produce the correct result because of these index statements.  There is
      *              a bug report out to mysql for this problem on the page
      *                  http://bugs.mysql.com/bug.php?id=16121
      *              Right now we are working around this problem by disabling indexing.
@@ -293,7 +294,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
      */
     public boolean checkMySQLBug() {
       try {
-        if (getCurrentConnection().isMySql() 
+        if (getCurrentConnection().isMySql()
             && getCurrentConnection().getDatabaseMajorVersion() == 5) {
           if (log.isLoggable(Level.FINE)) {
             log.fine("Found mysql 5.0 - correcting for mysql bug 16121.");
@@ -305,7 +306,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         Log.getLogger().warning("Unable to check database version with this jdbc driver");
         Log.getLogger().warning("If this database is mysql 5 then protege will perform incorrectly");
       }
-      return false;    
+      return false;
     }
 
     private void createIndices() throws SQLException {
@@ -320,18 +321,18 @@ public class DatabaseFrameDb implements NarrowFrameStore {
          */
         // used for slot and facet value lookup
         LapTimer timer = new LapTimer();
-        
+
         indexString = "CREATE INDEX " + _table + "_I1 ON " + _table;
         indexString += " (" + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN
                 + ", " + VALUE_INDEX_COLUMN + ")";
         executeUpdate(indexString);
-        log.info("\t..._I1 created (" + timer.lap() + "ms).");
-        
+        log.info("\t..._I1 created (" + timer.lap()/1000 + "s).");
+
         // used for searching for values
         indexString = "CREATE INDEX " + _table + "_I2 ON " + _table;
         indexString += " (" + SHORT_VALUE_COLUMN + ")";
         executeUpdate(indexString);
-        log.info("\t..._I2 created (" + timer.lap() + "ms).");
+        log.info("\t..._I2 created (" + timer.lap()/1000 + "s).");
 
         // used for getting slots with any value and for counting frames
         indexString = "CREATE INDEX " + _table + "_I3 ON " + _table;
@@ -339,14 +340,14 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         executeUpdate(indexString);;
 
         if (needsIndexOnLowerValue()) {
-            log.info("\t..._I3 created (" + timer.lap() + "ms).");
+            log.info("\t..._I3 created (" + timer.lap()/1000 + "s).");
             createIndexOnLowerValue();
-            log.info("\t..._IV created (" + timer.lap() + "ms).");
+            log.info("\t..._IV created (" + timer.lap()/1000 + "s).");
         }
         else {
-            log.info("\t..._I3 created (" + timer.lap() + "ms).");
+            log.info("\t..._I3 created (" + timer.lap()/1000 + "s).");
         }
-        log.info("All database indexes created (" + timer.total() + "ms).");
+        log.info("All database indexes created (" + timer.total()/1000 + "s).");
     }
 
     private boolean needsIndexOnLowerValue() throws SQLException {
@@ -382,7 +383,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         trace(stmt, "", Level.FINER);
       }
     }
-    
+
     private static int traceCount = 0;
     private static void trace(PreparedStatement stmt, String append, Level level) {
         if (log.isLoggable(level)) {
@@ -396,7 +397,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             trace(text + append, level);
         }
     }
-    
+
     private static void trace(String text, Level level) {
       log.log(level, ++traceCount + " SQL: " + text);
     }
@@ -418,12 +419,12 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         traceQuery(stmt);
         if (log.isLoggable(Level.FINER)) {
           startTime = System.nanoTime();
-        }       
+        }
         ResultSet ret = stmt.executeQuery();
         if (log.isLoggable(Level.FINER)) {
-          log.finer("Query took " + ((System.nanoTime() - startTime))/1000000.0 
+          log.finer("Query took " + (System.nanoTime() - startTime)/1000000.0
                       + " milliseconds (more or less)");
-        }       
+        }
         return ret;
     }
 
@@ -441,7 +442,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         ResultSet ret = statement.executeQuery(text);
         if (log.isLoggable(Level.FINER)) {
-          log.finer("Query took " + ((System.nanoTime() - startTime))/1000000.0
+          log.finer("Query took " + (System.nanoTime() - startTime)/1000000.0
                       + " milliseconds (more or less)");
         }
         return ret;
@@ -767,23 +768,23 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         }
         return matchColumn;
     }
-    
+
     /*
      * Ok the maxMatches code below is clearly broken.  Here is some explanation:
-     * 
+     *
      * 1. There is no portable way of limiting a database search to some number of matches.
      *    In mysql and postgres, there is a limit keyword.  Oracle uses a nested select and a rownum variable.
      *    Microsoft uses a "top 10" syntax.  Some database only restrict how many results you get but require you to start from
      *    the beginning if you want more.  Etc...  It is hard to accomodate this neatly.
-     * 2. In real live queries on the Thesaurus using the "*" query (which returned 888,497 rows) the database query itself 
-     *    only took about 15-20 seconds (!) on a dual 1.42Mhz PowerMac (e.g. a slow machine).  Indeed returning the result did not take 
+     * 2. In real live queries on the Thesaurus using the "*" query (which returned 888,497 rows) the database query itself
+     *    only took about 15-20 seconds (!) on a dual 1.42Mhz PowerMac (e.g. a slow machine).  Indeed returning the result did not take
      *    that long either.  What did take a tremendous amount of time was processing the returned data in the gui.
      * 3. On the other hand any time spent in this routine is painful because the knowledge base is locked for the duration.
      *    In the client-server mode this is awkward.
-     * 4. I am not sure why the desired slot and isTemplate values are not in the database query.  Changing this 
+     * 4. I am not sure why the desired slot and isTemplate values are not in the database query.  Changing this
      *    would help but there may be a reason why Ray didn't put them in there.  This would be a good thing to
      *    investigate later.
-     *    
+     *
      * Good enough for today.
      */
      private Set<Frame> getMatchingFramesSQL(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) throws SQLException {
@@ -803,7 +804,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             boolean returnedIsTemplate = rs.getBoolean(5);
             if (equals(returnedSlot, slot) && equals(returnedFacet, facet) && returnedIsTemplate == isTemplate) {
                 results.add(frame);
-                if (--maxMatches == 0) break;
+                if (--maxMatches == 0) {
+					break;
+				}
             }
         }
         rs.close();
@@ -1201,7 +1204,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private Frame getFrame(ResultSet rs, int frameIndex, int typeIndex) throws SQLException {
-        return DatabaseUtils.getFrame(rs, 
+        return DatabaseUtils.getFrame(rs,
                                       frameIndex, typeIndex,
                                       _frameFactory, _isInclude);
     }
@@ -1223,9 +1226,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private Object getShortValue(ResultSet rs, int index, int valueTypeIndex) throws SQLException {
-      return DatabaseUtils.getShortValue(rs, 
-                                         index, valueTypeIndex, 
-                                         _frameFactory, 0, 
+      return DatabaseUtils.getShortValue(rs,
+                                         index, valueTypeIndex,
+                                         _frameFactory, 0,
                                          _isInclude);
     }
 
@@ -1251,7 +1254,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         getCurrentConnection().setAutoCommit(true);
     }
 
-    public void overwriteKB(KnowledgeBase kb, 
+    public void overwriteKB(KnowledgeBase kb,
                                 boolean saveFrames) throws SQLException {
         slotToFacetsCacheMap.clear();
         ensureEmptyTableExists();
@@ -1261,17 +1264,16 @@ public class DatabaseFrameDb implements NarrowFrameStore {
           saveFrames(kb);
           endBatch();
         }
-        createIndices();
         kb.setCallCachingEnabled(wasCaching);
     }
 
     private static final Map slotToFacetsCacheMap = new HashMap();
-    
+
     protected void saveFrames(KnowledgeBase kb) throws SQLException {
         nFrames = kb.getFrameCount();
         loopcount = 0;
         previousTime = System.currentTimeMillis();
-        
+
         MergingNarrowFrameStore mnfs = MergingNarrowFrameStore.get(kb);
         NarrowFrameStore nfs = null;
         if (mnfs != null) {
@@ -1309,7 +1311,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
             long currentTime = System.currentTimeMillis();
             long delta = (currentTime - previousTime) / 1000;
             previousTime = currentTime;
-            //ESCA-JAVA0284 
+            //ESCA-JAVA0284
             System.gc();
             Runtime runtime = Runtime.getRuntime();
             String text = loopcount + "/" + nFrames;
@@ -1472,9 +1474,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
       if (transactionMonitor == null) {
         transactionMonitor = new TransactionMonitor() {
 
-            
+
             @Override
-            public TransactionIsolationLevel getTransationIsolationLevel() 
+            public TransactionIsolationLevel getTransationIsolationLevel()
               throws TransactionException {
               int jdbcLevel = Connection.TRANSACTION_NONE;
               try {
@@ -1485,9 +1487,9 @@ public class DatabaseFrameDb implements NarrowFrameStore {
               }
               return TransactionIsolationLevel.getTransactionLevel(jdbcLevel);
             }
-            
+
             @Override
-            public void setTransactionIsolationLevel(TransactionIsolationLevel level) 
+            public void setTransactionIsolationLevel(TransactionIsolationLevel level)
               throws TransactionException {
               int jdbcLevel = level.getJdbcLevel();
               try {
@@ -1499,7 +1501,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
                 throw new TransactionException(e);
               }
             }
-            
+
           };
       }
       return transactionMonitor;
@@ -1712,13 +1714,13 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     public NarrowFrameStore getDelegate() {
         return null;
     }
-    
+
     private String _updateFrameFieldText;
     private String _updateSlotFieldText;
     private String _updateFacetFieldText;
     private String _updateValueFieldText;
     private String _replaceNameText;
-    
+
     public void replaceFrame(Frame original, Frame replacement) {
     	try {
     		if (_updateFrameFieldText == null) {
@@ -1729,7 +1731,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     		setFrame(updateFrameFieldStatement, 1, replacement);
     		setFrame(updateFrameFieldStatement, 2, original);
     		executeUpdate(updateFrameFieldStatement);
-    		
+
     		if (_updateSlotFieldText == null) {
     			_updateSlotFieldText = "UPDATE " + _table + " SET " + SLOT_COLUMN + " = ? WHERE ";
     			_updateSlotFieldText = _updateSlotFieldText + SLOT_COLUMN + " = ?";
@@ -1738,7 +1740,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     		setFrame(updateSlotFieldStatement, 1, replacement);
     		setFrame(updateSlotFieldStatement, 2, original);
     		executeUpdate(updateSlotFieldStatement);
-    		
+
     		if (_updateFacetFieldText == null) {
     			_updateFacetFieldText = "UPDATE " + _table + " SET " + FACET_COLUMN + " = ? WHERE ";
     			_updateFacetFieldText = _updateFacetFieldText + FACET_COLUMN + " = ?";
@@ -1747,7 +1749,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     		setFrame(updateFacetFieldStatement, 1, replacement);
     		setFrame(updateFacetFieldStatement, 2, original);
     		executeUpdate(updateFacetFieldStatement);
-    		
+
     		if (_updateValueFieldText == null) {
     			_updateValueFieldText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ? WHERE ";
     			_updateValueFieldText = _updateValueFieldText + SHORT_VALUE_COLUMN + " = ? AND ";
@@ -1757,7 +1759,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     		setFrame(updateValueFieldStatement, 1, replacement);
     		setFrame(updateValueFieldStatement, 2, original);
     		executeUpdate(updateValueFieldStatement);
-    		
+
     		if (_replaceNameText == null) {
     			_replaceNameText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ?," +  VALUE_TYPE_COLUMN + " = ? WHERE ";
     			_replaceNameText = _replaceNameText + FRAME_COLUMN + " = ? AND ";
@@ -1777,28 +1779,28 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     public void reinitialize()  {
     }
 
-    
+
     @Override
     public String toString() {
         return "DatabaseFrameDb(" + getName() + ")";
     }
-    
+
     private class LapTimer {
         private long start;
         private long lapStart;
-        
+
         public LapTimer() {
             start = System.currentTimeMillis();
             lapStart = start;
         }
-        
+
         public long lap() {
             long lapEnd = System.currentTimeMillis();
             long interval = lapEnd - lapStart;
             lapStart = lapEnd;
             return interval;
         }
-        
+
         public long total() {
             return System.currentTimeMillis() - start;
         }
