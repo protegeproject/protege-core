@@ -3,7 +3,8 @@ package edu.stanford.smi.protege.server.metaproject;
 import edu.stanford.smi.protege.server.metaproject.impl.UnbackedOperationImpl;
 
 public class MetaProjectConstants {
-		
+	public final static Operation OPERATION_DISPLAY_IN_PROJECT_LIST = new  UnbackedOperationImpl("DisplayInProjectList", null);	
+    
 	public final static Operation OPERATION_READ = new UnbackedOperationImpl("Read", null);
 	public final static Operation OPERATION_WRITE = new UnbackedOperationImpl("Write", null);
 
