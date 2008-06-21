@@ -34,6 +34,7 @@ import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
+import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
@@ -278,6 +279,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (!_sessions.contains(session)) {
             return null;  // user didn't really log in
         }
+        if (!readAllowed(projectName, session)) {
+            return null;
+        }
         ServerProject serverProject = null;
         Project p = getOrCreateProject(projectName);
         if (p != null) {
@@ -298,6 +302,15 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return serverProject;
     }
     
+    private boolean readAllowed(String projectName, RemoteSession session) {
+        Policy policy = metaproject.getPolicy();
+        User user = policy.getUserByName(session.getUserName());
+        ProjectInstance projectInstance = metaproject.getProject(projectName);
+        if (projectInstance == null) {
+            return false;
+        }
+        return policy.isOperationAuthorized(user, MetaProjectConstants.OPERATION_READ, projectInstance);
+    }
     
     private void recordConnection(RemoteSession session, ServerProject project) 
     throws ServerSessionLost {
@@ -460,8 +473,14 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     public Collection<String> getAvailableProjectNames(RemoteSession session) {
+        Policy policy = metaproject.getPolicy();
+        User user = policy.getUserByName(session.getUserName());
         List<String> names = new ArrayList<String>();
         for (ProjectInstance instance : metaproject.getProjects()) {
+          if (!policy.isOperationAuthorized(user, MetaProjectConstants.OPERATION_DISPLAY_IN_PROJECT_LIST, instance) ||
+                  !policy.isOperationAuthorized(user, MetaProjectConstants.OPERATION_READ, instance)) {
+              continue;
+          }
           String fileName = instance.getLocation();
           URI uri = URIUtilities.createURI(fileName);
           String scheme = uri.getScheme();
