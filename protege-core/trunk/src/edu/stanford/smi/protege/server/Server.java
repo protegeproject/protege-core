@@ -474,32 +474,37 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     public Collection<String> getAvailableProjectNames(RemoteSession session) {
         Policy policy = metaproject.getPolicy();
-        User user = policy.getUserByName(session.getUserName());
+        User user = session != null ? policy.getUserByName(session.getUserName()) : null;
         List<String> names = new ArrayList<String>();
         for (ProjectInstance instance : metaproject.getProjects()) {
-          if (!policy.isOperationAuthorized(user, MetaProjectConstants.OPERATION_DISPLAY_IN_PROJECT_LIST, instance) ||
-                  !policy.isOperationAuthorized(user, MetaProjectConstants.OPERATION_READ, instance)) {
-              continue;
-          }
-          String fileName = instance.getLocation();
-          URI uri = URIUtilities.createURI(fileName);
-          String scheme = uri.getScheme();
-          if (scheme != null && scheme.contains("http")) {
-        	  BufferedReader reader = URIUtilities.createBufferedReader(uri);
-        	  if (reader != null) {
-        		  names.add(instance.getName());
-        		  FileUtilities.close(reader);
-        	  } else {
-        		  Log.getLogger().warning("Missing project at " + fileName);
-        	  }
-          } else {
-        	  File file = new File(fileName);
-        	  if (file.exists() && file.isFile()) {
-        		  names.add(instance.getName());
-        	  } else {
-        		  Log.getLogger().warning("Missing project at " + fileName);
-        	  }
-          }
+            if (user != null && (
+                    !policy.isOperationAuthorized(user, 
+                                                  MetaProjectConstants.OPERATION_DISPLAY_IN_PROJECT_LIST, 
+                                                  instance) ||
+                    !policy.isOperationAuthorized(user, 
+                                                  MetaProjectConstants.OPERATION_READ, 
+                                                  instance))) {
+                continue;
+            }
+            String fileName = instance.getLocation();
+            URI uri = URIUtilities.createURI(fileName);
+            String scheme = uri.getScheme();
+            if (scheme != null && scheme.contains("http")) {
+                BufferedReader reader = URIUtilities.createBufferedReader(uri);
+                if (reader != null) {
+                    names.add(instance.getName());
+                    FileUtilities.close(reader);
+                } else {
+                    Log.getLogger().warning("Missing project at " + fileName);
+                }
+            } else {
+                File file = new File(fileName);
+                if (file.exists() && file.isFile()) {
+                    names.add(instance.getName());
+                } else {
+                    Log.getLogger().warning("Missing project at " + fileName);
+                }
+            }
         }
         Collections.sort(names);
         return names;
