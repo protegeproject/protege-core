@@ -31,7 +31,7 @@ public void setUp() throws Exception {
     DefaultKnowledgeBase kb = (DefaultKnowledgeBase) p.getKnowledgeBase();
     
     assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new UnbackedOperationImpl("RestartServer", null)));
-    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, MetaProjectConstants.OPERATION_READ));
+    assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, MetaProject_Test.ALT_READ));
     assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, MetaProjectConstants.OPERATION_WRITE));
     assertFalse(RemoteClientFrameStore.isOperationAllowed(kb, Policy_Test.SELF_DESTRUCT));
     assertTrue(RemoteClientFrameStore.isOperationAllowed( kb, new UnbackedOperationImpl("someWeirdNotInOntology", null)));
