@@ -1,7 +1,7 @@
-; Thu Sep 14 10:51:00 PDT 2006
+; Sun Jun 22 08:49:27 PDT 2008
 ; 
-;+ (version "3.2")
-;+ (build "Build 331")
+;+ (version "3.4")
+;+ (build "Build 501")
 
 ([metaproject_Instance_0] of  Operation
 
@@ -114,7 +114,8 @@
 
 ([nci_metaproject_Instance_60009] of  Operation
 
-	(name "Read"))
+	(description "An alternative form of read that doesn't\nprevent users from accessing a server\nontology.")
+	(name "AltRead"))
 
 ([nci_metaproject_Instance_60010] of  Operation
 
