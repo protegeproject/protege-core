@@ -160,7 +160,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                               _updateWriter, 
                                               this,
                                               _sessionToRegistrationMap);
-        fsm.insertFrameStore(new FrameCalculatorFrameStore(frameCalculator));
+        fsm.insertFrameStore(new FrameCalculatorFrameStore(frameCalculator), 1); // after  the localization frame  store.
         _delegate = fsm.getHeadFrameStore();
         transactionMonitor = _delegate.getTransactionStatusMonitor();
         if (ServerProperties.delayInMilliseconds() != 0) {
