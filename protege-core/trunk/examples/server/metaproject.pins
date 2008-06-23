@@ -1,15 +1,33 @@
-; Thu Aug 16 16:49:40 PDT 2007
+; Sun Jun 22 09:18:55 PDT 2008
 ; 
-;+ (version "3.3")
-;+ (build "Build 418")
+;+ (version "3.4")
+;+ (build "Build 501")
+
+([metaproject_Class2] of  Operation
+
+	(name "DisplayInProjectList"))
+
+([metaproject_Class3] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_0])
+	(allowedOperation [metaproject_Class2]))
 
 ([metaproject_Instance_0] of  Group
 
+	(member
+		[metaproject_Instance_10002]
+		[metaproject_Instance_10003]
+		[metaproject_Instance_10004]
+		[metaproject_Instance_10005]
+		[metaproject_Instance_10006]
+		[metaproject_Instance_10007])
 	(name "World"))
 
 ([metaproject_Instance_10000] of  Project
 
-	(allowedGroupOperation [metaproject_Instance_10008])
+	(allowedGroupOperation
+		[metaproject_Instance_10008]
+		[metaproject_Class3])
 	(description "Frames project")
 	(location "examples/newspaper/newspaper.pprj")
 	(name "Newspaper")
@@ -17,31 +35,37 @@
 
 ([metaproject_Instance_10002] of  User
 
+	(group [metaproject_Instance_0])
 	(name "Guest")
 	(password "guest"))
 
 ([metaproject_Instance_10003] of  User
 
+	(group [metaproject_Instance_0])
 	(name "Jennifer Vendetti")
 	(password "jenny"))
 
 ([metaproject_Instance_10004] of  User
 
+	(group [metaproject_Instance_0])
 	(name "Natasha Noy")
 	(password "natalia"))
 
 ([metaproject_Instance_10005] of  User
 
+	(group [metaproject_Instance_0])
 	(name "Ray Fergerson")
 	(password "claudia"))
 
 ([metaproject_Instance_10006] of  User
 
+	(group [metaproject_Instance_0])
 	(name "Tania Tudorache")
 	(password "tania"))
 
 ([metaproject_Instance_10007] of  User
 
+	(group [metaproject_Instance_0])
 	(name "Timothy Redmond")
 	(password "troglodyte"))
 
@@ -54,14 +78,18 @@
 
 ([metaproject_Instance_20000] of  Project
 
-	(allowedGroupOperation [metaproject_Instance_10008])
+	(allowedGroupOperation
+		[metaproject_Instance_10008]
+		[metaproject_Class3])
 	(description "OWL project")
 	(location "examples/pizza/pizza.owl.pprj")
 	(name "Pizza"))
 
 ([metaproject_Instance_20002] of  Project
 
-	(allowedGroupOperation [metaproject_Instance_10008])
+	(allowedGroupOperation
+		[metaproject_Instance_10008]
+		[metaproject_Class3])
 	(description "Frames project")
 	(location "examples/wines/wines.pprj")
 	(name "Wines")
@@ -69,7 +97,9 @@
 
 ([metaproject_Instance_30000] of  Project
 
-	(allowedGroupOperation [metaproject_Instance_10008])
+	(allowedGroupOperation
+		[metaproject_Instance_10008]
+		[metaproject_Class3])
 	(annotationProject [metaproject_Instance_40001])
 	(description "The OWL pizza project with collaborative toppings :)")
 	(location "examples/collaborativePizza/collaborativePizza.owl.pprj")
@@ -86,7 +116,9 @@
 
 ([metaproject_Instance_40000] of  Project
 
-	(allowedGroupOperation [metaproject_Instance_10008])
+	(allowedGroupOperation
+		[metaproject_Instance_10008]
+		[metaproject_Class3])
 	(annotationProject [metaproject_Instance_30001])
 	(description "Example on how to configure a collaborative project.")
 	(location "examples/collaborativeNewspaper/collaborativeNewspaper.pprj")
