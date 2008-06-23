@@ -1,4 +1,4 @@
-; Sun Jun 22 18:16:52 PDT 2008
+; Mon Jun 23 15:29:00 GMT-08:00 2008
 ; 
 ;+ (version "3.4")
 ;+ (build "Build 501")
@@ -15,8 +15,15 @@
 	(name "Samson Tu")
 	(password "samson"))
 
+([metaproject_Class10001] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Dilvan Moreira")
+	(password "dilvan"))
+
 ([metaproject_Class2] of  Operation
 
+	(description "The operation of displaying the project in the project list.\n\nThis is used to control the projects displayed when a user connects to a server.")
 	(name "DisplayInProjectList"))
 
 ([metaproject_Class3] of  GroupOperation
@@ -26,6 +33,7 @@
 
 ([metaproject_Instance_0] of  Group
 
+	(description "This group is intended to represent all the users.\n\nNewly created users are added to this group by default.")
 	(member
 		[metaproject_Instance_10002]
 		[metaproject_Instance_10003]
@@ -34,7 +42,8 @@
 		[metaproject_Instance_10006]
 		[metaproject_Instance_10007]
 		[metaproject_Class0]
-		[metaproject_Class1])
+		[metaproject_Class1]
+		[metaproject_Class10001])
 	(name "World"))
 
 ([metaproject_Instance_10000] of  Project
@@ -149,8 +158,10 @@
 
 ([nci_metaproject_Instance_60009] of  Operation
 
+	(description "The operation of reading an ontology project.\n\nThis controls who can open a remote project.")
 	(name "Read"))
 
 ([nci_metaproject_Instance_60010] of  Operation
 
+	(description "The operation of writing to an ontology project.\n\n(Enforcement not implemented yet)")
 	(name "Write"))
