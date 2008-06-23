@@ -26,6 +26,18 @@ import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.util.Log;
 
 public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
+    
+    public static enum ClsEnum {
+    	Project, User, Group, Operation, GroupOperation;
+    }
+
+
+    public static enum SlotEnum {
+        name, password, location, group, member, allowedGroup, allowedOperation, 
+        allowedGroupOperation, owner, description, annotationProject;
+    }
+
+
     private static final long serialVersionUID = -7866511885264147967L;
     
     private transient KnowledgeBase kb;
@@ -41,7 +53,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	}
 
 
-	public Cls getCls(ClsEnum cls) throws OntologyException {
+	public Cls getCls(MetaProjectImpl.ClsEnum cls) throws OntologyException {
 		Cls frameCls = kb.getCls(cls.toString());
 		if (frameCls == null) {
 			throw new OntologyException("Metaproject Ontology should contain a class " + cls);
@@ -49,7 +61,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 		return frameCls;
 	}
 
-	public Slot getSlot(SlotEnum slot) throws OntologyException {
+	public Slot getSlot(MetaProjectImpl.SlotEnum slot) throws OntologyException {
 		Slot frameSlot = kb.getSlot(slot.toString());
 		if (frameSlot == null) {
 			throw new OntologyException("Metaproject Ontology should contain a slot " + slot);
@@ -57,7 +69,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 		return frameSlot;
 	}
 
-	protected WrappedProtegeInstanceImpl wrapInstance(ClsEnum cls, Instance i) {
+	protected WrappedProtegeInstanceImpl wrapInstance(MetaProjectImpl.ClsEnum cls, Instance i) {
 		if (!i.hasType(getCls(cls))) {
 			throw new IllegalArgumentException("" + i + " should be a " + cls + " instance");
 		}
@@ -78,7 +90,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Set getWrappedInstances(ClsEnum cls) {
+	protected Set getWrappedInstances(MetaProjectImpl.ClsEnum cls) {
 		Set instances = new HashSet();
 		for (Instance i : kb.getInstances(getCls(cls))) {
 			instances.add(wrapInstance(cls, i));
@@ -88,11 +100,11 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 
 	@SuppressWarnings("unchecked")
 	public Set<ProjectInstance> getProjects() {
-		return getWrappedInstances(ClsEnum.Project);
+		return getWrappedInstances(MetaProjectImpl.ClsEnum.Project);
 	}
 
 	public ProjectInstance getProject(String name) {
-		Collection frames = kb.getFramesWithValue(getSlot(SlotEnum.name), null, false, name);
+		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.name), null, false, name);
 		if (frames == null || frames.isEmpty()) {
 			return null;
 		}
@@ -105,11 +117,11 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 
 	@SuppressWarnings("unchecked")
 	public Set<User> getUsers() {
-		return getWrappedInstances(ClsEnum.User);
+		return getWrappedInstances(MetaProjectImpl.ClsEnum.User);
 	}
 
 	public User getUser(String name) {
-		Collection frames = kb.getFramesWithValue(getSlot(SlotEnum.name), null, false, name);
+		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.name), null, false, name);
 		if (frames == null || frames.isEmpty()) {
 			return null;
 		}
@@ -121,7 +133,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	}
 	
 	public Operation getOperation(String name) {
-		Collection frames = kb.getFramesWithValue(getSlot(SlotEnum.name), null, false, name);
+		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.name), null, false, name);
 		if (frames == null || frames.isEmpty()) {
 			return null;
 		}
@@ -134,12 +146,12 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	
 	@SuppressWarnings("unchecked")
 	public Set<Operation> getOperations() {
-		return getWrappedInstances(ClsEnum.Operation);
+		return getWrappedInstances(MetaProjectImpl.ClsEnum.Operation);
 	}
 
 	
 	public Group getGroup(String name) {
-		Collection frames = kb.getFramesWithValue(getSlot(SlotEnum.name), null, false, name);
+		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.name), null, false, name);
 		if (frames == null || frames.isEmpty()) {
 			return null;
 		}
@@ -153,7 +165,12 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 
 	@SuppressWarnings("unchecked")
 	public Set<Group> getGroups() {
-		return getWrappedInstances(ClsEnum.Group);
+		return getWrappedInstances(MetaProjectImpl.ClsEnum.Group);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Set<GroupOperation> getGroupOperations() {
+	    return getWrappedInstances(MetaProjectImpl.ClsEnum.GroupOperation);
 	}
 	
 	
@@ -192,7 +209,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	}
 
 	public ProjectInstance createProject(String name) {
-		Instance pi = kb.createInstance(name, getCls(ClsEnum.Project));
+		Instance pi = kb.createInstance(name, getCls(MetaProjectImpl.ClsEnum.Project));
 		
 		ProjectInstance project = new ProjectInstanceImpl(this, pi);
 		
@@ -201,7 +218,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	}
 
 	public User createUser(String name, String password) {
-		Instance ui = kb.createInstance(null, getCls(ClsEnum.User));
+		Instance ui = kb.createInstance(null, getCls(MetaProjectImpl.ClsEnum.User));
 
 		User userInstance = new UserImpl(this, ui);
 		userInstance.setName(name);
@@ -211,7 +228,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	}
 	
 	public Group createGroup(String name) {
-		Instance pi = kb.createInstance(name, getCls(ClsEnum.Group));
+		Instance pi = kb.createInstance(name, getCls(MetaProjectImpl.ClsEnum.Group));
 		
 		Group group = new GroupImpl(this, pi);
 		
@@ -221,7 +238,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	
 
 	public Operation createOperation(String name) {
-		Instance pi = kb.createInstance(name, getCls(ClsEnum.Operation));
+		Instance pi = kb.createInstance(name, getCls(MetaProjectImpl.ClsEnum.Operation));
 		
 		Operation op = new OperationImpl(this, pi);
 		
@@ -231,7 +248,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	
 	
 	public GroupOperation createGroupOperation() {
-		Instance pi = kb.createInstance(null, getCls(ClsEnum.GroupOperation));
+		Instance pi = kb.createInstance(null, getCls(MetaProjectImpl.ClsEnum.GroupOperation));
 		
 		GroupOperation groupOp = new GroupOperationImpl(this, pi);
 		

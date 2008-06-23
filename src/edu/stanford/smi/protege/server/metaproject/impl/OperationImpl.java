@@ -6,8 +6,8 @@ import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
 import edu.stanford.smi.protege.server.metaproject.Operation;
-import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 
 public class OperationImpl extends WrappedProtegeInstanceImpl implements Operation, Serializable {
 	private static final long serialVersionUID = 3175714463454087306L;
@@ -15,8 +15,8 @@ public class OperationImpl extends WrappedProtegeInstanceImpl implements Operati
 	private String name;
 
 	protected OperationImpl(MetaProjectImpl mp, Instance op) {
-		super(mp, op, ClsEnum.Operation);
-		name = (String) op.getOwnSlotValue(mp.getSlot(SlotEnum.name));
+		super(mp, op, MetaProjectImpl.ClsEnum.Operation);
+		name = (String) op.getOwnSlotValue(mp.getSlot(MetaProjectImpl.SlotEnum.name));
 	}
 
 	public String getName() {
@@ -44,19 +44,19 @@ public class OperationImpl extends WrappedProtegeInstanceImpl implements Operati
 
 	public void setName(String name) {
 		this.name = name;
-		setSlotValue(SlotEnum.name, name);
+		setSlotValue(MetaProjectImpl.SlotEnum.name, name);
 	}
 	
 	public String getDescription() {
-		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(SlotEnum.description));
+		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.description));
 		if (value != null && !(value instanceof String)) {
-			throw new OntologyException("The " + SlotEnum.name + " slot should take on string values");
+			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
 		}
 		return (String) value;		
 	}
 	
 	public void setDescription(String description) {
-		setSlotValue(SlotEnum.description, description);
+		setSlotValue(MetaProjectImpl.SlotEnum.description, description);
 	}
 	
 	// *********************** Deprecated constants *********************** //
