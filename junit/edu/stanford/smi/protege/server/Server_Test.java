@@ -5,17 +5,19 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.framestore.SimpleTestCase;
-import edu.stanford.smi.protege.test.APITestCase;
 import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.DeletionHook;
+import edu.stanford.smi.protege.util.DeletionHookUtil;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ProtegeJob;
 import edu.stanford.smi.protege.util.SystemUtilities;
 
 /**
@@ -142,6 +144,62 @@ public class Server_Test extends SimpleTestCase {
       Cls cls = kb.getCls("Editor");
       assertNotNull(cls);
       p.dispose();
-  }
+    }
+    
+    public void testDeletionHook() {
+        if (!serverRunning) {
+            return;
+        }
+        Project p = RemoteProjectManager.getInstance().getProject(HOST, USER1, PASSWORD1, PROJECT_NAME, true);
+        assertNotNull(p);
+        KnowledgeBase kb = p.getKnowledgeBase();
+        DeletionHookJob job = new DeletionHookJob(kb);
+        job.execute();
+        kb.deleteCls(kb.getCls("Content_Layout"));
+        assertTrue((Boolean) job.execute());
+    }
+    
+    public static void setProtegeJarLocation(String location) {
+        protegeJarLocation = location;
+    }
+    
+    public static class DeletionHookJob extends ProtegeJob {
+        private static final long serialVersionUID = 1L;
+        
+        private static boolean installed = false;
+        private static boolean deleteFound = false;
+        
+        public DeletionHookJob(KnowledgeBase kb) {
+            super(kb);
+        }
+        
+        public Boolean run() {
+            if (!installed) {
+                DeletionHookUtil.addDeletionHook(getKnowledgeBase(), new DeletionHook() {
+                    public void delete(Frame frame) {
+                        if (frame.getKnowledgeBase() != null) {
+                            deleteFound = true;
+                        }
+                    }
 
+                    public void beginTransaction(String name) {
+                        // TODO Auto-generated method stub
+                        
+                    }
+
+                    public void commitTransaction() {
+                        // TODO Auto-generated method stub
+                        
+                    }
+
+                    public void rollbackTransaction() {
+                        // TODO Auto-generated method stub
+                        
+                    }
+                });
+                installed = true;
+            }
+            return deleteFound;
+        }
+    }
 }
