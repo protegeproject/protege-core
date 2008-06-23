@@ -19,4 +19,6 @@ public interface Group {
   void addMember(User member);
    
   void setMembers(Collection<User> members);
+  
+  MetaProject getMetaProject();
 }
