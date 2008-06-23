@@ -1,4 +1,4 @@
-; Sun Jun 22 08:33:20 PDT 2008
+; Sun Jun 22 17:45:42 PDT 2008
 ; 
 ;+ (version "3.4")
 ;+ (build "Build 501")
@@ -6,14 +6,14 @@
 ([BROWSER_SLOT_NAMES] of  Property_List
 
 	(properties
-		[metaproject_ProjectKB_Class26]
-		[metaproject_ProjectKB_Class27]
-		[metaproject_ProjectKB_Class28]
-		[metaproject_ProjectKB_Class29]
-		[metaproject_ProjectKB_Class30]
-		[metaproject_ProjectKB_Class31]
-		[metaproject_ProjectKB_Class32]
-		[metaproject_ProjectKB_Class33]))
+		[metaproject_ProjectKB_Class10016]
+		[metaproject_ProjectKB_Class10017]
+		[metaproject_ProjectKB_Class10018]
+		[metaproject_ProjectKB_Class10019]
+		[metaproject_ProjectKB_Class10020]
+		[metaproject_ProjectKB_Class10021]
+		[metaproject_ProjectKB_Class10022]
+		[metaproject_ProjectKB_Class10023]))
 
 ([CLSES_TAB] of  Widget
 
@@ -47,7 +47,7 @@
 	(property_list [ProjectKB_0036_00038])
 	(widget_class_name "edu.stanford.smi.protege.widget.InstancesTab"))
 
-([KB_531795_Class0] of  Map
+([KB_622352_Class0] of  Map
 )
 
 ([KB_892109_Instance_0] of  Property_List
@@ -437,6 +437,51 @@
 ([metaproject_ProjectKB_Class10] of  Property_List
 )
 
+([metaproject_ProjectKB_Class10015] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-View References to Value"))
+
+([metaproject_ProjectKB_Class10016] of  String
+
+	(name ":INSTANCE-ANNOTATION")
+	(string_value "%3AANNOTATION-TEXT"))
+
+([metaproject_ProjectKB_Class10017] of  String
+
+	(name "GroupOperation")
+	(string_value "allowedGroup{+can+}allowedOperation"))
+
+([metaproject_ProjectKB_Class10018] of  String
+
+	(name ":META-CLASS")
+	(string_value "%3ANAME"))
+
+([metaproject_ProjectKB_Class10019] of  String
+
+	(name "User")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class10020] of  String
+
+	(name "Operation")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class10021] of  String
+
+	(name "Project")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class10022] of  String
+
+	(name "Group")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class10023] of  String
+
+	(name ":PAL-CONSTRAINT")
+	(string_value "%3APAL-NAME"))
+
 ([metaproject_ProjectKB_Class11] of  Widget
 
 	(is_hidden TRUE)
@@ -473,51 +518,11 @@
 ([metaproject_ProjectKB_Class2] of  Property_List
 )
 
-([metaproject_ProjectKB_Class26] of  String
-
-	(name "GroupOperation")
-	(string_value "{GrpOp%28}allowedGroup{%29}"))
-
-([metaproject_ProjectKB_Class27] of  String
-
-	(name ":INSTANCE-ANNOTATION")
-	(string_value "%3AANNOTATION-TEXT"))
-
-([metaproject_ProjectKB_Class28] of  String
-
-	(name ":META-CLASS")
-	(string_value "%3ANAME"))
-
-([metaproject_ProjectKB_Class29] of  String
-
-	(name "User")
-	(string_value "name"))
-
 ([metaproject_ProjectKB_Class3] of  Widget
 
 	(is_hidden TRUE)
 	(property_list [metaproject_ProjectKB_Class4])
 	(widget_class_name "edu.stanford.smi.protege.widget.ProtegePropertiesTab"))
-
-([metaproject_ProjectKB_Class30] of  String
-
-	(name "Project")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class31] of  String
-
-	(name "Operation")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class32] of  String
-
-	(name "Group")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class33] of  String
-
-	(name ":PAL-CONSTRAINT")
-	(string_value "%3APAL-NAME"))
 
 ([metaproject_ProjectKB_Class4] of  Property_List
 )
@@ -732,7 +737,8 @@
 
 	(properties
 		[nci_metaproject_ProjectKB_Instance_10091]
-		[nci_metaproject_ProjectKB_Instance_10092]))
+		[nci_metaproject_ProjectKB_Instance_10092]
+		[metaproject_ProjectKB_Class10015]))
 
 ([nci_metaproject_ProjectKB_Instance_10091] of  Boolean
 
@@ -1573,14 +1579,14 @@
 
 	(browser_slot_names [BROWSER_SLOT_NAMES])
 	(customized_instance_widgets
-		[nci_metaproject_ProjectKB_Instance_10082]
 		[INSTANCE_ANNOTATION_FORM_WIDGET]
+		[nci_metaproject_ProjectKB_Instance_10082]
 		[STANDARD_FACET_FORM_WIDGET]
 		[STANDARD_SLOT_FORM_WIDGET]
 		[STANDARD_CLASS_FORM_WIDGET]
 		[projects_ProjectKB_00053]
-		[projects_ProjectKB_00106]
 		[nci_metaproject_ProjectKB_Instance_20157]
+		[projects_ProjectKB_00106]
 		[projects_ProjectKB_00138]
 		[PAL_FORM_WIDGET])
 	(default_cls_metaclass ":STANDARD-CLASS")
