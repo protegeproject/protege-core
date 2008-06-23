@@ -33,8 +33,9 @@ public class DeletionHookUtil {
         FrameStoreManager fsm = kb.getFrameStoreManager();
         DeletionHookFrameStore frameStore = (DeletionHookFrameStore) fsm.getFrameStoreFromClass(DeletionHookFrameStore.class);
         if (frameStore == null) {
+            int pos = kb.getProject().isMultiUserServer() ? 1 : 0; // needs to go under the LocalizeFrameStoreHandler on a server
             frameStore = new DeletionHookFrameStore();
-            fsm.insertFrameStore(frameStore, 1);
+            fsm.insertFrameStore(frameStore, pos);
         }
         return frameStore;
     }
