@@ -38,9 +38,8 @@ import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
-import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
@@ -306,8 +305,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Policy policy = metaproject.getPolicy();
         User user = policy.getUserByName(session.getUserName());
         ProjectInstance projectInstance = metaproject.getProject(projectName);
+        /*
+         * Temporary projects (e.g. projects that do not appear in the metaproject like the chat project) 
+         * cannot have an associated policy.  So for things to work we must allow access.
+         */
         if (projectInstance == null) {
-            return false;
+            return true;
         }
         return policy.isOperationAuthorized(user, MetaProjectConstants.OPERATION_READ, projectInstance);
     }
@@ -453,14 +456,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         
         if (saveToMetaProject) {
         	ProjectInstance newProjectInstance = metaproject.createProject(newProjectName);
-        	newProjectInstance.setLocation(newProjectsDir + File.separator + newProjectName + ".pprj");        	        	
+        	newProjectInstance.setLocation(newProjectsDir + File.separator + newProjectName + ".pprj");
         	metaproject.save(errors);
         }
         
         return getServerProject(project);		
 	}
-
-    
 
     private static void localizeProject(Project project) {
         localizeKB(project.getKnowledgeBase());
@@ -712,18 +713,29 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     /* -----------------------------------------------------------------------
      * MetaProject utilities
      */
+    
+    /**
+     * @deprecated In ProtegeJobs use getMetaProjectInstance
+     */
+    @Deprecated
     public KnowledgeBase getMetaProject() {
-        return metaproject.getKnowledgeBase();
+        return ((MetaProjectImpl) metaproject).getKnowledgeBase();
     }
-    
+
+    /**
+     * @deprecated In ProtegeJobs use getMetaProjectInstance
+     */
+    @Deprecated
     public Cls getProjectCls()  {
-        return metaproject.getCls(ClsEnum.Project);
+        return ((MetaProjectImpl) metaproject).getCls(MetaProjectImpl.ClsEnum.Project);
     }
-    
+
+    /**
+     * @deprecated In ProtegeJobs use getMetaProjectInstance
+     */
+    @Deprecated
     public Slot getNameSlot() {
-        return metaproject.getSlot(SlotEnum.name);
+        return ((MetaProjectImpl) metaproject).getSlot(SlotEnum.name);
     }
-    
-    
 
 }
