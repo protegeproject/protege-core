@@ -7,8 +7,8 @@ import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Group;
 import edu.stanford.smi.protege.server.metaproject.User;
-import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 
 public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serializable {
 	private static final long serialVersionUID = -4416984896523630762L;
@@ -18,9 +18,9 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 
 	@SuppressWarnings("unchecked")
 	protected UserImpl(MetaProjectImpl mp, Instance ui) {
-		super(mp, ui, ClsEnum.User);
-		name = (String) ui.getOwnSlotValue(mp.getSlot(SlotEnum.name));
-		password = (String) ui.getOwnSlotValue(mp.getSlot(SlotEnum.password));
+		super(mp, ui, MetaProjectImpl.ClsEnum.User);
+		name = (String) ui.getOwnSlotValue(mp.getSlot(MetaProjectImpl.SlotEnum.name));
+		password = (String) ui.getOwnSlotValue(mp.getSlot(MetaProjectImpl.SlotEnum.password));
 	}
 
 	public String getName() {
@@ -33,7 +33,7 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 
 	@SuppressWarnings("unchecked")
     public Set<Group> getGroups() {
-		return getSlotValues(SlotEnum.group, ClsEnum.Group);
+		return getSlotValues(MetaProjectImpl.SlotEnum.group, MetaProjectImpl.ClsEnum.Group);
 	}
 
 	@Override
@@ -57,23 +57,23 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 
 	public void setName(String name) {
 		this.name = name;
-		setSlotValue(SlotEnum.name, name);
+		setSlotValue(MetaProjectImpl.SlotEnum.name, name);
 	}
 
 	public void setPassword(String password) {
-		setSlotValue(SlotEnum.password, password);
+		setSlotValue(MetaProjectImpl.SlotEnum.password, password);
 	}
 	
 	public String getDescription() {
-		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(SlotEnum.description));
+		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.description));
 		if (!(value instanceof String)) {
-			throw new OntologyException("The " + SlotEnum.name + " slot should take on string values");
+			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
 		}
 		return (String) value;		
 	}
 	
 	public void setDescription(String description) {
-		setSlotValue(SlotEnum.description, description);
+		setSlotValue(MetaProjectImpl.SlotEnum.description, description);
 	}
 
 }

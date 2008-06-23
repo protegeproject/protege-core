@@ -13,8 +13,8 @@ import edu.stanford.smi.protege.model.ValueType;
 import edu.stanford.smi.protege.server.metaproject.GroupOperation;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
-import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 
 public class ProjectInstanceImpl extends WrappedProtegeInstanceImpl implements ProjectInstance, Serializable {
@@ -26,10 +26,10 @@ public class ProjectInstanceImpl extends WrappedProtegeInstanceImpl implements P
 
 	@SuppressWarnings("unchecked")
 	protected ProjectInstanceImpl(MetaProjectImpl mp, Instance pi) {
-		super(mp, pi, ClsEnum.Project);
-		location = (String) pi.getOwnSlotValue(mp.getSlot(SlotEnum.location));
+		super(mp, pi, MetaProjectImpl.ClsEnum.Project);
+		location = (String) pi.getOwnSlotValue(mp.getSlot(MetaProjectImpl.SlotEnum.location));
 		localizeLocation(location);
-		name = (String) pi.getOwnSlotValue(mp.getSlot(SlotEnum.name));
+		name = (String) pi.getOwnSlotValue(mp.getSlot(MetaProjectImpl.SlotEnum.name));
 	}
 
 	public String getName() {
@@ -53,11 +53,11 @@ public class ProjectInstanceImpl extends WrappedProtegeInstanceImpl implements P
 
 	@SuppressWarnings("unchecked")
     public Set<GroupOperation> getAllowedGroupOperations() {
-		return getSlotValues(SlotEnum.allowedGroupOperation, ClsEnum.GroupOperation);
+		return getSlotValues(MetaProjectImpl.SlotEnum.allowedGroupOperation, MetaProjectImpl.ClsEnum.GroupOperation);
 	}
 
 	public ProjectInstance getAnnotationProject() {
-		return (ProjectInstance) getSlotValue(SlotEnum.annotationProject, ClsEnum.Project);
+		return (ProjectInstance) getSlotValue(MetaProjectImpl.SlotEnum.annotationProject, MetaProjectImpl.ClsEnum.Project);
 	}
 	
 	@Override
@@ -81,54 +81,54 @@ public class ProjectInstanceImpl extends WrappedProtegeInstanceImpl implements P
 
 	public void setLocation(String location) {
 		this.location = location;
-		setSlotValue(SlotEnum.location, location);
+		setSlotValue(MetaProjectImpl.SlotEnum.location, location);
 	}
 
 	public void setName(String name) {
 		this.name = name;
-		setSlotValue(SlotEnum.name, name);
+		setSlotValue(MetaProjectImpl.SlotEnum.name, name);
 	}
 
 	public User getOwner() {
-		return (User) getSlotValue(SlotEnum.owner, ClsEnum.User);
+		return (User) getSlotValue(MetaProjectImpl.SlotEnum.owner, MetaProjectImpl.ClsEnum.User);
 	}
 
 	public void setAllowedGroupOperations(Collection<GroupOperation> groupOperations) {
-		setSlotValuesAsProtegeInstances(SlotEnum.allowedGroupOperation, groupOperations);
+		setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum.allowedGroupOperation, groupOperations);
 	}
 
 	public void addAllowedGroupOperations(GroupOperation groupOperation) {
-		addSlotValue(SlotEnum.allowedGroupOperation, groupOperation);		
+		addSlotValue(MetaProjectImpl.SlotEnum.allowedGroupOperation, groupOperation);		
 	}
 
 	public void setAnnotationProject(ProjectInstance annotationProject) {
 		
 		//make sure that the annotationProject slot is there
 		Project prj = getProtegeInstance().getProject();
-		Slot annotationProjectSlot = prj.getKnowledgeBase().getSlot(SlotEnum.annotationProject.name());
+		Slot annotationProjectSlot = prj.getKnowledgeBase().getSlot(MetaProjectImpl.SlotEnum.annotationProject.name());
 		if (annotationProjectSlot == null) {
-			annotationProjectSlot = prj.getKnowledgeBase().createSlot(SlotEnum.annotationProject.name());
+			annotationProjectSlot = prj.getKnowledgeBase().createSlot(MetaProjectImpl.SlotEnum.annotationProject.name());
 			annotationProjectSlot.setValueType(ValueType.INSTANCE);
-			annotationProjectSlot.setAllowedClses(CollectionUtilities.createCollection(prj.getKnowledgeBase().getCls(ClsEnum.Project.name())));
+			annotationProjectSlot.setAllowedClses(CollectionUtilities.createCollection(prj.getKnowledgeBase().getCls(MetaProjectImpl.ClsEnum.Project.name())));
 		}
 		
-		setSlotValue(SlotEnum.annotationProject, annotationProject);
+		setSlotValue(MetaProjectImpl.SlotEnum.annotationProject, annotationProject);
 	}
 
 	public void setOwner(User owner) {
-		setSlotValue(SlotEnum.owner, owner);
+		setSlotValue(MetaProjectImpl.SlotEnum.owner, owner);
 	}
 	
 	public String getDescription() {
-		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(SlotEnum.description));
+		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.description));
 		if (!(value instanceof String)) {
-			throw new OntologyException("The " + SlotEnum.name + " slot should take on string values");
+			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
 		}
 		return (String) value;		
 	}
 	
 	public void setDescription(String description) {
-		setSlotValue(SlotEnum.description, description);
+		setSlotValue(MetaProjectImpl.SlotEnum.description, description);
 	}
 
 }

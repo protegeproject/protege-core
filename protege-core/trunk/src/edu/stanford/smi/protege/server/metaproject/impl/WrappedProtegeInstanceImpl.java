@@ -12,17 +12,17 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.server.metaproject.MetaProject.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.MetaProject.SlotEnum;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
 public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
     private static final long serialVersionUID = -1976680694911360227L;
     MetaProjectImpl mp;
 	private Instance i;
-	private ClsEnum cls;
+	private MetaProjectImpl.ClsEnum cls;
 
-	public WrappedProtegeInstanceImpl(MetaProjectImpl mp, Instance i, ClsEnum cls) {
+	public WrappedProtegeInstanceImpl(MetaProjectImpl mp, Instance i, MetaProjectImpl.ClsEnum cls) {
 		if (!i.hasType(mp.getCls(cls))) {
 			throw new IllegalArgumentException("" + i + " should be of type " + cls);
 		}
@@ -39,12 +39,12 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 		return i;
 	}
 	
-	public ClsEnum getCls() {
+	public MetaProjectImpl.ClsEnum getCls() {
 		return cls;
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Set getSlotValues(SlotEnum slot, ClsEnum rangeCls) {
+	protected Set getSlotValues(MetaProjectImpl.SlotEnum slot, MetaProjectImpl.ClsEnum rangeCls) {
 		Set results = new HashSet();
 		for (Object o : i.getOwnSlotValues(mp.getSlot(slot))) {
 		    if (o instanceof Instance)
@@ -53,7 +53,7 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 		return results;
 	}
 
-	protected Object getSlotValue(SlotEnum slot, ClsEnum rangeCls) {
+	protected Object getSlotValue(MetaProjectImpl.SlotEnum slot, MetaProjectImpl.ClsEnum rangeCls) {
 		Object o = i.getOwnSlotValue(mp.getSlot(slot));
 		
 		if (o != null) {
@@ -63,12 +63,12 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 	}
 
 
-	protected void setSlotValuesAsProtegeInstances(SlotEnum slot, Collection valueCollection) {
+	protected void setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum slot, Collection valueCollection) {
 		Slot protege_slot = mp.getSlot(slot);
 		i.setDirectOwnSlotValues(protege_slot, getProtegeCollection(valueCollection));
 	}
 	
-	protected void setSlotValue(SlotEnum slot, Object value) {
+	protected void setSlotValue(MetaProjectImpl.SlotEnum slot, Object value) {
 		Slot protege_slot = mp.getSlot(slot);
 		
 		if (value instanceof WrappedProtegeInstanceImpl) {
@@ -78,7 +78,7 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 		i.setDirectOwnSlotValue(protege_slot, value);
 	}
 
-	protected void addSlotValue(SlotEnum slot, Object value) {
+	protected void addSlotValue(MetaProjectImpl.SlotEnum slot, Object value) {
 		Slot protege_slot = mp.getSlot(slot);
 		
 		if (value instanceof WrappedProtegeInstanceImpl) {
