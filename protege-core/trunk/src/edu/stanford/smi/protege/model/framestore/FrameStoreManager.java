@@ -64,13 +64,13 @@ public class FrameStoreManager {
     
     public<X extends FrameStore> X getFrameStoreFromClass(Class<? extends X> clazz) {
       for (FrameStore fs = headFrameStore;  fs != null ; fs = fs.getDelegate()) {
-        Class fsClass = fs.getClass();
+        Class<?> fsClass = fs.getClass();
         if (Proxy.isProxyClass(fsClass)) {
           Object invocationHandler = Proxy.getInvocationHandler(fs);
           fsClass = invocationHandler.getClass();
         }
         if (clazz.isAssignableFrom(fsClass)) {
-          return (X) fs;
+          return clazz.cast(fs);
         }
       }
       return null;
