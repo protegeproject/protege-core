@@ -2,7 +2,6 @@ package edu.stanford.smi.protege.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -17,7 +16,6 @@ import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -52,7 +50,7 @@ import edu.stanford.smi.protege.widget.WidgetUtilities;
 
 interface TabbedPaneInterface {
     void addChangeListener(ChangeListener listener);
-    
+
     void removeChangeListener(ChangeListener listener);
 
     Component[] getComponents();
@@ -91,9 +89,9 @@ class MyCardPanel extends JPanel implements TabbedPaneInterface {
     public void addChangeListener(ChangeListener listener) {
         this.changeListener = listener;
     }
-    
+
     public void removeChangeListener(ChangeListener listener) {
-    	this.changeListener = null;    	
+    	this.changeListener = null;
     }
 
     public void setSelectedComponent(Component component) {
@@ -158,9 +156,9 @@ class MyJTabbedPane extends JTabbedPane implements TabbedPaneInterface {
 
 public class ProjectView extends JComponent {
     static private Logger log = Log.getLogger(ProjectView.class);
-    
+
     private ListenerCollection projectViewListeners = new ListenerList(new ProjectViewDispatcher());
-	
+
     private Project _project;
     private TabbedPaneInterface _viewHolder;
     private Collection _currentClsPath;
@@ -188,7 +186,7 @@ public class ProjectView extends JComponent {
 
             public void closed(ProjectViewEvent event) {
             }
-            
+
           });
         }
         _project = project;
@@ -199,31 +197,31 @@ public class ProjectView extends JComponent {
             project.getKnowledgeBase().setUndoEnabled(project.isUndoOptionEnabled());
         }
     }
-  
+
 
     public TabWidget addTab(WidgetDescriptor widgetDescriptor, int index) {
         if (log.isLoggable(Level.FINE)) {
             log.fine("Adding tab " + widgetDescriptor);
         }
-         
+
         TabWidget widget = WidgetUtilities.createTabWidget(widgetDescriptor, _project);
         addTab(widget, index);
-        projectViewListeners.postEvent(this, 
-        		                       ProjectViewEvent.Type.addTab.ordinal(), 
+        projectViewListeners.postEvent(this,
+        		                       ProjectViewEvent.Type.addTab.ordinal(),
         		                       widget);
         return widget;
     }
-    
-    
+
+
     public TabWidget addTab(WidgetDescriptor widgetDescriptor) {
         if (log.isLoggable(Level.FINE)) {
             log.fine("Adding tab " + widgetDescriptor);
         }
-         
+
         TabWidget widget = WidgetUtilities.createTabWidget(widgetDescriptor, _project);
         addTab(widget);
-        projectViewListeners.postEvent(this, 
-        		                       ProjectViewEvent.Type.addTab.ordinal(), 
+        projectViewListeners.postEvent(this,
+        		                       ProjectViewEvent.Type.addTab.ordinal(),
         		                       widget);
         return widget;
     }
@@ -331,8 +329,9 @@ public class ProjectView extends JComponent {
 				}
             }
         }
-        if (_viewHolder.getComponentCount() > 0)
-        	_viewHolder.setSelectedIndex(0);
+        if (_viewHolder.getComponentCount() > 0) {
+			_viewHolder.setSelectedIndex(0);
+		}
         setBorder(BorderFactory.createLoweredBevelBorder());
         return (JComponent) _viewHolder;
     }
@@ -340,15 +339,15 @@ public class ProjectView extends JComponent {
     public void addChangeListener(ChangeListener listener) {
         _viewHolder.addChangeListener(listener);
     }
-    
+
     public void removeChangeListener(ChangeListener listener) {
     	_viewHolder.removeChangeListener(listener);
     }
-    
+
     public void addProjectViewListener(ProjectViewListener pvl) {
         projectViewListeners.add(this, pvl);
     }
-    
+
     public void removeProjectViewListener(ProjectViewListener pvl) {
         projectViewListeners.remove(this, pvl);
     }
@@ -360,7 +359,8 @@ public class ProjectView extends JComponent {
     /**
      * @deprecated Use #getTabByClassName(String)
      */
-    public TabWidget getTab(String className) {
+    @Deprecated
+	public TabWidget getTab(String className) {
         return getTabByClassName(className);
     }
 
@@ -392,7 +392,8 @@ public class ProjectView extends JComponent {
     /**
      * @deprecated returns null.  Use the other methods on this class to manipulate views.
      */
-    public JTabbedPane getTabbedPane() {
+    @Deprecated
+	public JTabbedPane getTabbedPane() {
         return _viewHolder instanceof JTabbedPane ? (JTabbedPane) _viewHolder : null;
     }
 
@@ -401,9 +402,9 @@ public class ProjectView extends JComponent {
      * @param regenerate - if <i>true</i> - it will reinitialize all tabs
      * in the interface (dispose the existing tabs, create a new instance of the tab,
      * and call the initialize() method); <br>
-     * - if <i>false</i> - it will close the detached tabs, and if needed, it will resynchronize 
-     * the trees in the tabs (it will not create new instances of the tabs) 
-     * 
+     * - if <i>false</i> - it will close the detached tabs, and if needed, it will resynchronize
+     * the trees in the tabs (it will not create new instances of the tabs)
+     *
      */
     public void reload(boolean regenerate) {
         if (regenerate) {
@@ -419,23 +420,23 @@ public class ProjectView extends JComponent {
     }
 
     /**
-     * Reloads the tab widget given as argument.<br> 
-     * First, it will dispose the existing tab widget, and then it will 
+     * Reloads the tab widget given as argument.<br>
+     * First, it will dispose the existing tab widget, and then it will
      * create a new instance of the tab (it will call the constructor and initialize()),
      * and it will insert it in the same place in the tabbed pane. <br>
      * This method is useful when the content of the tab needs to be updated. (e.g.
-     * after an import). The tab will lose any stored state (because a new instance of the 
+     * after an import). The tab will lose any stored state (because a new instance of the
      * tab will be created.)
-     * 
+     *
      * @param tabWidget - the tab widget to be reinitialized
      */
     public void reload(TabWidget tabWidget) {
     	if (tabWidget == null) {
     		return;
     	}
-    	WidgetDescriptor widgetDescriptor = tabWidget.getDescriptor(); 
-    	try {    	
-    		int index = getTabIndex(widgetDescriptor);    	
+    	WidgetDescriptor widgetDescriptor = tabWidget.getDescriptor();
+    	try {
+    		int index = getTabIndex(widgetDescriptor);
     		if (index < 0) {
     			return; //tab is not loaded
     		}
@@ -446,29 +447,48 @@ public class ProjectView extends JComponent {
     		Log.getLogger().log(Level.WARNING, "Errors at reloading tab " + widgetDescriptor, e);
     	}
     }
-    
-    
+
+
     /**
      * It will reload (i.e. recreate and reinitialize) all tabs in the
      * user interface with the exception of the tab given as argument. <br>
      * For more information see {@link #reload(TabWidget)}.
-     * @param exceptionTab - the tab that will <b>NOT</b> be reloaded. 
+     * @param exceptionTab - the tab that will <b>NOT</b> be reloaded.
      */
     public void reloadAllTabsExcept(TabWidget exceptionTab) {
+    	TabWidget selTabWidget = getSelectedTab();
+    	String selectedTabClassName = null;
+
+    	if (selTabWidget != null) {
+    		selectedTabClassName = selTabWidget.getDescriptor().getWidgetClassName();
+    	}
+
+    	WidgetDescriptor exceptTabDescr = exceptionTab.getDescriptor();
+
     	 Iterator i = _project.getTabWidgetDescriptors().iterator();
          while (i.hasNext()) {
              WidgetDescriptor d = (WidgetDescriptor) i.next();
-             if (d.isVisible()) {
+             if (d.isVisible() && !d.equals(exceptTabDescr)) {
                  String className = d.getWidgetClassName();
-                 TabWidget tabWidget = getTabByClassName(className);                
+                 TabWidget tabWidget = getTabByClassName(className);
                  if (tabWidget != null && d.isVisible()) {
-                	 reload(tabWidget);               
+                	 reload(tabWidget);
                  }
              }
          }
+
+         if (selectedTabClassName != null) {
+         	TabWidget newTabWidget = getTabByClassName(selectedTabClassName);
+         	if (newTabWidget != null) {
+				setSelectedTab(newTabWidget);
+			}
+         }
+
+         revalidate();
+         repaint();
     }
-    
-    
+
+
     private void synchronizeTabbedPane() {
         removeDisabledTabs();
         addEnabledTabs();
@@ -522,10 +542,11 @@ public class ProjectView extends JComponent {
     public void reloadAll() {
     	TabWidget tabWidget = getSelectedTab();
     	String selectedTabClassName = null;
-    	
-    	if (tabWidget != null) 
-    		selectedTabClassName = tabWidget.getDescriptor().getWidgetClassName();
-    	
+
+    	if (tabWidget != null) {
+			selectedTabClassName = tabWidget.getDescriptor().getWidgetClassName();
+		}
+
         closeDetachedTabs();
         if (_viewHolder != null) {
             ComponentUtilities.dispose((Component) _viewHolder);
@@ -533,13 +554,14 @@ public class ProjectView extends JComponent {
         removeAll();
         _project.clearCachedWidgets();
         add(createTabbedPane());
-        
+
         if (selectedTabClassName != null) {
         	TabWidget newTabWidget = getTabByClassName(selectedTabClassName);
-        	if (newTabWidget != null)
-        		setSelectedTab(newTabWidget);
+        	if (newTabWidget != null) {
+				setSelectedTab(newTabWidget);
+			}
         }
-        
+
         revalidate();
         repaint();
     }
@@ -582,7 +604,8 @@ public class ProjectView extends JComponent {
         }
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "ProjectView";
     }
 
@@ -606,7 +629,8 @@ public class ProjectView extends JComponent {
         String title = ((TabWidget) c).getLabel() + " Tab - " + Text.getProgramName();
         frame.setTitle(title);
         frame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent event) {
+            @Override
+			public void windowClosing(WindowEvent event) {
                 Component tab = frame.getContentPane().getComponent(0);
                 reattachTab(tab);
                 frame.setVisible(false);
@@ -621,7 +645,7 @@ public class ProjectView extends JComponent {
     	if (_project == null) {
     		return;
     	}
-    	
+
         int index = getInsertionPoint(c);
         addTab((TabWidget) c, index);
         _viewHolder.setSelectedIndex(index);
@@ -651,7 +675,7 @@ public class ProjectView extends JComponent {
         synchronizeClsTree();
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     public boolean isAutosynchronizingClsTrees() {
         return ApplicationProperties.isAutosynchronizingClsTrees();
     }
@@ -661,7 +685,7 @@ public class ProjectView extends JComponent {
     }
 
     private void setCurrentInstances(Collection instances) {
-        _currentInstances = (instances == null) ? null : new ArrayList(instances);
+        _currentInstances = instances == null ? null : new ArrayList(instances);
     }
 
     public void synchronizeClsTree() {
