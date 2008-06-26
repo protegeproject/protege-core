@@ -6,9 +6,9 @@ package edu.stanford.smi.protege.storage.database;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 
 public enum DatabaseProperty {
-    DRIVER_PROPERTY("driver", "org.postgresql.Driver", "JDBC Driver Class Name"),
+    DRIVER_PROPERTY("driver", "com.mysql.jdbc.Driver", "JDBC Driver Class Name"),
     TABLENAME_PROPERTY("table", "ProtegeTable", "Table"),
-    URL_PROPERTY("url", "jdbc:postgresql://localhost/protege", "JDBC URL"),
+    URL_PROPERTY("url", "jdbc:mysql://localhost/protege", "JDBC URL"),
     USERNAME_PROPERTY("username", null, "Username"),
     PASSWORD_PROPERTY("password", null, "Password");
     
