@@ -66,6 +66,7 @@ public class FrameCalculator {
   private ServerFrameStore server;
   private RemoteSession effectiveClient;
   private Set<Thread> disabledThreads = new HashSet<Thread>();
+  private Set<RemoteSession> disabledSessions = new HashSet<RemoteSession>();
   
   FrameCalculatorThread innerThread;
   
@@ -406,8 +407,25 @@ public class FrameCalculator {
       return previousValue;
   }
   
-  public boolean inDisabledThread() {
+  public boolean setCachingEnabled(boolean enabled, RemoteSession session) {
+      boolean previousValue = !disabledSessions.contains(session);
+      if (enabled) {
+          disabledSessions.remove(session);
+      }
+      else {
+          disabledSessions.add(session);
+      }
+      return previousValue;
+  }
+  
+  public boolean inDisabledThread(RemoteSession session) {
       synchronized (requestLock) {
+          if (session == null) {
+              return true;
+          }
+          if (disabledSessions.contains(session)) {
+              return true;
+          }
           Thread currentThread = Thread.currentThread();
           if (disabledThreads.contains(currentThread)) {
               return true;
