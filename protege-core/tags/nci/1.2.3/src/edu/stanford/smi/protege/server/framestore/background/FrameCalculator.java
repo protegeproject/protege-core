@@ -252,7 +252,7 @@ public class FrameCalculator {
                              RemoteSession session, 
                              ServerCachedState state, 
                              CacheRequestReason reason) {
-    if (disabled) {
+    if (disabled || inDisabledThread(session)) {
       return null;
     }
     if (frame.getKnowledgeBase() == null) {
