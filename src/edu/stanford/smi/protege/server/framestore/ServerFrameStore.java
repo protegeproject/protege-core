@@ -1233,9 +1233,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         values = getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
       }
-      LocalizeUtils.localize(missing, _kb);
-      for (Frame value : missing) {
-        frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+      if (!frameCalculator.inDisabledThread(session)) {
+          LocalizeUtils.localize(missing, _kb);
+          for (Frame value : missing) {
+              frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+          }
       }
       return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
@@ -1254,9 +1256,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           }
         }
       }
-      LocalizeUtils.localize(missing,  _kb);
-      for (Frame value : missing) {
-        frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+      if (!frameCalculator.inDisabledThread(session)) {
+          LocalizeUtils.localize(missing,  _kb);
+          for (Frame value : missing) {
+              frameCalculator.addRequest((Frame) value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+          }
       }
       return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
