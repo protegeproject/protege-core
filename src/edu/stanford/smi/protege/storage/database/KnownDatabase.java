@@ -2,10 +2,10 @@ package edu.stanford.smi.protege.storage.database;
 
 public enum KnownDatabase {
     MYSQL(true, "mysql", 
-          "VARCHAR(255) COLLATE UTF8_BIN", 255, "MEDIUMTEXT",
+          "VARCHAR(500) COLLATE UTF8_BIN", 500, "MEDIUMTEXT",
           "BIT", "SMALLINT", "INT"),
     POSTGRESQL(true, "postgresql",
-               "VARCHAR(255)", 255, "TEXT",
+               "VARCHAR(500)", 500, "TEXT",
                "BOOL", "INT2", "INT4"),
     SQLSERVER(true, "MsSqlServer",
               "VARCHAR(255) COLLATE SQL_Latin1_General_CP1_CS_AS", 255, "NTEXT",
