@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.event.InstanceListener;
 import edu.stanford.smi.protege.event.KnowledgeBaseListener;
 import edu.stanford.smi.protege.event.SlotListener;
 import edu.stanford.smi.protege.event.TransactionListener;
+import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.query.Query;
@@ -740,6 +741,7 @@ public interface KnowledgeBase extends Disposable {
     void stopJournaling();
 
     void flushCache();
+    void flushEvents() throws ProtegeException;
 
     Cls getReifiedRelationCls();
     Slot getReifedRelationFromSlot();
