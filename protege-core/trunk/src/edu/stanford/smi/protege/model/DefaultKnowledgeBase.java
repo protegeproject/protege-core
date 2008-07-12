@@ -28,6 +28,7 @@ import edu.stanford.smi.protege.event.TransactionListener;
 import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.model.framestore.DefaultFrameFactory;
 import edu.stanford.smi.protege.model.framestore.DeleteSimplificationFrameStore;
+import edu.stanford.smi.protege.model.framestore.EventGeneratorFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
@@ -176,7 +177,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     public synchronized boolean isUndoEnabled() {
         return _frameStoreManager.isUndoEnabled();
     }
-    
+
     public void flushEvents() throws ProtegeException {
       _frameStoreManager.flushEvents();
     }
@@ -1037,6 +1038,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         DeleteSimplificationFrameStore dsfs 
                 = _frameStoreManager.getFrameStoreFromClass(DeleteSimplificationFrameStore.class);
         _frameStoreManager.setEnabled(dsfs, false);
+        EventGeneratorFrameStore egfs
+                = _frameStoreManager.getFrameStoreFromClass(EventGeneratorFrameStore.class);
+        if (egfs != null) {
+            _frameStoreManager.setEnabled(egfs, false);
+        }
     }
     
     protected void adjustForServer() {
