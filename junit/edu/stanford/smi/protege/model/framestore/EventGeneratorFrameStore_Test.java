@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.model.framestore;
 
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.AbstractEvent;
 
@@ -88,5 +90,17 @@ public class EventGeneratorFrameStore_Test extends FrameStore_Test {
         getTestFrameStore().deleteCls(cls);
         List<EventObject> events = (List) getTestFrameStore().getEvents();
         assertTrue(containsSimilarEvent(events, testEvent1));
+    }
+    
+    public void testProperlyConfigured() {
+        List errors = new ArrayList();
+        Project p = new Project("junit/pprj/metaproject.pprj", errors);
+        assertTrue(errors.isEmpty());
+        assertFalse(p.isMultiUserClient());
+        assertFalse(p.isMultiUserServer());
+        FrameStoreManager fsm = p.getKnowledgeBase().getFrameStoreManager();
+        assertNotNull(fsm.getFrameStoreFromClass(EventGeneratorFrameStore.class));
+        assertNull(fsm.getFrameStoreFromClass(EventSinkFrameStore.class));
+        p.dispose();
     }
 }
