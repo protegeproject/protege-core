@@ -1,10 +1,12 @@
 package edu.stanford.smi.protege.server;
 
+
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -20,6 +22,9 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.EventDispatchFrameStore;
+import edu.stanford.smi.protege.model.framestore.EventGeneratorFrameStore;
+import edu.stanford.smi.protege.model.framestore.EventSinkFrameStore;
+import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.test.APITestCase;
@@ -40,6 +45,7 @@ public class DBServer_Test extends APITestCase {
   
   private static final String USER = "Ray Fergerson";
   private static final String PASSWORD = "claudia";
+  
   
   private static boolean projectCleaned = false;
   
@@ -129,6 +135,7 @@ public class DBServer_Test extends APITestCase {
         }
       }
     }
+    kb.getProject().dispose();
   }
   
   private String newName() {
@@ -565,68 +572,214 @@ public class DBServer_Test extends APITestCase {
   public void testTransaction07() {
       if (!configured) {
           return;
-        }
-        final LockStepper<Test07Stages> ls = new LockStepper<Test07Stages>(Test07Stages.START);
-        
+      }
+      final LockStepper<Test07Stages> ls = new LockStepper<Test07Stages>(Test07Stages.START);
 
-        new Thread("Client Accessing the server") {
-            public void run() {
+
+      new Thread("Client Accessing the server") {
+          public void run() {
               try {
-                KnowledgeBase kb = getKb();
-                RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
-                
-                Cls thing = kb.getSystemFrames().getRootCls();
-                
-                ls.stageAchieved(Test07Stages.CLIENT_CONNECTED, null);
-                ls.waitForStage(Test07Stages.LISTENERS_INSTALLED_GO);
-                kb.beginTransaction("Starting outer transaction");
-                kb.createCls("A", Collections.singleton(thing));
-                
-                assertEventFired(TransactionEvent.TRANSACTION_BEGIN);  // a little weird but 
-                assert(getEventFired(KnowledgeBaseEvent.CLS_CREATED) == null); // this is detecting events on the server
-                
-                kb.beginTransaction("Starting inner transaction");
-                kb.createSlot("f");
-                assert(getEventFired(KnowledgeBaseEvent.SLOT_CREATED) == null);
-                kb.commitTransaction();
-                
-                assert(getEventFired(KnowledgeBaseEvent.SLOT_CREATED) == null);
-                assert(getEventFired(KnowledgeBaseEvent.CLS_CREATED) == null);
-                
-                kb.commitTransaction();
-                assertEventFired(KnowledgeBaseEvent.CLS_CREATED);
-                assertEventFired(KnowledgeBaseEvent.SLOT_CREATED);
-                ls.stageAchieved(Test07Stages.COMPLETED, null);
+                  KnowledgeBase kb = getKb();
+                  RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
+
+                  Cls thing = kb.getSystemFrames().getRootCls();
+
+                  ls.stageAchieved(Test07Stages.CLIENT_CONNECTED, null);
+                  ls.waitForStage(Test07Stages.LISTENERS_INSTALLED_GO);
+                  kb.beginTransaction("Starting outer transaction");
+                  kb.createCls("A", Collections.singleton(thing));
+
+                  assertEventFired(TransactionEvent.TRANSACTION_BEGIN);  // a little weird but 
+                  assert(getEventFired(KnowledgeBaseEvent.CLS_CREATED) == null); // this is detecting events on the server
+
+                  kb.beginTransaction("Starting inner transaction");
+                  kb.createSlot("f");
+                  assert(getEventFired(KnowledgeBaseEvent.SLOT_CREATED) == null);
+                  kb.commitTransaction();
+
+                  assert(getEventFired(KnowledgeBaseEvent.SLOT_CREATED) == null);
+                  assert(getEventFired(KnowledgeBaseEvent.CLS_CREATED) == null);
+
+                  kb.commitTransaction();
+                  assertEventFired(KnowledgeBaseEvent.CLS_CREATED);
+                  assertEventFired(KnowledgeBaseEvent.SLOT_CREATED);
+                  ls.stageAchieved(Test07Stages.COMPLETED, null);
               } catch (Exception e) {
                   ls.exceptionOffMainThread(Test07Stages.COMPLETED, e);
               }
-            }
-        }.start();
-        // Server work.
-        ls.waitForStage(Test07Stages.CLIENT_CONNECTED);
-        KnowledgeBase serverKb = Server.getInstance().getProject(clientProject).getKnowledgeBase();
-        serverKb.setDispatchEventsEnabled(true);
-        serverKb.getFrameStoreManager().getFrameStoreFromClass(EventDispatchFrameStore.class).setPassThrough(true);
-        clearEvents();
-        serverKb.addTransactionListener(new TransactionAdapter() {
-            @Override
-          public void transactionBegin(TransactionEvent event) {
-                recordEventFired(event);
-            }
-        });
-        serverKb.addKnowledgeBaseListener(new KnowledgeBaseAdapter() {
-           @Override
-           public void clsCreated(KnowledgeBaseEvent event) {
-               recordEventFired(event);
-           }
-           
-           @Override
-          public void slotCreated(KnowledgeBaseEvent event) {
-               recordEventFired(event);
           }
-        });
-        ls.stageAchieved(Test07Stages.LISTENERS_INSTALLED_GO, null);
-        ls.waitForStage(Test07Stages.COMPLETED);
+      }.start();
+      // Server work.
+      ls.waitForStage(Test07Stages.CLIENT_CONNECTED);
+      KnowledgeBase serverKb = Server.getInstance().getProject(clientProject).getKnowledgeBase();
+      serverKb.setDispatchEventsEnabled(true);
+      serverKb.getFrameStoreManager().getFrameStoreFromClass(EventDispatchFrameStore.class).setPassThrough(true);
+      clearEvents();
+      serverKb.addTransactionListener(new TransactionAdapter() {
+          @Override
+          public void transactionBegin(TransactionEvent event) {
+              recordEventFired(event);
+          }
+      });
+      serverKb.addKnowledgeBaseListener(new KnowledgeBaseAdapter() {
+          @Override
+          public void clsCreated(KnowledgeBaseEvent event) {
+              recordEventFired(event);
+          }
+
+          @Override
+          public void slotCreated(KnowledgeBaseEvent event) {
+              recordEventFired(event);
+          }
+      });
+      ls.stageAchieved(Test07Stages.LISTENERS_INSTALLED_GO, null);
+      ls.waitForStage(Test07Stages.COMPLETED);
+  }
+  
+  public enum EventGenerationStages {
+      START, LISTENERS_INSTALLED, 
+      FIRST_CLASS_ADDED, FIRST_CLASS_CHECKED,
+      SECOND_CLASS_ADDED, SECOND_CLASS_CHECKED,
+      THIRD_CLASS_ADDED, THIRD_CLASS_CHECKED,
+      COMPLETED;
+  }
+  
+  public void testEnableEventGeneration() {
+      if (!configured) {
+          return;
+      }
+      
+      final String aName = "A";
+      final String bName = "B";
+      final String cName = "C";
+      
+      final LockStepper<EventGenerationStages> ls 
+              = new LockStepper<EventGenerationStages>(EventGenerationStages.START);
+      Server server = Server.getInstance();
+      final KnowledgeBase serverSideKb = server.getProject(clientProject).getKnowledgeBase();
+      assertTrue(serverSideKb.getProject().isMultiUserServer());
+      assertFalse(serverSideKb.getProject().isMultiUserClient());
+      checkEventFrameStores(serverSideKb, true, false);
+
+      new Thread("First Client") {
+          public void run() {   
+              try {
+                  KnowledgeBase kb1 = getKb();
+                  assertTrue(kb1.getProject().isMultiUserClient());
+                  assertFalse(kb1.getProject().isMultiUserServer());
+                  checkEventFrameStores(kb1, false, false);
+                  
+                  TestListener listener1 = new TestListener();
+                  kb1.addKnowledgeBaseListener(listener1);
+                  
+                  ls.waitForStage(EventGenerationStages.LISTENERS_INSTALLED);
+                  Cls a = kb1.createCls(aName, new ArrayList());
+                  List<Cls> created = listener1.getCreatedClassesAndClear();
+                  assertEquals(1, created.size());
+                  assertTrue(created.contains(a));
+                  ls.stageAchieved(EventGenerationStages.FIRST_CLASS_ADDED, null);
+                  
+                  ls.waitForStage(EventGenerationStages.FIRST_CLASS_CHECKED);
+                  kb1.setGenerateEventsEnabled(false);
+                  checkEventFrameStores(kb1, false, true);
+                  checkEventFrameStores(serverSideKb, true, false);
+                  Cls b = kb1.createCls(bName, new ArrayList());
+                  created = listener1.getCreatedClassesAndClear();
+                  assertEquals(0, created.size());
+                  ls.stageAchieved(EventGenerationStages.SECOND_CLASS_ADDED, null);
+                  
+                  ls.waitForStage(EventGenerationStages.SECOND_CLASS_CHECKED);
+                  kb1.setGenerateEventsEnabled(true);
+                  checkEventFrameStores(kb1, false, false);
+                  checkEventFrameStores(serverSideKb, true, false);
+                  Cls c = kb1.createCls(cName, new ArrayList());
+                  created = listener1.getCreatedClassesAndClear();
+                  assertEquals(1, created.size());
+                  assertTrue(created.contains(c));
+                  ls.stageAchieved(EventGenerationStages.THIRD_CLASS_ADDED, null);
+                  
+                  ls.waitForStage(EventGenerationStages.THIRD_CLASS_CHECKED);
+                  kb1.getProject().dispose();
+                  ls.stageAchieved(EventGenerationStages.COMPLETED, null);
+              } catch (Exception e) {
+                  ls.exceptionOffMainThread(EventGenerationStages.COMPLETED, e);
+              }
+          }
+      }.start();
+
+      new Thread("Second Client") {
+          public void run() {   
+              try {
+                  KnowledgeBase kb2 = getKb();
+                  checkEventFrameStores(kb2, false, false);
+                  
+                  TestListener listener2 = new TestListener();
+                  kb2.addKnowledgeBaseListener(listener2);
+                  ls.stageAchieved(EventGenerationStages.LISTENERS_INSTALLED, null);
+                  
+                  ls.waitForStage(EventGenerationStages.FIRST_CLASS_ADDED);
+                  checkEventFrameStores(kb2, false, false);
+                  kb2.flushEvents();
+                  List<Cls> created = listener2.getCreatedClassesAndClear();
+                  assertEquals(1, created.size());
+                  assertTrue(created.iterator().next().getName().equals(aName));
+                  ls.stageAchieved(EventGenerationStages.FIRST_CLASS_CHECKED, null);
+                  
+                  ls.waitForStage(EventGenerationStages.SECOND_CLASS_ADDED);
+                  checkEventFrameStores(kb2, false, false);
+                  kb2.flushEvents();
+                  created = listener2.getCreatedClassesAndClear();
+                  assertEquals(1, created.size());
+                  assertTrue(created.iterator().next().getName().equals(bName));
+                  ls.stageAchieved(EventGenerationStages.SECOND_CLASS_CHECKED, null);
+                  
+                  ls.waitForStage(EventGenerationStages.THIRD_CLASS_ADDED);
+                  checkEventFrameStores(kb2, false, false);
+                  kb2.flushEvents();
+                  created = listener2.getCreatedClassesAndClear();
+                  assertEquals(1, created.size());
+                  assertTrue(created.iterator().next().getName().equals(cName));
+                  kb2.getProject().dispose();
+                  ls.stageAchieved(EventGenerationStages.THIRD_CLASS_CHECKED, null);
+              } catch (Exception e) {
+                  ls.exceptionOffMainThread(EventGenerationStages.COMPLETED, e);
+              }
+          }
+      }.start();
+      ls.waitForStage(EventGenerationStages.COMPLETED);
+  }
+  
+  private class TestListener extends KnowledgeBaseAdapter {
+      private List<Cls> createdClasses = new ArrayList();
+
+      @Override
+      public void clsCreated(KnowledgeBaseEvent event) {
+          createdClasses.add(event.getCls());
+      }
+      
+      public List<Cls> getCreatedClassesAndClear() {
+          List<Cls> result = createdClasses;
+          createdClasses = new ArrayList<Cls>();
+          return result;
+      }
+  }
+  
+  private void checkEventFrameStores(KnowledgeBase kb, boolean generation, boolean sink) {
+      FrameStoreManager fsm = kb.getFrameStoreManager();
+      EventGeneratorFrameStore eventGeneration = fsm.getFrameStoreFromClass(EventGeneratorFrameStore.class);
+      EventSinkFrameStore eventSink = fsm.getFrameStoreFromClass(EventSinkFrameStore.class);
+      if (generation) {
+          assertNotNull(eventGeneration);
+      }
+      else {
+          assertNull(eventGeneration);
+      }
+      if (sink) {
+          assertNotNull(eventSink);
+      }
+      else {
+          assertNull(eventSink);
+      }
   }
   
 }
