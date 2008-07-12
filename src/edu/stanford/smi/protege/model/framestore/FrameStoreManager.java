@@ -36,6 +36,7 @@ public class FrameStoreManager {
     private FrameStore cleanDispatchFrameStore;
     private EventDispatchFrameStore eventDispatchFrameStore;
     private EventGeneratorFrameStore eventGeneratorFrameStore;
+    private FrameStore eventSinkFrameStore;
     private FrameStore facetCheckingFrameStore;
     private FrameStore journalingFrameStore;
     private ModificationRecordFrameStore modificationRecordFrameStore;
@@ -76,10 +77,6 @@ public class FrameStoreManager {
       return null;
     }
 
-    public boolean isEventGeneratorFrameStoreEnabled() {
-        return isEnabled(eventGeneratorFrameStore);
-    }
-
     protected FrameStore create(Class clas) {
         FrameStore frameStore = null;
         try {
@@ -97,11 +94,21 @@ public class FrameStoreManager {
     private static boolean isHandlerClass(Class clas) {
         return AbstractFrameStoreInvocationHandler.class.isAssignableFrom(clas);
     }
+    
+    /*
+     * During the early phase of initialization when there is the knowledge base has
+     * no project, we assume that we are not multiuser client.  We will fix  any 
+     * mistakes in KnowledgeBase.setProject(Project).
+     */
+    private boolean isMultiUserClient() {
+        return kb.getProject() != null && kb.getProject().isMultiUserClient();
+    }
 
     private void addSystemFrameStores() {
         // closest to terminal frame store
         add(cachingFrameStore, false);
         add(eventGeneratorFrameStore, true);
+        add(eventSinkFrameStore, false);
         add(journalingFrameStore, false);
         add(modificationRecordFrameStore, false);
         add(eventDispatchFrameStore, true);
@@ -188,6 +195,7 @@ public class FrameStoreManager {
         cleanDispatchFrameStore = null;
         eventDispatchFrameStore = null;
         eventGeneratorFrameStore = null;
+        eventSinkFrameStore = null;
         facetCheckingFrameStore = null;
         journalingFrameStore = null;
         modificationRecordFrameStore = null;
@@ -214,7 +222,12 @@ public class FrameStoreManager {
     }
 
     public boolean getGenerateEventsEnabled() {
-        return isEnabled(eventGeneratorFrameStore);
+        if (!isMultiUserClient()) {
+            return isEnabled(eventGeneratorFrameStore);
+        }
+        else {
+            return !isEnabled(eventSinkFrameStore);
+        }
     }
 
     public boolean getFacetCheckingEnabled() {
@@ -310,7 +323,12 @@ public class FrameStoreManager {
     }
 
     public boolean setGenerateEventsEnabled(boolean b) {
-        return setEnabled(eventGeneratorFrameStore, b);
+        if (!isMultiUserClient()) {
+            return setEnabled(eventGeneratorFrameStore, b);
+        }
+        else {
+            return !setEnabled(eventSinkFrameStore, !b);
+        }
     }
 
     public boolean setJournalingEnabled(boolean b) {
@@ -365,6 +383,7 @@ public class FrameStoreManager {
         cleanDispatchFrameStore = create(CleanDispatchFrameStore.class);
         eventDispatchFrameStore = (EventDispatchFrameStore) create(EventDispatchFrameStore.class);
         eventGeneratorFrameStore = (EventGeneratorFrameStore) create(EventGeneratorFrameStore.class);
+        eventSinkFrameStore = create(EventSinkFrameStore.class);
         facetCheckingFrameStore = create(FacetCheckingFrameStore.class);
         journalingFrameStore = create(JournalingFrameStoreHandler.class);
         modificationRecordFrameStore = (ModificationRecordFrameStore) create(ModificationRecordFrameStore.class);
