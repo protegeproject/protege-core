@@ -429,7 +429,6 @@ public class Project {
         
        	_domainKB.addKnowledgeBaseListener(_knowledgeBaseListener);
        	loadCachedKnowledgeBaseObjects(_projectInstance);
-       	_domainKB.setGenerateEventsEnabled(true);
        	_domainKB.setChanged(false);
        	_projectKB.setChanged(false);
         
