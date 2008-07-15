@@ -10,6 +10,7 @@ import edu.stanford.smi.protege.event.FacetListener;
 import edu.stanford.smi.protege.event.FrameListener;
 import edu.stanford.smi.protege.event.InstanceListener;
 import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.ServerProjectListener;
 import edu.stanford.smi.protege.event.SlotListener;
 import edu.stanford.smi.protege.event.TransactionListener;
 import edu.stanford.smi.protege.exception.ProtegeException;
@@ -483,8 +484,13 @@ public interface KnowledgeBase extends Disposable {
     /** Add a listener for facet events for a particular facet */
     void addFacetListener(Facet facet, FacetListener listener);
     void removeFacetListener(Facet facet, FacetListener listener);
+    
+    void addServerProjectListener(ServerProjectListener listener);
+    void removeServerProjectListener(ServerProjectListener listener);
+    
     Slot getAssociatedSlot(Facet facet);
     void setAssociatedSlot(Facet facet, Slot slot);
+    
 
     /** Add a listener for class events for all classes */
     void addClsListener(ClsListener listener);
