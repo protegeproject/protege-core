@@ -17,20 +17,26 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.framestore.EventGeneratorFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.plugin.ProjectPluginManager;
 import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
@@ -48,9 +54,12 @@ import edu.stanford.smi.protege.util.URIUtilities;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
     private static final long serialVersionUID = 1675054259604532947L;
+    
+    private static final transient Logger log = Log.getLogger(Server.class);
         
     private static Server serverInstance;
     private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
+    private Map<String, ProjectStatus> _nameToProjectStatusMap = new  HashMap<String, ProjectStatus>();
     private Map<Project, ServerProject> _projectToServerProjectMap = new HashMap<Project, ServerProject>();
  
     private URI metaprojectURI;
@@ -68,6 +77,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private static final String OPTION_CHAR = "-";
     private boolean preload = true;
     private ProjectPluginManager _projectPluginManager = new ProjectPluginManager();
+    
+    public enum ServerStatus  {
+        READY, SHUTTING_DOWN, SHUTDOWN;
+    }
 
     public static void main(String[] args) {
         try {
@@ -201,14 +214,15 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private void initialize() throws RemoteException {
         metaproject = new MetaProjectImpl(metaprojectURI);
         bindName();
-        dumpProjects();
+        initializeProjects();
         startProjectUpdateThread();
     }
 
-    private void dumpProjects() {
+    private void initializeProjects() {
         Iterator i = getAvailableProjectNames(null).iterator();
         while (i.hasNext()) {
             String name = (String) i.next();
+            _nameToProjectStatusMap.put(name, ProjectStatus.READY);
             if (preload) {
                 try {
                 	createProject(name);
@@ -382,8 +396,48 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         return project;
     }
+    
+    public void setProjectStatus(String name, ProjectStatus status) {
+        ProjectStatus oldStatus  = _nameToProjectStatusMap.put(name, status);
+        Project  p = _nameToOpenProjectMap.get(name);
+        if (p != null) {
+            KnowledgeBase kb = p.getKnowledgeBase();
+            EventGeneratorFrameStore fs = kb.getFrameStoreManager().getFrameStoreFromClass(EventGeneratorFrameStore.class);
+            fs.addCustomEvent(new ServerProjectStatusChangeEvent(name, oldStatus, status));
+        }
+    }
+    
+    public void closeProject(String name) {
+        Project p = _nameToOpenProjectMap.get(name);
+        ServerProject sp = _projectToServerProjectMap.get(p);
+        Set<Session> sessionsToRemove = new HashSet<Session>();
+        for (Entry<RemoteSession, Collection<ServerProject>> entry  : _sessionToProjectsMap.entrySet()) {
+            RemoteSession session = entry.getKey();
+            Collection<ServerProject> serverProjects  = entry.getValue();
+            if (serverProjects.remove(sp)) {
+                try {
+                    sp.deregister(session);
+                }
+                catch (ServerSessionLost ssl) {
+                    log.log(Level.WARNING, "Unexpected exception deregistering client", ssl);
+                }
+            }
+            if (serverProjects.isEmpty() && session instanceof Session) {
+                sessionsToRemove.add((Session) session);
+            }
+        }
+        for (Session session : sessionsToRemove) {
+            _sessions.remove(session);
+            _sessionToProjectsMap.remove(session);
+        }
+        p.dispose();
+    }
 
     private Project createProject(String name) {
+        if (_nameToProjectStatusMap.get(name) != ProjectStatus.READY) {
+            return null;
+        }
+        
         Project project = null;
         
         for (ProjectInstance instance : metaproject.getProjects()) {
@@ -392,7 +446,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             String projectLocation = instance.getLocation();
             URI uri = URIUtilities.createURI(projectLocation);
             Log.getLogger().info("Loading project " + name + " from " + uri);
-            project = Project.loadProjectFromURI(uri, new ArrayList(), true);
+            List errors = new ArrayList();
+            project = Project.loadProjectFromURI(uri, errors, true);
+            Log.handleErrors(log, Level.WARNING, errors);
             if (serverInstance != null) _projectPluginManager.afterLoad(project);
             localizeProject(project);
             _nameToOpenProjectMap.put(name, project);
@@ -428,7 +484,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Log.getLogger().info("Server: Created server project at: " + uri);
         
         if (errors.size() > 0) {
-        	Log.getLogger().warning("Server: Errors at creating new project " + newProjectName);
+            Log.handleErrors(log, Level.SEVERE, errors);
         	return null;
         }
 
@@ -441,7 +497,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
               
         project.save(errors);
         if (errors.size() > 0) {
-        	Log.getLogger().warning("Server: Errors at saving new project " + newProjectName);
+            Log.handleErrors(log, Level.SEVERE, errors);
         	return null;
         }
         
@@ -458,6 +514,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         	ProjectInstance newProjectInstance = metaproject.createProject(newProjectName);
         	newProjectInstance.setLocation(newProjectsDir + File.separator + newProjectName + ".pprj");
         	metaproject.save(errors);
+            Log.handleErrors(log, Level.SEVERE, errors);
+
         }
         
         return getServerProject(project);		
@@ -572,6 +630,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
 		ArrayList errors = new ArrayList();
 		boolean success = metaproject.save(errors);
+        Log.handleErrors(log, Level.SEVERE, errors);
 				
 		return (success && errors.size() == 0);
 	}
@@ -656,11 +715,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private static void dumpErrors(Project p, Collection errors) {
         if (!errors.isEmpty()) {
             Log.getLogger().warning("Unable to save project " + p);
-            Iterator i = errors.iterator();
-            while (i.hasNext()) {
-                Object o = i.next();
-                Log.getLogger().warning("\t" + o.toString());
-            }
+            Log.handleErrors(log, Level.WARNING, errors);
         }
     }
 
