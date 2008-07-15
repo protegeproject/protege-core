@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.Project;
@@ -16,6 +17,8 @@ import edu.stanford.smi.protege.util.PropertyList;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin {
+
+    private static final transient Logger log = Log.getLogger(AbstractCreateProjectPlugin.class);
     private String name;
     private KnowledgeBaseFactory knowledgeBaseFactory;
     private boolean useExistingSources;
@@ -36,13 +39,7 @@ public abstract class AbstractCreateProjectPlugin implements CreateProjectPlugin
     protected void handleErrors(Collection errors) {
         if (!errors.isEmpty()) {
             ProjectManager.getProjectManager().displayErrors("Create Project Errors", errors);
-            for (Object error : errors) {
-              if (error instanceof Exception) {
-                Log.getLogger().log(Level.SEVERE, "Severe error (exception)", (Exception) error);
-              } else {
-                Log.getLogger().severe("Error found = " + error);
-              }
-            }
+            Log.handleErrors(log,  Level.SEVERE, errors);
         }
     }
 
