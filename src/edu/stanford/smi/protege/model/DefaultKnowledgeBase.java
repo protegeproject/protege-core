@@ -23,6 +23,7 @@ import edu.stanford.smi.protege.event.FacetListener;
 import edu.stanford.smi.protege.event.FrameListener;
 import edu.stanford.smi.protege.event.InstanceListener;
 import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.ServerProjectListener;
 import edu.stanford.smi.protege.event.SlotListener;
 import edu.stanford.smi.protege.event.TransactionListener;
 import edu.stanford.smi.protege.exception.ProtegeException;
@@ -38,6 +39,7 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.background.ServerCacheStateMachine;
+import edu.stanford.smi.protege.server.job.GetServerProjectName;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
@@ -2148,6 +2150,16 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     public synchronized void removeFacetListener(FacetListener listener) {
         removeFacetListener(null, listener);
+    }
+    
+    public synchronized void addServerProjectListener(ServerProjectListener listener) {
+        String projectName = (String) new GetServerProjectName(this).execute();
+        addListener(ServerProjectListener.class, projectName, listener);
+    }
+    
+    public synchronized void removeServerProjectListener(ServerProjectListener listener) {
+        String projectName = (String) new GetServerProjectName(this).execute();
+        removeListener(ServerProjectListener.class, projectName, listener);
     }
 
     private void addListener(Class c, Object o, EventListener listener) {
