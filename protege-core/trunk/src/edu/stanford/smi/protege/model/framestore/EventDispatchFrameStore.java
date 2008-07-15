@@ -28,6 +28,10 @@ import edu.stanford.smi.protege.event.InstanceEvent;
 import edu.stanford.smi.protege.event.InstanceListener;
 import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
 import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.ServerProjectEvent;
+import edu.stanford.smi.protege.event.ServerProjectListener;
+import edu.stanford.smi.protege.event.ServerProjectNotificationEvent;
+import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
 import edu.stanford.smi.protege.event.SlotEvent;
 import edu.stanford.smi.protege.event.SlotListener;
 import edu.stanford.smi.protege.event.TransactionEvent;
@@ -251,8 +255,22 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             dispatchFrameEventAsClsFacetEvent((FrameEvent) event);
         } else if (event instanceof TransactionEvent) {
             dispatchTransactionEvent((TransactionEvent) event);
+        } else if (event instanceof ServerProjectEvent) {
+            dispatchServerEvent((ServerProjectEvent) event);
         } else {
             throw new RuntimeException("unknown event type: " + event);
+        }
+    }
+    
+    private void dispatchServerEvent(ServerProjectEvent event) {
+        for (EventListener l : getListeners(ServerProjectListener.class, event.getSource())) {
+            ServerProjectListener listener = (ServerProjectListener)  l;
+            if  (event instanceof ServerProjectNotificationEvent) {
+                listener.projectNotificationReceived((ServerProjectNotificationEvent) event);
+            }
+            else if (event instanceof ServerProjectStatusChangeEvent) {
+                listener.projectStatusChanged((ServerProjectStatusChangeEvent) event);
+            }
         }
     }
     
