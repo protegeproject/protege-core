@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
-import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -213,6 +213,17 @@ public class Log {
      */
     public static void setLoggingLevel(Class<?> c, Level level) {
         Logger.getLogger(c.getName()).setLevel(level);
+    }
+    
+    public static void handleErrors(Logger log, Level level, Collection errors) {
+        for (Object o : errors) {
+            if (o instanceof Throwable) {
+                log.log(level, "Exception caught", (Throwable) o);
+            }
+            else {
+                log.log(level, "Error  found " + o);
+            }
+        }
     }
 
     public static String toString(Throwable t) {
