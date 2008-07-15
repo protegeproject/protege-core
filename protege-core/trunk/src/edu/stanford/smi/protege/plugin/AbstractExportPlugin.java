@@ -1,9 +1,11 @@
 package edu.stanford.smi.protege.plugin;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.util.Log;
 
 /**
  * TODO Class Comment
@@ -11,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class AbstractExportPlugin implements ExportProjectPlugin {
+    private static transient Logger log = Log.getLogger(AbstractExportPlugin.class);
     private String name;
 
     protected AbstractExportPlugin(String name) {
@@ -26,13 +29,7 @@ public abstract class AbstractExportPlugin implements ExportProjectPlugin {
 
     //ESCA-JAVA0130 
     protected void handleErrors(Collection errors) {
-        if (!errors.isEmpty()) {
-            Iterator i = errors.iterator();
-            while (i.hasNext()) {
-                Object error = i.next();
-                Log.getLogger().warning(error.toString());
-            }
-        }
+        Log.handleErrors(log, Level.WARNING, errors);
     }
 
     public boolean canExport(Project project) {
