@@ -6,6 +6,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
@@ -20,6 +21,14 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     private Project _project;
     private ServerFrameStore _domainKbFrameStore;
     private ServerFrameStore _projectKbFrameStore;
+    
+    public enum ProjectStatus implements Localizable {
+        READY, SHUTTING_DOWN, CLOSED_FOR_MAINTENANCE;
+        
+        public void localize(KnowledgeBase kb) {
+
+        }
+    }
 
     public URI getURI(RemoteSession session) {
         return _uri;
