@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.util;
 import java.io.Serializable;
 import java.util.Collection;
 
+import edu.stanford.smi.protege.event.Event;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.server.RemoteSession;
@@ -13,7 +14,7 @@ import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
  * 
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public abstract class AbstractEvent extends SessionEvent implements Localizable {
+public abstract class AbstractEvent extends SessionEvent implements Localizable, Event {
     private int _eventType;
     private Object _source;
     private Object _argument1;
