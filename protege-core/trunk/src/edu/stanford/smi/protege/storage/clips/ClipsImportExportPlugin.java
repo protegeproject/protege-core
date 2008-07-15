@@ -1,13 +1,23 @@
 package edu.stanford.smi.protege.storage.clips;
 
-import java.io.*;
-import java.util.*;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.plugin.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.plugin.ExportPlugin;
+import edu.stanford.smi.protege.plugin.ImportPlugin;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.ui.ProjectManager;
+import edu.stanford.smi.protege.util.FileUtilities;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.WaitCursor;
 
 /**
  * Import and Export plugins for the CLIPS file format.
@@ -25,6 +35,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ClipsImportExportPlugin implements ImportPlugin, ExportPlugin {
+    private static  transient Logger log = Log.getLogger(ClipsImportExportPlugin.class);
 
     public String getName() {
         return "CLIPS";
@@ -59,7 +70,7 @@ public class ClipsImportExportPlugin implements ImportPlugin, ExportPlugin {
         Reader clsesReader = FileUtilities.getReader(clsesFileName);
         Reader instancesReader = FileUtilities.getReader(instancesFileName);
         factory.loadKnowledgeBase(kb, clsesReader, instancesReader, false, errors);
-        handleErrors(errors);
+        Log.handleErrors(Log.getLogger(ClipsImportExportPlugin.class), Level.WARNING, errors);
     }
 
     public void handleExportRequest(Project project) {
@@ -85,17 +96,7 @@ public class ClipsImportExportPlugin implements ImportPlugin, ExportPlugin {
         Writer clsesWriter = FileUtilities.getWriter(clsesFileName);
         Writer instancesWriter = FileUtilities.getWriter(instancesFileName);
         factory.saveKnowledgeBase(kb, clsesWriter, instancesWriter, errors);
-        handleErrors(errors);
-    }
-
-    private static void handleErrors(Collection errors) {
-        if (!errors.isEmpty()) {
-            Iterator i = errors.iterator();
-            while (i.hasNext()) {
-                Object o = i.next();
-                Log.getLogger().warning(o.toString());
-            }
-        }
+        Log.handleErrors(log, Level.WARNING, errors);
     }
 
     public void dispose() {
