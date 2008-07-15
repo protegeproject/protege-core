@@ -684,6 +684,13 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     	}
     }
     
+    public void addCustomEvent(AbstractEvent event) {
+        TransactionIsolationLevel level = transactionMonitor.getTransationIsolationLevel();
+        boolean visible = TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level);
+        event.setHiddenByTransaction(!visible);
+        _events.add(event);
+    }
+    
     private void addEvent(AbstractEvent event, TransactionIsolationLevel level) {
     	if (inReplaceFrameOperation) {
     		event.setReplacementEvent(true);
