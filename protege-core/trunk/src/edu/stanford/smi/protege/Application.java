@@ -169,13 +169,7 @@ public class Application {
                         File file = new File(arg);
                         Collection errors = new ArrayList();
                         Project project = p.createProject(file, errors);
-                        if (!errors.isEmpty()) {
-                            Iterator it = errors.iterator();
-                            while (it.hasNext()) {
-                                Object error = it.next();
-                                System.err.println("Error with file " + arg + ": " + error);
-                            }
-                        }
+                        Log.handleErrors(log, Level.WARNING, errors);
                         return project;
                     }
                 }
