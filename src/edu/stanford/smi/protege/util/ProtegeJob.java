@@ -14,7 +14,11 @@ import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProject;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
+import edu.stanford.smi.protege.server.metaproject.Operation;
+import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.User;
 
 /*
  * There is a temptation to define Protege using a generic here.  But this
@@ -135,6 +139,18 @@ public abstract class ProtegeJob implements Localizable, Serializable {
     ServerProject serverProject = Server.getInstance().getServerProject(getKnowledgeBase().getProject());
     ServerFrameStore serverFs = (ServerFrameStore) serverProject.getDomainKbFrameStore(session);
     return serverFs.getMetaProjectInstance();
+  }
+  
+  public boolean serverSideCheckOperationAllowed(Operation op) {
+      Policy policy = Server.getPolicy();
+      String userName = ServerFrameStore.getCurrentSession().getUserName();
+      User user = policy.getUserByName(userName);
+      boolean allowed = policy.isOperationAuthorized(user, op, getMetaProjectInstance());
+      if (!allowed) {
+          log.warning("User " + userName + " attempted the operation " + op);
+          log.warning("Permission denied");
+      }
+      return allowed;
   }
   
   /**
