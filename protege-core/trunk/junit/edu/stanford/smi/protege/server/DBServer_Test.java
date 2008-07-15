@@ -12,6 +12,9 @@ import java.util.logging.Level;
 
 import edu.stanford.smi.protege.event.KnowledgeBaseAdapter;
 import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.event.ServerProjectAdapter;
+import edu.stanford.smi.protege.event.ServerProjectNotificationEvent;
+import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
 import edu.stanford.smi.protege.event.TransactionAdapter;
 import edu.stanford.smi.protege.event.TransactionEvent;
 import edu.stanford.smi.protege.exception.TransactionException;
@@ -25,14 +28,21 @@ import edu.stanford.smi.protege.model.framestore.EventDispatchFrameStore;
 import edu.stanford.smi.protege.model.framestore.EventGeneratorFrameStore;
 import edu.stanford.smi.protege.model.framestore.EventSinkFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
+import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
+import edu.stanford.smi.protege.server.job.ProjectNotifyJob;
+import edu.stanford.smi.protege.server.job.SetProjectStatusJob;
+import edu.stanford.smi.protege.server.job.ShutdownProjectJob;
 import edu.stanford.smi.protege.test.APITestCase;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.LockStepper;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
+
+import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
 
 public class DBServer_Test extends APITestCase {
   
@@ -782,4 +792,105 @@ public class DBServer_Test extends APITestCase {
       }
   }
   
+  public enum ProjectShutdownTestStages {
+      START, LISTENER_READY,
+      NOTIFIED, NOTIFICATION_HEARD,
+      NEW_STATUS, STATUS_CONFIRMED,
+      COMPLETED;
+  }
+  public void testProjectShutdownSteps() {
+      final LockStepper<ProjectShutdownTestStages> ls 
+          = new LockStepper<ProjectShutdownTestStages>(ProjectShutdownTestStages.START);
+      final String notificationMessage = "Hey there";
+      
+      new Thread("Alternate Thread") {
+          @Override
+          public void run() {
+              try {
+                  KnowledgeBase kb2 = getKb();
+
+                  ls.waitForStage(ProjectShutdownTestStages.LISTENER_READY);
+                  new ProjectNotifyJob(kb2, notificationMessage).execute();
+                  ls.stageAchieved(ProjectShutdownTestStages.NOTIFIED, null);
+
+                  ls.waitForStage(ProjectShutdownTestStages.NOTIFICATION_HEARD);
+                  new SetProjectStatusJob(kb2, ProjectStatus.SHUTTING_DOWN).execute();
+                  ls.stageAchieved(ProjectShutdownTestStages.NEW_STATUS, null);
+
+                  ls.waitForStage(ProjectShutdownTestStages.STATUS_CONFIRMED);
+                  new ShutdownProjectJob(kb2).execute();
+                  ls.stageAchieved(ProjectShutdownTestStages.COMPLETED, null);
+              }
+              catch (Throwable t) {
+                  ls.exceptionOffMainThread(ProjectShutdownTestStages.COMPLETED, t);
+              }
+          }
+      }.start();
+      
+      KnowledgeBase kb1 = getKb();
+      ProjectShutdownListener listener = new ProjectShutdownListener();
+      kb1.addServerProjectListener(listener);
+      ls.stageAchieved(ProjectShutdownTestStages.LISTENER_READY, null);
+      
+      ls.waitForStage(ProjectShutdownTestStages.NOTIFIED);
+      kb1.flushEvents();
+      assertEquals(notificationMessage, listener.getLastMessage());
+      assertNull(listener.getOldStatus());
+      assertNull(listener.getNewStatus());
+      ls.stageAchieved(ProjectShutdownTestStages.NOTIFICATION_HEARD, null);
+      
+      ls.waitForStage(ProjectShutdownTestStages.NEW_STATUS);
+      kb1.flushEvents();
+      assertEquals(ProjectStatus.READY, listener.getOldStatus());
+      assertEquals(ProjectStatus.SHUTTING_DOWN, listener.getNewStatus());
+      assertEquals(notificationMessage, listener.getLastMessage());
+      kb1.setDispatchEventsEnabled(false);
+      ls.stageAchieved(ProjectShutdownTestStages.STATUS_CONFIRMED, null);
+      
+      ls.waitForStage(ProjectShutdownTestStages.COMPLETED);
+      boolean exceptionFound = false;
+      try {
+          kb1.createCls("A", Collections.singleton(kb1.getRootCls()));
+      }
+      catch (Throwable t) {
+          exceptionFound = true;
+          while (t != null && !(t instanceof ServerSessionLost)) {
+              t = t.getCause();
+          }
+          assertTrue(t instanceof ServerSessionLost);
+      }
+      assertTrue(exceptionFound);
+      
+  }
+  
+  public class ProjectShutdownListener extends ServerProjectAdapter {
+      private String lastMessage;
+      private ProjectStatus oldStatus;
+      private ProjectStatus newStatus;
+
+      @Override
+      public void projectNotificationReceived(ServerProjectNotificationEvent event) {
+          lastMessage = event.getMessage();
+      }
+
+      @Override
+      public void projectStatusChanged(ServerProjectStatusChangeEvent event) {
+          oldStatus = event.getOldStatus();
+          newStatus = event.getNewStatus();
+      }
+
+      public String getLastMessage() {
+          return lastMessage;
+      }
+
+      public ProjectStatus getOldStatus() {
+          return oldStatus;
+      }
+
+      public ProjectStatus getNewStatus() {
+          return newStatus;
+      }
+
+  }
+
 }
