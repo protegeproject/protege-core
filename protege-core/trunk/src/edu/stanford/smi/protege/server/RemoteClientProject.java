@@ -67,6 +67,7 @@ public class RemoteClientProject extends Project {
     private static KnowledgeBase copyKb(KnowledgeBase remoteKb, KnowledgeBase domainKb) {
         Collection errors = new ArrayList();
         KnowledgeBase localKb = loadProjectKB(null, null, errors);
+        Log.handleErrors(log, Level.WARNING, errors);
         localKb.deleteInstance(getProjectInstance(localKb));
         Instance projectInstance = getProjectInstance(remoteKb);
         projectInstance.deepCopy(localKb, null);
@@ -88,13 +89,8 @@ public class RemoteClientProject extends Project {
         KnowledgeBaseFactory factory = (KnowledgeBaseFactory) SystemUtilities.newInstance(factoryClass);
         List errors = new ArrayList();
         DefaultKnowledgeBase kb = (DefaultKnowledgeBase) factory.createKnowledgeBase(errors);
-        for (Object o : errors) {
-          if (o instanceof Throwable) {
-            log.log(Level.WARNING, "Exception caught", (Throwable) o);
-          } else {
-            log.warning("Error  found" + o);
-          }
-        }
+        Log.handleErrors(log, Level.WARNING, errors);
+
         if (log.isLoggable(Level.FINE)) {
           log.fine("created kb=" + kb);
         }
