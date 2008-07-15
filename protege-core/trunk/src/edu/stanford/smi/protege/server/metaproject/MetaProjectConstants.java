@@ -14,6 +14,8 @@ public class MetaProjectConstants {
 	public final static Operation OPERATION_ONTOLOGY_TAB_READ = new UnbackedOperationImpl("OntologyTabRead", null);
 	public final static Operation OPERATION_ONTOLOGY_TAB_WRITE = new UnbackedOperationImpl("OntologyTabWrite", null);
 
+	public final static Operation OPERATION_CONFIGURE_SERVER = new UnbackedOperationImpl("ConfigureServer", null);
+	
 	public static final String USER_WORLD = "World";
 	
 }
