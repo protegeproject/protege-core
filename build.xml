@@ -59,11 +59,15 @@
         <echo message = ""/>
         <echo message = "   all      --> runs compile, documentation, jar, dist tasks"/>
         <echo message = "   clean    --> cleans up generated files and directories"/>
+        <echo message = "   javacc   --> build the protege clips parser"/>
         <echo message = "   compile  --> compiles the source code"/>
         <echo message = "   dist     --> generates source and binary distributions"/>
         <echo message = "   jar      --> generates the protege JAR file"/>
+        <echo message = "   update   --> updates the protege installation"/>
+        <echo message = "   install  --> installs Protege"/>
         <echo message = "   javadocs --> generates the API docs"/>
-                <echo message = "   junit    --> runs the junit tests (needs a little work...)"/>
+        <echo message = "   buildDbScratchProject --> build the junit test project"/>
+        <echo message = "   junit    --> runs the junit tests (needs a little work...)"/>
         <echo message = "   usage    --> provides help on using the build tool (default)"/>
         <echo message = ""/>
         <echo message = "-------------------------------------------------------------"/>
