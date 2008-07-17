@@ -56,9 +56,6 @@ public class DBServer_Test extends APITestCase {
   private static final String USER = "Ray Fergerson";
   private static final String PASSWORD = "claudia";
   
-  
-  private static boolean projectCleaned = false;
-  
   private static String clientProject;
   static {
     Properties props = getJunitProperties();
@@ -91,10 +88,7 @@ public class DBServer_Test extends APITestCase {
     } catch (NotBoundException e) {
       fail("Could not bind to server (is rmiregistry running?)");
     }
-    if (!projectCleaned) {
-      cleanProject();
-      projectCleaned = true;
-    }
+    cleanProject();
   }
 
   public void createDatabaseProject() {
