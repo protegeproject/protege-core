@@ -65,7 +65,8 @@ public class RobustConnection {
     public static final String OLD_PROPERTY_LONGVARCHAR_TYPE_NAME = "SimpleJdbcDatabaseManager.longvarcharname";
     public static final String PROPERTY_REFRESH_CONNECTIONS_TIME="Database.refresh.connections.interval";
     public static final String PROPERTY_LONGVARCHAR_TYPE_NAME = "Database.typename.longvarchar";
-    public static final String PROPERTY_VARCHAR_TYPE_NAME = "Database.typename.varchar";
+    public static final String PROPERTY_FRAME_NAME_TYPE_NAME = "Database.typename.frame.name.type";
+    public static final String PROPERTY_SHORT_VALUE_TYPE_NAME = "Database.typename.short.value.type";
     public static final String PROPERTY_VARCHAR_TYPE_SIZE = "Database.type.varchar.maxsize";
     public static final int DEFAULT_MAX_STRING_SIZE = 255;
     public static final String PROPERTY_INTEGER_TYPE_NAME = "Database.typename.integer";
@@ -476,15 +477,26 @@ public class RobustConnection {
         return getName(PROPERTY_INTEGER_TYPE_NAME, defaultValue);
     }
 
-    public String getVarcharTypeName() {
+    public String getFrameNameType() {
         String defaultValue;
         if (dbType != null) {
-            defaultValue = dbType.getStringType();
+            defaultValue = dbType.getFrameNameType();
         }
         else  {
             defaultValue = _driverVarcharTypeName;
         }
-        return getName(PROPERTY_VARCHAR_TYPE_NAME, defaultValue);
+        return getName(PROPERTY_FRAME_NAME_TYPE_NAME, defaultValue);
+    }
+    
+    public String getShortValueType() {
+        String defaultValue;
+        if (dbType != null) {
+            defaultValue = dbType.getShortValueType();
+        }
+        else  {
+            defaultValue = _driverVarcharTypeName;
+        }
+        return getName(PROPERTY_SHORT_VALUE_TYPE_NAME, defaultValue);
     }
     
     public int getMaxVarcharSize() {
@@ -498,7 +510,7 @@ public class RobustConnection {
             }
         }
         if (dbType != null) {
-            return dbType.getMaxStringSize();
+            return dbType.getMaxShortValueSize();
         }
         else {
             return DEFAULT_MAX_STRING_SIZE;
@@ -516,7 +528,7 @@ public class RobustConnection {
                 defaultValue = _driverLongvarcharTypeName;
             }
             if  (defaultValue == null) {
-                defaultValue = getVarcharTypeName();
+                defaultValue = getShortValueType();
                 Log.getLogger().warning("Using VARCHAR in place of LONGVARCHAR, long strings will be truncated.");
             }
         }
