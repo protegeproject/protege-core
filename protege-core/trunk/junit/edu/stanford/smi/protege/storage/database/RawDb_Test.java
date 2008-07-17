@@ -36,7 +36,7 @@ public class RawDb_Test extends APITestCase {
                     ;
                 }
 
-                createTestTable(connection, stmt);
+                createFrameNameTable(connection, stmt);
                 stmt.executeUpdate("INSERT INTO test VALUES ('aa')");
                 stmt.executeUpdate("INSERT INTO test VALUES ('aA')");
                 stmt.executeUpdate("INSERT INTO test VALUES ('Aa')");
@@ -48,7 +48,7 @@ public class RawDb_Test extends APITestCase {
                         found = true;
                     }
                     else {
-                        fail("database column " + connection.getVarcharTypeName() + " is not case sensitive.");
+                        fail("database column " + connection.getFrameNameType() + " is not case sensitive.");
                     }
                 }
                 if (!found) {
@@ -78,7 +78,7 @@ public class RawDb_Test extends APITestCase {
                 catch (SQLException sqle) {
                     ;
                 }
-                createTestTable(connection, stmt);
+                createShortValueTable(connection, stmt);
                 int maxSize = connection.getMaxVarcharSize();
                 String s1 = "hello";
                 stmt.executeUpdate("INSERT INTO test VALUES ('" + s1 + "')");
@@ -112,8 +112,16 @@ public class RawDb_Test extends APITestCase {
         }
     }
     
-    private void createTestTable(RobustConnection connection, Statement stmt) throws SQLException {
-        String cmd = "CREATE TABLE test ( str " + connection.getVarcharTypeName() + ")";
+    private void createFrameNameTable(RobustConnection connection, Statement stmt) throws SQLException {
+        String cmd = "CREATE TABLE test ( str " + connection.getFrameNameType() + ")";
+        if (connection.isMySql() && (connection.getDatabaseMajorVersion() == 5)) {
+            cmd = cmd + " ENGINE = INNODB";
+        }
+        stmt.executeUpdate(cmd);
+    }
+    
+    private void createShortValueTable(RobustConnection connection, Statement stmt) throws SQLException {
+        String cmd = "CREATE TABLE test ( str " + connection.getShortValueType() + ")";
         if (connection.isMySql() && (connection.getDatabaseMajorVersion() == 5)) {
             cmd = cmd + " ENGINE = INNODB";
         }

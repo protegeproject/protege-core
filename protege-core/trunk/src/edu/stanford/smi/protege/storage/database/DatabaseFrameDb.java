@@ -258,7 +258,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private String getFrameDataType() throws SQLException {
-        String  dtype = getCurrentConnection().getVarcharTypeName();
+        String  dtype = getCurrentConnection().getFrameNameType();
         return dtype;
     }
 
@@ -275,7 +275,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private String getShortValueDataType() throws SQLException {
-        return getCurrentConnection().getVarcharTypeName();
+        return getCurrentConnection().getShortValueType();
     }
 
     private String getLongValueDataType() throws SQLException {
