@@ -54,20 +54,20 @@ import edu.stanford.smi.protege.util.URIUtilities;
 
 public class Server extends UnicastRemoteObject implements RemoteServer {
     private static final long serialVersionUID = 1675054259604532947L;
-    
+
     private static final transient Logger log = Log.getLogger(Server.class);
-        
+
     private static Server serverInstance;
     private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
     private Map<String, ProjectStatus> _nameToProjectStatusMap = new  HashMap<String, ProjectStatus>();
     private Map<Project, ServerProject> _projectToServerProjectMap = new HashMap<Project, ServerProject>();
- 
+
     private URI metaprojectURI;
     private MetaProject metaproject;
-    
+
     private List<RemoteSession> _sessions = new ArrayList<RemoteSession>();
     private URI _baseURI;
-    private Map<RemoteSession, Collection<ServerProject>> _sessionToProjectsMap 
+    private Map<RemoteSession, Collection<ServerProject>> _sessionToProjectsMap
         = new HashMap<RemoteSession, Collection<ServerProject>>();
     private Thread _updateThread;
     private static final int NO_SAVE = -1;
@@ -77,7 +77,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private static final String OPTION_CHAR = "-";
     private boolean preload = true;
     private ProjectPluginManager _projectPluginManager = new ProjectPluginManager();
-    
+
     public enum ServerStatus  {
         READY, SHUTTING_DOWN, SHUTDOWN;
     }
@@ -99,7 +99,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     /**
      * Start up the server.
-     * 
+     *
      * @param args
      *            the arguments to the server
      * @param sf
@@ -121,11 +121,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         Log.getLogger().info("Protege server ready to accept connections...");
     }
-    
+
     public static Server getInstance() {
         return serverInstance;
     }
-    
+
     public static Policy getPolicy() {
       return serverInstance.metaproject.getPolicy();
     }
@@ -178,7 +178,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         metaprojectURI = URIUtilities.createURI(s);
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     protected void printUsage() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("usage: java -cp protege.jar edu.stanford.smi.protege.server.Server [options] <metaproject>");
@@ -187,7 +187,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         buffer.append("\n\t\t\tSave any dirty projects every n minutes (only needed for file based projects)");
         buffer.append("\n\t\t" + NOPRELOAD_OPTION);
         buffer.append("\n\t\t\tDon't preload projects.");
-        //ESCA-JAVA0267 
+        //ESCA-JAVA0267
         System.err.println(buffer.toString());
         System.exit(-1);
     }
@@ -227,7 +227,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                 try {
                 	createProject(name);
                 } catch (Exception e) {
-                	Log.getLogger().warning("Error at loading project: " + name + "Error message: "+ e.getMessage());					
+                	Log.getLogger().warning("Error at loading project: " + name + "Error message: "+ e.getMessage());
 				}
             } else {
                 Log.getLogger().info("Found project " + name);
@@ -266,10 +266,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             session = new Session(username, userIpAddress);
             _sessions.add(session);
         }
-                        
+
         return session;
     }
-    
+
     public RemoteSession cloneSession(RemoteSession session) {
         if (!_sessions.contains(session)) {
             return null;
@@ -282,12 +282,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     public void closeSession(RemoteSession session) {
         _sessions.remove(session);
     }
-    
+
     public boolean isActive(RemoteSession session) {
         return _sessions.contains(session);
     }
 
-    public RemoteServerProject openProject(String projectName, RemoteSession session) 
+    public RemoteServerProject openProject(String projectName, RemoteSession session)
     throws ServerSessionLost {
         if (!_sessions.contains(session)) {
             return null;  // user didn't really log in
@@ -309,18 +309,18 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             }
             recordConnection(session, serverProject);
         }
-        
-        Log.getLogger().info("Server: Opened project " + projectName + " for " + session + " on " + new Date());   
-        
+
+        Log.getLogger().info("Server: Opened project " + projectName + " for " + session + " on " + new Date());
+
         return serverProject;
     }
-    
+
     private boolean readAllowed(String projectName, RemoteSession session) {
         Policy policy = metaproject.getPolicy();
         User user = policy.getUserByName(session.getUserName());
         ProjectInstance projectInstance = metaproject.getProject(projectName);
         /*
-         * Temporary projects (e.g. projects that do not appear in the metaproject like the chat project) 
+         * Temporary projects (e.g. projects that do not appear in the metaproject like the chat project)
          * cannot have an associated policy.  So for things to work we must allow access.
          */
         if (projectInstance == null) {
@@ -328,8 +328,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         return policy.isOperationAuthorized(user, MetaProjectConstants.OPERATION_READ, projectInstance);
     }
-    
-    private void recordConnection(RemoteSession session, ServerProject project) 
+
+    private void recordConnection(RemoteSession session, ServerProject project)
     throws ServerSessionLost {
         Collection<ServerProject> projects = _sessionToProjectsMap.get(session);
         if (projects == null) {
@@ -341,7 +341,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Log.getLogger().info("Adding session " + session);
     }
 
-    private void recordDisconnection(RemoteSession session, RemoteServerProject project) 
+    private void recordDisconnection(RemoteSession session, RemoteServerProject project)
     throws ServerSessionLost {
         Collection<ServerProject> projects =  _sessionToProjectsMap.get(session);
         projects.remove(project);
@@ -354,7 +354,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     public ServerProject getServerProject(String projectName) {
         Project p = getProject(projectName);
-        return (p == null) ? null : getServerProject(p);
+        return p == null ? null : getServerProject(p);
     }
 
     private ServerProject createServerProject(String name, Project p) {
@@ -372,7 +372,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return _baseURI.resolve(name);
     }
 
-    public void disconnectFromProject(RemoteServerProject serverProject, RemoteSession session) 
+    public void disconnectFromProject(RemoteServerProject serverProject, RemoteSession session)
     throws ServerSessionLost {
         recordDisconnection(session, serverProject);
     }
@@ -396,7 +396,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         return project;
     }
-    
+
     public void setProjectStatus(String name, ProjectStatus status) {
         ProjectStatus oldStatus  = _nameToProjectStatusMap.put(name, status);
         Project  p = _nameToOpenProjectMap.get(name);
@@ -406,7 +406,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             fs.addCustomEvent(new ServerProjectStatusChangeEvent(name, oldStatus, status));
         }
     }
-    
+
     public void closeProject(String name) {
         Project p = _nameToOpenProjectMap.get(name);
         ServerProject sp = _projectToServerProjectMap.get(p);
@@ -437,9 +437,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (_nameToProjectStatusMap.get(name) != ProjectStatus.READY) {
             return null;
         }
-        
+
         Project project = null;
-        
+
         for (ProjectInstance instance : metaproject.getProjects()) {
           String projectName = instance.getName();
           if (projectName.equals(name)) {
@@ -449,7 +449,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             List errors = new ArrayList();
             project = Project.loadProjectFromURI(uri, errors, true);
             Log.handleErrors(log, Level.WARNING, errors);
-            if (serverInstance != null) _projectPluginManager.afterLoad(project);
+            if (serverInstance != null) {
+				_projectPluginManager.afterLoad(project);
+			}
             localizeProject(project);
             _nameToOpenProjectMap.put(name, project);
             break;
@@ -457,59 +459,59 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         return project;
     }
-    
+
 	public RemoteServerProject createProject(String newProjectName, RemoteSession session, KnowledgeBaseFactory kbfactory, boolean saveToMetaProject) throws RemoteException {
         Project project = null;
-        
+
         for (ProjectInstance instance : metaproject.getProjects()) {
             String projectName = instance.getName();
-            if (projectName.equals(newProjectName)) {              
+            if (projectName.equals(newProjectName)) {
               	Log.getLogger().warning("Server: Attempting to create server project with existing project name. No server project created.");
               	return null;
               }
         }
-                
+
         String newProjectsDir = ServerProperties.getDefaultNewProjectSaveDirectory();
 
         URI uri = URIUtilities.createURI(newProjectsDir + File.separator + newProjectName + ".pprj");
-        
+
         if (uri == null) {
         	Log.getLogger().warning("Could not create new server project at location " + newProjectsDir + File.separator + newProjectName + ".pprj");
         	return null;
         }
 
         ArrayList errors = new ArrayList();
-        
+
         project = Project.createNewProject(kbfactory, errors);
         Log.getLogger().info("Server: Created server project at: " + uri);
-        
+
         if (errors.size() > 0) {
             Log.handleErrors(log, Level.SEVERE, errors);
         	return null;
         }
 
         project.setProjectURI(uri);
-        
+
         //TT: How to treat other knowledge base factories?
         if (kbfactory instanceof ClipsKnowledgeBaseFactory) {
         	ClipsKnowledgeBaseFactory.setSourceFiles(project.getSources(), newProjectName + ".pont", newProjectName + ".pins");
         }
-              
+
         project.save(errors);
         if (errors.size() > 0) {
             Log.handleErrors(log, Level.SEVERE, errors);
         	return null;
         }
-        
+
         project = Project.loadProjectFromURI(uri, new ArrayList(), true);
 
         if (serverInstance != null) {
         	_projectPluginManager.afterLoad(project);
         }
-        
+
         localizeProject(project);
         _nameToOpenProjectMap.put(newProjectName, project);
-        
+
         if (saveToMetaProject) {
         	ProjectInstance newProjectInstance = metaproject.createProject(newProjectName);
         	newProjectInstance.setLocation(newProjectsDir + File.separator + newProjectName + ".pprj");
@@ -517,8 +519,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             Log.handleErrors(log, Level.SEVERE, errors);
 
         }
-        
-        return getServerProject(project);		
+
+        return getServerProject(project);
 	}
 
     private static void localizeProject(Project project) {
@@ -537,11 +539,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         List<String> names = new ArrayList<String>();
         for (ProjectInstance instance : metaproject.getProjects()) {
             if (user != null && (
-                    !policy.isOperationAuthorized(user, 
-                                                  MetaProjectConstants.OPERATION_DISPLAY_IN_PROJECT_LIST, 
+                    !policy.isOperationAuthorized(user,
+                                                  MetaProjectConstants.OPERATION_DISPLAY_IN_PROJECT_LIST,
                                                   instance) ||
-                    !policy.isOperationAuthorized(user, 
-                                                  MetaProjectConstants.OPERATION_READ, 
+                    !policy.isOperationAuthorized(user,
+                                                  MetaProjectConstants.OPERATION_READ,
                                                   instance))) {
                 continue;
             }
@@ -568,11 +570,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Collections.sort(names);
         return names;
     }
-    
+
     public Collection<ServerProject> getCurrentProjects(RemoteSession session) {
         return _sessionToProjectsMap.get(session);
     }
-    
+
     public  Collection<RemoteSession> getCurrentSessions() {
         return _sessions;
     }
@@ -609,11 +611,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return true;
         // return System.currentTimeMillis() - session.getLastAccessTime() > 10000;
     }
-    
-    public boolean allowsCreateUsers() throws RemoteException {    	
+
+    public boolean allowsCreateUsers() throws RemoteException {
     	return ServerProperties.getAllowsCreateUsers();
     }
-    
+
 	public boolean createUser(String userName, String password) {
 		List<String> names = new ArrayList<String>();
 		for (User instance : metaproject.getUsers()) {
@@ -631,8 +633,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 		ArrayList errors = new ArrayList();
 		boolean success = metaproject.save(errors);
         Log.handleErrors(log, Level.SEVERE, errors);
-				
-		return (success && errors.size() == 0);
+
+		return success && errors.size() == 0;
 	}
 
     private boolean isValid(String name, String password) {
@@ -650,14 +652,16 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
       return isValid;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "Server";
     }
 
     private void startProjectUpdateThread() {
         if (_saveIntervalMsec != NO_SAVE) {
             _updateThread = new Thread("Save Projects") {
-                public void run() {
+                @Override
+				public void run() {
                     try {
                         while (_updateThread == this) {
                             sleep(_saveIntervalMsec);
@@ -692,7 +696,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Log.getLogger().info("Saving " + project);
         Collection errors = new ArrayList();
         /*
-         * The order of these synchronize statements is critical.  There is some 
+         * The order of these synchronize statements is critical.  There is some
          * OWLFrameStore code (which holds the knowledgebase lock) that makes calls
          * to the internal project knowledge base to get configuration parameters.
          */
@@ -723,16 +727,17 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Log.getLogger().info("Received shutdown request.");
         saveAllProjects();
         Thread thread = new Thread() {
-            public void run() {
+            @Override
+			public void run() {
               try {
                 SystemUtilities.sleepMsec(100);
                 Log.getLogger().info("Server exiting.");
-                for (Project p : _projectToServerProjectMap.keySet()) { 
+                for (Project p : _projectToServerProjectMap.keySet()) {
                     /*
-                     * The order of these synchronize statements is critical.  There is some 
+                     * The order of these synchronize statements is critical.  There is some
                      * OWLFrameStore code (which holds the knowledgebase lock) that makes calls
                      * to the internal project knowledge base to get configuration parameters.
-                     */           
+                     */
                     synchronized(p.getKnowledgeBase()) {
                         synchronized (p.getInternalProjectKnowledgeBase()) {
                             try {
@@ -758,17 +763,17 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private void stopProjectUpdateThread() {
         _updateThread = null;
     }
-    
+
     public void setFrameCalculatorDisabled(boolean disabled) {
       for (ServerProject sp : _projectToServerProjectMap.values()) {
         sp.setFrameCalculatorDisabled(disabled);
       }
     }
-    
+
     /* -----------------------------------------------------------------------
      * MetaProject utilities
      */
-    
+
     /**
      * @deprecated In ProtegeJobs use getMetaProjectInstance
      */
