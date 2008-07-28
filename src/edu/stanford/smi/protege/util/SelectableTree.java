@@ -1,18 +1,26 @@
 package edu.stanford.smi.protege.util;
 
-import java.awt.*;
-import java.awt.dnd.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.dnd.Autoscroll;
+import java.awt.event.FocusEvent;
+import java.util.Collection;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.Action;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
 
-import com.jgoodies.looks.*;
 
 /**
- * A JTree component that implements the {@link Selectable} interface.  It also implements Autoscroll so the 
+ * A JTree component that implements the {@link Selectable} interface.  It also implements Autoscroll so the
  * drag scrolling works.
  *
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
@@ -47,12 +55,20 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
         getModel().addTreeModelListener(listener);
         expandRow(0);
         addMouseListener(new TreePopupMenuMouseListener(this) {
-            public JPopupMenu getPopupMenu() {
+            @Override
+			public JPopupMenu getPopupMenu() {
                 return SelectableTree.this.getPopupMenu();
             }
         });
         addTreeSelectionListener(new TreeSelectionListenerAdapter(this));
-        putClientProperty(Options.TREE_LINE_STYLE_KEY, Options.TREE_LINE_STYLE_NONE_VALUE);
+
+        try {
+        	LookAndFeelUtil.setTreeLineStyle(this);
+		} catch (Throwable e) {
+			//fail quietly
+			Log.emptyCatchBlock(e);
+		}
+
         // setScrollsOnExpand(false);
     }
 
@@ -68,7 +84,7 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
         }
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     public JPopupMenu getPopupMenu() {
         return null;
     }
@@ -91,11 +107,13 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
         expandRow(0);
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "SelectableTree";
     }
 
-    public void processFocusEvent(FocusEvent event) {
+    @Override
+	public void processFocusEvent(FocusEvent event) {
         // prevent dispatch of focus event if we have been removed from the screen!
         if (getParent() != null) {
             super.processFocusEvent(event);
@@ -133,7 +151,7 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
     }
 
     private static void scroll(JScrollBar bar, int increment) {
-        int sign = (increment < 0) ? -1 : +1;
-        bar.setValue(bar.getValue() + (sign * bar.getUnitIncrement(increment)));
+        int sign = increment < 0 ? -1 : +1;
+        bar.setValue(bar.getValue() + sign * bar.getUnitIncrement(increment));
     }
 }
