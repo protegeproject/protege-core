@@ -4,39 +4,45 @@ package edu.stanford.smi.protege.util;
 //ESCA*JAVA0266
 //ESCA*JAVA0170
 
-import java.awt.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.Constructor;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.*;
-import javax.swing.plaf.metal.*;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+import javax.swing.plaf.metal.DefaultMetalTheme;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.metal.MetalTheme;
 
-import com.jgoodies.looks.FontPolicies;
-import com.jgoodies.looks.FontPolicy;
-import com.jgoodies.looks.FontSet;
-import com.jgoodies.looks.FontSets;
-import com.jgoodies.looks.plastic.*;
-
-import edu.stanford.smi.protege.plugin.*;
-import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.plugin.PluginUtilities;
+import edu.stanford.smi.protege.resource.Text;
 
 /**
  * A set of utilities for accessing the underlying system and for manipulating system level objects.
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  * @author Joe Edelman (jxe@dartmouth.edu)
  */
 public class SystemUtilities {
     private static final Logger  log = Log.getLogger(SystemUtilities.class);
-  
+
     private static final String OLD_PLASTIC_LAF_NAME = "com.jgoodies.plaf.plastic.PlasticLookAndFeel";
     private static final String NEW_PLASTIC_LAF_NAME = "com.jgoodies.looks.plastic.PlasticLookAndFeel";
-    
+
     private static boolean isMac;
     private static boolean isWindows;
     private static boolean isApplet;
@@ -44,7 +50,7 @@ public class SystemUtilities {
     static {
         init();
     }
-    
+
     public static void initialize() {
         // just to call the static initializers.
     }
@@ -77,10 +83,10 @@ public class SystemUtilities {
     }
 
     public static void gc() {
-        //ESCA-JAVA0284 
+        //ESCA-JAVA0284
         System.gc();
         System.runFinalization();
-        //ESCA-JAVA0284 
+        //ESCA-JAVA0284
         System.gc();
     }
 
@@ -115,7 +121,7 @@ public class SystemUtilities {
         }
         return value;
     }
-    
+
     public static boolean getSystemBooleanProperty(String property, boolean defaultValue) {
         boolean value = defaultValue;
         try {
@@ -127,7 +133,7 @@ public class SystemUtilities {
         }
         return value;
     }
-    
+
     public static int getSystemIntegerProperty(String property) {
         int value = 0;
         try {
@@ -139,7 +145,7 @@ public class SystemUtilities {
         }
         return value;
     }
-    
+
     public static int getSystemIntegerProperty(String property, int defaultValue) {
         int value = defaultValue;
         try {
@@ -151,8 +157,8 @@ public class SystemUtilities {
         }
         return value;
     }
-    
-    
+
+
     public static String getUserDirectory() {
         return getSystemProperty("user.dir");
     }
@@ -197,14 +203,14 @@ public class SystemUtilities {
             loadParameters();
             PluginUtilities.initialize();
             loadUseAntialiasing();
-            //ESCA-JAVA0170 
+            //ESCA-JAVA0170
         } catch (Throwable e) {
             // We explicitly do nothing fancy with writing this output. This
             // method is called on startup
             // and there may be problems with almost anything (i.e. System.out).
             // This is the best chance we
             // have to getting a reasonable error message.
-            //ESCA-JAVA0266 
+            //ESCA-JAVA0266
             System.out.println(e.getMessage());
             // e.printStackTrace();
         }
@@ -229,14 +235,7 @@ public class SystemUtilities {
         try {
             LookAndFeel lookAndFeel = (LookAndFeel) Class.forName(lafName).newInstance();
             if (lafName.indexOf("Plastic") != -1) {
-                PopupFactory.setSharedInstance(new PopupFactory());
-                PlasticLookAndFeel.setCurrentTheme(PlasticHack.createTheme());
-                PlasticLookAndFeel.setTabStyle(PlasticLookAndFeel.TAB_STYLE_METAL_VALUE);
-                
-                FontSet fontSet = FontSets.createDefaultFontSet(ProtegePlasticTheme.DEFAULT_FONT);
-                FontPolicy fixedPolicy = FontPolicies.createFixedPolicy(fontSet);
-                PlasticLookAndFeel.setFontPolicy(fixedPolicy);
-           
+               LookAndFeelUtil.setUpPlasticLF();
             } else if (lafName.indexOf("Metal") != -1) {
                 MetalLookAndFeel.setCurrentTheme(createDefaultMetalTheme());
             }
@@ -437,7 +436,7 @@ public class SystemUtilities {
     }
 
     public static boolean equals(Object o1, Object o2) {
-        return (o1 == null) ? o2 == null : o1.equals(o2);
+        return o1 == null ? o2 == null : o1.equals(o2);
     }
 
     public static Collection getClassesWithAttribute(String key, String value) {
@@ -506,12 +505,6 @@ public class SystemUtilities {
     public static void setApplet(boolean b) {
         isApplet = b;
     }
+
 }
 
-// This hack gets around a classloader problem if the looks jar is not on the classpath
-
-class PlasticHack {
-    public static PlasticTheme createTheme() {
-        return new ProtegePlasticTheme();
-    }
-}
