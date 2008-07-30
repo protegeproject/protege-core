@@ -12,7 +12,7 @@ public class Session implements RemoteSession, Serializable {
     private String userIpAddress;
     private long startTime;
     private long lastAccessTime;
-    
+
     public Session(String userName, String userIpAddress) {
         this(userName, userIpAddress, nextSessionGroup++);
     }
@@ -22,7 +22,7 @@ public class Session implements RemoteSession, Serializable {
         this.sessionGroup = sessionGroup;
         this.userName = userName;
         this.userIpAddress = userIpAddress;
-        
+
         this.startTime = currentTime();
         this.lastAccessTime = startTime;
     }
@@ -38,7 +38,7 @@ public class Session implements RemoteSession, Serializable {
     public String getUserIpAddress() {
         return userIpAddress;
     }
-    
+
     public int getSessionGroup() {
         return sessionGroup;
     }
@@ -46,6 +46,14 @@ public class Session implements RemoteSession, Serializable {
     public long getLastAccessTime() {
         return lastAccessTime;
     }
+
+	public long getStartTime() {
+		return startTime;
+	}
+
+	public int getId() {
+		return id;
+	}
 
     public void updateAccessTime() {
         lastAccessTime = currentTime();
@@ -55,15 +63,18 @@ public class Session implements RemoteSession, Serializable {
         return System.currentTimeMillis();
     }
 
-    public boolean equals(Object o) {
+    @Override
+	public boolean equals(Object o) {
         return id == ((Session) o).id;
     }
 
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         return id;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "Session(id=" + id + ", user=" + userName + ")";
     }
 }
