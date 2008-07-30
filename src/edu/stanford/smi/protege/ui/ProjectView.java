@@ -24,15 +24,22 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import edu.stanford.smi.protege.event.ServerProjectAdapter;
+import edu.stanford.smi.protege.event.ServerProjectListener;
+import edu.stanford.smi.protege.event.ServerProjectNotificationEvent;
+import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
+import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.WidgetDescriptor;
 import edu.stanford.smi.protege.resource.Text;
+import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ComponentFactory;
 import edu.stanford.smi.protege.util.ComponentUtilities;
 import edu.stanford.smi.protege.util.ListenerCollection;
 import edu.stanford.smi.protege.util.ListenerList;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
 import edu.stanford.smi.protege.util.ProjectViewDispatcher;
 import edu.stanford.smi.protege.util.ProjectViewEvent;
 import edu.stanford.smi.protege.util.ProjectViewListener;
@@ -152,8 +159,6 @@ class MyJTabbedPane extends JTabbedPane implements TabbedPaneInterface {
 }
 
 
-
-
 public class ProjectView extends JComponent {
     static private Logger log = Log.getLogger(ProjectView.class);
 
@@ -162,33 +167,11 @@ public class ProjectView extends JComponent {
     private Project _project;
     private TabbedPaneInterface _viewHolder;
     private Collection _currentClsPath;
-    private Collection _currentInstances;
-    private Collection _detachedTabs = new HashSet();
+    private Collection<Instance> _currentInstances;
+    private Collection<JComponent> _detachedTabs = new HashSet<JComponent>();
+    private ServerProjectListener _shutdownListener;
 
     public ProjectView(Project project) {
-        if (log.isLoggable(Level.FINE)) {
-          // Add a listener for debug purposes only... if debugging is turned on.
-          addProjectViewListener(new ProjectViewListener() {
-            {
-              if (log.isLoggable(Level.FINE)) {
-                log.fine("Constructing ProjectViewListener");
-              }
-            }
-
-            public void tabAdded(ProjectViewEvent event) {
-              if (log.isLoggable(Level.FINE)) {
-                log.fine("Tab added event found " + event + " with widget " + event.getWidget());
-              }
-            }
-
-            public void saved(ProjectViewEvent event) {
-            }
-
-            public void closed(ProjectViewEvent event) {
-            }
-
-          });
-        }
         _project = project;
         setLayout(new BorderLayout());
         // add(createTabbedPane(), BorderLayout.CENTER); what does this change do? (bug fix?)
@@ -196,10 +179,42 @@ public class ProjectView extends JComponent {
         if (!project.isMultiUserClient()) {
             project.getKnowledgeBase().setUndoEnabled(project.isUndoOptionEnabled());
         }
+        if (project.isMultiUserClient()) {
+        	project.getKnowledgeBase().addServerProjectListener(_shutdownListener = createRemoteProjectShutdownListener());
+        }
     }
 
 
-    public TabWidget addTab(WidgetDescriptor widgetDescriptor, int index) {
+    protected ServerProjectListener createRemoteProjectShutdownListener() {
+		return new ServerProjectAdapter() {
+			@Override
+			public void projectNotificationReceived(ServerProjectNotificationEvent event) {
+				String project = event.getProjectName();
+				//TODO: to be fixed by Tim - we should be able to get the remote project name for this project
+				//if (project.equals(anObject))
+				if (log.isLoggable(Level.FINE)) {
+					log.fine("Server project notification received: " + event.getMessage());
+				}
+				ModalDialog.showMessageDialog(ProjectView.this, event.getMessage(), ModalDialog.MODE_CLOSE);
+			}
+
+			@Override
+			public void projectStatusChanged(
+					ServerProjectStatusChangeEvent event) {
+				ProjectStatus newStatus = event.getNewStatus();
+				if (log.isLoggable(Level.FINE)) {
+					log.fine("Project status changed: " + newStatus);
+				}
+				if (newStatus.equals(ProjectStatus.CLOSED_FOR_MAINTENANCE)) {
+					ModalDialog.showMessageDialog(ProjectView.this, "Shutting down NOW!", ModalDialog.MODE_CLOSE);
+					_project.dispose();
+				}
+			}
+		};
+	}
+
+
+	public TabWidget addTab(WidgetDescriptor widgetDescriptor, int index) {
         if (log.isLoggable(Level.FINE)) {
             log.fine("Adding tab " + widgetDescriptor);
         }
@@ -287,11 +302,15 @@ public class ProjectView extends JComponent {
         return canSave;
     }
 
+
     public void close() {
         Iterator i = getTabs().iterator();
         while (i.hasNext()) {
             TabWidget tab = (TabWidget) i.next();
             tab.close();
+        }
+        if (_shutdownListener != null) {
+        	_project.getKnowledgeBase().removeServerProjectListener(_shutdownListener);
         }
         _project = null;
         projectViewListeners.postEvent(this, ProjectViewEvent.Type.close.ordinal());
@@ -684,7 +703,7 @@ public class ProjectView extends JComponent {
         _currentClsPath = new ArrayList(c);
     }
 
-    private void setCurrentInstances(Collection instances) {
+    private void setCurrentInstances(Collection<? extends Instance> instances) {
         _currentInstances = instances == null ? null : new ArrayList(instances);
     }
 
