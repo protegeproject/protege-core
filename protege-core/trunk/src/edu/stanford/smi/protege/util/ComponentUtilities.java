@@ -59,16 +59,26 @@ public class ComponentUtilities {
 
     private static Collection _openWindows = new ArrayList();
 
-    public static void addColumn(JTable table, TableCellRenderer renderer) {
-        addColumn(table, renderer, null);
+    public static TableColumn addColumn(JTable table, TableCellRenderer renderer) {
+    	return addColumn(table, null, renderer);
     }
 
-    public static void addColumn(JTable table, TableCellRenderer renderer, TableCellEditor editor) {
+    public static TableColumn addColumn(JTable table, String header, TableCellRenderer renderer) {
+        return addColumn(table, renderer, null);
+    }
+
+    public static TableColumn addColumn(JTable table, TableCellRenderer renderer, TableCellEditor editor) {
+    	return addColumn(table, renderer, null, editor);
+    }
+
+    public static TableColumn addColumn(JTable table, TableCellRenderer renderer, String header, TableCellEditor editor) {
         int nColumns = table.getColumnCount();
         TableColumn column = new TableColumn(nColumns);
         column.setCellRenderer(renderer);
         column.setCellEditor(editor);
+        column.setHeaderValue(header);
         table.addColumn(column);
+        return column;
     }
 
     public static int addListValue(JList list, Object newValue) {
