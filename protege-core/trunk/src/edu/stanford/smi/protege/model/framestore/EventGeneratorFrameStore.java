@@ -31,7 +31,7 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 
 public class EventGeneratorFrameStore extends ModificationFrameStore {
-    
+
     private List<AbstractEvent> _events = new ArrayList<AbstractEvent>();
     private DefaultKnowledgeBase _kb;
     private SystemFrames _systemFrames;
@@ -43,7 +43,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         _kb = (DefaultKnowledgeBase) kb;
         _systemFrames = _kb.getSystemFrames();
     }
-    
+
     @Override
     public void setDelegate(FrameStore delegate) {
     	super.setDelegate(delegate);
@@ -51,13 +51,14 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     		transactionMonitor = delegate.getTransactionStatusMonitor();
     	}
     }
-    
+
 
     public void reinitialize() {
         _events.clear();
     }
 
-    public void close() {
+    @Override
+	public void close() {
         super.close();
         _events.clear();
         _events = null;
@@ -65,7 +66,8 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         _systemFrames = null;
     }
 
-    public Frame getFrame(String name) {
+    @Override
+	public Frame getFrame(String name) {
         return getDelegate().getFrame(name);
     }
 
@@ -145,12 +147,12 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
      * to generate subclass removed events on superclasses that have also been deleted. Receivers of these events are
      * going to get the "changed" event first and process it when in fact the superclass has also been deleted but they
      * haven't gotten that event yet. This will lead them to make calls with deleted frames have have trouble.
-     * 
+     *
      * It would seem that the only way around this is to change the definition of "delete class" so that it only works
      * on leaf classes (just as it only works on classes with no instances at the moment). This would probably be
      * cleaner and would simplify the interface. The differences could be handled at either the KB or the
      * FrameStoreManager level.
-     * 
+     *
      * For now though we hack it...
      */
 
@@ -161,7 +163,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         generateDeleteInstanceEvents(simpleInstance, level);
     }
 
-    private void generateDeleteSlotEvents(Slot slot, 
+    private void generateDeleteSlotEvents(Slot slot,
                                           TransactionIsolationLevel level) {
         generateDeleteFrameKbEvent(KnowledgeBaseEvent.SLOT_DELETED, slot, level);
         /** @todo other slot events */
@@ -318,29 +320,33 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
             generateOwnSlotValuesChangedEvent(directType, _systemFrames.getDirectInstancesSlot(), level);
         }
     }
-    
+
     private void generateReplacedFrameEvents(Frame original, Frame replacement, TransactionIsolationLevel level) {
         String oldName = original.getName();
         generateFrameEvent(FrameEvent.REPLACE_FRAME, original, oldName, replacement, level);
         generateKbEvent(KnowledgeBaseEvent.FRAME_REPLACED, original, oldName, replacement);
     }
-    
+
     private void generateReplacingFrameEvents(Frame replacement, Frame original, TransactionIsolationLevel level) {
     	generateReplacingFrameAsValueEvents(replacement, original, level);
     	if (replacement instanceof Slot) {
     		generateReplacingSlotEvents((Slot) replacement, level);
     	}
     }
-    
+
     private void generateReplacingFrameAsValueEvents(Frame replacement, Frame original, TransactionIsolationLevel level) {
     	Set<Reference> references = getDelegate().getReferences(replacement);
-    	if (references == null) return;
+    	if (references == null) {
+			return;
+		}
     	for (Reference reference : references) {
     		if (!reference.isTemplate()) {
     			Frame sourceFrame = reference.getFrame();
     			Slot sourceSlot = reference.getSlot();
     			Collection values = getDelegate().getOwnSlotValues(sourceFrame, sourceSlot);
-    			if (values == null || !values.contains(replacement)) continue;
+    			if (values == null || !values.contains(replacement)) {
+					continue;
+				}
     			Collection oldValues = new ArrayList(values);
     			oldValues.remove(replacement);
     			oldValues.add(original);  //TODO you need to add inferred events here + junits.
@@ -349,10 +355,12 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     		}
     	}
     }
-    
+
     private void generateReplacingSlotEvents(Slot replacement, TransactionIsolationLevel level) {
     	Set<Frame> frames = getDelegate().getFramesWithAnyDirectOwnSlotValue(replacement);
-    	if (frames == null) return;
+    	if (frames == null) {
+			return;
+		}
     	for (Frame frame : frames) {
     		generateFrameEvent(FrameEvent.OWN_SLOT_VALUE_CHANGED, frame, replacement, level);
     	}
@@ -365,7 +373,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     private void generateKbEvent(int type, Frame frame, String s, TransactionIsolationLevel level) {
         addEvent(new KnowledgeBaseEvent(_kb, type, frame, s), level);
     }
-    
+
     private void generateKbEvent(int type, Frame frame, String s, Frame oldFrame) {
         addEvent(new KnowledgeBaseEvent(_kb, type, frame, s, oldFrame));
     }
@@ -382,14 +390,14 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         generateFrameEvent(type, frame, o2, null, level);
     }
 
-    private void generateFrameEvent(int type, Frame frame, Object o2, Object o3, 
+    private void generateFrameEvent(int type, Frame frame, Object o2, Object o3,
     								TransactionIsolationLevel level) {
         if (generateEvent(frame)) {
             addEvent(new FrameEvent(frame, type, o2, o3), level);
         }
     }
 
-    private void generateClsEvent(int type, Cls cls, Frame frame1, Frame frame2, 
+    private void generateClsEvent(int type, Cls cls, Frame frame1, Frame frame2,
     							  TransactionIsolationLevel level) {
         if (generateEvent(cls)) {
             addEvent(new ClsEvent(cls, type, frame1, frame2), level);
@@ -407,14 +415,15 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         }
     }
 
-    private void generateInstanceEvent(int type, Instance instance, Frame frame, 
+    private void generateInstanceEvent(int type, Instance instance, Frame frame,
                                        TransactionIsolationLevel level) {
         if (generateEvent(instance)) {
             addEvent(new InstanceEvent(instance, type, frame), level);
         }
     }
 
-    public List<AbstractEvent> getEvents() {
+    @Override
+	public List<AbstractEvent> getEvents() {
     	List<AbstractEvent> events = _events;
     	_events = new ArrayList<AbstractEvent>();
     	return events;
@@ -437,8 +446,8 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         return slots;
     }
 
-    private void generateSuperclassTemplateSlotChangedEvents(Cls cls, 
-                                                             int type, 
+    private void generateSuperclassTemplateSlotChangedEvents(Cls cls,
+                                                             int type,
                                                              Collection addedSlots,
                                                              TransactionIsolationLevel level) {
         Iterator i = addedSlots.iterator();
@@ -448,9 +457,9 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         }
     }
 
-    private void generateOwnSlotValuesChangedEvent(Frame frame1, 
-                                                   Frame frame2, 
-                                                   Slot slot, 
+    private void generateOwnSlotValuesChangedEvent(Frame frame1,
+                                                   Frame frame2,
+                                                   Slot slot,
                                                    TransactionIsolationLevel level) {
         generateOwnSlotValuesChangedEvent(frame1, slot, level);
         generateOwnSlotValuesChangedEvent(frame2, slot.getInverseSlot(), level);
@@ -607,8 +616,8 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         boolean allowsTransactions = getDelegate().beginTransaction(name);
         return allowsTransactions;
     }
-    
-    private void generateTransactionEvent(int type, String name, Boolean commit, 
+
+    private void generateTransactionEvent(int type, String name, Boolean commit,
                                           TransactionIsolationLevel level) {
         addEvent(new TransactionEvent(_kb, type, name, commit), level);
     }
@@ -632,13 +641,13 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
         generateEventsOnDeletingFrames = b;
         return oldValue;
     }
-    
+
     /*
      * This is complicated...
 	 */
     public void replaceFrame(Frame original, Frame replacement) {
     	TransactionIsolationLevel level = getTransactionIsolationLevel();
-    	String newName = replacement.getFrameID().getName(); 
+    	String newName = replacement.getFrameID().getName();
     	if (getFrame(newName) != null) {
     		return;
     	}
@@ -666,7 +675,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     		inReplaceFrameOperation = true;
     		Collection directTypes = getDelegate().getDirectTypes((Instance) replacement);
     		if (original instanceof Cls) {
-    			generateCreateClsEvents((Cls) replacement, directTypes, level); 
+    			generateCreateClsEvents((Cls) replacement, directTypes, level);
     		}
     		if (original instanceof Slot) {
     			generateCreateSlotEvents((Slot) replacement, directTypes, level);
@@ -683,14 +692,14 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     		inReplaceFrameOperation = false;
     	}
     }
-    
+
     public void addCustomEvent(AbstractEvent event) {
-        TransactionIsolationLevel level = transactionMonitor.getTransationIsolationLevel();
+        TransactionIsolationLevel level = transactionMonitor == null ? null : transactionMonitor.getTransationIsolationLevel();
         boolean visible = TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level);
         event.setHiddenByTransaction(!visible);
         _events.add(event);
     }
-    
+
     private void addEvent(AbstractEvent event, TransactionIsolationLevel level) {
     	if (inReplaceFrameOperation) {
     		event.setReplacementEvent(true);
@@ -704,7 +713,7 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     	_events.add(event);
     }
 
-    
+
     private TransactionIsolationLevel getTransactionIsolationLevel() {
     	if (transactionMonitor == null) {
     		return TransactionIsolationLevel.NONE;
