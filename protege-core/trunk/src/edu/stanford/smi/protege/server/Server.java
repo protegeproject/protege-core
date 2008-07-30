@@ -397,6 +397,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return project;
     }
 
+    public ProjectStatus getProjectStatus(String name) {
+        return _nameToProjectStatusMap.get(name);
+    }
+
+
     public void setProjectStatus(String name, ProjectStatus status) {
         ProjectStatus oldStatus  = _nameToProjectStatusMap.put(name, status);
         Project  p = _nameToOpenProjectMap.get(name);
