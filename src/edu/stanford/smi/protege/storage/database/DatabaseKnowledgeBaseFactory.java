@@ -258,6 +258,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
           DatabaseFrameDb db = new DatabaseFrameDb();
           db.initialize(inputKb.getFrameFactory(), driver, url, username, password, tablename, false);
           db.overwriteKB(inputKb, true);
+          db.close();
       } catch (Exception e) {
     	  String message = "Errors at copying knowledgebase " + url;
     	  Log.getLogger().log(Level.WARNING, message, e);
