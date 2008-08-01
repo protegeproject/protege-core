@@ -20,14 +20,12 @@ import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JToolBar;
@@ -51,9 +49,6 @@ import edu.stanford.smi.protege.resource.ResourceKey;
 import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.RemoteProjectManager;
 import edu.stanford.smi.protege.server.RemoteProjectUtil;
-import edu.stanford.smi.protege.server.RemoteServer;
-import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.server.ServerPanel;
 import edu.stanford.smi.protege.storage.clips.ParseErrorPanel;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ArchiveManager;
@@ -203,7 +198,7 @@ public class ProjectManager {
         if (hasLoadedProject()) {
             KnowledgeBaseFactory oldFactory = _currentProject.getKnowledgeBase().getKnowledgeBaseFactory();
             KnowledgeBaseFactory factory = promptForFactory();
-            boolean succeeded = (factory != null) && factory != oldFactory;
+            boolean succeeded = factory != null && factory != oldFactory;
             if (succeeded) {
                 succeeded = loadNewSources(_currentProject, factory, true);
             }
@@ -249,8 +244,9 @@ public class ProjectManager {
     	ProjectView prjView = getCurrentProjectView();
 
     	//this should not be the case
-    	if (prjView == null)
-    		return true;
+    	if (prjView == null) {
+			return true;
+		}
 
         boolean succeeded = prjView.canClose();
         if (succeeded) {
@@ -285,10 +281,10 @@ public class ProjectManager {
            String title = "Configure " + p.getProjectURI();
            int result = ModalDialog.showDialog(_rootPane, panel, title, ModalDialog.MODE_OK_CANCEL);
            if (result == ModalDialog.OPTION_OK) {
-                boolean needToRegenerate = (displayHidden != p.getDisplayHiddenClasses()) || 
-                    (displayTabbedInstanceForm != p.getTabbedInstanceFormLayout()) || 
-                    (addNameOnInstanceForm != p.getAddNameOnInstanceForm()) ||
-                    (supressInstancesCountDisplay != p.getSuppressInstanceCounting());
+                boolean needToRegenerate = displayHidden != p.getDisplayHiddenClasses() ||
+                    displayTabbedInstanceForm != p.getTabbedInstanceFormLayout() ||
+                    addNameOnInstanceForm != p.getAddNameOnInstanceForm() ||
+                    supressInstancesCountDisplay != p.getSuppressInstanceCounting();
                 reloadUI(needToRegenerate);
             }
         }
@@ -351,7 +347,8 @@ public class ProjectManager {
     /**
      * @deprecated Use #getCurrentProjectSystemToolBar()
      */
-    public JToolBar getCurrentProjectToolBar() {
+    @Deprecated
+	public JToolBar getCurrentProjectToolBar() {
         return getCurrentProjectMainToolBar();
     }
 
@@ -360,7 +357,7 @@ public class ProjectManager {
     }
 
     public void displayErrors(String label, Collection errors) {
-        if (!errors.isEmpty()) {
+        if (!errors.isEmpty() && ProjectManager.getProjectManager().getMainPanel() != null) {
             JComponent panel = new ParseErrorPanel(errors);
             _errorFrame = ComponentFactory.showInFrame(panel, label);
             bringErrorFrameToFront();
@@ -437,7 +434,7 @@ public class ProjectManager {
 
     //TODO: check if condition is correct
     private boolean hasLoadedProject() {
-        return (_currentProject != null && _currentProject.getProjectInstance() != null && _currentProject.getKnowledgeBase() != null);
+        return _currentProject != null && _currentProject.getProjectInstance() != null && _currentProject.getKnowledgeBase() != null;
     }
 
     public void changeIncludedProjectURIsRequest(Collection includedProjectURIs) {
@@ -669,11 +666,13 @@ public class ProjectManager {
             _currentProject = project;
             if ( _currentProject != null ) {
                 _projectPluginManager .afterLoad( _currentProject);
-                if (!suppressDisplay) displayCurrentProject(remote);
+                if (!suppressDisplay) {
+					displayCurrentProject(remote);
+				}
             }
         }
     }
-    
+
     private static void printDisplayTime(final long t1) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -720,7 +719,7 @@ public class ProjectManager {
     private KnowledgeBaseFactory promptForFactory() {
         FactoryPanel panel = new FactoryPanel();
         int rval = ModalDialog.showDialog(_rootPane, panel, "Select Format", ModalDialog.MODE_OK_CANCEL);
-        return (rval == ModalDialog.OPTION_OK) ? panel.getSelectedFactory() : null;
+        return rval == ModalDialog.OPTION_OK ? panel.getSelectedFactory() : null;
     }
 
     public void reloadUI(boolean regenerate) {
@@ -842,20 +841,20 @@ public class ProjectManager {
         _headerPanel = new JPanel(new BorderLayout());
         _headerPanel.setBackground(Color.WHITE);
         _mainToolBar = new ProjectToolBar();
-        
+
         JComponent panel = Box.createHorizontalBox();
         panel.setOpaque(false);
-        panel.add(_mainToolBar);      
+        panel.add(_mainToolBar);
         _headerPanel.add(panel, BorderLayout.WEST);
-        
+
         _menuBar = new ProjectMenuBar();
         JComponent panel2 = Box.createHorizontalBox();
         panel2.setOpaque(false);
-        
+
         JLabel icon = ComponentFactory.createLabel(Icons.getLogo());
         icon.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
-        
-        panel2.add(icon);     
+
+        panel2.add(icon);
         _headerPanel.add(panel2, BorderLayout.EAST);
 
         _toolBarHolder = Box.createHorizontalBox();
@@ -896,7 +895,8 @@ public class ProjectManager {
         return userToolBar;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "ProjectManager";
     }
 
