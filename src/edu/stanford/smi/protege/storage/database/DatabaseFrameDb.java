@@ -1254,9 +1254,12 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         getCurrentConnection().setAutoCommit(true);
     }
 
+    private static final Map slotToFacetsCacheMap = new HashMap();
+    
     public void overwriteKB(KnowledgeBase kb,
                                 boolean saveFrames) throws SQLException {
         slotToFacetsCacheMap.clear();
+        try {
         ensureEmptyTableExists();
         boolean wasCaching = kb.setCallCachingEnabled(false);
         if (saveFrames) {
@@ -1265,9 +1268,11 @@ public class DatabaseFrameDb implements NarrowFrameStore {
           endBatch();
         }
         kb.setCallCachingEnabled(wasCaching);
+        }
+        finally {
+            slotToFacetsCacheMap.clear();
+        }
     }
-
-    private static final Map slotToFacetsCacheMap = new HashMap();
 
     protected void saveFrames(KnowledgeBase kb) throws SQLException {
         nFrames = kb.getFrameCount();
