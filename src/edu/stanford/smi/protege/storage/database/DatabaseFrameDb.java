@@ -326,13 +326,17 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         indexString += " (" + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN
                 + ", " + VALUE_INDEX_COLUMN + ")";
         executeUpdate(indexString);
-        log.info("\t..._I1 created (" + timer.lap()/1000 + "s).");
+        if (log.isLoggable(Level.FINE)) {
+        	log.fine("\t..._I1 created (" + timer.lap()/1000 + "s).");
+        }
 
         // used for searching for values
         indexString = "CREATE INDEX " + _table + "_I2 ON " + _table;
         indexString += " (" + SHORT_VALUE_COLUMN + ")";
         executeUpdate(indexString);
-        log.info("\t..._I2 created (" + timer.lap()/1000 + "s).");
+        if (log.isLoggable(Level.FINE)) {
+        	log.fine("\t..._I2 created (" + timer.lap()/1000 + "s).");
+        }
 
         // used for getting slots with any value and for counting frames
         indexString = "CREATE INDEX " + _table + "_I3 ON " + _table;
@@ -342,10 +346,14 @@ public class DatabaseFrameDb implements NarrowFrameStore {
         if (needsIndexOnLowerValue()) {
             log.info("\t..._I3 created (" + timer.lap()/1000 + "s).");
             createIndexOnLowerValue();
-            log.info("\t..._IV created (" + timer.lap()/1000 + "s).");
+            if (log.isLoggable(Level.FINE)) {
+            	log.fine("\t..._IV created (" + timer.lap()/1000 + "s).");
+            }
         }
         else {
-            log.info("\t..._I3 created (" + timer.lap()/1000 + "s).");
+        	if (log.isLoggable(Level.FINE)) {
+        		log.info("\t..._I3 created (" + timer.lap()/1000 + "s).");
+        	}
         }
         log.info("All database indexes created (" + timer.total()/1000 + "s).");
     }
@@ -1255,7 +1263,7 @@ public class DatabaseFrameDb implements NarrowFrameStore {
     }
 
     private static final Map slotToFacetsCacheMap = new HashMap();
-    
+
     public void overwriteKB(KnowledgeBase kb,
                                 boolean saveFrames) throws SQLException {
         slotToFacetsCacheMap.clear();
