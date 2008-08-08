@@ -109,10 +109,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * @see RMISocketFactory#setSocketFactory(RMISocketFactory)
      */
     public static void startServer(String[] args, RMISocketFactory sf) throws IOException {
+    	Log.getLogger().info("Protege server is starting...");
         System.setProperty("java.rmi.server.RMIClassLoaderSpi", ProtegeRmiClassLoaderSpi.class.getName());
         RMISocketFactory.setSocketFactory(sf);
         SystemUtilities.initialize();
-        serverInstance = new Server(args);
+        serverInstance = new Server(args);        
         for (Entry<String, Project> entry : serverInstance._nameToOpenProjectMap.entrySet()) {
             String name = entry.getKey();
             Project p = entry.getValue();
@@ -157,7 +158,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         } else if (arg.startsWith(OPTION_CHAR)) {
             printUsage();
         } else {
-            extractMetaProjectLocation(arg);
+            extractMetaProjectLocation(arg);            
         }
     }
 
@@ -212,6 +213,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private void initialize() throws RemoteException {
+    	Log.getLogger().info("Using metaproject from: " + metaprojectURI);
         metaproject = new MetaProjectImpl(metaprojectURI);
         bindName();
         initializeProjects();
