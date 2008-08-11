@@ -56,9 +56,7 @@ import edu.stanford.smi.protege.server.metaproject.User;
  *
  * @author tredmond
  */
-public abstract class ProtegeJob extends RemoteJob implements Localizable, Serializable {
-  private static final long serialVersionUID = -3178401391384077767L;
-
+public abstract class ProtegeJob implements Localizable, Serializable {
   private static transient Logger log = Log.getLogger(ProtegeJob.class);
 
   private transient KnowledgeBase kb;
@@ -74,6 +72,17 @@ public abstract class ProtegeJob extends RemoteJob implements Localizable, Seria
     FrameStore terminalFrameStore = dkb.getTerminalFrameStore();
     if (terminalFrameStore instanceof RemoteClientFrameStore) {
       clientFrameStore = (RemoteClientFrameStore) terminalFrameStore;
+    }
+  }
+  
+  public void fixLoader() {
+    ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
+    ClassLoader correctLoader = getClass().getClassLoader();
+    if (currentLoader != correctLoader) {
+        if (log.isLoggable(Level.FINEST)) {
+          Log.getLogger().finest("Changing loader from " + currentLoader + " to " + correctLoader);
+        }
+        Thread.currentThread().setContextClassLoader(correctLoader);
     }
   }
   
@@ -95,6 +104,17 @@ public abstract class ProtegeJob extends RemoteJob implements Localizable, Seria
       return clientFrameStore.executeProtegeJob(this);
     }
   }
+  
+  /**
+   * This class is overridden by the sub class and defines 
+   * the fuunctionality of this job.  The intention is that the
+   * sub-class will define this method and callers will use the 
+   * execute() method.
+   * 
+   * @return 
+   * @throws ProtegeException
+   */
+  public abstract Object run() throws ProtegeException;
 
   /**
    * Returns the knowledge base associated with this job.
@@ -122,7 +142,15 @@ public abstract class ProtegeJob extends RemoteJob implements Localizable, Seria
   }
   
   public boolean serverSideCheckOperationAllowed(Operation op) {
-      return serverSideCheckOperationAllowed(op, getMetaProjectInstance());
+      Policy policy = Server.getPolicy();
+      String userName = ServerFrameStore.getCurrentSession().getUserName();
+      User user = policy.getUserByName(userName);
+      boolean allowed = policy.isOperationAuthorized(user, op, getMetaProjectInstance());
+      if (!allowed) {
+          log.warning("User " + userName + " attempted the operation " + op);
+          log.warning("Permission denied");
+      }
+      return allowed;
   }
   
   /**

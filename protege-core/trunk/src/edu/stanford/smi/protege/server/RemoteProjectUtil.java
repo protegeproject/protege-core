@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.server.RemoteClientProject;
+import edu.stanford.smi.protege.server.ServerProject;
 import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
 import edu.stanford.smi.protege.server.job.GetProjectStatusJob;
 import edu.stanford.smi.protege.server.job.ProjectNotifyJob;

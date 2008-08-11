@@ -12,21 +12,19 @@ import edu.stanford.smi.protege.util.ProtegeJob;
 
 public class ShutdownProjectJob extends ProtegeJob {
     private static final long serialVersionUID = -4989229809698939487L;
-    
-    private String projectToKill;
 
-    public ShutdownProjectJob(KnowledgeBase kb, String projectName) {
+    public ShutdownProjectJob(KnowledgeBase kb) {
         super(kb);
-        projectToKill = projectName;
     }
 
     @Override
     public Object run() throws ProtegeException {
-        Server server = Server.getInstance();
         if (!serverSideCheckOperationAllowed(MetaProjectConstants.OPERATION_CONFIGURE_SERVER)) {
             return null;
         }
-        server.closeProject(projectToKill);
+        Server server = Server.getInstance();
+        String projectName = getMetaProjectInstance().getName();
+        server.closeProject(projectName);
         return null;
     }
     

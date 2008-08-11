@@ -812,7 +812,7 @@ public class DBServer_Test extends APITestCase {
                   ls.stageAchieved(ProjectShutdownTestStages.NEW_STATUS, null);
 
                   ls.waitForStage(ProjectShutdownTestStages.STATUS_CONFIRMED);
-                  new ShutdownProjectJob(kb2, DB_CLIENT_PROJECT_PROPERTY).execute();
+                  new ShutdownProjectJob(kb2).execute();
                   ls.stageAchieved(ProjectShutdownTestStages.COMPLETED, null);
               }
               catch (Throwable t) {
