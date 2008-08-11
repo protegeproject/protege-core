@@ -32,4 +32,4 @@ OPTIONS=$MAXIMUM_MEMORY
 #YJP_OPT="-agentlib:yjpagent=port=8142"
 
 # Run Protege
-$JAVA_PATH/java $OPTIONS -cp $JARS $MAIN_CLASS $1
+$JAVA_PATH/java $OPTIONS ${DEBUG_OPT} ${YJP_OPT} -cp $JARS $MAIN_CLASS $1
