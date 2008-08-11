@@ -23,12 +23,13 @@ fi
 
 JARS=protege.jar:driver.jar:driver1.jar:looks.jar:unicode_panel.jar
 MAIN_CLASS=edu.stanford.smi.protege.Application
-MAXIMUM_MEMORY=-Xmx100M
+MAXIMUM_MEMORY=-Xmx1900M
 OPTIONS=$MAXIMUM_MEMORY
 
 #Possible instrumentation options - debug, etc.
-#DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8100,server=y,suspend=n"
-#JCONSOLE=-Dcom.sun.management.jmxremote
+#DEBUG_OPT="-agentlib:jdwp=transport=dt_socket,address=8100,server=y,suspend=n"
+#export LD_LIBRARY_PATH=/home/tredmond/dev/packages/yjp-7.5.6/bin/linux-x86-32
+#YJP_OPT="-agentlib:yjpagent=port=8142"
 
 # Run Protege
 $JAVA_PATH/java $OPTIONS -cp $JARS $MAIN_CLASS $1
