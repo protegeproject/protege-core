@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
+import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
@@ -46,9 +47,11 @@ import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
+import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ServerJob;
 import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.URIUtilities;
 
@@ -776,10 +779,19 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         sp.setFrameCalculatorDisabled(disabled);
       }
     }
+    
+    public Object executeServerJob(ServerJob job, RemoteSession session) {
+        job.fixLoader();
+        return job.run();
+    }
 
     /* -----------------------------------------------------------------------
      * MetaProject utilities
      */
+    
+    public MetaProject getMetaProjectNew() {
+        return metaproject;
+    }
 
     /**
      * @deprecated In ProtegeJobs use getMetaProjectInstance

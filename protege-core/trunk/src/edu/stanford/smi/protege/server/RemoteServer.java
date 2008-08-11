@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
+import edu.stanford.smi.protege.util.ServerJob;
 
 public interface RemoteServer extends Remote {
     
@@ -29,4 +30,6 @@ public interface RemoteServer extends Remote {
     boolean createUser(String userName, String password) throws RemoteException;
 
     void shutdown() throws RemoteException;
+    
+    Object executeServerJob(ServerJob job, RemoteSession session);
 }
