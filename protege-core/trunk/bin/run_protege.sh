@@ -42,13 +42,20 @@ MAIN_CLASS=edu.stanford.smi.protege.Application
 MAXIMUM_MEMORY=-Xmx100M
 OPTIONS=$MAXIMUM_MEMORY
 
-#Possible instrumentation options - debug, etc.
-#DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8100,server=y,suspend=n"
-#JCONSOLE=-Dcom.sun.management.jmxremote
+
 #PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100 -Dprotege.rmi.server.local.port=2388"
 #SSLOPTS="-Dprotege.rmi.usessl=true -Djavax.net.ssl.trustStore=protegeca -Djavax.net.ssl.trustStorePassword=protege"
 LOG4J_OPT="-Dlog4j.configuration=file:log4j.xml"
-OPTIONS="${OPTIONS} ${DEBUG_OPT} ${PORT_OPTS} ${SSLOPTS} ${LOG4J_OPT}"
+
+#Possible instrumentation options - debug, etc.
+#DEBUG_OPT="-agentlib:jdwp=transport=dt_socket,address=8100,server=y,suspend=n"
+# For yjp remember to set the LDLIBRARY path
+# e.g export 
+#      LD_LIBRARY_PATH=/home/tredmond/dev/packages/yjp-7.5.6/bin/linux-x86-32
+#YJP_OPT="-agentlib:yjpagent=port=8142"
+
+
+OPTIONS="${OPTIONS} ${DEBUG_OPT} ${YJP_OPT} ${PORT_OPTS} ${SSLOPTS} ${LOG4J_OPT}"
 # ------------------- JVM Options ------------------- 
 
 # Run Protege
