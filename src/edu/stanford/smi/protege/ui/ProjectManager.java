@@ -48,7 +48,7 @@ import edu.stanford.smi.protege.resource.LocalizedText;
 import edu.stanford.smi.protege.resource.ResourceKey;
 import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.RemoteProjectManager;
-import edu.stanford.smi.protege.server.RemoteProjectUtil;
+import edu.stanford.smi.protege.server.util.RemoteProjectUtil;
 import edu.stanford.smi.protege.storage.clips.ParseErrorPanel;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ArchiveManager;
