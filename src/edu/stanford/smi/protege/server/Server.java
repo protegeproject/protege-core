@@ -41,6 +41,7 @@ import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
+import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
@@ -49,6 +50,7 @@ import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum
 import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ServerJob;
 import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.URIUtilities;
 
@@ -198,12 +200,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         initialize();
     }
 
-    public void reinitialize() throws RemoteException {
-        Log.getLogger().info("Server reinitializing");
-        clear();
-        initialize();
-    }
-
     private void clear() {
         _nameToOpenProjectMap.clear();
         _projectToServerProjectMap.clear();
@@ -262,60 +258,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return name;
     }
 
-    public RemoteSession openSession(String username, String userIpAddress, String password) {
-        RemoteSession session = null;
-        if (isValid(username, password)) {
-            session = new Session(username, userIpAddress);
-            _sessions.add(session);
-        }
-
-        return session;
-    }
-
-    public RemoteSession cloneSession(RemoteSession session) {
-        if (!_sessions.contains(session)) {
-            return null;
-        }
-        session =  new Session(session.getUserName(), session.getUserIpAddress(), session.getSessionGroup());
-        _sessions.add(session);
-        return session;
-    }
-
-    public void closeSession(RemoteSession session) {
-        _sessions.remove(session);
-    }
-
-    public boolean isActive(RemoteSession session) {
-        return _sessions.contains(session);
-    }
-
-    public RemoteServerProject openProject(String projectName, RemoteSession session)
-    throws ServerSessionLost {
-        if (!_sessions.contains(session)) {
-            return null;  // user didn't really log in
-        }
-        if (!readAllowed(projectName, session)) {
-            return null;
-        }
-        ServerProject serverProject = null;
-        Project p = getOrCreateProject(projectName);
-        if (p != null) {
-            serverProject = getServerProject(p);
-            if (serverProject == null) {
-                serverProject = createServerProject(projectName, p);
-                addServerProject(p, serverProject);
-            }
-            if (_sessionToProjectsMap.get(session) != null &&
-                    _sessionToProjectsMap.get(session).contains(serverProject)) {
-                return null;
-            }
-            recordConnection(session, serverProject);
-        }
-
-        Log.getLogger().info("Server: Opened project " + projectName + " for " + session + " on " + new Date());
-
-        return serverProject;
-    }
 
     private boolean readAllowed(String projectName, RemoteSession session) {
         Policy policy = metaproject.getPolicy();
@@ -374,21 +316,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return _baseURI.resolve(name);
     }
 
-    public void disconnectFromProject(RemoteServerProject serverProject, RemoteSession session)
-    throws ServerSessionLost {
-        recordDisconnection(session, serverProject);
-    }
-
-    public ServerProject getServerProject(Project p) {
-        return _projectToServerProjectMap.get(p);
-    }
 
     private void addServerProject(Project p, ServerProject sp) {
         _projectToServerProjectMap.put(p, sp);
-    }
-
-    public Project getProject(String name) {
-        return _nameToOpenProjectMap.get(name);
     }
 
     private Project getOrCreateProject(String name) {
@@ -399,46 +329,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return project;
     }
 
-    public ProjectStatus getProjectStatus(String name) {
-        return _nameToProjectStatusMap.get(name);
-    }
 
-
-    public void setProjectStatus(String name, ProjectStatus status) {
-        ProjectStatus oldStatus  = _nameToProjectStatusMap.put(name, status);
-        Project  p = _nameToOpenProjectMap.get(name);
-        if (p != null) {
-            KnowledgeBase kb = p.getKnowledgeBase();
-            EventGeneratorFrameStore fs = kb.getFrameStoreManager().getFrameStoreFromClass(EventGeneratorFrameStore.class);
-            fs.addCustomEvent(new ServerProjectStatusChangeEvent(name, oldStatus, status));
-        }
-    }
-
-    public void closeProject(String name) {
-        Project p = _nameToOpenProjectMap.get(name);
-        ServerProject sp = _projectToServerProjectMap.get(p);
-        Set<Session> sessionsToRemove = new HashSet<Session>();
-        for (Entry<RemoteSession, Collection<ServerProject>> entry  : _sessionToProjectsMap.entrySet()) {
-            RemoteSession session = entry.getKey();
-            Collection<ServerProject> serverProjects  = entry.getValue();
-            if (serverProjects.remove(sp)) {
-                try {
-                    sp.deregister(session);
-                }
-                catch (ServerSessionLost ssl) {
-                    log.log(Level.WARNING, "Unexpected exception deregistering client", ssl);
-                }
-            }
-            if (serverProjects.isEmpty() && session instanceof Session) {
-                sessionsToRemove.add((Session) session);
-            }
-        }
-        for (Session session : sessionsToRemove) {
-            _sessions.remove(session);
-            _sessionToProjectsMap.remove(session);
-        }
-        p.dispose();
-    }
 
     private Project createProject(String name) {
         if (_nameToProjectStatusMap.get(name) != ProjectStatus.READY) {
@@ -467,68 +358,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return project;
     }
 
-	public RemoteServerProject createProject(String newProjectName, RemoteSession session, KnowledgeBaseFactory kbfactory, boolean saveToMetaProject) throws RemoteException {
-        Project project = null;
-
-        for (ProjectInstance instance : metaproject.getProjects()) {
-            String projectName = instance.getName();
-            if (projectName.equals(newProjectName)) {
-              	Log.getLogger().warning("Server: Attempting to create server project with existing project name. No server project created.");
-              	return null;
-              }
-        }
-
-        String newProjectsDir = ServerProperties.getDefaultNewProjectSaveDirectory();
-
-        URI uri = URIUtilities.createURI(newProjectsDir + File.separator + newProjectName + ".pprj");
-
-        if (uri == null) {
-        	Log.getLogger().warning("Could not create new server project at location " + newProjectsDir + File.separator + newProjectName + ".pprj");
-        	return null;
-        }
-
-        ArrayList errors = new ArrayList();
-
-        project = Project.createNewProject(kbfactory, errors);
-        Log.getLogger().info("Server: Created server project at: " + uri);
-
-        if (errors.size() > 0) {
-            Log.handleErrors(log, Level.SEVERE, errors);
-        	return null;
-        }
-
-        project.setProjectURI(uri);
-
-        //TT: How to treat other knowledge base factories?
-        if (kbfactory instanceof ClipsKnowledgeBaseFactory) {
-        	ClipsKnowledgeBaseFactory.setSourceFiles(project.getSources(), newProjectName + ".pont", newProjectName + ".pins");
-        }
-
-        project.save(errors);
-        if (errors.size() > 0) {
-            Log.handleErrors(log, Level.SEVERE, errors);
-        	return null;
-        }
-
-        project = Project.loadProjectFromURI(uri, new ArrayList(), true);
-
-        if (serverInstance != null) {
-        	_projectPluginManager.afterLoad(project);
-        }
-
-        localizeProject(project);
-        _nameToOpenProjectMap.put(newProjectName, project);
-
-        if (saveToMetaProject) {
-        	ProjectInstance newProjectInstance = metaproject.createProject(newProjectName);
-        	newProjectInstance.setLocation(newProjectsDir + File.separator + newProjectName + ".pprj");
-        	metaproject.save(errors);
-            Log.handleErrors(log, Level.SEVERE, errors);
-
-        }
-
-        return getServerProject(project);
-	}
 
     private static void localizeProject(Project project) {
         localizeKB(project.getKnowledgeBase());
@@ -540,109 +369,15 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         kb.insertFrameStore(fs);
     }
 
-    public Collection<String> getAvailableProjectNames(RemoteSession session) {
-        Policy policy = metaproject.getPolicy();
-        User user = session != null ? policy.getUserByName(session.getUserName()) : null;
-        List<String> names = new ArrayList<String>();
-        for (ProjectInstance instance : metaproject.getProjects()) {
-            if (user != null && (
-                    !policy.isOperationAuthorized(user,
-                                                  MetaProjectConstants.OPERATION_DISPLAY_IN_PROJECT_LIST,
-                                                  instance) ||
-                    !policy.isOperationAuthorized(user,
-                                                  MetaProjectConstants.OPERATION_READ,
-                                                  instance))) {
-                continue;
-            }
-            String fileName = instance.getLocation();
-            URI uri = URIUtilities.createURI(fileName);
-            String scheme = uri.getScheme();
-            if (scheme != null && scheme.contains("http")) {
-                BufferedReader reader = URIUtilities.createBufferedReader(uri);
-                if (reader != null) {
-                    names.add(instance.getName());
-                    FileUtilities.close(reader);
-                } else {
-                    Log.getLogger().warning("Missing project at " + fileName);
-                }
-            } else {
-                File file = new File(fileName);
-                if (file.exists() && file.isFile()) {
-                    names.add(instance.getName());
-                } else {
-                    Log.getLogger().warning("Missing project at " + fileName);
-                }
-            }
-        }
-        Collections.sort(names);
-        return names;
-    }
 
-    public Collection<ServerProject> getCurrentProjects(RemoteSession session) {
-        return _sessionToProjectsMap.get(session);
-    }
 
-    public  Collection<RemoteSession> getCurrentSessions() {
-        return _sessions;
-    }
 
-    @SuppressWarnings("unchecked")
-    public Collection<RemoteSession> getCurrentSessions(String projectName, RemoteSession session) {
-        Collection<RemoteSession> currentSessions;
-        RemoteServerProject project = getServerProject(projectName);
-        if (project == null) {
-            currentSessions = Collections.EMPTY_LIST;
-        } else {
-            currentSessions = getCurrentSessions(project);
-        }
-        return currentSessions;
-    }
-
-    public Collection<RemoteSession> getCurrentSessions(RemoteServerProject project) {
-        Collection<RemoteSession> sessions = new ArrayList<RemoteSession>();
-        Iterator<Map.Entry<RemoteSession, Collection<ServerProject>>> i = _sessionToProjectsMap.entrySet().iterator();
-        while (i.hasNext()) {
-            Map.Entry<RemoteSession, Collection<ServerProject>> entry = i.next();
-            Collection<ServerProject> projects = entry.getValue();
-            if (projects.contains(project)) {
-                Session session = (Session) entry.getKey();
-                if (isCurrent(session)) {
-                    sessions.add(session);
-                }
-            }
-        }
-        return sessions;
-    }
 
     private static boolean isCurrent(Session session) {
         return true;
         // return System.currentTimeMillis() - session.getLastAccessTime() > 10000;
     }
 
-    public boolean allowsCreateUsers() throws RemoteException {
-    	return ServerProperties.getAllowsCreateUsers();
-    }
-
-	public boolean createUser(String userName, String password) {
-		List<String> names = new ArrayList<String>();
-		for (User instance : metaproject.getUsers()) {
-			String existingUserName = instance.getName();
-			if (existingUserName.equals(userName)) {
-				Log.getLogger().warning(
-						"Server: Could not create user with name " + userName
-								+ ". User name already exists.");
-				return false;
-			}
-		}
-		User newUserInstance = metaproject.createUser(userName,
-				password);
-
-		ArrayList errors = new ArrayList();
-		boolean success = metaproject.save(errors);
-        Log.handleErrors(log, Level.SEVERE, errors);
-
-		return success && errors.size() == 0;
-	}
 
     private boolean isValid(String name, String password) {
       boolean isValid = false;
@@ -730,6 +465,361 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
     }
 
+
+    
+    private void stopProjectUpdateThread() {
+        _updateThread = null;
+    }
+    
+    private void closeProject(String name) {
+        Project p = _nameToOpenProjectMap.get(name);
+        ServerProject sp = _projectToServerProjectMap.get(p);
+        Set<Session> sessionsToRemove = new HashSet<Session>();
+        for (Entry<RemoteSession, Collection<ServerProject>> entry  : _sessionToProjectsMap.entrySet()) {
+            RemoteSession session = entry.getKey();
+            Collection<ServerProject> serverProjects  = entry.getValue();
+            if (serverProjects.remove(sp)) {
+                try {
+                    sp.deregister(session);
+                }
+                catch (ServerSessionLost ssl) {
+                    log.log(Level.WARNING, "Unexpected exception deregistering client", ssl);
+                }
+            }
+            if (serverProjects.isEmpty() && session instanceof Session) {
+                sessionsToRemove.add((Session) session);
+            }
+        }
+        for (Session session : sessionsToRemove) {
+            _sessions.remove(session);
+            _sessionToProjectsMap.remove(session);
+        }
+        p.dispose();
+    }
+
+
+    /* -----------------------------------------------------------------
+     * Services available on the server
+     */
+
+
+    public boolean isActive(RemoteSession session) {
+        return _sessions.contains(session);
+    }
+
+    public void disconnectFromProject(RemoteServerProject serverProject, RemoteSession session)
+    throws ServerSessionLost {
+        recordDisconnection(session, serverProject);
+    }
+
+    public Project getProject(String name) {
+        return _nameToOpenProjectMap.get(name);
+    }
+
+    
+    public ServerProject getServerProject(Project p) {
+        return _projectToServerProjectMap.get(p);
+    }
+
+
+    public ProjectStatus getProjectStatus(String name) {
+        return _nameToProjectStatusMap.get(name);
+    }
+
+
+    public void setProjectStatus(String name, ProjectStatus status) {
+        ProjectStatus oldStatus  = _nameToProjectStatusMap.put(name, status);
+        Project  p = _nameToOpenProjectMap.get(name);
+        if (p != null) {
+            KnowledgeBase kb = p.getKnowledgeBase();
+            EventGeneratorFrameStore fs = kb.getFrameStoreManager().getFrameStoreFromClass(EventGeneratorFrameStore.class);
+            fs.addCustomEvent(new ServerProjectStatusChangeEvent(name, oldStatus, status));
+        }
+    }
+
+
+    public Collection<ServerProject> getCurrentProjects(RemoteSession session) {
+        return _sessionToProjectsMap.get(session);
+    }
+
+
+    public  Collection<RemoteSession> getCurrentSessions() {
+        return _sessions;
+    }
+    
+    public Collection<RemoteSession> getCurrentSessions(RemoteServerProject project) {
+        Collection<RemoteSession> sessions = new ArrayList<RemoteSession>();
+        Iterator<Map.Entry<RemoteSession, Collection<ServerProject>>> i = _sessionToProjectsMap.entrySet().iterator();
+        while (i.hasNext()) {
+            Map.Entry<RemoteSession, Collection<ServerProject>> entry = i.next();
+            Collection<ServerProject> projects = entry.getValue();
+            if (projects.contains(project)) {
+                Session session = (Session) entry.getKey();
+                if (isCurrent(session)) {
+                    sessions.add(session);
+                }
+            }
+        }
+        return sessions;
+    }
+
+
+    
+    public void setFrameCalculatorDisabled(boolean disabled) {
+      for (ServerProject sp : _projectToServerProjectMap.values()) {
+        sp.setFrameCalculatorDisabled(disabled);
+      }
+    }
+    
+
+    /* -----------------------------------------------------------------------
+     * MetaProject utilities
+     */
+    
+    public MetaProject getMetaProjectNew() {
+        return metaproject;
+    }
+
+    /**
+     * @deprecated In ProtegeJobs use getMetaProjectInstance
+     */
+    @Deprecated
+    public KnowledgeBase getMetaProject() {
+        return ((MetaProjectImpl) metaproject).getKnowledgeBase();
+    }
+
+    /**
+     * @deprecated In ProtegeJobs use getMetaProjectInstance
+     */
+    @Deprecated
+    public Cls getProjectCls()  {
+        return ((MetaProjectImpl) metaproject).getCls(MetaProjectImpl.ClsEnum.Project);
+    }
+
+    /**
+     * @deprecated In ProtegeJobs use getMetaProjectInstance
+     */
+    @Deprecated
+    public Slot getNameSlot() {
+        return ((MetaProjectImpl) metaproject).getSlot(SlotEnum.name);
+    }
+    
+    /* -----------------------------------------------------------------
+     * RemoteServer Interfaces
+     */
+    
+    public void reinitialize() throws RemoteException {
+        Log.getLogger().info("Server reinitializing");
+        clear();
+        initialize();
+    }
+ 
+    /* -----------------------------------------------------------------
+     * Session Management
+     */
+
+        public RemoteSession openSession(String username, String userIpAddress, String password) {
+        RemoteSession session = null;
+        if (isValid(username, password)) {
+            session = new Session(username, userIpAddress);
+            _sessions.add(session);
+        }
+
+        return session;
+    }
+
+    public RemoteSession cloneSession(RemoteSession session) {
+        if (!_sessions.contains(session)) {
+            return null;
+        }
+        session =  new Session(session.getUserName(), session.getUserIpAddress(), session.getSessionGroup());
+        _sessions.add(session);
+        return session;
+    }
+
+    public void closeSession(RemoteSession session) {
+        _sessions.remove(session);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public Collection<RemoteSession> getCurrentSessions(String projectName, RemoteSession session) {
+        Collection<RemoteSession> currentSessions;
+        RemoteServerProject project = getServerProject(projectName);
+        if (project == null) {
+            currentSessions = Collections.EMPTY_LIST;
+        } else {
+            currentSessions = getCurrentSessions(project);
+        }
+        return currentSessions;
+    }
+
+
+    /* -----------------------------------------------------------------
+     * Project Access
+     */
+
+    public Collection<String> getAvailableProjectNames(RemoteSession session) {
+        Policy policy = metaproject.getPolicy();
+        User user = session != null ? policy.getUserByName(session.getUserName()) : null;
+        List<String> names = new ArrayList<String>();
+        for (ProjectInstance instance : metaproject.getProjects()) {
+            if (user != null && (
+                    !policy.isOperationAuthorized(user,
+                                                  MetaProjectConstants.OPERATION_DISPLAY_IN_PROJECT_LIST,
+                                                  instance) ||
+                    !policy.isOperationAuthorized(user,
+                                                  MetaProjectConstants.OPERATION_READ,
+                                                  instance))) {
+                continue;
+            }
+            String fileName = instance.getLocation();
+            URI uri = URIUtilities.createURI(fileName);
+            String scheme = uri.getScheme();
+            if (scheme != null && scheme.contains("http")) {
+                BufferedReader reader = URIUtilities.createBufferedReader(uri);
+                if (reader != null) {
+                    names.add(instance.getName());
+                    FileUtilities.close(reader);
+                } else {
+                    Log.getLogger().warning("Missing project at " + fileName);
+                }
+            } else {
+                File file = new File(fileName);
+                if (file.exists() && file.isFile()) {
+                    names.add(instance.getName());
+                } else {
+                    Log.getLogger().warning("Missing project at " + fileName);
+                }
+            }
+        }
+        Collections.sort(names);
+        return names;
+    }
+
+   
+    public RemoteServerProject openProject(String projectName, RemoteSession session)
+    throws ServerSessionLost {
+        if (!_sessions.contains(session)) {
+            return null;  // user didn't really log in
+        }
+        if (!readAllowed(projectName, session)) {
+            return null;
+        }
+        ServerProject serverProject = null;
+        Project p = getOrCreateProject(projectName);
+        if (p != null) {
+            serverProject = getServerProject(p);
+            if (serverProject == null) {
+                serverProject = createServerProject(projectName, p);
+                addServerProject(p, serverProject);
+            }
+            if (_sessionToProjectsMap.get(session) != null &&
+                    _sessionToProjectsMap.get(session).contains(serverProject)) {
+                return null;
+            }
+            recordConnection(session, serverProject);
+        }
+
+        Log.getLogger().info("Server: Opened project " + projectName + " for " + session + " on " + new Date());
+
+        return serverProject;
+    }
+
+
+    /* -----------------------------------------------------------------
+     * Server Admin
+     */
+
+    	public RemoteServerProject createProject(String newProjectName, RemoteSession session, KnowledgeBaseFactory kbfactory, boolean saveToMetaProject) throws RemoteException {
+        Project project = null;
+
+        for (ProjectInstance instance : metaproject.getProjects()) {
+            String projectName = instance.getName();
+            if (projectName.equals(newProjectName)) {
+              	Log.getLogger().warning("Server: Attempting to create server project with existing project name. No server project created.");
+              	return null;
+              }
+        }
+
+        String newProjectsDir = ServerProperties.getDefaultNewProjectSaveDirectory();
+
+        URI uri = URIUtilities.createURI(newProjectsDir + File.separator + newProjectName + ".pprj");
+
+        if (uri == null) {
+        	Log.getLogger().warning("Could not create new server project at location " + newProjectsDir + File.separator + newProjectName + ".pprj");
+        	return null;
+        }
+
+        ArrayList errors = new ArrayList();
+
+        project = Project.createNewProject(kbfactory, errors);
+        Log.getLogger().info("Server: Created server project at: " + uri);
+
+        if (errors.size() > 0) {
+            Log.handleErrors(log, Level.SEVERE, errors);
+        	return null;
+        }
+
+        project.setProjectURI(uri);
+
+        //TT: How to treat other knowledge base factories?
+        if (kbfactory instanceof ClipsKnowledgeBaseFactory) {
+        	ClipsKnowledgeBaseFactory.setSourceFiles(project.getSources(), newProjectName + ".pont", newProjectName + ".pins");
+        }
+
+        project.save(errors);
+        if (errors.size() > 0) {
+            Log.handleErrors(log, Level.SEVERE, errors);
+        	return null;
+        }
+
+        project = Project.loadProjectFromURI(uri, new ArrayList(), true);
+
+        if (serverInstance != null) {
+        	_projectPluginManager.afterLoad(project);
+        }
+
+        localizeProject(project);
+        _nameToOpenProjectMap.put(newProjectName, project);
+
+        if (saveToMetaProject) {
+        	ProjectInstance newProjectInstance = metaproject.createProject(newProjectName);
+        	newProjectInstance.setLocation(newProjectsDir + File.separator + newProjectName + ".pprj");
+        	metaproject.save(errors);
+            Log.handleErrors(log, Level.SEVERE, errors);
+
+        }
+
+        return getServerProject(project);
+	}
+
+    public void setProjectStatus(String projectName, ProjectStatus status,
+                                 RemoteSession session) {
+
+    }
+
+	public boolean createUser(String userName, String password) {
+		List<String> names = new ArrayList<String>();
+		for (User instance : metaproject.getUsers()) {
+			String existingUserName = instance.getName();
+			if (existingUserName.equals(userName)) {
+				Log.getLogger().warning(
+						"Server: Could not create user with name " + userName
+								+ ". User name already exists.");
+				return false;
+			}
+		}
+		User newUserInstance = metaproject.createUser(userName,
+				password);
+
+		ArrayList errors = new ArrayList();
+		boolean success = metaproject.save(errors);
+        Log.handleErrors(log, Level.SEVERE, errors);
+
+		return success && errors.size() == 0;
+	}
+
     public void shutdown() {
         Log.getLogger().info("Received shutdown request.");
         saveAllProjects();
@@ -766,43 +856,40 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         };
         thread.start();
     }
-
-    private void stopProjectUpdateThread() {
-        _updateThread = null;
+    
+    public void shutdown(String projectName, RemoteSession session) {
+        if (!isOperationAllowed(session, MetaProjectConstants.OPERATION_CONFIGURE_SERVER, projectName)) {
+            return;
+        }
+        setProjectStatus(projectName, ProjectStatus.CLOSED_FOR_MAINTENANCE, session);
+        closeProject(projectName);
     }
 
-    public void setFrameCalculatorDisabled(boolean disabled) {
-      for (ServerProject sp : _projectToServerProjectMap.values()) {
-        sp.setFrameCalculatorDisabled(disabled);
-      }
-    }
-
-    /* -----------------------------------------------------------------------
-     * MetaProject utilities
+    /* -----------------------------------------------------------------
+     * Policy
      */
 
-    /**
-     * @deprecated In ProtegeJobs use getMetaProjectInstance
-     */
-    @Deprecated
-    public KnowledgeBase getMetaProject() {
-        return ((MetaProjectImpl) metaproject).getKnowledgeBase();
+    public boolean allowsCreateUsers() throws RemoteException {
+    	return ServerProperties.getAllowsCreateUsers();
     }
 
-    /**
-     * @deprecated In ProtegeJobs use getMetaProjectInstance
-     */
-    @Deprecated
-    public Cls getProjectCls()  {
-        return ((MetaProjectImpl) metaproject).getCls(MetaProjectImpl.ClsEnum.Project);
+    public boolean isOperationAllowed(RemoteSession session, Operation op,  String projectName) {
+        Policy policy = metaproject.getPolicy();
+        User user = policy.getUserByName(session.getUserName());
+        ProjectInstance project = policy.getProjectInstanceByName(projectName);
+        if (user == null || project == null) {
+            return false;
+        }
+        return policy.isOperationAuthorized(user, op, project);
     }
 
-    /**
-     * @deprecated In ProtegeJobs use getMetaProjectInstance
-     */
-    @Deprecated
-    public Slot getNameSlot() {
-        return ((MetaProjectImpl) metaproject).getSlot(SlotEnum.name);
+     /* -----------------------------------------------------------------
+      * Misc
+      */
+    public Object executeServerJob(ServerJob job, RemoteSession session) {
+        job.fixLoader();
+        return job.run();
     }
+
 
 }
