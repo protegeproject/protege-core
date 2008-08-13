@@ -38,13 +38,13 @@ public interface RemoteServer extends Remote {
     
     RemoteServerProject createProject(String projectName, RemoteSession session, KnowledgeBaseFactory kbfactory, boolean saveToMetaProject) throws RemoteException;
     
-    void setProjectStatus(String projectName, ProjectStatus status, RemoteSession session);
+    void setProjectStatus(String projectName, ProjectStatus status, RemoteSession session) throws RemoteException;
     
     boolean createUser(String userName, String password) throws RemoteException;
 
     void shutdown() throws RemoteException;
     
-    void shutdown(String projectName, RemoteSession session);
+    void shutdown(String projectName, RemoteSession session) throws RemoteException;
     
     /*
      * Policy
@@ -52,10 +52,10 @@ public interface RemoteServer extends Remote {
     
     boolean allowsCreateUsers() throws RemoteException;
     
-    boolean isOperationAllowed(RemoteSession session, Operation op, String projectName);
+    boolean isOperationAllowed(RemoteSession session, Operation op, String projectName) throws RemoteException;
     
     /* 
      * Misc
      */
-    Object executeServerJob(ServerJob job, RemoteSession session);
+    Object executeServerJob(ServerJob job, RemoteSession session) throws RemoteException;
 }
