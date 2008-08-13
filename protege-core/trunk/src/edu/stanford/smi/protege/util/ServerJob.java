@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.util;
 
 import java.io.Serializable;
+import java.rmi.RemoteException;
 
 import edu.stanford.smi.protege.exception.ProtegeException;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
@@ -38,7 +39,12 @@ public abstract class ServerJob extends RemoteJob implements Serializable {
     }
     
     public Object execute() throws ProtegeException {
-        return server.executeServerJob(this, session);
+        try {
+            return server.executeServerJob(this, session);
+        }
+        catch (RemoteException re) {
+            throw new ProtegeException(re);
+        }
     }
     
 }
