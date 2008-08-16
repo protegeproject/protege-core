@@ -679,14 +679,31 @@ public class ComponentUtilities {
         list.setSelectedIndex(index);
     }
 
-    public static void setSelectedNode(JTree tree, TreeNode node) {
+    /*
+     * JLV: wrapped calls to tree.updateUI in SwingUtilities.invokeLater to prevent 
+     * null pointer exception when users click on sub slots on Slots tab. Workaround 
+     * to prevent exception is documented on Sun's site, bug ID 5089562.
+     * 
+     * Refer to URL for full bug report: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5089562
+     */
+    public static void setSelectedNode(final JTree tree, TreeNode node) {
         final TreePath path = new TreePath(((LazyTreeModel) tree.getModel()).getPathToRoot(node));
         if (path != null) {
         	tree.scrollPathToVisible(path);
         	tree.setSelectionPath(path);
-        	tree.updateUI();
+        	
+            SwingUtilities.invokeLater(new Runnable() {
+            	public void run() {
+            		tree.updateUI();
+            	}
+            });
         }
-        tree.updateUI();
+        
+        SwingUtilities.invokeLater(new Runnable() {
+        	public void run() {
+        		tree.updateUI();
+        	}
+        });
     }
 
     public static void setSelectedObjectPath(final JTree tree, Collection objectPath) {
