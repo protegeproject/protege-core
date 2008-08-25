@@ -42,9 +42,7 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     @Override
     public List getDirectTemplateSlotValues(Cls cls, Slot slot) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && session != null) {
-            frameCalculator.addRequest(cls, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
-        }
+        frameCalculator.addRequest(cls, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
         return getDelegate().getDirectTemplateSlotValues(cls, slot);
     }
 
@@ -53,9 +51,7 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
                                              Slot slot, 
                                              Facet facet) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && session != null) {
-            frameCalculator.addRequest(cls, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
-        }
+        frameCalculator.addRequest(cls, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
         return getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
     }
     
@@ -63,10 +59,8 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     public Frame getFrame(String name) {
         Frame frame = getDelegate().getFrame(name);
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && session != null) {
-            if (frame != null) {
-                frameCalculator.addRequest(frame, session, CacheRequestReason.USER_NAME_REQUEST);
-            }
+        if (!frameCalculator.inFrameCalculatorThread() && frame != null) {
+            frameCalculator.addRequest(frame, session, CacheRequestReason.USER_NAME_REQUEST);
         }
         return frame;
     }
@@ -74,10 +68,8 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     @Override
     public int getDirectOwnSlotValuesCount(Frame frame, Slot slot) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && session != null) {
-            if (!slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
-                frameCalculator.addRequest(frame, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
-            }
+        if (!frameCalculator.inFrameCalculatorThread() && !slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
+            frameCalculator.addRequest(frame, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
         }
         return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
     }
@@ -86,11 +78,11 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     public List getDirectOwnSlotValues(Frame frame, Slot slot) {
         List values = getDelegate().getDirectOwnSlotValues(frame, slot);
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && session != null) {
-            if (!slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
+        if (!frameCalculator.isDisabled(session)) {
+            if (!frameCalculator.inFrameCalculatorThread() && !slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
                 frameCalculator.addRequest(frame, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
             }
-            if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES)) {
+            if (!frameCalculator.inFrameCalculatorThread() && slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES)) {
                 for (Object o : values) {
                     if (o instanceof Frame) {
                         frameCalculator.addRequest((Frame) o, session, CacheRequestReason.SUBCLASS);
@@ -107,9 +99,7 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
                              boolean loadDefaults) {
         Facet facet = getDelegate().createFacet(id, directTypes, loadDefaults);
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && session != null) {
-            frameCalculator.addRequest(facet, session,  CacheRequestReason.NEW_FRAME);
-        }
+        frameCalculator.addRequest(facet, session,  CacheRequestReason.NEW_FRAME);
         return facet;
     }
     
@@ -119,9 +109,7 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
                            boolean loadDefaults) {
         Slot slot = getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaults);
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && session != null) {
-            frameCalculator.addRequest(slot,  session, CacheRequestReason.NEW_FRAME);
-        }
+        frameCalculator.addRequest(slot,  session, CacheRequestReason.NEW_FRAME);
         return slot;
     }
     
@@ -132,9 +120,7 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
                          boolean loadDefaults) {
         Cls cls = getDelegate().createCls(id, directTypes, directSuperclasses, loadDefaults);
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && session != null) {
-            frameCalculator.addRequest(cls,  session, CacheRequestReason.NEW_FRAME);
-        }
+        frameCalculator.addRequest(cls,  session, CacheRequestReason.NEW_FRAME);
         return cls;
     }
     
@@ -144,9 +130,7 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
                                                boolean loadDefaults) {
         SimpleInstance si = getDelegate().createSimpleInstance(id, directTypes, loadDefaults);
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && session != null) {
-            frameCalculator.addRequest(si,  session, CacheRequestReason.NEW_FRAME);
-        }
+        frameCalculator.addRequest(si,  session, CacheRequestReason.NEW_FRAME);
         return si;
     }
 }
