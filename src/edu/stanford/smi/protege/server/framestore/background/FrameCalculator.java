@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,7 @@ import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.Session;
 import edu.stanford.smi.protege.server.framestore.Registration;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
@@ -75,7 +77,9 @@ public class FrameCalculator {
   private SortedSet<WorkInfo> requests = new TreeSet<WorkInfo>();
   private Map<ClientAndFrame, WorkInfo> requestMap = new HashMap<ClientAndFrame, WorkInfo>();
   private ServerCacheStateMachine machine = null;
+  
   private static boolean disabled = false;
+  private Set<RemoteSession> disabledSessions = new HashSet<RemoteSession>();
   
   FrameCalculatorStatsImpl stats = new FrameCalculatorStatsImpl();
   
@@ -251,7 +255,7 @@ public class FrameCalculator {
                              RemoteSession session, 
                              ServerCachedState state, 
                              CacheRequestReason reason) {
-    if (disabled) {
+    if (isDisabled(session)) {
       return null;
     }
     if (frame.getKnowledgeBase() == null) {
@@ -317,9 +321,30 @@ public class FrameCalculator {
     }
   }
   
+  public boolean isDisabled(RemoteSession session) {
+      synchronized (requestLock) {
+          return disabled || session == null || disabledSessions.contains(session);
+      }
+  }
+  
   public static void setDisabled(boolean disabled) {
     FrameCalculator.disabled = disabled;
   }
+  
+  public boolean setDisabled(boolean disabled, RemoteSession session) {
+      synchronized (requestLock) {
+          boolean previousValue = disabledSessions.contains(session);
+          if (disabled) {
+              disabledSessions.add(session);
+          }
+          else {
+              disabledSessions.remove(session);
+          }
+          return previousValue;
+      }
+  }
+  
+  
   
   public FrameCalculatorStats getStats() {
     Map<RemoteSession, Integer> backlogs = new HashMap<RemoteSession, Integer>();
