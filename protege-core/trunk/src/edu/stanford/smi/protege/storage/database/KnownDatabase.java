@@ -20,7 +20,12 @@ public enum KnownDatabase {
            "VARCHAR2(1900)", 
            "VARCHAR2(1900)", 1900,
            "LONG",
-           "SMALLINT", "SMALLINT", "INTEGER")
+           "SMALLINT", "SMALLINT", "INTEGER"),
+    DERBY(false, "derby",
+          "VARCHAR(500)",
+          "VARCHAR(500)", 500,
+          "LONG VARCHAR",
+          "SMALLINT","SMALLINT","INTEGER")
     ;
 
     private boolean supported;
