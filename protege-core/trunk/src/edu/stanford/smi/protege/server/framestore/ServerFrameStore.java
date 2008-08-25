@@ -1221,8 +1221,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         values = getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
       }
       LocalizeUtils.localize(missing, _kb);
-      for (Frame value : missing) {
-        frameCalculator.addRequest(value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+      if (!frameCalculator.isDisabled(session))  {
+          for (Frame value : missing) {
+              frameCalculator.addRequest(value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+          }
       }
       return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
@@ -1242,8 +1244,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
       }
       LocalizeUtils.localize(missing,  _kb);
-      for (Frame value : missing) {
-        frameCalculator.addRequest(value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+      if (!frameCalculator.isDisabled(session)) {
+          for (Frame value : missing) {
+              frameCalculator.addRequest(value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
+          }
       }
       return new RemoteResponse<Set>(values, getValueUpdates(session));
     }
@@ -1281,8 +1285,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       for (Cls subClass : subClasses) {
         frames.add(subClass);
       }
-      for (Frame frame : frames) {
-        frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
+      if (!frameCalculator.isDisabled(session)) {
+          for (Frame frame : frames) {
+              frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
+          }
       }
     }
     
@@ -1334,8 +1340,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           }
         }
       }
-      for (Frame frame : frames) {
-        frameCalculator.addRequest(frame, session, CacheRequestReason.IMMEDIATE_PRELOAD);
+      if (!frameCalculator.isDisabled(session)) {
+          for (Frame frame : frames) {
+              frameCalculator.addRequest(frame, session, CacheRequestReason.IMMEDIATE_PRELOAD);
+          }
       }
     }
  
