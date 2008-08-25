@@ -132,6 +132,9 @@ public class RobustConnection {
         else if  (productName.equalsIgnoreCase("oracle")) {
             dbType = KnownDatabase.ORACLE;
         }
+        else if (productName.equalsIgnoreCase("apache derby")) {
+            dbType = KnownDatabase.DERBY;
+        }
         else {
             dbType = null;
         }
