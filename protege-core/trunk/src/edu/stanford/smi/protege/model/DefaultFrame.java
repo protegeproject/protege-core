@@ -148,16 +148,9 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
         return result;
     }
 
-    /*
-     * public int compareTo(Object o) { int result; if (o instanceof Frame) { Frame f2 = (Frame) o; String t1 =
-     * this.getBrowserText(); String t2 = f2.getBrowserText(); if (t1.charAt(0) == SPECIAL_NAME_CHAR) { result =
-     * (t2.charAt(0) == SPECIAL_NAME_CHAR) ? compareStrings(t1, t2) : +1; } else if (t2.charAt(0) == SPECIAL_NAME_CHAR) {
-     * result = -1; } else { result = compareStrings(t1, t2); } } else { result = 0; } return result; }
-     */
-
     public int compareTo(Frame f2) {
         int result;
-        String t1 = this.getBrowserText();
+        String t1 = getBrowserText();
         String t2 = f2.getBrowserText();
         if (isSpecialName(t1)) {
             result = isSpecialName(t2) ? compareStrings(t1, t2) : +1;
@@ -165,6 +158,9 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
             result = -1;
         } else {
             result = compareStrings(t1, t2);
+        }
+        if (result == 0) {
+            result = compareStrings(getName(), f2.getName());
         }
         return result;
     }
