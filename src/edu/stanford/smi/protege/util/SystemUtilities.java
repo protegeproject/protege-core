@@ -149,7 +149,10 @@ public class SystemUtilities {
     public static int getSystemIntegerProperty(String property, int defaultValue) {
         int value = defaultValue;
         try {
-            value = Integer.getInteger(property).intValue();
+        	Integer i = Integer.getInteger(property);
+        	if (i != null) {
+        		value = i.intValue();
+        	}
         } catch (SecurityException e) {
             //do nothing
         } catch (Throwable t) {
