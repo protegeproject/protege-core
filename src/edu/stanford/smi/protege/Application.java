@@ -23,13 +23,14 @@ import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.plugin.CreateProjectFromFilePlugin;
 import edu.stanford.smi.protege.plugin.PluginUtilities;
 import edu.stanford.smi.protege.resource.Text;
-import edu.stanford.smi.protege.server.ServerPanel;
 import edu.stanford.smi.protege.ui.ProjectManager;
 import edu.stanford.smi.protege.ui.SplashScreen;
 import edu.stanford.smi.protege.ui.WelcomeDialog;
 import edu.stanford.smi.protege.util.ApplicationProperties;
+import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.ComponentFactory;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.MessageError;
 import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.URIUtilities;
 
@@ -46,6 +47,11 @@ public class Application {
     private static WelcomeDialog _welcome;
     private static final String projectFileExtension = ".pprj";
     private static final String propertyOptionsPrefix = "-prop";
+    private static final String serverPropertyOptionsPrefix = "-server";
+    private static final String serverUserProperty = serverPropertyOptionsPrefix + ".user";
+    private static final String serverPasswordProperty = serverPropertyOptionsPrefix + ".password";
+    private static final String serverHostProperty = serverPropertyOptionsPrefix + ".host";
+    private static final String serverprojectProperty = serverPropertyOptionsPrefix + ".project";
     
     private static void initialize() {
         try {
@@ -69,9 +75,10 @@ public class Application {
         URI uri = null;
         if (args.length > 0) {
             String projectString = args[0];
-            if (projectString.startsWith(propertyOptionsPrefix)) {
+            if (projectString.startsWith(propertyOptionsPrefix) ||
+            	projectString.startsWith(serverPropertyOptionsPrefix)) {
             	//this is a property, ignore it
-            	return uri;
+            	return null;
             }
             
             if (!projectString.endsWith(projectFileExtension)) {
@@ -101,32 +108,43 @@ public class Application {
         Project project = null;
         if (args.length > 0) {
             String possibleFilename = args[0];
-            boolean isFile = false;
-            
+            boolean isFile = false;            
             try {
             	isFile = new File(possibleFilename).exists();
 			} catch (Exception e) {
 				//Fine to have empty catch block here				
+			}            
+			if (isFile) {
+				int lastDotIndex = possibleFilename.lastIndexOf('.');
+				if (lastDotIndex > 0 && lastDotIndex < possibleFilename.length() - 1) {
+					if (!possibleFilename.endsWith(projectFileExtension)){
+						String suffix = possibleFilename.substring(lastDotIndex + 1);
+						Iterator it = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames().iterator();
+						while (it.hasNext() && project == null) {
+							Class pluginClass = (Class) it.next();
+							project = useCreateProjectFromFilePlugin(pluginClass, suffix, possibleFilename);
+							if (project != null) {
+								String projectFilePath = possibleFilename.substring(0, lastDotIndex) + projectFileExtension;
+								project.setProjectFilePath(projectFilePath);
+								ProjectManager.getProjectManager().setCurrentProject(project, false);
+							}
+						}
+					}
+				}
+			} else {
+				//try to load it as a remote server project (if args are right)
+				boolean continueLoading = false;
+				try {
+					project = getRemoteProject(args);					
+				} catch (IllegalArgumentException e) { //insufficient arguments passed - continue processsing
+					continueLoading = true;
+				}				
+				if (project == null && !continueLoading) {
+					return;
+				}
 			}
-            
-            int lastDotIndex = possibleFilename.lastIndexOf('.');
-            if (lastDotIndex > 0 && lastDotIndex < possibleFilename.length() - 1 && isFile) {
-                if (!possibleFilename.endsWith(projectFileExtension)){
-                    String suffix = possibleFilename.substring(lastDotIndex + 1);
-                    Iterator it = PluginUtilities.getAvailableCreateProjectFromFilePluginClassNames().iterator();
-                    while (it.hasNext() && project == null) {
-                        Class pluginClass = (Class) it.next();
-                        project = useCreateProjectFromFilePlugin(pluginClass, suffix, possibleFilename);
-                        if (project != null) {
-                            String projectFilePath = possibleFilename.substring(0, lastDotIndex) + projectFileExtension;
-                            project.setProjectFilePath(projectFilePath);
-                            ProjectManager.getProjectManager().setCurrentProject(project, false);
-                        }
-                    }
-                }
-            }
         }
-
+        
         if (project != null) {
             showMainFrame();
         }
@@ -136,8 +154,11 @@ public class Application {
 
             if (projectURI != null) {
                 // Load the project and show the main frame.
-                ProjectManager.getProjectManager().loadProject(projectURI);
-                showMainFrame();
+            	try {
+            		ProjectManager.getProjectManager().loadProject(projectURI);
+            	} finally {
+            		showMainFrame();
+            	}
             }
             else {
                 showMainFrame();
@@ -151,15 +172,65 @@ public class Application {
                 		_welcome.setLocationRelativeTo(_mainFrame);
                 		_welcome.setVisible(true);                	
                 	}
-                } else {
-                	//is applet
+                } else {//is applet
                 	ProjectManager.getProjectManager().openRemoteProjectRequest();
                 }
             }
         }
     }
 
-    public static Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String arg) {
+    private static Project getRemoteProject(String[] args) {
+    	Project project = null;
+    	String host = null;
+    	String user = null;
+    	String pass = null;
+    	String prjName = null;
+    	for (int i = 0; i < args.length; i++) {
+    		String option = args[i];
+			try {				
+				if (option.startsWith(serverHostProperty)) {
+					host = extractValue(option);
+				} else if (option.startsWith(serverUserProperty)) {
+					user = extractValue(option);
+				} else if (option.startsWith(serverPasswordProperty)) {
+					pass = extractValue(option);
+				} else if (option.startsWith(serverprojectProperty)) {
+					prjName = extractValue(option);
+				}
+			} catch (Throwable t) {
+				Log.getLogger().log(Level.WARNING, "Error at parsing argument: " + option +
+						". This argument will be ignored.", t);
+			}
+		}    	
+    	if (host == null || user == null || pass == null || prjName == null) {
+    		throw new IllegalArgumentException("Insufficient arguments");
+    	}
+    	project = ProjectManager.getProjectManager().openRemoteProjectRequest(host, user, pass, prjName);
+    	if (project == null) {
+			showMainFrame();
+			MessageError messageError = new MessageError(
+					"Loading remote project " + prjName + " from server " + host + " failed.\n" +
+					"Please check your username and password and try again.");
+			ProjectManager.getProjectManager().displayErrors("Could not load remote project " + prjName,
+					CollectionUtilities.createCollection(messageError));
+    	}
+		return project;
+	}
+    
+    
+    private static String extractValue(String option) {
+		int index = option.indexOf("=");
+		if (index != -1) {			
+			String value = option.substring(index+1);
+			if (value.startsWith("\"") && value.endsWith("\"")) {
+				value = value.substring(1, value.length()-1);
+			}
+			return value;
+		}
+		return null;
+    }
+
+	public static Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String arg) {
         if (pluginClass != null) {
             try {
                 Object plugin = pluginClass.newInstance();
