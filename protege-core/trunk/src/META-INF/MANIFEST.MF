@@ -246,5 +246,9 @@ Tab-widget: True
 Name: edu.stanford.smi.protege.util.Frames1_8_BackwardsCompatibilityProjectFixups.class
 ProjectFixupPlugin: True
 
+Name: edu.stanford.smi.protege.code.generator.wrapping.CodeGeneratorProjectPlugin.class
+Project-Plugin: True
+
+
 
 
