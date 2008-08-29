@@ -385,7 +385,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         String username = ui.getName();
         if (username.equals(name)) {
           String userpassword = ui.getPassword();
-          if (userpassword.equals(password)) {
+          if ( (userpassword == null && (password == null || password.length() == 0)) ||
+        		  userpassword.equals(password)) {
             isValid = true;
             break;
           }
