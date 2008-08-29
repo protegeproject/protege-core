@@ -699,6 +699,21 @@ public class ProjectManager {
         }
     }
 
+    public Project openRemoteProjectRequest (String serverName, String username, String password, String projectName) {
+    	if (closeProjectRequest()) {
+    		long t1 = System.currentTimeMillis();
+    		_currentProject = RemoteProjectManager.getInstance().getProject(serverName, username, password, projectName, true);
+    		long t2 = System.currentTimeMillis();
+    		if (_currentProject != null) {
+    			_projectPluginManager.afterLoad(_currentProject);
+    			displayCurrentProject(true);
+    			printLoadTimes(t1, t2);
+    		} else {
+    		}
+    	}
+    	return _currentProject;
+    }
+
     private void printLoadTimes(final long start, final long stopProject) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
