@@ -6,9 +6,11 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -18,11 +20,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
+import edu.stanford.smi.protege.action.ExportToCsvUtil;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.resource.Icons;
-import edu.stanford.smi.protege.ui.DisplayUtilities;
-import edu.stanford.smi.protege.ui.FrameRenderer;
 import edu.stanford.smi.protege.util.AllowableAction;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ComponentFactory;
@@ -33,30 +34,20 @@ import edu.stanford.smi.protege.util.LabeledComponent;
 import edu.stanford.smi.protege.util.SelectableList;
 
 public class ExportConfigurationPanel {
-
-	public static final String EXPORT_FILE_PREFIX = "_exported";
 	
-	public static final String EXPORT_FILE_EXTENSION = "csv";
-
-	public static final String DEFAULT_SLOT_VALUES_DELIMITER = ",";
-
-	public static final String DEFAULT_SLOTS_DELIMITER = "\\t";
-		
 	private KnowledgeBase kb;
-
-	private JPanel configPanel;
 	
-	private JCheckBox exportTypesCheckBox;
-	
+	private JPanel configPanel;	
+	private JCheckBox exportTypesCheckBox;	
 	private JCheckBox exportHeaderCheckBox;
-	
-	private FileField fileField;
-	
-	private JTextField slotDelimiterTextField;
-	
+	private JCheckBox exportBrowserTextCheckBox;
+	private FileField fileField;	
+	private JTextField slotDelimiterTextField;	
 	private JTextField slotValuesDelimiterTextField;
 	
-	private Collection<Slot> slots = new ArrayList<Slot>();
+	private List<Slot> slots = new ArrayList<Slot>();	
+	private Collection<Slot> possibleSlots = new ArrayList<Slot>();
+	
 
 	//Ugly, but did not find a better solution
 	private static HashMap<String, String> replaceChars = new HashMap<String, String>();
@@ -79,7 +70,7 @@ public class ExportConfigurationPanel {
 		configPanel = new JPanel();
 		configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
 			
-		fileField = new FileField("Exported file", getExportedFileName(), EXPORT_FILE_EXTENSION, "Exported result files" );
+		fileField = new FileField("Exported file", getExportedFileName(), ExportToCsvUtil.EXPORT_FILE_EXTENSION, "Exported result files" );
 		configPanel.add(fileField);
 		
 		LabeledComponent slotsListComp = getSlotsListComponent();
@@ -89,12 +80,12 @@ public class ExportConfigurationPanel {
 		
 		JPanel p1 = new JPanel(new GridLayout(2,2));
 		p1.add(new JLabel("Slot delimiter"));
-		slotDelimiterTextField = new JTextField(DEFAULT_SLOTS_DELIMITER, 10);
+		slotDelimiterTextField = new JTextField(ExportToCsvUtil.getSlotsDelimiter(), 10);
 		p1.add(slotDelimiterTextField);
 		configPanel.add(p1);
 		
 		p1.add(new JLabel("Slot values delimiter"));
-		slotValuesDelimiterTextField = new JTextField(DEFAULT_SLOT_VALUES_DELIMITER, 10);
+		slotValuesDelimiterTextField = new JTextField(ExportToCsvUtil.getSlotValuesDelimiter(), 10);
 		p1.add(slotValuesDelimiterTextField);		
 
 		configPanel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -105,9 +96,15 @@ public class ExportConfigurationPanel {
 		
 		configPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 		
-		exportTypesCheckBox = ComponentFactory.createCheckBox("Export instances type(s)");
-		exportTypesCheckBox.setSelected(true);	
+		exportTypesCheckBox = ComponentFactory.createCheckBox("Export instance type(s)");
+		exportTypesCheckBox.setSelected(false);	
 		configPanel.add(exportTypesCheckBox);
+		
+		configPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+		
+		exportBrowserTextCheckBox = ComponentFactory.createCheckBox("Export browser text (instead of name)");
+		exportBrowserTextCheckBox.setSelected(ExportToCsvUtil.isExportBrowserTextEnabled());	
+		configPanel.add(exportBrowserTextCheckBox);
 		
 		return configPanel;
 	}
@@ -134,9 +131,13 @@ public class ExportConfigurationPanel {
 				}
 
 				allSlots.add(kb.getNameSlot());
+				allSlots.addAll(possibleSlots);
+				
+				List allSlotsList = new ArrayList<Slot>(allSlots);				
+				Collections.sort(allSlotsList, new FrameComparator());
 				
 				// Show util window for multiple slot selection
-				Collection<Slot> newSlots = DisplayUtilities.pickSlots(configPanel, allSlots, "Select slots to export (multiple selection)");
+				Collection<Slot> newSlots = DisplayUtilities.pickSlots(configPanel, allSlotsList, "Select slots to export (multiple selection)");
 				addSlotsIfNotExists(newSlots);
 				
 				ComponentUtilities.clearListValues(slotsList);
@@ -171,6 +172,7 @@ public class ExportConfigurationPanel {
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	private String getExportedFileName(){
 		String projPath = kb.getProject().getProjectFilePath();;
 		String projName = kb.getProject().getProjectName();
@@ -181,9 +183,8 @@ public class ExportConfigurationPanel {
 			projName = "query";
 		}			
 			
-		String filename = FileUtilities.replaceFileName(projPath, projName + EXPORT_FILE_PREFIX);
-			
-		filename = filename + "." + EXPORT_FILE_EXTENSION;
+		String filename = FileUtilities.replaceFileName(projPath, projName + ExportToCsvUtil.EXPORT_FILE_PREFIX);			
+		filename = filename + "." + ExportToCsvUtil.EXPORT_FILE_EXTENSION;
 		
 		return filename;
 	}
@@ -205,6 +206,10 @@ public class ExportConfigurationPanel {
 		return exportHeaderCheckBox.isSelected();
 	}
 	
+	public boolean isExportBrowserTextEnabled(){
+		return exportBrowserTextCheckBox.isSelected();
+	}
+	
 	public String getSlotDelimiter() {
 		return getDelimiterString(slotDelimiterTextField.getText());
 	}
@@ -223,6 +228,21 @@ public class ExportConfigurationPanel {
 		}
 		
 		return newString;
+	}
+
+
+	public Collection<Slot> getPossibleSlots() {
+		return possibleSlots;
+	}
+
+
+	/**
+	 * Give a chance to other parts of the code to set the slots that will show up
+	 * when clicking on the "Add Slot" button
+	 * @param possibleSlots
+	 */
+	public void setPossibleSlots(Collection<Slot> possibleSlots) {
+		this.possibleSlots = possibleSlots;
 	}
 	
 }
