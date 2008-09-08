@@ -2,7 +2,7 @@ package edu.stanford.smi.protege.storage.database;
 
 public enum KnownDatabase {
     MYSQL(true, "mysql", 
-          "VARCHAR(500) COLLATE UTF8_BIN", 
+          "VARBINARY(500)", 
           "VARCHAR(500) COLLATE utf8_general_ci", 500,
           "MEDIUMTEXT",
           "BIT", "SMALLINT", "INT"),
