@@ -18,7 +18,6 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.resource.Icons;
 import edu.stanford.smi.protege.server.metaproject.Operation;
-import edu.stanford.smi.protege.server.metaproject.impl.OperationImpl;
 import edu.stanford.smi.protege.server.metaproject.impl.UnbackedOperationImpl;
 import edu.stanford.smi.protege.ui.ExportConfigurationPanel;
 import edu.stanford.smi.protege.ui.ProjectManager;
@@ -32,30 +31,37 @@ import edu.stanford.smi.protege.util.StandardAction;
  * This action class allows the export of an instance list to a CSV file. <br><br>
  * Delimiters between different slots and slots values can be configured
  * (see {@link #setSlotsDelimiter(String)} and {@link #setSlotValuesDelimiter(String)}).
- * Slots to be exported for each instance can be configured (see {@link #setSlotsToExport(Collection)}. 
+ * Slots to be exported for each instance can be configured (see {@link #setSlotsToExport(Collection)}.
  * <br><br>
  *  It works both with an UI and without. To use it without a UI, call the setter methods to configure the
  *  export action and then call {@link #export()}.
- *  
+ *
  * @author Tania Tudorache <tudorache@stanford.edu>
  *
  */
 public class ExportToCsvAction extends StandardAction {
-	
-	public static final Operation EXPORT_TO_CSV_OPERATION = new UnbackedOperationImpl("ExportToCSV", null);	
-	
-	private KnowledgeBase kb;	
+
+	private static final long serialVersionUID = 8536785619825508769L;
+
+	public static final Operation EXPORT_TO_CSV_OPERATION = new UnbackedOperationImpl("ExportToCSV", null);
+
+	private static final char NEW_LINE = '\n';
+	private static final char QUOTE_CHAR = '"';
+
+	private KnowledgeBase kb;
 	private Collection<Instance> instancesToExport = new ArrayList<Instance>();
 	private File exportFile;
 	private Collection<Slot> slotsToExport = new ArrayList<Slot>();
+	private String exportMetadataText;
 	private boolean exportHeader;
 	private boolean exportTypes;
+	private boolean exportMetadata;
 
 	private ExportConfigurationPanel exportConfigurationPanel;
-	
+
 
 	public ExportToCsvAction(KnowledgeBase kb) {
-		this(kb, "Export Slot Values to file", Icons.getQueryExportIcon());	
+		this(kb, "Export Slot Values to file", Icons.getQueryExportIcon());
 	}
 
 	protected ExportToCsvAction(KnowledgeBase kb, String name, Icon icon) {
@@ -64,7 +70,7 @@ public class ExportToCsvAction extends StandardAction {
 	}
 
 	public void actionPerformed(ActionEvent arg0) {
-		exportConfigurationPanel = getExportConfigurationPanel();		
+		exportConfigurationPanel = getExportConfigurationPanel();
 		exportConfigurationPanel.setPossibleSlots(getSlotsToExport());
 
 		int sel = ModalDialog.showDialog(ProjectManager.getProjectManager().getCurrentProjectView(), exportConfigurationPanel.getConfigPanel(), "Export configuration", ModalDialog.MODE_OK_CANCEL);
@@ -76,12 +82,15 @@ public class ExportToCsvAction extends StandardAction {
 		slotsToExport = exportConfigurationPanel.getExportedSlots();
 		exportHeader = exportConfigurationPanel.isExportHeaderEnabled();
 		exportTypes = exportConfigurationPanel.isExportTypesEnabled();
+		exportMetadata = exportConfigurationPanel.isExportMetadataEnabled();
 
-		//write configuration to protege.properties 
+		//write configuration to protege.properties
 		setSlotsDelimiter(exportConfigurationPanel.getSlotDelimiter());
 		setSlotValuesDelimiter(exportConfigurationPanel.getSlotValuesDelimiter());
 		setExportBrowserText(exportConfigurationPanel.isExportBrowserTextEnabled());
-		
+		setExportMetadata(exportConfigurationPanel.isExportMetadataEnabled());
+		setExportMetadata(exportConfigurationPanel.getExportMetadataText());
+
 		boolean success = export();
 
 		String messageText = success ? "Query results exported successfully to:\n" + exportFile.getAbsolutePath() :
@@ -90,8 +99,8 @@ public class ExportToCsvAction extends StandardAction {
 
 		ModalDialog.showMessageDialog(ProjectManager.getProjectManager().getCurrentProjectView(), messageText, success ? "Export successful" : "Errors at export");
 	}
-	
-	
+
+
 	public boolean export() {
 		boolean success = false;
 
@@ -106,9 +115,9 @@ public class ExportToCsvAction extends StandardAction {
 			}
 
 		} catch (Exception ex) {
-			Log.getLogger().log(Level.WARNING, "Errors at writing out query results file " + exportFile + ".", ex);					
+			Log.getLogger().log(Level.WARNING, "Errors at writing out query results file " + exportFile + ".", ex);
 		}
-		
+
 		return success;
 	}
 
@@ -119,12 +128,23 @@ public class ExportToCsvAction extends StandardAction {
 			printHeader(output, slots);
 		}
 
-		Iterator i = instances.iterator();
+		Iterator<Instance> i = instances.iterator();
 		while (i.hasNext()) {
-			Instance instance = (Instance) i.next();
+			Instance instance = i.next();
 			printInstance(output, instance);
 		}
+
+		if (exportMetadata) {
+			printMetadata(output);
+		}
+
 		output.close();
+	}
+
+	private void printMetadata(PrintWriter writer) {
+		writer.println();
+		writer.println();
+		writer.println(getQuotedValule(exportMetadataText));
 	}
 
 	protected void printHeader(PrintWriter writer, Collection<Slot> slots) {
@@ -135,11 +155,11 @@ public class ExportToCsvAction extends StandardAction {
 
 		if (exportTypes) {
 			buffer.append("Type(s)");
-			buffer.append(getSlotsDelimiter());        	
+			buffer.append(getSlotsDelimiter());
 		}
 
-		for (Iterator iter = slots.iterator(); iter.hasNext();) {
-			Slot slot = (Slot) iter.next();
+		for (Object element : slots) {
+			Slot slot = (Slot) element;
 			buffer.append(getExportName(slot));
 			buffer.append(getSlotsDelimiter());
 		}
@@ -168,7 +188,7 @@ public class ExportToCsvAction extends StandardAction {
 		if (!slotsToExport.isEmpty()) {
 			Iterator<Slot> j = slotsToExport.iterator();
 			while (j.hasNext()) {
-				Slot slot = (Slot) j.next();
+				Slot slot = j.next();
 				buffer.append(getSlotsDelimiter());
 				buffer.append(getSlotValuesExportString(instance, slot));
 			}
@@ -176,13 +196,13 @@ public class ExportToCsvAction extends StandardAction {
 
 		writer.println(buffer.toString());
 	}
-	
-	
+
+
 	protected String getSlotValuesExportString(Instance instance, Slot slot) {
 		StringBuffer buffer = new StringBuffer();
-		
-		Collection values = instance.getOwnSlotValues(slot);            	
-		
+
+		Collection values = instance.getOwnSlotValues(slot);
+
 		// Loop through the values for a particular slot
 		Iterator i = values.iterator();
 		while (i.hasNext()) {
@@ -191,26 +211,44 @@ public class ExportToCsvAction extends StandardAction {
 				Frame frame = (Frame) value;
 				buffer.append(getExportName(frame));
 			} else {
-				buffer.append(getExportValueString(value));
+				buffer.append(getQuotedValule(value.toString()));
 			}
 
 			if (i.hasNext()) {
 				buffer.append(getSlotValuesDelimiter());
 			}
 		}
-		
+
 		return buffer.toString();
 	}
-	
-		
+
+	protected String getQuotedValule(String value) {
+		if (value == null || value.length() == 0) {
+			return value;
+		}
+
+		StringBuffer buffer = new StringBuffer(value);
+
+		for (int i = 0; i < buffer.length(); i++) {
+			if (buffer.charAt(i) == QUOTE_CHAR) {
+				buffer.insert(i, QUOTE_CHAR);
+				i = i + 1;
+			}
+		}
+
+		if (value.indexOf(NEW_LINE) >= 0 || value.indexOf(getSlotValuesDelimiter()) > -1) {
+			buffer.insert(0, QUOTE_CHAR);
+			buffer.insert(buffer.length(), QUOTE_CHAR);
+		}
+
+		return buffer.toString();
+	}
+
+
 	protected String getExportName(Frame frame) {
-		return isExportBrowserTextEnabled() ? frame.getBrowserText() : frame.getName();		
+		return isExportBrowserTextEnabled() ? frame.getBrowserText() : frame.getName();
 	}
-	
-	protected String getExportValueString(Object value) {
-		return value.toString();
-	}
-	
+
 
 	private ExportConfigurationPanel getExportConfigurationPanel() {
 		if (exportConfigurationPanel != null) {
@@ -221,11 +259,11 @@ public class ExportToCsvAction extends StandardAction {
 		return exportConfigurationPanel;
 	}
 
-	
+
 	/*
 	 * Public setter and getter methods
 	 */
-	
+
 	public Collection<Instance> getInstancesToExport() {
 		return instancesToExport;
 	}
@@ -250,6 +288,10 @@ public class ExportToCsvAction extends StandardAction {
 		this.slotsToExport = slotsToExport;
 	}
 
+	public void setExportMetadata(String metadata) {
+		this.exportMetadataText = metadata;
+	}
+
 	public boolean isExportHeader() {
 		return exportHeader;
 	}
@@ -264,6 +306,15 @@ public class ExportToCsvAction extends StandardAction {
 
 	public void setExportTypes(boolean exportTypes) {
 		this.exportTypes = exportTypes;
+	}
+
+	public boolean isExportMetadata() {
+		return exportMetadata;
+	}
+
+	public void setExportMetadata(boolean exportMetadata) {
+		this.exportMetadata = exportMetadata;
+		ExportToCsvUtil.setExportMetadata(exportMetadata);
 	}
 
 	public String getSlotValuesDelimiter() {
@@ -281,11 +332,11 @@ public class ExportToCsvAction extends StandardAction {
 	public void setSlotsDelimiter(String slotsDelimiter) {
 		ExportToCsvUtil.setSlotsDelimiter(slotsDelimiter);
 	}
-	
+
 	public boolean isExportBrowserTextEnabled() {
 		return ExportToCsvUtil.isExportBrowserTextEnabled();
 	}
-	
+
 	public void setExportBrowserText(boolean exportBrowserText) {
 		ExportToCsvUtil.setExportBrowserText(exportBrowserText);
 	}
