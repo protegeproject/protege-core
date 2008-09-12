@@ -143,6 +143,9 @@ public class ExportToCsvAction extends StandardAction {
 	}
 
 	private void printMetadata(PrintWriter writer) {
+		if (exportMetadataText == null || exportMetadataText.length() == 0) {
+			return;
+		}
 		writer.println();
 		writer.println();
 		writer.println(getQuotedValule(exportMetadataText));
