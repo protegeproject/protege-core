@@ -921,7 +921,7 @@ public class RemoteClientFrameStore implements FrameStore {
       new Thread("Remote Client Callback thread") {
         public void run() {
           try {
-            RemoteResponse<Set<Frame>> response = getRemoteDelegate().executeQuery(query, session);
+            RemoteResponse<Collection<Frame>> response = getRemoteDelegate().executeQuery(query, session);
             processValueUpdate(response);
             callback.provideQueryResults(response.getResponse());
           } catch (OntologyException oe) {

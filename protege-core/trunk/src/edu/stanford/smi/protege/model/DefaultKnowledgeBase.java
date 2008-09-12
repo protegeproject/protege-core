@@ -2366,7 +2366,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         removeListener(TransactionListener.class, this, listener);
     }
     
-    public Set<Frame> executeQuery(Query q) {
+    public Collection<Frame> executeQuery(Query q) {
       SynchronizeQueryCallback callback = new SynchronizeQueryCallback(this);
       getHeadFrameStore().executeQuery(q, callback);
       return callback.waitForResults();

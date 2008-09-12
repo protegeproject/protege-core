@@ -1,6 +1,6 @@
 package edu.stanford.smi.protege.model.query;
 
-import java.util.Set;
+import java.util.Collection;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
@@ -18,7 +18,7 @@ public class QueryCallbackClone implements QueryCallback {
     return qc;
   }
 
-  public void provideQueryResults(Set<Frame> results) {
+  public void provideQueryResults(Collection<Frame> results) {
     qc.provideQueryResults(results);
   }
 

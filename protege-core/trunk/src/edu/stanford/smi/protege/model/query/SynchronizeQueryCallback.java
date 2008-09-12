@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.model.query;
 
+import java.util.Collection;
 import java.util.Set;
 
 import edu.stanford.smi.protege.exception.OntologyException;
@@ -27,7 +28,7 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
     this.kbLock = kbLock;
   }
 
-  public void provideQueryResults(Set<Frame> frames) {
+  public void provideQueryResults(Collection<Frame> frames) {
     synchronized (kbLock) {
       result = frames;
       kbLock.notifyAll();
@@ -53,7 +54,7 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
     passException(pe);
   }
 
-  public Set<Frame> waitForResults() throws OntologyException, ProtegeIOException {
+  public Collection<Frame> waitForResults() throws OntologyException, ProtegeIOException {
     Object o = null;
     try {
       synchronized (kbLock) {
@@ -67,8 +68,8 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
     } finally {
       result = null;
     }
-    if (o instanceof Set) {
-      return (Set<Frame>) o;
+    if (o instanceof Collection) {
+      return (Collection<Frame>) o;
     } 
     else if (o instanceof OntologyException) {
       throw (OntologyException) o;
