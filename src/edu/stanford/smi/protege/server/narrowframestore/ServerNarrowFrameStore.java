@@ -244,7 +244,7 @@ public class ServerNarrowFrameStore
 
 
 
-  public Set<Frame> executeQuery(Query query, RemoteSession session) throws RemoteException {
+  public Collection<Frame> executeQuery(Query query, RemoteSession session) throws RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
     final SynchronizeQueryCallback callback = new SynchronizeQueryCallback(kb);
     fixedDelegate.executeQuery(query, callback);

@@ -758,7 +758,7 @@ public interface KnowledgeBase extends Disposable {
     void addTransactionListener(TransactionListener listener);
     void removeTransactionListener(TransactionListener listener);
     
-    public Set<Frame> executeQuery(Query q);
+    public Collection<Frame> executeQuery(Query q);
     
     Frame rename(Frame frame, String name);
     void assertFrameName(Frame frame);

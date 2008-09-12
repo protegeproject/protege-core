@@ -695,7 +695,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public RemoteResponse<Set<Frame>> executeQuery(Query query, 
+    public RemoteResponse<Collection<Frame>> executeQuery(Query query, 
                                                    RemoteSession session) 
                                                    throws ProtegeException, ServerSessionLost {
       recordCall(session);
@@ -703,7 +703,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         getDelegate().executeQuery(query,callback);
       }
-      return new RemoteResponse<Set<Frame>>(callback.waitForResults(), getValueUpdates(session));
+      return new RemoteResponse<Collection<Frame>>(callback.waitForResults(), getValueUpdates(session));
     }
 
     public OntologyUpdate removeDirectType(Instance instance, Cls directType, RemoteSession session) throws ServerSessionLost {

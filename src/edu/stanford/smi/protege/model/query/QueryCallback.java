@@ -1,6 +1,6 @@
 package edu.stanford.smi.protege.model.query;
 
-import java.util.Set;
+import java.util.Collection;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
@@ -9,7 +9,7 @@ import edu.stanford.smi.protege.model.Frame;
 
 public interface QueryCallback {
   
-  public void provideQueryResults(Set<Frame> results);
+  public void provideQueryResults(Collection<Frame> results);
 
   public void handleError(OntologyException exception);
   

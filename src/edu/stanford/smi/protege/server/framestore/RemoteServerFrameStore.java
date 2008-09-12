@@ -177,7 +177,7 @@ public interface RemoteServerFrameStore extends Remote {
     Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot, Facet facet, String value, int maxMatches,
                                                      RemoteSession session) throws RemoteException;
 
-    RemoteResponse<Set<Frame>> executeQuery(Query query, RemoteSession session) throws OntologyException, ProtegeIOException, RemoteException;
+    RemoteResponse<Collection<Frame>> executeQuery(Query query, RemoteSession session) throws OntologyException, ProtegeIOException, RemoteException;
 
     // closures
     RemoteResponse<Set> getDirectOwnSlotValuesClosure(Frame frame, Slot slot, Set<Frame> missing, RemoteSession session) 
