@@ -23,7 +23,7 @@ public class ExportToCsvUtil {
 	public static final String EXPORT_FILE_PREFIX_PROPERTY = "query.export.file.prefix";
 	public static final String EXPORT_FILE_EXTENSION_PROPERTY = "query.export.file.extension";
 	public static final String EXPORT_BROWSER_TEXT_PROPERTY = "query.export.browser.text";
-	public static final String EXPORT_METADATA_PROPERTY = "query.metadata.query";
+	public static final String EXPORT_METADATA_PROPERTY = "query.export.metadata";
 
 	public static String getSlotValuesDelimiter() {
 		return ApplicationProperties.getString(SLOT_VALUES_DELIMITER_PROPERTY, DEFAULT_SLOT_VALUES_DELIMITER);
