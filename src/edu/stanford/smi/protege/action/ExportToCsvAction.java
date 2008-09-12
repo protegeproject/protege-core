@@ -72,6 +72,7 @@ public class ExportToCsvAction extends StandardAction {
 	public void actionPerformed(ActionEvent arg0) {
 		exportConfigurationPanel = getExportConfigurationPanel();
 		exportConfigurationPanel.setPossibleSlots(getSlotsToExport());
+		exportConfigurationPanel.setExportMetadata(exportMetadataText);
 
 		int sel = ModalDialog.showDialog(ProjectManager.getProjectManager().getCurrentProjectView(), exportConfigurationPanel.getConfigPanel(), "Export configuration", ModalDialog.MODE_OK_CANCEL);
 		if (sel == ModalDialog.OPTION_CANCEL) {
@@ -290,6 +291,10 @@ public class ExportToCsvAction extends StandardAction {
 
 	public void setExportMetadata(String metadata) {
 		this.exportMetadataText = metadata;
+	}
+
+	public String getExportMetadata() {
+		return exportMetadataText;
 	}
 
 	public boolean isExportHeader() {
