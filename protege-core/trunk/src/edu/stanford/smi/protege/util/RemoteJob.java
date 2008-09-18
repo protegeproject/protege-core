@@ -27,16 +27,7 @@ public abstract class RemoteJob {
      */
     public abstract Object run() throws ProtegeException;
 
-    public void fixLoader() {
-        ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
-        ClassLoader correctLoader = getClass().getClassLoader();
-        if (currentLoader != correctLoader) {
-            if (log.isLoggable(Level.FINEST)) {
-                Log.getLogger().finest("Changing loader from " + currentLoader + " to " + correctLoader);
-            }
-            Thread.currentThread().setContextClassLoader(correctLoader);
-        }
-    }
+    public abstract void fixLoader();
     
     public boolean serverSideCheckOperationAllowed(Operation op, ProjectInstance projectInstance) {
         Policy policy = Server.getPolicy();
