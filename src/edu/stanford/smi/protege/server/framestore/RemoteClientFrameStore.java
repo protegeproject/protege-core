@@ -68,14 +68,14 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /*
  * Transactions:
- * 
- * This class gets updates to its caches from the ServerFrameStore.  
+ *
+ * This class gets updates to its caches from the ServerFrameStore.
  */
 
 public class RemoteClientFrameStore implements FrameStore {
     private static transient Logger log = Log.getLogger(RemoteClientFrameStore.class);
     private static transient Logger cacheLog = ServerFrameStore.cacheLog;
-    
+
     private static Method executeProtegeJobMethod;
     static {
       try {
@@ -86,7 +86,7 @@ public class RemoteClientFrameStore implements FrameStore {
       }
     }
 
-    
+
     private KnowledgeBase kb;
     private ClassLoader kbClassLoader;
     private SystemFrames systemFrames;
@@ -94,7 +94,7 @@ public class RemoteClientFrameStore implements FrameStore {
     private RemoteServer server;
     private RemoteServerFrameStore proxiedDelegate;
     private RemoteServerFrameStore remoteDelegate;
-    
+
 
     private enum CacheStatus {
       STARTED_CACHING, COMPLETED_CACHING
@@ -102,7 +102,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     private TransactionIsolationLevel transactionLevel;
     private int transactionNesting = 0;
-    
+
 
   /*
    * These three variables (involving caching are synchronized using the cache object.
@@ -112,16 +112,16 @@ public class RemoteClientFrameStore implements FrameStore {
     private Map<Frame, Map<Sft, List>> cache = new HashMap<Frame, Map<Sft, List>>();
     private Map<Frame, Map<Sft, List>> sessionCache = new HashMap<Frame, Map<Sft, List>>();
     private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
-    
+
     private RemoteClientStatsImpl stats = new RemoteClientStatsImpl();
     private Set<Operation> allowedOps;
     private Set<Operation> knownOps;
 
- 
-    public RemoteClientFrameStore(String host, 
-                                  String user, 
-                                  String password, 
-                                  String projectName, 
+
+    public RemoteClientFrameStore(String host,
+                                  String user,
+                                  String password,
+                                  String projectName,
                                   KnowledgeBase kb,
                                   boolean preloadAll) {
         try {
@@ -139,7 +139,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public RemoteClientFrameStore(RemoteServer server,
-                                  RemoteServerFrameStore delegate, 
+                                  RemoteServerFrameStore delegate,
                                   RemoteSession session,
                                   KnowledgeBase kb,
                                   boolean preloadAll) {
@@ -163,33 +163,34 @@ public class RemoteClientFrameStore implements FrameStore {
       startHeartbeatThread();
       preload(preloadAll);
     }
-    
+
     private void startHeartbeatThread() {
       if (ServerProperties.heartbeatDisabled()) {
         return;
       }
       new Thread("Heartbeat thread [" + kb + "]") {
-        public void run() {
+        @Override
+		public void run() {
           try {
             while (true) {
               RemoteServerFrameStore remote = getRemoteDelegate();
               if (remote != null) {
-                remote.heartBeat(session); 
+                remote.heartBeat(session);
               }
               Thread.sleep(RemoteServerFrameStore.HEARTBEAT_POLL_INTERVAL);
             }
           } catch (ServerSessionLost ssl) {
             Log.emptyCatchBlock(ssl);
           } catch (Exception e) {
-            Log.getLogger().log(Level.SEVERE, 
+            Log.getLogger().log(Level.SEVERE,
                                 "Heartbeat thread died - can't survive the heart for long...",
                                 e);
           }
         }
       }.start();
     }
-    
-    
+
+
     public String getName() {
       return getClass().getName();
     }
@@ -208,20 +209,20 @@ public class RemoteClientFrameStore implements FrameStore {
               }
               try {
                 return method.invoke(remoteDelegate, args);
-              } catch (InvocationTargetException ite) { 
+              } catch (InvocationTargetException ite) {
                 throw ite.getCause();
               }
             }
           }
-          
+
         };
         proxiedDelegate = (RemoteServerFrameStore) Proxy.newProxyInstance(kbClassLoader,
-                                                                          new Class[] {RemoteServerFrameStore.class}, 
+                                                                          new Class[] {RemoteServerFrameStore.class},
                                                                           invoker);
       }
       return proxiedDelegate;
   }
-  
+
   public Map<RemoteSession, Boolean> getUserInfo() {
     try {
       return getRemoteDelegate().getUserInfo();
@@ -230,7 +231,7 @@ public class RemoteClientFrameStore implements FrameStore {
       return new HashMap<RemoteSession, Boolean>();
     }
   }
-  
+
   public FrameCalculatorStats getServerStats() {
     try {
       return getRemoteDelegate().getStats();
@@ -239,7 +240,7 @@ public class RemoteClientFrameStore implements FrameStore {
       return null;
     }
   }
-  
+
   public synchronized RemoteClientStats getClientStats() {
     return stats;
   }
@@ -293,7 +294,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return getRemoteDelegate().getFacetCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
-        } 
+        }
     }
 
     public int getSimpleInstanceCount() {
@@ -301,7 +302,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return getRemoteDelegate().getSimpleInstanceCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
-        } 
+        }
     }
 
     public int getFrameCount() {
@@ -309,7 +310,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return getRemoteDelegate().getFrameCount(session);
         } catch (RemoteException e) {
             throw convertException(e);
-        } 
+        }
     }
 
     private void localize(Object o) {
@@ -323,7 +324,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return clses;
         } catch (RemoteException e) {
             throw convertException(e);
-        } 
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -339,7 +340,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return facets;
         } catch (RemoteException e) {
             throw convertException(e);
-        } 
+        }
     }
 
     public Set<Frame> getFrames() {
@@ -349,7 +350,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return frames;
         } catch (RemoteException e) {
             throw convertException(e);
-        } 
+        }
     }
 
     public Frame getFrame(FrameID id) {
@@ -359,7 +360,7 @@ public class RemoteClientFrameStore implements FrameStore {
             return frame;
         } catch (RemoteException e) {
             throw convertException(e);
-        } 
+        }
     }
 
     public synchronized Frame getFrame(String name) {
@@ -395,8 +396,8 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public synchronized Cls createCls(FrameID id, 
-                         Collection directTypes, 
+    public synchronized Cls createCls(FrameID id,
+                         Collection directTypes,
                          Collection directSuperclasses,
                          boolean loadDefaultValues) {
         try {
@@ -409,14 +410,14 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public synchronized Slot createSlot(FrameID id, 
-                           Collection directTypes, 
+    public synchronized Slot createSlot(FrameID id,
+                           Collection directTypes,
                            Collection directSuperslots,
                            boolean loadDefaultValues) {
         try {
-            RemoteResponse<Slot> wrappedSlot 
-              = getRemoteDelegate().createSlot(id, 
-                                               directTypes, directSuperslots, 
+            RemoteResponse<Slot> wrappedSlot
+              = getRemoteDelegate().createSlot(id,
+                                               directTypes, directSuperslots,
                                                loadDefaultValues,
                                                session);
             processValueUpdate(wrappedSlot);
@@ -429,9 +430,9 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public synchronized Facet createFacet(FrameID id, Collection directTypes, boolean loadDefaultValues) {
         try {
-            RemoteResponse<Facet> wrappedFacet 
+            RemoteResponse<Facet> wrappedFacet
               = getRemoteDelegate().createFacet(id,
-                                                directTypes, 
+                                                directTypes,
                                                 loadDefaultValues, session);
             processValueUpdate(wrappedFacet);
             return wrappedFacet.getResponse();
@@ -440,13 +441,13 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, 
+    public synchronized SimpleInstance createSimpleInstance(FrameID id,
                                                Collection directTypes,
                                                boolean loadDefaultValues) {
         try {
-            RemoteResponse<SimpleInstance> wrappedSimpleInstance 
+            RemoteResponse<SimpleInstance> wrappedSimpleInstance
               = getRemoteDelegate().createSimpleInstance(id, directTypes,
-                                                         loadDefaultValues, 
+                                                         loadDefaultValues,
                                                          session);
             processValueUpdate(wrappedSimpleInstance);
             return wrappedSimpleInstance.getResponse();
@@ -837,7 +838,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     public synchronized List<Instance> getDirectInstances(Cls cls) {
         try {
-            return (List<Instance>) getCacheDirectOwnSlotValues(cls, getSystemFrames().getDirectInstancesSlot());
+            return getCacheDirectOwnSlotValues(cls, getSystemFrames().getDirectInstancesSlot());
         } catch (RemoteException e) {
             throw convertException(e);
         }
@@ -899,7 +900,7 @@ public class RemoteClientFrameStore implements FrameStore {
             throw convertException(e);
         }
     }
-    
+
     public synchronized List<AbstractEvent> getEvents() {
         if (transactionNesting > 0) {
           return new ArrayList<AbstractEvent>();
@@ -911,15 +912,16 @@ public class RemoteClientFrameStore implements FrameStore {
           receivedEvents = response.getResponse();
           return receivedEvents;
         } catch (RemoteException e) {
-          Log.getLogger().log(Level.SEVERE, 
+          Log.getLogger().log(Level.SEVERE,
                               "Exception caught - local cache may be out of date", e);
           throw new RuntimeException(e);
         }
     }
- 
+
     public void executeQuery(final Query query, final QueryCallback callback) {
       new Thread("Remote Client Callback thread") {
-        public void run() {
+        @Override
+		public void run() {
           try {
             RemoteResponse<Collection<Frame>> response = getRemoteDelegate().executeQuery(query, session);
             processValueUpdate(response);
@@ -951,8 +953,8 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    public Set<Cls> getClsesWithMatchingBrowserText(String text, 
-                                                    Collection superclasses, 
+    public Set<Cls> getClsesWithMatchingBrowserText(String text,
+                                                    Collection superclasses,
                                                     int maxMatches) {
         try {
             Set clses = getRemoteDelegate().getClsesWithMatchingBrowserText(text, superclasses, maxMatches, session);
@@ -1115,7 +1117,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public TransactionMonitor getTransactionStatusMonitor()  {
       throw new UnsupportedOperationException("Shouldn't be doing this on the client side");
     }
-    
+
     private static RemoteClientFrameStore getMeFromKb(KnowledgeBase kb) {
       if (!(kb instanceof DefaultKnowledgeBase)) {
         return null;
@@ -1128,8 +1130,8 @@ public class RemoteClientFrameStore implements FrameStore {
       }
       return null;
     }
-    
-    public static TransactionIsolationLevel getTransactionIsolationLevel(KnowledgeBase kb) 
+
+    public static TransactionIsolationLevel getTransactionIsolationLevel(KnowledgeBase kb)
     throws TransactionException {
       RemoteClientFrameStore frameStore = getMeFromKb(kb);
       if (frameStore == null) {
@@ -1137,19 +1139,19 @@ public class RemoteClientFrameStore implements FrameStore {
       }
       return frameStore.getTransactionIsolationLevel();
     }
-    
+
     public synchronized TransactionIsolationLevel getTransactionIsolationLevel() throws TransactionException {
       if (transactionLevel != null) {
         return transactionLevel;
-      }     
+      }
       try {
         return transactionLevel = getRemoteDelegate().getTransactionIsolationLevel();
       } catch (RemoteException re) {
         throw new TransactionException(re);
       }
     }
-    
-    public static boolean setTransactionIsolationLevel(KnowledgeBase kb, TransactionIsolationLevel level) 
+
+    public static boolean setTransactionIsolationLevel(KnowledgeBase kb, TransactionIsolationLevel level)
     throws TransactionException {
       RemoteClientFrameStore frameStore = getMeFromKb(kb);
       if (frameStore == null) {
@@ -1157,8 +1159,8 @@ public class RemoteClientFrameStore implements FrameStore {
       }
       return frameStore.setTransactionIsolationLevel(level);
     }
-    
-    public synchronized boolean setTransactionIsolationLevel(TransactionIsolationLevel level) 
+
+    public synchronized boolean setTransactionIsolationLevel(TransactionIsolationLevel level)
       throws TransactionException {
       try {
         transactionLevel = null;
@@ -1186,12 +1188,12 @@ public class RemoteClientFrameStore implements FrameStore {
       if (skip) {
         return;
       }
-      Log.getLogger().config("Preloading frame values");
+      Log.getLogger().config("Preloading frame values: " + kb);
       Set<String> frames = ServerProperties.preloadUserFrames();
       OntologyUpdate vu = getRemoteDelegate().preload(frames, preloadAll, session);
       processValueUpdate(vu);
     }
-      
+
     private Set getCacheOwnSlotValueClosure(Frame frame, Slot slot) throws RemoteException {
         return getCacheClosure(frame, slot);
     }
@@ -1209,7 +1211,7 @@ public class RemoteClientFrameStore implements FrameStore {
           log.fine("not in closure cache: " + frame.getFrameID() + ", " + slot.getFrameID());
         }
         stats.closureMiss++;
-        RemoteResponse<Set> wrappedClosure = 
+        RemoteResponse<Set> wrappedClosure =
           getRemoteDelegate().getDirectOwnSlotValuesClosure(frame, slot, missing, session);
         processValueUpdate(wrappedClosure);
         closure = wrappedClosure.getResponse();
@@ -1230,7 +1232,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
     /*
      * There is a fair bit of inefficiency here but taking the hit on the client side is much better
-     * than making extra calls to the server.  Also the server could be more aggressive about calculating 
+     * than making extra calls to the server.  Also the server could be more aggressive about calculating
      * values that the client might need, but I am finding that the server  is spending a lot of time
      * recalculating the same values over and over.  This is the start of an experiment where the server
      * needs a little more reason to believe that values need to be calculated for the client.
@@ -1258,7 +1260,7 @@ public class RemoteClientFrameStore implements FrameStore {
         }
         if (!missing.isEmpty()) {
           stats.closureMiss++;
-          RemoteResponse<Set> wrappedClosure = 
+          RemoteResponse<Set> wrappedClosure =
             getRemoteDelegate().getDirectOwnSlotValuesClosure(frames, slot, missing, session);
           processValueUpdate(wrappedClosure);
           closure = wrappedClosure.getResponse();
@@ -1275,7 +1277,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
 
-    
+
     // -----------------------------------------------------------
 
     // This code is copied from SimpleFrameStore
@@ -1290,7 +1292,7 @@ public class RemoteClientFrameStore implements FrameStore {
         return values;
     }
 */
-    
+
     // TT 2007/01/09:  This code is copied from SimpleFrameStore
     public Collection getCacheOwnFacetValues(Frame frame, Slot slot, Facet facet) {
         Collection values = new ArrayList();
@@ -1302,8 +1304,8 @@ public class RemoteClientFrameStore implements FrameStore {
         }
         return values;
     }
-    
-    
+
+
     private Collection getCacheTemplateFacetValues(Cls localCls, Slot slot, Facet facet) {
         Collection values = new ArrayList(getDirectTemplateFacetValues(localCls, slot, facet));
         Iterator i = getSuperclasses(localCls).iterator();
@@ -1446,31 +1448,31 @@ public class RemoteClientFrameStore implements FrameStore {
     private Set getCacheDomain(Slot slot) throws RemoteException {
         return getCacheOwnSlotValueClosure(getDirectDomain(slot), getSystemFrames().getDirectSubclassesSlot());
     }
-    
-    
+
+
     /*
      * This is the main routine for checking the cached data before going to the
      * server.
      */
-    private List getCacheValues(Frame frame, 
-                                Slot slot, 
-                                Facet facet, 
+    private List getCacheValues(Frame frame,
+                                Slot slot,
+                                Facet facet,
                                 boolean isTemplate) throws RemoteException {
       List values = null;
       if (isCached(frame, slot, facet, isTemplate)) {
         values = readCache(frame, slot, facet, isTemplate);
       } else {
         if (log.isLoggable(Level.FINE)) {
-          log.fine("cache miss for frame " + 
-              frame.getFrameID() + " slot " + slot.getFrameID() + 
+          log.fine("cache miss for frame " +
+              frame.getFrameID() + " slot " + slot.getFrameID() +
               (facet == null ? "null" : "" + facet.getFrameID()) +
               " template " + isTemplate);
         }
         RemoteResponse<List> vu = null;
         if (facet != null) {
           if (isTemplate) {
-            vu = getRemoteDelegate().getDirectTemplateFacetValues((Cls) frame, 
-                                                                  slot, facet, 
+            vu = getRemoteDelegate().getDirectTemplateFacetValues((Cls) frame,
+                                                                  slot, facet,
                                                                   session);
           } else {
             throw new UnsupportedOperationException(
@@ -1478,7 +1480,7 @@ public class RemoteClientFrameStore implements FrameStore {
           }
         } else {
           if (isTemplate) {
-            vu = getRemoteDelegate().getDirectTemplateSlotValues((Cls) frame, 
+            vu = getRemoteDelegate().getDirectTemplateSlotValues((Cls) frame,
                                                                  slot, session);
           } else {
             vu = getRemoteDelegate().getDirectOwnSlotValues(frame, slot, session);
@@ -1492,7 +1494,7 @@ public class RemoteClientFrameStore implements FrameStore {
       }
       return values;
     }
-    
+
     /**
      * This routine assumes that the caller is holding the cache lock
      */
@@ -1544,7 +1546,7 @@ public class RemoteClientFrameStore implements FrameStore {
         stats.hit++;
         return  true;
       } else {
-        boolean ret =  cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING 
+        boolean ret =  cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING
           && !m.containsKey(lookup);
         if  (ret) {
           stats.hit++;
@@ -1578,15 +1580,15 @@ public class RemoteClientFrameStore implements FrameStore {
 
 
     private void addCachedEntry(boolean isTransactionScope,
-                                Frame frame, 
+                                Frame frame,
                                 Slot slot,
                                 Facet facet,
                                 boolean isTemplate,
                                 List values) {
       if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Client Received value for frame " + frame.getFrameID() + 
-                      " slot " + slot.getFrameID() + " facet " + 
-                      (facet == null ? "null" : "" + facet.getFrameID()) + 
+        cacheLog.fine("Client Received value for frame " + frame.getFrameID() +
+                      " slot " + slot.getFrameID() + " facet " +
+                      (facet == null ? "null" : "" + facet.getFrameID()) +
                       " is template " + isTemplate);
         cacheLog.fine("Transaction Scope = " + isTransactionScope);
       }
@@ -1634,9 +1636,9 @@ public class RemoteClientFrameStore implements FrameStore {
       }
       if (slotValueMap != null) {
         Sft lookupSft = new Sft(slot, facet, isTemplate);
-        
-        if (facet == null && 
-            !isTemplate && 
+
+        if (facet == null &&
+            !isTemplate &&
             slot.equals(getSystemFrames().getNameSlot())) {
           List values = slotValueMap.get(lookupSft);
           if (values != null && !values.isEmpty()) {
@@ -1684,7 +1686,7 @@ public class RemoteClientFrameStore implements FrameStore {
       localize(vu);
       processValueUpdate(vu.getValueUpdates());
   }
-  
+
   private void processValueUpdate(List<ValueUpdate> updates) {
     if (cacheLog.isLoggable(Level.FINE)) {
       cacheLog.fine("received " + updates.size() + " value updates");
@@ -1698,7 +1700,7 @@ public class RemoteClientFrameStore implements FrameStore {
       Frame frame = vu.getFrame();
       if (vu instanceof FrameEvaluationStarted) {
         if (cacheLog.isLoggable(Level.FINE)) {
-          cacheLog.fine("Started caching for frame" + frame.getFrameID());  
+          cacheLog.fine("Started caching for frame" + frame.getFrameID());
         }
         cacheStatus.put(frame, CacheStatus.STARTED_CACHING);
       } else if (vu instanceof FrameEvaluationCompleted) {
@@ -1750,7 +1752,7 @@ public class RemoteClientFrameStore implements FrameStore {
       }
     }
   }
-  
+
   public synchronized void flushCache() {
     if (cacheLog.isLoggable(Level.FINE)) {
       cacheLog.fine("Flushing client cache");
@@ -1761,7 +1763,7 @@ public class RemoteClientFrameStore implements FrameStore {
     frameNameToFrameMap.clear();
     stats = new RemoteClientStatsImpl();
   }
-  
+
   public Object executeProtegeJob(ProtegeJob job) throws ProtegeException {
     try {
       RemoteResponse<Object> response = getRemoteDelegate().executeProtegeJob(job, session);
@@ -1773,7 +1775,7 @@ public class RemoteClientFrameStore implements FrameStore {
       throw new ProtegeIOException(remote);
     }
   }
-  
+
   public Set<Operation> getAllowedOperations() throws ProtegeIOException {
     if (allowedOps == null) {
       try {
@@ -1784,7 +1786,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
     return allowedOps;
   }
-  
+
   public Set<Operation> getKnownOperations() throws ProtegeIOException {
     if (knownOps == null) {
       try {
@@ -1795,8 +1797,8 @@ public class RemoteClientFrameStore implements FrameStore {
     }
     return knownOps;
   }
-  
-  public static boolean isOperationAllowed(KnowledgeBase kb, Operation op) 
+
+  public static boolean isOperationAllowed(KnowledgeBase kb, Operation op)
   throws ProtegeIOException {
     DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
     FrameStore terminalFS = dkb.getTerminalFrameStore();
@@ -1804,14 +1806,14 @@ public class RemoteClientFrameStore implements FrameStore {
       return true;
     }
     RemoteClientFrameStore remoteFS = (RemoteClientFrameStore) terminalFS;
-    return (!remoteFS.getKnownOperations().contains(op) || 
-              remoteFS.getAllowedOperations().contains(op));
+    return !remoteFS.getKnownOperations().contains(op) ||
+              remoteFS.getAllowedOperations().contains(op);
   }
-  
+
   public RemoteServer getRemoteServer() {
       return server;
   }
-  
+
   public RemoteSession getSession() {
       return session;
   }
@@ -1821,11 +1823,11 @@ public class RemoteClientFrameStore implements FrameStore {
     int hit = 0;
     int closureMiss = 0;
     int closureHit = 0;
-    
+
     public int getCacheHits() {
       return hit;
     }
-    
+
     public int getCacheMisses() {
       return miss;
     }
@@ -1837,7 +1839,7 @@ public class RemoteClientFrameStore implements FrameStore {
     public int getClosureCacheMisses() {
       return closureMiss;
     }
-    
+
   }
 
     public void replaceFrame(Frame original, Frame replacement) {
@@ -1848,6 +1850,6 @@ public class RemoteClientFrameStore implements FrameStore {
             throw convertException(e);
         }
     }
-    
-    
+
+
 }
