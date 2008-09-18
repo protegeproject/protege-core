@@ -1,6 +1,8 @@
 package edu.stanford.smi.protege.util;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,11 +16,8 @@ import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProject;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
-import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
 import edu.stanford.smi.protege.server.metaproject.Operation;
-import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
-import edu.stanford.smi.protege.server.metaproject.User;
 
 /*
  * There is a temptation to define Protege using a generic here.  But this
@@ -103,6 +102,28 @@ public abstract class ProtegeJob extends RemoteJob implements Localizable, Seria
    */
   public KnowledgeBase getKnowledgeBase() {
     return kb;
+  }
+  
+  public void fixLoader() {
+	  ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
+	  ClassLoader jobLoader = getClass().getClassLoader();
+	  ClassLoader kbLoader = kb.getClass().getClassLoader();
+	  ClassLoader correctLoader;
+	  if (jobLoader == kbLoader) {
+		  correctLoader = jobLoader;
+	  }
+	  else {
+		  Collection<ClassLoader> loaders = new ArrayList<ClassLoader>();
+		  loaders.add(kbLoader);
+		  loaders.add(jobLoader);
+		  correctLoader = new MultiplexingClassLoader(loaders);
+	  }
+	  if (currentLoader != correctLoader) {
+		  if (log.isLoggable(Level.FINEST)) {
+			  Log.getLogger().finest("Changing loader from " + currentLoader + " to " + correctLoader);
+		  }
+		  Thread.currentThread().setContextClassLoader(correctLoader);
+	  }
   }
   
   /**
