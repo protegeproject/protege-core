@@ -51,7 +51,7 @@ public class OntologyJavaMappingUtil {
 
 
 	public static <X> X createObject(KnowledgeBase kb, String name, String protegeClsName, Class<? extends X> javaReturnInterface) {
-    	if (kb.getFrame(name) != null) {
+    	if (name != null && kb.getFrame(name) != null) {
     		return null;
     	}
 		Cls cls = kb.getCls(protegeClsName);
@@ -147,6 +147,9 @@ public class OntologyJavaMappingUtil {
 
 
 	private static Class<?> getJavaImplementation(Cls cls) {
+		if (cls == null) {
+			return null;
+		}
 		Entry entry = ontologyClassNameMap.get(cls.getName());
 		if (entry != null) { //hopefully most cases
 			return entry.getJavaImplementation();
