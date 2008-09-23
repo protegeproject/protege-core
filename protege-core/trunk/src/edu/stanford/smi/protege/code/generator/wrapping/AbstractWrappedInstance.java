@@ -1,13 +1,16 @@
 package edu.stanford.smi.protege.code.generator.wrapping;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.LocalizeUtils;
 
-public abstract class AbstractWrappedInstance {
+public abstract class AbstractWrappedInstance implements Localizable, Serializable {
 	private Instance wrappedProtegeInstance;
 
 	protected AbstractWrappedInstance(Instance instance) {
@@ -91,6 +94,10 @@ public abstract class AbstractWrappedInstance {
     @Override
     public int hashCode() {
     	return getWrappedProtegeInstance().getName().length() + 42;
+    }
+    
+    public void localize(KnowledgeBase kb) {
+        LocalizeUtils.localize(wrappedProtegeInstance, kb);
     }
 
 
