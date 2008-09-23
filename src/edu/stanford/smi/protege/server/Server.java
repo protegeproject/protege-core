@@ -732,7 +732,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * Server Admin
      */
 
-    	public RemoteServerProject createProject(String newProjectName, RemoteSession session, KnowledgeBaseFactory kbfactory, boolean saveToMetaProject) throws RemoteException {
+    public RemoteServerProject createProject(String newProjectName, 
+                                             RemoteSession session, 
+                                             KnowledgeBaseFactory kbfactory, 
+                                             boolean saveToMetaProject) throws RemoteException {
         Project project = null;
 
         for (ProjectInstance instance : metaproject.getProjects()) {
