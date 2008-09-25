@@ -996,11 +996,12 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 	@Override
 	public void initialize(FrameFactory factory, String driver, String url, String user,
 			String pass, String table, boolean isInclude) {
-		if( table.endsWith( "_FRAME" ) )
+		final String match = table.toUpperCase();
+		if( match.endsWith( "_FRAME" ) )
 			table = table.substring( 0, table.length() - 6 );
-		else if( table.endsWith( "_SLOT_VALUE" ) )
+		else if( match.endsWith( "_SLOT_VALUE" ) )
 			table = table.substring( 0, table.length() - 11 );
-		else if( table.endsWith( "_FACET_VALUE" ) )
+		else if( match.endsWith( "_FACET_VALUE" ) )
 			table = table.substring( 0, table.length() - 12 );
 		super.initialize( factory, driver, url, user, pass, table, isInclude );
 		preparedStatementMap.clear();
