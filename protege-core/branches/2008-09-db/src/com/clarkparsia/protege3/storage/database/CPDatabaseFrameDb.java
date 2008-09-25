@@ -35,11 +35,28 @@ import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.ReferenceImpl;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.storage.database.AbstractDatabaseFrameDb;
+import edu.stanford.smi.protege.storage.database.DatabaseFrameDb;
 import edu.stanford.smi.protege.storage.database.DatabaseUtils;
 import edu.stanford.smi.protege.storage.database.RobustConnection;
 import edu.stanford.smi.protege.util.Log;
 
-public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
+/**
+ * <p>
+ * Title: CPDatabaseFrameDb
+ * </p>
+ * <p>
+ * Description: Implementation of {@link DatabaseFrameDb}
+ * </p>
+ * <p>
+ * Copyright: Copyright (c) 2008
+ * </p>
+ * <p>
+ * Company: Clark & Parsia, LLC. <http://www.clarkparsia.com>
+ * </p>
+ * 
+ * @author Mike Smith
+ */
+public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
 	private static DateFormat		df						= new SimpleDateFormat(
 																	"yyyy-MM-dd'T'HH:mm:ss.SSSZ" );
@@ -57,7 +74,7 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 	static {
 		schemaProperties = new Properties();
 		try {
-			schemaProperties.load( CPDatabaseFrameDB.class
+			schemaProperties.load( CPDatabaseFrameDb.class
 					.getResourceAsStream( SCHEMA_PROPERTIES_FILE ) );
 		} catch( IOException e ) {
 			throw new RuntimeException( e );
@@ -207,7 +224,7 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 	private int								maxFrameId				= 0;
 	private Map<String, PreparedStatement>	preparedStatementMap	= new HashMap<String, PreparedStatement>();
 
-	public CPDatabaseFrameDB() {
+	public CPDatabaseFrameDb() {
 		super();
 	}
 
@@ -221,17 +238,27 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 
 			final int frId = getDatabaseId( connection, frame, true, null );
 			final int slId = getDatabaseId( connection, slot, true, null );
-			final int faId = (facet == null)
-				? 0
-				: getDatabaseId( connection, facet, true, null );
+			int faId = 0;
 
 			if( oldMaxFrame == maxFrameId ) {
-				PreparedStatement maxSelect = getPreparedStatement( connection,
-						"SELECT_MAX_VALUE_INDEX_SQL" );
-				maxSelect.setInt( 1, frId );
-				maxSelect.setInt( 2, slId );
-				maxSelect.setInt( 3, faId );
-				maxSelect.setBoolean( 4, isTemplate );
+				PreparedStatement maxSelect;
+				if( facet == null ) {
+					maxSelect = getPreparedStatement( connection,
+							"SELECT_MAX_NULL_FACET_VALUE_INDEX_SQL" );
+					maxSelect.setInt( 1, frId );
+					maxSelect.setInt( 2, slId );
+					maxSelect.setBoolean( 3, isTemplate );
+
+				}
+				else {
+					faId = getDatabaseId( connection, facet, true, null );
+					maxSelect = getPreparedStatement( connection,
+							"SELECT_MAX_FACET_VALUE_INDEX_SQL" );
+					maxSelect.setInt( 1, frId );
+					maxSelect.setInt( 2, slId );
+					maxSelect.setInt( 3, faId );
+					maxSelect.setBoolean( 4, isTemplate );
+				}
 				ResultSet maxRset = executeQuery( maxSelect );
 				if( maxRset.next() )
 					index = maxRset.getInt( 1 ) + 1;
@@ -249,7 +276,9 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 
 	private void addValues(RobustConnection connection, int frameId, int slotId, int facetId,
 			boolean isTemplate, Collection values, int index) throws SQLException {
-		PreparedStatement insStmt = getPreparedStatement( connection, "INSERT_VALUE_SQL" );
+		PreparedStatement insStmt = getPreparedStatement( connection, (facetId == 0)
+			? "INSERT_NULL_FACET_VALUE_SQL"
+			: "INSERT_FACET_VALUE_SQL" );
 		for( Object o : values ) {
 			if( isNullValue( o ) ) {
 				Log.getLogger().warning( "Skipping addition of null value" );
@@ -267,23 +296,28 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 			int frameId, int slotId, int facetId, boolean isTemplate, int index, Object value,
 			Map<Frame, Integer> frameIdCache) throws SQLException {
 
+		final int facetSpace = (facetId == 0)
+			? 0
+			: 1;
 		final int type = DatabaseUtils.valueType( value, _frameFactory );
 		insert.setInt( 1, frameId );
 		insert.setInt( 2, slotId );
-		insert.setInt( 3, facetId );
-		insert.setBoolean( 4, isTemplate );
-		insert.setInt( 5, index );
+		if( facetSpace == 1 )
+			insert.setInt( 3, facetId );
+		insert.setBoolean( 3 + facetSpace, isTemplate );
+		insert.setInt( 4 + facetSpace, index );
 		if( type >= DatabaseUtils.BASE_FRAME_TYPE_VALUE ) {
 			final int vId = getDatabaseId( connection, (Frame) value, true, frameIdCache );
-			insert.setInt( 6, (short) DatabaseUtils.BASE_FRAME_TYPE_VALUE );
-			insert.setInt( 7, vId );
-			insert.setString( 8, null );
-			insert.setString( 9, null );
+			insert.setInt( 5 + facetSpace, (short) DatabaseUtils.BASE_FRAME_TYPE_VALUE );
+			insert.setInt( 6 + facetSpace, vId );
+			insert.setString( 7 + facetSpace, null );
+			insert.setString( 8 + facetSpace, null );
 		}
 		else {
-			insert.setInt( 6, (short) type );
-			insert.setNull( 7, Types.INTEGER );
-			setValueParameters( getCurrentConnection(), insert, 8, 9, value );
+			insert.setInt( 5 + facetSpace, (short) type );
+			insert.setNull( 6 + facetSpace, Types.INTEGER );
+			setValueParameters( getCurrentConnection(), insert, 7 + facetSpace, 8 + facetSpace,
+					value );
 		}
 	}
 
@@ -297,19 +331,31 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 				throw new IllegalStateException();
 
 			PreparedStatement delete;
-			delete = getPreparedStatement( connection, "DELETE_VALUE_BY_FRAME_SQL" );
+			delete = getPreparedStatement( connection, "DELETE_FACET_VALUE_BY_FRAME_SQL" );
 			delete.setInt( 1, fId );
 			executeUpdate( delete );
 
-			delete = getPreparedStatement( connection, "DELETE_VALUE_BY_SLOT_SQL" );
+			delete = getPreparedStatement( connection, "DELETE_NULL_FACET_VALUE_BY_FRAME_SQL" );
 			delete.setInt( 1, fId );
 			executeUpdate( delete );
 
-			delete = getPreparedStatement( connection, "DELETE_VALUE_BY_FACET_SQL" );
+			delete = getPreparedStatement( connection, "DELETE_FACET_VALUE_BY_SLOT_SQL" );
 			delete.setInt( 1, fId );
 			executeUpdate( delete );
 
-			delete = getPreparedStatement( connection, "DELETE_VALUE_BY_VALUE_FRAME_SQL" );
+			delete = getPreparedStatement( connection, "DELETE_NULL_FACET_VALUE_BY_SLOT_SQL" );
+			delete.setInt( 1, fId );
+			executeUpdate( delete );
+
+			delete = getPreparedStatement( connection, "DELETE_FACET_VALUE_BY_FACET_SQL" );
+			delete.setInt( 1, fId );
+			executeUpdate( delete );
+
+			delete = getPreparedStatement( connection, "DELETE_FACET_VALUE_BY_VALUE_FRAME_SQL" );
+			delete.setInt( 1, fId );
+			executeUpdate( delete );
+
+			delete = getPreparedStatement( connection, "DELETE_NULL_FACET_VALUE_BY_VALUE_FRAME_SQL" );
 			delete.setInt( 1, fId );
 			executeUpdate( delete );
 
@@ -352,11 +398,29 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 		return sql;
 	}
 
-	private String getCreateTableValueSQL() throws SQLException {
+	private String getCreateTableFacetValueSQL() throws SQLException {
 
 		RobustConnection connection = getCurrentConnection();
 
-		String sql = schemaProperties.getProperty( "CREATE_TABLE_VALUE_SQL" );
+		String sql = schemaProperties.getProperty( "CREATE_TABLE_FACET_VALUE_SQL" );
+		if( sql == null )
+			throw new IllegalStateException( "Create SQL missing for frame table" );
+
+		sql = replaceDBSchemaStrings( _table, sql );
+		sql = replaceDBTypeStrings( connection, sql );
+
+		if( getCurrentConnection().isMySql() ) {
+			sql = sql + " ENGINE = INNODB ";
+		}
+
+		return sql;
+	}
+
+	private String getCreateTableSlotValueSQL() throws SQLException {
+
+		RobustConnection connection = getCurrentConnection();
+
+		String sql = schemaProperties.getProperty( "CREATE_TABLE_SLOT_VALUE_SQL" );
 		if( sql == null )
 			throw new IllegalStateException( "Create SQL missing for frame table" );
 
@@ -615,10 +679,16 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 
 		try {
 			Map<Sft, List> ret = new HashMap<Sft, List>();
+
+			final String name = frame.getFrameID().getName();
+			final short frameType = (short) DatabaseUtils.valueType( frame, _frameFactory );
+
 			PreparedStatement select = getPreparedStatement( getCurrentConnection(),
 					"SELECT_VALUES_BY_FRAME_SQL" );
-			select.setString( 1, frame.getFrameID().getName() );
-			select.setInt( 2, (short) DatabaseUtils.valueType( frame, _frameFactory ) );
+			select.setString( 1, name );
+			select.setInt( 2, frameType );
+			select.setString( 3, name );
+			select.setInt( 4, frameType );
 
 			ResultSet rs = executeQuery( select );
 			try {
@@ -644,11 +714,11 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 						sl = createSlot( rs.getString( 1 ) );
 					}
 
-					if( rs.getInt( 2 ) > 0 ) {
-						ftStr = rs.getString( 3 );
+					ftStr = rs.getString( 2 );
+					if( ftStr != null ) {
 						if( !ftStr.equals( lastFtStr ) ) {
 							newSft = true;
-							ft = createFacet( rs.getString( 3 ) );
+							ft = createFacet( ftStr );
 						}
 					}
 					else {
@@ -658,7 +728,7 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 						ft = null;
 					}
 
-					isT = rs.getBoolean( 4 );
+					isT = rs.getBoolean( 3 );
 					if( isT != lastIsT )
 						newSft = true;
 
@@ -673,7 +743,7 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 						lastFtStr = ftStr;
 						lastIsT = isT;
 					}
-					values.add( getValueFromResult( rs, 5, 6, 7, 8, 9 ) );
+					values.add( getValueFromResult( rs, 4, 5, 6, 7, 8 ) );
 				}
 
 				if( key != null )
@@ -771,16 +841,20 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 			select.setInt( 1, (short) DatabaseUtils.getStringValueType() );
 			select.setString( 2, modifiedValue );
 			select.setString( 3, modifiedValue );
+			select.setInt( 4, (short) DatabaseUtils.getStringValueType() );
+			select.setString( 5, modifiedValue );
+			select.setString( 6, modifiedValue );
 
 			ResultSet rs = executeQuery( select );
 			try {
 				while( rs.next() && ((maxMatches--) != 0) ) {
 					Frame frame = createFrame( rs.getByte( 2 ), rs.getString( 1 ) );
 					Slot slot = createSlot( rs.getString( 3 ) );
-					Facet facet = (rs.getInt( 4 ) > 0)
-						? createFacet( rs.getString( 5 ) )
-						: null;
-					boolean isTemplate = rs.getBoolean( 6 );
+					final String facetStr = rs.getString( 4 );
+					Facet facet = (facetStr == null)
+						? null
+						: createFacet( facetStr );
+					boolean isTemplate = rs.getBoolean( 5 );
 					references.add( new ReferenceImpl( frame, slot, facet, isTemplate ) );
 				}
 			} finally {
@@ -821,11 +895,16 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 					: "SELECT_REFERENCES_LONG_SQL" );
 				select.setInt( 1, (short) type );
 				select.setString( 2, valueString );
+				select.setInt( 3, (short) type );
+				select.setString( 4, valueString );
 			}
 			else {
 				select = getPreparedStatement( connection, "SELECT_REFERENCES_FRAME_SQL" );
+				final String name = ((Frame) value).getFrameID().getName();
 				select.setInt( 1, (short) type );
-				select.setString( 2, ((Frame) value).getFrameID().getName() );
+				select.setString( 2, name );
+				select.setInt( 3, (short) type );
+				select.setString( 4, name );
 			}
 
 			ResultSet rs = executeQuery( select );
@@ -833,10 +912,11 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 				while( rs.next() ) {
 					Frame frame = createFrame( rs.getByte( 2 ), rs.getString( 1 ) );
 					Slot slot = createSlot( rs.getString( 3 ) );
-					Facet facet = (rs.getInt( 4 ) > 0)
-						? createFacet( rs.getString( 5 ) )
-						: null;
-					boolean isTemplate = rs.getBoolean( 6 );
+					final String facetStr = rs.getString( 4 );
+					Facet facet = (facetStr == null)
+						? null
+						: createFacet( facetStr );
+					boolean isTemplate = rs.getBoolean( 5 );
 					references.add( new ReferenceImpl( frame, slot, facet, isTemplate ) );
 				}
 			} finally {
@@ -1012,8 +1092,12 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 	@Override
 	public void initialize(FrameFactory factory, String driver, String url, String user,
 			String pass, String table, boolean isInclude) {
-		if( table.endsWith( "_FRAME" ) || table.endsWith( "_VALUE" ) )
+		if( table.endsWith( "_FRAME" ) )
 			table = table.substring( 0, table.length() - 6 );
+		else if( table.endsWith( "_SLOT_VALUE" ) )
+			table = table.substring( 0, table.length() - 11 );
+		else if( table.endsWith( "_FACET_VALUE" ) )
+			table = table.substring( 0, table.length() - 12 );
 		super.initialize( factory, driver, url, user, pass, table, isInclude );
 		preparedStatementMap.clear();
 	}
@@ -1036,7 +1120,12 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 			// FIXME Only ignore if this is a table does not exist exception
 		}
 		try {
-			executeUpdate( getPreparedStatement( connection, "DROP_TABLE_VALUE_SQL" ) );
+			executeUpdate( getPreparedStatement( connection, "DROP_TABLE_FACET_VALUE_SQL" ) );
+		} catch( SQLException e ) {
+			// FIXME Only ignore if this is a table does not exist exception
+		}
+		try {
+			executeUpdate( getPreparedStatement( connection, "DROP_TABLE_SLOT_VALUE_SQL" ) );
 		} catch( SQLException e ) {
 			// FIXME Only ignore if this is a table does not exist exception
 		}
@@ -1045,7 +1134,9 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 		try {
 
 			executeUpdate( getCreateTableFrameSQL() );
-			executeUpdate( getPreparedStatement( connection, "INSERT_TABLE_FRAME_INITIAL_SQL" ) );
+			// FIXME
+			// executeUpdate( getPreparedStatement( connection,
+			// "INSERT_TABLE_FRAME_INITIAL_SQL" ) );
 
 			for( String s : getStringStatementArray( connection, "CREATE_INDEX_FRAME_SQL" ) ) {
 				System.err.print( df.format( new Date() ) + " creating index on frame table ... " );
@@ -1053,7 +1144,8 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 				System.err.println( " complete " + df.format( new Date() ) );
 			}
 
-			executeUpdate( getCreateTableValueSQL() );
+			executeUpdate( getCreateTableFacetValueSQL() );
+			executeUpdate( getCreateTableSlotValueSQL() );
 
 		} catch( SQLException e ) {
 			Logger.getLogger( "Failed to create database tables or indices: " + e.getMessage() );
@@ -1080,12 +1172,19 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 		// 4) Create indices
 		try {
 
-			for( String s : getStringStatementArray( connection, "CREATE_INDEX_VALUE_SQL" ) ) {
-				System.err.print( df.format( new Date() ) + " creating index on value table ... " );
+			for( String s : getStringStatementArray( connection, "CREATE_INDEX_FACET_VALUE_SQL" ) ) {
+				System.err.print( df.format( new Date() )
+						+ " creating index on facet value table ... " );
 				executeUpdate( s );
 				System.err.println( " complete " + df.format( new Date() ) );
 			}
 
+			for( String s : getStringStatementArray( connection, "CREATE_INDEX_SLOT_VALUE_SQL" ) ) {
+				System.err.print( df.format( new Date() )
+						+ " creating index on slot value table ... " );
+				executeUpdate( s );
+				System.err.println( " complete " + df.format( new Date() ) );
+			}
 		} catch( SQLException e ) {
 			Logger.getLogger( "Failed to create database tables or indices: " + e.getMessage() );
 			throw e;
@@ -1104,6 +1203,9 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 			final int faId = (facet == null)
 				? 0
 				: getDatabaseId( connection, facet, true, null );
+			final int facetSpace = (facet == null)
+				? 0
+				: 1;
 
 			if( frId < 0 )
 				throw new IllegalStateException();
@@ -1122,23 +1224,34 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 				if( vfId < 0 )
 					throw new IllegalStateException();
 
-				delete = getPreparedStatement( connection, "DELETE_VALUE_BY_REFERENCES_FRAME_SQL" );
-				delete.setInt( 5, (short) DatabaseUtils.BASE_FRAME_TYPE_VALUE );
-				delete.setInt( 6, vfId );
+				delete = getPreparedStatement( connection, (facet == null)
+					? "DELETE_VALUE_BY_NULL_FACET_REFERENCES_FRAME_SQL"
+					: "DELETE_VALUE_BY_FACET_REFERENCES_FRAME_SQL" );
+				delete.setInt( 4 + facetSpace, (short) DatabaseUtils.BASE_FRAME_TYPE_VALUE );
+				delete.setInt( 5 + facetSpace, vfId );
 			}
 			else {
 				final String valueString = value.toString();
-				delete = getPreparedStatement( connection, isShortValue( connection, valueString )
-					? "DELETE_VALUE_BY_REFERENCES_SHORT_SQL"
-					: "DELETE_VALUE_BY_REFERENCES_LONG_SQL" );
-				delete.setInt( 5, (short) DatabaseUtils.valueType( value, _frameFactory ) );
-				delete.setString( 6, valueString );
+				if( facet == null )
+					delete = getPreparedStatement( connection, isShortValue( connection,
+							valueString )
+						? "DELETE_VALUE_BY_NULL_FACET_REFERENCES_SHORT_SQL"
+						: "DELETE_VALUE_BY_NULL_FACET_REFERENCES_LONG_SQL" );
+				else
+					delete = getPreparedStatement( connection, isShortValue( connection,
+							valueString )
+						? "DELETE_VALUE_BY_FACET_REFERENCES_SHORT_SQL"
+						: "DELETE_VALUE_BY_FACET_REFERENCES_LONG_SQL" );
+				delete.setInt( 4 + facetSpace, (short) DatabaseUtils.valueType( value,
+						_frameFactory ) );
+				delete.setString( 5 + facetSpace, valueString );
 			}
 
 			delete.setInt( 1, frId );
 			delete.setInt( 2, slId );
-			delete.setInt( 3, faId );
-			delete.setBoolean( 4, isTemplate );
+			if( facet != null )
+				delete.setInt( 3, faId );
+			delete.setBoolean( 3 + facetSpace, isTemplate );
 
 			executeUpdate( delete );
 
@@ -1181,7 +1294,10 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 
 		final boolean useNfs = (nfs != null);
 
-		PreparedStatement insStmt = getPreparedStatement( connection, "INSERT_VALUE_SQL" );
+		final PreparedStatement insFacetStmt = getPreparedStatement( connection,
+				"INSERT_FACET_VALUE_SQL" );
+		final PreparedStatement insNullFacetStmt = getPreparedStatement( connection,
+				"INSERT_NULL_FACET_VALUE_SQL" );
 
 		long nCountSinceExecute = 0;
 
@@ -1212,9 +1328,9 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 					if( sId < 0 )
 						sId = getDatabaseId( connection, s, true, frameIdCache );
 
-					completeInsertStatement( connection, insStmt, fId, sId, 0, false, index++, o,
-							frameIdCache );
-					insStmt.addBatch();
+					completeInsertStatement( connection, insNullFacetStmt, fId, sId, 0, false,
+							index++, o, frameIdCache );
+					insNullFacetStmt.addBatch();
 					nCountSinceExecute++;
 				}
 			}
@@ -1241,9 +1357,9 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 						if( sId < 0 )
 							sId = getDatabaseId( connection, s, true, frameIdCache );
 
-						completeInsertStatement( connection, insStmt, fId, sId, 0, true, index++,
-								o, frameIdCache );
-						insStmt.addBatch();
+						completeInsertStatement( connection, insNullFacetStmt, fId, sId, 0, true,
+								index++, o, frameIdCache );
+						insNullFacetStmt.addBatch();
 						nCountSinceExecute++;
 					}
 
@@ -1269,9 +1385,9 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 							if( facetId < 0 )
 								facetId = getDatabaseId( connection, facet, true, frameIdCache );
 
-							completeInsertStatement( connection, insStmt, fId, sId, facetId, true,
-									facetIndex++, o, frameIdCache );
-							insStmt.addBatch();
+							completeInsertStatement( connection, insFacetStmt, fId, sId, facetId,
+									true, facetIndex++, o, frameIdCache );
+							insFacetStmt.addBatch();
 							nCountSinceExecute++;
 						}
 					}
@@ -1281,12 +1397,14 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 			if( nCountSinceExecute > MAX_BATCH_VALUE_INSERT ) {
 				System.err.print( df.format( new Date() ) + " inserting " + nCountSinceExecute
 						+ " statements ..." );
-				insStmt.executeBatch();
+				insFacetStmt.executeBatch();
+				insNullFacetStmt.executeBatch();
 				System.err.println( " complete." );
 				nCountSinceExecute = 0;
 			}
 		}
-		insStmt.executeBatch();
+		insFacetStmt.executeBatch();
+		insNullFacetStmt.executeBatch();
 	}
 
 	public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
@@ -1299,12 +1417,18 @@ public class CPDatabaseFrameDB extends AbstractDatabaseFrameDb {
 			final int faId = (facet == null)
 				? 0
 				: getDatabaseId( connection, facet, true, null );
+			final int facetSpace = (facet == null)
+				? 0
+				: 1;
 
-			PreparedStatement delete = getPreparedStatement( connection, "DELETE_VALUE_SQL" );
+			PreparedStatement delete = getPreparedStatement( connection, (facet == null)
+				? "DELETE_NULL_FACET_VALUE_SQL"
+				: "DELETE_FACET_VALUE_SQL" );
 			delete.setInt( 1, frId );
 			delete.setInt( 2, slId );
-			delete.setInt( 3, faId );
-			delete.setBoolean( 4, isTemplate );
+			if( facet != null )
+				delete.setInt( 3, faId );
+			delete.setBoolean( 3 + facetSpace, isTemplate );
 			executeUpdate( delete );
 
 			addValues( connection, frId, slId, faId, isTemplate, values, 0 );
