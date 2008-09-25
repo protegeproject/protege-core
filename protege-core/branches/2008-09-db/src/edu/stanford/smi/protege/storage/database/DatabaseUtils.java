@@ -15,7 +15,7 @@ import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.Assert;
 
-class DatabaseUtils {
+public class DatabaseUtils {
 	public static final String NULL_FRAME_ID_STRING = "";
     /*
      * These constants are store in the database as a performance hack. When a frame is read out of the db we need to
