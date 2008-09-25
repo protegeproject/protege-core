@@ -912,13 +912,34 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 		throw new UnsupportedOperationException( "getSlotCount" );
 	}
 
+	private static String getProperty(String key, Properties properties) {
+		String value = properties.getProperty( key );
+		if( value == null )
+			return null;
+
+		Pattern p = Pattern.compile( "(^|[^\\$])(\\$\\{([^\\}]+)\\})" );
+		Matcher m = p.matcher( value );
+		StringBuffer buf = new StringBuffer();
+		while( m.find() ) {
+			String newKey = m.group( 3 );
+			String keyReplacement = getProperty( newKey, properties );
+			if( keyReplacement != null ) {
+				String replacement = m.group( 1 ) + keyReplacement;
+				m.appendReplacement( buf, replacement );
+			}
+		}
+		m.appendTail( buf );
+
+		return buf.toString();
+	}
+
 	private String getStringStatement(RobustConnection connection, String key) {
 
 		final String dbKey = key + "__DBT_" + connection.getKnownDatabaseType().getShortName();
 
-		String sql = schemaProperties.getProperty( dbKey );
+		String sql = getProperty( dbKey, schemaProperties );
 		if( sql == null )
-			sql = schemaProperties.getProperty( key );
+			sql = getProperty( key, schemaProperties );
 
 		if( sql == null )
 			throw new IllegalStateException( "Missing SQL data manipulation statement for key: "
