@@ -819,7 +819,8 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 		PreparedStatement stmt = preparedStatementMap.get( key );
 
 		if( stmt == null ) {
-			stmt = connection.getPreparedStatement( getStringStatement( connection, key ) );
+			final String stringStatement = getStringStatement( connection, key );
+			stmt = connection.getPreparedStatement( stringStatement );
 			preparedStatementMap.put( key, stmt );
 		}
 
@@ -912,7 +913,13 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 	}
 
 	private String getStringStatement(RobustConnection connection, String key) {
-		String sql = schemaProperties.getProperty( key );
+
+		final String dbKey = key + "__DBT_" + connection.getKnownDatabaseType().getShortName();
+
+		String sql = schemaProperties.getProperty( dbKey );
+		if( sql == null )
+			sql = schemaProperties.getProperty( key );
+
 		if( sql == null )
 			throw new IllegalStateException( "Missing SQL data manipulation statement for key: "
 					+ key );
