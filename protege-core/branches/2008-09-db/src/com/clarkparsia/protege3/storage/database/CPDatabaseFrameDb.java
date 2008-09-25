@@ -380,60 +380,6 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 		throw new UnsupportedOperationException( "getClsCount" );
 	}
 
-	private String getCreateTableFrameSQL() throws SQLException {
-
-		RobustConnection connection = getCurrentConnection();
-
-		String sql = schemaProperties.getProperty( "CREATE_TABLE_FRAME_SQL" );
-		if( sql == null )
-			throw new IllegalStateException( "Create SQL missing for frame table" );
-
-		sql = replaceDBSchemaStrings( _table, sql );
-		sql = replaceDBTypeStrings( connection, sql );
-
-		if( getCurrentConnection().isMySql() ) {
-			sql = sql + " ENGINE = INNODB ";
-		}
-
-		return sql;
-	}
-
-	private String getCreateTableFacetValueSQL() throws SQLException {
-
-		RobustConnection connection = getCurrentConnection();
-
-		String sql = schemaProperties.getProperty( "CREATE_TABLE_FACET_VALUE_SQL" );
-		if( sql == null )
-			throw new IllegalStateException( "Create SQL missing for frame table" );
-
-		sql = replaceDBSchemaStrings( _table, sql );
-		sql = replaceDBTypeStrings( connection, sql );
-
-		if( getCurrentConnection().isMySql() ) {
-			sql = sql + " ENGINE = INNODB ";
-		}
-
-		return sql;
-	}
-
-	private String getCreateTableSlotValueSQL() throws SQLException {
-
-		RobustConnection connection = getCurrentConnection();
-
-		String sql = schemaProperties.getProperty( "CREATE_TABLE_SLOT_VALUE_SQL" );
-		if( sql == null )
-			throw new IllegalStateException( "Create SQL missing for frame table" );
-
-		sql = replaceDBSchemaStrings( _table, sql );
-		sql = replaceDBTypeStrings( connection, sql );
-
-		if( getCurrentConnection().isMySql() ) {
-			sql = sql + " ENGINE = INNODB ";
-		}
-
-		return sql;
-	}
-
 	/**
 	 * Get database integer identifier for a frame, optionally adding if not
 	 * present
@@ -971,7 +917,8 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 			throw new IllegalStateException( "Missing SQL data manipulation statement for key: "
 					+ key );
 
-		return replaceSQLVariantStrings( connection, replaceDBSchemaStrings( _table, sql ) );
+		return replaceSQLVariantStrings( connection, replaceDBTypeStrings( connection,
+				replaceDBSchemaStrings( _table, sql ) ) );
 	}
 
 	private String[] getStringStatementArray(RobustConnection connection, String key)
@@ -1114,47 +1061,40 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 		connection.closeStatements();
 
 		// 1) Drop tables if exist
-		try {
-			executeUpdate( getPreparedStatement( connection, "DROP_TABLE_FRAME_SQL" ) );
-		} catch( SQLException e ) {
-			// FIXME Only ignore if this is a table does not exist exception
-		}
-		try {
-			executeUpdate( getPreparedStatement( connection, "DROP_TABLE_FACET_VALUE_SQL" ) );
-		} catch( SQLException e ) {
-			// FIXME Only ignore if this is a table does not exist exception
-		}
-		try {
-			executeUpdate( getPreparedStatement( connection, "DROP_TABLE_SLOT_VALUE_SQL" ) );
-		} catch( SQLException e ) {
-			// FIXME Only ignore if this is a table does not exist exception
-		}
-
-		// 2) Create tables (without indices)
-		try {
-
-			executeUpdate( getCreateTableFrameSQL() );
-			// FIXME
-			// executeUpdate( getPreparedStatement( connection,
-			// "INSERT_TABLE_FRAME_INITIAL_SQL" ) );
-
-			for( String s : getStringStatementArray( connection, "CREATE_INDEX_FRAME_SQL" ) ) {
-				System.err.print( df.format( new Date() ) + " creating index on frame table ... " );
-				executeUpdate( s );
-				System.err.println( " complete " + df.format( new Date() ) );
+		String[] drops = getStringStatementArray( connection, "DROP_TABLES_SQL" );
+		for( String dropSql : drops ) {
+			try {
+				executeUpdate( dropSql );
+			} catch( SQLException e ) {
+				// FIXME Only ignore if this is a table does not exist exception
 			}
+		}
 
-			executeUpdate( getCreateTableFacetValueSQL() );
-			executeUpdate( getCreateTableSlotValueSQL() );
-
+		// 2) Create tables
+		try {
+			String[] creates = getStringStatementArray( connection, "CREATE_TABLES_SQL" );
+			for( String createSql : creates ) {
+				executeUpdate( createSql );
+			}
 		} catch( SQLException e ) {
-			Logger.getLogger( "Failed to create database tables or indices: " + e.getMessage() );
+			Logger.getLogger( "Failed to create database tables: " + e.getMessage() );
+			throw e;
+		}
+
+		// 3) Create indices (pre-load)
+		try {
+			String[] creates = getStringStatementArray( connection, "CREATE_INDICES_PRELOAD_SQL" );
+			for( String createSql : creates ) {
+				executeUpdate( createSql );
+			}
+		} catch( SQLException e ) {
+			Logger.getLogger( "Failed to create database index: " + e.getMessage() );
 			throw e;
 		}
 
 		maxFrameId = 0;
 
-		// 3) Save any frames
+		// 4) Save any frames
 		if( saveFrames ) {
 			final boolean callCachingBefore = kb.setCallCachingEnabled( false );
 			try {
@@ -1169,24 +1109,16 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 			}
 		}
 
-		// 4) Create indices
+		// 5) Create indices (post-load)
 		try {
-
-			for( String s : getStringStatementArray( connection, "CREATE_INDEX_FACET_VALUE_SQL" ) ) {
-				System.err.print( df.format( new Date() )
-						+ " creating index on facet value table ... " );
-				executeUpdate( s );
-				System.err.println( " complete " + df.format( new Date() ) );
-			}
-
-			for( String s : getStringStatementArray( connection, "CREATE_INDEX_SLOT_VALUE_SQL" ) ) {
-				System.err.print( df.format( new Date() )
-						+ " creating index on slot value table ... " );
-				executeUpdate( s );
+			String[] creates = getStringStatementArray( connection, "CREATE_INDICES_POSTLOAD_SQL" );
+			for( String createSql : creates ) {
+				System.err.print( df.format( new Date() ) + " creating index ... " );
+				executeUpdate( createSql );
 				System.err.println( " complete " + df.format( new Date() ) );
 			}
 		} catch( SQLException e ) {
-			Logger.getLogger( "Failed to create database tables or indices: " + e.getMessage() );
+			Logger.getLogger( "Failed to create database index: " + e.getMessage() );
 			throw e;
 		}
 	}
