@@ -970,7 +970,7 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 				select.setString( 1, frame.getFrameID().getName() );
 				select.setInt( 2, (short) DatabaseUtils.valueType( frame, _frameFactory ) );
 				select.setString( 3, slot.getFrameID().getName() );
-				select.setString( 4, slot.getFrameID().getName() );
+				select.setString( 4, facet.getFrameID().getName() );
 				select.setBoolean( 5, isTemplate );
 			}
 
