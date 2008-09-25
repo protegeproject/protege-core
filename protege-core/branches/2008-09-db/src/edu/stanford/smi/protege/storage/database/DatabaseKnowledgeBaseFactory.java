@@ -216,7 +216,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
     }
 
    public ValueCachingNarrowFrameStore createNarrowFrameStore(String name) {
-      DatabaseFrameDb store = new DatabaseFrameDb();
+      DatabaseFrameDb store = DatabaseFrameDbFactory.createDatabaseFrameDb();
       ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
       vcnfs.setName(name);
       return vcnfs;
@@ -255,7 +255,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
                                  String tablename, 
                                  Collection errors) {
       try {
-          DatabaseFrameDb db = new DatabaseFrameDb();
+          DatabaseFrameDb db = DatabaseFrameDbFactory.createDatabaseFrameDb();
           db.initialize(inputKb.getFrameFactory(), driver, url, username, password, tablename, false);
           db.overwriteKB(inputKb, true);
           db.close();
