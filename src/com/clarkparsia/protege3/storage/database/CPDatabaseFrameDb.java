@@ -60,16 +60,12 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
 	private static DateFormat		df						= new SimpleDateFormat(
 																	"yyyy-MM-dd'T'HH:mm:ss.SSSZ" );
-	private static final String		FRAME_ID_COLUMN, FRAME_NAME_COLUMN, FRAME_TYPE_COLUMN;
 
 	public static final long		MAX_BATCH_VALUE_INSERT	= 50000;
 
 	private static final String		SCHEMA_PROPERTIES_FILE	= "database-config.properties";
 
 	private static final Properties	schemaProperties;
-	private static final String		VALUE_FRAME_COLUMN, VALUE_SLOT_COLUMN, VALUE_FACET_COLUMN,
-			VALUE_IS_TEMPLATE_COLUMN, VALUE_TYPE_COLUMN, VALUE_INDEX_COLUMN,
-			VALUE_VALUE_FRAME_COLUMN, VALUE_VALUE_SHORT_COLUMN, VALUE_VALUE_LONG_COLUMN;
 
 	static {
 		schemaProperties = new Properties();
@@ -79,25 +75,6 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 		} catch( IOException e ) {
 			throw new RuntimeException( e );
 		}
-
-		FRAME_ID_COLUMN = schemaProperties.getProperty( "FRAME_ID_COLUMN", "FRAME_ID" );
-		FRAME_TYPE_COLUMN = schemaProperties.getProperty( "FRAME_TYPE_COLUMN", "FRAME_TYPE" );
-		FRAME_NAME_COLUMN = schemaProperties.getProperty( "FRAME_NAME_COLUMN", "FRAME_NAME" );
-
-		VALUE_FRAME_COLUMN = schemaProperties.getProperty( "VALUE_FRAME_COLUMN", "FRAME" );
-		VALUE_SLOT_COLUMN = schemaProperties.getProperty( "VALUE_SLOT_COLUMN", "SLOT" );
-		VALUE_FACET_COLUMN = schemaProperties.getProperty( "VALUE_FACET_COLUMN", "FACET" );
-		VALUE_IS_TEMPLATE_COLUMN = schemaProperties.getProperty( "VALUE_IS_TEMPLATE_COLUMN",
-				"IS_TEMPLATE" );
-		VALUE_INDEX_COLUMN = schemaProperties.getProperty( "VALUE_INDEX_COLUMN", "VALUE_INDEX" );
-		VALUE_TYPE_COLUMN = schemaProperties.getProperty( "VALUE_TYPE_COLUMN", "VALUE_TYPE" );
-		VALUE_VALUE_FRAME_COLUMN = schemaProperties.getProperty( "VALUE_VALUE_FRAME_COLUMN",
-				"VALUE_FRAME" );
-		VALUE_VALUE_SHORT_COLUMN = schemaProperties.getProperty( "VALUE_VALUE_SHORT_COLUMN",
-
-		"VALUE_SHORT" );
-		VALUE_VALUE_LONG_COLUMN = schemaProperties.getProperty( "VALUE_VALUE_LONG_COLUMN",
-				"VALUE_LONG" );
 	}
 
 	private static String replaceSQLVariantStrings(RobustConnection connection, String sql) {
@@ -120,54 +97,6 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 		p = Pattern.compile( "@TABLE_PREFIX@" );
 		m = p.matcher( sql );
 		sql = m.replaceAll( table );
-
-		p = Pattern.compile( "@FRAME_ID_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( FRAME_ID_COLUMN );
-
-		p = Pattern.compile( "@FRAME_NAME_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( FRAME_NAME_COLUMN );
-
-		p = Pattern.compile( "@FRAME_TYPE_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( FRAME_TYPE_COLUMN );
-
-		p = Pattern.compile( "@VALUE_FRAME_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( VALUE_FRAME_COLUMN );
-
-		p = Pattern.compile( "@VALUE_SLOT_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( VALUE_SLOT_COLUMN );
-
-		p = Pattern.compile( "@VALUE_FACET_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( VALUE_FACET_COLUMN );
-
-		p = Pattern.compile( "@VALUE_IS_TEMPLATE_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( VALUE_IS_TEMPLATE_COLUMN );
-
-		p = Pattern.compile( "@VALUE_INDEX_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( VALUE_INDEX_COLUMN );
-
-		p = Pattern.compile( "@VALUE_TYPE_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( VALUE_TYPE_COLUMN );
-
-		p = Pattern.compile( "@VALUE_VALUE_FRAME_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( VALUE_VALUE_FRAME_COLUMN );
-
-		p = Pattern.compile( "@VALUE_VALUE_SHORT_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( VALUE_VALUE_SHORT_COLUMN );
-
-		p = Pattern.compile( "@VALUE_VALUE_LONG_COLUMN@" );
-		m = p.matcher( sql );
-		sql = m.replaceAll( VALUE_VALUE_LONG_COLUMN );
 
 		return sql;
 	}
