@@ -167,6 +167,14 @@
               classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>
         <rmic base = "${classes}" stubversion = "1.2" 
               classname = "edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore"/>
+        <copy todir="${classes}">
+          <fileset dir="${src}">
+            <include name="**/*"/>
+            <exclude name="**/*.java"/>
+            <exclude name="**/MANIFEST.MF"/>
+            <exclude name="**/manifest.mf"/>
+          </fileset>
+        </copy>
     </target>
 
 
@@ -176,12 +184,6 @@
     
     <!-- =================================================================== -->
     <target name = "jar" depends = "compile">    
-        <copy todir = "${classes}/edu/stanford/smi/protege/resource/files">      
-            <fileset dir = "${src}/edu/stanford/smi/protege/resource/files"/>    
-        </copy>    
-        <copy todir = "${classes}/edu/stanford/smi/protege/resource/image">      
-            <fileset dir = "${src}/edu/stanford/smi/protege/resource/image"/>
-        </copy>
         <copy todir="${dist}" file="${src}/META-INF/MANIFEST.MF" overwrite="true"/>
         <manifest file="${dist}/MANIFEST.MF" 
                   mode = "update">
