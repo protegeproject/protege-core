@@ -63,7 +63,7 @@ public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
     
     private void addUpdateToTransaction(S session, V var, CacheResult<R> result) {
         transactedWriteCache.get(session).put(var, result);
-        transactedModifications.get(var).add(new CacheModify<S, V, R>(session, var, result));
+        transactedModifications.get(session).add(new CacheModify<S, V, R>(session, var, result));
     }
 
     public void delete(S session) {
