@@ -23,7 +23,6 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
         int transactionNesting = delegate.getTransactionNesting(session);
         
         if (transactionNesting > 0 && !readOrWrittenVars.contains(var)) {
-            readOrWrittenVars.add(var);
             return new CacheResult<R>(null, false);
         }
         else if (transactionNesting > 0 && reads.containsKey(var)) {
@@ -76,10 +75,15 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
     public void finishCompleteCache() {
         delegate.finishCompleteCache();
     }
+    
+    public void abortCompleteCache() {
+        delegate.abortCompleteCache();
+    }
 
     public void beginTransaction(S session) {
         if (getTransactionNesting(session) == 0) {
             readOrWrittenVarsMap.put(session, new HashSet<V>());
+            transactedReads.put(session, new HashMap<V, CacheResult<R>>());
         }
         delegate.beginTransaction(session);
     }
@@ -97,6 +101,7 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
     private void decrementTransaction(S session) {
         if (getTransactionNesting(session) == 0) {
             readOrWrittenVarsMap.remove(session);
+            transactedReads.remove(session);
         }
     }
 

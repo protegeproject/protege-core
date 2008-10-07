@@ -1,9 +1,7 @@
 package edu.stanford.smi.protege.util.transaction.cache.impl;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
@@ -80,6 +78,13 @@ public class DeletableCache<S, V, R> implements Cache<S, V, R> {
             return;
         }
         delegate.finishCompleteCache();
+    }
+    
+    public void abortCompleteCache() {
+        if (invalid) {
+            return;
+        }
+        delegate.abortCompleteCache();
     }
 
     public void beginTransaction(S session) {

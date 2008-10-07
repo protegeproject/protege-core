@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.util.transaction.cache.impl;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
@@ -14,7 +13,8 @@ import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
  *  - ignore the cache completion mechanism (at least this one is correct...) 
  *  
  * It will only return 
- * valid results in the case that the transaction isolation level is READ_UNCOMMITTED.
+ * valid results in the case that the transaction isolation level is READ_UNCOMMITTED or where
+ * the caller covers the in transaction case.
  * 
  * @author tredmond
  *
@@ -54,6 +54,10 @@ public class BasicCache<S, V, R> implements Cache<S, V, R> {
 
     public void finishCompleteCache() {
         
+    }
+    
+    public void abortCompleteCache() {
+        ;
     }
 
     public void beginTransaction(S session) {
