@@ -110,7 +110,9 @@ public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
         delegate.rollbackTransaction(session);
         if (getTransactionNesting(session) == 0) {
             transactedWriteCache.remove(session);
-            transactedModifications.remove(session);
+            for (CacheModify<S, V, R> modification : transactedModifications.remove(session)) {
+                delegate.modifyCache(session, modification.getVar());
+            }
         }
     }
 
