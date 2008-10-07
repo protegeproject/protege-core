@@ -12,7 +12,7 @@ import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
  * delegate does the same.  
  *  
  * It will only return 
- * valid results in the case that the transaction isolation level is READ_UNCOMMITTED or where
+ * valid results in the case that the transaction isolation level is NONE or where
  * the caller covers the in transaction case.
  * 
  * @author tredmond
