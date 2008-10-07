@@ -32,12 +32,76 @@ public class Cache_Test extends TestCase {
             assertTrue(result.isValid());
             assertTrue(result.getResult().equals(VAL1));
             
+            result = cache.readCache(SESSION1, VAR2);
+            assertTrue(!result.isValid());
+            
             result = cache.readCache(SESSION2, VAR2);
             assertTrue(!result.isValid());
             
-            cache.modifyCache(SESSION3, VAR1);
+            cache.modifyCache(SESSION3, VAR1, VAL3);
             result = cache.readCache(SESSION2, VAR1);
-            assertTrue(!result.isValid());
+            assertTrue(result.isValid());
+            assertTrue(result.getResult().equals(VAL3));
+        }
+    }
+    
+    public void testNesting() {
+        CacheResult<String> result;
+        
+        for (TransactionIsolationLevel level : TransactionIsolationLevel.values()) {
+            Cache<String, String, String> cache = CacheFactory.createEmptyCache(level);
+            assertTrue(cache.getTransactionNesting(SESSION1) == 0);
+            assertTrue(cache.getTransactionNesting(SESSION2) == 0);
+            assertTrue(cache.getTransactionNesting(SESSION3) == 0);
+            
+            cache.beginTransaction(SESSION1);
+            assertTrue(cache.getTransactionNesting(SESSION1) == 1);
+            assertTrue(cache.getTransactionNesting(SESSION2) == 0);
+            assertTrue(cache.getTransactionNesting(SESSION3) == 0);
+            
+            cache.modifyCache(SESSION1, VAR1, VAL1);
+            assertTrue(cache.readCache(SESSION1, VAR1).isValid());
+            assertTrue(cache.readCache(SESSION1, VAR1).getResult().equals(VAL1));
+            
+            cache.beginTransaction(SESSION2);
+            assertTrue(cache.getTransactionNesting(SESSION1) == 1);
+            assertTrue(cache.getTransactionNesting(SESSION2) == 1);
+            assertTrue(cache.getTransactionNesting(SESSION3) == 0);
+            
+            cache.modifyCache(SESSION1, VAR2, VAL2);
+            assertTrue(cache.readCache(SESSION1, VAR2).isValid());
+            assertTrue(cache.readCache(SESSION1, VAR2).getResult().equals(VAL2));
+            
+            cache.beginTransaction(SESSION1);
+            assertTrue(cache.getTransactionNesting(SESSION1) == 2);
+            assertTrue(cache.getTransactionNesting(SESSION2) == 1);
+            assertTrue(cache.getTransactionNesting(SESSION3) == 0);
+            
+            cache.beginTransaction(SESSION3);
+            assertTrue(cache.getTransactionNesting(SESSION1) == 2);
+            assertTrue(cache.getTransactionNesting(SESSION2) == 1);
+            assertTrue(cache.getTransactionNesting(SESSION3) == 1);
+            
+            cache.commitTransaction(SESSION2);
+            assertTrue(cache.getTransactionNesting(SESSION1) == 2);
+            assertTrue(cache.getTransactionNesting(SESSION2) == 0);
+            assertTrue(cache.getTransactionNesting(SESSION3) == 1);
+            
+            cache.rollbackTransaction(SESSION1);
+            assertTrue(cache.getTransactionNesting(SESSION1) == 1);
+            assertTrue(cache.getTransactionNesting(SESSION2) == 0);
+            assertTrue(cache.getTransactionNesting(SESSION3) == 1);
+            
+            cache.commitTransaction(SESSION3);
+            assertTrue(cache.getTransactionNesting(SESSION1) == 1);
+            assertTrue(cache.getTransactionNesting(SESSION2) == 0);
+            assertTrue(cache.getTransactionNesting(SESSION3) == 0);
+            
+            cache.rollbackTransaction(SESSION1);
+            assertTrue(cache.getTransactionNesting(SESSION1) == 0);
+            assertTrue(cache.getTransactionNesting(SESSION2) == 0);
+            assertTrue(cache.getTransactionNesting(SESSION3) == 0);
+            
         }
     }
     
@@ -52,6 +116,13 @@ public class Cache_Test extends TestCase {
         
         result = cache.readCache(SESSION2, VAR3);
         assertTrue(result.isValid());
+        assertTrue(result.getResult().equals(VAL3));
+        
+        cache.modifyCache(SESSION2, VAR1, VAL2);
+        result=cache.readCache(SESSION3, VAR1);
+        assertTrue(result.isValid());
+        assertTrue(result.getResult().equals(VAL2));
+        
     }
 
 }
