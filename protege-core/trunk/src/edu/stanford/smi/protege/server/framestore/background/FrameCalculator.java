@@ -203,6 +203,7 @@ public class FrameCalculator {
     }
   }
   
+  @SuppressWarnings("unchecked")
   public void addFollowedExprs(Frame frame, Slot slot, List values) {
     synchronized (requestLock) {
       if (machine == null) {
@@ -224,7 +225,7 @@ public class FrameCalculator {
             if (newState == null) {
               continue;
             }
-            WorkInfo iwi = addRequest(inner, newState, CacheRequestReason.STATE_MACHINE);
+            WorkInfo iwi = addRequest(inner, effectiveClient, newState, CacheRequestReason.STATE_MACHINE, true);
             if (iwi != null) {
               iwi.setClient(wi.getClient());
             }
@@ -240,20 +241,18 @@ public class FrameCalculator {
 
   public WorkInfo addRequest(Frame frame, RemoteSession session, CacheRequestReason reason) {
     synchronized (requestLock) {
-      return addRequest(frame, session, machine == null ? null : machine.getInitialState(), reason);
-    }
-  }
-  
-  public WorkInfo addRequest(Frame frame, ServerCachedState state, CacheRequestReason  reason) {
-    synchronized (requestLock) {
-      return addRequest(frame, effectiveClient, state, reason);
+      return addRequest(frame, session, machine == null ? null : machine.getInitialState(), reason, false);
     }
   }
   
   public WorkInfo addRequest(Frame frame, 
                              RemoteSession session, 
                              ServerCachedState state, 
-                             CacheRequestReason reason) {
+                             CacheRequestReason reason, 
+                             boolean forceUpdate) {
+    if (inFrameCalculatorThread() && !forceUpdate) {
+        return null;
+    }
     if (isDisabled(session)) {
       return null;
     }
