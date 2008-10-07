@@ -59,7 +59,7 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     public Frame getFrame(String name) {
         Frame frame = getDelegate().getFrame(name);
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && frame != null) {
+        if (frame != null) {
             frameCalculator.addRequest(frame, session, CacheRequestReason.USER_NAME_REQUEST);
         }
         return frame;
@@ -68,7 +68,7 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     @Override
     public int getDirectOwnSlotValuesCount(Frame frame, Slot slot) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        if (!frameCalculator.inFrameCalculatorThread() && !slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
+        if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
             frameCalculator.addRequest(frame, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
         }
         return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
@@ -79,10 +79,10 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
         List values = getDelegate().getDirectOwnSlotValues(frame, slot);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         if (!frameCalculator.isDisabled(session)) {
-            if (!frameCalculator.inFrameCalculatorThread() && !slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
+            if (!slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
                 frameCalculator.addRequest(frame, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
             }
-            if (!frameCalculator.inFrameCalculatorThread() && slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES)) {
+            if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES)) {
                 for (Object o : values) {
                     if (o instanceof Frame) {
                         frameCalculator.addRequest((Frame) o, session, CacheRequestReason.SUBCLASS);
