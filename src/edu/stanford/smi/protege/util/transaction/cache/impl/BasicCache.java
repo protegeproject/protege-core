@@ -13,7 +13,7 @@ import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
  *  - ignore the cache completion mechanism (at least this one is correct...) 
  *  
  * It will only return 
- * valid results in the case that the transaction isolation level is READ_UNCOMMITTED or where
+ * valid results in the case that the transaction isolation level is NONE or where
  * the caller covers the in transaction case.
  * 
  * @author tredmond
