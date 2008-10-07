@@ -78,6 +78,10 @@ public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
     public void finishCompleteCache() {
         delegate.finishCompleteCache();
     }
+    
+    public void abortCompleteCache() {
+        delegate.abortCompleteCache();
+    }
 
     public void beginTransaction(S session) {
         if (getTransactionNesting(session) == 0) {

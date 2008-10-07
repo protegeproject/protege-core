@@ -147,6 +147,8 @@ public interface Cache<S, V, R> {
      * a complete list of all the real values.
      */
     void finishCompleteCache();
+    
+    void abortCompleteCache();
 
     /**
      * The session has entered a transaction.  Nesting is counted.
