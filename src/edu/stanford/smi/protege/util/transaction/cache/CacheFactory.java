@@ -7,6 +7,7 @@ import edu.stanford.smi.protege.util.transaction.cache.impl.BasicCache;
 import edu.stanford.smi.protege.util.transaction.cache.impl.CompleteableCache;
 import edu.stanford.smi.protege.util.transaction.cache.impl.DeletableCache;
 import edu.stanford.smi.protege.util.transaction.cache.impl.ReadCommittedCache;
+import edu.stanford.smi.protege.util.transaction.cache.impl.ReadUncommittedCache;
 import edu.stanford.smi.protege.util.transaction.cache.impl.RepeatableReadCache;
 
 public class CacheFactory {
@@ -25,8 +26,11 @@ public class CacheFactory {
     
     public static <S, V, R> Cache<S, V, R> createEmptyCache(TransactionIsolationLevel level) {
         Cache<S, V, R> untransactedCache = new CompleteableCache<S, V, R>(new BasicCache<S, V, R>());
-        if (level.compareTo(TransactionIsolationLevel.READ_UNCOMMITTED) <= 0) {
+        if (level == TransactionIsolationLevel.NONE) {
             return new DeletableCache<S, V, R>(untransactedCache, true);
+        }
+        if (level.compareTo(TransactionIsolationLevel.READ_UNCOMMITTED) <= 0) {
+            return new DeletableCache<S, V, R>(new ReadUncommittedCache<S, V, R>(untransactedCache), true);
         }
         Cache<S, V, R> readCommittedCache = new ReadCommittedCache<S, V, R>(untransactedCache);
         if (level == TransactionIsolationLevel.READ_COMMITTED) {
