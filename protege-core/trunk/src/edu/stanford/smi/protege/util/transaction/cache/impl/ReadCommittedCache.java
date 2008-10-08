@@ -2,15 +2,12 @@ package edu.stanford.smi.protege.util.transaction.cache.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
 import edu.stanford.smi.protege.util.transaction.cache.CacheModify;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
-import edu.stanford.smi.protege.util.transaction.cache.CacheUpdate;
 
 public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
     private Map<S, Map<V, CacheResult<R>>> transactedWriteCache = new HashMap<S, Map<V, CacheResult<R>>>();
@@ -110,9 +107,7 @@ public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
         delegate.rollbackTransaction(session);
         if (getTransactionNesting(session) == 0) {
             transactedWriteCache.remove(session);
-            for (CacheModify<S, V, R> modification : transactedModifications.remove(session)) {
-                delegate.modifyCache(session, modification.getVar());
-            }
+            transactedModifications.remove(session);
         }
     }
 
