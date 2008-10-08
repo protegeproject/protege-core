@@ -28,7 +28,7 @@ import edu.stanford.smi.protege.util.Disposable;
 import edu.stanford.smi.protege.util.ModalDialog;
 
 /**
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SetDisplaySlotPanel extends JComponent implements Disposable {
@@ -52,19 +52,23 @@ public class SetDisplaySlotPanel extends JComponent implements Disposable {
     };
 
     private ClsListener _clsListener = new ClsAdapter() {
-        public void directSuperclassAdded(ClsEvent event) {
+        @Override
+		public void directSuperclassAdded(ClsEvent event) {
             reload();
         }
 
-        public void directSuperclassRemoved(ClsEvent event) {
+        @Override
+		public void directSuperclassRemoved(ClsEvent event) {
             reload();
         }
 
-        public void templateSlotAdded(ClsEvent event) {
+        @Override
+		public void templateSlotAdded(ClsEvent event) {
             reload();
         }
 
-        public void templateSlotRemoved(ClsEvent event) {
+        @Override
+		public void templateSlotRemoved(ClsEvent event) {
             reload();
         }
     };
@@ -114,13 +118,19 @@ public class SetDisplaySlotPanel extends JComponent implements Disposable {
     private void reload() {
         _currentPattern = null;
         boolean shouldEnable = _cls != null;
-        Object selection = (_cls == null) ? null : _cls.getBrowserSlotPattern();
+        Object selection = _cls == null ? null : _cls.getBrowserSlotPattern();
         Collection values = new ArrayList();
         if (shouldEnable) {
             Collection slots = _cls.getVisibleTemplateSlots();
-            
+
+            //add :NAME slot, if not already there
+            Slot nameSlot = _cls.getKnowledgeBase().getNameSlot();
+            if (!slots.contains(nameSlot)) {
+            	slots.add(nameSlot);
+            }
+
             Collections.sort((List) slots, new FrameComparator());
-            
+
             Iterator i = slots.iterator();
             while (i.hasNext()) {
                 Slot slot = (Slot) i.next();
@@ -134,7 +144,7 @@ public class SetDisplaySlotPanel extends JComponent implements Disposable {
                 values.add(MULTISLOT);
             }
         }
-        
+
         DefaultComboBoxModel model = new DefaultComboBoxModel(values.toArray());
         _displaySlotComboBox.removeActionListener(_actionListener);
         _displaySlotComboBox.setModel(model);
@@ -143,7 +153,8 @@ public class SetDisplaySlotPanel extends JComponent implements Disposable {
         setEnabled(shouldEnable);
     }
 
-    public void setEnabled(boolean b) {
+    @Override
+	public void setEnabled(boolean b) {
         _displaySlotComboBox.setEnabled(b);
     }
 
