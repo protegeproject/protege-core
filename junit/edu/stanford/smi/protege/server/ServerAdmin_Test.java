@@ -229,5 +229,47 @@ public class ServerAdmin_Test extends APITestCase {
         ls.stageAchieved(TestSingleProjectShutdownStages.REVIVED, null);
         ls.waitForStage(TestSingleProjectShutdownStages.DONE);
     }
+    
+    public enum TestKillOtherUser {
+        START, OPEN, MURDER, CONFIRMED;
+    }
+    public void testKillOtherUser() throws RemoteException {
+        final LockStepper<TestKillOtherUser> ls = new LockStepper<TestKillOtherUser>(TestKillOtherUser.START);
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    RemoteSession session = server.openSession(USER1, SystemUtilities.getMachineIpAddress(), PASSWORD1);
+                    RemoteServerProject serverProject = server.openProject(PROJECT_NAME, session);
+                    Project p = RemoteClientProject.createProject(server, serverProject, session, false);
+                    KnowledgeBase kb = p.getKnowledgeBase();
+                    kb.flushCache();
+                    kb.getFrames();
+                    kb.flushCache();
+                    ls.stageAchieved(TestKillOtherUser.OPEN, session);
+                    ls.waitForStage(TestKillOtherUser.MURDER);
+                    boolean failed = false;
+                    try {
+                        kb.getFrames();
+                    }
+                    catch (Throwable t) {
+                        failed = true;
+                    }
+                    assertTrue(failed);
+                    serverProject = server.openProject(PROJECT_NAME, session);
+                    assertTrue(serverProject == null);
+                    ls.stageAchieved(TestKillOtherUser.CONFIRMED, null);
+                }
+                catch (Throwable t) {
+                    ls.exceptionOffMainThread(TestKillOtherUser.CONFIRMED, t);
+                }
+            }
+        }.start();
+        RemoteSession session = openSession();
+        RemoteSession sessionToKill = (RemoteSession) ls.waitForStage(TestKillOtherUser.OPEN);
+        server.killOtherUserSession(sessionToKill, session);
+        ls.stageAchieved(TestKillOtherUser.MURDER, null);
+        ls.waitForStage(TestKillOtherUser.CONFIRMED);
+    }
 }
 
