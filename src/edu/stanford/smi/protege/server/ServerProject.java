@@ -19,6 +19,7 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
     private URI _uri;
     private Server _server;
     private Project _project;
+    private ProjectInstance metaProjectInstance;
     private ServerFrameStore _domainKbFrameStore;
     private ServerFrameStore _projectKbFrameStore;
     
@@ -30,6 +31,27 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         }
     }
 
+
+
+    public ServerProject(Server server, URI uri, ProjectInstance projectInstance, Project project) throws RemoteException {
+        _server = server;
+        _uri = uri;
+        _project = project;
+        metaProjectInstance = projectInstance;
+        _domainKbFrameStore = createServerFrameStore(_project.getKnowledgeBase());
+        _domainKbFrameStore.setMetaProjectInstance(projectInstance);
+        _projectKbFrameStore = createServerFrameStore(_project.getInternalProjectKnowledgeBase());
+    }
+    
+    private static ServerFrameStore createServerFrameStore(KnowledgeBase kb) throws RemoteException {
+        ServerFrameStore sfs = new ServerFrameStore(kb);
+        return sfs;
+    }
+
+    public ProjectInstance getMetaProjectInstance() {
+        return metaProjectInstance;
+    }
+    
     public URI getURI(RemoteSession session) {
         return _uri;
     }
@@ -42,20 +64,6 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         return _project.getInternalProjectKnowledgeBase().getKnowledgeBaseFactory().getClass().getName();
     }
 
-    public ServerProject(Server server, URI uri, ProjectInstance projectInstance, Project project) throws RemoteException {
-        _server = server;
-        _uri = uri;
-        _project = project;
-        _domainKbFrameStore = createServerFrameStore(_project.getKnowledgeBase());
-        _domainKbFrameStore.setMetaProjectInstance(projectInstance);
-        _projectKbFrameStore = createServerFrameStore(_project.getInternalProjectKnowledgeBase());
-    }
-
-
-    private static ServerFrameStore createServerFrameStore(KnowledgeBase kb) throws RemoteException {
-        ServerFrameStore sfs = new ServerFrameStore(kb);
-        return sfs;
-    }
 
     public RemoteServerFrameStore getDomainKbFrameStore(RemoteSession session) {
         return _domainKbFrameStore;
