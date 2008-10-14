@@ -40,11 +40,15 @@ public interface RemoteServer extends Remote {
     
     void setProjectStatus(String projectName, ProjectStatus status, RemoteSession session) throws RemoteException;
     
+    void notifyProject(String projectName, String message, RemoteSession session) throws RemoteException;
+    
     boolean createUser(String userName, String password) throws RemoteException;
 
     void shutdown() throws RemoteException;
     
     void shutdown(String projectName, RemoteSession session) throws RemoteException;
+    
+    void killOtherUserSession(RemoteSession sessionToKill, RemoteSession session) throws RemoteException;
     
     /*
      * Policy
