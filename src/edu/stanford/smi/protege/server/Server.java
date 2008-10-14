@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.event.ServerProjectNotificationEvent;
 import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -704,6 +705,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (!_sessions.contains(session)) {
             return null;  // user didn't really log in
         }
+        if (_nameToProjectStatusMap.get(projectName) == ProjectStatus.CLOSED_FOR_MAINTENANCE) {
+            return null;
+        }
         if (!readAllowed(projectName, session)) {
             return null;
         }
@@ -798,9 +802,27 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return getServerProject(project);
 	}
 
-    public void setProjectStatus(String projectName, ProjectStatus status,
+    public void setProjectStatus(String projectName, 
+                                 ProjectStatus status,
                                  RemoteSession session) {
-
+        if (isOperationAllowed(session, MetaProjectConstants.OPERATION_CONFIGURE_SERVER, projectName)) {
+            ProjectStatus oldStatus = _nameToProjectStatusMap.put(projectName, status);
+            Project p = _nameToOpenProjectMap.get(projectName);
+            KnowledgeBase kb = p.getKnowledgeBase();
+            EventGeneratorFrameStore fs = kb.getFrameStoreManager().getFrameStoreFromClass(EventGeneratorFrameStore.class);
+            fs.addCustomEvent(new ServerProjectStatusChangeEvent(projectName, oldStatus, status));
+        }
+    }
+    
+    public void notifyProject(String projectName, 
+                              String message,
+                              RemoteSession session) throws RemoteException {
+        if (isOperationAllowed(session, MetaProjectConstants.OPERATION_CONFIGURE_SERVER, projectName)) {
+            Project p = _nameToOpenProjectMap.get(projectName);
+            KnowledgeBase kb = p.getKnowledgeBase();
+            EventGeneratorFrameStore fs = kb.getFrameStoreManager().getFrameStoreFromClass(EventGeneratorFrameStore.class);
+            fs.addCustomEvent(new ServerProjectNotificationEvent(projectName, message));
+        }
     }
 
 	public boolean createUser(String userName, String password) {
@@ -867,6 +889,38 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         setProjectStatus(projectName, ProjectStatus.CLOSED_FOR_MAINTENANCE, session);
         closeProject(projectName);
+    }
+    
+    public void killOtherUserSession(RemoteSession sessionToKill,
+                                     RemoteSession session) {
+        boolean partial = false;
+        Collection<ServerProject> projects = _sessionToProjectsMap.get(sessionToKill);
+        Collection<ServerProject> projectsWithSessionRemoved = new HashSet<ServerProject>();
+
+        for (ServerProject serverProject : projects) {
+            String projectName = serverProject.getMetaProjectInstance().getName();
+            if (isOperationAllowed(session, 
+                                   MetaProjectConstants.OPERATION_KILL_OTHER_USER_SESSION, 
+                                   projectName)) {
+                try {
+                    serverProject.deregister(sessionToKill);
+                    projectsWithSessionRemoved.add(serverProject);
+                }
+                catch (Throwable  t) {
+                    log.log(Level.WARNING, "Could not deregister session " + sessionToKill + " from project " + projectName, t);
+                }
+            }
+            else {
+                partial = true;
+            }
+        }
+        if (partial) {
+            projects.removeAll(projectsWithSessionRemoved);
+        }
+        else {
+            _sessionToProjectsMap.remove(sessionToKill);
+            _sessions.remove(sessionToKill);
+        }
     }
 
     /* -----------------------------------------------------------------
