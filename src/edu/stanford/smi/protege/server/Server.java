@@ -203,6 +203,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private void clear() {
         _nameToOpenProjectMap.clear();
+        _nameToProjectStatusMap.clear();
         _projectToServerProjectMap.clear();
         _sessions.clear();
         _sessionToProjectsMap.clear();
@@ -497,6 +498,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             _sessionToProjectsMap.remove(session);
         }
         p.dispose();
+        _projectToServerProjectMap.remove(p);
+        _nameToOpenProjectMap.remove(name);
     }
 
 
@@ -675,6 +678,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                                                   instance))) {
                 continue;
             }
+            String name = instance.getName();
+            ProjectStatus status = _nameToProjectStatusMap.get(name);
+            if (status != null && status != ProjectStatus.READY) {
+                continue;
+            }
             String fileName = instance.getLocation();
             URI uri = URIUtilities.createURI(fileName);
             String scheme = uri.getScheme();
@@ -808,9 +816,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (isOperationAllowed(session, MetaProjectConstants.OPERATION_CONFIGURE_SERVER, projectName)) {
             ProjectStatus oldStatus = _nameToProjectStatusMap.put(projectName, status);
             Project p = _nameToOpenProjectMap.get(projectName);
-            KnowledgeBase kb = p.getKnowledgeBase();
-            EventGeneratorFrameStore fs = kb.getFrameStoreManager().getFrameStoreFromClass(EventGeneratorFrameStore.class);
-            fs.addCustomEvent(new ServerProjectStatusChangeEvent(projectName, oldStatus, status));
+            if (p != null) {
+                KnowledgeBase kb = p.getKnowledgeBase();
+                EventGeneratorFrameStore fs = kb.getFrameStoreManager().getFrameStoreFromClass(EventGeneratorFrameStore.class);
+                fs.addCustomEvent(new ServerProjectStatusChangeEvent(projectName, oldStatus, status));
+            }
         }
     }
     
