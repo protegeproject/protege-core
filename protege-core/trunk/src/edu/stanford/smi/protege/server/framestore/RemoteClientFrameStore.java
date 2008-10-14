@@ -266,7 +266,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     public void reinitialize() {
-        // do nothing
+        flushCache();
     }
 
     private static RuntimeException convertException(Exception e) {
