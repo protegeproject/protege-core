@@ -1068,7 +1068,9 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     public synchronized void dispose() {
-        _frameStoreManager.close();
+    	if (_frameStoreManager != null) {
+    		_frameStoreManager.close();
+    	}
         _frameStoreManager = null;
         _project = null;
     }
