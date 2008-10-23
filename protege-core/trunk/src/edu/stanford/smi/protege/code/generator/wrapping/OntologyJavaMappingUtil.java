@@ -72,9 +72,10 @@ public class OntologyJavaMappingUtil {
 		} else { //corresponding java class not found
 			for (Iterator iterator = cls.getSuperclasses().iterator(); iterator.hasNext();) {
 				Cls supercls = (Cls) iterator.next();
-				Entry e = ontologyClassNameMap.get(supercls);
+				Entry e = ontologyClassNameMap.get(supercls.getName());
 				if (e != null) {
-					return createJavaObject(getJavaImplementation(e.getJavaImplementation(), javaReturnInterface), supercls.createDirectInstance(name));
+					Instance wrappedInst = cls.createDirectInstance(name);
+					return createJavaObject(getJavaImplementation(e.getJavaImplementation(), javaReturnInterface), wrappedInst);
 				}
 			}
 		}
@@ -156,7 +157,7 @@ public class OntologyJavaMappingUtil {
 		} else { //corresponding java class not found
 			for (Iterator iterator = cls.getSuperclasses().iterator(); iterator.hasNext();) {
 				Cls supercls = (Cls) iterator.next();
-				Entry e = ontologyClassNameMap.get(supercls);
+				Entry e = ontologyClassNameMap.get(supercls.getName());
 				if (e != null) {
 					return e.getJavaImplementation();
 				}
