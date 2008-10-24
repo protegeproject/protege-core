@@ -30,6 +30,7 @@
 		<mkdir dir = "${build.src}"/>
 		<mkdir dir = "${build.dest}"/>
 		<mkdir dir = "${dist.dir}"/>
+		<mkdir dir = "${build.javadoc}"/>
 
 		<!-- get source code from subversion repository -->
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
@@ -126,8 +127,8 @@
 	<!-- JAVADOC -->
 	<!-- =================================================================== -->
 	<target name = "javadoc" depends = "init" unless = "testbuild">
+
 		<property file = "${build.dir}/src/edu/stanford/smi/protege/resource/files/build.properties"/>
-		<mkdir dir = "${build.javadoc}"/>
 		
 		<javadoc packagenames = "${packages}" 
 		              sourcepath = "${build.src}" 
@@ -154,6 +155,7 @@
 				<pathelement location = "${lib.dir}/unicode_panel.jar"/>
 			</classpath>
 		</javadoc>
+		
 	</target>
 	
 	<!-- =================================================================== -->
