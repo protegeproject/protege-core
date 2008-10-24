@@ -19,7 +19,13 @@ public class CodeGeneratorProjectPlugin extends ProjectPluginAdapter {
 	public void afterShow(ProjectView view, ProjectToolBar toolBar,
 			ProjectMenuBar menuBar) {
 
-		insertCodeMenu(view.getProject().getKnowledgeBase(), menuBar);
+		KnowledgeBase kb = view.getProject().getKnowledgeBase();
+		if (kb.getKnowledgeBaseFactory().getClass().getName().contains(".owl.")) {
+			//try to filter out owl backends
+			return;
+		}
+
+		insertCodeMenu(kb, menuBar);
 	}
 
 	private void insertCodeMenu(KnowledgeBase kb, ProjectMenuBar menuBar) {
