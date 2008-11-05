@@ -111,6 +111,7 @@ public class RemoteClientFrameStore implements FrameStore {
     private Map<Frame, CacheStatus> cacheStatus = new HashMap<Frame, CacheStatus>();
     private Map<Frame, Map<Sft, List>> cache = new HashMap<Frame, Map<Sft, List>>();
     private Map<Frame, Map<Sft, List>> sessionCache = new HashMap<Frame, Map<Sft, List>>();
+    //FIXME: frameNameToFrameMap may not handle transactions or type updates correctly
     private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
 
     private RemoteClientStatsImpl stats = new RemoteClientStatsImpl();
@@ -208,7 +209,15 @@ public class RemoteClientFrameStore implements FrameStore {
                 ((ProtegeJob) args[0]).fixLoader();
               }
               try {
-                return method.invoke(remoteDelegate, args);
+            	  if (log.isLoggable(Level.FINE)) {
+            		  log.fine("Remote invoke: " + method.getName() + " Args:");
+            		  if (args != null) {
+            			  for (Object obj : args) {
+            				  log.fine("\t" + (obj instanceof Frame ? ((Frame)obj).getFrameID() : obj));
+            			  }
+            		  }
+            	  }
+            	  return method.invoke(remoteDelegate, args);
               } catch (InvocationTargetException ite) {
                 throw ite.getCause();
               }
@@ -250,7 +259,7 @@ public class RemoteClientFrameStore implements FrameStore {
       ClassLoader correctLoader = kbClassLoader;
       if (currentLoader != correctLoader) {
           if (log.isLoggable(Level.FINEST)) {
-            Log.getLogger().finest("Changing loader from " + currentLoader + " to " + correctLoader);
+            log.finest("Changing loader from " + currentLoader + " to " + correctLoader);
           }
           Thread.currentThread().setContextClassLoader(correctLoader);
       }
@@ -380,6 +389,9 @@ public class RemoteClientFrameStore implements FrameStore {
             processValueUpdate(response);
             frame = response.getResponse();
           }
+        }
+        if (transactionNesting == 0) {
+        	frameNameToFrameMap.put(name, frame);
         }
         return frame;
       } catch (RemoteException e) {
@@ -1188,10 +1200,12 @@ public class RemoteClientFrameStore implements FrameStore {
       if (skip) {
         return;
       }
+      long t0 = System.currentTimeMillis();
       Log.getLogger().config("Preloading frame values: " + kb);
       Set<String> frames = ServerProperties.preloadUserFrames();
       OntologyUpdate vu = getRemoteDelegate().preload(frames, preloadAll, session);
       processValueUpdate(vu);
+      Log.getLogger().config("  ... in " + (System.currentTimeMillis() - t0)/1000 + " sec.");
     }
 
     private Set getCacheOwnSlotValueClosure(Frame frame, Slot slot) throws RemoteException {
