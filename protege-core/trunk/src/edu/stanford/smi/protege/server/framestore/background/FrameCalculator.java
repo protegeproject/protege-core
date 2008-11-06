@@ -284,9 +284,7 @@ public class FrameCalculator {
         requestMap.put(cwf, wi);
       } else {
         if (log.isLoggable(Level.FINE)) {
-            synchronized (kbLock) {
                 log.fine("Updating state for " + frame.getFrameID() + " to include " + state);
-            }
         }
         requests.remove(wi);
       }
