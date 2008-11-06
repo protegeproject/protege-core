@@ -1,5 +1,8 @@
 package edu.stanford.smi.protege.server.framestore;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -217,7 +220,13 @@ public class RemoteClientFrameStore implements FrameStore {
             			  }
             		  }
             	  }
-            	  return method.invoke(remoteDelegate, args);
+            	  long start = System.currentTimeMillis();
+            	  Object val =  method.invoke(remoteDelegate, args);
+            	  if (log.isLoggable(Level.FINE)) {
+            		  log.fine("Invocation took " + (System.currentTimeMillis() - start) + " ms");
+            		  logSize(log, Level.FINEST, val);
+            	  }
+            	  return val;
               } catch (InvocationTargetException ite) {
                 throw ite.getCause();
               }
@@ -230,6 +239,41 @@ public class RemoteClientFrameStore implements FrameStore {
                                                                           invoker);
       }
       return proxiedDelegate;
+  }
+
+  private void logSize(Logger log, Level level, Object o) {
+	  if (o instanceof OntologyUpdate) {
+		  OntologyUpdate response = (OntologyUpdate) o;
+		  int valueUpdateSize = 0;
+		  int valueUpdateCount = 0;
+		  for (ValueUpdate vu : response.getValueUpdates()) {
+			  valueUpdateSize += getSerializedSize(vu);
+			  valueUpdateCount++;
+		  }
+		  log.log(level, "" + valueUpdateSize + " bytes of " + valueUpdateCount + " value updates");
+		  if (response instanceof RemoteResponse) {
+			  log.log(level, "" + getSerializedSize(((RemoteResponse) response).getResponse()) + " bytes of included object");
+		  }
+	  }
+	  else {
+		  log.log(level, "" + getSerializedSize(o) + " bytes for object of type " + o.getClass());
+	  }
+  }
+
+  private int getSerializedSize(Object o) {
+	  try {
+		  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		  ObjectOutputStream oos = new ObjectOutputStream(baos);
+		  oos.writeObject(o);
+		  oos.close();
+		  return baos.size();
+	  }
+	  catch (IOException ioe) {
+		  if (log.isLoggable(Level.FINE)) {
+			  log.fine("trouble calculating size");
+		  }
+		  return 0;
+	  }
   }
 
   public Map<RemoteSession, Boolean> getUserInfo() {
