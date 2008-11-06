@@ -22,6 +22,7 @@ public class Registration {
     private FifoReader<AbstractEvent> events;
     private FifoReader<ValueUpdate> updates;
     private List<ValueUpdate> commits = new ArrayList<ValueUpdate>();
+    private BandWidthPolicy bandwidthPolicy = new BandWidthPolicy();
     private long lastHeartbeat = 0;
 
 
@@ -59,6 +60,10 @@ public class Registration {
         cacheLog.fine("Ending transaction: clearing transaction local events and updates");
       }
       commits = new ArrayList<ValueUpdate>();
+    }
+    
+    public BandWidthPolicy getBandWidthPolicy() {
+        return bandwidthPolicy;
     }
     
     public long getLastHeartbeat() {
