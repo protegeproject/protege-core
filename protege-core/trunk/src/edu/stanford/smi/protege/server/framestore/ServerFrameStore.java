@@ -907,6 +907,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           ret.add(vu);
         }
       }
+      _sessionToRegistrationMap.get(session).getBandWidthPolicy().addItemsSent(ret.size()); 
       return ret;
     }
 
