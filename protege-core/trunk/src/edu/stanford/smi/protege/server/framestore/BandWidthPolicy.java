@@ -45,13 +45,13 @@ public class BandWidthPolicy {
     public synchronized boolean stopSending() {
         if (itemsWaitingToSend > surgeCap) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("throttling back");
+                log.fine("throttling back because we already have " + itemsWaitingToSend + " items to send.");
             }
             return true;
         }
         long now = System.currentTimeMillis();
         List<SentItems> sentItemsToForget = new ArrayList<SentItems>();
-        int itemsSentInInterval = 0;
+        int itemsSentInInterval = itemsWaitingToSend;
         for (SentItems si  : itemsSent) {
             if (si.whenInMillis < now - samplingInterval) {
                 sentItemsToForget.add(si);
@@ -62,7 +62,10 @@ public class BandWidthPolicy {
         }
         itemsSent.removeAll(sentItemsToForget);
         if (log.isLoggable(Level.FINE) && itemsSentInInterval > bandwidthCap) {
-            log.fine("Throttling back");
+            log.fine("Throttling back because we have " + itemsWaitingToSend + " items to send and we have recently sent the follwing");
+            for (SentItems si : itemsSent) {
+                log.fine("\t" + si.count + " items");
+            }
         }
         return itemsSentInInterval > bandwidthCap;
     }
