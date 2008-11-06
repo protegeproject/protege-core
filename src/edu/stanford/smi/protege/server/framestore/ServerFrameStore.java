@@ -907,7 +907,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           ret.add(vu);
         }
       }
-      _sessionToRegistrationMap.get(session).getBandWidthPolicy().addItemsSent(ret.size()); 
+      _sessionToRegistrationMap.get(session).getBandWidthPolicy().addItemsSent(ret.size());
       return ret;
     }
 
@@ -1292,11 +1292,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       */
       if (!frameCalculator.isDisabled(session)) {
           for (Frame frame : frames) {
-              WorkInfo wi = frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
-              //TODO: Tim, this does not seem to work
-              if (wi != null) {
-                  wi.setSkipDirectInstances(true);
-              }
+        	  synchronized (frameCalculator.getRequestLock()) {
+        		  WorkInfo wi = frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
+        		  if (wi != null) {
+        			  wi.setSkipDirectInstances(true);
+        		  }
+        	  }
           }
       }
     }
