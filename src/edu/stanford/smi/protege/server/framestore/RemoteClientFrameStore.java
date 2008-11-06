@@ -260,7 +260,7 @@ public class RemoteClientFrameStore implements FrameStore {
 	  }
   }
 
-  private int getSerializedSize(Object o) {
+  public static int getSerializedSize(Object o) {
 	  try {
 		  ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		  ObjectOutputStream oos = new ObjectOutputStream(baos);
