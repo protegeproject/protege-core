@@ -33,7 +33,7 @@ import edu.stanford.smi.protege.util.Log;
 /*
  * This frame calculator has to be aware of transactions.  A good
  * illustrative case is as follows:
- * 
+ *
  *   client X starts transaction
  *   client X modifies slot s for frame f
  *   the frame calculator evaluates a value for slot s for frame f
@@ -42,8 +42,8 @@ import edu.stanford.smi.protege.util.Log;
  * At this point the evaluation of the value for the frame f is
  * invalid.  We will take a simple approach to this situation; we wait
  * for all transactions to be complete before calculating frame
- * values.  
- * 
+ * values.
+ *
  */
 
 
@@ -55,34 +55,34 @@ import edu.stanford.smi.protege.util.Log;
 
 public class FrameCalculator {
   private static transient Logger log = Log.getLogger(FrameCalculator.class);
-  
+
   private enum RunStatus {
     IDLE, RUNNING, SHUTDOWN
   }
-  
+
   private FrameStore fs;
   private final Object kbLock;
   private FifoWriter<ValueUpdate> updates;
   private ServerFrameStore server;
   private RemoteSession effectiveClient;
-  
+
   FrameCalculatorThread innerThread;
-  
+
   /*
    * The kb lock is never taken while the request Lock is held.
    */
-  
+
   private Object requestLock = new Object();
   private SortedSet<WorkInfo> requests = new TreeSet<WorkInfo>();
   private Map<ClientAndFrame, WorkInfo> requestMap = new HashMap<ClientAndFrame, WorkInfo>();
   private ServerCacheStateMachine machine = null;
   private Map<RemoteSession, Registration> sessionMap;
-  
+
   private static boolean disabled = false;
   private Set<RemoteSession> disabledSessions = new HashSet<RemoteSession>();
-  
+
   FrameCalculatorStatsImpl stats = new FrameCalculatorStatsImpl();
-  
+
   public FrameCalculator(FrameStore fs,
                          ServerCacheStateMachine machine,
                          Object kbLock,
@@ -96,18 +96,20 @@ public class FrameCalculator {
     this.server = server;
     this.sessionMap = sessionMap;
   }
-  
+
   public void setStateMachine(ServerCacheStateMachine machine) {
       synchronized (requestLock) {
           this.machine = machine;
       }
   }
-  
+
 
   private void doWork(WorkInfo wi) throws ServerSessionLost {
     Frame frame = wi.getFrame();
     effectiveClient = wi.getClient();
-    if (sessionMap.get(effectiveClient).getBandWidthPolicy().stopSending()) {
+    if (!wi.getReasons().contains(CacheRequestReason.PRELOAD)
+    		&& !wi.getReasons().contains(CacheRequestReason.IMMEDIATE_PRELOAD)
+    		&& sessionMap.get(effectiveClient).getBandWidthPolicy().stopSending()) {
         return;
     }
     ServerFrameStore.setCurrentSession(effectiveClient);
@@ -147,7 +149,7 @@ public class FrameCalculator {
             }
           }
           addFollowedExprs(frame, slot, values);
-        }  
+        }
       }
       if (frame instanceof Cls) {
         Cls cls = (Cls) frame;
@@ -187,8 +189,8 @@ public class FrameCalculator {
         }
       }
     } catch (Throwable t) {
-      Log.getLogger().log(Level.SEVERE, 
-                          "Exception caught caching frame values", 
+      Log.getLogger().log(Level.SEVERE,
+                          "Exception caught caching frame values",
                           t);
       wi.setTargetFullCache(false);
       insertValueUpdate(new FrameEvaluationPartial(wi.getFrame()));
@@ -196,8 +198,8 @@ public class FrameCalculator {
       stats.completeWork();
     }
   }
-  
-  
+
+
   private void checkAbilityToGenerateFullCache(WorkInfo wi) {
     if (server.inTransaction() && wi.isTargetFullCache()) {
       if (log.isLoggable(Level.FINE)) {
@@ -207,7 +209,7 @@ public class FrameCalculator {
       insertValueUpdate(new FrameEvaluationPartial(wi.getFrame()));
     }
   }
-  
+
   @SuppressWarnings("unchecked")
   public void addFollowedExprs(Frame frame, Slot slot, List values) {
     synchronized (requestLock) {
@@ -235,7 +237,7 @@ public class FrameCalculator {
               iwi.setClient(wi.getClient());
             }
             if (log.isLoggable(Level.FINE)) {
-              log.fine("Added cache request frame for state transition " + 
+              log.fine("Added cache request frame for state transition " +
                   frame + " x " + state + " -> " + inner + " x " + newState);
             }
           }
@@ -249,11 +251,11 @@ public class FrameCalculator {
       return addRequest(frame, session, machine == null ? null : machine.getInitialState(), reason, false);
     }
   }
-  
-  public WorkInfo addRequest(Frame frame, 
-                             RemoteSession session, 
-                             ServerCachedState state, 
-                             CacheRequestReason reason, 
+
+  public WorkInfo addRequest(Frame frame,
+                             RemoteSession session,
+                             ServerCachedState state,
+                             CacheRequestReason reason,
                              boolean forceUpdate) {
     if (inFrameCalculatorThread() && !forceUpdate) {
         return null;
@@ -261,15 +263,19 @@ public class FrameCalculator {
     if (isDisabled(session)) {
       return null;
     }
-    if (frame.getKnowledgeBase() == null) {
-      log.log(Level.WARNING, "Non-localized frame being added to the FrameCalculator", new Exception());
-    }
+    if (reason != CacheRequestReason.PRELOAD &&
+    		reason != CacheRequestReason.IMMEDIATE_PRELOAD &&
+    		sessionMap.get(session).getBandWidthPolicy().stopSending()) {
+		if (frame.getKnowledgeBase() == null) {
+		  log.log(Level.WARNING, "Non-localized frame being added to the FrameCalculator", new Exception());
+		}
+	}
     synchronized (requestLock) {
       ClientAndFrame cwf = new ClientAndFrame(session, frame);
       WorkInfo wi = requestMap.get(cwf);
       if (wi == null) {
           if (log.isLoggable(Level.FINE)) {
-              log.fine("Added " + frame.getFrameID() + " in state " + state + 
+              log.fine("Added " + frame.getFrameID() + " in state " + state +
                        " with reason " + reason + " to head of frames to precalculate");
           }
         wi = new WorkInfo();
@@ -288,7 +294,7 @@ public class FrameCalculator {
       wi.addReason(reason);
       wi.setNewest();
       requests.add(wi);
-      if (innerThread == null || 
+      if (innerThread == null ||
           innerThread.getStatus() == RunStatus.SHUTDOWN) {
         innerThread = new FrameCalculatorThread();
         innerThread.start();
@@ -297,8 +303,8 @@ public class FrameCalculator {
     }
   }
 
-  
-  
+
+
   /*
    * This call assumes that the kbLock is held on entry.
    */
@@ -308,8 +314,8 @@ public class FrameCalculator {
     server.updateEvents(effectiveClient);
     updates.write(vu);
   }
-  
-  
+
+
   public void deregister(RemoteSession session) {
     synchronized (requestLock) {
       List<WorkInfo> remove = new ArrayList<WorkInfo>();
@@ -324,20 +330,19 @@ public class FrameCalculator {
       }
     }
   }
-  
+
   public boolean isDisabled(RemoteSession session) {
       synchronized (requestLock) {
-          return disabled 
-                    || session == null 
-                    || disabledSessions.contains(session)
-                    || sessionMap.get(session).getBandWidthPolicy().stopSending();
+          return disabled
+                    || session == null
+                    || disabledSessions.contains(session);
       }
   }
-  
+
   public static void setDisabled(boolean disabled) {
     FrameCalculator.disabled = disabled;
   }
-  
+
   public boolean setDisabled(boolean disabled, RemoteSession session) {
       synchronized (requestLock) {
           boolean previousValue = disabledSessions.contains(session);
@@ -350,8 +355,8 @@ public class FrameCalculator {
           return previousValue;
       }
   }
-  
-  
+
+
   public FrameCalculatorStats getStats() {
     Map<RemoteSession, Integer> backlogs = new HashMap<RemoteSession, Integer>();
     synchronized (requestLock) {
@@ -369,12 +374,12 @@ public class FrameCalculator {
     return stats;
   }
 
-  
+
   public void logRequests() {
       if (log.isLoggable(Level.FINE)) {
           try {
               if (log.isLoggable(Level.FINER)) {
-                  SortedSet<WorkInfo> requestsCopy; 
+                  SortedSet<WorkInfo> requestsCopy;
                   synchronized (requestLock) {
                       requestsCopy = new TreeSet<WorkInfo>(requests);
                   }
@@ -426,11 +431,11 @@ public class FrameCalculator {
           }
       }
   }
-  
+
   public Object getRequestLock() {
     return requestLock;
   }
-  
+
   public boolean inFrameCalculatorThread() {
       synchronized (requestLock) {
           if (innerThread == null) {
@@ -441,15 +446,16 @@ public class FrameCalculator {
           }
       }
   }
-  
+
   private class FrameCalculatorThread extends Thread {
     private RunStatus status = RunStatus.IDLE;
-    
+
     public FrameCalculatorThread() {
       super("Frame Pre-Calculation Thread");
     }
-    
-    public void run() {
+
+    @Override
+	public void run() {
       WorkInfo workInfo;
       synchronized(requestLock) {
         status = RunStatus.RUNNING;
@@ -466,7 +472,7 @@ public class FrameCalculator {
           doWork(workInfo);
           synchronized (requestLock) {
             requests.remove(workInfo);
-            requestMap.remove(new ClientAndFrame(workInfo.getClient(), 
+            requestMap.remove(new ClientAndFrame(workInfo.getClient(),
                                                  workInfo.getFrame()));
           }
           if (log.isLoggable(Level.FINE)) {
@@ -482,24 +488,24 @@ public class FrameCalculator {
           status = RunStatus.SHUTDOWN;
       }
     }
-    
+
     public RunStatus getStatus() {
       return status;
     }
   }
-  
+
   public static class FrameCalculatorStatsImpl implements FrameCalculatorStats, Serializable {
     private static final long serialVersionUID = -573113660316027300L;
-    
+
     private long startWorkTime;
     private long workUnits = 0;
     private long totalWorkTime  = 0;
     private Map<RemoteSession, Integer> preCacheBacklog;
-    
+
     private void startWork() {
       startWorkTime = System.currentTimeMillis();
     }
-    
+
     private void completeWork() {
       totalWorkTime = totalWorkTime + System.currentTimeMillis() - startWorkTime;
       workUnits++;
@@ -508,7 +514,7 @@ public class FrameCalculator {
     public Map<RemoteSession, Integer> getPreCacheBacklog() {
       return preCacheBacklog;
     }
-    
+
     public void setPreCacheBackLog(Map<RemoteSession, Integer> backlog) {
       preCacheBacklog = backlog;
     }
@@ -516,7 +522,7 @@ public class FrameCalculator {
     public long getPrecalculateTime() {
       return totalWorkTime / workUnits;
     }
-    
+
   }
-  
+
 }
