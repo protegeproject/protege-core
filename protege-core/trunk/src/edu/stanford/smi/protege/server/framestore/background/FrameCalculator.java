@@ -76,6 +76,7 @@ public class FrameCalculator {
   private SortedSet<WorkInfo> requests = new TreeSet<WorkInfo>();
   private Map<ClientAndFrame, WorkInfo> requestMap = new HashMap<ClientAndFrame, WorkInfo>();
   private ServerCacheStateMachine machine = null;
+  private Map<RemoteSession, Registration> sessionMap;
   
   private static boolean disabled = false;
   private Set<RemoteSession> disabledSessions = new HashSet<RemoteSession>();
@@ -93,6 +94,7 @@ public class FrameCalculator {
     this.kbLock = kbLock;
     this.updates = updates;
     this.server = server;
+    this.sessionMap = sessionMap;
   }
   
   public void setStateMachine(ServerCacheStateMachine machine) {
@@ -105,6 +107,9 @@ public class FrameCalculator {
   private void doWork(WorkInfo wi) throws ServerSessionLost {
     Frame frame = wi.getFrame();
     effectiveClient = wi.getClient();
+    if (sessionMap.get(effectiveClient).getBandWidthPolicy().stopSending()) {
+        return;
+    }
     ServerFrameStore.setCurrentSession(effectiveClient);
     if (log.isLoggable(Level.FINE)) {
         synchronized (kbLock) {
@@ -298,6 +303,7 @@ public class FrameCalculator {
    * This call assumes that the kbLock is held on entry.
    */
   private void insertValueUpdate(ValueUpdate vu) {
+    sessionMap.get(effectiveClient).getBandWidthPolicy().addItemToWaitList();
     vu.setClient(effectiveClient);
     server.updateEvents(effectiveClient);
     updates.write(vu);
@@ -321,7 +327,10 @@ public class FrameCalculator {
   
   public boolean isDisabled(RemoteSession session) {
       synchronized (requestLock) {
-          return disabled || session == null || disabledSessions.contains(session);
+          return disabled 
+                    || session == null 
+                    || disabledSessions.contains(session)
+                    || sessionMap.get(session).getBandWidthPolicy().stopSending();
       }
   }
   
@@ -341,7 +350,6 @@ public class FrameCalculator {
           return previousValue;
       }
   }
-  
   
   
   public FrameCalculatorStats getStats() {
@@ -450,7 +458,6 @@ public class FrameCalculator {
         while (true) {
           synchronized (requestLock) {
             if (requests.isEmpty()) {
-              status = RunStatus.SHUTDOWN;
               return;
             }
             workInfo = requests.first();
@@ -470,6 +477,9 @@ public class FrameCalculator {
       } catch (Throwable  t) {
         Log.getLogger().log(Level.SEVERE, "Exception caught in background frame value evaluator", t);
         Log.getLogger().severe("Pre-caching of frames will fail.");
+      }
+      finally {
+          status = RunStatus.SHUTDOWN;
       }
     }
     
