@@ -21,11 +21,6 @@ public class RemoteProjectManager {
 
     public static RemoteProjectManager getInstance() {
         if (_theInstance == null) {
-            try {
-                RMISocketFactory.setSocketFactory(new ClientRmiSocketFactory());
-            } catch (Exception e) {
-                Log.getLogger().severe("Could not set socket factory " + e.getMessage());
-            }
             _theInstance = new RemoteProjectManager();
         }
         return _theInstance;
