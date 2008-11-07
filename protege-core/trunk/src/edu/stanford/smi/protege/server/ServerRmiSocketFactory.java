@@ -2,10 +2,8 @@ package edu.stanford.smi.protege.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.rmi.server.RMISocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
 
-import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
 
 /* This code is based on an idea from here:
@@ -15,38 +13,49 @@ import edu.stanford.smi.protege.util.StringUtilities;
  * Date: Oct 3, 2002 - 3:51:34 PM 
  */
 
-public class ServerRmiSocketFactory extends RMISocketFactory {
-    private int fixedPort;
+public class ServerRmiSocketFactory implements RMIServerSocketFactory {
+	
+    private boolean use_ssl;
 
-    public ServerRmiSocketFactory() {
-        fixedPort = Integer.getInteger(ServerProperties.SERVER_PORT, 0).intValue();
-        if (fixedPort != 0) {
-            Log.getLogger().config("fixed port=" + fixedPort);
-        }
+    public ServerRmiSocketFactory(SSLSettings.Context context) {
+    	use_ssl = SSLSettings.useSSL(context);
     }
     
-    public Socket createSocket(String host, int port) throws IOException {
-        Socket socket = new Socket(host, port);
-        if (fixedPort != 0) {
-            Log.getLogger().config("local port: " + socket.getLocalPort());
-        }
-        return socket;
+    public static int getServerPort(SSLSettings.Context context) {
+    	if (SSLSettings.useSSL(context)) {
+    		return Integer.getInteger(ClientRmiSocketFactory.SERVER_SSL_PORT, 0).intValue();
+    	}
+        return Integer.getInteger(ClientRmiSocketFactory.SERVER_PORT, 0).intValue();
     }
 
     /*
      * This method gets passed a 0 to indicate "allocate any port".  If the user has specfied a
      * port then we use it.
      */
-    public ServerSocket createServerSocket(int requestedPort) throws IOException {
-        int port = requestedPort == 0 ? fixedPort : requestedPort;
-        ServerSocket socket = new ServerSocket(port);
-        if (fixedPort != 0) {
-            Log.getLogger().config("local port: " + socket.getLocalPort());
+    public ServerSocket createServerSocket(int port) throws IOException {
+        ServerSocket socket;
+        if (use_ssl) {
+            socket = new SSLSettings().createSSLServerSocket(port);
+        }
+        else {
+            socket = new ServerSocket(port);
         }
         return socket;
     }
     
     public String toString() {
         return StringUtilities.getClassName(this);
+    }
+    
+    public boolean equals(Object o) {
+    	if (!(o instanceof ServerRmiSocketFactory)) {
+    		return false;
+    	}
+    	ServerRmiSocketFactory other = (ServerRmiSocketFactory) o;
+    	return use_ssl == other.use_ssl;
+    }
+    
+    public int hashCode() {
+    	return use_ssl ? 1 : 0;
     }
 }

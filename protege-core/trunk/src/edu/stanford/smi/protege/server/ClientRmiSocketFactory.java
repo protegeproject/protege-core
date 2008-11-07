@@ -1,12 +1,14 @@
 package edu.stanford.smi.protege.server;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.rmi.registry.Registry;
-import java.rmi.server.RMISocketFactory;
+import java.rmi.server.RMIClientSocketFactory;
+import java.util.HashSet;
+import java.util.Set;
 
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
@@ -18,24 +20,22 @@ import edu.stanford.smi.protege.util.StringUtilities;
  * Author: Tim Goffings Date: Oct 3, 2002 - 3:51:34 PM
  */
 
-public class ClientRmiSocketFactory extends RMISocketFactory {
+public class ClientRmiSocketFactory implements RMIClientSocketFactory, Serializable {
+    private static final long serialVersionUID = -2237049150168090129L;
+    // Port Settings
+    public static final String SERVER_PORT = "protege.rmi.server.port";
+    public static final String SERVER_SSL_PORT = "protege.rmi.server.ssl.port";
+    public static final String REGISTRY_PORT = "protege.rmi.registry.port";
 
-    private int serverPort;
-    private int serverLocalPort;
-    private int registryPort;
-    private int registryLocalPort;
+    private boolean use_ssl;
+    
+    private static Set<Thread> authorized = new HashSet<Thread>();
 
-    public ClientRmiSocketFactory() {
-        serverPort = getPort(ServerProperties.SERVER_PORT, 0);
-        serverLocalPort = getPort(ServerProperties.SERVER_LOCAL_PORT, 0);
-        registryPort = getPort(ServerProperties.REGISTRY_PORT, Registry.REGISTRY_PORT);
-        registryLocalPort = getPort(ServerProperties.REGISTRY_LOCAL_PORT, 0);
-        if (!isDefault()) {
-            Log.getLogger().config(
-                    "server=" + serverPort + ", serverLocal= " + serverLocalPort + ", registryPort=" + registryPort
-                            + ", registryLocal=" + registryLocalPort);
-        }
+    public ClientRmiSocketFactory(SSLSettings.Context context) {
+        use_ssl      = SSLSettings.useSSL(context);
+        reportPorts();
     }
+    
 
     private static int getPort(String name, int defaultValue) {
         Integer i = Integer.getInteger(name);
@@ -43,41 +43,62 @@ public class ClientRmiSocketFactory extends RMISocketFactory {
     }
 
     public Socket createSocket(String host, int port) throws IOException {
-        int localPort;
-        if (port == serverPort) {
-            localPort = serverLocalPort;
-        } else if (port == registryPort) {
-            localPort = registryLocalPort;
-        } else {
-            localPort = 0;
-        }
-        Socket socket = createSocket(host, port, localPort);
-        if (!isDefault()) {
-            Log.getLogger().config("localPort=" + socket.getLocalPort());
-        }
+        Socket socket = createSocket(host, port, 0);
         return socket;
     }
 
-    private static Socket createSocket(String host, int hostPort, int localPort) throws IOException {
+    private Socket createSocket(String host, int hostPort, int localPort) throws IOException {
         SocketAddress serverAddress = new InetSocketAddress(host, hostPort);
         SocketAddress localAddress = new InetSocketAddress(localPort);
-        Socket socket = new Socket();
+        Socket socket;
+        if (use_ssl) {
+            socket = new SSLSettings().createSSLClientSocket();
+        }
+        else {
+            socket = new Socket();
+        }
         socket.setReuseAddress(true);
         socket.bind(localAddress);
         socket.connect(serverAddress);
+        if (use_ssl) {
+            authorized.add(Thread.currentThread());
+        }
         return socket;
     }
 
-    private boolean isDefault() {
-        return serverPort == 0 && serverLocalPort == 0 && registryPort == Registry.REGISTRY_PORT
-                && registryLocalPort == 0;
-    }
-
-    public ServerSocket createServerSocket(int requestedPort) {
-        throw new UnsupportedOperationException();
+    private static boolean portsReported = false;
+    private void reportPorts() {
+        if (!portsReported) {
+            int serverPort   = getPort(SERVER_PORT, 0);
+            int registryPort = getPort(REGISTRY_PORT, Registry.REGISTRY_PORT);
+            if (!(serverPort == 0 && registryPort == Registry.REGISTRY_PORT)) {
+                Log.getLogger().config("server=" + serverPort + ", registryPort=" + registryPort);
+            }
+            portsReported = true;
+        }
     }
 
     public String toString() {
         return StringUtilities.getClassName(this);
+    }
+    
+    public static void resetAuth() {
+        authorized.remove(Thread.currentThread());
+    }
+    
+    public static boolean checkAuth() throws SecurityException {
+        return authorized.contains(Thread.currentThread());
+    }
+    
+    public boolean equals(Object o) {
+    	if (!(o instanceof ClientRmiSocketFactory)) {
+    		return false;
+    	}
+    	ClientRmiSocketFactory other = (ClientRmiSocketFactory) o;
+    	return use_ssl == other.use_ssl;
+    }
+    
+    public int hashCode() {
+    	return use_ssl ? 1 : 0;
     }
 }
