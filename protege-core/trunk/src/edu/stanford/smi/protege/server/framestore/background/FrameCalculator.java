@@ -56,10 +56,6 @@ import edu.stanford.smi.protege.util.Log;
 public class FrameCalculator {
   private static transient Logger log = Log.getLogger(FrameCalculator.class);
 
-  private enum RunStatus {
-    IDLE, RUNNING, SHUTDOWN
-  }
-
   private FrameStore fs;
   private final Object kbLock;
   private FifoWriter<ValueUpdate> updates;
@@ -95,6 +91,8 @@ public class FrameCalculator {
     this.updates = updates;
     this.server = server;
     this.sessionMap = sessionMap;
+    innerThread = new FrameCalculatorThread();
+    innerThread.start();
   }
 
   public void setStateMachine(ServerCacheStateMachine machine) {
@@ -292,11 +290,7 @@ public class FrameCalculator {
       wi.addReason(reason);
       wi.setNewest();
       requests.add(wi);
-      if (innerThread == null ||
-          innerThread.getStatus() == RunStatus.SHUTDOWN) {
-        innerThread = new FrameCalculatorThread();
-        innerThread.start();
-      }
+      requestLock.notify();
       return wi;
     }
   }
@@ -446,49 +440,38 @@ public class FrameCalculator {
   }
 
   private class FrameCalculatorThread extends Thread {
-    private RunStatus status = RunStatus.IDLE;
 
     public FrameCalculatorThread() {
       super("Frame Pre-Calculation Thread");
     }
 
     @Override
-	public void run() {
-      WorkInfo workInfo;
-      synchronized(requestLock) {
-        status = RunStatus.RUNNING;
-      }
-      try {
-        while (true) {
-          synchronized (requestLock) {
-            if (requests.isEmpty()) {
-              return;
-            }
-            workInfo = requests.first();
-          }
-          long startTime = System.currentTimeMillis();
-          doWork(workInfo);
-          synchronized (requestLock) {
-            requests.remove(workInfo);
-            requestMap.remove(new ClientAndFrame(workInfo.getClient(),
-                                                 workInfo.getFrame()));
-          }
-          if (log.isLoggable(Level.FINE)) {
-            log.fine("work on frame " + workInfo.getFrame() + " took " + (System.currentTimeMillis() - startTime));
-            logRequests();
-          }
-        }
-      } catch (Throwable  t) {
-        Log.getLogger().log(Level.SEVERE, "Exception caught in background frame value evaluator", t);
-        Log.getLogger().severe("Pre-caching of frames will fail.");
-      }
-      finally {
-          status = RunStatus.SHUTDOWN;
-      }
-    }
+    public void run() {
+        WorkInfo workInfo;
 
-    public RunStatus getStatus() {
-      return status;
+        while (true) {
+            try {
+                synchronized (requestLock) {
+                    while (requests.isEmpty()) {
+                        requestLock.wait();
+                    }
+                    workInfo = requests.first();
+                }
+                long startTime = System.currentTimeMillis();
+                doWork(workInfo);
+                synchronized (requestLock) {
+                    requests.remove(workInfo);
+                    requestMap.remove(new ClientAndFrame(workInfo.getClient(),
+                                                         workInfo.getFrame()));
+                }
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("work on frame " + workInfo.getFrame() + " took " + (System.currentTimeMillis() - startTime));
+                    logRequests();
+                }
+            } catch (Throwable  t) {
+                Log.getLogger().log(Level.SEVERE, "Exception caught in background frame value evaluator", t);
+            }
+        }
     }
   }
 
