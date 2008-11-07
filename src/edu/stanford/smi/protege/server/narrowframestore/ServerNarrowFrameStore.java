@@ -22,7 +22,10 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
+import edu.stanford.smi.protege.server.ClientRmiSocketFactory;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.SSLSettings;
+import edu.stanford.smi.protege.server.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
@@ -41,6 +44,9 @@ public class ServerNarrowFrameStore
   
   public ServerNarrowFrameStore(NarrowFrameStore delegate, 
                                 KnowledgeBase kb) throws RemoteException {
+    super(ServerRmiSocketFactory.getServerPort(SSLSettings.Context.ALWAYS),
+          new ClientRmiSocketFactory(SSLSettings.Context.ALWAYS),
+          new ServerRmiSocketFactory(SSLSettings.Context.ALWAYS));
     this.delegate = delegate;
     this.kb = kb;
     fixedDelegate 
