@@ -94,13 +94,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     /**
-     * Calls startServer with {@link ServerRmiSocketFactory}as the socket factory.
-     */
-    public static void startServer(String[] args) throws IOException {
-        startServer(args, new ServerRmiSocketFactory());
-    }
-
-    /**
      * Start up the server.
      *
      * @param args
@@ -111,10 +104,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      *             if the socket factory has already been set
      * @see RMISocketFactory#setSocketFactory(RMISocketFactory)
      */
-    public static void startServer(String[] args, RMISocketFactory sf) throws IOException {
+    public static void startServer(String[] args) throws IOException {
     	Log.getLogger().info("Protege server is starting...");
         System.setProperty("java.rmi.server.RMIClassLoaderSpi", ProtegeRmiClassLoaderSpi.class.getName());
-        RMISocketFactory.setSocketFactory(sf);
         SystemUtilities.initialize();
         serverInstance = new Server(args);        
         for (Entry<String, Project> entry : serverInstance._nameToOpenProjectMap.entrySet()) {
@@ -143,8 +135,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private static Registry getRegistry() throws RemoteException {
-        int port = Integer.getInteger("protege.rmi.registry.port", Registry.REGISTRY_PORT).intValue();
-        return LocateRegistry.getRegistry(null, port, RMISocketFactory.getSocketFactory());
+        int port = Integer.getInteger(ClientRmiSocketFactory.REGISTRY_PORT, Registry.REGISTRY_PORT).intValue();
+        return LocateRegistry.getRegistry(null, port);
     }
 
     private void parseArgs(String[] args) {
@@ -197,6 +189,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private Server(String[] args) throws RemoteException, IOException {
+        super(ServerRmiSocketFactory.getServerPort(SSLSettings.Context.LOGIN),
+              new ClientRmiSocketFactory(SSLSettings.Context.LOGIN),
+              new ServerRmiSocketFactory(SSLSettings.Context.LOGIN));
         parseArgs(args);
         initialize();
     }
