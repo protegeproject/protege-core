@@ -15,6 +15,8 @@ import javax.swing.JTextField;
 
 import edu.stanford.smi.protege.resource.LocalizedText;
 import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.server.socket.ClientRmiSocketFactory;
+import edu.stanford.smi.protege.server.socket.SSLFactory;
 import edu.stanford.smi.protege.util.AllowableAction;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ComponentFactory;
@@ -123,11 +125,11 @@ public class ServerPanel extends JPanel implements Validatable {
 	private static RemoteServer connectToHost(String serverName) {
 		RemoteServer server = null;
 		try {
-		    if (SSLSettings.useSSL(SSLSettings.Context.LOGIN)) {
-		        ClientRmiSocketFactory.resetAuth();
+		    if (SSLFactory.useSSL(SSLFactory.Context.LOGIN)) {
+		        SSLFactory.resetAuth();
 		    }
 		    server = (RemoteServer) Naming.lookup("//" + serverName + "/" + Server.getBoundName());
-		    if (SSLSettings.useSSL(SSLSettings.Context.LOGIN) && !ClientRmiSocketFactory.checkAuth()) {
+		    if (SSLFactory.useSSL(SSLFactory.Context.LOGIN) && !SSLFactory.checkAuth()) {
 		        Log.getLogger().severe("Requested ssl security but server is not secured.");
 		        return null;
 		    }
