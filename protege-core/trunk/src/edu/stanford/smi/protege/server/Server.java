@@ -48,6 +48,9 @@ import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
+import edu.stanford.smi.protege.server.socket.ClientRmiSocketFactory;
+import edu.stanford.smi.protege.server.socket.SSLFactory;
+import edu.stanford.smi.protege.server.socket.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
@@ -189,9 +192,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private Server(String[] args) throws RemoteException, IOException {
-        super(ServerRmiSocketFactory.getServerPort(SSLSettings.Context.LOGIN),
-              new ClientRmiSocketFactory(SSLSettings.Context.LOGIN),
-              new ServerRmiSocketFactory(SSLSettings.Context.LOGIN));
+        super(ServerRmiSocketFactory.getServerPort(SSLFactory.Context.LOGIN),
+              new ClientRmiSocketFactory(SSLFactory.Context.LOGIN),
+              new ServerRmiSocketFactory(SSLFactory.Context.LOGIN));
         parseArgs(args);
         initialize();
     }
