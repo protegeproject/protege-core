@@ -33,12 +33,9 @@ import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
-import edu.stanford.smi.protege.server.ClientRmiSocketFactory;
 import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.server.SSLSettings;
 import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProperties;
-import edu.stanford.smi.protege.server.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
@@ -48,6 +45,9 @@ import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.UnbackedOperationImpl;
+import edu.stanford.smi.protege.server.socket.ClientRmiSocketFactory;
+import edu.stanford.smi.protege.server.socket.SSLFactory;
+import edu.stanford.smi.protege.server.socket.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.server.update.FrameRead;
 import edu.stanford.smi.protege.server.update.FrameWrite;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
@@ -143,9 +143,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     //ESCA-JAVA0160
     public ServerFrameStore(KnowledgeBase kb) throws RemoteException {
-        super(ServerRmiSocketFactory.getServerPort(SSLSettings.Context.ALWAYS),
-              new ClientRmiSocketFactory(SSLSettings.Context.ALWAYS),
-              new ServerRmiSocketFactory(SSLSettings.Context.ALWAYS));
+        super(ServerRmiSocketFactory.getServerPort(SSLFactory.Context.ALWAYS),
+              new ClientRmiSocketFactory(SSLFactory.Context.ALWAYS),
+              new ServerRmiSocketFactory(SSLFactory.Context.ALWAYS));
         _kb = kb;
         _kbLock = kb;
 
