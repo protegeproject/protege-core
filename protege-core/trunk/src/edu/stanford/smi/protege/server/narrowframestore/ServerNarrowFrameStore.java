@@ -22,11 +22,11 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
-import edu.stanford.smi.protege.server.ClientRmiSocketFactory;
 import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.server.SSLSettings;
-import edu.stanford.smi.protege.server.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.server.socket.ClientRmiSocketFactory;
+import edu.stanford.smi.protege.server.socket.SSLFactory;
+import edu.stanford.smi.protege.server.socket.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
@@ -44,9 +44,9 @@ public class ServerNarrowFrameStore
   
   public ServerNarrowFrameStore(NarrowFrameStore delegate, 
                                 KnowledgeBase kb) throws RemoteException {
-    super(ServerRmiSocketFactory.getServerPort(SSLSettings.Context.ALWAYS),
-          new ClientRmiSocketFactory(SSLSettings.Context.ALWAYS),
-          new ServerRmiSocketFactory(SSLSettings.Context.ALWAYS));
+    super(ServerRmiSocketFactory.getServerPort(SSLFactory.Context.ALWAYS),
+          new ClientRmiSocketFactory(SSLFactory.Context.ALWAYS),
+          new ServerRmiSocketFactory(SSLFactory.Context.ALWAYS));
     this.delegate = delegate;
     this.kb = kb;
     fixedDelegate 
