@@ -2,26 +2,89 @@ package edu.stanford.smi.protege.ui;
 
 //ESCA*JAVA0100
 
-import java.awt.*;
-import java.awt.event.*;
-import java.text.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JDesktopPane;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.border.Border;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.event.ClsAdapter;
+import edu.stanford.smi.protege.event.ClsEvent;
+import edu.stanford.smi.protege.event.ClsListener;
+import edu.stanford.smi.protege.event.FrameAdapter;
+import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.event.InstanceEvent;
+import edu.stanford.smi.protege.event.InstanceListener;
+import edu.stanford.smi.protege.event.KnowledgeBaseAdapter;
+import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.ProjectAdapter;
+import edu.stanford.smi.protege.event.ProjectEvent;
+import edu.stanford.smi.protege.event.ProjectListener;
+import edu.stanford.smi.protege.event.WidgetAdapter;
+import edu.stanford.smi.protege.event.WidgetEvent;
+import edu.stanford.smi.protege.event.WidgetListener;
+import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
-import edu.stanford.smi.protege.widget.*;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.ModelUtilities;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.resource.Colors;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.Disposable;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.StandardAction;
+import edu.stanford.smi.protege.util.StandardDateFormat;
+import edu.stanford.smi.protege.util.SystemUtilities;
+import edu.stanford.smi.protege.widget.ClsWidget;
+import edu.stanford.smi.protege.widget.FormWidget;
 
 /**
  * A holder for the display of a runtime "ClsForm". This holder handles the
  * "yellow sticky" ui and logic. This class inherits from JDesktopPane because
  * it uses internal frames to display yellow stickies.
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InstanceDisplay extends JDesktopPane implements Disposable {
@@ -40,64 +103,84 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     private boolean resizeVertically;
 
     private ClsListener _clsListener = new ClsAdapter() {
-    	
-        public void directSuperclassAdded(ClsEvent event) {
-        	if (event.isReplacementEvent()) return;
+
+        @Override
+		public void directSuperclassAdded(ClsEvent event) {
+        	if (event.isReplacementEvent()) {
+				return;
+			}
             reloadForm();
         }
 
-        public void directSuperclassRemoved(ClsEvent event) {
-        	if (event.isReplacementEvent()) return;
+        @Override
+		public void directSuperclassRemoved(ClsEvent event) {
+        	if (event.isReplacementEvent()) {
+				return;
+			}
             reloadForm();
         }
 
-        public void templateSlotAdded(ClsEvent event) {
-        	if (event.isReplacementEvent()) return;
+        @Override
+		public void templateSlotAdded(ClsEvent event) {
+        	if (event.isReplacementEvent()) {
+				return;
+			}
             if (shouldDisplaySlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
         }
 
-        public void templateSlotRemoved(ClsEvent event) {
-        	if (event.isReplacementEvent()) return;
+        @Override
+		public void templateSlotRemoved(ClsEvent event) {
+        	if (event.isReplacementEvent()) {
+				return;
+			}
             if (isDisplayingSlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
         }
 
-        public void templateFacetValueChanged(ClsEvent event) {
-        	if (event.isReplacementEvent()) return;
+        @Override
+		public void templateFacetValueChanged(ClsEvent event) {
+        	if (event.isReplacementEvent()) {
+				return;
+			}
             if (isDisplayingSlot(event.getCls(), event.getSlot())) {
                 reloadForm();
             }
         }
     };
     private FrameListener _frameListener = new FrameAdapter() {
-        public void ownSlotValueChanged(FrameEvent event) {
-        	if (event.isReplacementEvent()) return;
+        @Override
+		public void ownSlotValueChanged(FrameEvent event) {
+        	if (event.isReplacementEvent()) {
+				return;
+			}
             Slot slot = event.getSlot();
             if (slot.hasSuperslot(_templateSlotsSlot)) {
                 reloadForm();
             }
         }
     };
-    
+
     private KnowledgeBaseListener _kbListener = new KnowledgeBaseAdapter() {
-    	public void frameReplaced(KnowledgeBaseEvent event) {
+    	@Override
+		public void frameReplaced(KnowledgeBaseEvent event) {
     		Frame oldFrame = event.getFrame();
     		Frame newFrame = event.getNewFrame();
-    		
+
     		if (_currentInstance != null && _currentInstance.equals(oldFrame)) {
     			 setInstance((Instance)newFrame);
     		}
-    		if (_currentAssociatedCls != null && _currentAssociatedCls.equals(oldFrame)) {    		
-    			 setInstance(_currentInstance);    			
+    		if (_currentAssociatedCls != null && _currentAssociatedCls.equals(oldFrame)) {
+    			 setInstance(_currentInstance);
     		}
     	}
     };
 
     private WidgetListener _widgetListener = new WidgetAdapter() {
-        public void labelChanged(WidgetEvent event) {
+        @Override
+		public void labelChanged(WidgetEvent event) {
             if (_header != null) {
                 loadHeader();
             }
@@ -105,7 +188,8 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     };
 
     private ProjectListener _projectListener = new ProjectAdapter() {
-        public void formChanged(ProjectEvent event) {
+        @Override
+		public void formChanged(ProjectEvent event) {
             Cls cls = event.getCls();
             if (isDisplayingCls(cls)) {
                 reloadForm();
@@ -123,7 +207,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
     };
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     protected boolean shouldDisplaySlot(Cls cls, Slot slot) {
         return true;
     }
@@ -174,7 +258,8 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
     }
 
-    public void setBorder(Border border) {
+    @Override
+	public void setBorder(Border border) {
         _child.setBorder(border);
     }
 
@@ -186,7 +271,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         return (JLabel) _header.getComponent();
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     protected JScrollPane makeInstanceScrollPane() {
         JScrollPane pane = ComponentFactory.createScrollPane();
         pane.setBorder(null);
@@ -214,7 +299,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     }
 
     /**
-     * return null to prevent form from being displayed. 
+     * return null to prevent form from being displayed.
      */
     protected ClsWidget getWidget(Cls type, Instance instance, Cls associatedCls) {
         return _project.createRuntimeClsWidget(type, instance, associatedCls);
@@ -238,7 +323,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         return _project.getTabbedInstanceFormLayout();
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     protected JComponent createTabbedWidgetLayout(Collection widgets) {
         JTabbedPane tabbedPane = ComponentFactory.createTabbedPane(false);
         Iterator i = widgets.iterator();
@@ -354,6 +439,9 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     }
 
     public void dispose() {
+    	if (_project == null) { //already disposed
+    		return;
+    	}
     	_project.getKnowledgeBase().removeKnowledgeBaseListener(_kbListener);
         _project.removeProjectListener(_projectListener);
         if (_currentInstance != null) {
@@ -365,7 +453,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
             widget.getCls().removeFrameListener(_frameListener);
         }
         _currentWidgets.clear();
-        
+
         _project = null;
     }
 
@@ -375,12 +463,13 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     /**
      * @deprecated Use #getCurrentClsWidgets() or #getFirstClsWidget
      */
-    public ClsWidget getCurrentClsWidget() {
+    @Deprecated
+	public ClsWidget getCurrentClsWidget() {
         return getFirstClsWidget();
     }
 
     public ClsWidget getFirstClsWidget() {
-        return (ClsWidget) CollectionUtilities.getFirstItem(_currentWidgets);
+        return CollectionUtilities.getFirstItem(_currentWidgets);
     }
 
     private ClsWidget getClsWidget(Cls cls) {
@@ -416,7 +505,8 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         return _lastYellowStickyPosition;
     }
 
-    public Dimension getPreferredSize() {
+    @Override
+	public Dimension getPreferredSize() {
         return _child.getPreferredSize();
     }
 
@@ -514,7 +604,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
         }
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     protected String getTypeText(Instance instance) {
         StringBuffer typeText = new StringBuffer();
         Iterator i = instance.getDirectTypes().iterator();
@@ -549,11 +639,13 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
             frame.setBounds(r);
         }
         frame.addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent event) {
+            @Override
+			public void componentResized(ComponentEvent event) {
                 getYellowStickyMap().put(instance, event.getComponent().getBounds());
             }
 
-            public void componentMoved(ComponentEvent event) {
+            @Override
+			public void componentMoved(ComponentEvent event) {
                 getYellowStickyMap().put(instance, event.getComponent().getBounds());
             }
         });
@@ -632,7 +724,9 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
     /**
      * @deprecated
      */
-    public void reshape(int x, int y, int w, int h) {
+    @Deprecated
+	@Override
+	public void reshape(int x, int y, int w, int h) {
         super.reshape(x, y, w, h);
         _child.setBounds(0, 0, w, h);
     }
@@ -729,7 +823,7 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
                 int thisYear = calendar.get(Calendar.YEAR);
                 calendar.setTime(date);
                 int stickyYear = calendar.get(Calendar.YEAR);
-                String pattern = "MMM dd " + ((thisYear == stickyYear) ? "" : "yyyy ") + "HH:mm";
+                String pattern = "MMM dd " + (thisYear == stickyYear ? "" : "yyyy ") + "HH:mm";
                 formatter.applyPattern(pattern);
                 timeString = formatter.format(date);
             } catch (ParseException e) {
