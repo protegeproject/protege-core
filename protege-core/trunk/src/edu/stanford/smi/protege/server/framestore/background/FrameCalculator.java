@@ -264,9 +264,10 @@ public class FrameCalculator {
     if (reason != CacheRequestReason.PRELOAD &&
     		reason != CacheRequestReason.IMMEDIATE_PRELOAD &&
     		sessionMap.get(session).getBandWidthPolicy().stopSending()) {
-		if (frame.getKnowledgeBase() == null) {
-		  log.log(Level.WARNING, "Non-localized frame being added to the FrameCalculator", new Exception());
-		}
+    	return null;
+	}
+	if (frame.getKnowledgeBase() == null) {
+		log.log(Level.WARNING, "Non-localized frame being added to the FrameCalculator", new Exception());
 	}
     synchronized (requestLock) {
       ClientAndFrame cwf = new ClientAndFrame(session, frame);
