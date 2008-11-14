@@ -1,14 +1,33 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.LabeledComponent;
+import edu.stanford.smi.protege.util.LazyTreeRoot;
+import edu.stanford.smi.protege.util.ModalDialogCloseDoubleClickAdapter;
+import edu.stanford.smi.protege.util.SimpleListModel;
 
 /**
  * Panel to select a set of instances from all of the instances of a given set of classes.
@@ -71,8 +90,12 @@ public class SelectInstancesPanel extends JComponent {
     protected LabeledComponent createInstanceLabeledComponent() {
         LabeledComponent c = new LabeledComponent(null, new JScrollPane(_instanceList));
         c.setHeaderComponent(createDirectAllInstanceComboBox(), BorderLayout.WEST);
-        c.setFooterComponent(new ListFinder(_instanceList, "Find Instance"));
+        c.setFooterComponent(createListFinder());
         return c;
+    }
+    
+    protected Finder createListFinder() {
+    	return new ListFinder(_instanceList, "Find Instance");
     }
 
     protected JComboBox createDirectAllInstanceComboBox() {
@@ -133,11 +156,15 @@ public class SelectInstancesPanel extends JComponent {
             Cls cls = (Cls) i.next();
             instances.addAll(getInstances(cls));
         }
-        Collections.sort(instances, new FrameComparator());
+        Collections.sort(instances, getInstancesComparator());
         getInstanceModel().setValues(instances);
         if (!instances.isEmpty()) {
             _instanceList.setSelectedIndex(0);
         }
+    }
+    
+    protected Comparator getInstancesComparator() {
+    	return new FrameComparator();
     }
 
     protected Collection<Instance> getInstances(Cls cls) {
