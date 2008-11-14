@@ -136,7 +136,7 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 			Map.Entry<RemoteSession, RobustConnection> entry = i.next();
 			RemoteSession session = entry.getKey();
 			if( isDead( session ) ) {
-				RobustConnection connection = (RobustConnection) entry.getValue();
+				RobustConnection connection = entry.getValue();
 				// Log.getLogger().info("Clearing dead connection: " + session);
 				connection.dispose();
 				i.remove();
@@ -151,7 +151,7 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 				RemoteSession session = entry.getKey();
 				RobustConnection connection = entry.getValue();
 				connection.dispose();
-				Log.getLogger().info( "Closed connection for session: " + session );
+				Log.getLogger().info( "Closed DB connection for session: " + session );
 			}
 			_connections.clear();
 		} catch( SQLException e ) {
