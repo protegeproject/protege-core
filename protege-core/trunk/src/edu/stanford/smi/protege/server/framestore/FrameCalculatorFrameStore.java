@@ -23,22 +23,22 @@ import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
  * this component can be replaced depending on the application.
  */
 public class FrameCalculatorFrameStore extends FrameStoreAdapter {
-    
+
     /*
-     * The  !frameCalculator.inFrameCalculatorThread() calls are actually unneccessary at 
+     * The  !frameCalculator.inFrameCalculatorThread() calls are actually unneccessary at
      * the moment but I think that it is hacky to rely on this fact.
      */
-    
+
     private FrameCalculator frameCalculator;
-    
+
     public FrameCalculatorFrameStore(FrameCalculator frameCalculator) {
         this.frameCalculator = frameCalculator;
     }
-    
+
     public FrameCalculator getFrameCalculator() {
         return frameCalculator;
     }
-    
+
     @Override
     public List getDirectTemplateSlotValues(Cls cls, Slot slot) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
@@ -47,14 +47,14 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
     }
 
     @Override
-    public List getDirectTemplateFacetValues(Cls cls, 
-                                             Slot slot, 
+    public List getDirectTemplateFacetValues(Cls cls,
+                                             Slot slot,
                                              Facet facet) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
         frameCalculator.addRequest(cls, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
         return getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
     }
-    
+
     @Override
     public Frame getFrame(String name) {
         Frame frame = getDelegate().getFrame(name);
@@ -64,7 +64,7 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
         }
         return frame;
     }
-    
+
     @Override
     public int getDirectOwnSlotValuesCount(Frame frame, Slot slot) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
@@ -73,15 +73,13 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
         }
         return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
     }
-    
+
     @Override
     public List getDirectOwnSlotValues(Frame frame, Slot slot) {
         List values = getDelegate().getDirectOwnSlotValues(frame, slot);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         if (!frameCalculator.isDisabled(session)) {
-            if (!slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
-                frameCalculator.addRequest(frame, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
-            }
+        	frameCalculator.addRequest(frame, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);
             if (slot.getFrameID().equals(Model.SlotID.DIRECT_SUBCLASSES)) {
                 for (Object o : values) {
                     if (o instanceof Frame) {
@@ -89,20 +87,27 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
                     }
                 }
             }
+            else if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES)) {
+                for (Object o : values) {
+                    if (o instanceof Frame) {
+                        frameCalculator.addRequest((Frame) o, session, CacheRequestReason.DIRECT_INSTANCES);
+                    }
+                }
+            }
         }
         return  values;
     }
-    
+
     @Override
-    public Facet createFacet(FrameID id, 
-                             Collection directTypes, 
+    public Facet createFacet(FrameID id,
+                             Collection directTypes,
                              boolean loadDefaults) {
         Facet facet = getDelegate().createFacet(id, directTypes, loadDefaults);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         frameCalculator.addRequest(facet, session,  CacheRequestReason.NEW_FRAME);
         return facet;
     }
-    
+
     @Override
     public Slot createSlot(FrameID id,Collection directTypes,
                            Collection directSuperslots,
@@ -112,10 +117,10 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
         frameCalculator.addRequest(slot,  session, CacheRequestReason.NEW_FRAME);
         return slot;
     }
-    
+
     @Override
-    public Cls createCls(FrameID id, 
-                         Collection directTypes, 
+    public Cls createCls(FrameID id,
+                         Collection directTypes,
                          Collection directSuperclasses,
                          boolean loadDefaults) {
         Cls cls = getDelegate().createCls(id, directTypes, directSuperclasses, loadDefaults);
@@ -123,9 +128,9 @@ public class FrameCalculatorFrameStore extends FrameStoreAdapter {
         frameCalculator.addRequest(cls,  session, CacheRequestReason.NEW_FRAME);
         return cls;
     }
-    
+
     @Override
-    public SimpleInstance createSimpleInstance(FrameID id, 
+    public SimpleInstance createSimpleInstance(FrameID id,
                                                Collection directTypes,
                                                boolean loadDefaults) {
         SimpleInstance si = getDelegate().createSimpleInstance(id, directTypes, loadDefaults);
