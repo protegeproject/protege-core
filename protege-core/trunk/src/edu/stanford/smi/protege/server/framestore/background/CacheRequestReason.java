@@ -3,9 +3,9 @@ package edu.stanford.smi.protege.server.framestore.background;
 import java.util.EnumSet;
 
 public enum CacheRequestReason {
-  USER_REQUESTED_FRAME_VALUES,  USER_NAME_REQUEST, USER_CLOSURE_REQUEST, USER_SPECIFIC_FRAMES,  
-  NEW_FRAME, IMMEDIATE_PRELOAD, PRELOAD, SUBCLASS, STATE_MACHINE;
-  
+  USER_REQUESTED_FRAME_VALUES,  USER_NAME_REQUEST, USER_CLOSURE_REQUEST, USER_SPECIFIC_FRAMES,
+  NEW_FRAME, IMMEDIATE_PRELOAD, PRELOAD, SUBCLASS, DIRECT_INSTANCES, STATE_MACHINE;
+
   private static int MIN_PRIORITY;
   static {
     int min = STATE_MACHINE.priority();
@@ -16,7 +16,7 @@ public enum CacheRequestReason {
       MIN_PRIORITY = min;
     }
   }
-  
+
   public int priority() {
     switch (this) {
     case USER_REQUESTED_FRAME_VALUES:
@@ -37,7 +37,7 @@ public enum CacheRequestReason {
       return 0;
     }
   }
-  
+
   public static int priority(EnumSet<CacheRequestReason> reasons) {
     int priority = MIN_PRIORITY;
     for (CacheRequestReason reason : reasons) {
@@ -47,5 +47,5 @@ public enum CacheRequestReason {
     }
     return priority;
   }
-  
+
 }
