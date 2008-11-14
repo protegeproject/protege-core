@@ -1,12 +1,16 @@
 package edu.stanford.smi.protege.action;
 
-import java.util.*;
+import java.util.Iterator;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.DeleteAction;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.Selectable;
 
 /**
  * Action to attempt to delete an instance.  If the instance being deleted is a class then that class cannot have
@@ -28,7 +32,8 @@ public class DeleteInstancesAction extends DeleteAction {
     /**
      * @deprecated Use ResourceKey version
      */
-    public DeleteInstancesAction(String text, Selectable selectable) {
+    @Deprecated
+	public DeleteInstancesAction(String text, Selectable selectable) {
         super(text, selectable);
     }
 
@@ -54,7 +59,8 @@ public class DeleteInstancesAction extends DeleteAction {
         // do nothing
     }
 
-    public void onDelete(Object o) {
+    @Override
+	public void onDelete(Object o) {
         Instance instance = (Instance) o;
         if (canDelete(instance)) {
             onAboutToDelete(instance);
@@ -63,12 +69,13 @@ public class DeleteInstancesAction extends DeleteAction {
         }
     }
 
-    //ESCA-JAVA0130 
+    //ESCA-JAVA0130
     public void deleteInstance(Instance instance) {
         instance.getKnowledgeBase().deleteFrame(instance);
     }
 
-    public void onSelectionChange() {
+    @Override
+	public void onSelectionChange() {
         boolean isEditable = true;
         Iterator i = getSelection().iterator();
         while (i.hasNext()) {
