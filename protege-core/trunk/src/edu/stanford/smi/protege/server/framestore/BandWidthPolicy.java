@@ -30,7 +30,7 @@ public class BandWidthPolicy {
     }
     
     public static int getCap() {
-        return ApplicationProperties.getIntegerProperty(BANDWIDTH_CAP_PROPERTY, 500);
+        return ApplicationProperties.getIntegerProperty(BANDWIDTH_CAP_PROPERTY, 1000);
     }
     
     public synchronized void addItemToWaitList() {
