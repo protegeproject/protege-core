@@ -67,19 +67,19 @@ import edu.stanford.smi.protege.util.ViewAction;
  * The panel that holds the list of direct instances of one or more classes. If
  * only one class is chosen then you can also create new instances of this
  * class.
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DirectInstancesList extends SelectableContainer implements Disposable {
 
     private static final long serialVersionUID = 3123829893591425192L;
-    
+
     public final static String SORT_LIMIT_PROPERTY = "ui.DirectInstancesList.sort_limit";
     public static final int SORT_LIMIT;
     static {
         SORT_LIMIT = ApplicationProperties.getIntegerProperty(SORT_LIMIT_PROPERTY, 1000);
     }
-    
+
     private Collection<Cls> _clses = Collections.EMPTY_LIST;
     private SelectableList _list;
     private Project _project;
@@ -89,12 +89,13 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     private HeaderComponent _header;
     private boolean _showSubclassInstances;
     private LabeledComponent _labeledComponent;
-    
+
     private AddInstancesRunner background;
 
 
     private ClsListener _clsListener = new ClsAdapter() {
-        public void directInstanceAdded(ClsEvent event) {
+        @Override
+		public void directInstanceAdded(ClsEvent event) {
             synchronized (DirectInstancesList.this) {
                 if (background != null) {
                     background.addChange(event);
@@ -102,7 +103,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
             }
         }
 
-        public void directInstanceRemoved(ClsEvent event) {
+        @Override
+		public void directInstanceRemoved(ClsEvent event) {
             synchronized (DirectInstancesList.this) {
                 if (background != null) {
                     background.addChange(event);
@@ -112,7 +114,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     };
 
     private FrameListener _clsFrameListener = new FrameAdapter() {
-        public void ownSlotValueChanged(FrameEvent event) {
+        @Override
+		public void ownSlotValueChanged(FrameEvent event) {
             super.ownSlotValueChanged(event);
             background.addChange(event);
         }
@@ -123,8 +126,10 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         Action viewAction = createViewAction();
 
         _list = ComponentFactory.createSelectableList(viewAction);
-        _list.setCellRenderer(FrameRenderer.createInstance());
+        //_list.setCellRenderer(FrameRenderer.createInstance());
         _list.setModel(new ConcurrentListModel());
+
+
 
         _labeledComponent = new LabeledComponent(null, ComponentFactory.createScrollPane(_list));
         addButtons(viewAction, _labeledComponent);
@@ -142,7 +147,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     private void updateLabel() {
         String text;
         Cls cls = getSoleAllowedCls();
-        BrowserSlotPattern pattern = (cls == null) ? null : cls.getBrowserSlotPattern();
+        BrowserSlotPattern pattern = cls == null ? null : cls.getBrowserSlotPattern();
         if (pattern == null) {
             text = null;
         } else {
@@ -190,7 +195,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected Action createCreateAction() {
         _createAction = new CreateAction(ResourceKey.INSTANCE_CREATE) {
-            public void onCreate() {
+            @Override
+			public void onCreate() {
                 if (!_clses.isEmpty()) {
                     KnowledgeBase kb = _project.getKnowledgeBase();
                     Instance instance = kb.createInstance(null, _clses);
@@ -213,7 +219,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected Action createConfigureAction() {
         return new ConfigureAction() {
-            public void loadPopupMenu(JPopupMenu menu) {
+            @Override
+			public void loadPopupMenu(JPopupMenu menu) {
                 menu.add(createSetDisplaySlotAction());
                 menu.add(createShowAllInstancesAction());
             }
@@ -247,7 +254,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     protected Cls getSoleAllowedCls() {
         Cls cls;
         if (_clses.size() == 1) {
-            cls = (Cls) CollectionUtilities.getFirstItem(_clses);
+            cls = CollectionUtilities.getFirstItem(_clses);
         } else {
             cls = null;
         }
@@ -260,7 +267,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         Cls cls = getSoleAllowedCls();
         if (cls != null) {
             BrowserSlotPattern pattern = cls.getBrowserSlotPattern();
-            Slot browserSlot = (pattern != null && pattern.isSimple()) ? pattern.getFirstSlot() : null;
+            Slot browserSlot = pattern != null && pattern.isSimple() ? pattern.getFirstSlot() : null;
             Iterator i = cls.getVisibleTemplateSlots().iterator();
             while (i.hasNext()) {
                 Slot slot = (Slot) i.next();
@@ -318,7 +325,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected Action createCopyAction() {
         _copyAction = new MakeCopiesAction(ResourceKey.INSTANCE_COPY, this) {
-            protected Instance copy(Instance instance, boolean isDeep) {
+            @Override
+			protected Instance copy(Instance instance, boolean isDeep) {
                 Instance copy = super.copy(instance, isDeep);
                 setSelectedInstance(copy);
                 return copy;
@@ -333,13 +341,15 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected Action createViewAction() {
         return new ViewAction(ResourceKey.INSTANCE_VIEW, this) {
-            public void onView(Object o) {
+            @Override
+			public void onView(Object o) {
                 _project.show((Instance) o);
             }
         };
     }
 
-    public void dispose() {
+    @Override
+	public void dispose() {
         removeClsListeners();
         if (background != null) {
             background.cancel();
@@ -368,7 +378,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         return isEditable;
     }
 
-    public void onSelectionChange() {
+    @Override
+	public void onSelectionChange() {
         // Log.enter(this, "onSelectionChange");
         boolean editable = isSelectionEditable();
         ComponentUtilities.setDragAndDropEnabled(_list, editable);
@@ -478,7 +489,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     }
 
     private void updateButtons() {
-        Cls cls = (Cls) CollectionUtilities.getFirstItem(_clses);
+        Cls cls = CollectionUtilities.getFirstItem(_clses);
         _createAction.setEnabled(cls == null ? false : cls.isConcrete());
         Instance instance = (Instance) getSoleSelection();
         boolean allowed = instance != null && instance instanceof SimpleInstance;
@@ -487,34 +498,35 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     public void setListRenderer(ListCellRenderer renderer) {
     	_list.setCellRenderer(renderer);
-    	
+
     	if (renderer instanceof FrameRenderer) {
     		((FrameRenderer)renderer).setDisplayType(_showSubclassInstances);
     	}
     }
-    
+
     /**
      * Does nothing anymore. This functionality moved to the menu button.
-     * 
+     *
      * @deprecated
      */
-    public void setShowDisplaySlotPanel(boolean b) {
+    @Deprecated
+	public void setShowDisplaySlotPanel(boolean b) {
 
     }
-    
-    
-    
+
+
+
     private class AddInstancesRunner implements Runnable {
         private List<Instance> instances;
         private List<AbstractEvent> changes = new ArrayList<AbstractEvent>();
         private Instance deferredSelection;
         private boolean sorted;
-        
+
         private boolean cancelled = false;
-        
+
         public AddInstancesRunner(List<Instance> instances) {
             this.instances = instances;
-            sorted = (SORT_LIMIT < 0  || instances.size() < SORT_LIMIT);
+            sorted = SORT_LIMIT < 0  || instances.size() < SORT_LIMIT;
         }
 
         public void run() {
@@ -522,12 +534,14 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                 waitToProcessEvents();
                 addOneInstance(getNextInstance());
                 synchronized (this) {
-                    if (cancelled) return;
+                    if (cancelled) {
+						return;
+					}
                 }
                 handleChanges();
             }
         }
-        
+
         private void waitToProcessEvents() {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
@@ -541,7 +555,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                 Log.getLogger().log(Level.SEVERE, "Programmer error", e);
             }
         }
-        
+
         private void addOneInstance(final Instance instance) {
             if (instance == null) {
                 return;
@@ -551,7 +565,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                     SwingUtilities.invokeAndWait(new Runnable() {
                         public void run() {
                             /* Since I am writing you a message - you know it is not good.
-                             * 
+                             *
                              * If AddInstanceRunner.cancel is called in the AWT event queue thread
                              * then it will happen either before or after the following.  Therefore
                              * we won't get a cancel in the middle of the addValue operation.
@@ -568,7 +582,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                 }
             }
         }
-        
+
         private synchronized Instance getNextInstance() {
             if (instances.isEmpty() && !cancelled) {
                 try {
@@ -584,7 +598,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
             instances.remove(0);
             return instance;
         }
-        
+
         private void handleChanges() {
             final List<AbstractEvent> localChanges = new ArrayList<AbstractEvent>();
             final Instance localDeferredSelection;
@@ -649,7 +663,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                 }
             }
         }
-        
+
         private void insertInstanceInList(Instance instance) {
             if (sorted) {
                 List list = getModel().toList();
@@ -665,20 +679,20 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                 getModel().addValue(instance);
             }
         }
-        
+
         public synchronized void addChange(AbstractEvent event) {
             changes.add(event);
             notifyAll();
         }
-        
+
         public synchronized void setDeferredSelection(Instance instance) {
             deferredSelection = instance;
         }
-        
+
         public synchronized void cancel() {
             cancelled = true;
             notifyAll();
         }
-        
+
     }
 }
