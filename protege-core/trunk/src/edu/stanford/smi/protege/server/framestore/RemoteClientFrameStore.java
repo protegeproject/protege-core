@@ -1671,7 +1671,7 @@ public class RemoteClientFrameStore implements FrameStore {
       }
     }
 
-
+    
     private void invalidateCachedEntry(boolean isTransactionScope,
                                        Frame frame,
                                        Slot slot,
@@ -1761,6 +1761,9 @@ public class RemoteClientFrameStore implements FrameStore {
           cacheLog.fine("Started caching for frame" + frame.getFrameID());
         }
         cacheStatus.put(frame, CacheStatus.STARTED_CACHING);
+        if (cache.get(frame) == null) {
+        	cache.put(frame, new HashMap<Sft,List>());
+        }
       } else if (vu instanceof FrameEvaluationCompleted) {
         CacheStatus status = cacheStatus.get(frame);
         if (status != null && status == CacheStatus.STARTED_CACHING) {
