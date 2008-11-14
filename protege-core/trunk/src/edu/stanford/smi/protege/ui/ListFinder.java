@@ -14,7 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ListFinder extends Finder {
-    private JList _list;
+    protected JList _list;
 
     public ListFinder(JList list, ResourceKey key) {
         super(key);
