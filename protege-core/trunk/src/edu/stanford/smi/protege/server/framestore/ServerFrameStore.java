@@ -45,9 +45,8 @@ import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.UnbackedOperationImpl;
-import edu.stanford.smi.protege.server.socket.ClientRmiSocketFactory;
+import edu.stanford.smi.protege.server.socket.RmiSocketFactory;
 import edu.stanford.smi.protege.server.socket.SSLFactory;
-import edu.stanford.smi.protege.server.socket.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.server.update.FrameRead;
 import edu.stanford.smi.protege.server.update.FrameWrite;
 import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
@@ -143,9 +142,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     //ESCA-JAVA0160
     public ServerFrameStore(KnowledgeBase kb) throws RemoteException {
-        super(ServerRmiSocketFactory.getServerPort(SSLFactory.Context.ALWAYS),
-              new ClientRmiSocketFactory(SSLFactory.Context.ALWAYS),
-              new ServerRmiSocketFactory(SSLFactory.Context.ALWAYS));
+        super(SSLFactory.getServerPort(SSLFactory.Context.ALWAYS),
+              new RmiSocketFactory(SSLFactory.Context.ALWAYS),
+              new RmiSocketFactory(SSLFactory.Context.ALWAYS));
         _kb = kb;
         _kbLock = kb;
 
