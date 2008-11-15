@@ -1,8 +1,6 @@
 package edu.stanford.smi.protege.server.socket;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -11,8 +9,6 @@ import java.net.SocketAddress;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
-import java.util.ArrayList;
-import java.util.List;
 
 import edu.stanford.smi.protege.util.Log;
 
@@ -34,7 +30,7 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
     public Socket createSocket(String host, int port) throws IOException {
         SocketAddress serverAddress = new InetSocketAddress(host, port);
         SocketAddress localAddress = new InetSocketAddress(0);
-        Socket socket = createBareSocket();
+        Socket socket = new SocketWithAspects();
         socket.setReuseAddress(true);
         socket.bind(localAddress);
         socket.connect(serverAddress);
@@ -45,7 +41,7 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
         return new ServerSocket(port) {
             @Override
             public Socket accept() throws IOException {
-                Socket socket = createBareSocket();
+                Socket socket = new SocketWithAspects();
                 implAccept(socket);
                 return socket;
             }
@@ -64,20 +60,6 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
         return (use_ssl ? 1 : 0);
     }
 
-    
-    private Socket createBareSocket() {
-        return new Socket() {
-            private InputStream is;
-            private OutputStream os;
-            
-
-            
-            @Override
-            public synchronized void close() throws IOException {
-                super.close();
-            }
-        };
-    }
 
     private static boolean portsReported = false;
     private void reportPorts() {
@@ -94,5 +76,5 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
     private static int getPort(String name, int defaultValue) {
         Integer i = Integer.getInteger(name);
         return i == null ? defaultValue : i.intValue();
-    }
+    } 
 }
