@@ -1,7 +1,12 @@
 package edu.stanford.smi.protege.server.update;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Localizable;
@@ -42,12 +47,14 @@ public class OntologyUpdate implements Serializable, Localizable {
      LocalizeUtils.localize(updates, kb);
   }
 
-  /* Unable to figure how to avoid the EOF Exception and 
+  /* 
+     Unable to figure how to avoid the EOF Exception and 
      the ClassNotFoundException.
      I think  what is happening in the first  case is that the 
      reader is trying to read too fast.
      The second case almost worked but maybe there  was  a problem
-     wiht the classloader?
+     with the classloader?
+
   
   private void writeObject(ObjectOutputStream out)
   throws IOException {
@@ -64,7 +71,6 @@ public class OntologyUpdate implements Serializable, Localizable {
     ObjectInputStream zipObjectIn = new ObjectInputStream(zipIn);
     updates = (List) zipObjectIn.readObject();
   }
-
-  */
+    */
 
 }
