@@ -12,9 +12,8 @@ import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
-import edu.stanford.smi.protege.server.socket.ClientRmiSocketFactory;
+import edu.stanford.smi.protege.server.socket.RmiSocketFactory;
 import edu.stanford.smi.protege.server.socket.SSLFactory;
-import edu.stanford.smi.protege.server.socket.ServerRmiSocketFactory;
 
 public class ServerProject extends UnicastRemoteObject implements RemoteServerProject {
     private static final long serialVersionUID = 7320382402535936929L;
@@ -37,9 +36,9 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
 
 
     public ServerProject(Server server, URI uri, ProjectInstance projectInstance, Project project) throws RemoteException {
-        super(ServerRmiSocketFactory.getServerPort(SSLFactory.Context.ALWAYS),
-              new ClientRmiSocketFactory(SSLFactory.Context.ALWAYS),
-              new ServerRmiSocketFactory(SSLFactory.Context.ALWAYS));
+        super(SSLFactory.getServerPort(SSLFactory.Context.ALWAYS),
+              new RmiSocketFactory(SSLFactory.Context.ALWAYS),
+              new RmiSocketFactory(SSLFactory.Context.ALWAYS));
         _server = server;
         _uri = uri;
         _project = project;
