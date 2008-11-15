@@ -91,6 +91,13 @@ public class SSLFactory implements RMIClientSocketFactory, RMIServerSocketFactor
         return socket;
     }
     
+    public static int getServerPort(Context context) {
+    	if (useSSL(context)) {
+    		return Integer.getInteger(RmiSocketFactory.SERVER_SSL_PORT, 0).intValue();
+    	}
+        return Integer.getInteger(RmiSocketFactory.SERVER_PORT, 0).intValue();
+    }
+
     public static boolean useSSL(Context context) {
         if (policy == null) {
             policy = Context.NONE;
