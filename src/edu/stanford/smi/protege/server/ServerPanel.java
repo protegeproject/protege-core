@@ -15,7 +15,6 @@ import javax.swing.JTextField;
 
 import edu.stanford.smi.protege.resource.LocalizedText;
 import edu.stanford.smi.protege.resource.ResourceKey;
-import edu.stanford.smi.protege.server.socket.ClientRmiSocketFactory;
 import edu.stanford.smi.protege.server.socket.SSLFactory;
 import edu.stanford.smi.protege.util.AllowableAction;
 import edu.stanford.smi.protege.util.ApplicationProperties;
