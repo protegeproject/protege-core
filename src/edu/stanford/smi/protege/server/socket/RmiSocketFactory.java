@@ -26,14 +26,8 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
 
     private boolean use_ssl = false;
     
-    // Stream Factories starting with the innermost first.
-    private List<StreamAspect> aspects = new ArrayList<StreamAspect>();
-    
     public RmiSocketFactory(SSLFactory.Context context) {
         use_ssl = SSLFactory.useSSL(context);
-        if (CompressionAspect.useCompression()) {
-            aspects.add(new CompressionAspect());
-        }
         reportPorts();
     }
 
@@ -75,38 +69,11 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
         return new Socket() {
             private InputStream is;
             private OutputStream os;
-            private List<OutputStreamWithHooks> hooks = new ArrayList<OutputStreamWithHooks>();
             
-            @Override
-            public InputStream getInputStream() throws IOException {
-                if (is == null) {
-                    is = super.getInputStream();
-                    for (StreamAspect aspect : aspects) {
-                        is = aspect.getInputStream(is);
-                    }
-                }
-                return is;
-            }
-            
-            @Override
-            public OutputStream getOutputStream() throws IOException {
-                if (os == null) {
-                    os = super.getOutputStream();
-                    for (int i = aspects.size() - 1; i >= 0; i--) {
-                        os = aspects.get(i).getOutputStream(os);
-                        if (os instanceof OutputStreamWithHooks) {
-                            hooks.add((OutputStreamWithHooks) os);
-                        }
-                    }
-                }
-                return os;
-            }
+
             
             @Override
             public synchronized void close() throws IOException {
-                for (int i = hooks.size() - 1; i >= 0; i--) {
-                    hooks.get(i).socketCloseHook();
-                }
                 super.close();
             }
         };
