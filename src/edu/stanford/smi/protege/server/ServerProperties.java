@@ -34,6 +34,7 @@ public class ServerProperties {
   public final static String SERVER_ALLOW_CREATE_USERS = "server.allow.create.users";
   public final static String SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY = "server.newproject.save.directory";
 
+  public final static String PROTEGE_RMI_USE_COMPRESSION = "server.use.compression";
   
   public static boolean skipPreload() {
 	  return SystemUtilities.getSystemBooleanProperty(SKIP_PRELOAD, false);
@@ -93,6 +94,10 @@ public class ServerProperties {
       String defaultSaveDir = ApplicationProperties.getApplicationDirectory().getAbsolutePath();
       
       return ApplicationProperties.getApplicationOrSystemProperty(SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY, defaultSaveDir);
+  }
+  
+  public static boolean useCompression() {
+      return ApplicationProperties.getBooleanProperty(PROTEGE_RMI_USE_COMPRESSION, false);
   }
   
 }
