@@ -48,9 +48,8 @@ import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
-import edu.stanford.smi.protege.server.socket.ClientRmiSocketFactory;
+import edu.stanford.smi.protege.server.socket.RmiSocketFactory;
 import edu.stanford.smi.protege.server.socket.SSLFactory;
-import edu.stanford.smi.protege.server.socket.ServerRmiSocketFactory;
 import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
@@ -138,7 +137,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private static Registry getRegistry() throws RemoteException {
-        int port = Integer.getInteger(ClientRmiSocketFactory.REGISTRY_PORT, Registry.REGISTRY_PORT).intValue();
+        int port = Integer.getInteger(RmiSocketFactory.REGISTRY_PORT, Registry.REGISTRY_PORT).intValue();
         return LocateRegistry.getRegistry(null, port);
     }
 
@@ -192,9 +191,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
     private Server(String[] args) throws RemoteException, IOException {
-        super(ServerRmiSocketFactory.getServerPort(SSLFactory.Context.LOGIN),
-              new ClientRmiSocketFactory(SSLFactory.Context.LOGIN),
-              new ServerRmiSocketFactory(SSLFactory.Context.LOGIN));
+        super(SSLFactory.getServerPort(SSLFactory.Context.LOGIN),
+              new RmiSocketFactory(SSLFactory.Context.LOGIN),
+              new RmiSocketFactory(SSLFactory.Context.LOGIN));
         parseArgs(args);
         initialize();
     }
