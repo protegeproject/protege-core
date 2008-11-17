@@ -34,6 +34,9 @@ public class SocketWithAspects extends Socket {
         if (ServerProperties.useCompression()) {
             myAspects = new CompressionAspect(myAspects);
         }
+        if (MonitoringAspect.useMonitoring()) {
+            myAspects = new MonitoringAspect(myAspects);
+        }
     }
     
     public InputStream getInputStream() throws IOException {
