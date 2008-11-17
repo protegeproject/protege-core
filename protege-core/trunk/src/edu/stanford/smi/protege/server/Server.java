@@ -620,7 +620,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * Session Management
      */
 
-        public RemoteSession openSession(String username, String userIpAddress, String password) {
+   public RemoteSession openSession(String username, String userIpAddress, String password) {
         RemoteSession session = null;
         if (isValid(username, password)) {
             session = new Session(username, userIpAddress);
