@@ -28,6 +28,8 @@ public class ServerProperties {
   public static final String USER_PRELOAD = "server.client.preload";
   public static final String SKIP_PRELOAD = "server.client.preload.skip";
   public static final String DELAY_MSEC = "server.delay";
+  public static final String DELAY_KBS_DOWNLOAD = "server.download.kilobytes.second";
+  public static final String DELAY_KBS_UPLOAD = "server.upload.kilobytes.second";
   public static final String MIN_PRELOAD_FRAMES = "preload.frame.limit";
   public static final String DISABLE_HEARTBEAT = "server.disable.heartbeat";
   public static final String TX_LEVEL = "transaction.level";
@@ -98,6 +100,26 @@ public class ServerProperties {
   
   public static boolean useCompression() {
       return ApplicationProperties.getBooleanProperty(PROTEGE_RMI_USE_COMPRESSION, false);
+  }
+  
+  public static int getKiloBytesPerSecondDownload() {
+      String val = ApplicationProperties.getApplicationOrSystemProperty(DELAY_KBS_DOWNLOAD, "0");
+      try {
+          return Integer.parseInt(val);
+      }
+      catch (NumberFormatException nfe) {
+          return 0;
+      }
+  }
+  
+  public static int getKiloBytesPerSecondUpload() {
+      String val = ApplicationProperties.getApplicationOrSystemProperty(DELAY_KBS_UPLOAD, "0");
+      try {
+          return Integer.parseInt(val);
+      }
+      catch (NumberFormatException nfe) {
+          return 0;
+      }
   }
   
 }
