@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -11,7 +12,8 @@ import edu.stanford.smi.protege.util.Log;
 
 public class CompressingOutputStream extends OutputStream {
     private static final transient Logger log = Log.getLogger(CompressingOutputStream.class);
-    public final static int BUFFER_SIZE = 4096;
+    public final static int BUFFER_SIZE = 16 * 4096;
+    public final static int SMALL_DATA = 1024;
     
     private byte[] data = new byte[BUFFER_SIZE];
     int offset = 0;  // the next location in the buffer to write to
@@ -52,11 +54,20 @@ public class CompressingOutputStream extends OutputStream {
                 log.finer("OutputStream: Flushing output by starting new segment " + (blockCounter + 1));
             }
             ZipEntry entry = new ZipEntry("Segment" + blockCounter++);
-            entry.setMethod(ZipEntry.DEFLATED);
+            if (offset < SMALL_DATA) {
+                entry.setMethod(ZipEntry.STORED);
+                CRC32 crc = new CRC32();
+                crc.update(data, 0, offset);
+                entry.setCrc(crc.getValue());
+            }
+            else {
+                entry.setMethod(ZipEntry.DEFLATED);
+            }
             entry.setSize(offset);
             compressing.putNextEntry(entry);
             compressing.write(data, 0, offset);
             compressing.closeEntry();
+            compressing.flush();
             if (log.isLoggable(Level.FINER)) {
                 log.finer("OutputStream: segment " + blockCounter + " written (" + offset + " bytes)");
             }
