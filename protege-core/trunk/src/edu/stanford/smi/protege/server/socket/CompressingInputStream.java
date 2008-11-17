@@ -15,6 +15,9 @@ public class CompressingInputStream extends InputStream {
     private ZipEntry entry;
     boolean initialized = false;
     
+    long totalData = 0;
+    long compressedData = 0;
+    
     public CompressingInputStream(InputStream is) {
         compressing = new ZipInputStream(is);
     }
@@ -24,9 +27,13 @@ public class CompressingInputStream extends InputStream {
         if (!initialize() || entry == null) {
             return  -1;
         }
-        int ret = compressing.read();
+        int ret = -1;
+        if (compressing.available() != 0) {
+            ret = compressing.read();
+        }
         if (ret < 0) {
             compressing.closeEntry();
+            logZipEntry(entry);
             if ((entry = compressing.getNextEntry()) != null) {
                 if (log.isLoggable(Level.FINER)) {
                     log.finer("InputStream: reading new segment " + entry.getName());
@@ -42,9 +49,13 @@ public class CompressingInputStream extends InputStream {
         if (!initialize() || entry == null) {
             return  -1;
         }
-        int bytesRead = compressing.read(b, off, len);
+        int bytesRead = -1;
+        if (compressing.available() != 0) {
+            bytesRead = compressing.read(b, off, len);
+        }
         if (bytesRead < 0) {
             compressing.closeEntry();
+            logZipEntry(entry);
             if  ((entry = compressing.getNextEntry()) != null) {
                 if (log.isLoggable(Level.FINER)) {
                     log.finer("InputStream: reading new segment " + entry.getName());
@@ -70,5 +81,22 @@ public class CompressingInputStream extends InputStream {
             return entry != null;
         }
         return true;
+    }
+    
+    private void logZipEntry(ZipEntry entry) {
+        if (!log.isLoggable(Level.FINER)) {
+            return;
+        }
+        log.finer("" + entry.getName() 
+                  + " storage method " + (entry.getMethod() == ZipEntry.STORED ? "Uncompressed" : "Compressed")
+                  + " read - original size " + entry.getSize() 
+                  + " compressed size " + entry.getCompressedSize());
+        totalData += entry.getSize();
+        compressedData += entry.getCompressedSize();
+        if (totalData != 0) {
+            log.finer("Average Compression Ration = " 
+                      + (100.0 * ((double) compressedData) / ((double) totalData)) + "%");
+            log.finer("Data transfered = " + ((double) totalData)/(1024.0 * 1024.0) + " megabytes");
+        }
     }
 }
