@@ -587,6 +587,26 @@ public class RobustConnection {
         return committed;
     }
 
+	/**
+     * Refresh the activity monitor on a connection (useful to avoid connection
+     * reaping).
+     * 
+     * @return <code>false</code> if connection is not established, is closed,
+     *         or SQLException occurs <code>true</code> otherwise
+     */
+    public boolean refreshConnection() {
+        try {
+            if( (_connection == null) || _connection.isClosed() )
+                return false;
+        } catch( SQLException e ) {
+            Log.getLogger().warning( e.toString() );
+            return false;
+        }
+
+        lastAccessTime = System.currentTimeMillis();
+        return true;
+    }
+
     public boolean rollbackTransaction() {
         if (!sessionOk()) {
           return false;
