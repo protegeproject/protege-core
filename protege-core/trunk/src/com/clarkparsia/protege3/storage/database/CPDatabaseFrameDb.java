@@ -1291,6 +1291,9 @@ public class CPDatabaseFrameDb extends AbstractDatabaseFrameDb {
 				insNullFacetStmt.executeBatch();
 				System.err.println( " complete." );
 				nCountSinceExecute = 0;
+
+				if( !connection.refreshConnection() )
+					log.warning( "Failed to refresh database connection activity status.  Connection may be closed prematurely." );
 			}
 		}
 		insFacetStmt.executeBatch();
