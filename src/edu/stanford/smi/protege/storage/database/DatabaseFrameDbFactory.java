@@ -26,40 +26,11 @@ public class DatabaseFrameDbFactory {
 	final private static Logger						log	= Log
 																.getLogger( DatabaseFrameDbFactory.class );
 
-	private static Class<? extends DatabaseFrameDb>	implementation;
-	private static Class<? extends DatabaseFrameDb>	fallback;
 
-	static {
-		fallback = DefaultDatabaseFrameDb.class;
 
-		String className = System
-				.getProperty( "edu.stanford.smi.protege.storage.database.DatabaseFrameDb.class" );
-
-		if( className == null ) {
-			implementation = fallback;
-		}
-		else {
-			try {
-				Class<?> clazz = Class.forName( className );
-				implementation = clazz.asSubclass( DatabaseFrameDb.class );
-			} catch( ClassNotFoundException e ) {
-				log.warning( className + " not found, using default DatabaseFrameDb" );
-				implementation = fallback;
-			} catch( ClassCastException e ) {
-				log.warning( className
-						+ " does not implement DatabaseFrameDb, using default DatabaseFrameDb" );
-				implementation = fallback;
-			}
-		}
-	}
-
-	public static void setDefaultImplementation(Class<? extends DatabaseFrameDb> clazz) {
-		implementation = clazz;
-	}
-
-	public static DatabaseFrameDb createDatabaseFrameDb() {
+	public static DatabaseFrameDb createDatabaseFrameDb(Class<? extends DatabaseFrameDb> clz) {
 		try {
-			return implementation.newInstance();
+			return clz.newInstance();
 		} catch( InstantiationException e ) {
 			log.log( Level.SEVERE, "Failed to instantiate DatabaseFrameDb", e );
 			return null;
@@ -67,5 +38,21 @@ public class DatabaseFrameDbFactory {
 			log.log( Level.SEVERE, "Illegal access exception while creating DatabaseFrameDb", e );
 			return null;
 		}
+	}
+	
+	public static Class<? extends DatabaseFrameDb> getFrameDbClass(String className) {
+	    Class<? extends DatabaseFrameDb> dbFrameDbClass = DefaultDatabaseFrameDb.class;
+	    if( className != null ) {
+	        try {
+	            Class<?> clazz = Class.forName( className );
+	            dbFrameDbClass = clazz.asSubclass( DatabaseFrameDb.class );
+	        } catch( ClassNotFoundException e ) {
+	            log.warning( className + " not found, using default DatabaseFrameDb" );
+	        } catch( ClassCastException e ) {
+	            log.warning( className
+	                         + " does not implement DatabaseFrameDb, using default DatabaseFrameDb" );
+	        }
+	    }
+	    return dbFrameDbClass;
 	}
 }
