@@ -53,6 +53,10 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
         DefaultKnowledgeBase kb = new DefaultKnowledgeBase(this);
         return kb;
     }
+    
+    public Class<? extends DatabaseFrameDb> getDatabaseFrameDbClass() {
+        return DefaultDatabaseFrameDb.class;
+    }
 
     public KnowledgeBaseSourcesEditor createKnowledgeBaseSourcesEditor(String projectName, PropertyList sources) {
         return new DatabaseKnowledgeBaseSourcesEditor(projectName, sources);
@@ -216,7 +220,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
     }
 
    public ValueCachingNarrowFrameStore createNarrowFrameStore(String name) {
-      DatabaseFrameDb store = DatabaseFrameDbFactory.createDatabaseFrameDb();
+      DatabaseFrameDb store = DatabaseFrameDbFactory.createDatabaseFrameDb(getDatabaseFrameDbClass());
       ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
       vcnfs.setName(name);
       return vcnfs;
@@ -255,7 +259,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
                                  String tablename, 
                                  Collection errors) {
       try {
-          DatabaseFrameDb db = DatabaseFrameDbFactory.createDatabaseFrameDb();
+          DatabaseFrameDb db = DatabaseFrameDbFactory.createDatabaseFrameDb(getDatabaseFrameDbClass());
           db.initialize(inputKb.getFrameFactory(), driver, url, username, password, tablename, false);
           db.overwriteKB(inputKb, true);
           db.close();
