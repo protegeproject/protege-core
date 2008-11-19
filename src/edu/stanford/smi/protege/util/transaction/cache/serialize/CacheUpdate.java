@@ -1,4 +1,4 @@
-package edu.stanford.smi.protege.util.transaction.cache;
+package edu.stanford.smi.protege.util.transaction.cache.serialize;
 
 public class CacheUpdate<S, V, R> {
 	private S session;
