@@ -11,7 +11,6 @@ public class FrameID implements Serializable, Localizable {
     private static final long serialVersionUID = -3804918126573053937L;
     private String name;
     private int hashCode;
-    private static WeakHashMap<String, String> canonicalString = new WeakHashMap<String, String>();
 
     public FrameID(String name) {
         this.name = name;
@@ -53,16 +52,8 @@ public class FrameID implements Serializable, Localizable {
         }
     }
     
-    private void intern() {
-        /*
-        String canonical = canonicalString.get(name);
-        if (canonical != null) {
-            name = canonical;
-        }
-        else {
-            canonicalString.put(name, name);
-        }
-        */
+
+    private synchronized void intern() {
         name = name.intern();
     }
 }

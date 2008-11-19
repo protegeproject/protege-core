@@ -160,6 +160,36 @@ public class RemoteClientFrameStore implements FrameStore {
       startHeartbeatThread();
       preload(preloadAll);
     }
+    
+    private static RemoteClientFrameStore getMeFromKb(KnowledgeBase kb) {
+        if (!(kb instanceof DefaultKnowledgeBase)) {
+            return null;
+        }
+        DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
+        for (FrameStore fs = dkb.getHeadFrameStore(); fs != null;  fs = fs.getDelegate()) {
+            if (fs instanceof RemoteClientFrameStore) {
+                return (RemoteClientFrameStore) fs;
+            }
+        }
+        return null;
+    }
+    
+    public static boolean isCached(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+        RemoteClientFrameStore rcfs = getMeFromKb(frame.getKnowledgeBase());
+        if (rcfs == null) {
+            return true;
+        }
+        return rcfs.isCachedInternal(frame, slot, facet, isTemplate);
+    }
+    
+    public static boolean isCacheComplete(Frame frame) {
+        RemoteClientFrameStore rcfs = getMeFromKb(frame.getKnowledgeBase());
+        if (rcfs == null) {
+            return true;
+        }
+        return rcfs.cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING;
+    }
+
 
     private void startHeartbeatThread() {
       if (ServerProperties.heartbeatDisabled()) {
@@ -900,7 +930,7 @@ public class RemoteClientFrameStore implements FrameStore {
       Set<Instance> values = new HashSet<Instance>();
       Set<Frame> missingClasses = new HashSet<Frame>();
       for (Cls subClass : subClasses) {
-        if (isCached(subClass, getSystemFrames().getDirectInstancesSlot(), (Facet) null, false)) {
+        if (isCachedInternal(subClass, getSystemFrames().getDirectInstancesSlot(), (Facet) null, false)) {
           values.addAll(getDirectInstances(subClass));
         } else {
           missingClasses.add(subClass);
@@ -1167,19 +1197,6 @@ public class RemoteClientFrameStore implements FrameStore {
       throw new UnsupportedOperationException("Shouldn't be doing this on the client side");
     }
 
-    private static RemoteClientFrameStore getMeFromKb(KnowledgeBase kb) {
-      if (!(kb instanceof DefaultKnowledgeBase)) {
-        return null;
-      }
-      DefaultKnowledgeBase dkb = (DefaultKnowledgeBase) kb;
-      for (FrameStore fs = dkb.getHeadFrameStore(); fs != null;  fs = fs.getDelegate()) {
-        if (fs instanceof RemoteClientFrameStore) {
-          return (RemoteClientFrameStore) fs;
-        }
-      }
-      return null;
-    }
-
     public static TransactionIsolationLevel getTransactionIsolationLevel(KnowledgeBase kb)
     throws TransactionException {
       RemoteClientFrameStore frameStore = getMeFromKb(kb);
@@ -1290,7 +1307,7 @@ public class RemoteClientFrameStore implements FrameStore {
      */
     private void calculateClosureFromCacheOnly(Frame frame, Slot slot, Set closure, Set<Frame> missing)
             throws RemoteException {
-      if (isCached(frame, slot, (Facet) null, false)) {
+      if (isCachedInternal(frame, slot, (Facet) null, false)) {
         Collection values = getCacheValues(frame, slot, (Facet) null, false);
         for (Object value : values) {
           boolean changed = closure.add(value);
@@ -1510,7 +1527,7 @@ public class RemoteClientFrameStore implements FrameStore {
                                 Facet facet,
                                 boolean isTemplate) throws RemoteException {
       List values = null;
-      if (isCached(frame, slot, facet, isTemplate)) {
+      if (isCachedInternal(frame, slot, facet, isTemplate)) {
         values = readCache(frame, slot, facet, isTemplate);
       } else {
         if (log.isLoggable(Level.FINE)) {
@@ -1549,7 +1566,7 @@ public class RemoteClientFrameStore implements FrameStore {
     /**
      * This routine assumes that the caller is holding the cache lock
      */
-    private boolean isCached(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+    private boolean isCachedInternal(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
 
     }
 
