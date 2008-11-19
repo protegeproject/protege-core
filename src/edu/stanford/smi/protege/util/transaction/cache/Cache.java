@@ -1,7 +1,5 @@
 package edu.stanford.smi.protege.util.transaction.cache;
 
-import java.util.Iterator;
-import java.util.Map;
 
 
 

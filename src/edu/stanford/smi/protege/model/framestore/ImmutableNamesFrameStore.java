@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.Collection;
+import java.util.Random;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
@@ -13,6 +14,7 @@ import edu.stanford.smi.protege.model.Slot;
 public class ImmutableNamesFrameStore extends FrameStoreAdapter {
 	private KnowledgeBase kb;
 	private int nextName;
+	private Random r;
 
 	public ImmutableNamesFrameStore(KnowledgeBase kb) {
 		this.kb = kb;
@@ -43,7 +45,8 @@ public class ImmutableNamesFrameStore extends FrameStoreAdapter {
 				uniqueName = s;
 				++nextName;
 			} else {
-				nextName += 10000;
+			    if  (r == null) r = new Random();
+				nextName = r.nextInt();
 			}
 		}
 		return uniqueName;
