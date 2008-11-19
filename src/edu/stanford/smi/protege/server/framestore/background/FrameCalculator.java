@@ -328,6 +328,7 @@ public class FrameCalculator {
       synchronized (requestLock) {
           return disabled
                     || session == null
+                    || sessionMap.get(session) == null //a Protege Job accessed a different kb
                     || disabledSessions.contains(session);
       }
   }
