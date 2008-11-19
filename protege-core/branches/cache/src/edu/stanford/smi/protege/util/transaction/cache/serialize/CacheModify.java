@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.util.transaction.cache.serialize;
 
+import edu.stanford.smi.protege.util.transaction.cache.Cache;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 
 public class CacheModify<S, V, R> extends SerializedCacheUpdate<S, V, R> {
@@ -17,6 +18,16 @@ public class CacheModify<S, V, R> extends SerializedCacheUpdate<S, V, R> {
 	}
 	public CacheResult<R> getNewValue() {
 		return newValue;
+	}
+	
+	@Override
+	public void performUpdate(Cache<S, V, R> cache) {
+	    if (newValue.isValid()) {
+	        cache.modifyCache(getSession(), var, newValue.getResult());
+	    }
+	    else {
+	        cache.modifyCache(getSession(), var);
+	    }
 	}
 	
 	
