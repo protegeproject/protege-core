@@ -2,7 +2,7 @@ package edu.stanford.smi.protege.util.transaction.cache.serialize;
 
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 
-public class CacheModify<S, V, R> extends CacheUpdate<S, V, R> {
+public class CacheModify<S, V, R> extends SerializedCacheUpdate<S, V, R> {
 	private V var;
 	
 	private CacheResult<R> newValue;
