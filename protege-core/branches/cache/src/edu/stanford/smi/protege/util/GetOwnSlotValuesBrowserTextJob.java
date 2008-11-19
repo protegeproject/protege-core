@@ -27,7 +27,7 @@ public class GetOwnSlotValuesBrowserTextJob extends ProtegeJob {
 
 	protected Frame frame;
 	protected Slot slot;
-	protected boolean directValues = true;
+	protected boolean directValues = false;
 
 	public GetOwnSlotValuesBrowserTextJob(KnowledgeBase kb, Frame frame, Slot slot, boolean directValues) {
 		super(kb);
