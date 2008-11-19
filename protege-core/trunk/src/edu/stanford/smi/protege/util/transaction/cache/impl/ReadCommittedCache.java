@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
-import edu.stanford.smi.protege.util.transaction.cache.CacheModify;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheModify;
 
 public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
     private Map<S, Map<V, CacheResult<R>>> transactedWriteCache = new HashMap<S, Map<V, CacheResult<R>>>();
