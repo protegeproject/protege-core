@@ -181,6 +181,13 @@ public class RemoteClientFrameStore implements FrameStore {
         return null;
     }
     
+    
+    /**
+     * This method returns true if the client has a cached value for the direct own/template slot 
+     * value for the frame.
+     * 
+     * This call can be used regardless of whether the caller is a multi-user client.
+     */
     public static boolean isCached(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         RemoteClientFrameStore rcfs = getMeFromKb(frame.getKnowledgeBase());
         if (rcfs == null) {
@@ -189,6 +196,19 @@ public class RemoteClientFrameStore implements FrameStore {
         return rcfs.isCachedInternal(frame, slot, facet, isTemplate);
     }
     
+    /**
+     * In practice, if this method returns true, then all direct own slot values for the 
+     * frame will be cached except possibly for DIRECT-INSTANCES-SLOT.  
+     * 
+     * 
+     * This call can be used regardless of whether the caller is a multi-user client. The formal definition 
+     * is that if the internal cache does not find a value for a direct frame, slot value then
+     * the value really is null.  The cache has a special value that it uses to indicate that 
+     * even though the cache is "complete" it does not have a value for a particular frame.
+     * 
+     * @param frame
+     * @return
+     */
     public static boolean isCacheComplete(Frame frame) {
         RemoteClientFrameStore rcfs = getMeFromKb(frame.getKnowledgeBase());
         if (rcfs == null) {
