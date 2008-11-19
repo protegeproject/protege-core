@@ -14,7 +14,6 @@ import edu.stanford.smi.protege.model.Slot;
 public class ImmutableNamesFrameStore extends FrameStoreAdapter {
 	private KnowledgeBase kb;
 	private int nextName;
-	private Random r;
 
 	public ImmutableNamesFrameStore(KnowledgeBase kb) {
 		this.kb = kb;
@@ -45,8 +44,7 @@ public class ImmutableNamesFrameStore extends FrameStoreAdapter {
 				uniqueName = s;
 				++nextName;
 			} else {
-			    if  (r == null) r = new Random();
-				nextName = r.nextInt();
+			    nextName += 10000;
 			}
 		}
 		return uniqueName;
