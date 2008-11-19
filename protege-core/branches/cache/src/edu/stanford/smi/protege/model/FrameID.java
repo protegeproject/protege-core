@@ -54,6 +54,7 @@ public class FrameID implements Serializable, Localizable {
     }
     
     private void intern() {
+        /*
         String canonical = canonicalString.get(name);
         if (canonical != null) {
             name = canonical;
@@ -61,5 +62,7 @@ public class FrameID implements Serializable, Localizable {
         else {
             canonicalString.put(name, name);
         }
+        */
+        name = name.intern();
     }
 }
