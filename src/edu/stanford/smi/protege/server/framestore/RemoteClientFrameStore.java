@@ -68,6 +68,8 @@ import edu.stanford.smi.protege.util.ProtegeJob;
 import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
+import edu.stanford.smi.protege.util.transaction.cache.Cache;
+import edu.stanford.smi.protege.util.transaction.cache.CacheFactory;
 
 /*
  * Transactions:
@@ -97,23 +99,13 @@ public class RemoteClientFrameStore implements FrameStore {
     private RemoteServer server;
     private RemoteServerFrameStore proxiedDelegate;
     private RemoteServerFrameStore remoteDelegate;
+    
+    private Cache<RemoteSession, Sft, List> cache;
 
-
-    private enum CacheStatus {
-      STARTED_CACHING, COMPLETED_CACHING
-    }
 
     private TransactionIsolationLevel transactionLevel;
     private int transactionNesting = 0;
 
-
-  /*
-   * These three variables (involving caching are synchronized using the cache object.
-   * The purpose of this synchronization is to protect updates from the getEvents thread.
-   */
-    private Map<Frame, CacheStatus> cacheStatus = new HashMap<Frame, CacheStatus>();
-    private Map<Frame, Map<Sft, List>> cache = new HashMap<Frame, Map<Sft, List>>();
-    private Map<Frame, Map<Sft, List>> sessionCache = new HashMap<Frame, Map<Sft, List>>();
     //FIXME: frameNameToFrameMap may not handle transactions or type updates correctly
     private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
 
@@ -135,6 +127,7 @@ public class RemoteClientFrameStore implements FrameStore {
             RemoteServerProject project = server.openProject(projectName, session);
             remoteDelegate = project.getDomainKbFrameStore(session);
             this.kb = kb;
+            cache = CacheFactory.createEmptyCache(getTransactionIsolationLevel());
             initialize(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
@@ -1557,62 +1550,7 @@ public class RemoteClientFrameStore implements FrameStore {
      * This routine assumes that the caller is holding the cache lock
      */
     private boolean isCached(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-      /*
-       * if the transaction isolation level is repeatable read, then we need to let the database know
-       * about all read operations.  A more complicated and optimized solution is possible if I start
-       * new cache's when the transaction starts.  Then the database will know about the first read but
-       * later reads will come from the cache.
-       */
-      Sft lookup = new Sft(slot, facet, isTemplate);
-      if (transactionNesting > 0) {
-        TransactionIsolationLevel level;
-        try {
-          level = getTransactionIsolationLevel();
-          if (level == null) {
-            stats.miss++;
-            return false;
-          }
-        } catch (TransactionException e) {
-          Log.getLogger().log(Level.WARNING, "Could not get transaction isolation level - caching disabled", e);
-          stats.miss++;
-          return false;
-        }
-        Map<Sft, List> sessionCachedValues = sessionCache.get(frame);
-        if (level.compareTo(TransactionIsolationLevel.REPEATABLE_READ) >= 0 &&
-            (sessionCachedValues == null || sessionCachedValues.get(lookup) == null)) {
-          stats.miss++;
-          return false;
-        }
-        if (level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0 &&
-            sessionCachedValues != null && sessionCachedValues.containsKey(lookup)) {
-          if (sessionCachedValues.get(lookup) == null) {
-            stats.miss++;
-            return false;
-          } else {
-            stats.hit++;
-            return true;
-          }
-        }
-      }
-      Map<Sft, List> m = cache.get(frame);
-      if (m == null) {
-        stats.miss++;
-        return false;
-      }
-      List values = m.get(lookup);
-      if (values != null) {
-        stats.hit++;
-        return  true;
-      } else {
-        boolean ret =  cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING
-          && !m.containsKey(lookup);
-        if  (ret) {
-          stats.hit++;
-        } else {
-          stats.miss++;
-        }
-        return ret;
-      }
+
     }
 
     private List readCache(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
