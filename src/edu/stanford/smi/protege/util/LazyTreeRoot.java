@@ -3,6 +3,8 @@ package edu.stanford.smi.protege.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
 
 import edu.stanford.smi.protege.ui.FrameComparator;
 
@@ -40,31 +42,50 @@ public abstract class LazyTreeRoot extends LazyTreeNode {
     	}
     	return c;
     }
-    
-    protected int getChildObjectCount() {
+       
+    @Override
+	protected int getChildObjectCount() {
         return getChildObjects().size();
     }
 
-    public Collection getChildObjects() {
+    @Override
+	public Collection getChildObjects() {
         return (Collection) getUserObject();
     }
 
-    public void notifyChildNodeAdded(LazyTreeNode parent, int index, LazyTreeNode child) {
+    public void childReplaced(Object oldUserObj, Object newUserObj) {
+    	List userObj = (List) getUserObject();    	
+		int index = userObj.indexOf(oldUserObj);
+		if (index < 0) {
+			if (Log.getLogger().isLoggable(Level.FINE)) {
+				Log.getLogger().fine("Could not replace object " + oldUserObj +
+						" with " + newUserObj + " in tree root. Object not found.");
+			}			
+			return;
+		}
+		userObj.set(index, newUserObj);
+    }
+    
+    @Override
+	public void notifyChildNodeAdded(LazyTreeNode parent, int index, LazyTreeNode child) {
         // Log.enter("LazyTreeRoot.notifyChildNodeAdded", parent, new Integer(index), child);
         _model.nodesWereInserted(parent, new int[] { index });
     }
 
-    public void notifyChildNodeRemoved(LazyTreeNode parent, int index, LazyTreeNode child) {
+    @Override
+	public void notifyChildNodeRemoved(LazyTreeNode parent, int index, LazyTreeNode child) {
         // Log.enter("LazyTreeRoot.notifyChildNodeRemoved", parent, new Integer(index), child);
         _model.nodesWereRemoved(parent, new int[] { index }, new Object[] { child });
     }
 
-    public void notifyNodeChanged(LazyTreeNode node) {
+    @Override
+	public void notifyNodeChanged(LazyTreeNode node) {
         // Log.enter("LazyTreeRoot.notifyNodeChanged", node);
         _model.nodeChanged(node);
     }
 
-    public void notifyNodeStructureChanged(LazyTreeNode node) {
+    @Override
+	public void notifyNodeStructureChanged(LazyTreeNode node) {
         // Log.enter("LazyTreeRoot.notifyNodeStructureChanged", node);
         _model.nodeStructureChanged(node);
     }
