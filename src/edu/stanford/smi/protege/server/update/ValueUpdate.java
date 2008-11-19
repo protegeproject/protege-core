@@ -1,7 +1,7 @@
 package edu.stanford.smi.protege.server.update;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -18,11 +18,11 @@ public class ValueUpdate implements Serializable, Localizable{
     
     private Frame frame;
 	private RemoteSession destination;
-	private SerializedCacheUpdate<RemoteSession, Sft, Collection> update;
+	private SerializedCacheUpdate<RemoteSession, Sft, List> update;
 	
 
 	public ValueUpdate(Frame frame,
-					   SerializedCacheUpdate<RemoteSession, Sft, Collection> update,
+					   SerializedCacheUpdate<RemoteSession, Sft, List> update,
 					   RemoteSession destination) {
 		this.frame = frame;
 		this.update = update;
@@ -37,7 +37,7 @@ public class ValueUpdate implements Serializable, Localizable{
 		return destination;
 	}
 
-	public SerializedCacheUpdate<RemoteSession, Sft, Collection> getUpdate() {
+	public SerializedCacheUpdate<RemoteSession, Sft, List> getUpdate() {
 		return update;
 	}
 
@@ -45,12 +45,12 @@ public class ValueUpdate implements Serializable, Localizable{
 	public void localize(KnowledgeBase kb) {
 	    LocalizeUtils.localize(frame, kb);
 	    if (update instanceof CacheRead) {
-	        CacheRead<RemoteSession, Sft, Collection> read = (CacheRead<RemoteSession, Sft, Collection>) update;
+	        CacheRead<RemoteSession, Sft, List> read = (CacheRead<RemoteSession, Sft, List>) update;
 	        read.getVar().localize(kb);
 	        LocalizeUtils.localize(read.getValue().getResult(), kb);
 	    }
 	    else if (update instanceof CacheModify) {
-	        CacheModify<RemoteSession, Sft, Collection> modify = (CacheModify<RemoteSession, Sft, Collection>) update;
+	        CacheModify<RemoteSession, Sft, List> modify = (CacheModify<RemoteSession, Sft, List>) update;
 	        modify.getVar().localize(kb);
 	        LocalizeUtils.localize(modify.getNewValue().getResult(), kb);
 	    }
