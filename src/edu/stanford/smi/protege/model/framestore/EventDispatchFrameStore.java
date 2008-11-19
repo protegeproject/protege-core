@@ -79,6 +79,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 	    // the listeners to not get lost.
 	}
 
+	@Override
 	public void close() {
 	    super.close();
 	    _listeners = null;
@@ -123,6 +124,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 	 * 
 	 * @see edu.stanford.smi.protege.model.framestore.ModificationFrameStore#getEvents()
 	 */
+	@Override
 	public List<AbstractEvent> getEvents() {
 		if (passThrough) {
 			dispatchEvents();
@@ -150,7 +152,8 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     
     private void startEventThread() {
         _eventThread = new Thread("EventDispatchFrameStoreHandler.startEventThread") {
-          public void run() {
+          @Override
+		public void run() {
             while (true) {
               try {
                 synchronized (lock) {
@@ -871,6 +874,10 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     	for (Map<Object,  Collection<EventListener>> map : _listeners.values()) {
     		Collection<EventListener> listeners = map.remove(original);
     		if (listeners != null) {
+    			Collection<EventListener> existingListeners = map.get(replacement);
+    			if (existingListeners != null) {
+    				listeners.addAll(existingListeners);
+    			}
     			map.put(replacement, listeners);
     		}
     	}
@@ -886,7 +893,22 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     			   System.out.println("Found listener " + listener + " at " + o);
     			}
     		}
-    	}
-    	
+    	}    	
     }
+    
+    public void dumpListeners(Level level) {
+    	if (!log.isLoggable(level)) {
+    		return;
+    	}
+    	log.log(level, "-----------------------printing listeners======================");
+    	for (Map<Object,  Collection<EventListener>> map : _listeners.values()) {
+    		for (Entry<Object, Collection<EventListener>> entry : map.entrySet()) {
+    			log.log(level, "listeners for object " + entry.getKey());
+    			for (EventListener listener : entry.getValue()) {
+    				log.log(level, "\t" + listener);
+    			}
+    		}
+    	}
+    }
+    
 }
