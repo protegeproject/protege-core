@@ -1,4 +1,4 @@
-package edu.stanford.smi.protege.server.uitl;
+package edu.stanford.smi.protege.server.util;
 
 import edu.stanford.smi.protege.server.util.FifoReader;
 import edu.stanford.smi.protege.server.util.FifoWriter;
