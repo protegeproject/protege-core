@@ -86,6 +86,13 @@ public class DeletableCache<S, V, R> implements Cache<S, V, R> {
         }
         delegate.abortCompleteCache();
     }
+    
+    public boolean isCacheComplete() {
+        if (invalid) {
+            return false;
+        }
+        return delegate.isCacheComplete();
+    }
 
     public void beginTransaction(S session) {
         if (invalid) {
@@ -95,6 +102,9 @@ public class DeletableCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void commitTransaction(S session) {
+        if (getTransactionNesting(session) < 0) {
+            localFlush();
+        }
         if (invalid) {
             return;
         }
@@ -108,6 +118,9 @@ public class DeletableCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void rollbackTransaction(S session) {
+        if (getTransactionNesting(session) < 0) {
+            localFlush();
+        }
         if (invalid) {
             return;
         }
@@ -125,5 +138,14 @@ public class DeletableCache<S, V, R> implements Cache<S, V, R> {
     }
 
 
+    public void flush() {
+        localFlush();
+        delegate.flush();
+    }
+    
+    private void localFlush() {
+        sessionsWithCacheDeleted.clear();
+        invalid = false;
+    }
     
 }

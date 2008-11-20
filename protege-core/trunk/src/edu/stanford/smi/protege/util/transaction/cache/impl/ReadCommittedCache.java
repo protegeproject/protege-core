@@ -79,6 +79,10 @@ public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
     public void abortCompleteCache() {
         delegate.abortCompleteCache();
     }
+    
+    public boolean isCacheComplete() {
+        return delegate.isCacheComplete();
+    }
 
     public void beginTransaction(S session) {
         if (getTransactionNesting(session) == 0) {
@@ -89,30 +93,46 @@ public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void commitTransaction(S session) {
-        delegate.commitTransaction(session);
-        if (getTransactionNesting(session) == 0) {
-            transactedWriteCache.remove(session);
-            for (CacheModify<S, V, R> modification : transactedModifications.remove(session)) {
-                if (modification.getNewValue().isValid()) {
-                    delegate.modifyCache(session, modification.getVar(), modification.getNewValue().getResult());
-                }
-                else {
-                    delegate.modifyCache(session, modification.getVar());
+        if (getTransactionNesting(session) < 0) {
+            flush(); // draconian
+        }
+        else {
+            delegate.commitTransaction(session);
+            if (getTransactionNesting(session) == 0) {
+                transactedWriteCache.remove(session);
+                for (CacheModify<S, V, R> modification : transactedModifications.remove(session)) {
+                    if (modification.getNewValue().isValid()) {
+                        delegate.modifyCache(session, modification.getVar(), modification.getNewValue().getResult());
+                    }
+                    else {
+                        delegate.modifyCache(session, modification.getVar());
+                    }
                 }
             }
         }
     }
 
     public void rollbackTransaction(S session) {
-        delegate.rollbackTransaction(session);
-        if (getTransactionNesting(session) == 0) {
-            transactedWriteCache.remove(session);
-            transactedModifications.remove(session);
+        if (getTransactionNesting(session) < 0) {
+            flush(); // draconian
+        }
+        else {
+            delegate.rollbackTransaction(session);
+            if (getTransactionNesting(session) == 0) {
+                transactedWriteCache.remove(session);
+                transactedModifications.remove(session);
+            }
         }
     }
 
     public int getTransactionNesting(S session) {
         return delegate.getTransactionNesting(session);
+    }
+    
+    public void flush() {
+        transactedModifications.clear();
+        transactedWriteCache.clear();
+        delegate.flush();
     }
 
 }
