@@ -89,20 +89,42 @@ public class CompleteableCache<S, V, R> implements Cache<S, V, R> {
         invalidReads = null;
         delegate.abortCompleteCache();
     }
+    
+    public boolean isCacheComplete() {
+        return status == CompletionStatus.CACHE_COMPLETE;
+    }
 
     public void beginTransaction(S session) {
         delegate.beginTransaction(session);
     }
 
     public void commitTransaction(S session) {
+        if (getTransactionNesting(session) <=0) {
+            localFlush();
+        }
         delegate.commitTransaction(session);
     }
     
     public void rollbackTransaction(S session) {
+        if (getTransactionNesting(session) <=0) {
+            localFlush();
+        }
         delegate.rollbackTransaction(session);
     }
     
     public int getTransactionNesting(S session) {
         return delegate.getTransactionNesting(session);
     }
+
+    public void flush() {
+        localFlush();
+        delegate.flush();
+    }
+    
+    private void localFlush() {
+        status = CompletionStatus.NORMAL;
+        invalidReads.clear();
+    }
+
+
 }

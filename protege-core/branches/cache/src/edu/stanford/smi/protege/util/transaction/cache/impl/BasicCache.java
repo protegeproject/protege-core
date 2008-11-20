@@ -59,6 +59,10 @@ public class BasicCache<S, V, R> implements Cache<S, V, R> {
     public void abortCompleteCache() {
         ;
     }
+    
+    public boolean isCacheComplete() {
+        return false;
+    }
 
     public void beginTransaction(S session) {
         Integer nesting = transactionNestingMap.get(session);
@@ -97,4 +101,11 @@ public class BasicCache<S, V, R> implements Cache<S, V, R> {
         }
         return nesting;
     }
+
+    public void flush() {
+        transactionNestingMap.clear();
+        cache.clear();
+    }
+
+
 }

@@ -2,6 +2,8 @@ package edu.stanford.smi.protege.util;
 
 import java.util.Comparator;
 
+import edu.stanford.smi.protege.model.Frame;
+
 public class FrameWithBrowserTextComparator implements
 		Comparator<FrameWithBrowserText> {
 
@@ -11,7 +13,15 @@ public class FrameWithBrowserTextComparator implements
 		if (bt1 != null && bt2 != null) {
 			return bt1.compareTo(bt2);
 		}
-		return fbt1.getFrame().compareTo(fbt2.getFrame());
+		Frame f1 = fbt1.getFrame();
+		Frame f2 = fbt2.getFrame();
+		if (f1 != null) {
+			return f2 == null ? 1 : f1.compareTo(f2);
+		}
+		if (f2 != null) {
+			return f1 == null ? -1 : f1.compareTo(f2);
+		}
+		return 0;
 	}
 
 }

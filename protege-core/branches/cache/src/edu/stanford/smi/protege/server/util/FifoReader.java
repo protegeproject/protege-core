@@ -9,7 +9,7 @@ public class FifoReader<X> {
     queue = writer.getQueue();
   }
   
-  public FifoReader(FifoReader fr) {
+  public FifoReader(FifoReader<X> fr) {
     queue = fr.queue;
     writer = fr.writer;
   }
