@@ -20,24 +20,26 @@ public class Registration {
     private static final transient Logger cacheLog = ServerFrameStore.cacheLog;
   
     private FifoReader<AbstractEvent> events;
-    private FifoReader<ValueUpdate> updates;
+    private List<ValueUpdate> updates = new ArrayList<ValueUpdate>();
     private List<ValueUpdate> commits = new ArrayList<ValueUpdate>();
     private BandWidthPolicy bandwidthPolicy = new BandWidthPolicy();
     private long lastHeartbeat = 0;
 
 
-    public Registration(FifoWriter<AbstractEvent> events,
-                        FifoWriter<ValueUpdate> updates) {
+    public Registration(FifoWriter<AbstractEvent> events) {
         this.events = new FifoReader<AbstractEvent>(events);
-        this.updates = new FifoReader<ValueUpdate>(updates);
     }
  
     public FifoReader<AbstractEvent> getEvents() {
         return events;
     }
 
-    public FifoReader<ValueUpdate> getUpdates() {
+    public List<ValueUpdate> getUpdates() {
       return updates;
+    }
+    
+    public void addUpdate(ValueUpdate vu) {
+    	updates.add(vu);
     }
     
     public void addCommittableUpdate(ValueUpdate vu) {

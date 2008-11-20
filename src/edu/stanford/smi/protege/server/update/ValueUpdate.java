@@ -16,16 +16,18 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCache
 public class ValueUpdate implements Serializable, Localizable{
     private static final long serialVersionUID = -7753881900765528485L;
     
+	
     private Frame frame;
-	private RemoteSession destination;
 	private SerializedCacheUpdate<RemoteSession, Sft, List> update;
 	
 
 	public ValueUpdate(Frame frame,
 					   SerializedCacheUpdate<RemoteSession, Sft, List> update,
+					   Visibility visibility,
 					   RemoteSession destination) {
 		this.frame = frame;
 		this.update = update;
+		this.visibility = visibility;
 		this.destination = destination;
 	}
 	
@@ -39,6 +41,10 @@ public class ValueUpdate implements Serializable, Localizable{
 
 	public SerializedCacheUpdate<RemoteSession, Sft, List> getUpdate() {
 		return update;
+	}
+	
+	public Visibility getVisibility() {
+		return visibility;
 	}
 
 

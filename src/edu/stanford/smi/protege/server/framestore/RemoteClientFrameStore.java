@@ -48,19 +48,14 @@ import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.metaproject.Operation;
-import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
-import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
-import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
-import edu.stanford.smi.protege.server.update.FrameRead;
-import edu.stanford.smi.protege.server.update.FrameWrite;
-import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
-import edu.stanford.smi.protege.server.update.RemoveCacheUpdate;
-import edu.stanford.smi.protege.server.update.RemoveFrameCache;
-import edu.stanford.smi.protege.server.update.SftUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
+import edu.stanford.smi.protege.server.util.DeferredTransactionsCache;
+import edu.stanford.smi.protege.server.util.FifoReader;
+import edu.stanford.smi.protege.server.util.FifoWriter;
 import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
@@ -69,7 +64,11 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
-import edu.stanford.smi.protege.util.transaction.cache.CacheFactory;
+import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheBeginTransaction;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheCommitTransaction;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheRollbackTransaction;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCacheUpdate;
 
 /*
  * Transactions:
@@ -100,8 +99,8 @@ public class RemoteClientFrameStore implements FrameStore {
     private RemoteServerFrameStore proxiedDelegate;
     private RemoteServerFrameStore remoteDelegate;
     
-    private Cache<RemoteSession, Sft, List> cache;
-
+    private List<SerializedCacheUpdate<RemoteSession, Sft, List>> transactionUpdates = new ArrayList<SerializedCacheUpdate<RemoteSession, Sft, List>>();
+    private Map<Frame, DeferredTransactionsCache> cacheMap = new CacheMap<Frame, DeferredTransactionsCache>();
 
     private TransactionIsolationLevel transactionLevel;
     private int transactionNesting = 0;
@@ -127,7 +126,6 @@ public class RemoteClientFrameStore implements FrameStore {
             RemoteServerProject project = server.openProject(projectName, session);
             remoteDelegate = project.getDomainKbFrameStore(session);
             this.kb = kb;
-            cache = CacheFactory.createEmptyCache(getTransactionIsolationLevel());
             initialize(preloadAll);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
@@ -174,6 +172,13 @@ public class RemoteClientFrameStore implements FrameStore {
         return null;
     }
     
+    
+    /**
+     * This method returns true if the client has a cached value for the direct own/template slot 
+     * value for the frame.
+     * 
+     * This call can be used regardless of whether the caller is a multi-user client.
+     */
     public static boolean isCached(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         RemoteClientFrameStore rcfs = getMeFromKb(frame.getKnowledgeBase());
         if (rcfs == null) {
@@ -182,12 +187,29 @@ public class RemoteClientFrameStore implements FrameStore {
         return rcfs.isCachedInternal(frame, slot, facet, isTemplate);
     }
     
+    /**
+     * In practice, if this method returns true, then all direct own slot values for the 
+     * frame will be cached except possibly for DIRECT-INSTANCES-SLOT.  
+     * 
+     * 
+     * This call can be used regardless of whether the caller is a multi-user client. The formal definition 
+     * is that if the internal cache does not find a value for a direct frame, slot value then
+     * the value really is null.  The cache has a special value that it uses to indicate that 
+     * even though the cache is "complete" it does not have a value for a particular frame.
+     * 
+     * @param frame
+     * @return
+     */
     public static boolean isCacheComplete(Frame frame) {
         RemoteClientFrameStore rcfs = getMeFromKb(frame.getKnowledgeBase());
         if (rcfs == null) {
             return true;
         }
-        return rcfs.cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING;
+        Cache<RemoteSession, Sft, List> cache = rcfs.cacheMap.get(frame);
+        if (cache == null) {
+        	return false;
+        }
+        return cache.isCacheComplete();
     }
 
 
@@ -1165,9 +1187,6 @@ public class RemoteClientFrameStore implements FrameStore {
       }
         try {
             transactionNesting--;
-            if (transactionNesting == 0) {
-              sessionCache = new HashMap<Frame, Map<Sft, List>>();
-            }
             RemoteResponse<Boolean> ret =  getRemoteDelegate().commitTransaction(session);
             processValueUpdate(ret);
             return ret.getResponse();
@@ -1182,9 +1201,6 @@ public class RemoteClientFrameStore implements FrameStore {
       }
         try {
             transactionNesting--;
-            if (transactionNesting == 0) {
-              sessionCache = new HashMap<Frame, Map<Sft, List>>();
-            }
             RemoteResponse<Boolean> ret = getRemoteDelegate().rollbackTransaction(session);
             processValueUpdate(ret);
             return ret.getResponse();
@@ -1567,205 +1583,52 @@ public class RemoteClientFrameStore implements FrameStore {
      * This routine assumes that the caller is holding the cache lock
      */
     private boolean isCachedInternal(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-
+    	Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
+    	if (cache == null) {
+    		return false;
+    	}
+    	else {
+    		CacheResult<List> result = cache.readCache(session, new Sft(slot, facet, isTemplate));
+    		return result.isValid();
+    	}
     }
 
     private List readCache(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-      List result = null;
-      Sft lookup = new Sft(slot, facet, isTemplate);
-      if (transactionNesting > 0 && sessionCache.get(frame) != null) {
-        TransactionIsolationLevel level;
-        try {
-          level = getTransactionIsolationLevel();
-        } catch (TransactionException e) {
-          Log.getLogger().log(Level.WARNING, "Could not get transaction isolation level - caching disabled", e);
-          level = null;
-        }
-        if (level != null && level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0) {
-          result = sessionCache.get(frame).get(lookup);
-        }
-      }
-      if (result == null) {
-        result = cache.get(frame).get(lookup);
-      }
-      return result;
+    	Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
+    	if (cache == null) {
+    		return null;
+    	}
+    	CacheResult<List> result = cache.readCache(session, new Sft(slot, facet, isTemplate));
+    	if (!result.isValid()) {
+    		return null;
+    	}
+    	else {
+    		return result.getResult();
+    	}
     }
 
 
-    private void addCachedEntry(boolean isTransactionScope,
-                                Frame frame,
-                                Slot slot,
-                                Facet facet,
-                                boolean isTemplate,
-                                List values) {
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Client Received value for frame " + frame.getFrameID() +
-                      " slot " + slot.getFrameID() + " facet " +
-                      (facet == null ? "null" : "" + facet.getFrameID()) +
-                      " is template " + isTemplate);
-        cacheLog.fine("Transaction Scope = " + isTransactionScope);
-      }
-      Map<Frame, Map<Sft,List>> workingCache = isTransactionScope ? sessionCache : cache;
-      Map<Sft, List> slotValueMap = workingCache.get(frame);
-      if (slotValueMap == null) {
-        slotValueMap = new HashMap<Sft, List>();
-        workingCache.put(frame, slotValueMap);
-      }
-      Sft lookupSft = new Sft(slot, facet, isTemplate);
-      slotValueMap.put(lookupSft, values);
-      if (facet == null &&
-          !isTemplate &&
-          slot.equals(getSystemFrames().getNameSlot()) &&
-          !isTransactionScope) {
-        if (values != null && !values.isEmpty()) {
-          if (cacheLog.isLoggable(Level.FINE)) {
-            cacheLog.fine("frame " + frame.getFrameID() + " has name " + values.get(0));
-          }
-          frameNameToFrameMap.put((String) values.get(0), frame);
-        }
-      }
-    }
 
-    
-    private void invalidateCachedEntry(boolean isTransactionScope,
-                                       Frame frame,
-                                       Slot slot,
-                                       Facet facet,
-                                       boolean isTemplate,
-                                       boolean remove) {
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("making invalid cache entry for frame " +
-                      frame.getFrameID() + " slot " + slot.getFrameID() +
-                      " facet " + (facet == null ? "null" : facet.toString()) +
-                      " isTemplate " + isTemplate + " remove flag " + remove);
-        cacheLog.fine("Transaction Scope = " + isTransactionScope);
-      }
-      Map<Frame, Map<Sft, List>> workingCache = isTransactionScope ? sessionCache : cache;
-      Map<Sft, List> slotValueMap = workingCache.get(frame);
-      CacheStatus status = cacheStatus.get(frame);
-      if (isTransactionScope && !remove && slotValueMap == null) {
-        slotValueMap = new HashMap<Sft, List>();
-        workingCache.put(frame, slotValueMap);
-      }
-      if (slotValueMap != null) {
-        Sft lookupSft = new Sft(slot, facet, isTemplate);
-
-        if (facet == null &&
-            !isTemplate &&
-            slot.equals(getSystemFrames().getNameSlot())) {
-          List values = slotValueMap.get(lookupSft);
-          if (values != null && !values.isEmpty()) {
-            String name = (String) values.get(0);
-            frameNameToFrameMap.remove(name);
-            if (cacheLog.isLoggable(Level.FINE)) {
-              cacheLog.fine("Flushing name also " + name);
-            }
-          }
-        }
-        if (cacheLog.isLoggable(Level.FINE)) {
-          cacheLog.fine("Cache Completion Status = " + status);
-        }
-        if (!remove && (isTransactionScope || status != null)) {
-          slotValueMap.put(lookupSft, null);
-        } else {
-          slotValueMap.remove(lookupSft);
-        }
-      }
-    }
-
-  private void removeCachedUpdate(boolean isTransactionScope, Frame frame) {
+  private void processValueUpdate(OntologyUpdate updates) {
     if (cacheLog.isLoggable(Level.FINE)) {
-      cacheLog.fine("Removing cache entry for " + frame.getFrameID());
-      cacheLog.fine("Transaction Scope = " + isTransactionScope);
+      cacheLog.fine("received " + updates.getValueUpdates().size() + " value updates");
     }
-    Sft lookup = new Sft(getSystemFrames().getNameSlot(), null, false);
-    if (cache.get(frame) != null && cache.get(frame).get(lookup) != null) {
-      String name = (String) cache.get(frame).get(lookup).get(0);
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("\tName too (" + name + ")");
-      }
-      frameNameToFrameMap.remove(name);
-    }
-    Map<Frame, Map<Sft, List>> workingCache = isTransactionScope ? sessionCache : cache;
-    workingCache.remove(frame);
-    cacheStatus.remove(frame);
-  }
-
-  /*
-   * This call assumes that the eventLock is held by the
-   * caller.
-   */
-  private void processValueUpdate(OntologyUpdate vu) {
-      localize(vu);
-      processValueUpdate(vu.getValueUpdates());
-  }
-
-  private void processValueUpdate(List<ValueUpdate> updates) {
-    if (cacheLog.isLoggable(Level.FINE)) {
-      cacheLog.fine("received " + updates.size() + " value updates");
-    }
-    for (ValueUpdate vu : updates) {
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Client Processing event " + vu);
-      }
-      boolean isTransactionScope = vu.isTransactionScope();
-      Map<Frame, Map<Sft, List>> workingCache = isTransactionScope ? sessionCache : cache;
-      Frame frame = vu.getFrame();
-      if (vu instanceof FrameEvaluationStarted) {
-        if (cacheLog.isLoggable(Level.FINE)) {
-          cacheLog.fine("Started caching for frame" + frame.getFrameID());
-        }
-        cacheStatus.put(frame, CacheStatus.STARTED_CACHING);
-        if (cache.get(frame) == null) {
-        	cache.put(frame, new HashMap<Sft,List>());
-        }
-      } else if (vu instanceof FrameEvaluationCompleted) {
-        CacheStatus status = cacheStatus.get(frame);
-        if (status != null && status == CacheStatus.STARTED_CACHING) {
-          if (cacheLog.isLoggable(Level.FINE)) {
-            cacheLog.fine("Completed caching for " + frame.getFrameID());
-          }
-          cacheStatus.put(frame, CacheStatus.COMPLETED_CACHING);
-        }
-      } else if (vu instanceof FrameEvaluationPartial) {
-        if (cacheLog.isLoggable(Level.FINE)) {
-          cacheLog.fine("Aborted full cache for " + frame.getFrameID());
-        }
-        cacheStatus.remove(frame);
-      } else if (vu instanceof RemoveFrameCache) {
-        removeCachedUpdate(isTransactionScope, frame);
-      } else if (vu instanceof SftUpdate) {
-        SftUpdate sftu = (SftUpdate) vu;
-        Slot slot = sftu.getSlot();
-        Facet facet = sftu.getFacet();
-        boolean isTemplate = sftu.isTemplate();
-        TransactionIsolationLevel level;
-        try {
-          level = getTransactionIsolationLevel();
-        } catch (TransactionException te) {
-          Log.getLogger().log(Level.WARNING, "Error handling cache update", te);
-          level = null;
-        }
-        if (cacheLog.isLoggable(Level.FINE)) {
-          cacheLog.fine("Transaction Isolation Level = " + level);
-        }
-        if (level == null && vu instanceof FrameRead) {
-          invalidateCachedEntry(false, frame, slot, facet, isTemplate, false);
-          invalidateCachedEntry(true, frame, slot, facet, isTemplate, false);
-        } else if (vu instanceof FrameRead && level == TransactionIsolationLevel.READ_COMMITTED) {
-          if (sessionCache.get(frame) == null || sessionCache.get(frame).get(new Sft(slot, facet, isTemplate)) == null) {
-            addCachedEntry(false, frame, slot, facet, isTemplate, ((FrameRead) vu).getValues());
-          }
-        } else if (vu instanceof FrameRead) {
-          addCachedEntry(isTransactionScope, frame, slot, facet, isTemplate, ((FrameRead) vu).getValues());
-        } else if (vu instanceof FrameWrite) {
-          addCachedEntry(isTransactionScope, frame, slot, facet, isTemplate, ((FrameWrite) vu).getValues());
-        } else if (vu instanceof RemoveCacheUpdate) {
-          invalidateCachedEntry(isTransactionScope, frame, slot, facet, isTemplate, true);
-        } else if (vu instanceof InvalidateCacheUpdate) {
-          invalidateCachedEntry(isTransactionScope, frame, slot, facet, isTemplate, false);
-        }
-      }
+    // this reader marks the state at the beginning of this call.
+    FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> deferredTransactionsReader 
+               = new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsWriter);
+    for (ValueUpdate vu : updates.getValueUpdates()) {
+    	SerializedCacheUpdate<RemoteSession, Sft,  List> cacheUpdate = vu.getUpdate();
+    	if (cacheUpdate instanceof CacheBeginTransaction ||
+    			cacheUpdate instanceof CacheCommitTransaction ||
+    			cacheUpdate instanceof CacheRollbackTransaction) {
+    		deferredTransactionsWriter.write(cacheUpdate);
+    		break;
+    	}
+    	Frame frame = vu.getFrame();
+    	Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
+    	if (cache == null) {
+    		
+    	}
     }
   }
 
@@ -1773,11 +1636,7 @@ public class RemoteClientFrameStore implements FrameStore {
     if (cacheLog.isLoggable(Level.FINE)) {
       cacheLog.fine("Flushing client cache");
     }
-    cacheStatus.clear();
-    cache.clear();
-    sessionCache.clear();
-    frameNameToFrameMap.clear();
-    stats = new RemoteClientStatsImpl();
+
   }
 
   public Object executeProtegeJob(ProtegeJob job) throws ProtegeException {

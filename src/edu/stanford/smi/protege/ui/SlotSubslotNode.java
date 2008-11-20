@@ -1,10 +1,15 @@
 package edu.stanford.smi.protege.ui;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.FrameAdapter;
+import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.LazyTreeNode;
 
 /**
  * Tree node for modeling the superslot-subslot relationship.
@@ -18,16 +23,18 @@ public class SlotSubslotNode extends LazyTreeNode {
     		Frame oldFrame = event.getFrame();
     		Frame newFrame = event.getNewFrame();
     		Slot slot = getSlot();
-    		if (slot != null && slot.equals(oldFrame)) {
+    		if (slot != null && slot.equals(oldFrame)) {    			
     			reload(newFrame);
     		}
     	}
     	
-        public void browserTextChanged(FrameEvent event) {
+        @Override
+		public void browserTextChanged(FrameEvent event) {
         	if (event.isReplacementEvent()) return;
             notifyNodeChanged();
         }
-        public void ownSlotValueChanged(FrameEvent event) {
+        @Override
+		public void ownSlotValueChanged(FrameEvent event) {
         	if (event.isReplacementEvent()) return;
             String slotName = event.getSlot().getName();
             if (slotName.equals(Model.Slot.DIRECT_SUBSLOTS)) {
@@ -45,24 +52,29 @@ public class SlotSubslotNode extends LazyTreeNode {
         parentSlot.addFrameListener(_frameListener);
     }
 
-    protected LazyTreeNode createNode(Object o) {
+    @Override
+	protected LazyTreeNode createNode(Object o) {
         return new SlotSubslotNode(this, (Slot) o);
     }
 
-    protected void dispose() {
+    @Override
+	protected void dispose() {
         super.dispose();
         getSlot().removeFrameListener(_frameListener);
     }
 
-    protected int getChildObjectCount() {
+    @Override
+	protected int getChildObjectCount() {
         return getSlot().getDirectSubslotCount();
     }
 
-    protected Collection getChildObjects() {
+    @Override
+	protected Collection getChildObjects() {
         return getSlot().getDirectSubslots();
     }
 
-    protected Comparator getComparator() {
+    @Override
+	protected Comparator getComparator() {
         return new LazyTreeNodeFrameComparator();
     }
 
@@ -74,7 +86,8 @@ public class SlotSubslotNode extends LazyTreeNode {
         notifyNodeChanged(this);
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "SlotSubslotNode(" + getSlot() + ")";
     }
 }

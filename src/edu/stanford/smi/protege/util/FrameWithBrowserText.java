@@ -55,12 +55,15 @@ public class FrameWithBrowserText implements Serializable, Localizable {
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof FrameWithBrowserText)) { return false;}
-		return ((FrameWithBrowserText)obj).getFrame().equals(frame);
+		FrameWithBrowserText fbt = (FrameWithBrowserText)obj;		
+		return fbt.getFrame() == null ? false : fbt.getFrame().equals(frame);
 	}
 
 	@Override
 	public int hashCode() {
-		return frame.getName().length() * 43 + 7 * browserText.length() + 5 * types.size() + 3;
+		return
+			frame == null ? 42 :
+				frame.getName().length() * 43 + 7 * browserText.length() + 5 * types.size() + 3;
 	}
 
 }
