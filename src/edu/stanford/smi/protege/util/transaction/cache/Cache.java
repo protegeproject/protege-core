@@ -129,6 +129,13 @@ public interface Cache<S, V, R> {
      * @param session
      */
     void delete(S session);
+    
+    /**
+     * Try to avoid this.  If this is invoked and you are at READ_COMMITTED or above, the
+     * cache can repeatedly get flushed on commit and rollback transactions until everything 
+     * is closed out.
+     */
+    void flush();
 
     /**
      * The startCompleteCache and the finishCompleteCache are part of a protocol.  In the 
@@ -147,6 +154,8 @@ public interface Cache<S, V, R> {
     void finishCompleteCache();
     
     void abortCompleteCache();
+    
+    boolean isCacheComplete();
 
     /**
      * The session has entered a transaction.  Nesting is counted.

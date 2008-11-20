@@ -79,6 +79,10 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
     public void abortCompleteCache() {
         delegate.abortCompleteCache();
     }
+    
+    public boolean isCacheComplete() {
+        return delegate.isCacheComplete();
+    }
 
     public void beginTransaction(S session) {
         if (getTransactionNesting(session) == 0) {
@@ -89,11 +93,19 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void commitTransaction(S session) {
+        if (getTransactionNesting(session) <= 0) {
+            flush();
+            return;
+        }
         delegate.commitTransaction(session);
         decrementTransaction(session);
     }
 
     public void rollbackTransaction(S session) {
+        if (getTransactionNesting(session) <= 0) {
+            flush();
+            return;
+        }
         delegate.rollbackTransaction(session);
         decrementTransaction(session);
     }
@@ -109,4 +121,13 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
         return delegate.getTransactionNesting(session);
     }
 
+    public void flush() {
+        myFlush();
+        delegate.flush();
+    }
+    
+    private void myFlush() {
+        readOrWrittenVarsMap.clear();
+        transactedReads.clear();
+    }
 }
