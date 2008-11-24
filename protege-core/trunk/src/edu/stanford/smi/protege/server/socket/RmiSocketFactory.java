@@ -10,7 +10,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 
-import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.util.Log;
 
 public class RmiSocketFactory implements RMIClientSocketFactory,
