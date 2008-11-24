@@ -48,6 +48,7 @@ import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.metaproject.Operation;
+import edu.stanford.smi.protege.server.socket.SimulateDelayAspect;
 import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
 import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
@@ -271,6 +272,7 @@ public class RemoteClientFrameStore implements FrameStore {
             		  }
             	  }
             	  long start = System.currentTimeMillis();
+            	  SimulateDelayAspect.delayForLatency();
             	  Object val =  method.invoke(remoteDelegate, args);
             	  if (log.isLoggable(Level.FINE)) {
             		  log.fine("Invocation took " + (System.currentTimeMillis() - start) + " ms");
