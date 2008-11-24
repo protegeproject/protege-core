@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import edu.stanford.smi.protege.server.ServerProperties;
+
 public class CompressionAspect implements SocketAspect {
     
     private SocketAspect delegate;
@@ -40,6 +42,10 @@ public class CompressionAspect implements SocketAspect {
         if (is != null) {
             is.close();
         }
+    }
+    
+    public static boolean useCompression() {
+        return ServerProperties.useCompression();
     }
 
 }

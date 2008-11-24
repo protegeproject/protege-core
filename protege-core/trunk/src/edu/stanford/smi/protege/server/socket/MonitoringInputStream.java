@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.util.Log;
 
 public class MonitoringInputStream extends FilterInputStream {
@@ -14,8 +13,6 @@ public class MonitoringInputStream extends FilterInputStream {
     private static int KB = MonitoringAspect.KB;
     
     private static int counter = 0;
-    
-    private int bandwidth = ServerProperties.getKiloBytesPerSecondDownload();
     
     private int id;
     private int bytesRead = 0;
@@ -71,21 +68,8 @@ public class MonitoringInputStream extends FilterInputStream {
             log.finer(logPrefix() + "reading");
             readingNotified = true;
         }
-        int previousSecondsDelay = bandwidth != 0 ? bytesRead / (bandwidth * KB) : 0;
         int previousMB = bytesRead / (KB * KB);
-        
         bytesRead += n;
-        
-        if (bandwidth != 0) {
-            int newSecondsDelay = bytesRead / (bandwidth * KB);
-            if (newSecondsDelay > previousSecondsDelay) {
-                try {
-                    Thread.sleep(1000 * (newSecondsDelay - previousSecondsDelay));
-                } catch (InterruptedException e) {
-                    log.log(Level.WARNING, "Simulation of network delay failed", e);
-                }
-            }
-        }
         if (log.isLoggable(Level.FINER)) {
             int newMB = bytesRead / (KB * KB);
             if (newMB > previousMB) {
