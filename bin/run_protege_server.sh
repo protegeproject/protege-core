@@ -53,11 +53,10 @@ OPTIONS="$MAX_MEMORY $HEADLESS $CODEBASE $HOSTNAME_PARAM ${TX} ${LOG4J_OPT}"
 #
 # Instrumentation debug, delay simulation,  etc
 #
-#DELAY="-Dserver.delay=80"
 #PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100"
 #DEBUG_OPT="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
 
-OPTIONS="${OPTIONS} ${DELAY} ${PORTOPTS} ${DEBUG_OPT}"
+OPTIONS="${OPTIONS} ${PORTOPTS} ${DEBUG_OPT}"
 # ------------------- JVM Options ------------------- 
 
 # ------------------- Cmd Options -------------------
