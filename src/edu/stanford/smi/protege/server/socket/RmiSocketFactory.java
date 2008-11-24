@@ -71,8 +71,18 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
         if (!portsReported) {
             int serverPort   = getPort(SERVER_PORT, 0);
             int registryPort = getPort(REGISTRY_PORT, Registry.REGISTRY_PORT);
-            if (!(serverPort == 0 && registryPort == Registry.REGISTRY_PORT)) {
-                Log.getLogger().config("server=" + serverPort + ", registryPort=" + registryPort);
+            if (!(serverPort == 0 && registryPort == Registry.REGISTRY_PORT && !useCompression && !useSSL)) {
+                StringBuffer sb = new StringBuffer("Server port = ");
+                sb.append(serverPort);
+                sb.append(", registry port = ");
+                sb.append(registryPort);
+                if (useCompression) {
+                    sb.append(", compressed stream");
+                }
+                if (useSSL) {
+                    sb.append(", SSL");
+                }
+                Log.getLogger().config(sb.toString());
             }
             portsReported = true;
         }
