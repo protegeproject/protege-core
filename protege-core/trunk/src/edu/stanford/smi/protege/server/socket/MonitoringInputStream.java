@@ -70,10 +70,10 @@ public class MonitoringInputStream extends FilterInputStream {
         }
         int previousMB = bytesRead / (KB * KB);
         bytesRead += n;
-        if (log.isLoggable(Level.FINER)) {
+        if (log.isLoggable(Level.FINE)) {
             int newMB = bytesRead / (KB * KB);
             if (newMB > previousMB) {
-                log.finer(logPrefix() + newMB + " megabytes read");
+                log.fine(logPrefix() + newMB + " megabytes read");
             }
         }
     }
