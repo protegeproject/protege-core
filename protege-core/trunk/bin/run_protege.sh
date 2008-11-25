@@ -39,7 +39,7 @@ JARS=protege.jar:driver.jar:driver1.jar:looks-2.1.3.jar:unicode_panel.jar
 MAIN_CLASS=edu.stanford.smi.protege.Application
 
 # ------------------- JVM Options ------------------- 
-MAXIMUM_MEMORY=-Xmx100M
+MAXIMUM_MEMORY=-Xmx500M
 OPTIONS=$MAXIMUM_MEMORY
 
 #DELAY="-Dserver.delay=80 -Dserver.upload.kilobytes.second=128 -Dserver.download.kilobytes.second=500"
