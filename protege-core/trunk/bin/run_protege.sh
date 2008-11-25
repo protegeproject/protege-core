@@ -42,7 +42,7 @@ MAIN_CLASS=edu.stanford.smi.protege.Application
 MAXIMUM_MEMORY=-Xmx100M
 OPTIONS=$MAXIMUM_MEMORY
 
-#DELAY="-Dserrver.delay=80 -Dserver.upload.kilobytes.second=128 -Dserver.download.kilobytes.second=500"
+#DELAY="-Dserver.delay=80 -Dserver.upload.kilobytes.second=128 -Dserver.download.kilobytes.second=500"
 LOG4J_OPT="-Dlog4j.configuration=file:log4j.xml"
 
 #Possible instrumentation options - debug, etc.
