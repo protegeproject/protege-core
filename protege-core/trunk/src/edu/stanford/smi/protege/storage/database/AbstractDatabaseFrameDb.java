@@ -92,9 +92,9 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	    return ret;
 	}
 
-	protected static void executeUpdate(PreparedStatement stmt) throws SQLException {
+	protected static int executeUpdate(PreparedStatement stmt) throws SQLException {
 	    traceUpdate(stmt);
-	    stmt.executeUpdate();
+	    return stmt.executeUpdate();
 	}
 
 	protected static boolean isNullValue(Object o) {
@@ -313,9 +313,9 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	    return _table;
 	}
 
-	protected void executeUpdate(String text) throws SQLException {
+	protected int executeUpdate(String text) throws SQLException {
 	    traceUpdate(text);
-	    getCurrentConnection().getStatement().executeUpdate(text);
+	    return getCurrentConnection().getStatement().executeUpdate(text);
 	}
 
 	public void executeQuery(Query query, final QueryCallback callback) {
