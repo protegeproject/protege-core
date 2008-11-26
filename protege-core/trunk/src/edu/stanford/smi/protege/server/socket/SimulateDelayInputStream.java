@@ -58,7 +58,7 @@ public class SimulateDelayInputStream extends FilterInputStream {
                 bytesRead -= bandwidth * KB * secondsDelay;
                 try {
                     Thread.sleep(1000 * secondsDelay);
-                    log.info("" + secondsDelay + " seconds of upload delay");
+                    log.info("Simulated " + secondsDelay + " seconds of upload delay");
                 } catch (InterruptedException e) {
                     log.log(Level.WARNING, "Simulation of network delay failed", e);
                 }
