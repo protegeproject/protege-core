@@ -43,7 +43,7 @@ public class SimulateDelayOutputStream extends FilterOutputStream {
                 bytesWritten -= secondsDelay * bandwidth * KB;
                 try {
                     Thread.sleep(1000 * secondsDelay);
-                    log.info("Simulated " + secondsDelay + " seconds of download delay simulated");
+                    log.info("Simulated " + secondsDelay + " seconds of download delay");
                 } catch (InterruptedException e) {
                     log.log(Level.WARNING, "Simulation of network delay failed", e);
                 }
