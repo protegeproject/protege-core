@@ -476,7 +476,7 @@ public class FrameCalculator {
               for (WorkInfo wi : requests) {
                   if (wi.getReasons().contains(CacheRequestReason.PRELOAD)
                           || wi.getReasons().contains(CacheRequestReason.IMMEDIATE_PRELOAD)
-                          || !sessionMap.get(effectiveClient).getBandWidthPolicy().stopSending()) {
+                          || !sessionMap.get(wi.getClient()).getBandWidthPolicy().stopSending()) {
                       return wi;
                   }
               }
