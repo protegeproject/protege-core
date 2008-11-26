@@ -95,7 +95,8 @@ public class ServerProperties {
   }
   
   public static boolean useCompression() {
-      return Boolean.getBoolean(PROTEGE_RMI_USE_COMPRESSION);
+      String val = ApplicationProperties.getApplicationOrSystemProperty(PROTEGE_RMI_USE_COMPRESSION, "TRUE");
+      return val.toLowerCase().equals("true");
   }
   
   public static int delayInMilliseconds() {
