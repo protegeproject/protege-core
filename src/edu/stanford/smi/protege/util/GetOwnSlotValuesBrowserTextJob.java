@@ -11,6 +11,12 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.Server;
+import edu.stanford.smi.protege.server.ServerProject;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.server.framestore.background.CacheRequestReason;
+import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 
 /**
  * Protege Job for getting the own slot values of a frame slot pair
@@ -39,6 +45,7 @@ public class GetOwnSlotValuesBrowserTextJob extends ProtegeJob {
 	@Override
 	public Collection<FrameWithBrowserText> run() throws ProtegeException {
 		List<FrameWithBrowserText> framesWithBrowserText = new ArrayList<FrameWithBrowserText>();
+		addRequestsToFrameCalculator(frame);
 		Collection values = getValues();
 		for (Iterator iterator = values.iterator(); iterator.hasNext();) {
 			Object value = iterator.next();
@@ -46,6 +53,7 @@ public class GetOwnSlotValuesBrowserTextJob extends ProtegeJob {
 				Frame valueFrame = (Frame) value;
 				framesWithBrowserText.add(new FrameWithBrowserText(valueFrame,
 						valueFrame.getBrowserText(), ((Instance)valueFrame).getDirectTypes()));
+				addRequestsToFrameCalculator(valueFrame);
 			} else {
 				framesWithBrowserText.add(new FrameWithBrowserText(null, value.toString(), null));
 			}
@@ -59,11 +67,24 @@ public class GetOwnSlotValuesBrowserTextJob extends ProtegeJob {
 		return directValues ? frame.getDirectOwnSlotValues(slot) : frame.getOwnSlotValues(slot);
 	}
 
+	private void addRequestsToFrameCalculator(Frame frm) {
+		if (!getKnowledgeBase().getProject().isMultiUserServer()) {
+			return;
+		}
+		Server server = Server.getInstance();
+        RemoteSession session = ServerFrameStore.getCurrentSession();
+        ServerProject serverProject = server.getServerProject(getKnowledgeBase().getProject());
+        ServerFrameStore serverFrameStore = (ServerFrameStore) serverProject.getDomainKbFrameStore(session);
+        FrameCalculator fc = serverFrameStore.getFrameCalculator();
+        
+        fc.addRequest(frm, session, CacheRequestReason.USER_REQUESTED_FRAME_VALUES);		
+	}
+	
 	@Override
 	public Collection<FrameWithBrowserText> execute() throws ProtegeException {
 		return (Collection<FrameWithBrowserText>) super.execute();
-	}
-
+	}	
+	
 	@Override
 	public void localize(KnowledgeBase kb) {
 		super.localize(kb);
