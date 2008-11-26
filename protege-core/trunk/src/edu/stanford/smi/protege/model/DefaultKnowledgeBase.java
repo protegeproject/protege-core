@@ -1875,7 +1875,8 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
 
     private static boolean areComparableTypes(ValueType type1, ValueType type2) {
         return equals(type1, type2) || (isFrameType(type1) && isFrameType(type2))
-                || (isStringType(type1) && isStringType(type2)) || type1.equals(ValueType.ANY) || type2 == null;
+                || (isStringType(type1) && isStringType(type2)) 
+                || type1.equals(ValueType.ANY) || type2 == null  || type2.equals(ValueType.ANY);
     }
 
     private static boolean isFrameType(ValueType type) {
