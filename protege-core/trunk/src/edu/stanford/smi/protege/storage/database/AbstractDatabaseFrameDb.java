@@ -151,7 +151,9 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 				RemoteSession session = entry.getKey();
 				RobustConnection connection = entry.getValue();
 				connection.dispose();
-				Log.getLogger().info( "Closed DB connection for session: " + session );
+				if (log.isLoggable(Level.FINE)) {
+				    log.fine( "Closed DB connection for session: " + session );
+				}
 			}
 			_connections.clear();
 		} catch( SQLException e ) {
@@ -191,7 +193,7 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 		} catch( SQLException ex ) {
 			// do nothing
 		}
-		Log.getLogger().info( Log.toString( e ) );
+		log.info( Log.toString( e ) );
 
 		RuntimeException runtimeEx = new RuntimeException( e.getMessage() );
 		runtimeEx.initCause( e );
