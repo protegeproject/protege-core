@@ -87,9 +87,9 @@ public class CompressingInputStream extends InputStream {
     private void logZipEntry(ZipEntry entry) {
         totalData += entry.getSize();
         compressedData += entry.getCompressedSize();
-        if (log.isLoggable(Level.FINE) && totalData != 0 && (System.currentTimeMillis() - lastTotalsLogMsg >= 5000)) {
-            log.fine(String.format("Average Compression Ratio = %.3f %%, Compressed = %.2f MB, Uncompressed = %.2f MB", 
-                                   (100.0 * ((double) compressedData) / ((double) totalData)),
+        if (log.isLoggable(Level.FINE) && compressedData != 0 && (System.currentTimeMillis() - lastTotalsLogMsg >= 5000)) {
+            log.fine(String.format("Average Compression Ratio = %.3f to 1, Compressed = %.2f MB, Uncompressed = %.2f MB (Cumulative) ", 
+                                   (((double) totalData) / ((double) compressedData)),
                                    ((double) compressedData)/(1024.0 * 1024.0),
                                    ((double) totalData)/(1024.0 * 1024.0)));
             lastTotalsLogMsg = System.currentTimeMillis();
