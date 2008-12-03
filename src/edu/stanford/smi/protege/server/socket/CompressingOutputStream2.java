@@ -78,7 +78,7 @@ public class CompressingOutputStream2 extends OutputStream {
             compressing.flush();
             offset = 0;
             if (log.isLoggable(Level.FINER)) {
-                log.finer("OutputStream: segment " + blockCounter + " written (" + offset + " bytes)");
+                log.finer("OutputStream: segment " + blockCounter + " written");
             }
         } else {
             os.flush();
