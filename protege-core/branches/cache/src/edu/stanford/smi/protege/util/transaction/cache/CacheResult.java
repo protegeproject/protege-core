@@ -9,6 +9,10 @@ public class CacheResult<R> {
         this.result = result;
         this.isValid = isValid;
     }
+    
+    public static <R> CacheResult<R> getInvalid() {
+    	return new CacheResult<R>(null, false);
+    }
 
     /**
      * @return the result
