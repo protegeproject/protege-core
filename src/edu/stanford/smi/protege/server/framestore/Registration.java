@@ -21,7 +21,7 @@ public class Registration {
   
     private FifoReader<AbstractEvent> events;
     private List<ValueUpdate> updates = new ArrayList<ValueUpdate>();
-    private List<ValueUpdate> commits = new ArrayList<ValueUpdate>();
+    private List<ValueUpdate> commitableUpdates = new ArrayList<ValueUpdate>();
     private BandWidthPolicy bandwidthPolicy = new BandWidthPolicy();
     private long lastHeartbeat = 0;
 
@@ -46,22 +46,19 @@ public class Registration {
       if (cacheLog.isLoggable(Level.FINE)) {
         cacheLog.fine("Saving an update for commit/rollback " + vu);
       }
-      commits.add(vu);
+      commitableUpdates.add(vu);
     }
     
     public List<ValueUpdate>  getCommits() {
-      return commits;
+    	return commitableUpdates;
     }
 
-    public void clearCommits() {
-      getCommits();
-    }
 
     public void endTransaction() {
       if (cacheLog.isLoggable(Level.FINE)) {
         cacheLog.fine("Ending transaction: clearing transaction local events and updates");
       }
-      commits = new ArrayList<ValueUpdate>();
+      commitableUpdates = new ArrayList<ValueUpdate>();
     }
     
     public BandWidthPolicy getBandWidthPolicy() {

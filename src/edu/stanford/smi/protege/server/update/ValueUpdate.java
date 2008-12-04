@@ -22,29 +22,17 @@ public class ValueUpdate implements Serializable, Localizable{
 	
 
 	public ValueUpdate(Frame frame,
-					   SerializedCacheUpdate<RemoteSession, Sft, List> update,
-					   Visibility visibility,
-					   RemoteSession destination) {
+					   SerializedCacheUpdate<RemoteSession, Sft, List> update) {
 		this.frame = frame;
 		this.update = update;
-		this.visibility = visibility;
-		this.destination = destination;
 	}
 	
 	public Frame getFrame() {
 		return frame;
 	}
-
-	public RemoteSession getDestination() {
-		return destination;
-	}
-
+	
 	public SerializedCacheUpdate<RemoteSession, Sft, List> getUpdate() {
 		return update;
-	}
-	
-	public Visibility getVisibility() {
-		return visibility;
 	}
 
 

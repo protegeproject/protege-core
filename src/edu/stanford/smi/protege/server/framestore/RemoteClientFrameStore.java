@@ -49,12 +49,6 @@ import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.socket.SimulateDelayAspect;
-import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
-import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
-import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
-import edu.stanford.smi.protege.server.update.FrameRead;
-import edu.stanford.smi.protege.server.update.FrameWrite;
-import edu.stanford.smi.protege.server.update.InvalidateCacheUpdate;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
@@ -71,6 +65,7 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
+import edu.stanford.smi.protege.util.transaction.cache.CacheFactory;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheBeginTransaction;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheCommitTransaction;
@@ -106,7 +101,8 @@ public class RemoteClientFrameStore implements FrameStore {
     private RemoteServerFrameStore proxiedDelegate;
     private RemoteServerFrameStore remoteDelegate;
     
-    private List<SerializedCacheUpdate<RemoteSession, Sft, List>> transactionUpdates = new ArrayList<SerializedCacheUpdate<RemoteSession, Sft, List>>();
+    private FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>> deferredTransactionsWriter 
+        = new FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>>();
     private Map<Frame, DeferredTransactionsCache> cacheMap = new CacheMap<Frame, DeferredTransactionsCache>();
 
     private TransactionIsolationLevel transactionLevel;
@@ -1635,8 +1631,12 @@ public class RemoteClientFrameStore implements FrameStore {
     	Frame frame = vu.getFrame();
     	Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
     	if (cache == null) {
-    		
+    		cache = CacheFactory.createEmptyCache(getTransactionIsolationLevel());
+    		FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> reader 
+    				= new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsReader);
+    		cache = new DeferredTransactionsCache(cache, reader);
     	}
+    	cacheUpdate.performUpdate(cache);
     }
   }
 

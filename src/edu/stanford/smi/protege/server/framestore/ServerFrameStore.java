@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheModify;
 import edu.stanford.smi.protege.event.ClsEvent;
 import edu.stanford.smi.protege.event.FrameEvent;
 import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
@@ -31,6 +32,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.EventDispatchFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
+import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
@@ -56,9 +58,15 @@ import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.ProtegeJob;
-import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
+import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheBeginTransaction;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheCommitTransaction;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheDelete;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheModify;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheRollbackTransaction;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCacheUpdate;
 
 /*
  * Transactions:
@@ -116,10 +124,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     {
       _eventWriter.setLogger(cacheLog, "New Event");
     }
-    private FifoWriter<ValueUpdate> _updateWriter = new FifoWriter<ValueUpdate>();
-    {
-      _updateWriter.setLogger(cacheLog, "ValueUpdate");
-    }
 
     private Map<RemoteSession, Registration> _sessionToRegistrationMap
       = new HashMap<RemoteSession, Registration>();
@@ -157,7 +161,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         frameCalculator = new FrameCalculator(fsm.getHeadFrameStore(),
                                               ((DefaultKnowledgeBase) _kb).getCacheMachine(),
                                               _kbLock,
-                                              _updateWriter,
                                               this,
                                               _sessionToRegistrationMap);
         fsm.insertFrameStore(new FrameCalculatorFrameStore(frameCalculator), 1); // after  the localization frame  store.
@@ -825,7 +828,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public void register(RemoteSession session) throws ServerSessionLost {
       synchronized(_kbLock) {
-        Registration registration = new Registration(_eventWriter, _updateWriter);
+        Registration registration = new Registration(_eventWriter);
         _sessionToRegistrationMap.put(session, registration);
       }
     }
@@ -885,15 +888,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     private List<ValueUpdate> getValueUpdates(RemoteSession session) {
       updateEvents(session);
-      FifoReader<ValueUpdate> valueUpdates = _sessionToRegistrationMap.get(session).getUpdates();
-      ValueUpdate vu = null;
-      List<ValueUpdate> ret = new ArrayList<ValueUpdate>();
-      while ((vu = valueUpdates.read()) != null) {
-        RemoteSession targettedClient = vu.getClient();
-        if (targettedClient == null || targettedClient.equals(session)) {
-          ret.add(vu);
-        }
-      }
+      List<ValueUpdate> ret = _sessionToRegistrationMap.get(session).getUpdates();
       int size = ret.size();
       if (size != 0) {
           _sessionToRegistrationMap.get(session).getBandWidthPolicy().addItemsSent(ret.size());
@@ -907,73 +902,112 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                               AbstractEvent event)  {
       /* ---------------> Look for other relevant event types!!! and fix for nullness--- */
       if (event instanceof FrameEvent) {
-        handleFrameEvent(session, registration, level, (FrameEvent) event);
+        handleFrameEvent(session, (FrameEvent) event);
       } else if (event instanceof ClsEvent) {
-        handleClsEvent(session, registration, level, (ClsEvent) event);
+        handleClsEvent(session, (ClsEvent) event);
       } if (event instanceof KnowledgeBaseEvent) {
-        handleKnowledgeBaseEvent(session, registration, level, (KnowledgeBaseEvent) event);
+        handleKnowledgeBaseEvent(session, (KnowledgeBaseEvent) event);
       }
     }
+    
+    
 
 
     /*
      * Warning... calling getSlot for the wrong event type can cause a
      *            ClassCastException.
      */
+  @SuppressWarnings("unchecked")
   private void handleFrameEvent(RemoteSession session,
-                                Registration registration,
-                                TransactionIsolationLevel level,
                                 FrameEvent frameEvent) {
     Frame frame = frameEvent.getFrame();
     int type = frameEvent.getEventType();
+    
+    Sft sft = null;
 
     if (type == FrameEvent.OWN_SLOT_ADDED) {
-      Slot slot = frameEvent.getSlot();
-      invalidateCacheForWriteToStore(frame, slot, null, false);
-    } else if (type == FrameEvent.OWN_SLOT_VALUE_CHANGED) {
-      Slot slot = frameEvent.getSlot();
-      invalidateCacheForWriteToStore(frame, slot, null, false);
-    } else if (type == FrameEvent.OWN_SLOT_REMOVED) {
-      Slot slot = frameEvent.getSlot();
-      updateCacheForWriteToStore(session, frame, slot, (Facet) null, false, null);
-    } else if (type == FrameEvent.DELETED) {
-      removeFrameCache(frame);
-    }
+        Slot slot = frameEvent.getSlot();
+        CacheResult<List> result = CacheResult.getInvalid();
+        sft = new Sft(slot, null, false);
+        addWriteUpdate(session, frame, 
+ 		               new CacheModify<RemoteSession, Sft, List>(session, sft, result));
+      } else if (type == FrameEvent.OWN_SLOT_VALUE_CHANGED) {
+        Slot slot = frameEvent.getSlot();
+        CacheResult<List> result = CacheResult.getInvalid();
+        sft = new Sft(slot, null, false);
+        addWriteUpdate(session, frame, 
+ 		               new CacheModify<RemoteSession, Sft, List>(session, sft, result));
+      } else if (type == FrameEvent.OWN_SLOT_REMOVED) {
+        Slot slot = frameEvent.getSlot();
+        CacheResult<List> result = new CacheResult<List>(new ArrayList(), true);
+        sft = new Sft(slot, null, false);        
+        addWriteUpdate(session, frame, 
+	                    new CacheModify<RemoteSession, Sft, List>(session, sft, result));
+      } else if (type == FrameEvent.DELETED) {
+    	  addWriteUpdate(session, frame, 
+    			  	     new CacheDelete<RemoteSession, Sft, List>(session));
+      }
   }
-
+  
   /*
    * Warning... calling getSlot/getFacet for the wrong event type can cause a
    *            ClassCastException.
    */
+  @SuppressWarnings("unchecked")
   private void handleClsEvent(RemoteSession session,
-                              Registration registration,
-                              TransactionIsolationLevel level,
                               ClsEvent clsEvent) {
     Frame frame = clsEvent.getCls();
     int type = clsEvent.getEventType();
+    Sft sft = null;
     if (type == ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED) {
-      Slot slot = clsEvent.getSlot();
-      invalidateCacheForWriteToStore(frame, slot, valuesFacet, true);
+        Slot slot = clsEvent.getSlot();
+    	sft = new Sft(slot, valuesFacet, true);
     } else if (type == ClsEvent.TEMPLATE_FACET_ADDED) {
       Slot slot = clsEvent.getSlot();
       Facet facet = clsEvent.getFacet();
-      invalidateCacheForWriteToStore(frame, slot, facet, true);
+      sft = new Sft(slot, facet, false);
     } else if (type == ClsEvent.TEMPLATE_FACET_VALUE_CHANGED) {
       Slot slot = clsEvent.getSlot();
       Facet facet  = clsEvent.getFacet();
-      invalidateCacheForWriteToStore(frame, slot, facet, true);
+      sft = new Sft(slot, facet, true);
     }
+    CacheResult<List> result = CacheResult.getInvalid();
+    addWriteUpdate(session, frame, 
+    		       new CacheModify<RemoteSession, Sft, List>(session, sft, result));
   }
 
+  private void addWriteUpdate(RemoteSession session, Frame frame, 
+		                     SerializedCacheUpdate<RemoteSession, Sft, List> update) {
+	  ValueUpdate vu = new ValueUpdate(frame, update);
+	  TransactionIsolationLevel level = getTransactionIsolationLevel();
+	  if (TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
+		  for (Registration r : _sessionToRegistrationMap.values()) {
+			  r.addUpdate(vu);
+		  }
+	  }
+	  else {
+		  Registration r = _sessionToRegistrationMap.get(getCurrentSession());
+		  r.addUpdate(vu);
+		  r.addCommittableUpdate(vu);
+	  }
+  }
+
+public void addReadUpdate(RemoteSession session, Frame frame, 
+		                    SerializedCacheUpdate<RemoteSession, Sft, List> update) {
+	  Registration r = _sessionToRegistrationMap.get(getCurrentSession());
+	  ValueUpdate vu = new ValueUpdate(frame, update);
+	  r.addUpdate(vu);
+  }
+
+  @SuppressWarnings("unchecked")
   private void handleKnowledgeBaseEvent(RemoteSession session,
-                                        Registration registration,
-                                        TransactionIsolationLevel level,
-                                        KnowledgeBaseEvent event) {
+                                      KnowledgeBaseEvent event) {
     int type = event.getEventType();
     if (type == KnowledgeBaseEvent.CLS_DELETED || type == KnowledgeBaseEvent.SLOT_DELETED
         || type == KnowledgeBaseEvent.FACET_DELETED || type == KnowledgeBaseEvent.INSTANCE_DELETED) {
       Frame deletedFrame = event.getFrame();
-      removeFrameCache(deletedFrame);
+	  addWriteUpdate(session, deletedFrame, 
+		  	         new CacheDelete<RemoteSession, Sft, List>(session));
     }
   }
 
@@ -988,7 +1022,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      *    Updating value updates
      *       -> Nothing to do
      */
-    public RemoteResponse<Boolean> beginTransaction(String name, RemoteSession session) throws ServerSessionLost {
+    @SuppressWarnings("unchecked")
+	public RemoteResponse<Boolean> beginTransaction(String name, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       if (cacheLog.isLoggable(Level.FINE)) {
         cacheLog.fine("Begin Transaction for session " + session);
@@ -996,6 +1031,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         updateEvents(session);
         boolean success = getDelegate().beginTransaction(name);
+        addWriteUpdate(session, null,
+        		       new CacheBeginTransaction<RemoteSession, Sft, List>(session));
         return new RemoteResponse<Boolean>(success, getValueUpdates(session));
       }
     }
@@ -1019,20 +1056,24 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         cacheLog.fine("Commit Transaction for Session " + session);
       }
       synchronized(_kbLock) {
+    	addWriteUpdate(session, null, 
+    			       new CacheCommitTransaction<RemoteSession, Sft, List>(session));
         boolean success = getDelegate().commitTransaction();
         updateEvents(session);
         if (!inTransaction()) {
           Registration registration = _sessionToRegistrationMap.get(session);
-          TransactionIsolationLevel level = getTransactionIsolationLevel();
-          if (success && level != null &&
-              level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0) {
-            for (ValueUpdate vu : registration.getCommits()) {
-              _updateWriter.write(vu);
-            }
+          List<ValueUpdate> committedUpdates = registration.getCommits();
+          for (Registration otherRegistration : _sessionToRegistrationMap.values()) {
+        	  if (otherRegistration.equals(registration)) {
+        		  continue;
+        	  }
+        	  for (ValueUpdate committedUpdate : committedUpdates) {
+        		  otherRegistration.addUpdate(committedUpdate);
+        	  }
           }
           registration.endTransaction();
         }
-        if (!existsTransaction()) {
+        if (!existsTransaction()) { // who am i waking?
           _kbLock.notifyAll();
         }
         return new RemoteResponse<Boolean>(success, getValueUpdates(session));
@@ -1063,53 +1104,20 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
       synchronized(_kbLock) {
         updateEvents(session);
+        addWriteUpdate(session, null, 
+        			   new CacheRollbackTransaction<RemoteSession, Sft, List>(session));
         boolean success = getDelegate().rollbackTransaction();
         if (!inTransaction()) {
           Registration registration = _sessionToRegistrationMap.get(session);
-          TransactionIsolationLevel level = getTransactionIsolationLevel();
-          if (success && (level != null ||
-                          level.compareTo(TransactionIsolationLevel.READ_COMMITTED) < 0)) {
-            for (ValueUpdate vu : registration.getCommits()) {
-              ValueUpdate invalid = vu.getInvalidatingVariant();
-              if (invalid != null) {
-                _updateWriter.write(invalid);
-              }
-            }
-          }
           registration.endTransaction();
         }
-        if (!existsTransaction()) {
+        if (!existsTransaction()) {  // who am i waking?
           _kbLock.notifyAll();
         }
         return new RemoteResponse<Boolean>(success, getValueUpdates(session));
       }
     }
 
-
-    public void removeFrameCache(Frame frame) {
-      TransactionIsolationLevel level = getTransactionIsolationLevel();
-      RemoteSession session = getCurrentSession();
-      updateEvents(session);
-      Registration registration = _sessionToRegistrationMap.get(session);
-      if (level == null) {
-        _updateWriter.write(new RemoveFrameCache(frame));
-        if (inTransaction()) {
-          registration.addCommittableUpdate(new RemoveFrameCache(frame));
-        }
-        RemoveFrameCache remove  = new RemoveFrameCache(frame);
-        remove.setTransactionScope(true);
-        _updateWriter.write(remove);
-      }
-      RemoveFrameCache remove = new RemoveFrameCache(frame);
-      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
-        remove.setClient(session);
-        remove.setTransactionScope(true);
-      }
-      _updateWriter.write(remove);
-      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
-        registration.addCommittableUpdate(new RemoveFrameCache(frame));
-      }
-    }
 
   /**
    * Calculates the transaction isolation level.  If it returns null
@@ -1373,113 +1381,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized (_kbLock) {
         Registration registration = _sessionToRegistrationMap.get(session);
         registration.setLastHeartbeat(System.currentTimeMillis());
-      }
-    }
-
-    public void cacheValuesReadFromStore(RemoteSession session,
-                                         Frame frame,
-                                         Slot slot,
-                                         Facet facet,
-                                         boolean isTemplate,
-                                         List values) {
-      updateEvents(session);
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Cacheing read values for session " + session + " [" + _kb + "]");
-        cacheLog.fine("Read[" + frame + ", " + slot + ", " + facet + ", " + isTemplate + " -> " + values);
-      }
-      TransactionIsolationLevel level  = getTransactionIsolationLevel();
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Transaction Isolation Level = " + level);
-      }
-      if (level == null) {
-        return;  // no caching can be done
-      }
-      SftUpdate vu = new FrameRead(frame, slot, facet, isTemplate, values);
-      if (inTransaction() && level.compareTo(TransactionIsolationLevel.REPEATABLE_READ) >= 0) {
-        if (cacheLog.isLoggable(Level.FINE)) {
-          cacheLog.fine("Repeatable Read ==> session only");
-        }
-        vu.setClient(session);
-        vu.setTransactionScope(true);
-      }
-      _updateWriter.write(vu);
-    }
-
-    private void updateCacheForWriteToStore(RemoteSession session,
-                                            Frame frame,
-                                            Slot slot,
-                                            Facet facet,
-                                            boolean isTemplate,
-                                            List values) {
-      updateEvents(session);
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Cacheing written values for session " + session + "[" + _kb + "]");
-        cacheLog.fine("Read[" + frame + ", " + slot + ", " + facet + ", " + isTemplate + " -> " + values);
-      }
-      TransactionIsolationLevel level = getTransactionIsolationLevel();
-      Registration registration = _sessionToRegistrationMap.get(session);
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Transaction Isolation Level = " + level);
-      }
-      if (level  == null) {
-        InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
-        _updateWriter.write(invalid);
-        registration.addCommittableUpdate(invalid);
-        invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
-        invalid.setTransactionScope(true);
-        _updateWriter.write(invalid);
-        return;
-      }
-      SftUpdate vu = new FrameWrite(frame, slot, facet, isTemplate, values);
-      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
-        if (cacheLog.isLoggable(Level.FINE)) {
-          cacheLog.fine("Update is transaction scope and specific to this client");
-        }
-        vu.setClient(session);
-        vu.setTransactionScope(true);
-      }
-      _updateWriter.write(vu);
-      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
-        registration.addCommittableUpdate(new FrameWrite(frame, slot, facet, isTemplate, values));
-      }
-    }
-
-    public void invalidateCacheForWriteToStore(Frame frame,
-                                                Slot slot,
-                                                Facet facet,
-                                                boolean isTemplate) {
-      RemoteSession session = getCurrentSession();
-      updateEvents(session);
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Cacheing unknown values for session " + session + "[" + _kb + "]");
-        cacheLog.fine("Read[" + frame + ", " + slot + ", " + facet + ", " + isTemplate + " -> ??");
-      }
-      TransactionIsolationLevel level = getTransactionIsolationLevel();
-      Registration registration = _sessionToRegistrationMap.get(session);
-      if (cacheLog.isLoggable(Level.FINE)) {
-        cacheLog.fine("Transaction Isolation Level = " + level);
-      }
-      if (level == null) {
-        _updateWriter.write(new InvalidateCacheUpdate(frame, slot, facet, isTemplate));
-        if (inTransaction()) {
-          registration.addCommittableUpdate(new InvalidateCacheUpdate(frame, slot, facet, isTemplate));
-        }
-        InvalidateCacheUpdate invalid = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
-        invalid.setTransactionScope(true);
-        _updateWriter.write(invalid);
-        return;
-      }
-      SftUpdate vu = new InvalidateCacheUpdate(frame, slot, facet, isTemplate);
-      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
-        if (cacheLog.isLoggable(Level.FINE)) {
-          log.fine("Update is transaction scope and is only seen by the session");
-        }
-        vu.setClient(session);
-        vu.setTransactionScope(true);
-      }
-      _updateWriter.write(vu);
-      if (!TransactionMonitor.updatesSeenByUntransactedClients(transactionMonitor, level)) {
-        registration.addCommittableUpdate(new InvalidateCacheUpdate(frame,slot, facet, isTemplate));
       }
     }
 

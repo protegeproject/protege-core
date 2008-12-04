@@ -19,16 +19,20 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.Registration;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
-import edu.stanford.smi.protege.server.update.FrameEvaluationCompleted;
-import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
-import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
 import edu.stanford.smi.protege.server.util.FifoWriter;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheAbortComplete;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheCompleted;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheRead;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheStartComplete;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCacheUpdate;
 
 /*
  * This frame calculator has to be aware of transactions.  A good
@@ -61,7 +65,6 @@ public class FrameCalculator {
 
   private FrameStore fs;
   private final Object kbLock;
-  private FifoWriter<ValueUpdate> updates;
   private ServerFrameStore server;
   private RemoteSession effectiveClient;
 
@@ -85,13 +88,11 @@ public class FrameCalculator {
   public FrameCalculator(FrameStore fs,
                          ServerCacheStateMachine machine,
                          Object kbLock,
-                         FifoWriter<ValueUpdate> updates,
                          ServerFrameStore server,
                          Map<RemoteSession, Registration> sessionMap) {
     this.fs = fs;
     this.machine = machine;
     this.kbLock = kbLock;
-    this.updates = updates;
     this.server = server;
     this.sessionMap = sessionMap;
     innerThread = new FrameCalculatorThread();
@@ -105,7 +106,8 @@ public class FrameCalculator {
   }
 
 
-  private void doWork(WorkInfo wi) throws ServerSessionLost {
+  @SuppressWarnings("unchecked")
+private void doWork(WorkInfo wi) throws ServerSessionLost {
     Frame frame = wi.getFrame();
     effectiveClient = wi.getClient();
     ServerFrameStore.setCurrentSession(effectiveClient);
@@ -123,11 +125,12 @@ public class FrameCalculator {
           }
           wi.setTargetFullCache(false);
         } else {
-          insertValueUpdate(new FrameEvaluationStarted(frame));
+          insertValueUpdate(frame, new CacheStartComplete<RemoteSession, Sft, List>());
         }
       }
       Set<Slot> slots = null;
       List values = null;
+      Sft sft;
       synchronized (kbLock) {
         checkAbilityToGenerateFullCache(wi);
         slots = fs.getOwnSlots(frame);
@@ -135,13 +138,16 @@ public class FrameCalculator {
       for (Slot slot : slots) {
         synchronized (kbLock) {
           checkAbilityToGenerateFullCache(wi);
+    	  sft = new Sft(slot, null, false);
           if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES) &&
               wi.skipDirectInstances()) {
-            server.invalidateCacheForWriteToStore(frame, slot, null, false);
+        	  CacheResult<List> invalid = CacheResult.getInvalid();
+        	  insertValueUpdate(frame, new CacheRead<RemoteSession, Sft, List>(effectiveClient, sft, invalid));
           } else {
             values = fs.getDirectOwnSlotValues(frame, slot);
             if (values != null && !values.isEmpty()) {
-              server.cacheValuesReadFromStore(effectiveClient, frame, slot, null, false, values);
+            	CacheResult<List> result = new CacheResult<List>(values, true);
+            	insertValueUpdate(frame, new CacheRead<RemoteSession, Sft, List>(effectiveClient, sft, result));
             }
           }
           addFollowedExprs(frame, slot, values);
@@ -156,9 +162,11 @@ public class FrameCalculator {
         for (Slot slot : slots) {
           synchronized (kbLock) {
             checkAbilityToGenerateFullCache(wi);
+            sft = new Sft(slot, null, true);
             values = fs.getDirectTemplateSlotValues(cls, slot);
             if (values != null && !values.isEmpty()) {
-              server.cacheValuesReadFromStore(effectiveClient, cls, slot, null, true, values);
+            	CacheResult<List> result = new CacheResult<List>(values, true);
+            	insertValueUpdate(frame, new CacheRead<RemoteSession, Sft, List>(effectiveClient, sft, result));
             }
           }
           Set<Facet> facets;
@@ -169,9 +177,11 @@ public class FrameCalculator {
           for (Facet facet : facets) {
             synchronized (kbLock) {
               checkAbilityToGenerateFullCache(wi);
+              sft = new Sft(slot, facet, true);
               values = fs.getDirectTemplateFacetValues(cls, slot,facet);
               if (values != null && !values.isEmpty()) {
-                server.cacheValuesReadFromStore(effectiveClient, cls, slot, facet, true, values);
+              	CacheResult<List> result = new CacheResult<List>(values, true);
+            	insertValueUpdate(frame, new CacheRead<RemoteSession, Sft, List>(effectiveClient, sft, result));
               }
             }
           }
@@ -179,9 +189,9 @@ public class FrameCalculator {
       }
       synchronized(kbLock) {
         if (wi.isTargetFullCache() && !server.inTransaction()) {
-          insertValueUpdate(new FrameEvaluationCompleted(frame));
+          insertValueUpdate(frame, new CacheCompleted<RemoteSession, Sft, List>());
         } else if (wi.isTargetFullCache()) {
-          insertValueUpdate(new FrameEvaluationPartial(wi.getFrame()));
+            insertValueUpdate(frame, new CacheAbortComplete<RemoteSession, Sft, List>());
         }
       }
     } catch (Throwable t) {
@@ -189,7 +199,7 @@ public class FrameCalculator {
                           "Exception caught caching frame values",
                           t);
       wi.setTargetFullCache(false);
-      insertValueUpdate(new FrameEvaluationPartial(wi.getFrame()));
+      insertValueUpdate(frame, new CacheAbortComplete<RemoteSession, Sft, List>());
     } finally {
       stats.completeWork();
     }
@@ -202,7 +212,7 @@ public class FrameCalculator {
         log.fine("Found transaction in progress - can't complete cache for frame " + wi.getFrame());
       }
       wi.setTargetFullCache(false);
-      insertValueUpdate(new FrameEvaluationPartial(wi.getFrame()));
+      insertValueUpdate(wi.getFrame(), new CacheAbortComplete<RemoteSession, Sft, List>());
     }
   }
 
@@ -299,11 +309,10 @@ public class FrameCalculator {
   /*
    * This call assumes that the kbLock is held on entry.
    */
-  private void insertValueUpdate(ValueUpdate vu) {
+  private void insertValueUpdate(Frame frame, SerializedCacheUpdate<RemoteSession, Sft, List> update) {
     sessionMap.get(effectiveClient).getBandWidthPolicy().addItemToWaitList();
-    vu.setClient(effectiveClient);
     server.updateEvents(effectiveClient);
-    updates.write(vu);
+    server.addReadUpdate(effectiveClient, frame, update);
   }
 
 

@@ -10,12 +10,12 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCache
 
 public class DeferredTransactionsCache implements
 		Cache<RemoteSession, Sft, List> {
-	private List<SerializedCacheUpdate<RemoteSession, Sft, List>> transactionUpdates;
+	private FifoReader<SerializedCacheUpdate<RemoteSession, Sft, List>> transactionUpdates;
 	private int location = 0;
 	private Cache<RemoteSession, Sft, List> delegate;
 	
 	public DeferredTransactionsCache(Cache<RemoteSession, Sft, List> delegate, 
-			List<SerializedCacheUpdate<RemoteSession, Sft, List>> transactionUpdates) {
+			                         FifoReader<SerializedCacheUpdate<RemoteSession, Sft, List>> transactionUpdates) {
 		this.delegate = delegate;
 		this.transactionUpdates = transactionUpdates;
 	}
@@ -51,10 +51,10 @@ public class DeferredTransactionsCache implements
 	}
 	
 	public void flush() {
-		while (deferredTransactions.read() != null) {
+		while (transactionUpdates.read() != null) {
 			;
 		}
-		flush();
+		delegate.flush();
 	}
 	
 	public void startCompleteCache() {
@@ -94,9 +94,11 @@ public class DeferredTransactionsCache implements
 		return delegate.getTransactionNesting(session);
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void catchUp() {
-		while (transactionUpdates.size() > location) {
-			transactionUpdates.get(location++).performUpdate(delegate);
+		SerializedCacheUpdate<RemoteSession, Sft, List> update;
+		while ((update = transactionUpdates.read()) != null) {
+			update.performUpdate(delegate);
 		}
 	}
 
