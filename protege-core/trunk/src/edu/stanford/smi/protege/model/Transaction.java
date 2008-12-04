@@ -28,10 +28,12 @@ import edu.stanford.smi.protege.util.Log;
  *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
-public abstract class Transaction {
+public abstract class Transaction<X> {
     public static final String APPLY_TO_TRAILER_STRING = " -- Apply to: ";
 
     private KnowledgeBase _knowledgeBase;
+    
+    private String applyTo;
     
     private String transactionName = "transaction";
 
@@ -42,6 +44,12 @@ public abstract class Transaction {
     protected Transaction(KnowledgeBase kb, String transactionName) {
         _knowledgeBase = kb;
         this.transactionName = transactionName;
+    }
+    
+    protected Transaction(KnowledgeBase kb, String transactionName, String applyTo) {
+        _knowledgeBase = kb;
+        this.transactionName = transactionName;
+        this.applyTo = applyTo;
     }
     
     public KnowledgeBase getKnowledgeBase() {
@@ -62,7 +70,7 @@ public abstract class Transaction {
         synchronized (_knowledgeBase) {
             boolean transactionComplete = false;
             try {
-                _knowledgeBase.beginTransaction(transactionName);
+                _knowledgeBase.beginTransaction(transactionName, applyTo);
                 boolean doCommit = doOperations();
                 if (doCommit) {
                     commited = _knowledgeBase.commitTransaction();
@@ -79,6 +87,10 @@ public abstract class Transaction {
             }
         }
         return commited;
+    }
+    
+    public X getResult() {
+        return null;
     }
     
     public static String getApplyTo(String beginString) {
