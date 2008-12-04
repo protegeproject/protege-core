@@ -466,6 +466,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
         Collection secondaryValues = getSecondaryValues(frame, slot, facet, isTemplate);
 

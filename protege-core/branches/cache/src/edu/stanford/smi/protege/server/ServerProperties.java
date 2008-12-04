@@ -66,10 +66,6 @@ public class ServerProperties {
     return true;
   }
   
-  public static int delayInMilliseconds() {
-    return SystemUtilities.getSystemIntegerProperty(DELAY_MSEC , 0);
-  }
-  
   public static int minimumPreloadedFrames() {
     return SystemUtilities.getSystemIntegerProperty(MIN_PRELOAD_FRAMES, 5000);
   }
@@ -99,8 +95,13 @@ public class ServerProperties {
   }
   
   public static boolean useCompression() {
-      return ApplicationProperties.getBooleanProperty(PROTEGE_RMI_USE_COMPRESSION, false);
+      String val = ApplicationProperties.getApplicationOrSystemProperty(PROTEGE_RMI_USE_COMPRESSION, "TRUE");
+      return val.toLowerCase().equals("true");
   }
+  
+  public static int delayInMilliseconds() {
+      return SystemUtilities.getSystemIntegerProperty(DELAY_MSEC , 0);
+    }
   
   public static int getKiloBytesPerSecondDownload() {
       String val = ApplicationProperties.getApplicationOrSystemProperty(DELAY_KBS_DOWNLOAD, "0");

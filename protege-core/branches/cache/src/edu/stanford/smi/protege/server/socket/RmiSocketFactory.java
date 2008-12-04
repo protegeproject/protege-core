@@ -20,17 +20,22 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
     public static final String SERVER_SSL_PORT = "protege.rmi.server.ssl.port";
     public static final String REGISTRY_PORT = "protege.rmi.registry.port";
 
-    private boolean use_ssl = false;
+    /*
+     * This class must have state variables for anything that must agree on both the 
+     * client and the server.  The equals and hashCode must consider these parameters.
+     */
+    private boolean useSSL = false;
+    private boolean useCompression = CompressionAspect.useCompression();
     
     public RmiSocketFactory(SSLFactory.Context context) {
-        use_ssl = SSLFactory.useSSL(context);
+        useSSL = SSLFactory.useSSL(context);
         reportPorts();
     }
 
     public Socket createSocket(String host, int port) throws IOException {
         SocketAddress serverAddress = new InetSocketAddress(host, port);
         SocketAddress localAddress = new InetSocketAddress(0);
-        Socket socket = new SocketWithAspects();
+        Socket socket = new SocketWithAspects(useCompression);
         socket.setReuseAddress(true);
         socket.bind(localAddress);
         socket.connect(serverAddress);
@@ -41,7 +46,7 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
         return new ServerSocket(port) {
             @Override
             public Socket accept() throws IOException {
-                Socket socket = new SocketWithAspects();
+                Socket socket = new SocketWithAspects(useCompression);
                 implAccept(socket);
                 return socket;
             }
@@ -53,11 +58,11 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
             return false;
         }
         RmiSocketFactory other = (RmiSocketFactory) o;
-        return use_ssl == other.use_ssl;
+        return useSSL == other.useSSL && useCompression == other.useCompression;
     }
     
     public int hashCode() {
-        return (use_ssl ? 1 : 0);
+        return (useSSL ? 1 : 0) + (useCompression ? 2 : 0);
     }
 
 
@@ -66,8 +71,18 @@ public class RmiSocketFactory implements RMIClientSocketFactory,
         if (!portsReported) {
             int serverPort   = getPort(SERVER_PORT, 0);
             int registryPort = getPort(REGISTRY_PORT, Registry.REGISTRY_PORT);
-            if (!(serverPort == 0 && registryPort == Registry.REGISTRY_PORT)) {
-                Log.getLogger().config("server=" + serverPort + ", registryPort=" + registryPort);
+            if (!(serverPort == 0 && registryPort == Registry.REGISTRY_PORT && !useCompression && !useSSL)) {
+                StringBuffer sb = new StringBuffer("Server port = ");
+                sb.append(serverPort);
+                sb.append(", registry port = ");
+                sb.append(registryPort);
+                if (useCompression) {
+                    sb.append(", compressed stream");
+                }
+                if (useSSL) {
+                    sb.append(", SSL");
+                }
+                Log.getLogger().config(sb.toString());
             }
             portsReported = true;
         }

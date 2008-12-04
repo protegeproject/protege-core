@@ -4,14 +4,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.server.ServerProperties;
+import edu.stanford.smi.protege.util.Log;
 
 
 public class SocketWithAspects extends Socket {
+    static Logger log = Log.getLogger(SocketWithAspects.class);
+    
     private SocketAspect myAspects;
 
-    public SocketWithAspects() {
+    public SocketWithAspects(boolean useCompression) {
         myAspects = new SocketAspect() {
 
             public SocketAspect getDelegate() {
@@ -31,7 +34,10 @@ public class SocketWithAspects extends Socket {
             }
             
         };
-        if (ServerProperties.useCompression()) {
+        if (SimulateDelayAspect.useSimulatedDelay()) {
+            myAspects = new SimulateDelayAspect(myAspects);
+        }
+        if (useCompression) {
             myAspects = new CompressionAspect(myAspects);
         }
         if (MonitoringAspect.useMonitoring()) {

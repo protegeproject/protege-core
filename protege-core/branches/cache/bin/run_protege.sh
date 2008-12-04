@@ -39,12 +39,10 @@ JARS=protege.jar:driver.jar:driver1.jar:looks-2.1.3.jar:unicode_panel.jar
 MAIN_CLASS=edu.stanford.smi.protege.Application
 
 # ------------------- JVM Options ------------------- 
-MAXIMUM_MEMORY=-Xmx100M
+MAXIMUM_MEMORY=-Xmx500M
 OPTIONS=$MAXIMUM_MEMORY
 
-
-#PORTOPTS="-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100 -Dprotege.rmi.server.local.port=2388"
-#SSLOPTS="-Dprotege.rmi.usessl=true -Djavax.net.ssl.trustStore=protegeca -Djavax.net.ssl.trustStorePassword=protege"
+#DELAY="-Dserver.delay=80 -Dserver.upload.kilobytes.second=128 -Dserver.download.kilobytes.second=500"
 LOG4J_OPT="-Dlog4j.configuration=file:log4j.xml"
 
 #Possible instrumentation options - debug, etc.
@@ -55,7 +53,7 @@ LOG4J_OPT="-Dlog4j.configuration=file:log4j.xml"
 #YJP_OPT="-agentlib:yjpagent=port=8142"
 
 
-OPTIONS="${OPTIONS} ${DEBUG_OPT} ${YJP_OPT} ${PORT_OPTS} ${SSLOPTS} ${LOG4J_OPT}"
+OPTIONS="${OPTIONS} ${DEBUG_OPT} ${YJP_OPT} ${DELAY} ${LOG4J_OPT}"
 # ------------------- JVM Options ------------------- 
 
 # Run Protege

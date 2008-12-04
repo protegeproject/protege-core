@@ -259,6 +259,18 @@
        <mkdir dir="${protege.home}/logs"/>
     </target>
 
+    <target name="osx">
+        <copy todir="dist/Protege.app">
+            <fileset dir="bin/skeleton.app"/>
+        </copy>
+        <chmod file="dist/Protege.app/Contents/MacOS/JavaApplicationStub"
+               perm="ugo+x"/>
+        <antcall target="install">
+            <param name="protege.home"
+                   value="dist/Protege.app/Contents/Resources/Java"/>
+        </antcall>
+    </target>
+
     <!-- Run targets -->
 
     <target name="debug" depends="update">

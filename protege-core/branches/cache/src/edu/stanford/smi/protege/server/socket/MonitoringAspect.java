@@ -41,9 +41,7 @@ public class MonitoringAspect implements SocketAspect {
     }
     
     public static boolean useMonitoring() {
-        return ServerProperties.getKiloBytesPerSecondDownload() != 0 
-            || ServerProperties.getKiloBytesPerSecondUpload() != 0 
-            || MonitoringInputStream.log.isLoggable(Level.FINE)
+        return MonitoringInputStream.log.isLoggable(Level.FINE)
             || MonitoringOutputStream.log.isLoggable(Level.FINE);
     }
 
