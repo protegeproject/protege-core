@@ -15,19 +15,21 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public interface DatabaseFrameDb extends NarrowFrameStore {
 
-    public void initialize(FrameFactory factory,
+    void initialize(FrameFactory factory,
                            String driver,
                            String url, String user, String pass, String table,
                            boolean isInclude);
     
-    public String getTableName();
+    void close();
+    
+    String getTableName();
 
-    public void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value);
+    void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value);
 
-    public Map<Sft,List> getFrameValues(Frame frame);
+    Map<Sft,List> getFrameValues(Frame frame);
 
-    public void overwriteKB(KnowledgeBase kb,
+    void overwriteKB(KnowledgeBase kb,
                                 boolean saveFrames) throws SQLException;
 
-    public TransactionMonitor getTransactionStatusMonitor();
+    TransactionMonitor getTransactionStatusMonitor();
 }

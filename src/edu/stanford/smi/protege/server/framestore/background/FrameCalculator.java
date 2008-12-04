@@ -55,6 +55,9 @@ import edu.stanford.smi.protege.util.Log;
 
 public class FrameCalculator {
   private static transient Logger log = Log.getLogger(FrameCalculator.class);
+  
+  public static long WAIT_FOR_OVERLOADED_CLIENT = 300; // ms
+  public static long MAX_WORKINFO_QUEUE = 15000;
 
   private FrameStore fs;
   private final Object kbLock;
@@ -105,11 +108,6 @@ public class FrameCalculator {
   private void doWork(WorkInfo wi) throws ServerSessionLost {
     Frame frame = wi.getFrame();
     effectiveClient = wi.getClient();
-    if (!wi.getReasons().contains(CacheRequestReason.PRELOAD)
-    		&& !wi.getReasons().contains(CacheRequestReason.IMMEDIATE_PRELOAD)
-    		&& sessionMap.get(effectiveClient).getBandWidthPolicy().stopSending()) {
-        return;
-    }
     ServerFrameStore.setCurrentSession(effectiveClient);
     if (log.isLoggable(Level.FINE)) {
         synchronized (kbLock) {
@@ -453,12 +451,7 @@ public class FrameCalculator {
 
         while (true) {
             try {
-                synchronized (requestLock) {
-                    while (requests.isEmpty()) {
-                        requestLock.wait();
-                    }
-                    workInfo = requests.first();
-                }
+                workInfo = getWorkInfo();
                 long startTime = System.currentTimeMillis();
                 doWork(workInfo);
                 synchronized (requestLock) {
@@ -475,6 +468,31 @@ public class FrameCalculator {
             }
         }
     }
+  }
+  
+  private WorkInfo getWorkInfo() {
+      synchronized (requestLock) {
+          while  (true) {
+              for (WorkInfo wi : requests) {
+                  if (wi.getReasons().contains(CacheRequestReason.PRELOAD)
+                          || wi.getReasons().contains(CacheRequestReason.IMMEDIATE_PRELOAD)
+                          || !sessionMap.get(wi.getClient()).getBandWidthPolicy().stopSending()) {
+                      return wi;
+                  }
+              }
+              try {
+                  if (requests.isEmpty()) {
+                      requestLock.wait();
+                  }
+                  else {
+                      requestLock.wait(WAIT_FOR_OVERLOADED_CLIENT);
+                  }
+              }
+              catch (InterruptedException ie) {
+                  log.log(Level.WARNING, "Unexpected interrupt", ie);
+              }
+          }
+      }
   }
 
   public static class FrameCalculatorStatsImpl implements FrameCalculatorStats, Serializable {

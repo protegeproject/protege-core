@@ -11,7 +11,7 @@ set JARS=protege.jar;looks-2.1.3.jar;unicode_panel.jar;driver.jar;driver1.jar;dr
 set MAIN_CLASS=edu.stanford.smi.protege.Application
 
 rem --- JVM Options --- 
-set MAXIMUM_MEMORY=-Xmx200M
+set MAXIMUM_MEMORY=-Xmx500M
 set OPTIONS=%MAXIMUM_MEMORY%
 
 rem Possible instrumentation options - debug, etc.

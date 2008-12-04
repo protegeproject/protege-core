@@ -4,6 +4,6 @@ Merged to trunk revision 12211 (to get performUpdate code)
 Merged to trunk revision 12220 (to avoid conflicts in RemoteClientFrameStore)
 Merged to trunk revision 12239 (copying over extra Cache interfaces)
 Merged to trunk revision 12242 (oops - didn't get copied with the last)
-
+Merged to trunk revision 12390
 p=http://smi-protege/repos/protege/protege-core
 

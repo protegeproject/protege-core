@@ -126,7 +126,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         Action viewAction = createViewAction();
 
         _list = ComponentFactory.createSelectableList(viewAction);
-        //_list.setCellRenderer(FrameRenderer.createInstance());
+        _list.setCellRenderer(FrameRenderer.createInstance());
         _list.setModel(new ConcurrentListModel());
 
 

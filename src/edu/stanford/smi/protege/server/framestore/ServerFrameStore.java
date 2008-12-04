@@ -220,23 +220,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public FrameCalculatorStats getStats() {
-        delay();
         return frameCalculator.getStats();
     }
 
     private FrameStore getDelegate() {
         return _delegate;
-    }
-
-    private static int nDelayedCalls = 0;
-
-    private static void delay() {
-        if (ServerProperties.delayInMilliseconds() != 0) {
-            SystemUtilities.sleepMsec(ServerProperties.delayInMilliseconds());
-            if (++nDelayedCalls % 10 == 0) {
-                Log.getLogger().info(nDelayedCalls + " delayed calls");
-            }
-        }
     }
 
     public void recordCall(RemoteSession session) throws ServerSessionLost {
@@ -249,7 +237,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public static void recordCallNoCheck(RemoteSession session) {
-        delay();
         setCurrentSession(session);
     }
 

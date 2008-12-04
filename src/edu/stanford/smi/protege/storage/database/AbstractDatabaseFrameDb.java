@@ -92,9 +92,9 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	    return ret;
 	}
 
-	protected static void executeUpdate(PreparedStatement stmt) throws SQLException {
+	protected static int executeUpdate(PreparedStatement stmt) throws SQLException {
 	    traceUpdate(stmt);
-	    stmt.executeUpdate();
+	    return stmt.executeUpdate();
 	}
 
 	protected static boolean isNullValue(Object o) {
@@ -151,7 +151,9 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 				RemoteSession session = entry.getKey();
 				RobustConnection connection = entry.getValue();
 				connection.dispose();
-				Log.getLogger().info( "Closed DB connection for session: " + session );
+				if (log.isLoggable(Level.FINE)) {
+				    log.fine( "Closed DB connection for session: " + session );
+				}
 			}
 			_connections.clear();
 		} catch( SQLException e ) {
@@ -191,7 +193,7 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 		} catch( SQLException ex ) {
 			// do nothing
 		}
-		Log.getLogger().info( Log.toString( e ) );
+		log.info( Log.toString( e ) );
 
 		RuntimeException runtimeEx = new RuntimeException( e.getMessage() );
 		runtimeEx.initCause( e );
@@ -313,9 +315,9 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	    return _table;
 	}
 
-	protected void executeUpdate(String text) throws SQLException {
+	protected int executeUpdate(String text) throws SQLException {
 	    traceUpdate(text);
-	    getCurrentConnection().getStatement().executeUpdate(text);
+	    return getCurrentConnection().getStatement().executeUpdate(text);
 	}
 
 	public void executeQuery(Query query, final QueryCallback callback) {

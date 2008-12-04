@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.socket.SimulateDelayAspect;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 
@@ -107,6 +108,7 @@ public class RemoteClientInvocationHandler implements InvocationHandler {
 			  }
 		  }
 	  }
+      SimulateDelayAspect.delayForLatency();
       Object o =  remoteMethod.invoke(delegate, remoteArgs);
 
       LocalizeUtils.localize(o, kb);

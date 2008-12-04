@@ -17,6 +17,7 @@ public class CompressingInputStream extends InputStream {
     
     long totalData = 0;
     long compressedData = 0;
+    long lastTotalsLogMsg = 0;
     
     public CompressingInputStream(InputStream is) {
         compressing = new ZipInputStream(is);
@@ -84,6 +85,15 @@ public class CompressingInputStream extends InputStream {
     }
     
     private void logZipEntry(ZipEntry entry) {
+        totalData += entry.getSize();
+        compressedData += entry.getCompressedSize();
+        if (log.isLoggable(Level.FINE) && compressedData != 0 && (System.currentTimeMillis() - lastTotalsLogMsg >= 5000)) {
+            log.fine(String.format("Average Compression Ratio = %.3f to 1, Compressed = %.2f MB, Uncompressed = %.2f MB (Cumulative) ", 
+                                   (((double) totalData) / ((double) compressedData)),
+                                   ((double) compressedData)/(1024.0 * 1024.0),
+                                   ((double) totalData)/(1024.0 * 1024.0)));
+            lastTotalsLogMsg = System.currentTimeMillis();
+        }
         if (!log.isLoggable(Level.FINER)) {
             return;
         }
@@ -91,12 +101,5 @@ public class CompressingInputStream extends InputStream {
                   + " storage method " + (entry.getMethod() == ZipEntry.STORED ? "Uncompressed" : "Compressed")
                   + " read - original size " + entry.getSize() 
                   + " compressed size " + entry.getCompressedSize());
-        totalData += entry.getSize();
-        compressedData += entry.getCompressedSize();
-        if (totalData != 0) {
-            log.finer("Average Compression Ration = " 
-                      + (100.0 * ((double) compressedData) / ((double) totalData)) + "%");
-            log.finer("Data transfered = " + ((double) totalData)/(1024.0 * 1024.0) + " megabytes");
-        }
     }
 }
