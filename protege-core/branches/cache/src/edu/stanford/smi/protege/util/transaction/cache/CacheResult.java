@@ -50,5 +50,17 @@ public class CacheResult<R> implements Serializable {
     public int hashCode() {
         return result.hashCode() + (isValid ? 42 : 0);
     }
+    
+    public String toString() {
+    	if (isValid()) {
+        	StringBuffer sb = new StringBuffer("[");
+    		sb.append(getResult());
+    		sb.append("]");
+    		return sb.toString();
+    	}
+    	else {
+    		return "[Invalid Result]";
+    	}
+    }
 
 }
