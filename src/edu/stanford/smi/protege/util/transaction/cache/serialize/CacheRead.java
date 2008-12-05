@@ -25,6 +25,9 @@ public class CacheRead<S, V, R> extends SerializedCacheUpdate<S, V, R> {
 	    if (value.isValid()) {
 	        cache.updateCache(getSession(), var, value.getResult());
 	    }
+	    else {
+	    	cache.updateCache(getSession(), var);
+	    }
 	}
 	
 }
