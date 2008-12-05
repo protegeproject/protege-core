@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheModify;
 import edu.stanford.smi.protege.event.ClsEvent;
 import edu.stanford.smi.protege.event.FrameEvent;
 import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
@@ -65,6 +64,7 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheBeginTrans
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheCommitTransaction;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheDelete;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheModify;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheRead;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheRollbackTransaction;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCacheUpdate;
 
@@ -360,7 +360,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
     }
 
-    public RemoteResponse<List> getDirectTemplateSlotValues(Cls cls,
+    @SuppressWarnings("unchecked")
+	public RemoteResponse<List> getDirectTemplateSlotValues(Cls cls,
                                                             Slot slot,
                                                             RemoteSession session)
     throws ServerSessionLost {
@@ -368,7 +369,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       LocalizeUtils.localize(cls, _kb);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateSlotValues(cls, slot);
-        cacheValuesReadFromStore(session, cls, slot, (Facet) null, true, values);
+        Sft sft = new Sft(slot, null, true);
+        CacheResult<List> cacheValues = new CacheResult<List>(values, true);
+        addReadUpdate(session, cls, new CacheRead<RemoteSession, Sft, List>(session, sft, cacheValues));
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
@@ -452,7 +455,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
 
-    public RemoteResponse<List> getDirectTemplateFacetValues(Cls cls,
+    @SuppressWarnings("unchecked")
+	public RemoteResponse<List> getDirectTemplateFacetValues(Cls cls,
                                                              Slot slot,
                                                              Facet facet,
                                                              RemoteSession session) throws ServerSessionLost {
@@ -460,7 +464,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       LocalizeUtils.localize(cls, _kb);
       synchronized(_kbLock) {
         List values = getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
-        cacheValuesReadFromStore(session, cls, slot, facet, true, values);
+        Sft sft = new Sft(slot, facet, true);
+        CacheResult<List> cacheValues = new CacheResult<List>(values, true);
+        addReadUpdate(session, cls, new CacheRead<RemoteSession, Sft, List>(session, sft, cacheValues));
         return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
@@ -502,7 +508,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public RemoteResponse<List> getDirectOwnSlotValues(Frame frame, Slot slot, RemoteSession session) throws ServerSessionLost {
+    @SuppressWarnings("unchecked")
+	public RemoteResponse<List> getDirectOwnSlotValues(Frame frame, Slot slot, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       if (log.isLoggable(Level.FINE)) {
         log.fine("getDirectOwnSlotValues for frame " + frame.getFrameID() + " slot " + slot.getFrameID());
@@ -511,12 +518,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       LocalizeUtils.localize(slot, _kb);
       synchronized(_kbLock) {
           List values = getDelegate().getDirectOwnSlotValues(frame, slot);
-          cacheValuesReadFromStore(session, frame, slot, (Facet) null, false, values);
+          Sft sft = new Sft(slot, null, false);
+          CacheResult<List> cacheValues = new CacheResult<List>(values, true);
+          addReadUpdate(session, frame, new CacheRead<RemoteSession, Sft, List>(session, sft, cacheValues));
           return new RemoteResponse<List>(values, getValueUpdates(session));
       }
     }
 
-    public OntologyUpdate setDirectTemplateFacetValues(Cls cls,
+    @SuppressWarnings("unchecked")
+	public OntologyUpdate setDirectTemplateFacetValues(Cls cls,
                                                        Slot slot,
                                                        Facet facet,
                                                        Collection values,
@@ -528,7 +538,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
         getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
         markDirty();
-        updateCacheForWriteToStore(session, cls, slot, facet, true, (List) values);
+        Sft sft = new Sft(slot, facet, true);
+        CacheResult<List> cacheValues = new CacheResult<List>((List) values, true);
+        addWriteUpdate(session, cls, new CacheModify<RemoteSession, Sft, List>(session, sft, cacheValues));
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
@@ -553,7 +565,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public OntologyUpdate setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values, RemoteSession session)
+    @SuppressWarnings("unchecked")
+	public OntologyUpdate setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values, RemoteSession session)
     throws ServerSessionLost {
       recordCall(session);
       if (!(values instanceof  List)) {
@@ -562,7 +575,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         markDirty();
         getDelegate().setDirectTemplateSlotValues(cls, slot, values);
-        updateCacheForWriteToStore(session, cls, slot, null, true, (List) values);
+        Sft sft = new Sft(slot, null, true);
+        CacheResult<List> cacheValues = new CacheResult<List>((List) values, true);
+        addWriteUpdate(session, cls, new CacheModify<RemoteSession, Sft, List>(session, sft, cacheValues));
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
@@ -651,7 +666,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       }
     }
 
-    public OntologyUpdate setDirectOwnSlotValues(Frame frame, Slot slot, Collection values, RemoteSession session)
+    @SuppressWarnings("unchecked")
+	public OntologyUpdate setDirectOwnSlotValues(Frame frame, Slot slot, Collection values, RemoteSession session)
       throws ServerSessionLost {
       recordCall(session);
       if (!(values instanceof List)) {
@@ -660,7 +676,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       synchronized(_kbLock) {
         getDelegate().setDirectOwnSlotValues(frame, slot, values);
         markDirty();
-        updateCacheForWriteToStore(session, frame, slot, null, false, (List) values);
+        Sft sft = new Sft(slot, null, true);
+        CacheResult<List> cacheValues = new CacheResult<List>((List) values, true);
+        addReadUpdate(session, frame, new CacheRead<RemoteSession, Sft, List>(session, sft, cacheValues));
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
@@ -888,7 +906,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     private List<ValueUpdate> getValueUpdates(RemoteSession session) {
       updateEvents(session);
-      List<ValueUpdate> ret = _sessionToRegistrationMap.get(session).getUpdates();
+      List<ValueUpdate> ret = _sessionToRegistrationMap.get(session).getAndClearValueUpdates();
       int size = ret.size();
       if (size != 0) {
           _sessionToRegistrationMap.get(session).getBandWidthPolicy().addItemsSent(ret.size());
@@ -971,9 +989,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       Facet facet  = clsEvent.getFacet();
       sft = new Sft(slot, facet, true);
     }
-    CacheResult<List> result = CacheResult.getInvalid();
-    addWriteUpdate(session, frame, 
-    		       new CacheModify<RemoteSession, Sft, List>(session, sft, result));
+    if (sft != null) {
+    	CacheResult<List> result = CacheResult.getInvalid();
+    	addWriteUpdate(session, frame, 
+    			new CacheModify<RemoteSession, Sft, List>(session, sft, result));
+    }
   }
 
   private void addWriteUpdate(RemoteSession session, Frame frame, 
@@ -992,7 +1012,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 	  }
   }
 
-public void addReadUpdate(RemoteSession session, Frame frame, 
+  public void addReadUpdate(RemoteSession session, Frame frame, 
 		                    SerializedCacheUpdate<RemoteSession, Sft, List> update) {
 	  Registration r = _sessionToRegistrationMap.get(getCurrentSession());
 	  ValueUpdate vu = new ValueUpdate(frame, update);
