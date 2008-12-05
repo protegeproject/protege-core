@@ -34,8 +34,10 @@ public class Registration {
         return events;
     }
 
-    public List<ValueUpdate> getUpdates() {
-      return updates;
+    public List<ValueUpdate> getAndClearValueUpdates() {
+    	List<ValueUpdate> result = updates;
+    	updates = new ArrayList<ValueUpdate>();
+    	return result;
     }
     
     public void addUpdate(ValueUpdate vu) {
