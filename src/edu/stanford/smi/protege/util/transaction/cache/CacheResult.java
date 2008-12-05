@@ -1,6 +1,8 @@
 package edu.stanford.smi.protege.util.transaction.cache;
 
-public class CacheResult<R> {
+import java.io.Serializable;
+
+public class CacheResult<R> implements Serializable {
     private R result;
     private boolean isValid;
     
