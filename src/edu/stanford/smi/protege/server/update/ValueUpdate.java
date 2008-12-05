@@ -49,4 +49,13 @@ public class ValueUpdate implements Serializable, Localizable{
 	        LocalizeUtils.localize(modify.getNewValue().getResult(), kb);
 	    }
 	}
+	
+	public String toString() {
+		StringBuffer sb = new StringBuffer("{");
+		sb.append(update);
+		sb.append(" applied to ");
+		sb.append(frame);
+		sb.append(" cache}");
+		return sb.toString();
+	}
 }

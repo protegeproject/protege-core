@@ -30,5 +30,14 @@ public class CacheModify<S, V, R> extends SerializedCacheUpdate<S, V, R> {
 	    }
 	}
 	
-	
+	public String toString() {
+		StringBuffer sb = new StringBuffer("<CacheOp: Session ");
+		sb.append(getSession());
+		sb.append(" modifies var ");
+		sb.append(getVar());
+		sb.append(" to ");
+		sb.append(getNewValue());
+		sb.append(">");
+		return sb.toString();
+	}
 }

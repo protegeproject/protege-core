@@ -11,4 +11,8 @@ public class CacheAbortComplete<S,V,R> extends SerializedCacheUpdate<S,V,R> {
     public void performUpdate(Cache<S, V, R> cache) {
         cache.abortCompleteCache();
     }
+    
+    public String toString() {
+    	return "<CacheOp: Abort Complete Cache>";
+    }
 }
