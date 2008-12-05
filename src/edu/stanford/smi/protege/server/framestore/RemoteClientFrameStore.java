@@ -271,6 +271,7 @@ public class RemoteClientFrameStore implements FrameStore {
             	  long start = System.currentTimeMillis();
             	  SimulateDelayAspect.delayForLatency();
             	  Object val =  method.invoke(remoteDelegate, args);
+            	  LocalizeUtils.localize(val, kb);
             	  if (log.isLoggable(Level.FINE)) {
             		  log.fine("Invocation took " + (System.currentTimeMillis() - start) + " ms");
             		  logSize(log, Level.FINEST, val);
@@ -415,14 +416,9 @@ public class RemoteClientFrameStore implements FrameStore {
         }
     }
 
-    private void localize(Object o) {
-        LocalizeUtils.localize(o, kb);
-    }
-
     public Set<Cls> getClses() {
         try {
             Set clses = getRemoteDelegate().getClses(session);
-            localize(clses);
             return clses;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -438,7 +434,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set<Facet> getFacets() {
         try {
             Set<Facet> facets = getRemoteDelegate().getFacets(session);
-            localize(facets);
             return facets;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -448,7 +443,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set<Frame> getFrames() {
         try {
             Set frames = getRemoteDelegate().getFrames(session);
-            localize(frames);
             return frames;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -458,7 +452,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Frame getFrame(FrameID id) {
         try {
             Frame frame = getRemoteDelegate().getFrame(id, session);
-            localize(frame);
             return frame;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -678,7 +671,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set getOverriddenTemplateSlots(Cls cls) {
         try {
             Set slots = getRemoteDelegate().getOverriddenTemplateSlots(cls, session);
-            localize(slots);
             return slots;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -688,7 +680,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set getDirectlyOverriddenTemplateSlots(Cls cls) {
         try {
             Set slots = getRemoteDelegate().getDirectlyOverriddenTemplateSlots(cls, session);
-            localize(slots);
             return slots;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -746,7 +737,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
         try {
           Set facets = getRemoteDelegate().getTemplateFacets(cls, slot, session);
-          localize(facets);
           return facets;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -756,7 +746,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set getOverriddenTemplateFacets(Cls cls, Slot slot) {
         try {
             Set facets = getRemoteDelegate().getOverriddenTemplateFacets(cls, slot, session);
-            localize(facets);
             return facets;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -766,7 +755,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot) {
         try {
             Set facets = getRemoteDelegate().getDirectlyOverriddenTemplateFacets(cls, slot, session);
-            localize(facets);
             return facets;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1051,7 +1039,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public synchronized Set<Reference> getReferences(Object object) {
         try {
             Set<Reference> references = getRemoteDelegate().getReferences(object, session);
-            localize(references);
             return references;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1063,7 +1050,6 @@ public class RemoteClientFrameStore implements FrameStore {
                                                     int maxMatches) {
         try {
             Set clses = getRemoteDelegate().getClsesWithMatchingBrowserText(text, superclasses, maxMatches, session);
-            localize(clses);
             return clses;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1074,7 +1060,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set<Reference> getMatchingReferences(String string, int maxMatches) {
         try {
             Set references = getRemoteDelegate().getMatchingReferences(string, maxMatches, session);
-            localize(references);
             return references;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1084,7 +1069,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         try {
             Set frames = getRemoteDelegate().getFramesWithDirectOwnSlotValue(slot, value, session);
-            localize(frames);
             return frames;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1094,7 +1078,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         try {
             Set frames = getRemoteDelegate().getFramesWithAnyDirectOwnSlotValue(slot, session);
-            localize(frames);
             return frames;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1104,7 +1087,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set<Frame> getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
         try {
             Set<Frame> frames = getRemoteDelegate().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches, session);
-            localize(frames);
             return frames;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1114,7 +1096,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value) {
         try {
             Set clses = getRemoteDelegate().getClsesWithDirectTemplateSlotValue(slot, value, session);
-            localize(clses);
             return clses;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1124,7 +1105,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         try {
             Set clses = getRemoteDelegate().getClsesWithAnyDirectTemplateSlotValue(slot, session);
-            localize(clses);
             return clses;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1135,7 +1115,6 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             Set clses = getRemoteDelegate().getClsesWithMatchingDirectTemplateSlotValue(slot, value, maxMatches,
                     session);
-            localize(clses);
             return clses;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1145,7 +1124,6 @@ public class RemoteClientFrameStore implements FrameStore {
     public Set getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet, Object value) {
         try {
             Set clses = getRemoteDelegate().getClsesWithDirectTemplateFacetValue(slot, facet, value, session);
-            localize(clses);
             return clses;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1156,7 +1134,6 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             Set clses = getRemoteDelegate().getClsesWithMatchingDirectTemplateFacetValue(slot, facet, value,
                     maxMatches, session);
-            localize(clses);
             return clses;
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1635,6 +1612,7 @@ public class RemoteClientFrameStore implements FrameStore {
     		FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> reader 
     				= new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsReader);
     		cache = new DeferredTransactionsCache(cache, reader);
+    		cacheMap.put(frame, (DeferredTransactionsCache) cache);
     	}
     	cacheUpdate.performUpdate(cache);
     }
