@@ -2,7 +2,10 @@ package edu.stanford.smi.protege.util.transaction;
 
 import java.sql.Connection;
 
-public enum TransactionIsolationLevel {
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Localizable;
+
+public enum TransactionIsolationLevel implements Localizable {
   NONE(Connection.TRANSACTION_NONE), 
   READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED),
   READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED), 
@@ -26,6 +29,9 @@ public enum TransactionIsolationLevel {
       }
     }
     return null;
+  }
+
+  public void localize(KnowledgeBase kb) {
   }
 
 }
