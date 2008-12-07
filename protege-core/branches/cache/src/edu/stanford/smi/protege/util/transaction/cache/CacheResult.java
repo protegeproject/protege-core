@@ -54,7 +54,14 @@ public class CacheResult<R> implements Serializable {
     public String toString() {
     	if (isValid()) {
         	StringBuffer sb = new StringBuffer("[");
-    		sb.append(getResult());
+        	sb.append("Valid Result ");
+        	if (getResult() == null) {
+        	    sb.append("null");
+        	}
+        	else {
+        	    sb.append(" of type ");
+        	    sb.append(getResult().getClass());
+        	}
     		sb.append("]");
     		return sb.toString();
     	}

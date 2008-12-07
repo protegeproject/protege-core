@@ -14,6 +14,6 @@ public class CacheCompleted<S,V, R> extends SerializedCacheUpdate<S,V,R> {
     }
     
     public String toString() {
-    	return "<CacheOp: Complete Cache>";
+    	return "<CacheOp: Completed Cache>";
     }
 }

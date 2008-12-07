@@ -36,7 +36,7 @@ public class Sft implements Localizable, Serializable {
     */
     
     public String toString() {
-        return "Sft(" + _slot + ", " + _facet + ", " + _isTemplate + ")";
+        return "Sft(" + _slot.getFrameID() + ", " + (_facet == null ? "null" : _facet.getFrameID().getName()) + ", " + _isTemplate + ")";
     }
 
     public Sft(Slot slot, Facet facet, boolean isTemplate) {

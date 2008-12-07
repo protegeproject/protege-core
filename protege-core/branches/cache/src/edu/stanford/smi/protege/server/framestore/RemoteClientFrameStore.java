@@ -103,7 +103,7 @@ public class RemoteClientFrameStore implements FrameStore {
     
     private FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>> deferredTransactionsWriter 
         = new FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>>();
-    private Map<Frame, DeferredTransactionsCache> cacheMap = new CacheMap<Frame, DeferredTransactionsCache>();
+    private Map<Frame, DeferredTransactionsCache> cacheMap = new WeakHashMap<Frame, DeferredTransactionsCache>();
 
     private TransactionIsolationLevel transactionLevel;
     private int transactionNesting = 0;
@@ -1564,22 +1564,36 @@ public class RemoteClientFrameStore implements FrameStore {
      * This routine assumes that the caller is holding the cache lock
      */
     private boolean isCachedInternal(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+    	boolean ret;
     	Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
     	if (cache == null) {
-    		return false;
+    		ret = false;
     	}
     	else {
     		CacheResult<List> result = cache.readCache(session, new Sft(slot, facet, isTemplate));
-    		return result.isValid();
+    		ret = result.isValid();
     	}
+    	if (cacheLog.isLoggable(Level.FINEST)) {
+    		cacheLog.finest("is " + frame.getFrameID().getName()
+    		                       + ", " + slot.getFrameID().getName() 
+    		                       + ", " + (facet == null ? "null" : facet.getFrameID().getName()) +", " + isTemplate + " cached = " + ret);
+    	}
+    	return ret;
     }
 
     private List readCache(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
     	Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
     	if (cache == null) {
+    		if (cacheLog.isLoggable(Level.FINE)) {
+    			log.fine("using cache for frame " + frame + " even though not present");
+    		}
     		return null;
     	}
     	CacheResult<List> result = cache.readCache(session, new Sft(slot, facet, isTemplate));
+		if (cacheLog.isLoggable(Level.FINEST)) {
+			log.finest("Cache returns " + result + " for " 
+					     + frame.getFrameID() + ", " + slot.getFrameID() + ", " +  (facet == null ? "null" : facet.getFrameID())  +", " + isTemplate);
+		}
     	if (!result.isValid()) {
     		return null;
     	}
@@ -1591,13 +1605,16 @@ public class RemoteClientFrameStore implements FrameStore {
 
 
   private void processValueUpdate(OntologyUpdate updates) {
-    if (cacheLog.isLoggable(Level.FINE)) {
-      cacheLog.fine("received " + updates.getValueUpdates().size() + " value updates");
+    if (cacheLog.isLoggable(Level.FINE) && updates.getValueUpdates().size() != 0) {
+      cacheLog.fine("received " + updates.getValueUpdates().size() + " value updates for Knowledge base " + kb);
     }
     // this reader marks the state at the beginning of this call.
     FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> deferredTransactionsReader 
                = new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsWriter);
     for (ValueUpdate vu : updates.getValueUpdates()) {
+    	if (cacheLog.isLoggable(Level.FINER)) {
+    		cacheLog.finer("processing " + vu);
+    	}
     	SerializedCacheUpdate<RemoteSession, Sft,  List> cacheUpdate = vu.getUpdate();
     	if (cacheUpdate instanceof CacheBeginTransaction ||
     			cacheUpdate instanceof CacheCommitTransaction ||

@@ -14,6 +14,6 @@ public class CacheStartComplete<S, V, R> extends SerializedCacheUpdate<S, V, R> 
     }
 
     public String toString() {
-    	return "<Cache OP: Cache Complete>";
+    	return "<Cache OP: Start Cache Complete>";
     }
 }
