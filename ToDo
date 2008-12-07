@@ -1,4 +1,9 @@
 
+Working on the writing updates logic
+   processing events = done
+   working on begin/commit/rollback transaction
+   Client side must do the right thing with an update containing a null.
+
 
 Make sure that the begin/end transaction and all changes by another
 session are sent in a surge.  Use two different calls in the ServerFrameStore
