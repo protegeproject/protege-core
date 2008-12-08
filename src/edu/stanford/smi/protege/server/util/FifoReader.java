@@ -25,6 +25,16 @@ public class FifoReader<X> {
     }
   }
   
+  /*
+   * A weird thing to be doing for sure.
+   */
+  public void prepend(X x) {
+      LinkedList<X> prequeue = new LinkedList<X>();
+      prequeue.setElement(x);
+      prequeue.setNext(queue);
+      queue = prequeue;
+  }
+  
   public int getCounter() {
     return queue.getCounter();
   }
