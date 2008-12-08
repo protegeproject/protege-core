@@ -18,6 +18,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,7 +57,6 @@ import edu.stanford.smi.protege.server.util.DeferredTransactionsCache;
 import edu.stanford.smi.protege.server.util.FifoReader;
 import edu.stanford.smi.protege.server.util.FifoWriter;
 import edu.stanford.smi.protege.util.AbstractEvent;
-import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
@@ -103,7 +103,12 @@ public class RemoteClientFrameStore implements FrameStore {
     
     private FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>> deferredTransactionsWriter 
         = new FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>>();
-    private Map<Frame, DeferredTransactionsCache> cacheMap = new WeakHashMap<Frame, DeferredTransactionsCache>();
+    /*
+     * It is true that this cacheMap is a memory leak on the client but a weak hash map does not do the right
+     * thing. Frames with equal frame id are constantly being seen and garbage collected, so with a weak hash map,
+     * the cacheMap is far too empty.
+     */
+    private Map<Frame, DeferredTransactionsCache> cacheMap = new HashMap<Frame, DeferredTransactionsCache>();
 
     private TransactionIsolationLevel transactionLevel;
     private int transactionNesting = 0;
@@ -1153,9 +1158,9 @@ public class RemoteClientFrameStore implements FrameStore {
         cacheLog.fine("Begin Transaction");
       }
         try {
-            transactionNesting++;
             RemoteResponse<Boolean> ret = getRemoteDelegate().beginTransaction(name, session);
             processValueUpdate(ret);
+            transactionNesting++;
             return ret.getResponse();
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1167,9 +1172,9 @@ public class RemoteClientFrameStore implements FrameStore {
         cacheLog.fine("Commit Transaction");
       }
         try {
-            transactionNesting--;
             RemoteResponse<Boolean> ret =  getRemoteDelegate().commitTransaction(session);
             processValueUpdate(ret);
+            transactionNesting--;
             return ret.getResponse();
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1181,9 +1186,9 @@ public class RemoteClientFrameStore implements FrameStore {
         cacheLog.fine("Rollback Transaction");
       }
         try {
-            transactionNesting--;
             RemoteResponse<Boolean> ret = getRemoteDelegate().rollbackTransaction(session);
             processValueUpdate(ret);
+            transactionNesting--;
             return ret.getResponse();
         } catch (RemoteException e) {
             throw convertException(e);
@@ -1564,7 +1569,7 @@ public class RemoteClientFrameStore implements FrameStore {
      * This routine assumes that the caller is holding the cache lock
      */
     private boolean isCachedInternal(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-    	boolean ret;
+    	boolean ret;	
     	Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
     	if (cache == null) {
     		ret = false;
@@ -1577,6 +1582,12 @@ public class RemoteClientFrameStore implements FrameStore {
     		cacheLog.finest("is " + frame.getFrameID().getName()
     		                       + ", " + slot.getFrameID().getName() 
     		                       + ", " + (facet == null ? "null" : facet.getFrameID().getName()) +", " + isTemplate + " cached = " + ret);
+    	}
+    	if (ret) {
+    	    stats.hit++;
+    	}
+    	else {
+    	    stats.miss++;
     	}
     	return ret;
     }
@@ -1611,6 +1622,9 @@ public class RemoteClientFrameStore implements FrameStore {
     // this reader marks the state at the beginning of this call.
     FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> deferredTransactionsReader 
                = new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsWriter);
+    for (int myNesting = 0; myNesting < transactionNesting; myNesting++) {
+        deferredTransactionsReader.prepend(new CacheBeginTransaction<RemoteSession, Sft, List>(session));
+    }
     for (ValueUpdate vu : updates.getValueUpdates()) {
     	if (cacheLog.isLoggable(Level.FINER)) {
     		cacheLog.finer("processing " + vu);
@@ -1623,15 +1637,21 @@ public class RemoteClientFrameStore implements FrameStore {
     		break;
     	}
     	Frame frame = vu.getFrame();
-    	Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
-    	if (cache == null) {
-    		cache = CacheFactory.createEmptyCache(getTransactionIsolationLevel());
-    		FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> reader 
-    				= new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsReader);
-    		cache = new DeferredTransactionsCache(cache, reader);
-    		cacheMap.put(frame, (DeferredTransactionsCache) cache);
+    	try {
+    	    Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
+    	    if (cache == null) {
+    	        cache = CacheFactory.createEmptyCache(getTransactionIsolationLevel());
+    	        FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> reader 
+    	        = new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsReader);
+    	        cache = new DeferredTransactionsCache(cache, reader);
+    	        cacheMap.put(frame, (DeferredTransactionsCache) cache);
+    	    }
+    	    cacheUpdate.performUpdate(cache);
     	}
-    	cacheUpdate.performUpdate(cache);
+    	catch (Throwable t) {
+    	    cacheMap.remove(frame);
+    	    log.log(Level.WARNING, "Exception caught processing cache for " + frame.getFrameID().getName(), t);
+    	}
     }
   }
 

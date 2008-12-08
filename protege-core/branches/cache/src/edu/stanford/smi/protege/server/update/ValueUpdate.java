@@ -54,8 +54,13 @@ public class ValueUpdate implements Serializable, Localizable{
 		StringBuffer sb = new StringBuffer("{");
 		sb.append(update);
 		sb.append(" applied to ");
-		sb.append(frame.getFrameID().getName());
-		sb.append(" cache}");
+		if (frame != null) {
+		    sb.append(frame.getFrameID().getName());
+		    sb.append(" cache}");
+		}
+		else {
+		    sb.append("all frame caches");
+		}
 		return sb.toString();
 	}
 }
