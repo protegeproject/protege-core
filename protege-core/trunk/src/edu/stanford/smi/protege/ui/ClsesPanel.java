@@ -1,16 +1,42 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTree;
+import javax.swing.SwingConstants;
 
-import edu.stanford.smi.protege.action.*;
-import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.action.ClsReferencersAction;
+import edu.stanford.smi.protege.action.CreateClsAction;
+import edu.stanford.smi.protege.action.DeleteClsAction;
+import edu.stanford.smi.protege.action.ViewClsAction;
+import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.Transaction;
+import edu.stanford.smi.protege.model.ValueType;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.AllowableAction;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.DefaultRenderer;
+import edu.stanford.smi.protege.util.LabeledComponent;
+import edu.stanford.smi.protege.util.Selectable;
+import edu.stanford.smi.protege.util.SelectableContainer;
+import edu.stanford.smi.protege.util.StandardAction;
 
 /**
  * The left upper display of the classes tab. This holds the tree, the
@@ -118,9 +144,23 @@ public class ClsesPanel extends SelectableContainer {
     protected AllowableAction getCreateClsAction() {
         return new CreateClsAction() {
             public void onCreate() {
-                Collection parents = _subclassPane.getSelection();
+                final Collection parents = _subclassPane.getSelection();
                 if (!parents.isEmpty()) {
-                    Cls cls = getKnowledgeBase().createCls(null, parents);
+                    Transaction<Cls> t = new Transaction<Cls>(getKnowledgeBase(), "Create Cls (random name)") {
+                        private Cls cls;
+                        
+                        @Override
+                        public boolean doOperations() {
+                            cls = getKnowledgeBase().createCls(null, parents);
+                            return true;
+                        }
+                        
+                        public Cls getResult() {
+                            return cls;
+                        }
+                    };
+                    t.execute();
+                    Cls cls = t.getResult();
                     _subclassPane.extendSelection(cls);
                 }
             }
