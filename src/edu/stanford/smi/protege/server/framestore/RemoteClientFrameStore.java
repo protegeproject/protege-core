@@ -50,10 +50,10 @@ import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.socket.SimulateDelayAspect;
+import edu.stanford.smi.protege.server.update.DeferredTransactionsCache;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
-import edu.stanford.smi.protege.server.util.DeferredTransactionsCache;
 import edu.stanford.smi.protege.server.util.FifoReader;
 import edu.stanford.smi.protege.server.util.FifoWriter;
 import edu.stanford.smi.protege.util.AbstractEvent;
@@ -1622,9 +1622,6 @@ public class RemoteClientFrameStore implements FrameStore {
     // this reader marks the state at the beginning of this call.
     FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> deferredTransactionsReader 
                = new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsWriter);
-    for (int myNesting = 0; myNesting < transactionNesting; myNesting++) {
-        deferredTransactionsReader.prepend(new CacheBeginTransaction<RemoteSession, Sft, List>(session));
-    }
     for (ValueUpdate vu : updates.getValueUpdates()) {
     	if (cacheLog.isLoggable(Level.FINER)) {
     		cacheLog.finer("processing " + vu);
@@ -1634,7 +1631,7 @@ public class RemoteClientFrameStore implements FrameStore {
     			cacheUpdate instanceof CacheCommitTransaction ||
     			cacheUpdate instanceof CacheRollbackTransaction) {
     		deferredTransactionsWriter.write(cacheUpdate);
-    		break;
+    		continue;
     	}
     	Frame frame = vu.getFrame();
     	try {
@@ -1642,8 +1639,8 @@ public class RemoteClientFrameStore implements FrameStore {
     	    if (cache == null) {
     	        cache = CacheFactory.createEmptyCache(getTransactionIsolationLevel());
     	        FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> reader 
-    	        = new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsReader);
-    	        cache = new DeferredTransactionsCache(cache, reader);
+    	           = new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsReader);
+    	        cache = new DeferredTransactionsCache(cache, session, transactionNesting, reader);
     	        cacheMap.put(frame, (DeferredTransactionsCache) cache);
     	    }
     	    cacheUpdate.performUpdate(cache);
