@@ -63,6 +63,9 @@ public class CompressingInputStream extends InputStream {
                 }
                 bytesRead = compressing.read(b, off, len);
             }
+            else {
+                compressing.close();
+            }
         }
         return bytesRead;
     }
