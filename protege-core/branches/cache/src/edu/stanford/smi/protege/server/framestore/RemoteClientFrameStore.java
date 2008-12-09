@@ -1656,6 +1656,7 @@ public class RemoteClientFrameStore implements FrameStore {
     if (cacheLog.isLoggable(Level.FINE)) {
       cacheLog.fine("Flushing client cache");
     }
+    frameNameToFrameMap.clear();
     for (Cache c : cacheMap.values()) {
         c.flush();
     }
