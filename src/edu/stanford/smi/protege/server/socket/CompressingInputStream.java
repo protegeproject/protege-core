@@ -41,6 +41,9 @@ public class CompressingInputStream extends InputStream {
                 }
                 ret = compressing.read();
             }
+            else {
+                compressing.close();
+            }
         }
         return ret;
     }
