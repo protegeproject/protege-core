@@ -6,7 +6,8 @@ Merged to trunk revision 12239 (copying over extra Cache interfaces)
 Merged to trunk revision 12242 (oops - didn't get copied with the last)
 Merged to trunk revision 12390
 Merged to trunk revision 12406 getting the new transaction stuff
-
+Merged to trunk revision 12445 getting modified compression + 
+                                       transactions in create
 
 p=http://smi-protege/repos/protege/protege-core
 

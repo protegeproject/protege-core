@@ -87,7 +87,10 @@ public class CompressingOutputStream2 extends OutputStream {
     
     @Override
     public void close() throws IOException {
-        flush();
+        if (inZipEntry) {
+            compressing.closeEntry();
+            inZipEntry = false;
+        }
         compressing.close();
     }
     
