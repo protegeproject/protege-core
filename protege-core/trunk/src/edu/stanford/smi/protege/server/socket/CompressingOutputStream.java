@@ -15,6 +15,7 @@ public class CompressingOutputStream extends OutputStream {
     public final static int BUFFER_SIZE = 16 * 4096;
     public final static int SMALL_DATA = 1024;
     
+    
     private byte[] data = new byte[BUFFER_SIZE];
     int offset = 0;  // the next location in the buffer to write to
                      // also doubles as the size of the unflushed data
@@ -79,6 +80,18 @@ public class CompressingOutputStream extends OutputStream {
     @Override
     public void close() throws IOException {
         flush();
+        
+        // mark the end of file so the reader can be warned and clean up
+        ZipEntry entry = new ZipEntry(CompressingInputStream.EOS);
+        entry.setMethod(ZipEntry.STORED);
+        CRC32 crc = new CRC32();
+        crc.update(data, 0, 0);
+        entry.setCrc(crc.getValue());
+        entry.setSize(offset);
+        compressing.putNextEntry(entry);
+        compressing.closeEntry();
+        compressing.flush();
+
         compressing.close();
     }
     

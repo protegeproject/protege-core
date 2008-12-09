@@ -29,38 +29,61 @@ public class MonitoringInputStream extends FilterInputStream {
     
     @Override
     public int read() throws IOException {
-        int ret = super.read();
-        if (ret != -1) {
-            countRead(1);
+        int ret = -1;
+        try {
+            ret = super.read();
+            if (ret != -1) {
+                countRead(1);
+            }
+        }
+        catch (Throwable t) {
+            rethrow(t);
         }
         return ret;
     }
     
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        int ret = super.read(b, off, len);;
-        if (ret > 0) {
-            countRead(ret);
+        int ret = -1;
+        try {
+            ret = super.read(b, off, len);;
+            if (ret > 0) {
+                countRead(ret);
+            }
+        }
+        catch (Throwable t) {
+            rethrow(t);
         }
         return ret;
     }
     
     @Override
     public long skip(long n) throws IOException {
-        long ret = super.skip(n);
-        if (ret > 0) {
-            countRead((int) ret);
+        long ret = -1;
+        try {
+            ret = super.skip(n);
+            if (ret > 0) {
+                countRead((int) ret);
+            }
+             }
+        catch (Throwable t) {
+            rethrow(t);
         }
-        return ret;
+       return ret;
     }
     
     @Override
     public void close() throws IOException {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer(logPrefix() + "closing");
+        try {
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(logPrefix() + "closing");
+            }
+            readingNotified = false;
+            super.close();
         }
-        readingNotified = false;
-        super.close();
+        catch (Throwable t) {
+            rethrow(t);
+        }
     }
     
     private synchronized void countRead(int n) {
@@ -81,4 +104,19 @@ public class MonitoringInputStream extends FilterInputStream {
     private String logPrefix() {
         return "InputStream " + id + ": ";
     }
+
+    private void rethrow(Throwable t) throws IOException {
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Exception caught", t);
+        }
+        if (t instanceof IOException) {
+            throw (IOException) t;
+        }
+        else {
+            IOException ioe = new IOException(t.getMessage());
+            ioe.initCause(t);
+            throw ioe;
+        }
+    }
+
 }
