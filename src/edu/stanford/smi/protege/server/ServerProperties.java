@@ -95,7 +95,7 @@ public class ServerProperties {
   }
   
   public static boolean useCompression() {
-      String val = ApplicationProperties.getApplicationOrSystemProperty(PROTEGE_RMI_USE_COMPRESSION, "TRUE");
+      String val = ApplicationProperties.getApplicationOrSystemProperty(PROTEGE_RMI_USE_COMPRESSION, "FALSE");
       return val.toLowerCase().equals("true");
   }
   
