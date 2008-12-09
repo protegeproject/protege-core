@@ -159,8 +159,21 @@ public class SubslotPane extends SelectableContainer {
     protected Action getCreateAction() {
         return new CreateAction(ResourceKey.SLOT_CREATE) {
             public void onCreate() {
-                Slot slot = _knowledgeBase.createSlot(null);
-                setSelectedSlot(slot);
+                Transaction<Slot> t = new Transaction<Slot>(_knowledgeBase, "Create Slot (random name)") {
+                    private Slot slot;
+                    
+                    @Override
+                    public boolean doOperations() {
+                        slot = _knowledgeBase.createSlot(null);
+                        return true;
+                    }
+                    
+                    public Slot getResult() {
+                        return slot;
+                    }
+                };
+                t.execute();
+                setSelectedSlot(t.getResult());
             }
         };
     }
