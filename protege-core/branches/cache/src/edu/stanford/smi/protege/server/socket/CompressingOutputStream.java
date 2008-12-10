@@ -15,7 +15,6 @@ public class CompressingOutputStream extends OutputStream {
     public final static int BUFFER_SIZE = 16 * 4096;
     public final static int SMALL_DATA = 1024;
     
-    public final static String EOS = "End of Stream";
     
     private byte[] data = new byte[BUFFER_SIZE];
     int offset = 0;  // the next location in the buffer to write to
@@ -83,7 +82,7 @@ public class CompressingOutputStream extends OutputStream {
         flush();
         
         // mark the end of file so the reader can be warned and clean up
-        ZipEntry entry = new ZipEntry(EOS);
+        ZipEntry entry = new ZipEntry(CompressingInputStream.EOS);
         entry.setMethod(ZipEntry.STORED);
         CRC32 crc = new CRC32();
         crc.update(data, 0, 0);

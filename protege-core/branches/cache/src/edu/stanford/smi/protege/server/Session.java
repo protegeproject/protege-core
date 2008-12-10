@@ -65,6 +65,9 @@ public class Session implements RemoteSession, Serializable {
 
     @Override
 	public boolean equals(Object o) {
+        if (o == null || !(o instanceof Session)) {
+            return false;
+        }
         return id == ((Session) o).id;
     }
 

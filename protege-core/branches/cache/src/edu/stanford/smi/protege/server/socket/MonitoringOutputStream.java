@@ -27,34 +27,54 @@ public class MonitoringOutputStream extends FilterOutputStream {
     
     @Override
     public void write(int b) throws IOException {
-        super.write(b);
-        countWritten(1);
+        try {
+            super.write(b);
+            countWritten(1);
+        }
+        catch (Throwable t) {
+            rethrow(t);
+        }
     }
     
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        super.write(b, off, len);
-        countWritten(len);
+        try {
+            super.write(b, off, len);
+            countWritten(len);
+        }
+        catch (Throwable t) {
+            rethrow(t);
+        }
     }
 
     @Override
     public void flush() throws IOException {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer(logPrefix() + "flushing");
+        try {
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(logPrefix() + "flushing");
+            }
+            writingNotified = false;
+            super.flush();
         }
-        writingNotified = false;
-        super.flush();
+        catch (Throwable t) {
+            rethrow(t);
+        }
     }
     
     @Override
     public void close() throws IOException {
-        if (log.isLoggable(Level.FINER)) {
-            log.finer(logPrefix() + "closing");
+        try {
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(logPrefix() + "closing");
+            }
+            writingNotified = false;
+            super.close();
         }
-        writingNotified = false;
-        super.close();
+        catch (Throwable t) {
+            rethrow(t);
+        }
     }
-    
+
     private synchronized void countWritten(int n) {
         if (log.isLoggable(Level.FINER) && !writingNotified) {
             log.finer(logPrefix() + "writing");
@@ -74,5 +94,19 @@ public class MonitoringOutputStream extends FilterOutputStream {
 
     private String logPrefix() {
         return "OutputStream " + id + ": ";
+    }
+
+    private void rethrow(Throwable t) throws IOException {
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Exception caught", t);
+        }
+        if (t instanceof IOException) {
+            throw (IOException) t;
+        }
+        else {
+            IOException ioe = new IOException(t.getMessage());
+            ioe.initCause(t);
+            throw ioe;
+        }
     }
 }

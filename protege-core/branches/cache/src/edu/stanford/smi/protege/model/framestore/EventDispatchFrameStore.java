@@ -237,6 +237,14 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                 }
             }
         }
+        for (Object event : events) {
+        	if (event instanceof KnowledgeBaseEvent) {
+        		KnowledgeBaseEvent kbEvent = (KnowledgeBaseEvent) event;
+        		if (kbEvent.getEventType() == KnowledgeBaseEvent.FRAME_REPLACED) {
+        			replaceListeners(kbEvent.getFrame(), kbEvent.getNewFrame());
+        		}
+        	}
+        }
     }
 
 
@@ -867,7 +875,6 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     public void replaceFrame(Frame original, Frame replacement) {
       getDelegate().replaceFrame(original, replacement);
       dispatchEvents();
-      replaceListeners(original, replacement);
     }
     
     private void replaceListeners(Frame original, Frame replacement) {

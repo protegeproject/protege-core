@@ -27,6 +27,7 @@ public class SimulateDelayAspect implements SocketAspect {
     
     public SimulateDelayAspect(SocketAspect delegate) {
         this.delegate = delegate;
+        reportDelays();
     }
 
     public void close() throws IOException {
@@ -54,6 +55,24 @@ public class SimulateDelayAspect implements SocketAspect {
     public static boolean useSimulatedDelay() {
         return ServerProperties.getKiloBytesPerSecondDownload() != 0 
             || ServerProperties.getKiloBytesPerSecondUpload() != 0 ;
+    }
+    
+    private boolean delaysReported = false;
+    public void reportDelays() {
+        if (!delaysReported && 
+                (ServerProperties.getKiloBytesPerSecondDownload() != 0 
+                   || ServerProperties.getKiloBytesPerSecondUpload() != 0
+                   || ServerProperties.delayInMilliseconds() != 0)) {
+            StringBuffer sb = new StringBuffer("Simulated Delays: ");
+            sb.append(ServerProperties.getKiloBytesPerSecondDownload());
+            sb.append(" KByte/sec download, ");
+            sb.append(ServerProperties.getKiloBytesPerSecondUpload());
+            sb.append(" KByte/sec upload, ");
+            sb.append(ServerProperties.delayInMilliseconds());
+            sb.append(" milliseconds latency");
+            Log.getLogger().config(sb.toString());
+            delaysReported = true;
+        }
     }
 
 }

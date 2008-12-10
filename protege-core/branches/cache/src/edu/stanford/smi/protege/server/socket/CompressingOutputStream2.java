@@ -12,7 +12,7 @@ import edu.stanford.smi.protege.util.Log;
 
 public class CompressingOutputStream2 extends OutputStream {
     private static final transient Logger log = Log.getLogger(CompressingOutputStream2.class);
-
+    
     public final static int SMALL_DATA = 1024;
     
     private byte[] data = new byte[SMALL_DATA];
@@ -91,6 +91,20 @@ public class CompressingOutputStream2 extends OutputStream {
             compressing.closeEntry();
             inZipEntry = false;
         }
+        flush();
+        
+        // mark the end of file so the reader can be warned and clean up
+        ZipEntry entry = new ZipEntry(CompressingInputStream.EOS);
+        entry.setMethod(ZipEntry.STORED);
+        CRC32 crc = new CRC32();
+        crc.update(data, 0, 0);
+        entry.setCrc(crc.getValue());
+        entry.setSize(offset);
+        compressing.putNextEntry(entry);
+        compressing.closeEntry();
+        compressing.flush();
+
+        compressing.close();
         compressing.close();
     }
     
