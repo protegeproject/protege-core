@@ -8,6 +8,9 @@ Merged to trunk revision 12390
 Merged to trunk revision 12406 getting the new transaction stuff
 Merged to trunk revision 12445 getting modified compression + 
                                        transactions in create
+Merged to trunk revision 12471 getting some bug fixes
+   I had claimed before that I merged to the 12471 but it did not
+   appear  I did so.  Hopefully now things are right.
 
 p=http://smi-protege/repos/protege/protege-core
 

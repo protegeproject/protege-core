@@ -14,11 +14,12 @@ public class CompressingInputStream extends InputStream {
     private ZipInputStream compressing;
     private ZipEntry entry;
     boolean initialized = false;
-    boolean closed = false;
+    boolean endOfStream = false;
     
     long totalData = 0;
     long compressedData = 0;
     long lastTotalsLogMsg = 0;
+    public final static String EOS = "End of Stream";
     
     public CompressingInputStream(InputStream is) {
         compressing = new ZipInputStream(is);
@@ -26,60 +27,26 @@ public class CompressingInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        if (!initialize() || closed) {
+        if (!checkStream()) {
             return  -1;
         }
         int ret = -1;
         ret = compressing.read();
-        if (ret < 0) {
-            compressing.closeEntry();
-            logZipEntry(entry);
-            entry = compressing.getNextEntry();
-            if (entry == null) {
-                compressing.close();
-                closed = true;
-            }
-            else if (entry.getName().equals(CompressingOutputStream.EOS)) {
-                compressing.closeEntry();
-                compressing.close();
-                closed = true;
-            }
-            else {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("InputStream: reading new segment " + entry.getName());
-                }
-                ret = compressing.read();
-            }
+        if (ret < 0 && gotoNextEntry()) {
+            ret = compressing.read();
         }
         return ret;
     }
     
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        if (!initialize() || closed) {
+        if (!checkStream()) {
             return  -1;
         }
         int bytesRead = -1;
         bytesRead = compressing.read(b, off, len);
-        if (bytesRead < 0) {
-            compressing.closeEntry();
-            logZipEntry(entry);
-            entry = compressing.getNextEntry();
-            if (entry == null) {
-                compressing.close();
-                closed = true;
-            }
-            else if (entry.getName().equals(CompressingOutputStream.EOS)) {
-                compressing.closeEntry();
-                compressing.close();
-                closed = true;
-            }
-            else {
-                if (log.isLoggable(Level.FINER)) {
-                    log.finer("InputStream: reading new segment " + entry.getName());
-                }
-                bytesRead = compressing.read(b, off, len);
-            }
+        if (bytesRead < 0 && gotoNextEntry()) {
+            bytesRead = compressing.read(b, off, len);
         }
         return bytesRead;
     }
@@ -92,19 +59,44 @@ public class CompressingInputStream extends InputStream {
         compressing.close();
     }
     
-    private boolean initialize() throws IOException {
+    private boolean checkStream() throws IOException {
         if (!initialized) {
             initialized = true;
             entry = compressing.getNextEntry();
-            if (entry != null && entry.getName().equals(CompressingOutputStream.EOS)) {
+            if  (entry == null) {
+                endOfStream = true;
+            }
+            if (entry != null && entry.getName().equals(EOS)) {
                 compressing.closeEntry();
-                compressing.close();
-                closed = true;
+                endOfStream = true;
                 entry = null;
             }
-            return entry != null;
         }
-        return true;
+        return !endOfStream;
+    }
+    
+    private boolean gotoNextEntry() throws IOException {
+        compressing.closeEntry();
+        logZipEntry(entry);
+        entry = compressing.getNextEntry();
+        if (entry == null) {
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Came to end of stream with no end of stream marker");
+            }
+            endOfStream = true;
+        }
+        else if (entry.getName().equals(EOS)) {
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Output stream left and end of stream marker");
+            }
+            compressing.closeEntry();
+            endOfStream = true;
+        } else {
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("InputStream: reading new segment " + entry.getName());
+            }
+        }
+        return endOfStream != true;
     }
     
     private void logZipEntry(ZipEntry entry) {
