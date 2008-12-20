@@ -1,0 +1,72 @@
+; Sun Jun 22 17:45:42 PDT 2008
+; 
+;+ (version "3.4")
+;+ (build "Build 501")
+
+([metaproject_Instance_0] of  Group
+
+	(member
+		[metaproject_Instance_10002]
+		[metaproject_Instance_10003]
+		[metaproject_Instance_10004]
+		[metaproject_Instance_10005]
+		[metaproject_Instance_10006]
+		[metaproject_Instance_10007])
+	(name "World"))
+
+([metaproject_Instance_10001] of  Project
+
+	(allowedGroupOperation [metaproject_Instance_10008])
+	(location "junit/pprj/scratch.pprj")
+	(name "scratch"))
+
+([metaproject_Instance_10002] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Guest")
+	(password "guest"))
+
+([metaproject_Instance_10003] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Jennifer Vendetti")
+	(password "jenny"))
+
+([metaproject_Instance_10004] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Natasha Noy")
+	(password "natalia"))
+
+([metaproject_Instance_10005] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Ray Fergerson")
+	(password "claudia"))
+
+([metaproject_Instance_10006] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Tania Tudorache")
+	(password "tania"))
+
+([metaproject_Instance_10007] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Timothy Redmond")
+	(password "troglodyte"))
+
+([metaproject_Instance_10008] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_0])
+	(allowedOperation
+		[nci_metaproject_Instance_60009]
+		[nci_metaproject_Instance_60010]))
+
+([nci_metaproject_Instance_60009] of  Operation
+
+	(name "Read"))
+
+([nci_metaproject_Instance_60010] of  Operation
+
+	(name "Write"))
