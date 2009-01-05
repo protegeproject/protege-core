@@ -11,6 +11,7 @@ Merged to trunk revision 12445 getting modified compression +
 Merged to trunk revision 12471 getting some bug fixes
    I had claimed before that I merged to the 12471 but it did not
    appear  I did so.  Hopefully now things are right.
-
-p=http://smi-protege/repos/protege/protege-core
-
+Merged to trunk revision 12518 with the commands
+    p=http://smi-protege/repos/protege/protege-core
+    svn merge $p/trunk@12471 $p/trunk@12518
+    

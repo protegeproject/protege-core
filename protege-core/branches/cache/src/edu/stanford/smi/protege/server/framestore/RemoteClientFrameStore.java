@@ -1273,7 +1273,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     private Set getCacheClosure(Frame frame, Slot slot) throws RemoteException {
-      Set closure = new HashSet();
+      Set closure = new LinkedHashSet();
       Set<Frame> missing = new HashSet<Frame>();
       calculateClosureFromCacheOnly(frame, slot, closure, missing);
       if (!missing.isEmpty()) {
@@ -1323,7 +1323,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
     private Set getCacheClosure(Collection<Frame> frames, Slot slot) throws RemoteException {
-        Set closure = new HashSet(frames);
+        Set closure = new LinkedHashSet(frames);
         Set<Frame> missing = new HashSet<Frame>();
         for (Frame frame : frames) {
           calculateClosureFromCacheOnly(frame, slot, closure, missing);

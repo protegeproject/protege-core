@@ -25,10 +25,10 @@ public class SimpleStringMatcher implements StringMatcher {
                 buffer.append(c);
             }
         }
-        pattern = Pattern.compile(buffer.toString(), Pattern.CASE_INSENSITIVE);
+        pattern = Pattern.compile(buffer.toString(), Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     }
 
-    public boolean isMatch(String value) {
+    public boolean isMatch(String value) {    	
         return pattern.matcher(value).matches();
     }
 }
