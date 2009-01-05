@@ -240,11 +240,12 @@ public class ExportToCsvAction extends StandardAction {
 			}
 		}
 
-		if (value.indexOf(NEW_LINE) >= 0 || value.indexOf(getSlotValuesDelimiter()) > -1) {
+		if (value.indexOf(NEW_LINE) >= 0 || value.indexOf(getSlotValuesDelimiter()) > -1
+				|| value.indexOf(this.getSlotsDelimiter()) > -1) {
 			buffer.insert(0, QUOTE_CHAR);
 			buffer.insert(buffer.length(), QUOTE_CHAR);
 		}
-
+		
 		return buffer.toString();
 	}
 

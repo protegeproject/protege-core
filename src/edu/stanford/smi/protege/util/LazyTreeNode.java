@@ -127,13 +127,22 @@ public abstract class LazyTreeNode implements TreeNode {
 		return o1.toString().compareTo(o2.toString());
 	}
 
+	
+	//TODO: check method before merging to head
 	public void childAdded(Object o, int index) {
         if (_isLoaded) {
-            LazyTreeNode child = createNode(o);
-            _childNodes.add(index, child);
-            ++_childCount;
-            notifyChildNodeAdded(this, index, child);
-            // Log.trace("added", this, "childAdded", o, new Integer(index));
+            int ti = getIndex(o);
+            if (ti != -1) {
+                LazyTreeNode child = (LazyTreeNode) _childNodes.get(ti);
+                notifyChildNodeAdded(this, ti, child);
+            } else {
+                LazyTreeNode child = createNode(o);
+                _childNodes.add(index, child);
+                ++_childCount;
+                notifyChildNodeAdded(this, index, child);
+                // Log.trace("added", this, "childAdded", o, new
+                // Integer(index));
+            }
         } else {
             ensureChildrenLoaded();
             _childCount = _childNodes.size();
@@ -144,6 +153,7 @@ public abstract class LazyTreeNode implements TreeNode {
             }
         }
     }
+	
 
     public void childRemoved(Object o) {
         if (_childCount != -1) {
