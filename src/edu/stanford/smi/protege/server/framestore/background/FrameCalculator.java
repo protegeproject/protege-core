@@ -300,7 +300,11 @@ public class FrameCalculator {
    * This call assumes that the kbLock is held on entry.
    */
   private void insertValueUpdate(ValueUpdate vu) {
-    sessionMap.get(effectiveClient).getBandWidthPolicy().addItemToWaitList();
+    Registration registration = sessionMap.get(effectiveClient);
+    if (registration == null) {
+        return;
+    }
+    registration.getBandWidthPolicy().addItemToWaitList();
     vu.setClient(effectiveClient);
     server.updateEvents(effectiveClient);
     updates.write(vu);
