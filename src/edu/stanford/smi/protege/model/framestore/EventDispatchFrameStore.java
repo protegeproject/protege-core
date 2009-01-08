@@ -45,6 +45,7 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.ArrayListMultiMap;
 import edu.stanford.smi.protege.util.Assert;
@@ -99,9 +100,12 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 			if (passThrough) {
 				savedEvents.add(event);
 			}
-			if (event.isHiddenByTransaction()) {
+			if (event.isHiddenByTransaction() && !isMyEvent(event)) {
 				RemoteSession session = event.getSession();
 				transactedEvents.addValue(session, event);
+				if (log.isLoggable(Level.FINER)) {
+				    log.finer("Dispatch for " + event + " deferred until " + session + "s transaction closes.");
+				}
 				continue;
 			}
 			if (event instanceof TransactionEvent && 
@@ -109,12 +113,29 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 				RemoteSession session = event.getSession();
 				List<AbstractEvent> deferred = transactedEvents.removeKey(session);
 				if (deferred != null && ((TransactionEvent) event).isCommitted()) {
+				    if (log.isLoggable(Level.FINER)) {
+				        log.finer("Committing " + deferred.size() + " events for session " + session);
+				    }
 				    results.addAll(deferred);
 				}
 			}
 			results.add(event);
+			if (log.isLoggable(Level.FINER)) {
+			    log.finer("Event being dispatched now: " + event);
+			}
 		}
 		return results;
+	}
+	
+	private boolean isMyEvent(AbstractEvent event) {
+	    RemoteSession mySession = ServerFrameStore.getCurrentSession();
+	    RemoteSession eventSession = event.getSession();
+	    if (mySession == null) {
+	        return eventSession == null;
+	    }
+	    else {
+	        return mySession.equals(eventSession);
+	    }
 	}
 
 	/**
