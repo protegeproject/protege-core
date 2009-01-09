@@ -37,6 +37,7 @@ public class ServerProperties {
   public final static String SERVER_NEW_PROJECTS_SAVE_DIRECTORY_PROTEGE_PROPERTY = "server.newproject.save.directory";
 
   public final static String PROTEGE_RMI_USE_COMPRESSION = "server.use.compression";
+  public final static String PROTEGE_RMI_TOO_SMALL_TO_COMPRESS = "server.too.small.to.compress";
   
   public static boolean skipPreload() {
 	  return SystemUtilities.getSystemBooleanProperty(SKIP_PRELOAD, false);
@@ -97,6 +98,18 @@ public class ServerProperties {
   public static boolean useCompression() {
       String val = ApplicationProperties.getApplicationOrSystemProperty(PROTEGE_RMI_USE_COMPRESSION, "FALSE");
       return val.toLowerCase().equals("true");
+  }
+  
+  public static int tooSmallToCompress() {
+      int defaultValue = 1024;
+      String small = System.getProperty(PROTEGE_RMI_TOO_SMALL_TO_COMPRESS, 
+                                        new StringBuffer().append(defaultValue).toString());
+      try {
+          return Integer.parseInt(small);
+      }
+      catch (NumberFormatException nfe) {
+          return defaultValue;
+      }
   }
   
   public static int delayInMilliseconds() {

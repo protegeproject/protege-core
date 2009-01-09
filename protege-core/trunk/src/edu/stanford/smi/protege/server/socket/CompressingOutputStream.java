@@ -8,12 +8,14 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.util.Log;
 
 public class CompressingOutputStream extends OutputStream {
     private static final transient Logger log = Log.getLogger(CompressingOutputStream.class);
     public final static int BUFFER_SIZE = 16 * 4096;
-    public final static int SMALL_DATA = 1024;
+    
+    private int smallSize = ServerProperties.tooSmallToCompress();
     
     
     private byte[] data = new byte[BUFFER_SIZE];
@@ -55,7 +57,7 @@ public class CompressingOutputStream extends OutputStream {
                 log.finer("OutputStream: Flushing output by starting new segment " + (blockCounter + 1));
             }
             ZipEntry entry = new ZipEntry("Segment" + blockCounter++);
-            if (offset < SMALL_DATA) {
+            if (offset < smallSize) {
                 entry.setMethod(ZipEntry.STORED);
                 CRC32 crc = new CRC32();
                 crc.update(data, 0, offset);
