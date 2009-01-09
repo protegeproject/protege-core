@@ -8,14 +8,14 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.util.Log;
 
 public class CompressingOutputStream2 extends OutputStream {
     private static final transient Logger log = Log.getLogger(CompressingOutputStream2.class);
     
-    public final static int SMALL_DATA = 1024;
-    
-    private byte[] data = new byte[SMALL_DATA];
+    private int smallSize = ServerProperties.tooSmallToCompress();
+    private byte[] data = new byte[smallSize];
     int offset = 0;  // the next location in the buffer to write to
                      // also doubles as the size of the unflushed data
     private boolean inZipEntry = false;
@@ -67,6 +67,7 @@ public class CompressingOutputStream2 extends OutputStream {
             entry.setSize(offset);
             compressing.putNextEntry(entry);
             compressing.write(data, 0, offset);
+            offset = 0;
             closingZipEntry = true;
         }
         else if (inZipEntry) {
@@ -76,7 +77,6 @@ public class CompressingOutputStream2 extends OutputStream {
             inZipEntry = false;
             compressing.closeEntry();
             compressing.flush();
-            offset = 0;
             if (log.isLoggable(Level.FINER)) {
                 log.finer("OutputStream: segment " + blockCounter + " written");
             }
@@ -105,23 +105,22 @@ public class CompressingOutputStream2 extends OutputStream {
         compressing.flush();
 
         compressing.close();
-        compressing.close();
     }
     
     private boolean stillBuffering(int moreToWrite) throws IOException {
         if (inZipEntry) {
             return false;
         }
-        if (offset + moreToWrite < SMALL_DATA) {
+        if (offset + moreToWrite < smallSize) {
             return true;
         }
         else {
             ZipEntry entry = new ZipEntry("Segment" + blockCounter++);
             entry.setMethod(ZipEntry.DEFLATED);
             compressing.putNextEntry(entry);
+            inZipEntry = true;
             compressing.write(data, 0, offset);
             offset = 0;
-            inZipEntry = true;
             return false;
         }
     }
