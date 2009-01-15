@@ -13,23 +13,26 @@ public class SimulateDelayOutputStream extends FilterOutputStream {
     static Logger log = Log.getLogger(SimulateDelayOutputStream.class);
     private static int KB = MonitoringAspect.KB;
     
+    private OutputStream os;
+    
     private int bandwidth = ServerProperties.getKiloBytesPerSecondUpload();
     
     private int bytesWritten = 0;
 
     public SimulateDelayOutputStream(OutputStream os) {
         super(os);
+        this.os = os;
     }
     
     @Override
     public void write(int b) throws IOException {
-        super.write(b);
+        os.write(b);
         delayForDownLoad(1);
     }
     
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        super.write(b, off, len);
+        os.write(b, off, len);
         delayForDownLoad(len);
     }
 

@@ -1,6 +1,5 @@
 package edu.stanford.smi.protege.server.socket;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
@@ -8,11 +7,13 @@ import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.util.Log;
 
-public class MonitoringInputStream extends FilterInputStream {
+public class MonitoringInputStream extends InputStream {
     static Logger log = Log.getLogger(MonitoringInputStream.class);
     private static int KB = MonitoringAspect.KB;
     
     private static int counter = 0;
+    
+    private InputStream is;
     
     private int id;
     private int bytesRead = 0;
@@ -20,7 +21,7 @@ public class MonitoringInputStream extends FilterInputStream {
 
     
     public MonitoringInputStream(InputStream is) throws IOException {
-        super(is);
+        this.is = is;
         id = counter++;
         if (log.isLoggable(Level.FINER)) {
             log.finer(logPrefix() + " opened.");
@@ -31,7 +32,11 @@ public class MonitoringInputStream extends FilterInputStream {
     public int read() throws IOException {
         int ret = -1;
         try {
-            ret = super.read();
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(logPrefix() + "requesting byte");
+            }
+            ret = is.read();
+            showRead(ret);
             if (ret != -1) {
                 countRead(1);
             }
@@ -46,7 +51,11 @@ public class MonitoringInputStream extends FilterInputStream {
     public int read(byte[] b, int off, int len) throws IOException {
         int ret = -1;
         try {
-            ret = super.read(b, off, len);;
+            if (log.isLoggable(Level.FINER)) {
+                log.finer(logPrefix() + "requesting " + len + " bytes");
+            }
+            ret = is.read(b, off, len);
+            showRead(b, off, len, ret);
             if (ret > 0) {
                 countRead(ret);
             }
@@ -61,7 +70,7 @@ public class MonitoringInputStream extends FilterInputStream {
     public long skip(long n) throws IOException {
         long ret = -1;
         try {
-            ret = super.skip(n);
+            ret = is.skip(n);
             if (ret > 0) {
                 countRead((int) ret);
             }
@@ -79,10 +88,38 @@ public class MonitoringInputStream extends FilterInputStream {
                 log.finer(logPrefix() + "closing");
             }
             readingNotified = false;
-            super.close();
+            is.close();
         }
         catch (Throwable t) {
             rethrow(t);
+        }
+    }
+    
+    private void showRead(byte[] b, int off, int len, int ret) {
+        if (log.isLoggable(Level.FINER)) {
+            if (len != ret) {
+                log.finer(logPrefix() + "asked for " + len + " bytes and received " + ret);
+            }
+        }
+        if (log.isLoggable(Level.FINEST)) {
+            StringBuffer sb = new StringBuffer(logPrefix());
+            sb.append("bytes read: ");
+            for (int i = off; i < off + ret; i++) {
+                sb.append(b[i]);
+                sb.append(" ");
+            }
+            log.finest(sb.toString());
+        }
+    }
+    
+    private void showRead(int b) {
+        if (log.isLoggable(Level.FINE)) {
+            if (b < 0) {
+                log.fine(logPrefix() + "End of Stream read");
+            }
+        }
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest(logPrefix() + " byte read " + (byte) b + " : " + b);
         }
     }
     

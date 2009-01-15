@@ -29,7 +29,7 @@ public class CompressionAspect implements SocketAspect {
 
     public OutputStream getOutputStream() throws IOException {
         if (os == null) {
-            os = new CompressingOutputStream2(delegate.getOutputStream());
+            os = new CompressingOutputStream(delegate.getOutputStream());
         }
         return os;
     }

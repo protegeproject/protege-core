@@ -13,11 +13,12 @@ public class CompressingInputStream extends InputStream {
     private static transient final Logger  log  = Log.getLogger(CompressingInputStream.class);
     private ZipInputStream compressing;
     private ZipEntry entry;
-    boolean initialized = false;
+    private boolean initialized = false;
     
-    long totalData = 0;
-    long compressedData = 0;
-    long lastTotalsLogMsg = 0;
+    private long totalData = 0;
+    private long compressedData = 0;
+    private long lastTotalsLogMsg = 0;
+    private String lastSegmentRead;
     public final static String EOS = "End of Stream";
     
     public CompressingInputStream(InputStream is) {
@@ -77,6 +78,9 @@ public class CompressingInputStream extends InputStream {
         if (entry == null) {
             return false;
         }
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("last segment read was " + lastSegmentRead + " getting new segment");
+        }
         compressing.closeEntry();
         logZipEntry(entry);
         entry = compressing.getNextEntry();
@@ -94,6 +98,7 @@ public class CompressingInputStream extends InputStream {
             entry = null;
         } else {
             if (log.isLoggable(Level.FINER)) {
+                lastSegmentRead = entry.getName();
                 log.finer("InputStream: reading new segment " + entry.getName());
             }
         }
