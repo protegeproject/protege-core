@@ -13,6 +13,8 @@ public class SimulateDelayInputStream extends FilterInputStream {
     static Logger log = Log.getLogger(SimulateDelayInputStream.class);
     private static int KB = MonitoringAspect.KB;
     
+    private InputStream is;
+    
     private static int bandwidth = ServerProperties.getKiloBytesPerSecondDownload();
 
     private int bytesRead = 0;
@@ -20,11 +22,12 @@ public class SimulateDelayInputStream extends FilterInputStream {
     
     public SimulateDelayInputStream(InputStream is) throws IOException {
         super(is);
+        this.is = is;
     }
     
     @Override
     public int read() throws IOException {
-        int ret = super.read();
+        int ret = is.read();
         if (ret != -1) {
             delayForUpload(1);
         }
@@ -33,7 +36,7 @@ public class SimulateDelayInputStream extends FilterInputStream {
     
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        int ret = super.read(b, off, len);;
+        int ret = is.read(b, off, len);;
         if (ret > 0) {
             delayForUpload(ret);
         }
