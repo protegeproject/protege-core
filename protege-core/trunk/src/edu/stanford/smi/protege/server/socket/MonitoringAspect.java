@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 
-import edu.stanford.smi.protege.server.ServerProperties;
-
 public class MonitoringAspect implements SocketAspect {
     public final static int KB = 1024;
     private SocketAspect delegate;
