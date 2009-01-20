@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import edu.stanford.smi.protege.server.ServerProperties;
+import edu.stanford.smi.protege.server.socket.deflate.CompressingInputStream;
+import edu.stanford.smi.protege.server.socket.deflate.CompressingOutputStream;
 
 public class CompressionAspect implements SocketAspect {
     

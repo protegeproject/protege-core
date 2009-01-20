@@ -9,7 +9,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import edu.stanford.smi.protege.server.ServerProperties;
-import edu.stanford.smi.protege.server.socket.CompressingInputStream;
+import edu.stanford.smi.protege.server.socket.original.CompressingInputStream;
 import edu.stanford.smi.protege.util.Log;
 
 public class CompressingOutputStream extends OutputStream {

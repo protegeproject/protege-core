@@ -1,4 +1,4 @@
-package edu.stanford.smi.protege.server.socket;
+package edu.stanford.smi.protege.server.socket.original;
 
 import java.io.IOException;
 import java.io.InputStream;
