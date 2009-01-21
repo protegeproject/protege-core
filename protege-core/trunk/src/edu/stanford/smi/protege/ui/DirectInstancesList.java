@@ -36,6 +36,9 @@ import edu.stanford.smi.protege.event.ClsListener;
 import edu.stanford.smi.protege.event.FrameAdapter;
 import edu.stanford.smi.protege.event.FrameEvent;
 import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.event.KnowledgeBaseAdapter;
+import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.event.KnowledgeBaseListener;
 import edu.stanford.smi.protege.model.BrowserSlotPattern;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Frame;
@@ -95,16 +98,17 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     private ClsListener _clsListener = new ClsAdapter() {
         @Override
-		public void directInstanceAdded(ClsEvent event) {
+        public void directInstanceAdded(ClsEvent event) {
             synchronized (DirectInstancesList.this) {
                 if (background != null) {
+                    background.setDeferredSelection(event.getInstance());
                     background.addChange(event);
                 }
             }
         }
 
         @Override
-		public void directInstanceRemoved(ClsEvent event) {
+        public void directInstanceRemoved(ClsEvent event) {
             synchronized (DirectInstancesList.this) {
                 if (background != null) {
                     background.addChange(event);
@@ -115,8 +119,14 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     private FrameListener _clsFrameListener = new FrameAdapter() {
         @Override
-		public void ownSlotValueChanged(FrameEvent event) {
+        public void ownSlotValueChanged(FrameEvent event) {
             super.ownSlotValueChanged(event);
+            background.addChange(event);
+        }
+    };
+    
+    private KnowledgeBaseListener kbListener = new KnowledgeBaseAdapter() {
+        public void frameReplaced(KnowledgeBaseEvent event) {
             background.addChange(event);
         }
     };
@@ -129,8 +139,6 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         _list.setCellRenderer(FrameRenderer.createInstance());
         _list.setModel(new ConcurrentListModel());
 
-
-
         _labeledComponent = new LabeledComponent(null, ComponentFactory.createScrollPane(_list));
         addButtons(viewAction, _labeledComponent);
         _labeledComponent.setFooterComponent(new ListFinder(_list, ResourceKey.INSTANCE_SEARCH_FOR));
@@ -141,7 +149,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         add(panel, BorderLayout.NORTH);
 
         setSelectable(_list);
-        // initializeShowSubclassInstances();
+        _project.getKnowledgeBase().addKnowledgeBaseListener(kbListener);
     }
 
     private void updateLabel() {
@@ -196,7 +204,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     protected Action createCreateAction() {
         _createAction = new CreateAction(ResourceKey.INSTANCE_CREATE) {
             @Override
-			public void onCreate() {
+            public void onCreate() {
                 if (!_clses.isEmpty()) {
                     KnowledgeBase kb = _project.getKnowledgeBase();
                     Instance instance = kb.createInstance(null, _clses);
@@ -220,7 +228,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     protected Action createConfigureAction() {
         return new ConfigureAction() {
             @Override
-			public void loadPopupMenu(JPopupMenu menu) {
+            public void loadPopupMenu(JPopupMenu menu) {
                 menu.add(createSetDisplaySlotAction());
                 menu.add(createShowAllInstancesAction());
             }
@@ -305,7 +313,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                 BrowserSlotPattern currentPattern = getSoleAllowedCls().getBrowserSlotPattern();
                 MultiSlotPanel panel = new MultiSlotPanel(currentPattern, cls);
                 int rval = ModalDialog.showDialog(DirectInstancesList.this, panel, "Multislot Display Pattern",
-                        ModalDialog.MODE_OK_CANCEL);
+                                                  ModalDialog.MODE_OK_CANCEL);
                 if (rval == ModalDialog.OPTION_OK) {
                     BrowserSlotPattern pattern = panel.getBrowserTextPattern();
                     if (pattern != null) {
@@ -326,7 +334,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     protected Action createCopyAction() {
         _copyAction = new MakeCopiesAction(ResourceKey.INSTANCE_COPY, this) {
             @Override
-			protected Instance copy(Instance instance, boolean isDeep) {
+            protected Instance copy(Instance instance, boolean isDeep) {
                 Instance copy = super.copy(instance, isDeep);
                 setSelectedInstance(copy);
                 return copy;
@@ -342,15 +350,16 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     protected Action createViewAction() {
         return new ViewAction(ResourceKey.INSTANCE_VIEW, this) {
             @Override
-			public void onView(Object o) {
+            public void onView(Object o) {
                 _project.show((Instance) o);
             }
         };
     }
 
     @Override
-	public void dispose() {
+    public void dispose() {
         removeClsListeners();
+        _project.getKnowledgeBase().removeKnowledgeBaseListener(kbListener);
         if (background != null) {
             background.cancel();
             background = null;
@@ -379,7 +388,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     }
 
     @Override
-	public void onSelectionChange() {
+    public void onSelectionChange() {
         // Log.enter(this, "onSelectionChange");
         boolean editable = isSelectionEditable();
         ComponentUtilities.setDragAndDropEnabled(_list, editable);
@@ -497,11 +506,11 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     }
 
     public void setListRenderer(ListCellRenderer renderer) {
-    	_list.setCellRenderer(renderer);
+        _list.setCellRenderer(renderer);
 
-    	if (renderer instanceof FrameRenderer) {
-    		((FrameRenderer)renderer).setDisplayType(_showSubclassInstances);
-    	}
+        if (renderer instanceof FrameRenderer) {
+            ((FrameRenderer)renderer).setDisplayType(_showSubclassInstances);
+        }
     }
 
     /**
@@ -510,7 +519,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
      * @deprecated
      */
     @Deprecated
-	public void setShowDisplaySlotPanel(boolean b) {
+    public void setShowDisplaySlotPanel(boolean b) {
 
     }
 
@@ -535,8 +544,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                 addOneInstance(getNextInstance());
                 synchronized (this) {
                     if (cancelled) {
-						return;
-					}
+                        return;
+                    }
                 }
                 handleChanges();
             }
@@ -545,9 +554,9 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         private void waitToProcessEvents() {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
-                   public void run() {
-                       ;
-                   }
+                    public void run() {
+                        ;
+                    }
                 });
             } catch (InterruptedException e) {
                 Log.getLogger().log(Level.SEVERE, "Interrupt caught - why?", e);
@@ -641,8 +650,21 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
                                             getModel().contains(frame) &&
                                             frame instanceof Instance) {
                                         getModel().removeValue(frame);
-                                        insertInstanceInList((Instance) frame);
                                         updateButtons();
+                                    }
+                                }
+                                else if (event instanceof KnowledgeBaseEvent) {
+                                    KnowledgeBaseEvent kbEvent = (KnowledgeBaseEvent) event;
+                                    if (kbEvent.getEventType() == KnowledgeBaseEvent.FRAME_REPLACED) {
+                                        boolean selected =
+                                            _list.getSelection().contains(kbEvent.getFrame())
+                                                    && localDeferredSelection  == null;
+                                        instances.remove(kbEvent.getFrame());
+                                        getModel().removeValue(kbEvent.getFrame());
+                                        insertInstanceInList((Instance) kbEvent.getNewFrame());
+                                        if (selected) {
+                                            _list.setSelectedValue(kbEvent.getNewFrame());
+                                        }
                                     }
                                 }
                             }
@@ -681,6 +703,9 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         }
 
         public synchronized void addChange(AbstractEvent event) {
+            if (event.isReplacementEvent() && event.getEventType() != KnowledgeBaseEvent.FRAME_REPLACED) {
+                return;
+            }
             changes.add(event);
             notifyAll();
         }

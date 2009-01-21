@@ -7,17 +7,21 @@ import java.util.List;
 /*
  * Tim's rule of comments: big comments mean trouble.
  * 
- * Be careful of deadlock.  Actually I am not sure this is a problem but it made me nervous so I was careful.  
- * The approach that I took is to synchronize the inner list and the read methods. If there is only one writer
- * then I don't have to worry about things changing underneath the writer.  The fact that the list is 
- * synchronized means that readers are safe accessing the list.
+ * Be careful of deadlock.  Actually I am not sure this is a problem
+ * but it made me nervous so I was careful.  The approach that I took
+ * is to synchronize the inner list and the read methods. If there is
+ * only one writer then I don't have to worry about things changing
+ * underneath the writer.  The fact that the list is synchronized
+ * means that readers are safe accessing the list.
  * 
- * The world could change underneath the reader while he is trying to find something. But synchronizing 
- * the reader methods protect the reader from change.  These methods are safe to synchronize because they
- * do not make calls such as fire... which might take who knows what locks.
+ * The world could change underneath the reader while he is trying to
+ * find something. But synchronizing the reader methods protect the
+ * reader from change.  These methods are safe to synchronize because
+ * they do not make calls such as fire... which might take who knows
+ * what locks.
  * 
- * I don't need to synchronize all the reader calls but it seems safer since there is little or no performance
- * penalty.
+ * I don't need to synchronize all the reader calls but it seems safer
+ * since there is little or no performance penalty.
  */
 
 /**
