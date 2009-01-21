@@ -32,7 +32,7 @@ public class PacketHeader {
            throw new EOFException("No packet found");
        }
        if (alignCheck != ALIGNMENT) {
-           throw new IOException("Packet header out of alignment between reader and writer");
+           throw new IOException("Packet header out of alignment between reader and writer (Thread = " + Thread.currentThread().getName() + ")");
        }
        int size = readInt(is);
        int compressedSize = readInt(is);
