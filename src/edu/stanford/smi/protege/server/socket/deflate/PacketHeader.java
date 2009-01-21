@@ -1,10 +1,19 @@
 package edu.stanford.smi.protege.server.socket.deflate;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import edu.stanford.smi.protege.util.Log;
 
 public class PacketHeader {
+    private static Logger log = Log.getLogger(PacketHeader.class);
+    
+    private static byte ALIGNMENT = 0x4c;
+    
     private static int BYTES_IN_INT = 4;
     private static int BITS_IN_BYTE = 8;
     private static int BYTE_MASK = 0x0ff;
@@ -18,14 +27,28 @@ public class PacketHeader {
     }
 
     public static PacketHeader read(InputStream is) throws IOException {
+       int alignCheck = is.read();
+       if (alignCheck == -1) {
+           throw new EOFException("No packet found");
+       }
+       if (alignCheck != ALIGNMENT) {
+           throw new IOException("Packet header out of alignment between reader and writer");
+       }
        int size = readInt(is);
        int compressedSize = readInt(is);
+       if (log.isLoggable(Level.FINEST)) {
+           log.finest("Read compressed packet header, size = " + size + " compressed size = " + compressedSize);
+       }
        return new PacketHeader(size, compressedSize);
     }
     
     public void write(OutputStream os) throws IOException {
+        os.write(ALIGNMENT);
         writeInt(os, size);
         writeInt(os, compressedSize);
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest("Wrote compressed packet header, size = " + size + " compressed size = " + compressedSize);
+        }
     }
 
     public int getSize() {
@@ -37,14 +60,20 @@ public class PacketHeader {
     }
     
     private static int readInt(InputStream is) throws IOException {
-        byte [] buffer = new byte[BYTES_IN_INT];
         int result = 0;
-        is.read(buffer);
-        int i = BYTES_IN_INT - 1;
-        result = buffer[i--];
-        for (; i >= 0; i--) {
+        int[] buffer = new int[BYTES_IN_INT];
+        for (int i = 0; i < BYTES_IN_INT; i++) {
+            int c = is.read();
+            if (c == -1) {
+                throw new EOFException("Could not read compressed packet header");
+            }        
+            buffer[i] = c;
+        }
+        
+        for (int i = BYTES_IN_INT - 1; i >= 0; i--) {
             result = result << BITS_IN_BYTE;
-            result += buffer[i];
+            int b = buffer[i];
+            result += b < 0 ? 256 + b : b;
         }
         return result;
     }
