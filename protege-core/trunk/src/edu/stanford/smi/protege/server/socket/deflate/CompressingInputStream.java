@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.server.socket.deflate;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
@@ -32,29 +33,58 @@ public class CompressingInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        if (buffer == null || offset == buffer.length) {
+        if (buffer == null) {
             readBuffer();
         }
         if (buffer == null) {
             return -1;
         }
-        return buffer[offset++];
+        int ret = buffer[offset++];
+        if (buffer.length == offset) {
+            buffer = null;
+        }
+        return ret;
+    }
+    
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        if (buffer == null) {
+            readBuffer();
+        }
+        if (buffer == null) {
+            return -1;
+        }
+        int bytesRead = 0;
+        for (bytesRead = 0; offset < buffer.length && bytesRead < len; bytesRead++) {
+            b[off++] = buffer[offset++];
+        }
+        if (buffer.length == offset) {
+            buffer = null;
+        }
+        return bytesRead;
     }
     
     public void readBuffer() throws IOException {
-        inflater.reset();
+        int size = offset;
         buffer = null;
+        offset = 0;
+        
+        inflater.reset();
+        
         PacketHeader header = PacketHeader.read(is);
+        int compressedSize = header.getCompressedSize();
         buffer = new byte[header.getSize()];
-        byte compressedBuffer[] = new byte[header.getCompressedSize()];
-        int bytesRead = is.read(compressedBuffer);
-        if (bytesRead != header.getCompressedSize()) {
-            throw new IOException("Incomplete compressed buffer.  Expected " 
-                                  + header.getCompressedSize() 
-                                  + " bytes but found " 
-                                  + bytesRead 
-                                  + " bytes");
+        byte compressedBuffer[] = new byte[compressedSize];
+              
+        int bytesRead = 0;
+        while (bytesRead < compressedSize) {
+            int readThisTime = is.read(compressedBuffer, bytesRead, compressedSize - bytesRead);
+            if (readThisTime == -1) {
+                throw new EOFException("Unabled to read entire compressed packet contents");
+            }
+            bytesRead += readThisTime;
         }
+
         inflater.setInput(compressedBuffer);
         try {
             int inflatedSize = inflater.inflate(buffer);
@@ -88,7 +118,7 @@ public class CompressingInputStream extends InputStream {
           sb.append("Uncompressed buffer of size ");
           sb.append(buffer.length);
           sb.append(": ");
-          for (int i = 0; i < offset; i++) {
+          for (int i = 0; i < buffer.length; i++) {
               sb.append(buffer[i]);
               sb.append(" ");
           }
