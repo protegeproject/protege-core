@@ -46,6 +46,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.ArrayListMultiMap;
 import edu.stanford.smi.protege.util.Assert;
@@ -249,6 +250,12 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             try {
                 dispatchEvent(event);
             } catch (Throwable e) {
+                do {
+                    if (e instanceof ServerSessionLost) {
+                        kb.getProject().dispose();
+                        return;
+                    }
+                } while ((e = e.getCause()) != null);
                 if (!ignoreExceptions) {
                   if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "Exception caught", e);
