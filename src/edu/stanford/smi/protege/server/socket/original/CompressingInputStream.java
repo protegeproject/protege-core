@@ -1,4 +1,4 @@
-package edu.stanford.smi.protege.server.socket;
+package edu.stanford.smi.protege.server.socket.original;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,12 +13,12 @@ public class CompressingInputStream extends InputStream {
     private static transient final Logger  log  = Log.getLogger(CompressingInputStream.class);
     private ZipInputStream compressing;
     private ZipEntry entry;
-    boolean initialized = false;
-    boolean endOfStream = false;
+    private boolean initialized = false;
     
-    long totalData = 0;
-    long compressedData = 0;
-    long lastTotalsLogMsg = 0;
+    private long totalData = 0;
+    private long compressedData = 0;
+    private long lastTotalsLogMsg = 0;
+    private String lastSegmentRead;
     public final static String EOS = "End of Stream";
     
     public CompressingInputStream(InputStream is) {
@@ -55,6 +55,8 @@ public class CompressingInputStream extends InputStream {
     public void close() throws IOException {
         if (entry != null)  {
             compressing.closeEntry();
+            logZipEntry(entry);
+            entry = null;
         }
         compressing.close();
     }
@@ -63,19 +65,22 @@ public class CompressingInputStream extends InputStream {
         if (!initialized) {
             initialized = true;
             entry = compressing.getNextEntry();
-            if  (entry == null) {
-                endOfStream = true;
-            }
             if (entry != null && entry.getName().equals(EOS)) {
                 compressing.closeEntry();
-                endOfStream = true;
+                logZipEntry(entry);
                 entry = null;
             }
         }
-        return !endOfStream;
+        return entry != null;
     }
     
     private boolean gotoNextEntry() throws IOException {
+        if (entry == null) {
+            return false;
+        }
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("last segment read was " + lastSegmentRead + " getting new segment");
+        }
         compressing.closeEntry();
         logZipEntry(entry);
         entry = compressing.getNextEntry();
@@ -83,38 +88,51 @@ public class CompressingInputStream extends InputStream {
             if (log.isLoggable(Level.FINER)) {
                 log.finer("Came to end of stream with no end of stream marker");
             }
-            endOfStream = true;
         }
         else if (entry.getName().equals(EOS)) {
             if (log.isLoggable(Level.FINER)) {
-                log.finer("Output stream left and end of stream marker");
+                log.finer("Output stream left an end of stream marker");
             }
             compressing.closeEntry();
-            endOfStream = true;
+            logZipEntry(entry);
+            entry = null;
         } else {
             if (log.isLoggable(Level.FINER)) {
+                lastSegmentRead = entry.getName();
                 log.finer("InputStream: reading new segment " + entry.getName());
             }
         }
-        return endOfStream != true;
+        return entry != null;
     }
     
     private void logZipEntry(ZipEntry entry) {
-        totalData += entry.getSize();
-        compressedData += entry.getCompressedSize();
-        if (log.isLoggable(Level.FINE) && compressedData != 0 && (System.currentTimeMillis() - lastTotalsLogMsg >= 5000)) {
-            log.fine(String.format("Average Compression Ratio = %.3f to 1, Compressed = %.2f MB, Uncompressed = %.2f MB (Cumulative) ", 
-                                   (((double) totalData) / ((double) compressedData)),
-                                   ((double) compressedData)/(1024.0 * 1024.0),
-                                   ((double) totalData)/(1024.0 * 1024.0)));
-            lastTotalsLogMsg = System.currentTimeMillis();
+        try {
+            if (!log.isLoggable(Level.FINE)) {
+                return;
+            }
+            if (entry.getName().equals(EOS)) {
+                log.fine("EOS found");
+                return;
+            }
+            totalData += entry.getSize();
+            compressedData += entry.getCompressedSize();
+            if (compressedData != 0 && (System.currentTimeMillis() - lastTotalsLogMsg >= 5000)) {
+                log.fine(String.format("Average Compression Ratio = %.3f to 1, Compressed = %.2f MB, Uncompressed = %.2f MB (Cumulative) ", 
+                                       (((double) totalData) / ((double) compressedData)),
+                                       ((double) compressedData)/(1024.0 * 1024.0),
+                                       ((double) totalData)/(1024.0 * 1024.0)));
+                lastTotalsLogMsg = System.currentTimeMillis();
+            }
+            if (!log.isLoggable(Level.FINER)) {
+                return;
+            }
+            log.finer("" + entry.getName() 
+                      + " storage method " + (entry.getMethod() == ZipEntry.STORED ? "Uncompressed" : "Compressed")
+                      + " read - original size " + entry.getSize() 
+                      + " compressed size " + entry.getCompressedSize());
         }
-        if (!log.isLoggable(Level.FINER)) {
-            return;
+        catch (Throwable t) {
+            log.fine("Exception caught trying to log zip entry " + t);
         }
-        log.finer("" + entry.getName() 
-                  + " storage method " + (entry.getMethod() == ZipEntry.STORED ? "Uncompressed" : "Compressed")
-                  + " read - original size " + entry.getSize() 
-                  + " compressed size " + entry.getCompressedSize());
     }
 }

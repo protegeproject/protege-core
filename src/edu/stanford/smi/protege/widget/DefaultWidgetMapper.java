@@ -92,7 +92,8 @@ public class DefaultWidgetMapper implements WidgetMapper {
                 isSuitable = result.booleanValue();
             }
         } catch (Exception e) {
-          log.log(Level.SEVERE, "Exception caught", e);
+          log.log(Level.WARNING, "Could not verify isSuitable for widget: " + className +
+        		  " class: " + cls + " slot: " + slot, e);
           isSuitable = false;
         }
         return isSuitable;
@@ -102,7 +103,8 @@ public class DefaultWidgetMapper implements WidgetMapper {
         return isSuitable(cls, slot, facet, d.getWidgetClassName());
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return StringUtilities.getClassName(this);
     }
 }

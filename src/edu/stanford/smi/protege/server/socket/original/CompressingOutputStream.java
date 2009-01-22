@@ -1,4 +1,4 @@
-package edu.stanford.smi.protege.server.socket;
+package edu.stanford.smi.protege.server.socket.original;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,14 +8,14 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.util.Log;
 
-public class CompressingOutputStream2 extends OutputStream {
-    private static final transient Logger log = Log.getLogger(CompressingOutputStream2.class);
+public class CompressingOutputStream extends OutputStream {
+    private static final transient Logger log = Log.getLogger(CompressingOutputStream.class);
     
-    public final static int SMALL_DATA = 1024;
-    
-    private byte[] data = new byte[SMALL_DATA];
+    private int smallSize = ServerProperties.tooSmallToCompress();
+    private byte[] data = new byte[smallSize];
     int offset = 0;  // the next location in the buffer to write to
                      // also doubles as the size of the unflushed data
     private boolean inZipEntry = false;
@@ -23,8 +23,9 @@ public class CompressingOutputStream2 extends OutputStream {
     private OutputStream os;
     private ZipOutputStream compressing;
     private static int blockCounter = 0;
+    private int currentSegmentCounter = 0;
 
-    public CompressingOutputStream2(OutputStream os) {
+    public CompressingOutputStream(OutputStream os) {
         this.os = os;
         compressing = new ZipOutputStream(os);
     }
@@ -59,6 +60,7 @@ public class CompressingOutputStream2 extends OutputStream {
             if (log.isLoggable(Level.FINER)) {
                 log.finer("OutputStream: Flushing small output by starting new segment " + (blockCounter + 1));
             }
+            currentSegmentCounter = blockCounter;
             ZipEntry entry = new ZipEntry("Segment" + blockCounter++);
             entry.setMethod(ZipEntry.STORED);
             CRC32 crc = new CRC32();
@@ -67,6 +69,7 @@ public class CompressingOutputStream2 extends OutputStream {
             entry.setSize(offset);
             compressing.putNextEntry(entry);
             compressing.write(data, 0, offset);
+            offset = 0;
             closingZipEntry = true;
         }
         else if (inZipEntry) {
@@ -76,9 +79,8 @@ public class CompressingOutputStream2 extends OutputStream {
             inZipEntry = false;
             compressing.closeEntry();
             compressing.flush();
-            offset = 0;
             if (log.isLoggable(Level.FINER)) {
-                log.finer("OutputStream: segment " + blockCounter + " written");
+                log.finer("OutputStream: Segment" + currentSegmentCounter + " written");
             }
         } else {
             os.flush();
@@ -105,23 +107,23 @@ public class CompressingOutputStream2 extends OutputStream {
         compressing.flush();
 
         compressing.close();
-        compressing.close();
     }
     
     private boolean stillBuffering(int moreToWrite) throws IOException {
         if (inZipEntry) {
             return false;
         }
-        if (offset + moreToWrite < SMALL_DATA) {
+        if (offset + moreToWrite < smallSize) {
             return true;
         }
         else {
+            currentSegmentCounter = blockCounter;
             ZipEntry entry = new ZipEntry("Segment" + blockCounter++);
             entry.setMethod(ZipEntry.DEFLATED);
             compressing.putNextEntry(entry);
+            inZipEntry = true;
             compressing.write(data, 0, offset);
             offset = 0;
-            inZipEntry = true;
             return false;
         }
     }
