@@ -62,14 +62,14 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private Map<Class<?>, Map<Object, Collection<EventListener>>> _listeners 
     			= new HashMap<Class<?>, Map<Object, Collection<EventListener>>>();
     private Thread _eventThread;
-    private Object lock;
+    private KnowledgeBase kb;
     
     private boolean passThrough = false;
     private List<AbstractEvent> savedEvents = new ArrayList<AbstractEvent>();
     private ArrayListMultiMap<RemoteSession, AbstractEvent> transactedEvents = new ArrayListMultiMap<RemoteSession, AbstractEvent>();
 
     public EventDispatchFrameStore(KnowledgeBase kb) {
-    	lock = kb;
+    	this.kb = kb;
     }
     
 
@@ -177,14 +177,14 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 		public void run() {
             while (true) {
               try {
-                synchronized (lock) {
+                synchronized (kb) {
                   if (_eventThread != this) {
                     return;
                   }
                 }
                 flushEvents();
-                synchronized (lock) {
-                  lock.wait(DELAY_MSEC);
+                synchronized (kb) {
+                  kb.wait(DELAY_MSEC);
                 }
               } catch (Exception e) {
                 Log.getLogger().warning(e.toString());
@@ -227,7 +227,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     
     @SuppressWarnings("unchecked")
     private void dispatchEvents(boolean ignoreExceptions) {
-    	synchronized (lock) {
+    	synchronized (kb) {
     		Collection<AbstractEvent> events = getDispatchableEvents();
     		if (!events.isEmpty()) {
     			dispatchEvents(events, ignoreExceptions);
@@ -248,7 +248,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             AbstractEvent event = i.next();
             try {
                 dispatchEvent(event);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (!ignoreExceptions) {
                   if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "Exception caught", e);
