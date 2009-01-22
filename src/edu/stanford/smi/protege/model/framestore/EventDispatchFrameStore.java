@@ -252,6 +252,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             } catch (Throwable e) {
                 do {
                     if (e instanceof ServerSessionLost) {
+                        log.warning("Knowledge base has been disconnected from the server");
                         kb.getProject().dispose();
                         return;
                     }
