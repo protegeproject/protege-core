@@ -1,4 +1,4 @@
-package edu.stanford.smi.protege.server.socket;
+package edu.stanford.smi.protege.server.socket.buffered;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,12 +8,15 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import edu.stanford.smi.protege.server.ServerProperties;
+import edu.stanford.smi.protege.server.socket.original.CompressingInputStream;
 import edu.stanford.smi.protege.util.Log;
 
 public class CompressingOutputStream extends OutputStream {
     private static final transient Logger log = Log.getLogger(CompressingOutputStream.class);
     public final static int BUFFER_SIZE = 16 * 4096;
-    public final static int SMALL_DATA = 1024;
+    
+    private int smallSize = ServerProperties.tooSmallToCompress();
     
     
     private byte[] data = new byte[BUFFER_SIZE];
@@ -38,24 +41,13 @@ public class CompressingOutputStream extends OutputStream {
     }
     
     @Override
-    public void write(byte[] b, int off, int len) throws IOException {
-        while (len > 0) {
-            ensureNotFull();
-            for (; len > 0 && offset < BUFFER_SIZE; offset++, off++, len--) {
-                data[offset] = b[off];
-            }
-        }
-        ensureNotFull();
-    }
-    
-    @Override
     public void flush() throws IOException {
         if (offset > 0) {
             if (log.isLoggable(Level.FINER)) {
                 log.finer("OutputStream: Flushing output by starting new segment " + (blockCounter + 1));
             }
             ZipEntry entry = new ZipEntry("Segment" + blockCounter++);
-            if (offset < SMALL_DATA) {
+            if (offset < smallSize) {
                 entry.setMethod(ZipEntry.STORED);
                 CRC32 crc = new CRC32();
                 crc.update(data, 0, offset);

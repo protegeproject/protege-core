@@ -14,4 +14,14 @@ Merged to trunk revision 12471 getting some bug fixes
 Merged to trunk revision 12518 with the commands
     p=http://smi-protege/repos/protege/protege-core
     svn merge $p/trunk@12471 $p/trunk@12518
-    
+
+Merged to trunk revision 12591
+    cd to protege-core cache directory
+    p=http://smi-protege/repos/protege/protege-core
+    svn info $p
+    svn log -r 12519:12591 $p
+    svn log -r 12519:12591
+    svn merge  $p/trunk@12519 $p/trunk@12591 - looks right
+    ant clean install
+    svn status
+    svn commit 

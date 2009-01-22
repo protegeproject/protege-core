@@ -310,7 +310,11 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
    * This call assumes that the kbLock is held on entry.
    */
   private void insertValueUpdate(Frame frame, SerializedCacheUpdate<RemoteSession, Sft, List> update) {
-    sessionMap.get(effectiveClient).getBandWidthPolicy().addItemToWaitList();
+    Registration registration = sessionMap.get(effectiveClient);
+    if (registration == null) {
+        return;
+    }
+    registration.getBandWidthPolicy().addItemToWaitList();
     server.updateEvents(effectiveClient);
     server.addReadUpdate(effectiveClient, frame, update);
   }
