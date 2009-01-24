@@ -13,8 +13,10 @@ import java.rmi.registry.Registry;
 import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,11 +24,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.event.ServerProjectNotificationEvent;
+import edu.stanford.smi.protege.event.ServerProjectSessionClosedEvent;
 import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -64,7 +71,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private static Server serverInstance;
     private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
-    private Map<String, ProjectStatus> _nameToProjectStatusMap = new  HashMap<String, ProjectStatus>();
+    private Map<String, ProjectStatus> _nameToProjectStatusMap = new  TreeMap<String, ProjectStatus>(); //sorted map by keys
     private Map<Project, ServerProject> _projectToServerProjectMap = new HashMap<Project, ServerProject>();
 
     private URI metaprojectURI;
@@ -82,6 +89,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private static final String OPTION_CHAR = "-";
     private boolean preload = true;
     private ProjectPluginManager _projectPluginManager = new ProjectPluginManager();
+    
+    /**
+     * Thread executor for project shutdown
+     */
+    private ExecutorService prjShutdownExecutor = Executors.newCachedThreadPool();
+    private Map<String, FutureTask<Object>> _prjNameToTaskMap = new HashMap<String, FutureTask<Object>>();
 
     public enum ServerStatus  {
         READY, SHUTTING_DOWN, SHUTDOWN;
@@ -106,7 +119,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      *             if the socket factory has already been set
      * @see RMISocketFactory#setSocketFactory(RMISocketFactory)
      */
-    public static void startServer(String[] args) throws IOException {
+    public synchronized static void startServer(String[] args) throws IOException {
     	Log.getLogger().info("Protege server is starting...");
         System.setProperty("java.rmi.server.RMIClassLoaderSpi", ProtegeRmiClassLoaderSpi.class.getName());
         SystemUtilities.initialize();
@@ -120,11 +133,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Log.getLogger().info("Protege server ready to accept connections...");
     }
 
-    public static Server getInstance() {
+    public synchronized static Server getInstance() {
         return serverInstance;
     }
 
-    public static Policy getPolicy() {
+    public synchronized static Policy getPolicy() {
       return serverInstance.metaproject.getPolicy();
     }
 
@@ -295,7 +308,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Log.getLogger().info("Removing session: " + session);
     }
 
-    public ServerProject getServerProject(String projectName) {
+    public synchronized ServerProject getServerProject(String projectName) {
         Project p = getProject(projectName);
         return p == null ? null : getServerProject(p);
     }
@@ -419,7 +432,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
     }
 
-    private void saveAllProjects() {
+    private synchronized void saveAllProjects() {
         // Log.enter(this, "update");
         ///CLOVER:FLUSH
         Iterator<Map.Entry<Project, ServerProject>> i = _projectToServerProjectMap.entrySet().iterator();
@@ -505,31 +518,31 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      */
 
 
-    public boolean isActive(RemoteSession session) {
+    public synchronized boolean isActive(RemoteSession session) {
         return _sessions.contains(session);
     }
 
-    public void disconnectFromProject(RemoteServerProject serverProject, RemoteSession session)
+    public synchronized void disconnectFromProject(RemoteServerProject serverProject, RemoteSession session)
     throws ServerSessionLost {
         recordDisconnection(session, serverProject);
     }
 
-    public Project getProject(String name) {
+    public synchronized Project getProject(String name) {
         return _nameToOpenProjectMap.get(name);
     }
 
     
-    public ServerProject getServerProject(Project p) {
+    public synchronized ServerProject getServerProject(Project p) {
         return _projectToServerProjectMap.get(p);
     }
 
 
-    public ProjectStatus getProjectStatus(String name) {
+    public synchronized ProjectStatus getProjectStatus(String name) {
         return _nameToProjectStatusMap.get(name);
     }
 
 
-    public void setProjectStatus(String name, ProjectStatus status) {
+    public synchronized void setProjectStatus(String name, ProjectStatus status) {
         ProjectStatus oldStatus  = _nameToProjectStatusMap.put(name, status);
         Project  p = _nameToOpenProjectMap.get(name);
         if (p != null) {
@@ -540,16 +553,16 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
 
-    public Collection<ServerProject> getCurrentProjects(RemoteSession session) {
+    public synchronized Collection<ServerProject> getCurrentProjects(RemoteSession session) {
         return _sessionToProjectsMap.get(session);
     }
 
 
-    public  Collection<RemoteSession> getCurrentSessions() {
+    public synchronized  Collection<RemoteSession> getCurrentSessions() {
         return _sessions;
     }
     
-    public Collection<RemoteSession> getCurrentSessions(RemoteServerProject project) {
+    public synchronized Collection<RemoteSession> getCurrentSessions(RemoteServerProject project) {
         Collection<RemoteSession> sessions = new ArrayList<RemoteSession>();
         Iterator<Map.Entry<RemoteSession, Collection<ServerProject>>> i = _sessionToProjectsMap.entrySet().iterator();
         while (i.hasNext()) {
@@ -567,7 +580,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
 
     
-    public void setFrameCalculatorDisabled(boolean disabled) {
+    public synchronized void setFrameCalculatorDisabled(boolean disabled) {
       for (ServerProject sp : _projectToServerProjectMap.values()) {
         sp.setFrameCalculatorDisabled(disabled);
       }
@@ -578,7 +591,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * MetaProject utilities
      */
     
-    public MetaProject getMetaProjectNew() {
+    public synchronized MetaProject getMetaProjectNew() {
         return metaproject;
     }
 
@@ -586,7 +599,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * @deprecated In ProtegeJobs use getMetaProjectInstance
      */
     @Deprecated
-    public KnowledgeBase getMetaProject() {
+    public synchronized KnowledgeBase getMetaProject() {
         return ((MetaProjectImpl) metaproject).getKnowledgeBase();
     }
 
@@ -594,7 +607,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * @deprecated In ProtegeJobs use getMetaProjectInstance
      */
     @Deprecated
-    public Cls getProjectCls()  {
+    public synchronized Cls getProjectCls()  {
         return ((MetaProjectImpl) metaproject).getCls(MetaProjectImpl.ClsEnum.Project);
     }
 
@@ -602,7 +615,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * @deprecated In ProtegeJobs use getMetaProjectInstance
      */
     @Deprecated
-    public Slot getNameSlot() {
+    public synchronized Slot getNameSlot() {
         return ((MetaProjectImpl) metaproject).getSlot(SlotEnum.name);
     }
     
@@ -610,7 +623,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * RemoteServer Interfaces
      */
     
-    public void reinitialize() throws RemoteException {
+    public synchronized void reinitialize() throws RemoteException {
         Log.getLogger().info("Server reinitializing");
         clear();
         initialize();
@@ -620,7 +633,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * Session Management
      */
 
-   public RemoteSession openSession(String username, String userIpAddress, String password) {
+   public synchronized RemoteSession openSession(String username, String userIpAddress, String password) {
         RemoteSession session = null;
         if (isValid(username, password)) {
             session = new Session(username, userIpAddress);
@@ -630,7 +643,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return session;
     }
 
-    public RemoteSession cloneSession(RemoteSession session) {
+    public synchronized RemoteSession cloneSession(RemoteSession session) {
         if (!_sessions.contains(session)) {
             return null;
         }
@@ -639,13 +652,13 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return session;
     }
 
-    public void closeSession(RemoteSession session) {
+    public synchronized void closeSession(RemoteSession session) {
         _sessions.remove(session);
     }
 
 
     @SuppressWarnings("unchecked")
-    public Collection<RemoteSession> getCurrentSessions(String projectName, RemoteSession session) {
+    public synchronized Collection<RemoteSession> getCurrentSessions(String projectName, RemoteSession session) {
         Collection<RemoteSession> currentSessions;
         RemoteServerProject project = getServerProject(projectName);
         if (project == null) {
@@ -661,7 +674,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * Project Access
      */
 
-    public Collection<String> getAvailableProjectNames(RemoteSession session) {
+    public synchronized Collection<String> getAvailableProjectNames(RemoteSession session) {
         Policy policy = metaproject.getPolicy();
         User user = session != null ? policy.getUserByName(session.getUserName()) : null;
         List<String> names = new ArrayList<String>();
@@ -703,9 +716,20 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Collections.sort(names);
         return names;
     }
+    
 
+    public synchronized Collection<String> getAllProjectNames() {
+       ArrayList<String> prjs = new ArrayList<String>(_nameToProjectStatusMap.keySet());
+       Collections.sort(prjs);
+       return prjs;
+    }
    
-    public RemoteServerProject openProject(String projectName, RemoteSession session)
+    public synchronized Map<String, ProjectStatus> getProjectsStatusMap() {
+    	return _nameToProjectStatusMap;
+    }
+    
+   
+    public synchronized RemoteServerProject openProject(String projectName, RemoteSession session)
     throws ServerSessionLost {
         if (!_sessions.contains(session)) {
             return null;  // user didn't really log in
@@ -741,7 +765,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * Server Admin
      */
 
-    public RemoteServerProject createProject(String newProjectName, 
+    public synchronized RemoteServerProject createProject(String newProjectName, 
                                              RemoteSession session, 
                                              KnowledgeBaseFactory kbfactory, 
                                              boolean saveToMetaProject) throws RemoteException {
@@ -776,7 +800,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
         project.setProjectURI(uri);
 
-        //TT: How to treat other knowledge base factories?
+        //TODO TT: How to treat other knowledge base factories?
         if (kbfactory instanceof ClipsKnowledgeBaseFactory) {
         	ClipsKnowledgeBaseFactory.setSourceFiles(project.getSources(), newProjectName + ".pont", newProjectName + ".pins");
         }
@@ -807,7 +831,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return getServerProject(project);
 	}
 
-    public void setProjectStatus(String projectName, 
+    public synchronized void setProjectStatus(String projectName, 
                                  ProjectStatus status,
                                  RemoteSession session) {
         if (isOperationAllowed(session, MetaProjectConstants.OPERATION_CONFIGURE_SERVER, projectName)) {
@@ -821,18 +845,20 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
     }
     
-    public void notifyProject(String projectName, 
+    public synchronized void notifyProject(String projectName, 
                               String message,
-                              RemoteSession session) throws RemoteException {
+                              RemoteSession session) {
         if (isOperationAllowed(session, MetaProjectConstants.OPERATION_CONFIGURE_SERVER, projectName)) {
             Project p = _nameToOpenProjectMap.get(projectName);
-            KnowledgeBase kb = p.getKnowledgeBase();
-            EventGeneratorFrameStore fs = kb.getFrameStoreManager().getFrameStoreFromClass(EventGeneratorFrameStore.class);
-            fs.addCustomEvent(new ServerProjectNotificationEvent(projectName, message));
+            if (p != null) {
+            	KnowledgeBase kb = p.getKnowledgeBase();
+            	EventGeneratorFrameStore fs = kb.getFrameStoreManager().getFrameStoreFromClass(EventGeneratorFrameStore.class);
+            	fs.addCustomEvent(new ServerProjectNotificationEvent(projectName, message));
+            }
         }
     }
 
-	public boolean createUser(String userName, String password) {
+	public synchronized boolean createUser(String userName, String password) {
 		List<String> names = new ArrayList<String>();
 		for (User instance : metaproject.getUsers()) {
 			String existingUserName = instance.getName();
@@ -853,7 +879,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 		return success && errors.size() == 0;
 	}
 
-    public void shutdown() {
+    public synchronized void shutdown() {
         Log.getLogger().info("Received shutdown request.");
         saveAllProjects();
         Thread thread = new Thread() {
@@ -890,7 +916,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         thread.start();
     }
     
-    public void shutdown(String projectName, RemoteSession session) {
+    public synchronized void shutdown(String projectName, RemoteSession session) {
         if (!isOperationAllowed(session, MetaProjectConstants.OPERATION_CONFIGURE_SERVER, projectName)) {
             return;
         }
@@ -898,38 +924,243 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         closeProject(projectName);
     }
     
-    public void killOtherUserSession(RemoteSession sessionToKill,
-                                     RemoteSession session) {
-        boolean partial = false;
-        Collection<ServerProject> projects = _sessionToProjectsMap.get(sessionToKill);
-        Collection<ServerProject> projectsWithSessionRemoved = new HashSet<ServerProject>();
+    
+    public synchronized void killOtherUserSession(RemoteSession sessionToKill, RemoteSession session) {
+    	killOtherUserSession(sessionToKill, session, 0);
+    }   
 
-        for (ServerProject serverProject : projects) {
-            String projectName = serverProject.getMetaProjectInstance().getName();
-            if (isOperationAllowed(session, 
-                                   MetaProjectConstants.OPERATION_KILL_OTHER_USER_SESSION, 
-                                   projectName)) {
-                try {
-                    serverProject.deregister(sessionToKill);
-                    projectsWithSessionRemoved.add(serverProject);
-                }
-                catch (Throwable  t) {
-                    log.log(Level.WARNING, "Could not deregister session " + sessionToKill + " from project " + projectName, t);
-                }
-            }
-            else {
-                partial = true;
-            }
-        }
-        if (partial) {
-            projects.removeAll(projectsWithSessionRemoved);
-        }
-        else {
-            _sessionToProjectsMap.remove(sessionToKill);
-            _sessions.remove(sessionToKill);
-        }
+    public void killOtherUserSession(final RemoteSession sessionToKill, final RemoteSession session, final int finalGracePeriod) {
+    	//TODO: check permission for session kill
+    	Thread killSessionThread = new Thread("Kill other session thread") {
+    		@Override
+    		public void run() {
+				Collection<ServerProject> projectsWithSessionRemoved = new HashSet<ServerProject>();    			
+				Collection<ServerProject> candidateProjectsToKill = new HashSet<ServerProject>();
+				boolean partial = false;    			
+				Collection<ServerProject> projects;
+				
+    			synchronized (Server.this) {			
+    				projects = _sessionToProjectsMap.get(sessionToKill);
+    				if (projects == null) {
+    					_sessionToProjectsMap.remove(sessionToKill);
+    					_sessions.remove(sessionToKill);
+    					return;
+    				}
+    				
+    				for (ServerProject serverProject : projects) {
+    					String projectName = serverProject.getMetaProjectInstance().getName();
+    					if (isOperationAllowed(session, 
+    							MetaProjectConstants.OPERATION_KILL_OTHER_USER_SESSION, 
+    							projectName)) {
+    						candidateProjectsToKill.add(serverProject);
+    						//send notification that the session will be killed
+    						Project p = _nameToOpenProjectMap.get(projectName);
+    						if (p != null) {
+    							KnowledgeBase kb = p.getKnowledgeBase();
+    							EventGeneratorFrameStore fs = kb.getFrameStoreManager().getFrameStoreFromClass(EventGeneratorFrameStore.class);
+    							fs.addCustomEvent(new ServerProjectSessionClosedEvent(projectName, sessionToKill));
+    						} else {
+    							partial = true;
+    						}
+    					}
+    				}
+    			}
+
+    			//wait for the grace period to pass - this will allow the clients to get the notification
+    			try {
+    				sleep(finalGracePeriod * 1000);
+    			} catch (InterruptedException e) {
+    				log.severe("Unexpected interrupt - you trying to kill me or what?");
+    			}
+
+    			synchronized (Server.this) {
+    				//kill one by one the projects in the session to kill
+    				for (ServerProject serverProject : candidateProjectsToKill) {
+    					try {
+    						serverProject.deregister(sessionToKill);
+    						projectsWithSessionRemoved.add(serverProject);
+    					}
+    					catch (Throwable  t) {
+    						String projectName = "(unknown)";
+    						try {
+    							projectName = serverProject.getMetaProjectInstance().getName();
+    						} catch (Exception e) {
+    							Log.emptyCatchBlock(e);
+    						}
+    						log.log(Level.WARNING, "Could not deregister session " + sessionToKill + " from project " + 
+    								projectName, t);
+    					}
+    				} //end for
+    				if (partial) {
+    					projects.removeAll(projectsWithSessionRemoved);
+    				} else {
+    					_sessionToProjectsMap.remove(sessionToKill);
+    					_sessions.remove(sessionToKill);        
+    				}
+    			}
+    		}
+    	};
+    	
+    	killSessionThread.start();
     }
 
+    
+    /**
+     * Shuts down the remote project with the name projectName and sends shutdown notifications
+	 * at certain time periods: it starts with the warningTimeInSeconds argument and divides it by two.
+	 * A {@link SecurityException} is thrown if the user of the session does not
+	 * have the right to shutdown the project.
+	 * @param session - the session that tries to shutdown the project
+	 * @param projectName - the remote project name	     
+     * @param warningTimeInSeconds - the time of the first notification in seconds
+     */
+    public void shutdownProject(RemoteSession session, String projectName, float warningTimeInSeconds)
+    	throws RemoteException {
+    	if (session == null) {
+    		log.warning("Can only shutdown the remote project " + projectName + " in multi-user mode.");
+    		return;
+    	}
+    	if (!isOperationAllowed(session,  MetaProjectConstants.OPERATION_STOP_REMOTE_PROJECT, projectName)) {
+    		throw new SecurityException("Operation not permitted: Shutdown remote project " + projectName + 
+    				" for user: " + session.getUserName() + " (" + session.getUserIpAddress() + ")");
+    	}	
+		int lastWarning = 5;
+		int finalGracePeriodInSeconds = 7;
+
+		int t = (int) warningTimeInSeconds;
+		ArrayList<Integer> ints = new ArrayList<Integer>();
+
+		while (t > lastWarning) {
+			ints.add(Integer.valueOf(t));
+			if (t >= 120) {
+				t = t/120 * 60;
+			} else if (t >= 20) {
+				t = t/20 * 10;
+			} else if (t >= 10) {
+				t = t/10 * 5;
+			}
+		}
+		ints.add(Integer.valueOf(t));
+		//ints.add(Integer.valueOf(0));
+
+		shutdownProject(session, projectName, ints.toArray(new Integer[ints.size()]), finalGracePeriodInSeconds);
+    }
+
+
+	/**
+	 * Shuts down the remote project with the name projectName and sends shutdown notifications
+	 * at time periods (in seconds) from the warningTimesInSeconds argument.
+	 * A {@link SecurityException} is thrown if the user of the session does not
+	 * have the right to shutdown the project.
+	 * @param session - the session that tries to shutdown the project
+	 * @param projectName - the remote project name
+	 * @param warningTimesInSeconds - a list of {@link Integer} with the notify periods of time in seconds
+	 * @param finalGracePeriodInSeconds - the time the server will wait until shutting down the project after the last notification message
+	 */
+	public synchronized void shutdownProject(final RemoteSession session, final String projectName,
+								final Integer[] warningTimesInSeconds, final int finalGracePeriodInSeconds) 
+									throws RemoteException {
+    	if (session == null) {
+    		log.warning("Can only shutdown the remote project " + projectName + " in multi-user mode.");
+    		return;
+    	}
+    	if (!isOperationAllowed(session, MetaProjectConstants.OPERATION_STOP_REMOTE_PROJECT, projectName)) {
+    		throw new SecurityException("Operation not permitted: Shutdown remote project " + projectName + 
+    				" for user: " + session.getUserName() + " (" + session.getUserIpAddress() + ")");
+    	}	
+	    Arrays.sort(warningTimesInSeconds, new Comparator<Integer>() {
+	        public int compare(Integer o1, Integer o2) {
+	            return o2.compareTo(o1);
+	        }
+	    });			
+	
+		Runnable projShutdownNotificaitonThread = getProjectShutdownRunnable(session, projectName,
+				warningTimesInSeconds, finalGracePeriodInSeconds);
+		FutureTask<Object> task = new FutureTask<Object>(projShutdownNotificaitonThread, null);
+		prjShutdownExecutor.submit(task);
+		_prjNameToTaskMap.put(projectName, task);		
+	}
+	
+	public synchronized boolean cancelShutdownProject(RemoteSession session, String projectName) {
+		boolean success = false;
+		FutureTask<Object> task = null;
+		task = _prjNameToTaskMap.get(projectName);
+		if (task == null || task.isDone()) { return false; }
+		success = task.cancel(true);		
+
+		if (!success) {
+			log.info("Could not cancel task: " + task);
+		} else {
+			log.info("Task canceled: " + task);
+			_prjNameToTaskMap.remove(projectName);
+			setProjectStatus(projectName, ProjectStatus.READY);
+			notifyProject(projectName, "Shut down of project " + projectName + " has been canceled by the administrator.", session);
+		}
+
+		return success;
+	}
+    
+    
+	private Runnable getProjectShutdownRunnable(final RemoteSession session, final String projectName,
+								final Integer[] warningTimesInSeconds, final int finalGracePeriodInSeconds) {
+		Runnable projShutdownNotificaitonThread = new Runnable() {			
+			public void run() {				
+				setProjectStatus(projectName, ProjectStatus.SHUTTING_DOWN, session);
+				
+			    for (int i = 0; i < warningTimesInSeconds.length; i++) {
+			        int timeLeft = warningTimesInSeconds[i];
+			        int timeToNextWarning = i == warningTimesInSeconds.length -1 ? timeLeft : timeLeft - warningTimesInSeconds[i + 1];
+			        String message = "Remote project " + projectName + " will be shut down in " +
+			        	 (timeLeft <= 60 ? ""  + timeLeft + " seconds." :  "" + timeLeft / 60 + " minutes.");
+		
+					notifyProject(projectName, message, session);
+					
+			        try {
+			            Thread.sleep(timeToNextWarning * 1000);
+			        }
+			        catch (InterruptedException e) {
+			        	FutureTask<Object> task;
+			        	synchronized (Server.this) {
+			        		task = _prjNameToTaskMap.get(projectName);
+						}			        	
+			        	if (task != null && task.isCancelled()) {
+				            log.warning("Thread for shutting down project " + projectName + " has been interrupted.");				            
+			        	} else {
+			        		log.severe("Thread for shutting down project " + projectName + " has been interrupted for no good reason.");
+			        	}
+			        	return;
+			        }
+			    }
+			    			    
+				setProjectStatus(projectName, ProjectStatus.CLOSED_FOR_MAINTENANCE, session);
+							    	    
+			    if (finalGracePeriodInSeconds != 0) {
+			        try {			        	
+			            Thread.sleep(finalGracePeriodInSeconds * 1000);
+			        } catch (InterruptedException e) {
+			        	FutureTask<Object> task;
+			        	synchronized (Server.this) {
+			        		task = _prjNameToTaskMap.get(projectName);
+						}
+			        	if (task != null && task.isCancelled()) {
+				            log.warning("Thread for shutting down project " + projectName + " has been interrupted.");				            
+			        	} else {
+			        		log.severe("Thread for shutting down project " + projectName + " has been interrupted for no good reason.");
+			        	}
+			        	return;
+			        }
+			    }
+
+			    synchronized (Server.this) {
+			    	shutdown(projectName, session);
+			    	_prjNameToTaskMap.remove(projectName);
+				}			    
+			}
+		};
+		return projShutdownNotificaitonThread;
+	}
+	
+	
     /* -----------------------------------------------------------------
      * Policy
      */
@@ -938,7 +1169,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     	return ServerProperties.getAllowsCreateUsers();
     }
 
-    public boolean isOperationAllowed(RemoteSession session, Operation op,  String projectName) {
+    public synchronized boolean isOperationAllowed(RemoteSession session, Operation op,  String projectName) {
         Policy policy = metaproject.getPolicy();
         User user = policy.getUserByName(session.getUserName());
         ProjectInstance project = policy.getProjectInstanceByName(projectName);
