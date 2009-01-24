@@ -38,6 +38,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
+import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
@@ -218,6 +219,14 @@ public class RemoteClientFrameStore implements FrameStore {
         return rcfs.cacheStatus.get(frame) == CacheStatus.COMPLETED_CACHING;
     }
 
+    
+    public static RemoteSession getCurrentSession(KnowledgeBase kb) {    
+		FrameStoreManager framestore_manager = ((DefaultKnowledgeBase) kb).getFrameStoreManager();
+		RemoteClientFrameStore remote_frame_store = framestore_manager.getFrameStoreFromClass(RemoteClientFrameStore.class);
+		if (remote_frame_store == null) { return null; }
+        return remote_frame_store.getSession();
+    }
+    
 
     private void startHeartbeatThread() {
       if (ServerProperties.heartbeatDisabled()) {
