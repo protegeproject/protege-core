@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 import java.util.logging.Level;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -36,6 +37,7 @@ public class ServerPanel extends JPanel implements Validatable {
 	private JTextField _passwordField;
 	private JTextField _hostNameField;
 	private JComponent _registerUserPanel;
+	private JCheckBox _administerServerChekBox;
 
 	private RemoteServer _server;
 	private RemoteSession _session;
@@ -59,13 +61,17 @@ public class ServerPanel extends JPanel implements Validatable {
 		_hostNameField.setText(ApplicationProperties.getString(HOST_NAME, "localhost"));
 
 		setLayout(new BorderLayout());
-		JPanel panel = new JPanel(new GridLayout(4, 0));
+		JPanel panel = new JPanel(new GridLayout(5, 0));
 		panel.add(new LabeledComponent("Host Machine Name", _hostNameField));
 		panel.add(new LabeledComponent("User Name", _usernameField));
 		panel.add(new LabeledComponent("Password", _passwordField));
 
 		 _registerUserPanel = getRegisterUserPanel();		 
 		panel.add(_registerUserPanel);
+		
+		_administerServerChekBox = ComponentFactory.createCheckBox("Administer server (requires priviledges)");
+		_administerServerChekBox.setSelected(false);
+		panel.add(_administerServerChekBox);
 
 		add(panel, BorderLayout.NORTH);
 	}
@@ -119,6 +125,10 @@ public class ServerPanel extends JPanel implements Validatable {
 
 	public RemoteSession getSession() {
 		return _session;
+	}
+	
+	public boolean isAdminsterServerActivated() {
+		return _administerServerChekBox.isSelected();
 	}
 
 	private static RemoteServer connectToHost(String serverName) {
