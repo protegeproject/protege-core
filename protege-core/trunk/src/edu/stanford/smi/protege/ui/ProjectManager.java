@@ -240,7 +240,7 @@ public class ProjectManager {
         return succeeded;
     }
 
-    private boolean closeCurrentProject() {
+    public boolean closeCurrentProject() {
     	ProjectView prjView = getCurrentProjectView();
 
     	//this should not be the case
