@@ -24,15 +24,20 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import edu.stanford.smi.protege.event.ProjectAdapter;
+import edu.stanford.smi.protege.event.ProjectEvent;
+import edu.stanford.smi.protege.event.ProjectListener;
 import edu.stanford.smi.protege.event.ServerProjectAdapter;
 import edu.stanford.smi.protege.event.ServerProjectListener;
 import edu.stanford.smi.protege.event.ServerProjectNotificationEvent;
+import edu.stanford.smi.protege.event.ServerProjectSessionClosedEvent;
 import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.WidgetDescriptor;
 import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ComponentFactory;
 import edu.stanford.smi.protege.util.ComponentUtilities;
@@ -170,6 +175,7 @@ public class ProjectView extends JComponent {
     private Collection<Instance> _currentInstances;
     private Collection<JComponent> _detachedTabs = new HashSet<JComponent>();
     private ServerProjectListener _shutdownListener;
+    private ProjectListener _projectListener;
 
     public ProjectView(Project project) {
         _project = project;
@@ -180,7 +186,8 @@ public class ProjectView extends JComponent {
             project.getKnowledgeBase().setUndoEnabled(project.isUndoOptionEnabled());
         }
         if (project.isMultiUserClient()) {
-        	project.getKnowledgeBase().addServerProjectListener(_shutdownListener = createRemoteProjectShutdownListener());
+        	project.addProjectListener(_projectListener = createProjectListener());
+        	project.getKnowledgeBase().addServerProjectListener(_shutdownListener = createRemoteProjectShutdownListener());        	
         }
     }
 
@@ -189,13 +196,11 @@ public class ProjectView extends JComponent {
 		return new ServerProjectAdapter() {
 			@Override
 			public void projectNotificationReceived(ServerProjectNotificationEvent event) {
-				String project = event.getProjectName();
-				//TODO: to be fixed by Tim - we should be able to get the remote project name for this project
-				//if (project.equals(anObject))
+				String project = event.getProjectName();				
 				if (log.isLoggable(Level.FINE)) {
 					log.fine("Server project notification received: " + event.getMessage());
 				}
-				ModalDialog.showMessageDialog(ProjectView.this, event.getMessage(), ModalDialog.MODE_CLOSE);
+				ComponentFactory.showMessageInFrame(event.getMessage(), "Message from server");
 			}
 
 			@Override
@@ -205,14 +210,44 @@ public class ProjectView extends JComponent {
 				if (log.isLoggable(Level.FINE)) {
 					log.fine("Project status changed: " + newStatus);
 				}
-				if (newStatus.equals(ProjectStatus.CLOSED_FOR_MAINTENANCE)) {
-					ModalDialog.showMessageDialog(ProjectView.this, "Shutting down NOW!", ModalDialog.MODE_CLOSE);
-					_project.dispose();
+				if (newStatus.equals(ProjectStatus.CLOSED_FOR_MAINTENANCE)) {					
+					ComponentFactory.showMessageInFrame("Shutting down NOW!", "Message from server");
+					ProjectManager.getProjectManager().closeCurrentProject();
+				}
+			}
+			
+			@Override
+			public void beforeProjectSessionClosed(ServerProjectSessionClosedEvent event) {
+				if (RemoteClientFrameStore.getCurrentSession(getProject().getKnowledgeBase())
+						.equals(event.getSessionToKill())) {
+					ProjectManager.getProjectManager().closeCurrentProject();
+					ModalDialog.showMessageDialog(ProjectManager.getProjectManager().getMainPanel(), 
+							"An administrator has closed your\n" +
+							"remote working session on project " + event.getProjectName(), "Session killed");				
 				}
 			}
 		};
 	}
 
+    
+    protected ProjectListener createProjectListener() {
+    	return new ProjectAdapter() {
+    		@Override
+    		public void serverSessionLost(ProjectEvent event) {
+    			try {
+    				ProjectManager.getProjectManager().closeCurrentProject();	
+				} catch (Throwable t) {
+					log.log(Level.WARNING, "Could not close current project cleanly", t);
+				}    			
+				ModalDialog.showMessageDialog(ProjectManager.getProjectManager().getMainPanel(), 
+						 "The connection to the server has been broken and Protege is closing\n" +
+						 "the session. Possible causes are poor network connectivity, a server\n" +
+						 "crash or an administrator who has closed your session."
+						 , "Session killed");
+    		}
+    	};
+    }
+    
 
 	public TabWidget addTab(WidgetDescriptor widgetDescriptor, int index) {
         if (log.isLoggable(Level.FINE)) {
@@ -309,9 +344,16 @@ public class ProjectView extends JComponent {
             TabWidget tab = (TabWidget) i.next();
             tab.close();
         }
-        if (_shutdownListener != null) {
-        	_project.getKnowledgeBase().removeServerProjectListener(_shutdownListener);
+        if (_projectListener != null) {
+        	_project.removeProjectListener(_projectListener);
         }
+        try {
+            if (_shutdownListener != null) {
+            	_project.getKnowledgeBase().removeServerProjectListener(_shutdownListener);
+            }			
+		} catch (Throwable t) {
+			log.log(Level.WARNING, "Could not remove server project listener", t);
+		}
         _project = null;
         projectViewListeners.postEvent(this, ProjectViewEvent.Type.close.ordinal());
     }
