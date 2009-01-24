@@ -7,6 +7,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.dnd.DnDConstants;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -64,6 +66,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 
@@ -103,7 +106,8 @@ public class ComponentFactory {
             enableEvents(AWTEvent.WINDOW_EVENT_MASK);
         }
 
-        public void processWindowEvent(WindowEvent event) {
+        @Override
+		public void processWindowEvent(WindowEvent event) {
             if (event.getID() == WindowEvent.WINDOW_CLOSED) {
                 ComponentUtilities.deregisterWindow(this);
             }
@@ -113,7 +117,8 @@ public class ComponentFactory {
 
     public static void addMenuItem(JMenu menu, final Action action) {
         JMenuItem item = new JMenuItem(action) {
-            public String getText() {
+            @Override
+			public String getText() {
                 String text = null;
                 if (action == null) {
                     text = super.getText();
@@ -123,7 +128,8 @@ public class ComponentFactory {
                 return text;
             }
 
-            public void paint(Graphics g) {
+            @Override
+			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
                 super.paint(g);
             }
@@ -272,7 +278,8 @@ public class ComponentFactory {
 
     public static JCheckBox createCheckBox(String s) {
         JCheckBox checkBox = new JCheckBox(s) {
-            public void paint(Graphics g) {
+            @Override
+			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
                 super.paint(g);
             }
@@ -282,11 +289,13 @@ public class ComponentFactory {
 
     public static JComboBox createComboBox() {
         JComboBox comboBox = new JComboBox() {
-            public Dimension getPreferredSize() {
+            @Override
+			public Dimension getPreferredSize() {
                 return fieldPreferredHeightSize(super.getPreferredSize());
             }
 
-            public void paint(Graphics g) {
+            @Override
+			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
                 super.paint(g);
             }
@@ -301,7 +310,8 @@ public class ComponentFactory {
     public static JFileChooser createFileChooser(String title, String fileDescription, String fileExtension) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
         JFileChooser chooser = new JFileChooser(lastDirectory) {
-            public int showDialog(Component c, String s) {
+            @Override
+			public int showDialog(Component c, String s) {
                 int rval = super.showDialog(c, s);
                 if (rval == APPROVE_OPTION) {
                     ApplicationProperties.setLastFileDirectory(getCurrentDirectory());
@@ -322,7 +332,8 @@ public class ComponentFactory {
     public static JFileChooser createFileChooser(String title, ExtensionFilter extensionFilter) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
         JFileChooser chooser = new JFileChooser(lastDirectory) {
-            public int showDialog(Component c, String s) {
+            @Override
+			public int showDialog(Component c, String s) {
                 int rval = super.showDialog(c, s);
                 if (rval == APPROVE_OPTION) {
                     ApplicationProperties.setLastFileDirectory(getCurrentDirectory());
@@ -343,7 +354,8 @@ public class ComponentFactory {
     public static JFileChooser createSaveFileChooser(String title, String fileDescription, String fileExtension, final boolean overwrite) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
         JFileChooser chooser = new JFileChooser(lastDirectory) {
-            public int showDialog(Component c, String s) {
+            @Override
+			public int showDialog(Component c, String s) {
                 int rval = super.showDialog(c, s);
                 if (rval == APPROVE_OPTION) {
                     ApplicationProperties.setLastFileDirectory(getCurrentDirectory());
@@ -351,7 +363,8 @@ public class ComponentFactory {
                 return rval;
             }
             
-            public void approveSelection() {
+            @Override
+			public void approveSelection() {
             	if (!overwrite)
             		return;
             	
@@ -400,7 +413,8 @@ public class ComponentFactory {
 
     public static JLabel createLabel() {
         JLabel label = new JLabel() {
-            public void paint(Graphics g) {
+            @Override
+			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
                 super.paint(g);
             }
@@ -500,7 +514,8 @@ public class ComponentFactory {
 
     public static JMenuItem createMenuItem(String s) {
         JMenuItem item = new JMenuItem(s) {
-            public void paint(Graphics g) {
+            @Override
+			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
                 super.paint(g);
             }
@@ -539,7 +554,8 @@ public class ComponentFactory {
 
     public static JPasswordField createPasswordField() {
         JPasswordField passwordField = new JPasswordField() {
-            public Dimension getPreferredSize() {
+            @Override
+			public Dimension getPreferredSize() {
                 return fieldPreferredHeightSize(super.getPreferredSize());
             }
         };
@@ -638,7 +654,8 @@ public class ComponentFactory {
 
     private static JSplitPane createSplitPane(int direction, final boolean autoResize, double resizeWeight) {
         JSplitPane pane = new JSplitPane(direction, autoResize) {
-            public void addImpl(Component component, Object constraint, int i) {
+            @Override
+			public void addImpl(Component component, Object constraint, int i) {
                 super.addImpl(component, constraint, i);
                 setSplitPaneComponentMinimumSize(component);
             }
@@ -648,7 +665,9 @@ public class ComponentFactory {
             /**
              * @deprecated
              */
-            public void reshape(int x, int y, int w, int h) {
+            @Deprecated
+			@Override
+			public void reshape(int x, int y, int w, int h) {
                 super.reshape(x, y, w, h);
                 if (!initialized && w != 0 && h != 0) {
                     initialized = true;
@@ -678,12 +697,14 @@ public class ComponentFactory {
 
     public static JTabbedPane createTabbedPane(final boolean addBorder) {
         JTabbedPane pane = new JTabbedPane() {
-            public void paint(Graphics g) {
+            @Override
+			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
                 super.paint(g);
             }
 
-            public void addImpl(Component component, Object constraints, int index) {
+            @Override
+			public void addImpl(Component component, Object constraints, int index) {
                 if (addBorder) {
                     JComponent c = (JComponent) component;
                     c.setBorder(BorderFactory.createCompoundBorder(createThinStandardBorder(), c.getBorder()));
@@ -701,12 +722,14 @@ public class ComponentFactory {
 
     public static JTextArea createTextArea() {
         JTextArea area = new JTextArea() {
-            public void paint(Graphics g) {
+            @Override
+			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
                 super.paint(g);
             }
 
-            public void setText(String text) {
+            @Override
+			public void setText(String text) {
                 super.setText(text);
                 setCaretPosition(0);
                 repaint();
@@ -726,12 +749,14 @@ public class ComponentFactory {
 
     public static JTextField createTextField() {
         JTextField textField = new JTextField() {
-            public void paint(Graphics g) {
+            @Override
+			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
                 super.paint(g);
             }
 
-            public Dimension getPreferredSize() {
+            @Override
+			public Dimension getPreferredSize() {
                 return fieldPreferredHeightSize(super.getPreferredSize());
             }
         };
@@ -761,7 +786,8 @@ public class ComponentFactory {
 
     public static JToggleButton createToggleButton(Action action) {
         JToggleButton button = new JToggleButton() {
-            public Dimension getPreferredSize() {
+            @Override
+			public Dimension getPreferredSize() {
                 return buttonPreferredHeightSize(super.getPreferredSize());
             }
         };
@@ -771,7 +797,8 @@ public class ComponentFactory {
 
     public static JToolBar createToolBar() {
         JToolBar bar = new JToolBar() {
-            public Dimension getPreferredSize() {
+            @Override
+			public Dimension getPreferredSize() {
                 Dimension d = super.getPreferredSize();
                 d.height = STANDARD_BUTTON_HEIGHT;
                 return d;
@@ -855,11 +882,28 @@ public class ComponentFactory {
 
     public static JFrame showInFrame(Component panel, String title) {
         JFrame frame = createFrame();
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);        
+        frame.getContentPane().setLayout(new BorderLayout());
+        frame.getContentPane().add(panel, BorderLayout.CENTER);
+        frame.setTitle(title);
+        frame.pack();        
+        ComponentUtilities.center(frame);
+        adjustPosition(frame);
+        frame.setVisible(true);        
+        return frame;
+    }
+
+    
+    public static JFrame showMessageInFrame(String message, String title) {
+        JFrame frame = createFrame();
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        Container c = frame.getContentPane();
+        Container c = frame.getContentPane();        
         c.setLayout(new BorderLayout());
-        c.add(panel, BorderLayout.CENTER);
-        c.add(getCloseButtonPanel(frame), BorderLayout.SOUTH);
+        JPanel innerPane = new JPanel(new BorderLayout());
+        innerPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JLabel label = new JLabel(message);
+        innerPane.add(label);
+        c.add(innerPane, BorderLayout.CENTER);
         frame.pack();
         frame.setTitle(title);
         ComponentUtilities.center(frame);
@@ -868,13 +912,39 @@ public class ComponentFactory {
         return frame;
     }
 
+    
+	public static void showTableRowInDialog(TableModel tableModel, int row, Component parentComp) {
+		if (row < 0 || row > tableModel.getRowCount()) {
+			return;
+		}
+		LinkedHashMap<String, String> colNameToValue = new LinkedHashMap<String, String>();
+		for (int col = 0; col < tableModel.getColumnCount(); col++) {
+			String colName = tableModel.getColumnName(col);
+			if (colName == null) {
+				colName = "Column " + (col + 1);
+			}
+			colNameToValue.put(colName, tableModel.getValueAt(row, col).toString());
+		}
+				
+		JPanel panel = new JPanel(new GridLayout(tableModel.getColumnCount(), 1, 5, 5));
+		
+		for (String colName : colNameToValue.keySet()) {
+			panel.add(new JLabel("<html>" + colName + ": <b>" + colNameToValue.get(colName) + "</b></html>"));	
+		}
+		
+		ModalDialog.showDialog(parentComp, panel, "Table row details", ModalDialog.MODE_CLOSE);
+		
+	}
+    
+    
     public static JEditorPane createEditorPane() {
         return new JEditorPane();
     }
 
     public static JEditorPane createHTMLBrowser(URL url) {
         JEditorPane pane = new JEditorPane() {
-            public void paint(Graphics g) {
+            @Override
+			public void paint(Graphics g) {
                 ComponentUtilities.enableAllAntialiasing(g);
                 super.paint(g);
             }
