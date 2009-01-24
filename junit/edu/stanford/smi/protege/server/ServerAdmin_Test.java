@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.event.ServerProjectListener;
 import edu.stanford.smi.protege.event.ServerProjectNotificationEvent;
+import edu.stanford.smi.protege.event.ServerProjectSessionClosedEvent;
 import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBase;
@@ -34,7 +35,8 @@ public class ServerAdmin_Test extends APITestCase {
     public static final String USER2 = "Jennifer Vendetti";
     public static final String PASSWORD2 = "jenny";
 
-    public void setUp() throws Exception {
+    @Override
+	public void setUp() throws Exception {
         super.setUp();
         try {
             if (!Server_Test.startServer()) {
@@ -105,6 +107,10 @@ public class ServerAdmin_Test extends APITestCase {
             oldStatus = event.getOldStatus();
             newStatus = event.getNewStatus();
         }
+        
+        public void beforeProjectSessionClosed(ServerProjectSessionClosedEvent event) {
+                	
+        }
 
         public boolean isStatusChanged() {
             return statusChanged;
@@ -165,6 +171,10 @@ public class ServerAdmin_Test extends APITestCase {
 
         public void projectStatusChanged(ServerProjectStatusChangeEvent event) {
             ;
+        }
+        
+        public void beforeProjectSessionClosed(ServerProjectSessionClosedEvent event) {
+        	
         }
 
         public boolean isNotified() {
