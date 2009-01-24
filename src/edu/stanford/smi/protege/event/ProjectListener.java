@@ -1,6 +1,6 @@
 package edu.stanford.smi.protege.event;
 
-import java.util.*;
+import java.util.EventListener;
 
 /**
  * Listener interface for projects.
@@ -15,4 +15,6 @@ public interface ProjectListener extends EventListener {
     void projectClosed(ProjectEvent event);
 
     void projectSaved(ProjectEvent event);
+    
+    void serverSessionLost(ProjectEvent event);
 }
