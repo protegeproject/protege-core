@@ -175,7 +175,8 @@ public class Project {
     
 
     private WindowListener _closeListener = new WindowAdapter() {
-        public void windowClosing(WindowEvent event) {
+        @Override
+		public void windowClosing(WindowEvent event) {
             JFrame frame = (JFrame) event.getWindow();
             frame.setVisible(false);
             Object o = _objects.remove(frame);
@@ -187,7 +188,8 @@ public class Project {
     };
 
     private KnowledgeBaseListener _knowledgeBaseListener = new KnowledgeBaseAdapter() {
-        public void clsDeleted(KnowledgeBaseEvent event) {
+        @Override
+		public void clsDeleted(KnowledgeBaseEvent event) {
             if (log.isLoggable(Level.FINE)) {
               log.fine("cls eleted for project " + this + " event = " + event);
             }
@@ -204,11 +206,13 @@ public class Project {
             _hiddenFrames.remove(cls);
         }
     
-        public void frameReplaced(KnowledgeBaseEvent event) {        
+        @Override
+		public void frameReplaced(KnowledgeBaseEvent event) {        
             onFrameReplace(event.getFrame(), event.getNewFrame());
         }
 
-        public void facetDeleted(KnowledgeBaseEvent event) {
+        @Override
+		public void facetDeleted(KnowledgeBaseEvent event) {
             Frame facet = event.getFrame();
             if (!event.isReplacementEvent()) {
             	removeDisplay(facet);
@@ -216,7 +220,8 @@ public class Project {
             _hiddenFrames.remove(facet);
         }
 
-        public void slotDeleted(KnowledgeBaseEvent event) {
+        @Override
+		public void slotDeleted(KnowledgeBaseEvent event) {
             Slot slot = (Slot) event.getFrame();
             if (!event.isReplacementEvent()) {
             	removeDisplay(slot);
@@ -224,7 +229,7 @@ public class Project {
             Iterator<Map.Entry<Cls, BrowserSlotPattern>> i = _directBrowserSlotPatterns.entrySet().iterator();
             while (i.hasNext()) {
                 Map.Entry<Cls, BrowserSlotPattern> entry = i.next();
-                BrowserSlotPattern pattern = (BrowserSlotPattern) entry.getValue();
+                BrowserSlotPattern pattern = entry.getValue();
                 if (pattern.contains(slot)) {
                     i.remove();
                 }
@@ -232,7 +237,8 @@ public class Project {
             _hiddenFrames.remove(slot);
         }
 
-        public void instanceDeleted(KnowledgeBaseEvent event) {
+        @Override
+		public void instanceDeleted(KnowledgeBaseEvent event) {
             super.instanceDeleted(event);
             // Log.enter(this, "instanceDeleted");
             Frame frame = event.getFrame();
@@ -274,7 +280,7 @@ public class Project {
 	             Iterator<Map.Entry<Cls, BrowserSlotPattern>> i = _directBrowserSlotPatterns.entrySet().iterator();
 	             while (i.hasNext()) {
 	                 Map.Entry<Cls, BrowserSlotPattern> entry = i.next();
-	                 BrowserSlotPattern pattern = (BrowserSlotPattern) entry.getValue();
+	                 BrowserSlotPattern pattern = entry.getValue();
 	                 if (pattern.contains(oldSlot)) {
 	                	pattern.replaceSlot(oldSlot, (Slot) newFrame);
 	                 }
@@ -492,7 +498,8 @@ public class Project {
         ClsWidget widget = display.getFirstClsWidget();
         frame.setTitle(widget.getLabel());
         widget.addWidgetListener(new WidgetAdapter() {
-            public void labelChanged(WidgetEvent event) {
+            @Override
+			public void labelChanged(WidgetEvent event) {
                 frame.setTitle(event.getWidget().getLabel());
             }
         });
@@ -551,7 +558,8 @@ public class Project {
     /**
      * @deprecated use createRuntimeClsWidget
      */
-    public Widget createRuntimeWidget(Instance instance) {
+    @Deprecated
+	public Widget createRuntimeWidget(Instance instance) {
         return createRuntimeClsWidget(instance);
     }
 
@@ -568,10 +576,18 @@ public class Project {
         postProjectEvent(ProjectEvent.PROJECT_CLOSED);
         clearWidgets();
         if (_domainKB != null) {
-            _domainKB.dispose();
+        	try {
+        		_domainKB.dispose();
+			} catch (Throwable t) {
+				log.log(Level.WARNING, "Errors at disposing domain KB", t);
+			}            
         }
         if (_projectKB != null) {
-            _projectKB.dispose();
+        	try {
+                _projectKB.dispose();				
+			} catch (Throwable t) {
+				log.log(Level.WARNING, "Errors at disposing project KB", t);
+			}
         }
         _domainKB = null;
         _projectKB = null;
@@ -625,7 +641,8 @@ public class Project {
     /**
      * @deprecated
      */
-    public Slot getBrowserSlot(Cls cls) {
+    @Deprecated
+	public Slot getBrowserSlot(Cls cls) {
         return getPatternSlot(getBrowserSlotPattern(cls));
     }
 
@@ -656,14 +673,16 @@ public class Project {
     /**
      * @deprecated Use {@link #getInheritedBrowserSlotPattern(Cls)}
      */
-    public Slot getInheritedBrowserSlot(Cls cls) {
+    @Deprecated
+	public Slot getInheritedBrowserSlot(Cls cls) {
         return getPatternSlot(getInheritedBrowserSlotPattern(cls));
     }
 
     /**
      * @deprecated
      */
-    private static Slot getPatternSlot(BrowserSlotPattern pattern) {
+    @Deprecated
+	private static Slot getPatternSlot(BrowserSlotPattern pattern) {
         return (pattern == null) ? null : pattern.getFirstSlot();
     }
 
@@ -707,7 +726,8 @@ public class Project {
     /**
      * @deprecated
      */
-    public Slot getDirectBrowserSlot(Cls cls) {
+    @Deprecated
+	public Slot getDirectBrowserSlot(Cls cls) {
         return getPatternSlot(getDirectBrowserSlotPattern(cls));
     }
 
@@ -787,7 +807,8 @@ public class Project {
      *         included Project is not a file then IllegalArgumentException is
      *         thrown
      */
-    public Collection getDirectIncludedProjects() {
+    @Deprecated
+	public Collection getDirectIncludedProjects() {
         Collection paths = new ArrayList();
         Iterator i = getDirectIncludedProjectURIs().iterator();
         while (i.hasNext()) {
@@ -906,7 +927,8 @@ public class Project {
     /**
      * @deprecated Use #getProjectDirectoryURI()
      */
-    public File getProjectDirectoryFile() {
+    @Deprecated
+	public File getProjectDirectoryFile() {
         File projectFile = getProjectFile();
         return (projectFile == null) ? null : projectFile.getParentFile();
     }
@@ -914,14 +936,16 @@ public class Project {
     /**
      * @deprecated Use #getProjectURI()
      */
-    public File getProjectFile() {
+    @Deprecated
+	public File getProjectFile() {
         return (_uri == null) ? null : new File(_uri);
     }
 
     /**
      * @deprecated Use #getProjectURI()
      */
-    public String getProjectFilePath() {
+    @Deprecated
+	public String getProjectFilePath() {
         File file = getProjectFile();
         return (file == null) ? null : file.getPath();
     }
@@ -939,7 +963,7 @@ public class Project {
         } else {
             Collection<Instance> instances = cls.getDirectInstances();
             // Assert.areEqual(instances.size(), 1);
-            result = (Instance) CollectionUtilities.getFirstItem(instances);
+            result = CollectionUtilities.getFirstItem(instances);
         }
         if (result == null) {
             Log.getLogger().severe("no project instance");
@@ -1773,8 +1797,8 @@ public class Project {
         Iterator<Map.Entry<Cls, BrowserSlotPattern>> i = _directBrowserSlotPatterns.entrySet().iterator();
         while (i.hasNext()) {
             Map.Entry<Cls, BrowserSlotPattern> entry = i.next();
-            Cls cls = (Cls) entry.getKey();
-            BrowserSlotPattern slotPattern = (BrowserSlotPattern) entry.getValue();
+            Cls cls = entry.getKey();
+            BrowserSlotPattern slotPattern = entry.getValue();
             if (!isIncludedBrowserSlotPattern(cls, slotPattern)) {
                 browserSlots.setString(cls.getName(), slotPattern.getSerialization());
             }
@@ -2130,7 +2154,8 @@ public class Project {
         return frame;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "Project(" + getProjectName() + ")";
     }
 
