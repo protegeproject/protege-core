@@ -24,35 +24,37 @@ public class Socket_Test extends TestCase {
     private Random r = new Random();
     
     public void testReadWrite() throws IOException, InterruptedException {
-        debug();
+        // debug();
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream(in);
         CompressingInputStream cin = new CompressingInputStream(in);
         CompressingOutputStream cout = new CompressingOutputStream(out);
         for (int j = 0; j < 3; j++) {
-            testReadWrite(cin, cout, createTestBuffer(368));
+            doReadWriteAndCheck(cin, cout, createTestBuffer(368));
         }
+        cleanup(cin, cout);
     }
-    
+
     public void testNegativeSize() throws IOException, InterruptedException {
-        debug();
+        // debug();
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream(in);
         CompressingInputStream cin = new CompressingInputStream(in);
         CompressingOutputStream cout = new CompressingOutputStream(out);
         for (int j = 0; j < 4; j++) {
-            testReadWrite(cin, cout, createTestBuffer(250));
+            doReadWriteAndCheck(cin, cout, createTestBuffer(250));
         }
         for (int j = 0; j < 4; j++) {
-            testReadWrite(cin, cout, createTestBuffer(255));
+            doReadWriteAndCheck(cin, cout, createTestBuffer(255));
         }
         for (int j = 0; j < 4; j++) {
-            testReadWrite(cin, cout, createTestBuffer(512 + 250));
+            doReadWriteAndCheck(cin, cout, createTestBuffer(512 + 250));
         }
+        cleanup(cin, cout);
     }
     
     public void testParticular() throws IOException, InterruptedException {
-        debug();
+        // debug();
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream(in);
         CompressingInputStream cin = new CompressingInputStream(in);
@@ -62,24 +64,26 @@ public class Socket_Test extends TestCase {
                     49, 46, 54, 53, 46,
                     51, 50, 46, 49, 49,
                     49, 0, 0, -27, -85};
-            testReadWrite(cin, cout, testBuffer);
+            doReadWriteAndCheck(cin, cout, testBuffer);
         }
+        cleanup(cin, cout);
     }
     
     public void testUnbuffered() throws IOException, InterruptedException {
-        debug();
+        // debug();
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream(in);
         DebufferingInputStream din = new DebufferingInputStream(in);
         CompressingInputStream cin = new CompressingInputStream(din);
         CompressingOutputStream cout = new CompressingOutputStream(out);
         for (int j = 0; j < 3; j++) {
-            testReadWrite(cin, cout, createTestBuffer(368));
+            doReadWriteAndCheck(cin, cout, createTestBuffer(368));
         }
+        cleanup(cin,cout);
     }
     
     public void badTestHybrid() throws IOException, InterruptedException {
-        debug();
+        // debug();
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream(in);
         HybridCompressingInputStream cin = new HybridCompressingInputStream(in);
@@ -94,13 +98,14 @@ public class Socket_Test extends TestCase {
         };  
         for (int size : sizes) {
             for (int j = 0; j < 3; j++) {
-                testReadWrite(cin, cout, createTestBuffer(size));
+                doReadWriteAndCheck(cin, cout, createTestBuffer(size));
             }
         }
+        cleanup(cin, cout);
     }
     
     public void badTestHybridUnbuffered() throws IOException, InterruptedException {
-        debug();
+        // debug();
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream(in);
         DebufferingInputStream din = new DebufferingInputStream(in);
@@ -116,26 +121,37 @@ public class Socket_Test extends TestCase {
         };  
         for (int size : sizes) {
             for (int j = 0; j < 3; j++) {
-                testReadWrite(cin, cout, createTestBuffer(size));
+                doReadWriteAndCheck(cin, cout, createTestBuffer(size));
             }
         }
+        cleanup(cin, cout);
     }
     
-    public void testReadWrite(InputStream is, OutputStream os, byte[] buffer) throws IOException, InterruptedException {
-        byte[] bufferRead = new byte[buffer.length];
-        ReadRunnable reader = new ReadRunnable(is, bufferRead);
-        Thread th = new Thread(reader);
-        th.start();
-        os.write(buffer);
-        os.flush();
-        th.join(7000);
-        assertTrue(reader.isDone());
-        if (reader.getError() != null) {
-            log.log(Level.WARNING, "Exception caught in other thread", reader.getError());
-            fail();
+    public void doReadWriteAndCheck(InputStream is, OutputStream os, byte[] buffer) 
+    throws IOException, InterruptedException {
+        try {
+            byte[] bufferRead = new byte[buffer.length];
+            ReadRunnable reader = new ReadRunnable(is, bufferRead);
+            Thread th = new Thread(reader, "Read Test Thread");
+            th.start();
+            Thread.sleep(1000); // awkward - reader has to be blocked...
+                                // there doesn't seem to be an advertised 
+                                // way to do this.
+            os.write(buffer);
+            os.flush();
+            th.join(7000);
+            assertTrue(reader.isDone());
+            if (reader.getError() != null) {
+                log.log(Level.WARNING, "Exception caught in other thread", reader.getError());
+                fail();
+            }
+            for (int i = 0; i < buffer.length; i++) {
+                assertTrue(buffer[i] == bufferRead[i]);
+            }
         }
-        for (int i = 0; i < buffer.length; i++) {
-            assertTrue(buffer[i] == bufferRead[i]);
+        catch (Throwable t) {
+            t.printStackTrace();
+            log.log(Level.WARNING, "Junit test failed because of exception thrown", t);
         }
     }
     
@@ -166,10 +182,15 @@ public class Socket_Test extends TestCase {
                 synchronized (this) {
                     error = t;
                 }
+                log.log(Level.WARNING, "Exception caught in reader thread", t);
             }
             synchronized (this) {
                 done = true;
             }
+        }
+        
+        public synchronized void waitUntilReady() {
+            
         }
 
         public synchronized Throwable getError() {
@@ -191,6 +212,21 @@ public class Socket_Test extends TestCase {
         byte [] testBuffer = new byte[size];
         r.nextBytes(testBuffer);
         return testBuffer;
+    }
+    
+    private void cleanup(InputStream in, OutputStream os)  {
+        try {
+            os.close();
+        }
+        catch (Throwable t) {
+            log.log(Level.FINE, "Exception caught closing output stream", t);
+        }
+        try {
+            in.close();
+        }
+        catch (Throwable t) {
+            log.log(Level.FINE, "Exception caught closing input stream", t);
+        }     
     }
 
 }
