@@ -157,7 +157,9 @@ public class Project {
     private Boolean _isUndoEnabled;
 
     private Map<Cls, BrowserSlotPattern> _includedBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>();
-    private Map<Cls, BrowserSlotPattern> _directBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>(); 
+    private Map<Cls, BrowserSlotPattern> _directBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>();
+    private Map<Cls, BrowserSlotPattern> _inheritedBrowserSlotPatterns = new HashMap<Cls, BrowserSlotPattern>();
+    
     private Set<Frame> _hiddenFrames = new HashSet<Frame>();
     private Set<Frame> _includedHiddenFrames = new HashSet<Frame>();
     private boolean _hasChanged;
@@ -200,6 +202,8 @@ public class Project {
                 ComponentUtilities.dispose((Component) widget);
             }
             _directBrowserSlotPatterns.remove(cls);
+            removeInheritedBrowserSlotPattern(cls);           
+            
             if (!event.isReplacementEvent()) {
             	removeDisplay(cls);
             }
@@ -232,6 +236,14 @@ public class Project {
                 BrowserSlotPattern pattern = entry.getValue();
                 if (pattern.contains(slot)) {
                     i.remove();
+                }
+            }
+            Iterator<Map.Entry<Cls, BrowserSlotPattern>> j = _inheritedBrowserSlotPatterns.entrySet().iterator();
+            while (j.hasNext()) {
+                Map.Entry<Cls, BrowserSlotPattern> entry = j.next();
+                BrowserSlotPattern pattern = (BrowserSlotPattern) entry.getValue();
+                if (pattern != null && pattern.contains(slot)) {
+                    j.remove();
                 }
             }
             _hiddenFrames.remove(slot);
@@ -272,6 +284,11 @@ public class Project {
 	            	_directBrowserSlotPatterns.put((Cls) newFrame, bsp);
 	            }
 	            _directBrowserSlotPatterns.remove(oldCls);
+	            
+	            BrowserSlotPattern ibsp = _inheritedBrowserSlotPatterns.get(oldCls);
+	            if (ibsp != null) {
+	                _inheritedBrowserSlotPatterns.put((Cls)newFrame, ibsp);
+	            }
 	     
 	    	} else if (oldFrame instanceof Slot) {
 	    		 Slot oldSlot = (Slot) oldFrame;
@@ -285,6 +302,14 @@ public class Project {
 	                	pattern.replaceSlot(oldSlot, (Slot) newFrame);
 	                 }
 	             }
+	             Iterator<Map.Entry<Cls, BrowserSlotPattern>> j = _inheritedBrowserSlotPatterns.entrySet().iterator();
+                 while (j.hasNext()) {
+                     Map.Entry<Cls, BrowserSlotPattern> entry = j.next();
+                     BrowserSlotPattern pattern = (BrowserSlotPattern) entry.getValue();
+                     if (pattern != null && pattern.contains(oldSlot)) {
+                        pattern.replaceSlot(oldSlot, (Slot) newFrame);
+                     }
+                 }
 	    	}
 	    	//TODO: client information
 	    	
@@ -600,6 +625,7 @@ public class Project {
         //_widgetMapper = null;
         
         _directBrowserSlotPatterns = null;
+        _inheritedBrowserSlotPatterns = null;
         _includedBrowserSlotPatterns = null;
         
         _clientInformation = null;
@@ -687,12 +713,15 @@ public class Project {
     }
 
     public BrowserSlotPattern getInheritedBrowserSlotPattern(Cls cls) {
-        BrowserSlotPattern slotPattern = null;
+        BrowserSlotPattern slotPattern = _inheritedBrowserSlotPatterns.get(cls);
+        if (_inheritedBrowserSlotPatterns.containsKey(cls)) { return slotPattern; }
+        
         Iterator i = cls.getSuperclasses().iterator();
         while (i.hasNext() && slotPattern == null) {
             Cls superclass = (Cls) i.next();
             slotPattern = getDirectBrowserSlotPattern(superclass);
-        }      
+        }       
+        _inheritedBrowserSlotPatterns.put(cls, slotPattern);        
         return slotPattern;
     }
 
@@ -1673,13 +1702,24 @@ public class Project {
         _listeners.postEvent(this, type, widget);
     }
 
+    private void removeInheritedBrowserSlotPattern(Cls cls) {
+        _inheritedBrowserSlotPatterns.remove(cls);
+        for (Iterator<Cls> iterator = _inheritedBrowserSlotPatterns.keySet().iterator(); iterator.hasNext();) {
+            Cls scls = (Cls) iterator.next();
+            if (scls.hasSuperclass(cls)) {
+                iterator.remove();
+            }
+        }
+    }
+    
     private void recordDirectBrowserSlotPattern(Cls cls, BrowserSlotPattern slotPattern) {
         Assert.assertNotNull("class", cls);
         if (slotPattern == null) {
-            _directBrowserSlotPatterns.remove(cls);
+            _directBrowserSlotPatterns.remove(cls);            
         } else {
-            _directBrowserSlotPatterns.put(cls, slotPattern);
-        }
+            _directBrowserSlotPatterns.put(cls, slotPattern);            
+        }        
+        removeInheritedBrowserSlotPattern(cls);
     }
 
     private void recordHidden(Frame frame, boolean hidden) {
@@ -1714,6 +1754,7 @@ public class Project {
         browserSlots.putAll(_directBrowserSlotPatterns);
         _directBrowserSlotPatterns = browserSlots;
         _includedBrowserSlotPatterns.clear();
+        //TODO: do something with the inherited browser slot patterns?
 
         Iterator<WidgetDescriptor> i = _activeClsWidgetDescriptors.values().iterator();
         while (i.hasNext()) {

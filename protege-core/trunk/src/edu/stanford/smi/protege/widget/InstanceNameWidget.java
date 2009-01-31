@@ -33,6 +33,7 @@ public class InstanceNameWidget extends TextFieldWidget {
     }
 
     private boolean needsNameChange() {
+        if (getInstance() == null) { return false;}
         boolean needsNameChange = false;
         String name = getInstance().getName();
         if (isEditable() && name != null) {
