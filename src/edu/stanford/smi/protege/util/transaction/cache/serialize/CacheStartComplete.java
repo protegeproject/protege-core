@@ -13,4 +13,7 @@ public class CacheStartComplete<S, V, R> extends SerializedCacheUpdate<S, V, R> 
         cache.startCompleteCache();
     }
 
+    public String toString() {
+    	return "<Cache OP: Start Cache Complete>";
+    }
 }

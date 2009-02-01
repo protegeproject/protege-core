@@ -1,6 +1,8 @@
 package edu.stanford.smi.protege.util.transaction.cache;
 
-public class CacheResult<R> {
+import java.io.Serializable;
+
+public class CacheResult<R> implements Serializable {
     private R result;
     private boolean isValid;
     
@@ -8,6 +10,10 @@ public class CacheResult<R> {
         super();
         this.result = result;
         this.isValid = isValid;
+    }
+    
+    public static <R> CacheResult<R> getInvalid() {
+    	return new CacheResult<R>(null, false);
     }
 
     /**
@@ -43,6 +49,25 @@ public class CacheResult<R> {
     @Override
     public int hashCode() {
         return result.hashCode() + (isValid ? 42 : 0);
+    }
+    
+    public String toString() {
+    	if (isValid()) {
+        	StringBuffer sb = new StringBuffer("[");
+        	sb.append("Valid Result ");
+        	if (getResult() == null) {
+        	    sb.append("null");
+        	}
+        	else {
+        	    sb.append(" of type ");
+        	    sb.append(getResult().getClass());
+        	}
+    		sb.append("]");
+    		return sb.toString();
+    	}
+    	else {
+    		return "[Invalid Result]";
+    	}
     }
 
 }
