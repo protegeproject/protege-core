@@ -33,4 +33,19 @@ Merged to trunk revision 12778
     svn info $p
     svn merge  $p/trunk@12591 $p/trunk@12778
     ant clean install
+    svn commit - commit revision = 12780 - what was 12779?
+
+Moving changes to cache utility to cache revision 12780
+    p=http://smi-protege/repos/protege/protege-core
+    q=src/edu/stanford/smi/protege/util/transaction/cache
+    svn diff $p/trunk/$q $p/branches/cache/$q
+    cd to protege-core on trunk
+    cd $q
+    svn update 
+    svn status
+    svn merge $p/trunk/$q $p/branches/cache/$q
+    svn diff
     svn commit
+
+This branch is now relative to the trunk at revision 12781
+
