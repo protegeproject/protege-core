@@ -9,7 +9,7 @@ package edu.stanford.smi.protege.server.util;
  *
  * @param <X> the type of element being entered into the linked list.
  */
-public class LinkedList<X> {
+class LinkedList<X> {
   private static int lastCount = 0;
   private int counter = lastCount++;
   private LinkedList<X> next;
