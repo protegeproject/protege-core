@@ -22,6 +22,7 @@ import edu.stanford.smi.protege.server.metaproject.impl.UnbackedOperationImpl;
 import edu.stanford.smi.protege.ui.ExportConfigurationPanel;
 import edu.stanford.smi.protege.ui.ProjectManager;
 import edu.stanford.smi.protege.util.FileUtilities;
+import edu.stanford.smi.protege.util.FrameWithBrowserText;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.ModalDialog;
 import edu.stanford.smi.protege.util.StandardAction;
@@ -275,6 +276,16 @@ public class ExportToCsvAction extends StandardAction {
 
 	public void setInstancesToExport(Collection<Instance> instancesToExport) {
 		this.instancesToExport = instancesToExport;
+	}
+	
+	public void setFramesWithBrowserTextToExport(Collection<FrameWithBrowserText> frames) {
+	    instancesToExport = new ArrayList<Instance>();
+	    for (FrameWithBrowserText frameWithBrowserText : frames) {
+            Frame frame = frameWithBrowserText.getFrame();
+            if (frame instanceof Instance) {
+                instancesToExport.add((Instance) frame);
+            }
+        }
 	}
 
 	public File getExportFile() {

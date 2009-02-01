@@ -3,15 +3,18 @@ package edu.stanford.smi.protege.server;
 //ESCA*JAVA0130
 
 import java.rmi.Naming;
-import java.rmi.server.RMISocketFactory;
 import java.util.logging.Level;
 
 import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.WindowConstants;
 
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.resource.LocalizedText;
 import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.server.admin.ServerAdminPanel;
 import edu.stanford.smi.protege.ui.ProjectManager;
+import edu.stanford.smi.protege.util.ComponentFactory;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.ModalDialog;
 import edu.stanford.smi.protege.util.SystemUtilities;
@@ -38,7 +41,11 @@ public class RemoteProjectManager {
             server = panel.getServer();
             session = panel.getSession();
             if (server != null && session != null) {
-                project = getServerProject(mainPanel, server, session);
+            	if (panel.isAdminsterServerActivated()) {
+            		showServerAdminWindow(server, session);
+            	} else {  //show projects only if administer server is not activated
+            		project = getServerProject(mainPanel, server, session);
+            	}
             }
         }
         return project;
@@ -94,5 +101,14 @@ public class RemoteProjectManager {
             Log.getLogger().log(Level.WARNING, "Could not connect to remote project " + name, e);
         }
         return p;    	
+    }
+    
+    public void showServerAdminWindow(RemoteServer server, RemoteSession session) {
+    	ProjectManager.getProjectManager().setExitVMOnApplicationExit(false);
+    	ProjectManager.getProjectManager().exitApplicationRequest();
+    	JFrame frame = ComponentFactory.showInFrame(new ServerAdminPanel(server, session), "Administer Protege Server");
+    	frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    	frame.requestFocus();
+    	ProjectManager.getProjectManager().setExitVMOnApplicationExit(true);
     }
 }

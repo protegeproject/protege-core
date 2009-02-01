@@ -18,4 +18,7 @@ public abstract class ProjectAdapter implements ProjectListener {
 
     public void projectSaved(ProjectEvent event) {
     }
+    
+    public void serverSessionLost(ProjectEvent event) {    	
+    }
 }

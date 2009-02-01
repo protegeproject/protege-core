@@ -12,6 +12,7 @@ public class FrameWithBrowserTextRenderer extends FrameRenderer {
      		FrameWithBrowserText fbt = (FrameWithBrowserText) value;
      		setMainText(fbt.getBrowserText());
      		if (fbt.getFrame() != null) {
+     		    //TODO: fix this - this might go to the server
      			setMainIcon(fbt.getFrame().getIcon());
      		}
      	} else {

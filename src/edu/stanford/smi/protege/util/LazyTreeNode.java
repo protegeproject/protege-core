@@ -218,6 +218,13 @@ public abstract class LazyTreeNode implements TreeNode {
             _isLoaded = true;
         }
     }
+    
+    /**
+     * Do not call this method unless you know exactly what you are doing.     
+     */
+    protected void setIsLoaded(boolean isLoaded) {
+        _isLoaded = isLoaded;
+    }
 
     public boolean getAllowsChildren() {
         return true;
@@ -294,7 +301,12 @@ public abstract class LazyTreeNode implements TreeNode {
         return _childCount == 0;
     }
 
-    private void loadChildObjects(Collection childObjects) {
+    /**
+     * Do not override or call this method in a subclass, unless you
+     * know what you are doing.
+     * @param childObjects
+     */
+    protected void loadChildObjects(Collection childObjects) {
         if (_childNodes == null) {
             _childNodes = new ArrayList();
         } else {

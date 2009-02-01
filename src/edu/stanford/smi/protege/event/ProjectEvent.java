@@ -1,8 +1,9 @@
 package edu.stanford.smi.protege.event;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
-import edu.stanford.smi.protege.widget.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.widget.ClsWidget;
 
 /**
  * Event generated when the project changes.
@@ -14,6 +15,7 @@ public class ProjectEvent extends AbstractEvent {
     public static final int PROJECT_SAVED = 2;
     public static final int PROJECT_CLOSED = 3;
     public static final int RUNTIME_CLS_WIDGET_CREATED = 4;
+    public static final int SERVER_SESSION_LOST = 5;
 
     public ProjectEvent(Project project, int type, ClsWidget widget) {
         super(project, type, widget);

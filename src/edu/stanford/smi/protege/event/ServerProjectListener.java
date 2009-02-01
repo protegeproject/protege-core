@@ -12,4 +12,6 @@ public interface ServerProjectListener extends EventListener {
     void projectNotificationReceived(ServerProjectNotificationEvent event);
 
     void projectStatusChanged(ServerProjectStatusChangeEvent event);
+    
+    void beforeProjectSessionClosed(ServerProjectSessionClosedEvent event);
 }
