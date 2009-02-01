@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.server;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.event.ServerProjectListener;
@@ -216,7 +217,6 @@ public class ServerAdmin_Test extends APITestCase {
                     }
                     catch (Throwable t) {
                         failed = true;
-                        log.info("Exception = " + t);
                     }
                     assertTrue(failed);
                     ls.stageAchieved(TestSingleProjectShutdownStages.OK_DEAD, null);
@@ -226,6 +226,7 @@ public class ServerAdmin_Test extends APITestCase {
                     ls.stageAchieved(TestSingleProjectShutdownStages.DONE, null);
                 }
                 catch (Throwable t) {
+                    log.log(Level.WARNING, "Exception will cause junit to fail", t);
                     ls.exceptionOffMainThread(TestSingleProjectShutdownStages.DONE, t);
                 }
             }
