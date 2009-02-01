@@ -47,5 +47,29 @@ Moving changes to cache utility to cache revision 12780
     svn diff
     svn commit
 
-This branch is now relative to the trunk at revision 12781
+The following changes were made on the trunk to minimize the delta
+from the trunk to the cache branch.
 
+This branch is now relative to the trunk at revision 12781
+   Merged cache utility code to trunk because not used there.
+This branch is now relative to the trunk at revision 12782
+   Merged logging from ServerAdmin_Test to trunk
+This branch is now relative to the trunk at revision 12783
+   Merged minor logging from Sft to trunk
+
+   d=src/edu/stanford/smi/protege/model/framestore/Sft.java
+   pushd src/edu/stanford/smi/protege/model/framestore
+   svn merge $p/trunk/$d $p/branches/cache/$d 
+   svn commit
+
+This branch is now relative to the trunk at revision 12785
+
+   d=src/edu/stanford/smi/protege/server/util/LinkedList.java
+   pushd src/edu/stanford/smi/protege/server/util
+   svn merge $p/trunk/$d $p/branches/cache/$d 
+
+This branch is now relative to the trunk at revision 12786
+   d=src/edu/stanford/smi/protege/util/transaction/TransactionIsolationLevel.java
+   pushd src/edu/stanford/smi/protege/util/transaction
+   svn merge $p/trunk/$d $p/branches/cache/$d 
+   svn commit 
