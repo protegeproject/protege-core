@@ -7,4 +7,7 @@ public class ServerProjectAdapter implements ServerProjectListener {
 
     public void projectStatusChanged(ServerProjectStatusChangeEvent event) {
     }
+    
+    public void beforeProjectSessionClosed(ServerProjectSessionClosedEvent event) {
+    }
 }

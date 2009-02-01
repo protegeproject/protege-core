@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.model.framestore;
 
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
+import java.rmi.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,9 +29,11 @@ import edu.stanford.smi.protege.event.InstanceEvent;
 import edu.stanford.smi.protege.event.InstanceListener;
 import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
 import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.event.ProjectEvent;
 import edu.stanford.smi.protege.event.ServerProjectEvent;
 import edu.stanford.smi.protege.event.ServerProjectListener;
 import edu.stanford.smi.protege.event.ServerProjectNotificationEvent;
+import edu.stanford.smi.protege.event.ServerProjectSessionClosedEvent;
 import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
 import edu.stanford.smi.protege.event.SlotEvent;
 import edu.stanford.smi.protege.event.SlotListener;
@@ -46,6 +49,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.ArrayListMultiMap;
 import edu.stanford.smi.protege.util.Assert;
@@ -62,14 +66,14 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private Map<Class<?>, Map<Object, Collection<EventListener>>> _listeners 
     			= new HashMap<Class<?>, Map<Object, Collection<EventListener>>>();
     private Thread _eventThread;
-    private Object lock;
+    private KnowledgeBase kb;
     
     private boolean passThrough = false;
     private List<AbstractEvent> savedEvents = new ArrayList<AbstractEvent>();
     private ArrayListMultiMap<RemoteSession, AbstractEvent> transactedEvents = new ArrayListMultiMap<RemoteSession, AbstractEvent>();
 
     public EventDispatchFrameStore(KnowledgeBase kb) {
-    	lock = kb;
+    	this.kb = kb;
     }
     
 
@@ -177,14 +181,14 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 		public void run() {
             while (true) {
               try {
-                synchronized (lock) {
+                synchronized (kb) {
                   if (_eventThread != this) {
                     return;
                   }
                 }
                 flushEvents();
-                synchronized (lock) {
-                  lock.wait(DELAY_MSEC);
+                synchronized (kb) {
+                  kb.wait(DELAY_MSEC);
                 }
               } catch (Exception e) {
                 Log.getLogger().warning(e.toString());
@@ -227,11 +231,23 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     
     @SuppressWarnings("unchecked")
     private void dispatchEvents(boolean ignoreExceptions) {
-    	synchronized (lock) {
+    	try {
+    	synchronized (kb) {
     		Collection<AbstractEvent> events = getDispatchableEvents();
     		if (!events.isEmpty()) {
     			dispatchEvents(events, ignoreExceptions);
     		}
+    	}
+    	}
+    	catch (Throwable t) {
+            do {
+            	//TODO: watch the ConnectionException - maybe it is thrown for transitory connection problems
+                if (t instanceof ServerSessionLost || t instanceof ConnectException) {
+                    log.warning("Knowledge base has been disconnected from the server");
+                    kb.getProject().postProjectEvent(ProjectEvent.SERVER_SESSION_LOST);
+                    return;
+                }
+            } while ((t = t.getCause()) != null);
     	}
     }
 
@@ -248,7 +264,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             AbstractEvent event = i.next();
             try {
                 dispatchEvent(event);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (!ignoreExceptions) {
                   if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "Exception caught", e);
@@ -302,6 +318,13 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             }
             else if (event instanceof ServerProjectStatusChangeEvent) {
                 listener.projectStatusChanged((ServerProjectStatusChangeEvent) event);
+            } else if (event instanceof ServerProjectSessionClosedEvent) {
+            	/*
+            	 * The event is dispatch to all clients with this project.
+            	 * Each client is responsible for checking whether sessionToKill
+            	 * is his own session.
+            	 */
+            	listener.beforeProjectSessionClosed((ServerProjectSessionClosedEvent) event);
             }
         }
     }

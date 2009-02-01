@@ -105,7 +105,8 @@ public class ProjectChooser extends JFileChooser {
         setName(FILE_CARD);
     }
 
-    protected JDialog createDialog(Component parent) {
+    @Override
+	protected JDialog createDialog(Component parent) {
         dialog = super.createDialog(parent);
         Container contentPane = dialog.getContentPane();
         contentPane.remove(this);
@@ -156,7 +157,8 @@ public class ProjectChooser extends JFileChooser {
         return canClose;
     }
 
-    public int showOpenDialog(Component parent) {
+    @Override
+	public int showOpenDialog(Component parent) {
         int dialogReturnValue = super.showOpenDialog(parent);
         if (dialogReturnValue == APPROVE_OPTION) {
             returnValue = APPROVE_OPTION;
@@ -209,7 +211,8 @@ public class ProjectChooser extends JFileChooser {
         };
         JButton button = ComponentFactory.createButton(action);
         button.addKeyListener(new KeyAdapter() {
-            public void keyPressed(KeyEvent event) {
+            @Override
+			public void keyPressed(KeyEvent event) {
                 switch (event.getKeyCode()) {
                     case KeyEvent.VK_ENTER:
                         attemptClose(result);
@@ -242,8 +245,15 @@ public class ProjectChooser extends JFileChooser {
 	        }
 
         } else if (c == serverPanel) {
-            project = getRemoteProject();
-
+            RemoteServer server = serverPanel.getServer();
+            RemoteSession session = serverPanel.getSession();
+        	if (server != null || session != null) {
+        		if (serverPanel.isAdminsterServerActivated()) {
+        			RemoteProjectManager.getInstance().showServerAdminWindow(server, session);
+        		} else { //show projects only if administer server is not activated
+        			project = getRemoteProject(server, session);
+        		}
+        	}
         } else {
             Log.getLogger().warning("bad component: " + c);
         }
@@ -269,7 +279,7 @@ public class ProjectChooser extends JFileChooser {
 		    Iterator<Class> it = availablePlugins.iterator();
 		    
 		    while (it.hasNext() && project == null) {
-		    	Class pluginClass = (Class) it.next();
+		    	Class pluginClass = it.next();
 		        project = useCreateProjectFromFilePlugin(pluginClass, suffix, fileName, errors);
 		        
 		        if (project != null) {
@@ -299,9 +309,7 @@ public class ProjectChooser extends JFileChooser {
 	}
 
 	
-    private Project getRemoteProject() {
-        RemoteServer server = serverPanel.getServer();
-        RemoteSession session = serverPanel.getSession();
+    private Project getRemoteProject(RemoteServer server, RemoteSession session) {
         return RemoteProjectManager.getInstance().getServerProject(this, server, session);
     }
 
@@ -343,7 +351,8 @@ public class ProjectChooser extends JFileChooser {
     /**    
      * @deprecated Use: useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String fileName, Collection errors)
      */
-    public Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String fileName) {    	
+    @Deprecated
+	public Project useCreateProjectFromFilePlugin(Class pluginClass, String suffix, String fileName) {    	
     	return useCreateProjectFromFilePlugin(pluginClass, suffix, fileName, new ArrayList());    
     }
     

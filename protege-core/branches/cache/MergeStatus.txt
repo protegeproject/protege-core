@@ -25,3 +25,12 @@ Merged to trunk revision 12591
     ant clean install
     svn status
     svn commit 
+
+
+Merged to trunk revision 12778
+    cd to protege-core cache directory
+    p=http://smi-protege/repos/protege/protege-core
+    svn info $p
+    svn merge  $p/trunk@12591 $p/trunk@12778
+    ant clean install
+    svn commit
