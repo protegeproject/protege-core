@@ -73,3 +73,15 @@ This branch is now relative to the trunk at revision 12786
    pushd src/edu/stanford/smi/protege/util/transaction
    svn merge $p/trunk/$d $p/branches/cache/$d 
    svn commit 
+
+Diffs are actually pretty minimal:
+  1. the server.update package is all different (one conflict)
+  2. diffs to 
+      src/edu/stanford/smi/protege/server/framestore/background/FrameCalculator.java
+      src/edu/stanford/smi/protege/server/framestore/RemoteClientFrameStore.java
+      src/edu/stanford/smi/protege/server/framestore/Registration.java
+      src/edu/stanford/smi/protege/server/framestore/ServerFrameStore.java
+  Steps to merge to trunk
+      p=http://smi-protege/repos/protege/protege-core
+      svn merge $p/trunk $p/branches/cache
+  but then be careful about commits...
