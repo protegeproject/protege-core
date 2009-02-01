@@ -57,7 +57,10 @@ public class DeletableCache<S, V, R> implements Cache<S, V, R> {
     }
     
     public void delete(S session) {
-        if (!ignoreTransactions && delegate.getTransactionNesting(session) > 0) {
+        if (invalid) {
+            return;
+        }
+        else if (!ignoreTransactions && delegate.getTransactionNesting(session) > 0) {
             sessionsWithCacheDeleted.add(session);
         }
         else {

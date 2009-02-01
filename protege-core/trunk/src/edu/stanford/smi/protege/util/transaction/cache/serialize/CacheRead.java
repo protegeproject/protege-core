@@ -25,6 +25,20 @@ public class CacheRead<S, V, R> extends SerializedCacheUpdate<S, V, R> {
 	    if (value.isValid()) {
 	        cache.updateCache(getSession(), var, value.getResult());
 	    }
+	    else {
+	    	cache.updateCache(getSession(), var);
+	    }
+	}
+	
+	public String toString() {
+		StringBuffer sb = new StringBuffer("<CacheOp: Session ");
+		sb.append(getSession());
+		sb.append(" reads var ");
+		sb.append(getVar());
+		sb.append(" retrieving ");
+		sb.append(getValue());
+		sb.append(">");
+		return sb.toString();
 	}
 	
 }
