@@ -50,8 +50,10 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
                                = new LinkedHashSet<NarrowFrameStore>();
     private NarrowFrameStore topFrameStore;
     private NarrowFrameStore systemFrameStore;
+    
     private boolean queryAllFrameStores = false;
-
+    private boolean suppressDuplicates = false;
+    
     private Tree<NarrowFrameStore> frameStoreTree 
       = new Tree<NarrowFrameStore>(ROOT_NODE);
 
@@ -274,6 +276,10 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         queryAllFrameStores = b;
         updateQueryableFrameStores();
     }
+    
+    public void setSuppressDuplicates(boolean suppressDuplicates) {
+        this.suppressDuplicates = suppressDuplicates;
+    }
 
     private void updateQueryableFrameStores() {
         availableFrameStores.clear();
@@ -390,17 +396,22 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         return getValues(frame, slot, facet, isTemplate, true);
     }
 
+    @SuppressWarnings("unchecked")
     private List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, boolean skipActive) {
-        List values = null;
+        Collection values = null;
         Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
         while (i.hasNext()) {
             NarrowFrameStore fs = i.next();
             if (fs != activeFrameStore || !skipActive) {
                 List fsValues = fs.getValues(frame, slot, facet, isTemplate);
                 if (!fsValues.isEmpty()) {
-                    if (values == null) {
+                    if (values == null && !suppressDuplicates) {
                         values = fsValues;
-                    } else {
+                    }
+                    else if (values == null && suppressDuplicates) {
+                        values = new LinkedHashSet(fsValues);
+                    }
+                    else {
                         values.addAll(fsValues);
                     }
                 }
@@ -409,7 +420,10 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         if (values == null) {
             values = Collections.EMPTY_LIST;
         }
-        return values;
+        if (!(values instanceof List)) {
+            values = new ArrayList(values);
+        }
+        return (List) values;
     }
 
     public int getValuesCount(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
