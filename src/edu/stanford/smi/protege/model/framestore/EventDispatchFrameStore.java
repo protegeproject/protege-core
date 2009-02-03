@@ -257,7 +257,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
      * We ignore exceptions in the multiuser server client because they are an almost unavoidable side-effect of event
      * processing in some cases
      */
-    private void dispatchEvents(Collection events, boolean ignoreExceptions) {
+    private void dispatchEvents(Collection<AbstractEvent> events, boolean ignoreExceptions) {
         // Log.trace("found events: " + events, this, "dispatchEvents");
         Iterator<AbstractEvent> i = events.iterator();
         while (i.hasNext()) {
