@@ -36,7 +36,7 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
  */
 
 public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
-    private Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
+    private static Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private NarrowFrameStore _delegate;
     private DatabaseFrameDb _framedb;
     private CacheMap<Frame, Map<Sft, List>> valuesMap 
@@ -45,6 +45,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                 = new HashMap<RemoteSession, CacheMap<Frame, Map<Sft, List>>>();
     private Map<RemoteSession, Set<Frame>> transactedWrites
                 = new HashMap<RemoteSession, Set<Frame>>();
+    private Map<RemoteSession, Set<Frame>> transactedDeletes
+    			= new HashMap<RemoteSession, Set<Frame>>();
 
     public ValueCachingNarrowFrameStore(DatabaseFrameDb delegate) {
         if (log.isLoggable(Level.FINE)) {
@@ -107,6 +109,27 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         }
         writtenFrames.add(frame);
     }
+    
+    private void markDeleted(Frame frame) {
+        TransactionMonitor tm = getTransactionStatusMonitor();
+        if (!tm.inTransaction()) {
+            return;
+        } 
+        TransactionIsolationLevel level = tm.getTransationIsolationLevel();
+        if (level.compareTo(TransactionIsolationLevel.READ_UNCOMMITTED) <= 0) {
+            return;
+        }
+        RemoteSession session = ServerFrameStore.getCurrentSession();
+        Set<Frame> deletedFrames = transactedDeletes.get(session);
+        if (deletedFrames == null) {
+            deletedFrames = new HashSet<Frame>();
+            transactedDeletes.put(session, deletedFrames);
+        }
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("frame = " + frame.getFrameID() + " modified in this transaction");
+        }
+        deletedFrames.add(frame);
+    }
 
 
     private Map<Sft, List> lookup(Frame frame) {
@@ -120,8 +143,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                 tm.getTransationIsolationLevel() == TransactionIsolationLevel.READ_COMMITTED &&
                 values == null &&
                 valuesMap.get(frame) != null && 
-                (transactedWrites.get(frame) == null ||
-                 !transactedWrites.get(frame).contains(ServerFrameStore.getCurrentSession()))) {
+                (transactedWrites.get(ServerFrameStore.getCurrentSession()) == null ||
+                		!transactedWrites.get(ServerFrameStore.getCurrentSession()).contains(frame)) &&
+                (transactedDeletes.get(ServerFrameStore.getCurrentSession()) == null || 
+                		!transactedDeletes.get(ServerFrameStore.getCurrentSession()).contains(frame))) {
             if (log.isLoggable(Level.FINE)) {
                 log.fine("Copying values from untransacted cache");
             }                                  // the following looks expensive but the alternative is loadFrameIntoCache
@@ -209,7 +234,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         }
     }
 
-    private void insert(Map<Sft, List> map, Slot slot, Facet facet, boolean isTemplate, 
+    private static void insert(Map<Sft, List> map, Slot slot, Facet facet, boolean isTemplate, 
                         List values) {
         if (log.isLoggable(Level.FINE)) {
             log.fine("Inserting cache values for " +
@@ -224,7 +249,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         }
     }
 
-    private void remove(Map<Sft, List> map, Slot slot, Facet facet, boolean isTemplate) {
+    private static void remove(Map<Sft, List> map, Slot slot, Facet facet, boolean isTemplate) {
         Sft lookupSft = new Sft(slot, facet, isTemplate);
         map.remove(lookupSft);
     }
@@ -284,21 +309,20 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     
     @SuppressWarnings("unchecked")
 	private void deleteCacheFrame(Frame frame) {
-        getFrameToSftToValuesMap().remove(frame);
-        for (Frame frameKey : getFrameToSftToValuesMap().keySet()) {
-            Map<Sft, List> sftToValuesMap =  getFrameToSftToValuesMap().get(frameKey);
+    	markDeleted(frame);
+    	fullyDeleteFrameFromCache(frame, getFrameToSftToValuesMap());
+    }
+    
+    private static void fullyDeleteFrameFromCache(Frame frameBeingDeleted, CacheMap<Frame, Map<Sft, List>> cache) {
+        cache.remove(frameBeingDeleted);
+        for (Frame frameWithValues : cache.keySet()) {
+            Map<Sft, List> sftToValuesMap =  cache.get(frameWithValues);
             if (sftToValuesMap != null) {
                 for ( Map.Entry<Sft,List> entry : sftToValuesMap.entrySet()) {
                     Sft sft = entry.getKey();
                     List values = entry.getValue();
-                    if (contains(sft, frame)) {
-                        getFrameToSftToValuesMap().remove(frameKey);
-                        markWritten(frameKey);
-                    } else if (values.contains(frame)) {
-                        values = new ArrayList(values);
-                        values.remove(frame);
-                        insert(sftToValuesMap, sft.getSlot(), sft.getFacet(), sft.isTemplateSlot(), values);
-                        markWritten(frameKey);
+                    if (contains(sft, frameBeingDeleted) || values.contains(frameBeingDeleted)) {
+                        cache.remove(frameWithValues);
                     }
                 }
             }
@@ -323,6 +347,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             map.clear();
         }
         transactedWrites.clear();
+        transactedDeletes.clear();
     }
 
 
@@ -476,6 +501,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         valuesMap = null;
         transactedValuesMap = null;
         transactedWrites = null;
+        transactedDeletes = null;
     }
 
     public Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
@@ -537,11 +563,27 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                         }
                     }
                 }
+                Set<Frame> deletes = transactedDeletes.get(session);
+                if (deletes != null) {
+                    if (level.compareTo(TransactionIsolationLevel.READ_COMMITTED) >= 0) {
+                        for (Frame frame : deletes) {
+                            fullyDeleteFrameFromCache(frame, valuesMap);
+                        }
+                    }
+                    if (level == TransactionIsolationLevel.READ_COMMITTED) {
+                        for (Frame frame : deletes) {
+                            for (RemoteSession othersession : transactedValuesMap.keySet()) {
+                            	fullyDeleteFrameFromCache(frame, transactedValuesMap.get(othersession));
+                            }
+                        }
+                    }
+                }
             }
             if (oldNesting == 1) {
                 RemoteSession session = ServerFrameStore.getCurrentSession();
                 transactedValuesMap.remove(session);
-                transactedWrites.remove(session);               
+                transactedWrites.remove(session);   
+                transactedDeletes.remove(session);
             }
         } catch (Throwable t) {
             Log.getLogger().log(Level.WARNING, "Exception caught closing transaction", t);
@@ -561,6 +603,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             RemoteSession session = ServerFrameStore.getCurrentSession();
             transactedValuesMap.remove(session);
             transactedWrites.remove(session);
+            transactedDeletes.remove(session);
         }
         return rolledback;
     }
