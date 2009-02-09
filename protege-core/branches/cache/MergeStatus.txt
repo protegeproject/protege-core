@@ -84,6 +84,30 @@ Merged to trunk revision 12894
     ant clean update in protege-owl
     svn commit
 
+
+This branch is now relative to the trunk at revision 12901
+    p=http://smi-protege/repos/protege/protege-core
+    svn diff ${p}/trunk@12894 ${p}/trunk@12901 - no changes on the trunk
+
+
+This branch is now relative to the trunk at revision 12902
+Merging the fix to the ValueCachingFrameStore.
+    svn diff --summarize $p/trunk $p/branches/cache
+    d=src/edu/stanford/smi/protege/storage/database
+    cd to trunk of protege-core
+    svn update
+    svn status
+    pushd $d
+    svn merge $p/trunk/$d $p/branches/cache/$d
+    svn diff - looks right
+    svn commit 
+
+This branch is now relative to the trunk at revision 12903
+Merging the changes to the changes to the cache utilities.
+    d=src/edu/stanford/smi/protege/util/transaction/cache
+    pushd $d
+    svn merge $p/trunk/$d $p/branches/cache/$d
+
 ---------------------------------------------------------
 Diffs are actually pretty minimal:
   1. the server.update package is all different (one conflict)
