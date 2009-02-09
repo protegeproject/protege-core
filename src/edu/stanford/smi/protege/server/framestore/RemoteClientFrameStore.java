@@ -18,7 +18,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,6 +69,8 @@ import edu.stanford.smi.protege.util.transaction.cache.CacheFactory;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheBeginTransaction;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheCommitTransaction;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheDelete;
+import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheModify;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheRollbackTransaction;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCacheUpdate;
 
@@ -115,6 +116,8 @@ public class RemoteClientFrameStore implements FrameStore {
     private int transactionNesting = 0;
 
     //FIXME: frameNameToFrameMap may not handle transactions or type updates correctly
+    // Any positive result from this map is checked against the cache (more reliable)
+    // The negative cache is aggressively cleared and hopefully is accurate.
     private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
 
     private RemoteClientStatsImpl stats = new RemoteClientStatsImpl();
@@ -479,6 +482,11 @@ public class RemoteClientFrameStore implements FrameStore {
         frame = frameNameToFrameMap.get(name);
         if (frame == null) {
           containsFrame = frameNameToFrameMap.containsKey(name);
+        }
+        else if (!isCachedInternal(frame, systemFrames.getNameSlot(), null, false)) {
+            frame = null;
+            frameNameToFrameMap.remove(name);
+            containsFrame = false;
         }
         if (frame == null) {
           if (!containsFrame) {
@@ -1583,6 +1591,11 @@ public class RemoteClientFrameStore implements FrameStore {
     	if (cache == null) {
     		ret = false;
     	}
+    	else if (cache.isDeleted()) {
+    	    cacheMap.remove(frame);
+    	    cache = null;
+    	    ret = false;
+    	}
     	else {
     		CacheResult<List> result = cache.readCache(session, new Sft(slot, facet, isTemplate));
     		ret = result.isValid();
@@ -1643,6 +1656,12 @@ public class RemoteClientFrameStore implements FrameStore {
     		continue;
     	}
     	Frame frame = vu.getFrame();
+    	if (frameNameToFrameMap.get(frame.getName()) == null // be aggressive about cleaning the negative cache
+    	        || cacheUpdate instanceof CacheDelete        // deleted guys might get a new type
+    	        || cacheUpdate instanceof CacheModify)       // could be modifying the type.
+    	{
+    	    frameNameToFrameMap.remove(frame.getName());
+    	}
     	try {
     	    Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
     	    if (cache == null) {
