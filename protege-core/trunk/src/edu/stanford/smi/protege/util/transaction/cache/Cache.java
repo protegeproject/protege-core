@@ -131,6 +131,12 @@ public interface Cache<S, V, R> {
     void delete(S session);
     
     /**
+     * This indicates  that the cache has entered the deleted state.  Once in this
+     * state the cache cannot recover.
+     */
+    boolean isDeleted();
+    
+    /**
      * Try to avoid this.  If this is invoked and you are at READ_COMMITTED or above, the
      * cache can repeatedly get flushed on commit and rollback transactions until everything 
      * is closed out.

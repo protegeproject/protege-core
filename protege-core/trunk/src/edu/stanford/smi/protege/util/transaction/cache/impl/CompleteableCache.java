@@ -73,6 +73,10 @@ public class CompleteableCache<S, V, R> implements Cache<S, V, R> {
         delegate.delete(session);
     }
 
+    public boolean isDeleted() {
+        return delegate.isDeleted();
+    }
+    
     public void startCompleteCache() {
         status = CompletionStatus.GETTING_COMPLETE_CACHE;
         invalidReads = new HashSet<V>();
