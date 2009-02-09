@@ -85,6 +85,11 @@ public class DeferredTransactionsCache implements
 		delegate.delete(session);
 	}
 	
+    public boolean isDeleted() {
+        catchUp();
+        return delegate.isDeleted();
+    }
+	
 	public void flush() {
 		while (transactionUpdates.read() != null) {
 			;
