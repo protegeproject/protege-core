@@ -67,6 +67,9 @@ public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
         delegate.delete(session);
     }
 
+    public boolean isDeleted() {
+        return delegate.isDeleted();
+    }
 
     public void startCompleteCache() {
         delegate.startCompleteCache();

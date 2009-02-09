@@ -47,6 +47,10 @@ public class BasicCache<S, V, R> implements Cache<S, V, R> {
     public void delete(S session) {
         
     }
+    
+    public boolean isDeleted() {
+        return false;
+    }
 
     public void startCompleteCache() {
         ;
