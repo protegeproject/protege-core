@@ -313,8 +313,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     	fullyDeleteFrameFromCache(frame, getFrameToSftToValuesMap());
     }
     
+    @SuppressWarnings("unchecked")
     private static void fullyDeleteFrameFromCache(Frame frameBeingDeleted, CacheMap<Frame, Map<Sft, List>> cache) {
         cache.remove(frameBeingDeleted);
+        Collection<Frame> framesToRemove = new ArrayList<Frame>();
         for (Frame frameWithValues : cache.keySet()) {
             Map<Sft, List> sftToValuesMap =  cache.get(frameWithValues);
             if (sftToValuesMap != null) {
@@ -322,10 +324,13 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                     Sft sft = entry.getKey();
                     List values = entry.getValue();
                     if (contains(sft, frameBeingDeleted) || values.contains(frameBeingDeleted)) {
-                        cache.remove(frameWithValues);
+                        framesToRemove.add(frameWithValues);
                     }
                 }
             }
+        }
+        for (Frame frameToRemove : framesToRemove) {
+            cache.remove(frameToRemove);
         }
     }
 
