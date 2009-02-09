@@ -67,6 +67,10 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
     public void delete(S session) {
         delegate.delete(session);
     }
+    
+    public boolean isDeleted() {
+        return delegate.isDeleted();
+    }
 
     public void startCompleteCache() {
         delegate.startCompleteCache();
