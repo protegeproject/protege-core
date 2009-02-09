@@ -74,6 +74,17 @@ This branch is now relative to the trunk at revision 12786
    svn merge $p/trunk/$d $p/branches/cache/$d 
    svn commit 
 
+
+Merged to trunk revision 12894
+    cd to protege-core cache directory
+    p=http://smi-protege/repos/protege/protege-core
+    svn info $p
+    svn merge $p/trunk@12786 $p/trunk@12894
+    ant clean update in protege-core
+    ant clean update in protege-owl
+    svn commit
+
+---------------------------------------------------------
 Diffs are actually pretty minimal:
   1. the server.update package is all different (one conflict)
   2. diffs to 
