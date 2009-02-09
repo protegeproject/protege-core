@@ -563,6 +563,15 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
             } catch (InvocationTargetException e) {
                 Log.getLogger().log(Level.SEVERE, "Programmer error", e);
             }
+            synchronized (this) {
+                if (instances.isEmpty() && !cancelled && changes.isEmpty()) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        Log.getLogger().log(Level.SEVERE, "Interrupted thread - why?", e);
+                    }
+                }
+            }
         }
 
         private void addOneInstance(final Instance instance) {
@@ -593,13 +602,6 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         }
 
         private synchronized Instance getNextInstance() {
-            if (instances.isEmpty() && !cancelled) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    Log.getLogger().log(Level.SEVERE, "Interrupted thread - why?", e);
-                }
-            }
             if (instances.isEmpty() || cancelled)  {
                 return null;
             }
