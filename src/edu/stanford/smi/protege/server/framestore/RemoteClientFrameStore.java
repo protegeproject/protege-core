@@ -1591,7 +1591,7 @@ public class RemoteClientFrameStore implements FrameStore {
     	if (cache == null) {
     		ret = false;
     	}
-    	else if (cache.isDeleted()) {
+    	else if (cache.isDeleted() && transactionNesting == 0) {
     	    cacheMap.remove(frame);
     	    cache = null;
     	    ret = false;
