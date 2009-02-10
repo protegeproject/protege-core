@@ -24,8 +24,6 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.Registration;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
-import edu.stanford.smi.protege.server.update.ValueUpdate;
-import edu.stanford.smi.protege.server.util.FifoWriter;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheAbortComplete;
@@ -310,6 +308,9 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
    * This call assumes that the kbLock is held on entry.
    */
   private void insertValueUpdate(Frame frame, SerializedCacheUpdate<RemoteSession, Sft, List> update) {
+    if (log.isLoggable(Level.FINEST)) {
+        log.finest("For frame " + frame.getName() + " inserted value update " + update);
+    }
     Registration registration = sessionMap.get(effectiveClient);
     if (registration == null) {
         return;
