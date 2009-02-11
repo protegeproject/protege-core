@@ -103,16 +103,10 @@ public class CompleteableCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void commitTransaction(S session) {
-        if (getTransactionNesting(session) <=0) {
-            localFlush();
-        }
         delegate.commitTransaction(session);
     }
     
     public void rollbackTransaction(S session) {
-        if (getTransactionNesting(session) <=0) {
-            localFlush();
-        }
         delegate.rollbackTransaction(session);
     }
     
