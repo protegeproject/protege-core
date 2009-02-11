@@ -66,7 +66,8 @@ public class SubclassPane extends SelectableContainer {
         setupDragAndDrop();
         getTree().setCellRenderer(FrameRenderer.createInstance());
         getTree().addMouseListener(new TreePopupMenuMouseListener(tree) {
-            public JPopupMenu getPopupMenu() {
+            @Override
+			public JPopupMenu getPopupMenu() {
                 return SubclassPane.this.getPopupMenu();
             }
         });
@@ -340,7 +341,16 @@ public class SubclassPane extends SelectableContainer {
         ComponentUtilities.setDisplayParent(getTree(), cls, new SuperclassTraverser());
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "SubclassPane";
+    }
+    
+    @Override
+    public void dispose() {
+    	((SelectableTree)getSelectable()).setRoot(null);
+    	((SelectableTree)getSelectable()).setModel(null);
+    	_knowledgeBase = null;
+    	super.dispose();
     }
 }
