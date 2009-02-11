@@ -117,6 +117,20 @@ Merged to trunk revision 12923
     svn merge $p/trunk@12903 $p/trunk@12923
     no changes
 
+This branch is now relative to the trunk at revision 12925
+Merging the changes to the changes to the cache utilities.
+    cd to the trunk protege-core directory
+    d=src/edu/stanford/smi/protege/util/transaction/cache
+    pushd $d
+    svn update
+    svn status
+    svn merge $p/trunk/$d $p/branches/cache/$d
+    svn diff -- looks right
+    popd
+    ant clean jar
+    svn status
+    svn commit
+    svn log -v -r 12924:HEAD http://smi-protege/repos/protege (MergeStatus.txt + these commits to protege-core)
 
 ---------------------------------------------------------
 Diffs are actually pretty minimal:
