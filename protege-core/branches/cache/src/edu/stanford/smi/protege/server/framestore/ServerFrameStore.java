@@ -678,7 +678,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         markDirty();
         Sft sft = new Sft(slot, null, true);
         CacheResult<List> cacheValues = new CacheResult<List>((List) values, true);
-        addReadUpdate(session, frame, new CacheRead<RemoteSession, Sft, List>(session, sft, cacheValues));
+        addReadUpdate(session, frame, new CacheModify<RemoteSession, Sft, List>(session, sft, cacheValues));
         return new OntologyUpdate(getValueUpdates(session));
       }
     }
