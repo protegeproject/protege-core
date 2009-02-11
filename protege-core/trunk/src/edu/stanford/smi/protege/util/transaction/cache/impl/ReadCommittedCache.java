@@ -96,35 +96,25 @@ public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void commitTransaction(S session) {
-        if (getTransactionNesting(session) < 0) {
-            flush(); // draconian
-        }
-        else {
-            delegate.commitTransaction(session);
-            if (getTransactionNesting(session) == 0) {
-                transactedWriteCache.remove(session);
-                for (CacheModify<S, V, R> modification : transactedModifications.remove(session)) {
-                    if (modification.getNewValue().isValid()) {
-                        delegate.modifyCache(session, modification.getVar(), modification.getNewValue().getResult());
-                    }
-                    else {
-                        delegate.modifyCache(session, modification.getVar());
-                    }
+        delegate.commitTransaction(session);
+        if (getTransactionNesting(session) == 0) {
+            transactedWriteCache.remove(session);
+            for (CacheModify<S, V, R> modification : transactedModifications.remove(session)) {
+                if (modification.getNewValue().isValid()) {
+                    delegate.modifyCache(session, modification.getVar(), modification.getNewValue().getResult());
+                }
+                else {
+                    delegate.modifyCache(session, modification.getVar());
                 }
             }
         }
     }
 
     public void rollbackTransaction(S session) {
-        if (getTransactionNesting(session) < 0) {
-            flush(); // draconian
-        }
-        else {
-            delegate.rollbackTransaction(session);
-            if (getTransactionNesting(session) == 0) {
-                transactedWriteCache.remove(session);
-                transactedModifications.remove(session);
-            }
+        delegate.rollbackTransaction(session);
+        if (getTransactionNesting(session) == 0) {
+            transactedWriteCache.remove(session);
+            transactedModifications.remove(session);
         }
     }
 

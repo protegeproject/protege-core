@@ -6,13 +6,25 @@ import java.util.Set;
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 
-public class DeletableCache<S, V, R> implements Cache<S, V, R> {
+/**
+ * This cache can take a delegate that either does not understand transactions (e.g. below
+ * READ_COMMITTED) or a delegate that does.  This cache is responsible for invalidating the cache if 
+ * on deletion or when the transaction nesting goes negative.  Once the cache is invalid, it 
+ * cannot recover and should be tossed out by the caller who holds this cache.
+ *
+ * @author tredmond
+ *
+ * @param <S>
+ * @param <V>
+ * @param <R>
+ */
+public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
     private boolean ignoreTransactions;
     private Set<S> sessionsWithCacheDeleted = new HashSet<S>();
     private boolean invalid = false;
     private Cache<S, V, R> delegate;
     
-    public DeletableCache(Cache<S, V, R> delegate, boolean ignoreTransactions) {
+    public InvalidatableCache(Cache<S, V, R> delegate, boolean ignoreTransactions) {
         this.delegate = delegate;
         this.ignoreTransactions = ignoreTransactions;
     }
@@ -65,6 +77,7 @@ public class DeletableCache<S, V, R> implements Cache<S, V, R> {
         }
         else {
             invalid = true;
+            delegate.flush();
             delegate = null;
         }
     }
@@ -113,13 +126,16 @@ public class DeletableCache<S, V, R> implements Cache<S, V, R> {
             return;
         }
         if (getTransactionNesting(session) < 0) {
-            localFlush();
+            invalid = true;
+            flush();
+            return;
         }
         delegate.commitTransaction(session);
         if (!ignoreTransactions 
                 && delegate.getTransactionNesting(session) == 0 
                 && sessionsWithCacheDeleted.contains(session)) {
             invalid = true;
+            delegate.flush();
             delegate = null;
             sessionsWithCacheDeleted.clear();
         }
@@ -130,7 +146,9 @@ public class DeletableCache<S, V, R> implements Cache<S, V, R> {
             return;
         }
         if (getTransactionNesting(session) < 0) {
-            localFlush();
+            invalid = true;
+            flush();
+            return;
         }
         delegate.rollbackTransaction(session);
         if (!ignoreTransactions && delegate.getTransactionNesting(session) == 0) {
@@ -150,13 +168,11 @@ public class DeletableCache<S, V, R> implements Cache<S, V, R> {
         if (invalid) {
             return;
         }
-        localFlush();
+        if (!sessionsWithCacheDeleted.isEmpty()) {
+            sessionsWithCacheDeleted.clear();
+            invalid = true;
+        }
         delegate.flush();
-    }
-    
-    private void localFlush() {
-        sessionsWithCacheDeleted.clear();
-        invalid = false;
     }
     
 }
