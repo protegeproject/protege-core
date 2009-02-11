@@ -74,9 +74,6 @@ public class ReadUncommittedCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void commitTransaction(S session) {
-        if (getTransactionNesting(session) <= 0) {
-            return;
-        }
         delegate.commitTransaction(session);
         if (delegate.getTransactionNesting(session) == 0) {
             transactedModifications.remove(session);
@@ -84,9 +81,6 @@ public class ReadUncommittedCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void rollbackTransaction(S session) {
-        if (getTransactionNesting(session) <= 0) {
-            return;
-        }
         delegate.rollbackTransaction(session);
         for (V var : transactedModifications.get(session)) {
             delegate.modifyCache(session, var);
