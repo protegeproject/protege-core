@@ -108,6 +108,16 @@ Merging the changes to the changes to the cache utilities.
     pushd $d
     svn merge $p/trunk/$d $p/branches/cache/$d
 
+Merged to trunk revision 12923
+    cd to protege-core cache directory
+    svn update
+    svn status
+    p=http://smi-protege/repos/protege/protege-core
+    svn info $p
+    svn merge $p/trunk@12903 $p/trunk@12923
+    no changes
+
+
 ---------------------------------------------------------
 Diffs are actually pretty minimal:
   1. the server.update package is all different (one conflict)
