@@ -23,13 +23,16 @@ public class ServerUtil {
 	 */
 	public static void fixMetaProject(MetaProject metaproject) {
 		if (!(metaproject instanceof MetaProjectImpl)) { return; }
+		boolean initialized = false;
 		MetaProjectImpl mp = (MetaProjectImpl) metaproject;
-		KnowledgeBase kb = mp.getKnowledgeBase();
+		KnowledgeBase kb = mp.getKnowledgeBase();		
 		try {
 			Cls policyCtrledObjCls = kb.getCls(ClsEnum.PolicyControlledObject.name());
 			if (policyCtrledObjCls == null) {
 				Log.getLogger().info("Fixing up the metaproject to new version. No information will be lost.");			
 				policyCtrledObjCls = kb.createCls(ClsEnum.PolicyControlledObject.name(), kb.getRootClses());
+			} else {
+				initialized = true;
 			}
 			addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.name));
 			addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.description));
@@ -49,12 +52,17 @@ public class ServerUtil {
 				projectCls.removeDirectSuperclass(kb.getRootCls());
 			}
 			
-			try {
-				kb.getProject().getDesignTimeClsWidget(policyCtrledObjCls).layoutLikeCls(projectCls);
-				kb.getProject().getDesignTimeClsWidget(policyCtrledObjCls).layoutLikeCls(serverCls);
-			} catch (Throwable t) {
-				Log.emptyCatchBlock(t);
+			/*
+			//causes headless expcetion - find better way to adapt metaproject
+			if (!initialized) {
+				try {				
+					kb.getProject().getDesignTimeClsWidget(policyCtrledObjCls).layoutLikeCls(projectCls);
+					kb.getProject().getDesignTimeClsWidget(policyCtrledObjCls).layoutLikeCls(serverCls);
+				} catch (Throwable t) {
+					Log.emptyCatchBlock(t);
+				}
 			}
+			*/
 			
 			ArrayList errors = new ArrayList();
 			mp.save(errors);
