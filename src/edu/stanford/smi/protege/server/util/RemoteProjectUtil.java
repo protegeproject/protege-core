@@ -104,6 +104,15 @@ public class RemoteProjectUtil {
 		}
     }
     
+    public static boolean isServerOperationAllowed(RemoteServer server, RemoteSession session, Operation op) {
+    	try {
+			return server.isServerOperationAllowed(session, op);			
+		} catch (RemoteException e) {
+			Log.getLogger().log(Level.WARNING, "Could not figure out from server whether session: "
+					+ session + " is allowed to: " + op);
+			return true;
+		}
+    }
 
  
 }
