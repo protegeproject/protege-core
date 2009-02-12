@@ -41,6 +41,7 @@ public class AboutBox extends JPanel {
         String text = getText(pane);
         text = replace(text, "{0}", Text.getVersion());
         text = replace(text, "{1}", Text.getBuildInfo());
+        text = replace(text, "{2}", Text.getCopyright());
         pane.setText(text);
     }
 
