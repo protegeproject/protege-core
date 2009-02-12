@@ -1,7 +1,7 @@
-; Mon Jun 23 15:29:00 GMT-08:00 2008
+; Thu Feb 12 09:38:18 GMT-08:00 2009
 ; 
 ;+ (version "3.4")
-;+ (build "Build 501")
+;+ (build "Build 518")
 
 ([metaproject_Class0] of  User
 
@@ -26,6 +26,56 @@
 	(description "The operation of displaying the project in the project list.\n\nThis is used to control the projects displayed when a user connects to a server.")
 	(name "DisplayInProjectList"))
 
+([metaproject_Class20003] of  Group
+
+	(description "The group of adminsitrators of the Protege server.")
+	(member [metaproject_Class20008])
+	(name "AdminGroup"))
+
+([metaproject_Class20004] of  Operation
+
+	(description "A super-right: a user who has this right can kill other users' sessions, stop and start server projects without having these rights set for each ptoject individually.")
+	(name "AdministerServer"))
+
+([metaproject_Class20005] of  Operation
+
+	(description "The operation of killing another user's session.")
+	(name "KillOtherUserSession"))
+
+([metaproject_Class20006] of  Operation
+
+	(description "The operation of starting a (previously stopped) server project.")
+	(name "StartRemoteProject"))
+
+([metaproject_Class20007] of  Operation
+
+	(description "The operation of stopping/closing a running server project.")
+	(name "StopRemoteProject"))
+
+([metaproject_Class20008] of  User
+
+	(description "A admin user that can perform adminisitrative operations on the Protege server.")
+	(group
+		[metaproject_Instance_0]
+		[metaproject_Class20003])
+	(name "Admin")
+	(password "admin"))
+
+([metaproject_Class20009] of  Server
+
+	(allowedGroupOperation [metaproject_Class20010])
+	(description "The server on which the policies apply.\nCurrent implementaion does not take into account the hostname, so all the policies (allowed group operations) are applied to this one instance.")
+	(name "MyServer"))
+
+([metaproject_Class20010] of  GroupOperation
+
+	(allowedGroup [metaproject_Class20003])
+	(allowedOperation
+		[metaproject_Class20004]
+		[metaproject_Class20005]
+		[metaproject_Class20006]
+		[metaproject_Class20007]))
+
 ([metaproject_Class3] of  GroupOperation
 
 	(allowedGroup [metaproject_Instance_0])
@@ -43,7 +93,8 @@
 		[metaproject_Instance_10007]
 		[metaproject_Class0]
 		[metaproject_Class1]
-		[metaproject_Class10001])
+		[metaproject_Class10001]
+		[metaproject_Class20008])
 	(name "World"))
 
 ([metaproject_Instance_10000] of  Project
