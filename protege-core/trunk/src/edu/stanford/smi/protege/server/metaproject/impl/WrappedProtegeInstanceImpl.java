@@ -12,8 +12,6 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
 public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
