@@ -106,7 +106,8 @@ public class RemoteProjectManager {
     public void showServerAdminWindow(RemoteServer server, RemoteSession session) {
     	ProjectManager.getProjectManager().setExitVMOnApplicationExit(false);
     	ProjectManager.getProjectManager().exitApplicationRequest();
-    	JFrame frame = ComponentFactory.showInFrame(new ServerAdminPanel(server, session), "Administer Protege Server");
+    	JFrame frame = ComponentFactory.showInFrame(new ServerAdminPanel(server, session), 
+    			"Administer Protege Server (Logged in as " + session.getUserName() + ")");
     	frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     	frame.requestFocus();
     	ProjectManager.getProjectManager().setExitVMOnApplicationExit(true);
