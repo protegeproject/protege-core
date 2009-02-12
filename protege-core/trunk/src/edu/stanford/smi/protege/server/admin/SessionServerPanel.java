@@ -182,19 +182,23 @@ public class SessionServerPanel extends AbstractRefreshableServerPanel {
 
 	private boolean isKillAllowed(RemoteSession session) {
 		if (session.equals(getSession())) {
-			return false; //can't kill my own session
+			return false; //can't kill this session
 		}
-		//for the session to kill check if each project in the session allows the session kill
-		//TODO: I think this logic is wrong		
 		int row = remoteSessions.indexOf(session);
 		if (row < 0) { return false; }
+		if (RemoteProjectUtil.isServerOperationAllowed(getServer(), getSession(), MetaProjectConstants.OPERATION_ADMINISTER_SERVER)) {
+			return true;
+		}
+		if (!RemoteProjectUtil.isServerOperationAllowed(getServer(), getSession(), MetaProjectConstants.OPERATION_KILL_OTHER_USER_SESSION)) {
+			return false;
+		}
+		//for the session to kill check if each project in the session allows the session kill
 		Collection<String> prjsInSession = (Collection<String>) tableModel.getValueAt(row, 3);
 		for (Iterator<String> iterator = prjsInSession.iterator(); iterator.hasNext();) {
-			String project = iterator.next();
-			if (	!project.equals(NO_PROJECT) &&
-					!RemoteProjectUtil.isOperationAllowed(getServer(), getSession(), project,
-					MetaProjectConstants.OPERATION_KILL_OTHER_USER_SESSION)) {
-				return false;
+			String project = iterator.next();			
+			if (	!project.equals(NO_PROJECT) &&					
+					!RemoteProjectUtil.isOperationAllowed(getServer(), getSession(), project, MetaProjectConstants.OPERATION_KILL_OTHER_USER_SESSION)) {
+						return false;
 			}			
 		}
 		return true;
