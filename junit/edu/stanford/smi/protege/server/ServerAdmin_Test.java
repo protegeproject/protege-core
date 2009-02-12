@@ -260,6 +260,7 @@ public class ServerAdmin_Test extends APITestCase {
                     ls.stageAchieved(TestKillOtherUser.OPEN, session);
                     ls.waitForStage(TestKillOtherUser.MURDER);
                     boolean failed = false;
+                    Thread.sleep(6000);
                     try {
                         kb.getFrames();
                     }
