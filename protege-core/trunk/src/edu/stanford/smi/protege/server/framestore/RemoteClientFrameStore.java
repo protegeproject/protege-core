@@ -1291,13 +1291,11 @@ public class RemoteClientFrameStore implements FrameStore {
       boolean skip = ServerProperties.skipPreload();
       if (skip) {
         return;
-      }
-      long t0 = System.currentTimeMillis();
+      }      
       Log.getLogger().config("Preloading frame values: " + kb);
       Set<String> frames = ServerProperties.preloadUserFrames();
       OntologyUpdate vu = getRemoteDelegate().preload(frames, preloadAll, session);
-      processValueUpdate(vu);
-      Log.getLogger().config("  ... in " + (System.currentTimeMillis() - t0)/1000 + " sec.");
+      processValueUpdate(vu);     
     }
 
     private Set getCacheOwnSlotValueClosure(Frame frame, Slot slot) throws RemoteException {
