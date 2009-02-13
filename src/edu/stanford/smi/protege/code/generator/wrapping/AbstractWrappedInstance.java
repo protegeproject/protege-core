@@ -8,9 +8,10 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.Disposable;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
-public abstract class AbstractWrappedInstance implements Localizable, Serializable {
+public abstract class AbstractWrappedInstance implements Localizable, Serializable, Disposable {
 	private Instance wrappedProtegeInstance;
 
 	protected AbstractWrappedInstance(Instance instance) {
@@ -100,7 +101,11 @@ public abstract class AbstractWrappedInstance implements Localizable, Serializab
         LocalizeUtils.localize(wrappedProtegeInstance, kb);
     }
 
-
+    public void dispose() {
+    	wrappedProtegeInstance = null;    	
+    }
+    
+    
     @Override
     public String toString() {
     	return getName();

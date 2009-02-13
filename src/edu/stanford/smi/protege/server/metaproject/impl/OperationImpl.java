@@ -6,8 +6,6 @@ import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
 import edu.stanford.smi.protege.server.metaproject.Operation;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 
 public class OperationImpl extends WrappedProtegeInstanceImpl implements Operation, Serializable {
 	private static final long serialVersionUID = 3175714463454087306L;

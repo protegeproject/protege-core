@@ -4,8 +4,12 @@ package edu.stanford.smi.protege.util;
 //ESCA*JAVA0031
 //ESCA*JAVA0078
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * BrowserLauncher is a class that provides one static method, openURL, which opens the default
@@ -472,7 +476,7 @@ public class BrowserLauncher {
                 break;
             case OTHER :
             default :
-                browser = "netscape";
+                browser = "firefox";
                 break;
         }
         return browser;

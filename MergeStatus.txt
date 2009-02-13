@@ -132,6 +132,18 @@ Merging the changes to the changes to the cache utilities.
     svn commit
     svn log -v -r 12924:HEAD http://smi-protege/repos/protege (MergeStatus.txt + these commits to protege-core)
 
+Merged to trunk revision 13025
+    cd to protege-core cache directory
+    svn update
+    svn status
+    p=http://smi-protege/repos/protege/protege-core
+    svn info $p
+    svn merge $p/trunk@12925 $p/trunk@13025
+    ant clean
+    ant update
+    pushd ../protege-owl ; ant clean update
+
+
 ---------------------------------------------------------
 Diffs are actually pretty minimal:
   1. the server.update package is all different (one conflict)

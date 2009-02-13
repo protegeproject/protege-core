@@ -10,6 +10,7 @@ import edu.stanford.smi.protege.server.RemoteServer;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
 import edu.stanford.smi.protege.server.ServerProject;
+import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.util.ServerJob;
 
 public class GetProjectsForSessionJob extends ServerJob {
@@ -32,8 +33,11 @@ public class GetProjectsForSessionJob extends ServerJob {
         	return prjNames;
         }
         for (ServerProject prj : prjs) {
-			String name = prj.getMetaProjectInstance().getName();
-			prjNames.add(name);			
+			ProjectInstance metaProjectInstance = prj.getMetaProjectInstance();
+			if (metaProjectInstance != null) { //null, when temporary project, e.g., chat 
+				String name = metaProjectInstance.getName();
+				prjNames.add(name);			
+			}
 		}
         Collections.sort(prjNames);        
         return prjNames;

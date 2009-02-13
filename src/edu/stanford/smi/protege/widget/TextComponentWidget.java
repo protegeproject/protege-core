@@ -1,15 +1,31 @@
 package edu.stanford.smi.protege.widget;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.text.JTextComponent;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.ValueType;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.DocumentChangedListener;
+import edu.stanford.smi.protege.util.LabeledComponent;
+import edu.stanford.smi.protege.util.Log;
 
 /**
  * Slot widget for acquiring a string of arbitrary length.
@@ -29,13 +45,15 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
         }
     };
     private FocusListener _focusListener = new FocusAdapter() {
-        public void focusLost(FocusEvent event) {
+        @Override
+		public void focusLost(FocusEvent event) {
             commitChanges();
         }
     };
 
     private KeyListener _keyListener = new KeyAdapter() {
-        public void keyPressed(KeyEvent event) {
+        @Override
+		public void keyPressed(KeyEvent event) {
             if (event.getKeyCode() == KeyEvent.VK_ENTER) {
                 commitChanges();
             }
@@ -65,8 +83,21 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
 
     protected abstract JComponent createCenterComponent(JTextComponent textComponent);
 
-    public void dispose() {
+    @Override
+	public void dispose() {
         commitChanges();
+        if (_textComponent != null) {
+        	try {
+        		_textComponent.getDocument().removeDocumentListener(_documentListener);
+        		_textComponent.removeFocusListener(_focusListener);
+        		_textComponent.removeKeyListener(_keyListener);
+        	} catch (Exception e) {
+        		Log.emptyCatchBlock(e);
+        	}
+        }
+        _documentListener = null;
+        _focusListener = null;
+        _keyListener = null;
         super.dispose();
     }
 
@@ -87,12 +118,14 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
         _isDirty = b;
     }
 
-    public void setInstanceValues() {
+    @Override
+	public void setInstanceValues() {
         super.setInstanceValues();
         _isDirty = false;
     }
 
-    public Collection getValues() {
+    @Override
+	public Collection getValues() {
         String s = getText();
         return CollectionUtilities.createList(s);
     }
@@ -151,7 +184,8 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
         });
     }
 
-    public void setEditable(boolean b) {
+    @Override
+	public void setEditable(boolean b) {
     	b = b && !isReadOnlyConfiguredWidget();
     	
         _textComponent.setEditable(b);
@@ -171,14 +205,16 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
         // do nothing
     }
 
-    public void setInstance(Instance instance) {
+    @Override
+	public void setInstance(Instance instance) {
         if (_isDirty) {
             valueChanged();
         }
         super.setInstance(instance);
     }
 
-    public void setValues(Collection values) {
+    @Override
+	public void setValues(Collection values) {
         Object o = CollectionUtilities.getFirstItem(values);
         String text = o == null ? (String) null : o.toString();
         setText(text);
@@ -199,12 +235,9 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
     
     @Override
     public WidgetConfigurationPanel createWidgetConfigurationPanel() {
-    	WidgetConfigurationPanel confPanel = super.createWidgetConfigurationPanel();
-    	
-    	confPanel.addTab("Options", new ReadOnlyWidgetConfigurationPanel(this));
-    	
+    	WidgetConfigurationPanel confPanel = super.createWidgetConfigurationPanel();    	
+    	confPanel.addTab("Options", new ReadOnlyWidgetConfigurationPanel(this));    	
     	return confPanel;
-    }
- 
-    
+    }    
+   
 }

@@ -7,8 +7,6 @@ import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Group;
 import edu.stanford.smi.protege.server.metaproject.User;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 
 public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serializable {
 	private static final long serialVersionUID = -4416984896523630762L;

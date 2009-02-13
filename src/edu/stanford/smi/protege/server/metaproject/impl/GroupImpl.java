@@ -7,8 +7,6 @@ import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Group;
 import edu.stanford.smi.protege.server.metaproject.User;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 
 public class GroupImpl extends WrappedProtegeInstanceImpl implements Group {
     private static final long serialVersionUID = -6623180400376787848L;

@@ -1,17 +1,50 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.*;
-import java.awt.dnd.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DropTarget;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTree;
+import javax.swing.tree.TreePath;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.Transaction;
+import edu.stanford.smi.protege.resource.Colors;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.ComponentUtilities;
+import edu.stanford.smi.protege.util.CreateAction;
+import edu.stanford.smi.protege.util.DefaultRenderer;
+import edu.stanford.smi.protege.util.DeleteAction;
+import edu.stanford.smi.protege.util.LabeledComponent;
+import edu.stanford.smi.protege.util.LazyTreeNode;
+import edu.stanford.smi.protege.util.LazyTreeRoot;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.SelectableContainer;
+import edu.stanford.smi.protege.util.SelectableTree;
+import edu.stanford.smi.protege.util.SuperslotTraverser;
+import edu.stanford.smi.protege.util.TreePopupMenuMouseListener;
+import edu.stanford.smi.protege.util.ViewAction;
+import edu.stanford.smi.protege.util.WaitCursor;
 
 /**
  * This component displays the superslot/subslot tree on the slots tab.
@@ -53,7 +86,8 @@ public class SubslotPane extends SelectableContainer {
         add(_labeledComponent, BorderLayout.CENTER);
         add(new SlotsTreeFinder(_knowledgeBase, tree), BorderLayout.SOUTH);
         tree.addMouseListener(new TreePopupMenuMouseListener(tree) {
-            public JPopupMenu getPopupMenu() {
+            @Override
+			public JPopupMenu getPopupMenu() {
                 return SubslotPane.this.getPopupMenu();
             }
         });
@@ -158,7 +192,8 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action getCreateAction() {
         return new CreateAction(ResourceKey.SLOT_CREATE) {
-            public void onCreate() {
+            @Override
+			public void onCreate() {
                 Transaction<Slot> t = new Transaction<Slot>(_knowledgeBase, "Create Slot (random name)") {
                     private Slot slot;
                     
@@ -168,7 +203,8 @@ public class SubslotPane extends SelectableContainer {
                         return true;
                     }
                     
-                    public Slot getResult() {
+                    @Override
+					public Slot getResult() {
                         return slot;
                     }
                 };
@@ -198,7 +234,8 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action getCreateSubslotAction() {
         return new CreateAction(ResourceKey.SLOT_CREATE_SUBSLOT) {
-            public void onCreate() {
+            @Override
+			public void onCreate() {
                 // SystemUtilities.debugBreak();
                 Collection superslots = SubslotPane.this.getSelection();
                 Slot firstSuperslot = (Slot) CollectionUtilities.getFirstItem(superslots);
@@ -241,11 +278,13 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action getDeleteAction() {
         return new DeleteAction(ResourceKey.SLOT_DELETE, this) {
-            public void onDelete(Collection slots) {
+            @Override
+			public void onDelete(Collection slots) {
                 handleDelete(slots);
             }
 
-            public void onSelectionChange() {
+            @Override
+			public void onSelectionChange() {
                 Slot slot = (Slot) CollectionUtilities.getFirstItem(this.getSelection());
                 if (slot != null) {
                     setAllowed(slot.isEditable());
@@ -275,9 +314,11 @@ public class SubslotPane extends SelectableContainer {
         TreePath childPath = getTree().getSelectionModel().getLeadSelectionPath();
         if (childPath != null) {
             TreePath path = childPath.getParentPath();
-            LazyTreeNode node = (LazyTreeNode) path.getLastPathComponent();
-            Object o = node.getUserObject();
-            slot = (o instanceof Slot) ? (Slot) o : null;
+            if (path != null) {
+            	LazyTreeNode node = (LazyTreeNode) path.getLastPathComponent();
+            	Object o = node.getUserObject();
+            	slot = (o instanceof Slot) ? (Slot) o : null;
+            }
         }
         return slot;
     }
@@ -321,7 +362,8 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action getViewAction() {
         return new ViewAction(ResourceKey.SLOT_VIEW, this) {
-            public void onView(Object o) {
+            @Override
+			public void onView(Object o) {
                 _project.show((Slot) o);
             }
         };
@@ -372,7 +414,8 @@ public class SubslotPane extends SelectableContainer {
         ComponentUtilities.setDisplayParent(getTree(), slot, new SuperslotTraverser());
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "SubclassPane";
     }
     
