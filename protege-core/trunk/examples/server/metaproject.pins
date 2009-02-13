@@ -1,7 +1,7 @@
-; Thu Feb 12 09:38:18 GMT-08:00 2009
+; Thu Feb 12 22:45:22 GMT-08:00 2009
 ; 
 ;+ (version "3.4")
-;+ (build "Build 518")
+;+ (build "Build 522")
 
 ([metaproject_Class0] of  User
 
@@ -14,6 +14,11 @@
 	(group [metaproject_Instance_0])
 	(name "Samson Tu")
 	(password "samson"))
+
+([metaproject_Class10000] of  Operation
+
+	(description "The operation of shutting down the server.")
+	(name "ShutdownServer"))
 
 ([metaproject_Class10001] of  User
 
@@ -74,7 +79,8 @@
 		[metaproject_Class20004]
 		[metaproject_Class20005]
 		[metaproject_Class20006]
-		[metaproject_Class20007]))
+		[metaproject_Class20007]
+		[metaproject_Class10000]))
 
 ([metaproject_Class3] of  GroupOperation
 
