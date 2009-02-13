@@ -341,7 +341,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         _projectToServerProjectMap.put(p, sp);
     }
 
-    private Project getOrCreateProject(String name) {
+    public Project getOrCreateProject(String name) {
         Project project = getProject(name);
         if (project == null) {
             project = createProject(name);
