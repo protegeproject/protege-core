@@ -32,7 +32,7 @@ public class ControlServerPanel extends AbstractRefreshableServerPanel {
 	protected JComponent createCenterComponent() {
 		JPanel panel = new JPanel(new GridBagLayout());
 		JButton shutdownButton = new JButton(getShutdownAction());
-		shutdownButton.setText("Shutdown the Protege server");
+		shutdownButton.setText("Shut down the Protege server");
 		boolean hasShutdownRight = hasShutdownRight();
 		shutdownButton.setEnabled(hasShutdownRight);
 		if (!hasShutdownRight) {
