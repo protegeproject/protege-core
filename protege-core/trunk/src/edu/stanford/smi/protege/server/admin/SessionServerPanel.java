@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.server.admin;
 
 import java.awt.event.ActionEvent;
-import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import edu.stanford.smi.protege.resource.Icons;
 import edu.stanford.smi.protege.server.RemoteServer;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Session;
-import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.job.GetProjectsForSessionJob;
 import edu.stanford.smi.protege.server.job.GetSessionsJob;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
@@ -111,6 +109,7 @@ public class SessionServerPanel extends AbstractRefreshableServerPanel {
 			}
 		} catch (Exception e) {
 			Log.getLogger().log(Level.WARNING, "Could not get remote sessions from server.", e);
+			treatPossibleConnectionLostException(e);
 		}
 	}
 
@@ -132,7 +131,8 @@ public class SessionServerPanel extends AbstractRefreshableServerPanel {
 					} catch (RemoteException e) {
 						Log.getLogger().log(Level.WARNING, "Could not kill session " + session, e);
 						ModalDialog.showMessageDialog(SessionServerPanel.this, "Could not kill session " + session + ".\n" +
-								"See console and logs for more information.");						
+								"See console and logs for more information.");
+						treatPossibleConnectionLostException(e);
 					}					
 					refresh();
 				}
@@ -169,14 +169,7 @@ public class SessionServerPanel extends AbstractRefreshableServerPanel {
 			fillTableModel();
 			tableModel.fireTableDataChanged();
 		} catch (Throwable t) {
-			do{
-				if (t instanceof ServerSessionLost || t instanceof ConnectException) {
-					Log.getLogger().warning("Session disconnected from the server");
-					ModalDialog.showMessageDialog(SessionServerPanel.this, "You were disconnected from the server",
-					"No server connection");
-					return;
-				}
-			} while ((t = t.getCause()) != null);
+			treatPossibleConnectionLostException(t);
 		}
 	}
 
