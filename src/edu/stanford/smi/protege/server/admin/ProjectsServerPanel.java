@@ -3,7 +3,6 @@ package edu.stanford.smi.protege.server.admin;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +26,6 @@ import edu.stanford.smi.protege.resource.Icons;
 import edu.stanford.smi.protege.server.RemoteServer;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
-import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.job.GetFrameCalculatorStatisticsJob;
 import edu.stanford.smi.protege.server.job.GetProjectsStatusMapJob;
@@ -163,11 +161,13 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 					sessions = getServer().getCurrentSessions(project, getSession());
 				} catch (RemoteException e) {
 					Log.getLogger().log(Level.WARNING, "Error at getting the sessions for the remote project " + project, e);
+					treatPossibleConnectionLostException(e);					
 				}
 				prjsTableModel.addRow(new Object[] {project, projectsToStatusMap.get(project), sessions});
 			}
-		} catch (Exception e) {
+		} catch (Exception e) {			
 			Log.getLogger().log(Level.WARNING, "Error at getting projects status from server.", e);
+			treatPossibleConnectionLostException(e);
 		}
 	}
 
@@ -208,6 +208,7 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 			
 		} catch (Throwable t) {
 			Log.getLogger().log(Level.WARNING, "Failed to get user info from server for project " + project, t);
+			treatPossibleConnectionLostException(t);
 		}
 		userInfoTableModel.setUserInfo(userInfo, stats);		
 	}
@@ -228,6 +229,7 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 						Log.getLogger().log(Level.WARNING, "Could not shut down remote project " + project, e);
 						ModalDialog.showMessageDialog(ProjectsServerPanel.this, "Shutting down the remote project " + project +
 								" failed. \nSee console and log for more details.");
+						treatPossibleConnectionLostException(e);
 					}
 					refresh();
 				}
@@ -276,6 +278,7 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 						ModalDialog.showMessageDialog(ProjectsServerPanel.this, "Could not start remote project "
 								+ project + ".\n" +
 								"See console and logs for more information.");
+						treatPossibleConnectionLostException(e);
 					}
 					refresh();
 				}
@@ -294,6 +297,7 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 						success = getServer().cancelShutdownProject(getSession(), project);
 					} catch (RemoteException e) {
 						Log.getLogger().log(Level.WARNING, "Could not cancel shut down for remote project " + project, e);
+						treatPossibleConnectionLostException(e);
 					}					
 					if (!success) {
 						ModalDialog.showMessageDialog(ProjectsServerPanel.this, "Could not cancel shut down of project " + project);
@@ -335,14 +339,7 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 			fillProjectsTableModel();
 			prjsTableModel.fireTableDataChanged();
 		} catch (Throwable t) {
-			do{
-			  if (t instanceof ServerSessionLost || t instanceof ConnectException) {
-                  Log.getLogger().warning("Session disconnected from the server");
-                  ModalDialog.showMessageDialog(ProjectsServerPanel.this, "You were disconnected from the server",
-                		  "No server connection");
-                  return;
-              }
-          } while ((t = t.getCause()) != null);
+			treatPossibleConnectionLostException(t);
 		}
 	}
 
