@@ -69,7 +69,8 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     }
 
     private ClsListener _clsListener = new ClsAdapter() {
-        public void templateFacetValueChanged(ClsEvent event) {
+        @Override
+		public void templateFacetValueChanged(ClsEvent event) {
         	if (event.isReplacementEvent()) return;
             if (AbstractWidget.equals(event.getSlot(), getSlot())) {
                 updateBorder(getValues());
@@ -79,7 +80,8 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     
     private boolean _kbListenerInstalled = false;
     private KnowledgeBaseListener _kbListener = new KnowledgeBaseAdapter() {
-    	public void frameReplaced(edu.stanford.smi.protege.event.KnowledgeBaseEvent event) {
+    	@Override
+		public void frameReplaced(edu.stanford.smi.protege.event.KnowledgeBaseEvent event) {
     		Frame oldFrame = event.getFrame();
     		Frame newFrame = event.getNewFrame();
     		//TODO: check this!!!!
@@ -102,7 +104,8 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
 
     private ClsListener _associatedClsListener = new ClsAdapter() {
 
-        public void templateFacetValueChanged(ClsEvent event) {
+        @Override
+		public void templateFacetValueChanged(ClsEvent event) {
         	if (event.isReplacementEvent()) return;
             if (AbstractWidget.equals(event.getFacet(), _slot.getAssociatedFacet())) {
                 loadValues();
@@ -132,7 +135,8 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     	}
     }
 
-    public void dispose() {
+    @Override
+	public void dispose() {
         super.dispose();
         getCls().removeClsListener(_clsListener);
         getKnowledgeBase().removeKnowledgeBaseListener(_kbListener);
@@ -222,7 +226,8 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         _showInstanceListener = listener;
     }
 
-    public void showInstance(Instance instance) {
+    @Override
+	public void showInstance(Instance instance) {
         if (_showInstanceListener == null) {
             super.showInstance(instance);
         } else {
@@ -329,7 +334,8 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         return result;
     }
 
-    public String getLabel() {
+    @Override
+	public String getLabel() {
         String label = super.getLabel();
         if (label == null) {
             label = getDefaultLabel();
@@ -354,7 +360,8 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         return getCls().getTemplateSlotMinimumCardinality(getSlot());
     }
 
-    public Dimension getPreferredSize() {
+    @Override
+	public Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
         if (_preferredColumns > 0) {
             d.width = _preferredColumns * ComponentUtilities.getStandardColumnWidth();
@@ -387,7 +394,9 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     /**
      * @deprecated
      */
-    public void reshape(int x, int y, int w, int h) {
+    @Deprecated
+	@Override
+	public void reshape(int x, int y, int w, int h) {
         super.reshape(x, y, w, h);
         if (isDesignTime()) {
             // Log.trace("design time", this, "reshape", getBounds());
@@ -482,7 +491,8 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
         _preferredRows = nRows;
     }
 
-    public void setPreferredSize(Dimension size) {
+    @Override
+	public void setPreferredSize(Dimension size) {
         super.setPreferredSize(size);
         _preferredColumns = 0;
         _preferredRows = 0;
@@ -578,5 +588,6 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     
     public void setReadOnlyWidget(boolean isReadOnly) {
     	this.getPropertyList().setBoolean(READ_ONLY_WIDGET_PROPERTY, isReadOnly);
-    }
+    }   
+    
 }

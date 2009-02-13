@@ -31,17 +31,12 @@ import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
 import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
 import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
-import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
-import edu.stanford.smi.protege.server.job.ProjectNotifyJob;
-import edu.stanford.smi.protege.server.job.SetProjectStatusJob;
 import edu.stanford.smi.protege.test.APITestCase;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.LockStepper;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
-
-import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
 
 public class DBServer_Test extends APITestCase {
   
@@ -69,7 +64,8 @@ public class DBServer_Test extends APITestCase {
 
   private boolean informedNotConfigured = false;
   
-  public void setUp() throws Exception {
+  @Override
+public void setUp() throws Exception {
     super.setUp();
     if (clientProject == null) {
       if (!informedNotConfigured) {
@@ -189,7 +185,8 @@ public class DBServer_Test extends APITestCase {
       KnowledgeBase kb = getKb();
       RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.READ_COMMITTED);
       new Thread("Second Transaction With Writes Thread") {
-        public void run() {
+        @Override
+		public void run() {
           try {
             String transactionName = "My transaction";
             KnowledgeBase kb = getKb();
@@ -265,7 +262,8 @@ public class DBServer_Test extends APITestCase {
       final LockStepper<Test02Stages> ls = new LockStepper<Test02Stages>(Test02Stages.testStarted);
       final Cls testCls = kb.createCls(newName(), Collections.singleton(kb.getSystemFrames().getRootCls()));
       new Thread("Second Transaction with Writes Thread doTest02(" + commit + "," + commitOther + ")") {
-        public void run() {
+        @Override
+		public void run() {
           try {
             KnowledgeBase kb = getKb();
             try {
@@ -383,7 +381,8 @@ public class DBServer_Test extends APITestCase {
     final Cls middle = kb.createCls(newName(), Collections.singleton(top));
     final Cls firstBottom = kb.createCls(newName(), Collections.singleton(middle));
     new Thread("Second knowledge base which writes a sub-subclass") {
-      public void run() {
+      @Override
+	public void run() {
         try {
           KnowledgeBase kb = getKb();
           RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
@@ -449,7 +448,8 @@ public class DBServer_Test extends APITestCase {
     final Cls middle = kb.createCls(newName(), Collections.singleton(top));
     final Cls firstBottom = kb.createCls(newName(), Collections.singleton(middle));
     new Thread("Second knowledge base which writes a sub-subclass") {
-      public void run() {
+      @Override
+	public void run() {
         try {
           KnowledgeBase kb = getKb();
           RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.READ_COMMITTED);
@@ -523,7 +523,8 @@ public class DBServer_Test extends APITestCase {
     assertTrue(values.contains(val1));
     assertTrue(!values.contains(val2));
     new Thread("Non-transaction write thread") {
-      public void run() {
+      @Override
+	public void run() {
         try {
           KnowledgeBase kb = getKb();
           RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
@@ -580,7 +581,8 @@ public class DBServer_Test extends APITestCase {
 
 
       new Thread("Client Accessing the server") {
-          public void run() {
+          @Override
+		public void run() {
               try {
                   KnowledgeBase kb = getKb();
                   RemoteClientFrameStore.setTransactionIsolationLevel(kb, TransactionIsolationLevel.REPEATABLE_READ);
@@ -665,7 +667,8 @@ public class DBServer_Test extends APITestCase {
       checkEventFrameStores(serverSideKb, true, false);
 
       new Thread("First Client") {
-          public void run() {   
+          @Override
+		public void run() {   
               try {
                   KnowledgeBase kb1 = getKb();
                   assertTrue(kb1.getProject().isMultiUserClient());
@@ -711,7 +714,8 @@ public class DBServer_Test extends APITestCase {
       }.start();
 
       new Thread("Second Client") {
-          public void run() {   
+          @Override
+		public void run() {   
               try {
                   KnowledgeBase kb2 = getKb();
                   checkEventFrameStores(kb2, false, false);

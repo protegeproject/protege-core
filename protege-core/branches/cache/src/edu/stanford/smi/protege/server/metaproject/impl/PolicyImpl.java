@@ -10,8 +10,11 @@ import edu.stanford.smi.protege.server.metaproject.Group;
 import edu.stanford.smi.protege.server.metaproject.GroupOperation;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
+import edu.stanford.smi.protege.server.metaproject.PolicyControlledObject;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.ServerInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
+import edu.stanford.smi.protege.util.CollectionUtilities;
 
 public class PolicyImpl implements Policy, Localizable, Serializable {
     private static final long serialVersionUID = 2209527990426609790L;
@@ -23,13 +26,12 @@ public class PolicyImpl implements Policy, Localizable, Serializable {
 		this.mp = mp;
 	}
 
-
 	/*
 	 * The project is ignored in this implementation.
 	 */
 	public boolean isOperationAuthorized(User user, 
 	                                     Operation op, 
-	                                     ProjectInstance project) {
+	                                     PolicyControlledObject project) {
 		if (!getKnownOperations().contains(op)) {
 			return true;
 		}
@@ -78,6 +80,19 @@ public class PolicyImpl implements Policy, Localizable, Serializable {
 	    return null;
 	}
 
+	
+	public ServerInstance getServerInstanceByName(String serverName) {
+	    for (ServerInstance serverInstance : mp.getServers()) {
+	        if (serverInstance.getName().equals(serverName)) {
+	            return serverInstance;
+	        }
+	    }
+	    return null;
+	}
+	
+	public ServerInstance getFirstServerInstance() {		
+		return CollectionUtilities.getFirstItem(mp.getServers());
+	}
 
     public void localize(KnowledgeBase kb) {
         mp.localize(kb);

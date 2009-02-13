@@ -57,6 +57,14 @@ public final class Text {
     public static String getVersion() {
         return props.getProperty("build.version", "?");
     }
+    
+    public static String getTrademark() {
+    	return props.getProperty("trademark");
+    }
+
+    public static String getCopyright() {
+    	return props.getProperty("copyright");
+    }
 
     public static URL getAboutURL() {
         return Text.class.getResource("files/about.html");

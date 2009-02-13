@@ -22,19 +22,20 @@ import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.ServerInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.util.Log;
 
 public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
     
     public static enum ClsEnum {
-    	Project, User, Group, Operation, GroupOperation;
+    	Project, User, Group, Operation, GroupOperation, PolicyControlledObject, Server;
     }
 
 
     public static enum SlotEnum {
         name, password, location, group, member, allowedGroup, allowedOperation, 
-        allowedGroupOperation, owner, description, annotationProject;
+        allowedGroupOperation, owner, description, annotationProject, hostName;
     }
 
 
@@ -84,6 +85,10 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 			return new OperationImpl(this, i);
 		case User:
 			return new UserImpl(this, i);
+		case Server:
+			return new ServerInstanceImpl(this, i);
+		case PolicyControlledObject:
+			return new PolicyControlledObjectImpl(this, i);
 		default:
 			throw new UnsupportedOperationException("Unexpected cls " + cls);
 		}
@@ -173,6 +178,10 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	    return getWrappedInstances(MetaProjectImpl.ClsEnum.GroupOperation);
 	}
 	
+	@SuppressWarnings("unchecked")
+	public Set<ServerInstance> getServers() {
+		return getWrappedInstances(MetaProjectImpl.ClsEnum.Server);
+	}
 	
 	
 	public Policy getPolicy() {

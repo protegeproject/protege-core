@@ -40,7 +40,9 @@ public class AboutBox extends JPanel {
     private static void substitute(JEditorPane pane) {
         String text = getText(pane);
         text = replace(text, "{0}", Text.getVersion());
-        text = replace(text, "{1}", Text.getBuildInfo());
+        text = replace(text, "{1}", Text.getStatus());
+        text = replace(text, "{2}", Text.getBuildInfo());
+        text = replace(text, "{3}", Text.getCopyright());
         pane.setText(text);
     }
 

@@ -77,11 +77,15 @@ public class SelectableTree extends JTree implements Selectable, Disposable, Aut
     }
 
     public void dispose() {
-        TreeModel model = getModel();
-        if (model instanceof LazyTreeModel) {
-            LazyTreeModel lazyModel = (LazyTreeModel) model;
-            lazyModel.dispose();
-        }
+    	TreeModel model = getModel();
+    	if (model != null){
+    		model.removeTreeModelListener(listener);
+    		if (model instanceof LazyTreeModel) {
+    			LazyTreeModel lazyModel = (LazyTreeModel) model;
+    			lazyModel.dispose();
+    		}
+    	}
+    	setCellRenderer(null);
     }
 
     //ESCA-JAVA0130

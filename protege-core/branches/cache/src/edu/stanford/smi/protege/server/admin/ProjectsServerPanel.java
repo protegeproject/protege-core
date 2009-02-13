@@ -129,11 +129,11 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 		int col2size = 8;
 	    JPanel panel = new JPanel(new GridLayout(3,2,5,5));
 
-	    panel.add(new JLabel("Estimated round trip time:"));
+	    panel.add(new JLabel("Estimated round trip time (ms):"));
 	    serverRoundTripField = createOutputTextField(col2size);
 	    panel.add(serverRoundTripField);
 
-	    panel.add(new JLabel("Milliseconds to calculate Frame Cache"));
+	    panel.add(new JLabel("Milliseconds to calculate frame cache:"));
 	    timeToFrameCacheField = createOutputTextField(col2size);
 	    panel.add(timeToFrameCacheField);
 
@@ -355,16 +355,16 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 	}
 
 	private boolean isStopAllowed(int row) {
-		return getProjectStatus(row).equals(ProjectStatus.READY) &&
-				RemoteProjectUtil.isOperationAllowed(getServer(), getSession(), getProject(row), 
-						MetaProjectConstants.OPERATION_STOP_REMOTE_PROJECT);
+		return getProjectStatus(row).equals(ProjectStatus.READY) && (
+			RemoteProjectUtil.isServerOperationAllowed(getServer(), getSession(), MetaProjectConstants.OPERATION_ADMINISTER_SERVER) ||
+			RemoteProjectUtil.isOperationAllowed(getServer(), getSession(), getProject(row), MetaProjectConstants.OPERATION_STOP_REMOTE_PROJECT));
 	}
 
 	private boolean isStartAllowed(int row) {
 		return (getProjectStatus(row).equals(ProjectStatus.CLOSED_FOR_MAINTENANCE) ||
-				getProjectStatus(row).equals(ProjectStatus.SHUTTING_DOWN)) &&
-				RemoteProjectUtil.isOperationAllowed(getServer(), getSession(), getProject(row), 
-						MetaProjectConstants.OPERATION_START_REMOTE_PROJECT);
+				getProjectStatus(row).equals(ProjectStatus.SHUTTING_DOWN)) && 
+				(RemoteProjectUtil.isServerOperationAllowed(getServer(), getSession(), MetaProjectConstants.OPERATION_ADMINISTER_SERVER) ||
+				 RemoteProjectUtil.isOperationAllowed(getServer(), getSession(), getProject(row), MetaProjectConstants.OPERATION_START_REMOTE_PROJECT));
 	}
 
 	

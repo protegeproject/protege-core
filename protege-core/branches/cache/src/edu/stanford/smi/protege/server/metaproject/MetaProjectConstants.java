@@ -14,7 +14,7 @@ public class MetaProjectConstants {
 	public final static Operation OPERATION_ONTOLOGY_TAB_READ = new UnbackedOperationImpl("OntologyTabRead", null);
 	public final static Operation OPERATION_ONTOLOGY_TAB_WRITE = new UnbackedOperationImpl("OntologyTabWrite", null);
 
-	public final static Operation OPERATION_CONFIGURE_SERVER = new UnbackedOperationImpl("ConfigureServer", null);
+	public final static Operation OPERATION_ADMINISTER_SERVER = new UnbackedOperationImpl("AdministerServer", null);
 
 	public static final Operation OPERATION_KILL_OTHER_USER_SESSION = new UnbackedOperationImpl("KillOtherUserSession", null);
 

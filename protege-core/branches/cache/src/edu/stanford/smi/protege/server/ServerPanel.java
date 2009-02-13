@@ -69,7 +69,7 @@ public class ServerPanel extends JPanel implements Validatable {
 		 _registerUserPanel = getRegisterUserPanel();		 
 		panel.add(_registerUserPanel);
 		
-		_administerServerChekBox = ComponentFactory.createCheckBox("Administer server (requires priviledges)");
+		_administerServerChekBox = ComponentFactory.createCheckBox("Administer server (requires privileges)");
 		_administerServerChekBox.setSelected(false);
 		panel.add(_administerServerChekBox);
 
