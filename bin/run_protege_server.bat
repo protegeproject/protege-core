@@ -18,11 +18,12 @@ set CODEBASE=-Djava.rmi.server.codebase=%CODEBASE_URL%
 set LOG4J_OPT=-Dlog4j.configuration=file:log4j.xml
 
 rem --- Optional arguments; uncomment if necessary ---
+rem set HOSTNAME=-Djava.rmi.server.hostname=localhost
 rem set "PORTOPTS=-Dprotege.rmi.server.port=5200 -Dprotege.rmi.registry.port=5100"
 rem TX=-Dtransaction.level=READ_COMMITTED
 rem "DEBUG_OPT=-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
 
-set OPTIONS=%MAX_MEMORY% %CODEBASE% %HEADLESS% %LOG4J_OPT% %PORTOPTS% %TX% %DEBUG_OPT%
+set OPTIONS=%MAX_MEMORY% %CODEBASE% %HEADLESS% %LOG4J_OPT% %HOSTNAME% %PORTOPTS% %TX% %DEBUG_OPT%
 
 rem ------------------- Cmd Options -------------------
 rem If you want automatic saving of the project, 
