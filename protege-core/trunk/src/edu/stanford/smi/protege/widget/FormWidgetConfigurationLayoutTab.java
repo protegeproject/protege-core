@@ -1,13 +1,20 @@
 package edu.stanford.smi.protege.widget;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.util.ArrayList;
 
-import javax.swing.*;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.ui.FrameRenderer;
+import edu.stanford.smi.protege.util.AbstractValidatableComponent;
+import edu.stanford.smi.protege.util.ComponentFactory;
+import edu.stanford.smi.protege.util.LabeledComponent;
+import edu.stanford.smi.protege.util.ResizingLayout;
 
 /**
  * Layout configuration panel for a FormWidget.  This panel allows the user to select a widget that will take up any
@@ -57,16 +64,18 @@ public class FormWidgetConfigurationLayoutTab extends AbstractValidatableCompone
 
     private String getSelection(JComboBox box) {
         Object o = box.getSelectedItem();
-        if (o != ALL && o != NONE) {
-            Slot slot = (Slot) o;
+        if (o != null && o != ALL && o != NONE) {
+            Slot slot = (Slot) o;            
             o = slot.getName();
         }
-        return o.toString();
+        return o == null ? null : o.toString();
     }
 
     public void saveContents() {
-        _formWidget.setHorizontalStretcher(getSelection(_horizontalStretcherComponent));
-        _formWidget.setVerticalStretcher(getSelection(_verticalStretcherComponent));
+        String horiz = getSelection(_horizontalStretcherComponent);
+        String vert = getSelection(_verticalStretcherComponent);
+		_formWidget.setHorizontalStretcher(horiz == null ? ALL.toString() : horiz);
+        _formWidget.setVerticalStretcher(vert == null ? NONE.toString() : vert);
     }
 
     private void setSelection(JComboBox box, String name, boolean defaultValue) {
