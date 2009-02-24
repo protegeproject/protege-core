@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.model;
 
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
 
 
@@ -11,6 +12,8 @@ public class FrameID implements Serializable, Localizable {
     private static final long serialVersionUID = -3804918126573053937L;
     private String name;
     private int hashCode;
+    
+    private static WeakHashMap<String, WeakReference<String>> identityMap = new WeakHashMap<String, WeakReference<String>>();
 
     public FrameID(String name) {
         this.name = name;
@@ -53,7 +56,16 @@ public class FrameID implements Serializable, Localizable {
     }
     
 
-    private synchronized void intern() {
-        name = name.intern();
+    private void intern() {
+        synchronized (identityMap) {
+            WeakReference<String> genericReference = identityMap.get(name);
+            String genericName = null;
+            if (genericReference != null && (genericName = genericReference.get()) != null) {
+                name = genericName;
+            }
+            else {
+                identityMap.put(name, new WeakReference<String>(name));
+            }
+        }
     }
 }
