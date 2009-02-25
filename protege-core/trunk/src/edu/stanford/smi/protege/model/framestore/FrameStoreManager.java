@@ -63,15 +63,17 @@ public class FrameStoreManager {
         return headFrameStore;
     }
     
-    public<X extends FrameStore> X getFrameStoreFromClass(Class<? extends X> clazz) {
+    public<X> X getFrameStoreFromClass(Class<? extends X> clazz) {
       for (FrameStore fs = headFrameStore;  fs != null ; fs = fs.getDelegate()) {
+        Object o = fs;
         Class<?> fsClass = fs.getClass();
         if (Proxy.isProxyClass(fsClass)) {
           Object invocationHandler = Proxy.getInvocationHandler(fs);
           fsClass = invocationHandler.getClass();
+          o = invocationHandler;
         }
         if (clazz.isAssignableFrom(fsClass)) {
-          return clazz.cast(fs);
+          return clazz.cast(o);
         }
       }
       return null;
