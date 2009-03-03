@@ -515,6 +515,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             _sessions.remove(session);
             _sessionToProjectsMap.remove(session);
         }
+        
+        /*         
+         * Save project
+         */
+        save(sp, p);
+        
         p.dispose();
         _projectToServerProjectMap.remove(p);
         _nameToOpenProjectMap.remove(name);
