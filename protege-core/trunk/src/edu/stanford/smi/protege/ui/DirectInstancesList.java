@@ -126,8 +126,16 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     };
     
     private KnowledgeBaseListener kbListener = new KnowledgeBaseAdapter() {
-        public void frameReplaced(KnowledgeBaseEvent event) {
-            background.addChange(event);
+        @Override
+		public void frameReplaced(KnowledgeBaseEvent event) {
+        	Instance inst = (Instance)event.getNewFrame();
+        	Collection<Cls> types = inst.getDirectTypes();
+        	for (Cls type : types) {
+        		if (_clses.contains(type)) {
+        			background.addChange(event);
+        			return;
+        		}
+        	}            
         }
     };
 
