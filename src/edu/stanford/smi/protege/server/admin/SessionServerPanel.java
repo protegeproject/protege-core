@@ -115,37 +115,47 @@ public class SessionServerPanel extends AbstractRefreshableServerPanel {
 
 
 	private AllowableAction getKillSessionAction(final SelectableTable table) {
-		killSessionAction = new AllowableAction("Kill session", Icons.getCancelIcon(), table) {
+		killSessionAction = new AllowableAction("Kill session(s)", Icons.getCancelIcon(), table) {
 
-			public void actionPerformed(ActionEvent arg0) {
-				int row = table.getSelectedRow();
-				RemoteSession session = remoteSessions.get(row);
+			public void actionPerformed(ActionEvent arg0) {				
 				int kill =
-					JOptionPane.showConfirmDialog(SessionServerPanel.this, "Kill session for user " + session.getUserName() +
-							"?\nThis user may lose work as a result of this.",
-							"Confirm Kill Session",
+					JOptionPane.showConfirmDialog(SessionServerPanel.this, "Kill selected session(s)?" +
+							"\nUsers may lose work as a result of this action.",
+							"Confirm Kill Sessions",
 							JOptionPane.OK_CANCEL_OPTION);
 				if (kill == JOptionPane.OK_OPTION ) {
-					try {
-						getServer().killOtherUserSession(session, getSession(), 10);
-					} catch (RemoteException e) {
-						Log.getLogger().log(Level.WARNING, "Could not kill session " + session, e);
-						ModalDialog.showMessageDialog(SessionServerPanel.this, "Could not kill session " + session + ".\n" +
-								"See console and logs for more information.");
-						treatPossibleConnectionLostException(e);
-					}					
+					int[] rows = table.getSelectedRows();
+					
+					for (int i = 0; i < rows.length; i++) {
+						RemoteSession session = remoteSessions.get(rows[i]);
+						try {
+							getServer().killOtherUserSession(session, getSession(), 10);
+						} catch (RemoteException e) {
+							Log.getLogger().log(Level.WARNING, "Could not kill session " + session, e);
+							ModalDialog.showMessageDialog(SessionServerPanel.this, "Could not kill session " + session + ".\n" +
+									"See console and logs for more information.");
+							treatPossibleConnectionLostException(e);
+						}
+					}										
 					refresh();
 				}
 			}
 
 			@Override
 			public void onSelectionChange() {
-				int row = table.getSelectedRow();
-				if (row < 0) {
+				int[] rows = table.getSelectedRows();
+				if (rows == null || rows.length <= 0) {
+					this.setAllowed(false);
 					return;
 				}
-				RemoteSession session = remoteSessions.get(row);
-				this.setAllowed(isKillAllowed(session));
+				for (int i = 0; i < rows.length; i++) {
+					RemoteSession session = remoteSessions.get(rows[i]);
+					if (!isKillAllowed(session)) {
+						this.setAllowed(false);
+						return;
+					}
+				}
+				this.setAllowed(true);				
 			}
 		};
 
