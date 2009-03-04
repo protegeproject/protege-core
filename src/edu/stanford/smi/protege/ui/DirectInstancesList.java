@@ -100,7 +100,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         @Override
         public void directInstanceAdded(ClsEvent event) {
             synchronized (DirectInstancesList.this) {
-                if (background != null) {
+                if (background != null && !event.isReplacementEvent()) {
                     background.setDeferredSelection(event.getInstance());
                     background.addChange(event);
                 }
@@ -110,7 +110,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         @Override
         public void directInstanceRemoved(ClsEvent event) {
             synchronized (DirectInstancesList.this) {
-                if (background != null) {
+                if (background != null && !event.isReplacementEvent()) {
                     background.addChange(event);
                 }
             }
@@ -500,8 +500,11 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     }
 
     public synchronized void setSelectedInstance(Instance instance) {
-        if (background != null) {
+        if (background != null && !getModel().contains(instance)) {
             background.setDeferredSelection(instance);
+        }
+        else {
+        	_list.setSelectedValue(instance);
         }
     }
 
