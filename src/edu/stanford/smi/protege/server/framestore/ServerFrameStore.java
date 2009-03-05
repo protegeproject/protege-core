@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.server.framestore;
 
+import java.lang.reflect.Proxy;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -61,7 +62,6 @@ import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.ProtegeJob;
-import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
@@ -165,7 +165,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                               _updateWriter,
                                               this,
                                               _sessionToRegistrationMap);
+        
         fsm.insertFrameStore(new FrameCalculatorFrameStore(frameCalculator), 1); // after  the localization frame  store.
+        
         _delegate = fsm.getHeadFrameStore();
         transactionMonitor = _delegate.getTransactionStatusMonitor();
         if (ServerProperties.delayInMilliseconds() != 0) {
@@ -1490,6 +1492,13 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public void setMetaProjectInstance(ProjectInstance projectInstance) {
       this.projectInstance = projectInstance;
+      FrameStoreManager fsm = _kb.getFrameStoreManager();
+      ReadAccessEnforcementFrameStore readAccessEnforcement = new ReadAccessEnforcementFrameStore(this);
+      if (readAccessEnforcement.isApplicable()) {
+          fsm.insertFrameStore((FrameStore) Proxy.newProxyInstance(getClass().getClassLoader(), 
+                                                                   new Class[] { FrameStore.class }, 
+                                                                   readAccessEnforcement), 1);
+      }
     }
 
     public ProjectInstance getMetaProjectInstance() {
