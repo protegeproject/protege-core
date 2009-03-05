@@ -1491,14 +1491,16 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public void setMetaProjectInstance(ProjectInstance projectInstance) {
-      this.projectInstance = projectInstance;
-      FrameStoreManager fsm = _kb.getFrameStoreManager();
-      ReadAccessEnforcementFrameStore readAccessEnforcement = new ReadAccessEnforcementFrameStore(this);
-      if (readAccessEnforcement.isApplicable()) {
-          fsm.insertFrameStore((FrameStore) Proxy.newProxyInstance(getClass().getClassLoader(), 
-                                                                   new Class[] { FrameStore.class }, 
-                                                                   readAccessEnforcement), 1);
-      }
+    	this.projectInstance = projectInstance;
+    	if (projectInstance != null) {
+    		FrameStoreManager fsm = _kb.getFrameStoreManager();
+    		ReadAccessEnforcementFrameStore readAccessEnforcement = new ReadAccessEnforcementFrameStore(this);
+    		if (readAccessEnforcement.isApplicable()) {
+    			fsm.insertFrameStore((FrameStore) Proxy.newProxyInstance(getClass().getClassLoader(), 
+    					new Class[] { FrameStore.class }, 
+    					readAccessEnforcement), 1);
+    		}
+    	}
     }
 
     public ProjectInstance getMetaProjectInstance() {
