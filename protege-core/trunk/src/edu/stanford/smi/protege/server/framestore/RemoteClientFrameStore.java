@@ -62,6 +62,7 @@ import edu.stanford.smi.protege.server.update.RemoveCacheUpdate;
 import edu.stanford.smi.protege.server.update.RemoveFrameCache;
 import edu.stanford.smi.protege.server.update.SftUpdate;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
+import edu.stanford.smi.protege.ui.FrameTreeFinder;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
@@ -484,6 +485,11 @@ public class RemoteClientFrameStore implements FrameStore {
         frame = frameNameToFrameMap.get(name);
         if (frame == null) {
           containsFrame = frameNameToFrameMap.containsKey(name);
+        }
+        else if (!isCachedInternal(frame, systemFrames.getNameSlot(), null, false)) {
+            frame = null;
+            frameNameToFrameMap.remove(name);
+            containsFrame = false;
         }
         if (frame == null) {
           if (!containsFrame) {
