@@ -35,6 +35,9 @@ public class ServerAdmin_Test extends APITestCase {
 
     public static final String USER2 = "Jennifer Vendetti";
     public static final String PASSWORD2 = "jenny";
+    
+    public static final String USER3 = "Admin";
+    public static final String PASSWORD3 = "admin";
 
     @Override
 	public void setUp() throws Exception {
@@ -58,6 +61,10 @@ public class ServerAdmin_Test extends APITestCase {
     
     public RemoteSession openSession() throws RemoteException {
         return server.openSession(USER2, SystemUtilities.getMachineIpAddress(), PASSWORD2);
+    }
+    
+    public RemoteSession openAdminSession() throws RemoteException {
+        return server.openSession(USER3, SystemUtilities.getMachineIpAddress(), PASSWORD3);
     }
     
     public enum TestSetProjectStatusStages {
@@ -232,8 +239,9 @@ public class ServerAdmin_Test extends APITestCase {
             }
         }.start();
         ls.waitForStage(TestSingleProjectShutdownStages.OPENED);
-        RemoteSession session = openSession();
+        RemoteSession session = openAdminSession();
         server.shutdown(PROJECT_NAME, session);
+        SystemUtilities.sleepMsec(200);
         ls.stageAchieved(TestSingleProjectShutdownStages.KILLED_PROJECT, null);
         ls.waitForStage(TestSingleProjectShutdownStages.OK_DEAD);
         server.setProjectStatus(PROJECT_NAME, ProjectStatus.READY, session);
@@ -270,6 +278,44 @@ public class ServerAdmin_Test extends APITestCase {
                     assertTrue(failed);
                     serverProject = server.openProject(PROJECT_NAME, session);
                     assertTrue(serverProject == null);
+                    ls.stageAchieved(TestKillOtherUser.CONFIRMED, null);
+                }
+                catch (Throwable t) {
+                    ls.exceptionOffMainThread(TestKillOtherUser.CONFIRMED, t);
+                }
+            }
+        }.start();
+        RemoteSession session = openAdminSession();
+        RemoteSession sessionToKill = (RemoteSession) ls.waitForStage(TestKillOtherUser.OPEN);
+        server.killOtherUserSession(sessionToKill, session);
+        ls.stageAchieved(TestKillOtherUser.MURDER, null);
+        ls.waitForStage(TestKillOtherUser.CONFIRMED);
+    }
+    
+    public void testKillOtherUserPreventedByPolicy() throws RemoteException {
+        final LockStepper<TestKillOtherUser> ls = new LockStepper<TestKillOtherUser>(TestKillOtherUser.START);
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    RemoteSession session = server.openSession(USER1, SystemUtilities.getMachineIpAddress(), PASSWORD1);
+                    RemoteServerProject serverProject = server.openProject(PROJECT_NAME, session);
+                    Project p = RemoteClientProject.createProject(server, serverProject, session, false);
+                    KnowledgeBase kb = p.getKnowledgeBase();
+                    kb.flushCache();
+                    kb.getFrames();
+                    kb.flushCache();
+                    ls.stageAchieved(TestKillOtherUser.OPEN, session);
+                    ls.waitForStage(TestKillOtherUser.MURDER);
+                    boolean failed = false;
+                    Thread.sleep(6000);
+                    try {
+                        kb.getFrames();
+                    }
+                    catch (Throwable t) {
+                        failed = true;
+                    }
+                    assertTrue(!failed);
                     ls.stageAchieved(TestKillOtherUser.CONFIRMED, null);
                 }
                 catch (Throwable t) {
