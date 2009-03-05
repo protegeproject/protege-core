@@ -306,8 +306,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private void recordDisconnection(RemoteSession session, RemoteServerProject project)
     throws ServerSessionLost {
         Collection<ServerProject> projects =  _sessionToProjectsMap.get(session);
-        projects.remove(project);
-        if (projects.isEmpty()) {
+        if (projects != null) {
+        	projects.remove(project);
+        }
+        if (projects == null ||projects.isEmpty()) {
         	_sessionToProjectsMap.remove(session);
         	_sessions.remove(session);
         }
