@@ -932,7 +932,8 @@ public class ProjectManager {
                 if (factory != null) {
                     backend = ", " + factory.getDescription();
                 }
-                text = shortname + "  " + programName + "    (" + longname + backend + ")";
+                text = shortname + "  " + programName + "    (" + longname + backend +
+                		(_currentProject.isReadonly() ? " - Read-Only)" : ")");            	
             }
         }
         ComponentUtilities.setFrameTitle(_rootPane, text);
