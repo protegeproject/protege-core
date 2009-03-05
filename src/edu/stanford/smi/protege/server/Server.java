@@ -934,6 +934,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     public synchronized void shutdown(String projectName, RemoteSession session) {
         if (!isServerOperationAllowed(session, MetaProjectConstants.OPERATION_ADMINISTER_SERVER) &&
         	!isOperationAllowed(session, MetaProjectConstants.OPERATION_STOP_REMOTE_PROJECT, projectName)) {
+            log.warning("Unauthorized attempt to shutdown project " + projectName + " by " + session.getUserName() + " @ " + session.getUserIpAddress());
             return;
         }
         setProjectStatus(projectName, ProjectStatus.CLOSED_FOR_MAINTENANCE, session);
