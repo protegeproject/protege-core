@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 
+import edu.stanford.smi.protege.exception.ModificationException;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.plugin.CreateProjectFromFilePlugin;
 import edu.stanford.smi.protege.plugin.PluginUtilities;
@@ -31,6 +32,7 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.ComponentFactory;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.MessageError;
+import edu.stanford.smi.protege.util.ModalDialog;
 import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.URIUtilities;
 
@@ -96,7 +98,8 @@ public class Application {
         // Construct the application's main frame.
         _mainFrame = ComponentFactory.createMainFrame();
         _mainFrame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent event) {
+            @Override
+			public void windowClosing(WindowEvent event) {
                 ProjectManager.getProjectManager().exitApplicationRequest();
             }
         });
@@ -284,12 +287,15 @@ public class Application {
         // This bit of sleight of hand causes uncaught exceptions to get logged.
         // There is a better way to do this in JDK 1.5.
         ThreadGroup group = new ThreadGroup(Thread.currentThread().getThreadGroup(), "Safe Thread Group") {
-            public void uncaughtException(Thread thread, Throwable throwable) {
+            @Override
+			public void uncaughtException(Thread thread, Throwable throwable) {
                 Log.getLogger().log(Level.SEVERE, "Uncaught Exception", throwable);
+                handleModificationException(throwable);
             }
         };
         Thread thread = new Thread(group, "Safe Main Thread") {
-            public void run() {
+            @Override
+			public void run() {
               try {
                 realmain(args);
               } catch (Throwable t) {
@@ -348,6 +354,24 @@ public class Application {
 
     public static void shutdown() {
         _mainFrame.dispatchEvent(new WindowEvent(_mainFrame, WindowEvent.WINDOW_CLOSING));
+    }
+    
+    private static boolean handleModificationException(Throwable t) {  
+    	Throwable exception = t;
+    	boolean foundModEx = false;
+    	while (!foundModEx && exception != null) {
+    		if (exception instanceof ModificationException) {
+    			if (_mainFrame != null) { //in UI mode
+    				ModalDialog.showMessageDialog(_mainFrame, 
+    					"You do not have permission to make this modification.",
+    					"Write error");  
+    			}
+    			foundModEx = true;
+    			break;
+    		}
+    		exception = exception.getCause();
+    	}
+    	return foundModEx;	
     }
 
 }

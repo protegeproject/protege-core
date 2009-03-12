@@ -143,6 +143,17 @@ Merged to trunk revision 13025
     ant update
     pushd ../protege-owl ; ant clean update
 
+Merged to trunk revision 13357
+    In the cache directory.
+    svn update
+    svn status
+    p=http://smi-protege/repos/protege/protege-core/trunk
+    svn ls $p
+    svn info $p          last changed rev = 13357
+    svn merge $p@13025 $p@13357
+    ant clean
+    ant update
+
 
 ---------------------------------------------------------
 Diffs are actually pretty minimal:

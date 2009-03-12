@@ -35,7 +35,8 @@ public class ServerAdminPanel extends JPanel implements Disposable {
 		tabbedPane = ComponentFactory.createTabbedPane(true);	
 		if (server != null) {
 			tabbedPane.addTab("Projects", createProjectsTab());
-			tabbedPane.addTab("Sessions", createSessionsTab());			
+			tabbedPane.addTab("Sessions", createSessionsTab());
+			tabbedPane.addTab("Server Control", createControlTab());
 		}
 		add(tabbedPane);
 	}
@@ -46,6 +47,10 @@ public class ServerAdminPanel extends JPanel implements Disposable {
 
 	private JPanel createProjectsTab() {
 		return new ProjectsServerPanel(server, session);
+	}
+	
+	private JPanel createControlTab() {
+		return new ControlServerPanel(server, session);
 	}
 
 

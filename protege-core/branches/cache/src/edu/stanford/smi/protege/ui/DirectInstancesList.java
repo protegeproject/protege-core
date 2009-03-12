@@ -100,7 +100,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         @Override
         public void directInstanceAdded(ClsEvent event) {
             synchronized (DirectInstancesList.this) {
-                if (background != null) {
+                if (background != null && !event.isReplacementEvent()) {
                     background.setDeferredSelection(event.getInstance());
                     background.addChange(event);
                 }
@@ -110,7 +110,7 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
         @Override
         public void directInstanceRemoved(ClsEvent event) {
             synchronized (DirectInstancesList.this) {
-                if (background != null) {
+                if (background != null && !event.isReplacementEvent()) {
                     background.addChange(event);
                 }
             }
@@ -126,8 +126,16 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     };
     
     private KnowledgeBaseListener kbListener = new KnowledgeBaseAdapter() {
-        public void frameReplaced(KnowledgeBaseEvent event) {
-            background.addChange(event);
+        @Override
+		public void frameReplaced(KnowledgeBaseEvent event) {
+        	Instance inst = (Instance)event.getNewFrame();
+        	Collection<Cls> types = inst.getDirectTypes();
+        	for (Cls type : types) {
+        		if (_clses.contains(type)) {
+        			background.addChange(event);
+        			return;
+        		}
+        	}            
         }
     };
 
@@ -492,8 +500,11 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
     }
 
     public synchronized void setSelectedInstance(Instance instance) {
-        if (background != null) {
+        if (background != null && !getModel().contains(instance)) {
             background.setDeferredSelection(instance);
+        }
+        else {
+        	_list.setSelectedValue(instance);
         }
     }
 

@@ -38,18 +38,6 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
     private static final int DELETED_MASK = 1 << 3;
     private int state;
 
-    /* from Externalizable Interface
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        id = (FrameID) in.readObject();
-        state = in.readInt();
-    }
-
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(id);
-        out.writeInt(state);
-    }
-    */
-
     protected DefaultFrame() {
 
     }

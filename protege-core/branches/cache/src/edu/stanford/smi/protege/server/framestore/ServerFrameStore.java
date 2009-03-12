@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.server.framestore;
 
+import java.lang.reflect.Proxy;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -163,7 +164,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                               _kbLock,
                                               this,
                                               _sessionToRegistrationMap);
+        
         fsm.insertFrameStore(new FrameCalculatorFrameStore(frameCalculator), 1); // after  the localization frame  store.
+        
         _delegate = fsm.getHeadFrameStore();
         transactionMonitor = _delegate.getTransactionStatusMonitor();
         if (ServerProperties.delayInMilliseconds() != 0) {
@@ -1405,7 +1408,16 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public void setMetaProjectInstance(ProjectInstance projectInstance) {
-      this.projectInstance = projectInstance;
+    	this.projectInstance = projectInstance;
+    	if (projectInstance != null) {
+    		FrameStoreManager fsm = _kb.getFrameStoreManager();
+    		ReadAccessEnforcementFrameStore readAccessEnforcement = new ReadAccessEnforcementFrameStore(this);
+    		if (readAccessEnforcement.isApplicable()) {
+    			fsm.insertFrameStore((FrameStore) Proxy.newProxyInstance(getClass().getClassLoader(), 
+    					new Class[] { FrameStore.class }, 
+    					readAccessEnforcement), 1);
+    		}
+    	}
     }
 
     public ProjectInstance getMetaProjectInstance() {

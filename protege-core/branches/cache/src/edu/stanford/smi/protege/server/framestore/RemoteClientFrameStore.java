@@ -56,6 +56,7 @@ import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
 import edu.stanford.smi.protege.server.util.FifoReader;
 import edu.stanford.smi.protege.server.util.FifoWriter;
+import edu.stanford.smi.protege.ui.FrameTreeFinder;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
@@ -1272,13 +1273,11 @@ public class RemoteClientFrameStore implements FrameStore {
       boolean skip = ServerProperties.skipPreload();
       if (skip) {
         return;
-      }
-      long t0 = System.currentTimeMillis();
+      }      
       Log.getLogger().config("Preloading frame values: " + kb);
       Set<String> frames = ServerProperties.preloadUserFrames();
       OntologyUpdate vu = getRemoteDelegate().preload(frames, preloadAll, session);
-      processValueUpdate(vu);
-      Log.getLogger().config("  ... in " + (System.currentTimeMillis() - t0)/1000 + " sec.");
+      processValueUpdate(vu);     
     }
 
     private Set getCacheOwnSlotValueClosure(Frame frame, Slot slot) throws RemoteException {
