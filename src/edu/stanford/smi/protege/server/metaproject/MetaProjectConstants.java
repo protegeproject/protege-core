@@ -17,10 +17,10 @@ public class MetaProjectConstants {
 	public final static Operation OPERATION_ADMINISTER_SERVER = new UnbackedOperationImpl("AdministerServer", null);
 
 	public static final Operation OPERATION_KILL_OTHER_USER_SESSION = new UnbackedOperationImpl("KillOtherUserSession", null);
-
 	public static final Operation OPERATION_STOP_REMOTE_PROJECT = new UnbackedOperationImpl("StopRemoteProject", null);
 	public static final Operation OPERATION_START_REMOTE_PROJECT = new UnbackedOperationImpl("StartRemoteProject", null);
-
+	public static final Operation OPERATION_SHUTDOWN_SERVER = new UnbackedOperationImpl("ShutdownServer", null);
+	
 	public static final String USER_WORLD = "World";
 
 }

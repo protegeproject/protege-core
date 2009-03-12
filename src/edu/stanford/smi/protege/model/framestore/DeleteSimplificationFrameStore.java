@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.StringUtilities;
 
 /**
  *
@@ -37,7 +38,8 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
 	@Override
 	public void removeDirectTemplateSlot(Cls cls, Slot slot) {
 		try {
-			beginTransaction("Remove template slot ");
+			beginTransaction("Remove template slot " + StringUtilities.getFriendlyName(slot) + 
+					" from class " + StringUtilities.getFriendlyName(cls), cls.getName());
 			internalRemoveDirectTemplateSlot(cls, slot);
 			commitTransaction();
 		} catch (Throwable t) {
@@ -82,7 +84,8 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
 	@Override
 	public void removeDirectSuperclass(Cls cls, Cls superclass) {
 		try {
-			beginTransaction("Remove superclass ");
+			beginTransaction("Remove superclass " + StringUtilities.getFriendlyName(superclass) + 
+					" from " + StringUtilities.getFriendlyName(cls), cls.getName());
 			internalRemoveDirectSuperclass(cls, superclass);
 			commitTransaction();
 		} catch (Throwable t) {
@@ -117,7 +120,8 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
 	@Override
 	public void removeDirectSuperslot(Slot slot, Slot superslot) {
 		try {
-			beginTransaction("Remove superslot");
+			beginTransaction("Remove superslot " + StringUtilities.getFriendlyName(superslot) +
+					" from " + StringUtilities.getFriendlyName(slot), slot.getName());
 			super.removeDirectSuperslot(slot, superslot);
 			commitTransaction();
 		} catch (Throwable e) {
@@ -129,7 +133,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
 	@Override
 	public void deleteCls(Cls cls) {
 		try {
-			beginTransaction("Delete class ");
+			beginTransaction("Delete class " + StringUtilities.getFriendlyName(cls), cls.getName());
 			cls.markDeleting();
 			internalDeleteCls(cls);
 			commitTransaction();
@@ -142,7 +146,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
 	@Override
 	public void deleteSlot(Slot slot) {
 		try {
-			beginTransaction("Delete slot ");
+			beginTransaction("Delete slot " + StringUtilities.getFriendlyName(slot));
 			slot.markDeleting();
 			internalDeleteSlot(slot);
 			commitTransaction();
@@ -155,7 +159,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
 	@Override
 	public void deleteFacet(Facet facet) {
 		try {
-			beginTransaction("Delete facet ");
+			beginTransaction("Delete facet " + StringUtilities.getFriendlyName(facet));
 			facet.markDeleting();
 			internalDeleteFacet(facet);
 			commitTransaction();
@@ -169,7 +173,7 @@ public class DeleteSimplificationFrameStore extends FrameStoreAdapter {
 	public void deleteSimpleInstance(SimpleInstance simpleInstance) {
 		// beginTransaction("Delete simple instance  " + simpleInstance.getBrowserText());
 		try {
-			beginTransaction("Delete simple instance  ");
+			beginTransaction("Delete simple instance " + StringUtilities.getFriendlyName(simpleInstance));
 			simpleInstance.markDeleting();
 			internalDeleteSimpleInstance(simpleInstance);
 			commitTransaction();

@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.Transaction;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.AbstractEvent;
@@ -356,6 +357,13 @@ public class FrameStoreAdapter extends AbstractFrameStore {
     public boolean beginTransaction(String name) {
         return getDelegate().beginTransaction(name);
     }
+    
+    public boolean beginTransaction(String name, String appliedToFrameName) {
+    	if (appliedToFrameName == null) {
+    		return beginTransaction(name);
+    	}
+    	return beginTransaction(name + Transaction.APPLY_TO_TRAILER_STRING + appliedToFrameName);		
+	}
 
     public boolean commitTransaction() {
         return getDelegate().commitTransaction();

@@ -122,8 +122,9 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      *             if the socket factory has already been set
      * @see RMISocketFactory#setSocketFactory(RMISocketFactory)
      */
-    public synchronized static void startServer(String[] args) throws IOException {
+    public synchronized static void startServer(String[] args) throws IOException {    	
     	Log.getLogger().info("Protege server is starting...");
+    	SystemUtilities.logSystemInfo();
         System.setProperty("java.rmi.server.RMIClassLoaderSpi", ProtegeRmiClassLoaderSpi.class.getName());
         SystemUtilities.initialize();
         serverInstance = new Server(args);        
@@ -305,8 +306,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private void recordDisconnection(RemoteSession session, RemoteServerProject project)
     throws ServerSessionLost {
         Collection<ServerProject> projects =  _sessionToProjectsMap.get(session);
-        projects.remove(project);
-        if (projects.isEmpty()) {
+        if (projects != null) {
+        	projects.remove(project);
+        }
+        if (projects == null ||projects.isEmpty()) {
         	_sessionToProjectsMap.remove(session);
         	_sessions.remove(session);
         }
@@ -341,7 +344,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         _projectToServerProjectMap.put(p, sp);
     }
 
-    private Project getOrCreateProject(String name) {
+    public Project getOrCreateProject(String name) {
         Project project = getProject(name);
         if (project == null) {
             project = createProject(name);
@@ -515,6 +518,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             _sessions.remove(session);
             _sessionToProjectsMap.remove(session);
         }
+        
+        /*         
+         * Save project
+         */
+        save(sp, p);
+        
         p.dispose();
         _projectToServerProjectMap.remove(p);
         _nameToOpenProjectMap.remove(name);
@@ -925,6 +934,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     public synchronized void shutdown(String projectName, RemoteSession session) {
         if (!isServerOperationAllowed(session, MetaProjectConstants.OPERATION_ADMINISTER_SERVER) &&
         	!isOperationAllowed(session, MetaProjectConstants.OPERATION_STOP_REMOTE_PROJECT, projectName)) {
+            log.warning("Unauthorized attempt to shutdown project " + projectName + " by " + session.getUserName() + " @ " + session.getUserIpAddress());
             return;
         }
         setProjectStatus(projectName, ProjectStatus.CLOSED_FOR_MAINTENANCE, session);

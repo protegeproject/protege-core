@@ -3,7 +3,6 @@ package edu.stanford.smi.protege.server.admin;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +26,6 @@ import edu.stanford.smi.protege.resource.Icons;
 import edu.stanford.smi.protege.server.RemoteServer;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
-import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.job.GetFrameCalculatorStatisticsJob;
 import edu.stanford.smi.protege.server.job.GetProjectsStatusMapJob;
@@ -129,7 +127,7 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 		int col2size = 8;
 	    JPanel panel = new JPanel(new GridLayout(3,2,5,5));
 
-	    panel.add(new JLabel("Estimated round trip time (ms):"));
+	    panel.add(new JLabel("Estimated round trip time for this admin client (ms):"));
 	    serverRoundTripField = createOutputTextField(col2size);
 	    panel.add(serverRoundTripField);
 
@@ -163,11 +161,13 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 					sessions = getServer().getCurrentSessions(project, getSession());
 				} catch (RemoteException e) {
 					Log.getLogger().log(Level.WARNING, "Error at getting the sessions for the remote project " + project, e);
+					treatPossibleConnectionLostException(e);					
 				}
 				prjsTableModel.addRow(new Object[] {project, projectsToStatusMap.get(project), sessions});
 			}
-		} catch (Exception e) {
+		} catch (Exception e) {			
 			Log.getLogger().log(Level.WARNING, "Error at getting projects status from server.", e);
+			treatPossibleConnectionLostException(e);
 		}
 	}
 
@@ -208,39 +208,57 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 			
 		} catch (Throwable t) {
 			Log.getLogger().log(Level.WARNING, "Failed to get user info from server for project " + project, t);
+			treatPossibleConnectionLostException(t);
 		}
 		userInfoTableModel.setUserInfo(userInfo, stats);		
 	}
 	
 
 	private AllowableAction getStopProjectAction(final SelectableTable table) {
-		stopProjectAction = new AllowableAction("Stop project", Icons.getCancelIcon(), table) {
-			public void actionPerformed(ActionEvent arg0) {
-				int row = table.getSelectedRow();
-				String project = getProject(row);
-				ShutDownPanel shutDownPanel = new ShutDownPanel(project);
+		stopProjectAction = new AllowableAction("Stop project(s)", Icons.getCancelIcon(), table) {
+			public void actionPerformed(ActionEvent arg0) {				
+				int[] rows = table.getSelectedRows();
+				Collection<String> projects = new ArrayList<String>();
+				for (int i = 0; i < rows.length; i++) {
+					projects.add(getProject(rows[i]));
+				}
+				ShutDownPanel shutDownPanel = new ShutDownPanel(projects);				
 				int opt = ModalDialog.showDialog(ProjectsServerPanel.this, shutDownPanel,
-						"Shut down project " + project, ModalDialog.MODE_OK_CANCEL);
+						"Shut down project(s)", ModalDialog.MODE_OK_CANCEL);
 				if (opt == ModalDialog.OPTION_OK) {					
-					try {
-						getServer().shutdownProject(getSession(), project, shutDownPanel.getShutdownInSec());
-					} catch (RemoteException e) {
-						Log.getLogger().log(Level.WARNING, "Could not shut down remote project " + project, e);
-						ModalDialog.showMessageDialog(ProjectsServerPanel.this, "Shutting down the remote project " + project +
-								" failed. \nSee console and log for more details.");
+					int secs = shutDownPanel.getShutdownInSec();
+					for (String project : projects) {
+						shutDownProject(project, secs);
 					}
 					refresh();
 				}
 			}
-
+			
+			private void shutDownProject(String project, int secs) {
+				try {
+					getServer().shutdownProject(getSession(), project, secs);
+				} catch (RemoteException e) {
+					Log.getLogger().log(Level.WARNING, "Could not shut down remote project " + project, e);
+					ModalDialog.showMessageDialog(ProjectsServerPanel.this, "Shutting down the remote project " + project +
+							" failed. \nSee console and log for more details.");
+					treatPossibleConnectionLostException(e);
+				}
+			}
+		
 			@Override
 			public void onSelectionChange() {
-				int row = table.getSelectedRow();
-				if (row < 0) {
+				int[] rows = table.getSelectedRows();
+				if (rows == null || rows.length <= 0) {
 					this.setAllowed(false);
 					return;
 				}
-				this.setAllowed(isStopAllowed(row));
+				for (int i = 0; i < rows.length; i++) {
+					if (!isStopAllowed(rows[i])) {
+						this.setAllowed(false);
+						return;
+					}
+				}
+				this.setAllowed(true);
 			}
 		};
 
@@ -265,8 +283,8 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 
 			private void handleStartProject(String project) {
 				int start =
-					JOptionPane.showConfirmDialog(ProjectsServerPanel.this, "Start project " + project + "?",
-							"Confirm start project",
+					JOptionPane.showConfirmDialog(ProjectsServerPanel.this, "Start selected project(s)?",
+							"Confirm start projects",
 							JOptionPane.OK_CANCEL_OPTION);
 				if (start == JOptionPane.OK_OPTION ) {
 					try {
@@ -276,6 +294,7 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 						ModalDialog.showMessageDialog(ProjectsServerPanel.this, "Could not start remote project "
 								+ project + ".\n" +
 								"See console and logs for more information.");
+						treatPossibleConnectionLostException(e);
 					}
 					refresh();
 				}
@@ -294,6 +313,7 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 						success = getServer().cancelShutdownProject(getSession(), project);
 					} catch (RemoteException e) {
 						Log.getLogger().log(Level.WARNING, "Could not cancel shut down for remote project " + project, e);
+						treatPossibleConnectionLostException(e);
 					}					
 					if (!success) {
 						ModalDialog.showMessageDialog(ProjectsServerPanel.this, "Could not cancel shut down of project " + project);
@@ -306,12 +326,18 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 
 			@Override
 			public void onSelectionChange() {
-				int row = table.getSelectedRow();
-				if (row < 0) {
+				int[] rows = table.getSelectedRows();
+				if (rows == null || rows.length <= 0) {
 					this.setAllowed(false);
 					return;
 				}
-				this.setAllowed(isStartAllowed(row));
+				for (int i = 0; i < rows.length; i++) {
+					if (!isStartAllowed(rows[i])) {
+						this.setAllowed(false);
+						return;
+					}
+				}
+				this.setAllowed(true);
 			}
 		};
 
@@ -335,14 +361,7 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 			fillProjectsTableModel();
 			prjsTableModel.fireTableDataChanged();
 		} catch (Throwable t) {
-			do{
-			  if (t instanceof ServerSessionLost || t instanceof ConnectException) {
-                  Log.getLogger().warning("Session disconnected from the server");
-                  ModalDialog.showMessageDialog(ProjectsServerPanel.this, "You were disconnected from the server",
-                		  "No server connection");
-                  return;
-              }
-          } while ((t = t.getCause()) != null);
+			treatPossibleConnectionLostException(t);
 		}
 	}
 
@@ -371,7 +390,7 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 	class ShutDownPanel extends JPanel {
 		private JTextField minsTextField = new JTextField(5);
 
-		ShutDownPanel(String project){
+		ShutDownPanel(Collection<String> projects){
 			 SpringLayout layout = new SpringLayout();
 			 setLayout(layout);
 			 JLabel shLabel = new JLabel("Shutdown time (in minutes):");
@@ -380,8 +399,14 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 			 layout.putConstraint(SpringLayout.WEST, minsTextField, 5, SpringLayout.EAST, shLabel);
 			 layout.putConstraint(SpringLayout.NORTH, minsTextField, 3,  SpringLayout.NORTH, this);
 			 minsTextField.setText("10");
-			 JLabel confLabel = new JLabel("<html><b>Are you sure you want to shut down project " + project + "?</b><br>" +
-			 		"This will affect all the users connected currently to this project.</html>");
+			 StringBuffer projectsString = new StringBuffer();
+			 for (String project : projects) {
+				 projectsString.append(project);
+				 projectsString.append("<br>");
+			 }			 
+			 JLabel confLabel = new JLabel("<html><b>Are you sure you want to shut down the following project(s)? <br><br>"
+					 + projectsString + "</b><br>" +
+			 		"This will affect all the users connected currently to the listed project(s).</html>");
 			 layout.putConstraint(SpringLayout.WEST, confLabel, 5, SpringLayout.WEST, this);
 			 layout.putConstraint(SpringLayout.NORTH, confLabel, 20, SpringLayout.SOUTH, shLabel);
 			 layout.putConstraint(SpringLayout.EAST, this, 5, SpringLayout.EAST, confLabel);

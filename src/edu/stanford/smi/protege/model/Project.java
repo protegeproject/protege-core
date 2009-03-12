@@ -46,6 +46,8 @@ import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.plugin.PluginUtilities;
 import edu.stanford.smi.protege.plugin.ProjectFixupsPluginManager;
 import edu.stanford.smi.protege.resource.Files;
+import edu.stanford.smi.protege.server.framestore.RemoteClientFrameStore;
+import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
 import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 import edu.stanford.smi.protege.ui.InstanceDisplay;
 import edu.stanford.smi.protege.util.ApplicationProperties;
@@ -241,7 +243,7 @@ public class Project {
             Iterator<Map.Entry<Cls, BrowserSlotPattern>> j = _inheritedBrowserSlotPatterns.entrySet().iterator();
             while (j.hasNext()) {
                 Map.Entry<Cls, BrowserSlotPattern> entry = j.next();
-                BrowserSlotPattern pattern = (BrowserSlotPattern) entry.getValue();
+                BrowserSlotPattern pattern = entry.getValue();
                 if (pattern != null && pattern.contains(slot)) {
                     j.remove();
                 }
@@ -305,7 +307,7 @@ public class Project {
 	             Iterator<Map.Entry<Cls, BrowserSlotPattern>> j = _inheritedBrowserSlotPatterns.entrySet().iterator();
                  while (j.hasNext()) {
                      Map.Entry<Cls, BrowserSlotPattern> entry = j.next();
-                     BrowserSlotPattern pattern = (BrowserSlotPattern) entry.getValue();
+                     BrowserSlotPattern pattern = entry.getValue();
                      if (pattern != null && pattern.contains(oldSlot)) {
                         pattern.replaceSlot(oldSlot, (Slot) newFrame);
                      }
@@ -1218,8 +1220,11 @@ public class Project {
 
     public boolean isReadonly() {
         if (_isReadonly == null) {
-            _isReadonly = loadOption(SLOT_IS_READONLY, false);
-
+        	if (isMultiUserClient()) {
+        		_isReadonly = !RemoteClientFrameStore.isOperationAllowed(getKnowledgeBase(), MetaProjectConstants.OPERATION_WRITE);
+        	} else {
+        		_isReadonly = loadOption(SLOT_IS_READONLY, false);
+        	}        	
         }
         return _isReadonly.booleanValue();
     }
@@ -1705,7 +1710,7 @@ public class Project {
     private void removeInheritedBrowserSlotPattern(Cls cls) {
         _inheritedBrowserSlotPatterns.remove(cls);
         for (Iterator<Cls> iterator = _inheritedBrowserSlotPatterns.keySet().iterator(); iterator.hasNext();) {
-            Cls scls = (Cls) iterator.next();
+            Cls scls = iterator.next();
             if (scls.hasSuperclass(cls)) {
                 iterator.remove();
             }

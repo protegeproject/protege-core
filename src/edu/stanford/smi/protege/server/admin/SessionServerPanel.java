@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.server.admin;
 
 import java.awt.event.ActionEvent;
-import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import edu.stanford.smi.protege.resource.Icons;
 import edu.stanford.smi.protege.server.RemoteServer;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Session;
-import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.job.GetProjectsForSessionJob;
 import edu.stanford.smi.protege.server.job.GetSessionsJob;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
@@ -111,41 +109,53 @@ public class SessionServerPanel extends AbstractRefreshableServerPanel {
 			}
 		} catch (Exception e) {
 			Log.getLogger().log(Level.WARNING, "Could not get remote sessions from server.", e);
+			treatPossibleConnectionLostException(e);
 		}
 	}
 
 
 	private AllowableAction getKillSessionAction(final SelectableTable table) {
-		killSessionAction = new AllowableAction("Kill session", Icons.getCancelIcon(), table) {
+		killSessionAction = new AllowableAction("Kill session(s)", Icons.getCancelIcon(), table) {
 
-			public void actionPerformed(ActionEvent arg0) {
-				int row = table.getSelectedRow();
-				RemoteSession session = remoteSessions.get(row);
+			public void actionPerformed(ActionEvent arg0) {				
 				int kill =
-					JOptionPane.showConfirmDialog(SessionServerPanel.this, "Kill session for user " + session.getUserName() +
-							"?\nThis user may lose work as a result of this.",
-							"Confirm Kill Session",
+					JOptionPane.showConfirmDialog(SessionServerPanel.this, "Kill selected session(s)?" +
+							"\nUsers may lose work as a result of this action.",
+							"Confirm Kill Sessions",
 							JOptionPane.OK_CANCEL_OPTION);
 				if (kill == JOptionPane.OK_OPTION ) {
-					try {
-						getServer().killOtherUserSession(session, getSession(), 10);
-					} catch (RemoteException e) {
-						Log.getLogger().log(Level.WARNING, "Could not kill session " + session, e);
-						ModalDialog.showMessageDialog(SessionServerPanel.this, "Could not kill session " + session + ".\n" +
-								"See console and logs for more information.");						
-					}					
+					int[] rows = table.getSelectedRows();
+					
+					for (int i = 0; i < rows.length; i++) {
+						RemoteSession session = remoteSessions.get(rows[i]);
+						try {
+							getServer().killOtherUserSession(session, getSession(), 10);
+						} catch (RemoteException e) {
+							Log.getLogger().log(Level.WARNING, "Could not kill session " + session, e);
+							ModalDialog.showMessageDialog(SessionServerPanel.this, "Could not kill session " + session + ".\n" +
+									"See console and logs for more information.");
+							treatPossibleConnectionLostException(e);
+						}
+					}										
 					refresh();
 				}
 			}
 
 			@Override
 			public void onSelectionChange() {
-				int row = table.getSelectedRow();
-				if (row < 0) {
+				int[] rows = table.getSelectedRows();
+				if (rows == null || rows.length <= 0) {
+					this.setAllowed(false);
 					return;
 				}
-				RemoteSession session = remoteSessions.get(row);
-				this.setAllowed(isKillAllowed(session));
+				for (int i = 0; i < rows.length; i++) {
+					RemoteSession session = remoteSessions.get(rows[i]);
+					if (!isKillAllowed(session)) {
+						this.setAllowed(false);
+						return;
+					}
+				}
+				this.setAllowed(true);				
 			}
 		};
 
@@ -169,14 +179,7 @@ public class SessionServerPanel extends AbstractRefreshableServerPanel {
 			fillTableModel();
 			tableModel.fireTableDataChanged();
 		} catch (Throwable t) {
-			do{
-				if (t instanceof ServerSessionLost || t instanceof ConnectException) {
-					Log.getLogger().warning("Session disconnected from the server");
-					ModalDialog.showMessageDialog(SessionServerPanel.this, "You were disconnected from the server",
-					"No server connection");
-					return;
-				}
-			} while ((t = t.getCause()) != null);
+			treatPossibleConnectionLostException(t);
 		}
 	}
 

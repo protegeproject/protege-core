@@ -1,6 +1,9 @@
 package edu.stanford.smi.protege.server.framestore.background;
 
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -81,7 +84,10 @@ public class FrameCalculator {
   private static boolean disabled = false;
   private Set<RemoteSession> disabledSessions = new HashSet<RemoteSession>();
 
-  FrameCalculatorStatsImpl stats = new FrameCalculatorStatsImpl();
+  private FrameCalculatorStatsImpl stats = new FrameCalculatorStatsImpl();
+  private ThreadMXBean threadManager = ManagementFactory.getThreadMXBean();
+  private long myid;
+  
 
   public FrameCalculator(FrameStore fs,
                          ServerCacheStateMachine machine,
@@ -95,6 +101,7 @@ public class FrameCalculator {
     this.sessionMap = sessionMap;
     innerThread = new FrameCalculatorThread();
     innerThread.start();
+    myid = innerThread.getId();
   }
 
   public void setStateMachine(ServerCacheStateMachine machine) {
@@ -111,12 +118,14 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
     ServerFrameStore.setCurrentSession(effectiveClient);
     if (log.isLoggable(Level.FINE)) {
         synchronized (kbLock) {
+            letOtherThreadsRun();
             log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
         }
     }
     try {
       stats.startWork();
       synchronized(kbLock) {
+        letOtherThreadsRun();
         if (server.inTransaction()) {
           if (log.isLoggable(Level.FINE)) {
             log.fine("\tbut transaction in progress");
@@ -130,11 +139,13 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
       List values = null;
       Sft sft;
       synchronized (kbLock) {
+        letOtherThreadsRun();
         checkAbilityToGenerateFullCache(wi);
         slots = fs.getOwnSlots(frame);
       }
       for (Slot slot : slots) {
         synchronized (kbLock) {
+          letOtherThreadsRun();
           checkAbilityToGenerateFullCache(wi);
     	  sft = new Sft(slot, null, false);
           if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES) &&
@@ -154,11 +165,13 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
       if (frame instanceof Cls) {
         Cls cls = (Cls) frame;
         synchronized (kbLock) {
+          letOtherThreadsRun();
           checkAbilityToGenerateFullCache(wi);
           slots = fs.getTemplateSlots(cls);
         }
         for (Slot slot : slots) {
           synchronized (kbLock) {
+            letOtherThreadsRun();
             checkAbilityToGenerateFullCache(wi);
             sft = new Sft(slot, null, true);
             values = fs.getDirectTemplateSlotValues(cls, slot);
@@ -169,11 +182,13 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
           }
           Set<Facet> facets;
           synchronized (kbLock) {
+            letOtherThreadsRun();
             checkAbilityToGenerateFullCache(wi);
             facets = fs.getTemplateFacets(cls, slot);
           }
           for (Facet facet : facets) {
             synchronized (kbLock) {
+              letOtherThreadsRun();
               checkAbilityToGenerateFullCache(wi);
               sft = new Sft(slot, facet, true);
               values = fs.getDirectTemplateFacetValues(cls, slot,facet);
@@ -186,6 +201,7 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
         }
       }
       synchronized(kbLock) {
+        letOtherThreadsRun();
         if (wi.isTargetFullCache() && !server.inTransaction()) {
           insertValueUpdate(frame, new CacheCompleted<RemoteSession, Sft, List>());
         } else if (wi.isTargetFullCache()) {
@@ -451,6 +467,36 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
               return Thread.currentThread().equals(innerThread);
           }
       }
+  }
+  
+  /*
+   * This method assumes that the caller is holding the kbLock.  The idea is to
+   * encourage other thread that are waiting on the kbLock to continue running at
+   * the expense of the current thread.
+   */
+  private void letOtherThreadsRun() {
+      Thread th = Thread.currentThread();
+      long myid = th.getId();
+      int count = 4;
+      boolean threadsWaiting;
+      do {
+          threadsWaiting = false;
+          for (long otherThreadId : threadManager.getAllThreadIds()) {
+              ThreadInfo otherThreadInfo = threadManager.getThreadInfo(otherThreadId);
+              if (otherThreadInfo != null && otherThreadInfo.getThreadId() != myid && otherThreadInfo.getLockOwnerId() == myid) {
+                  threadsWaiting = true;
+                  break;
+              }
+          }
+          if (threadsWaiting) {
+              try {
+                  kbLock.wait(0, 200);
+              }
+              catch (InterruptedException e) {
+                  log.log(Level.WARNING, "Unexpected Interrupt - weird but probably harmless", e);
+            }
+          }
+      } while (threadsWaiting && count-- > 0);
   }
 
   private class FrameCalculatorThread extends Thread {

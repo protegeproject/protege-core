@@ -10,6 +10,8 @@ import java.util.logging.Level;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
 
+import edu.stanford.smi.protege.model.Frame;
+
 /**
  * Some utilities for working with Strings.
  *
@@ -56,17 +58,18 @@ public class StringUtilities {
 
 	public static String commaSeparatedList(Collection c) {
 		StringBuffer text = new StringBuffer();
+		if (c == null) { return "(empty)"; }
 		Iterator i = c.iterator();
 		while (i.hasNext()) {
 			Object o = i.next();
 			if (text.length() > 0) {
 				text.append(", ");
-			}
-			text.append(o.toString());
+			}			
+			text.append(o.toString());			
 		}
 		return text.toString();
 	}
-
+	
 	public static String getShortClassName(String classname) {
 		int index = classname.lastIndexOf('.') + 1;
 		return classname.substring(index);
@@ -95,6 +98,17 @@ public class StringUtilities {
 		}
 		in.close();
 		return text;
+	}
+
+	//a very careful method of getting the user friendly name of a frame
+	public static String getFriendlyName(Frame frame) {
+		String name = frame.getName();
+		try {
+			name = frame.getBrowserText();
+		} catch (Throwable t) {
+			Log.emptyCatchBlock(t);
+		}
+		return name;
 	}
 }
 
