@@ -43,6 +43,9 @@ public class SocketWithAspects extends Socket {
         if (MonitoringAspect.useMonitoring()) {
             myAspects = new MonitoringAspect(myAspects);
         }
+        if (TeeAspect.doTeeOuput()) {
+            myAspects = new TeeAspect(myAspects);
+        }
     }
     
     public InputStream getInputStream() throws IOException {
