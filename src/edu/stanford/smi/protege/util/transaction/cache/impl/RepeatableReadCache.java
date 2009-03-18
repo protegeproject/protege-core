@@ -1,15 +1,13 @@
 package edu.stanford.smi.protege.util.transaction.cache.impl;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 
 public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
-    private Map<S, Set<V>> readOrWrittenVarsMap = new  HashMap<S, Set<V>>();
+    private Map<S, Map<V, CacheResult<R>>> repeatableReadCacheMap = new HashMap<S, Map<V, CacheResult<R>>>();
     private Cache<S, V, R> delegate;
     
     public RepeatableReadCache(Cache<S, V, R> delegate) {
@@ -17,32 +15,47 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public CacheResult<R> readCache(S session, V var) {
-        Set<V> readOrWrittenVars = readOrWrittenVarsMap.get(session);       
-        if (readOrWrittenVars != null && !readOrWrittenVars.contains(var)) {
+        Map<V, CacheResult<R>> repeatableReadCache = repeatableReadCacheMap.get(session); 
+        if (repeatableReadCache == null) {
+            return delegate.readCache(session, var); 
+        }
+        else if (!repeatableReadCache.containsKey(var)) {
             return new CacheResult<R>(null, false);
         }
         else {
-            return delegate.readCache(session, var);
+            return repeatableReadCache.get(var);
         }
     }
 
-    public void updateCache(S session, V var) {
-        markReadOrWritten(session, var);
-        delegate.updateCache(session, var);
+    public void updateCache(S session, V var) { 
+        if (getTransactionNesting(session) == 0) {
+            delegate.updateCache(session, var);
+        }
     }
 
     public void updateCache(S session, V var, R value) {
-        markReadOrWritten(session, var);
-        delegate.updateCache(session, var, value);
+        Map<V, CacheResult<R>> repeatableReadCache = repeatableReadCacheMap.get(session);  
+        if (repeatableReadCache != null) {
+            repeatableReadCache.put(var, new CacheResult<R>(value, true));
+        }
+        else {
+            delegate.updateCache(session, var, value);
+        }
     }
 
     public void modifyCache(S session, V var) {
-        markReadOrWritten(session, var);
+        Map<V, CacheResult<R>> repeatableReadCache = repeatableReadCacheMap.get(session);  
+        if (repeatableReadCache != null) {
+            repeatableReadCache.remove(var);
+        }
         delegate.modifyCache(session, var);
     }
 
     public void modifyCache(S session, V var, R value) {
-        markReadOrWritten(session, var);
+        Map<V, CacheResult<R>> repeatableReadCache = repeatableReadCacheMap.get(session);  
+        if (repeatableReadCache != null) {
+            repeatableReadCache.put(var, new CacheResult<R>(value, true));
+        }
         delegate.modifyCache(session, var, value);
     }
 
@@ -72,7 +85,7 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
 
     public void beginTransaction(S session) {
         if (getTransactionNesting(session) == 0) {
-            readOrWrittenVarsMap.put(session, new HashSet<V>());
+            repeatableReadCacheMap.put(session, new HashMap<V, CacheResult<R>>());
         }
         delegate.beginTransaction(session);
     }
@@ -93,20 +106,13 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void flush() {
-        readOrWrittenVarsMap.clear();
+        repeatableReadCacheMap.clear();
         delegate.flush();
-    }
-    
-    private void markReadOrWritten(S session, V var) {
-        Set<V> readOrWrittenVars = readOrWrittenVarsMap.get(session);
-        if (readOrWrittenVars != null) {
-            readOrWrittenVars.add(var);
-        }
     }
     
     private void decrementTransaction(S session) {
         if (getTransactionNesting(session) == 0) {
-            readOrWrittenVarsMap.remove(session);
+            repeatableReadCacheMap.remove(session);
         }
     }
 }
