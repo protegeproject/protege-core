@@ -163,6 +163,16 @@ Merged to trunk revision 13424
     svn merge $p@13357 $p@13424
     svn commit
 
+
+Merged to trunk revision 13439
+    svn update
+    svn status
+    p=http://smi-protege/repos/protege/protege-core/trunk
+    svn ls $p
+    svn info http://smi-protege/repos/protege << revision 13439
+    svn merge $p@13424 $p@13439
+    svn commit  << no changes
+
 ---------------------------------------------------------
 Diffs are actually pretty minimal:
   1. the server.update package is all different (one conflict)
