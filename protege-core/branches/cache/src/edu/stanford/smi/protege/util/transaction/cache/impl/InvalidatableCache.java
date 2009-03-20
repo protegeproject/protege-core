@@ -2,7 +2,10 @@ package edu.stanford.smi.protege.util.transaction.cache.impl;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 
@@ -19,14 +22,18 @@ import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
  * @param <R>
  */
 public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
+    private Logger logger = Log.getLogger(InvalidatableCache.class);
+    
     private boolean ignoreTransactions;
     private Set<S> sessionsWithCacheDeleted = new HashSet<S>();
     private boolean invalid = false;
     private Cache<S, V, R> delegate;
+    private int id;
     
     public InvalidatableCache(Cache<S, V, R> delegate, boolean ignoreTransactions) {
         this.delegate = delegate;
         this.ignoreTransactions = ignoreTransactions;
+        id = delegate.getCacheId();
     }
     
     private boolean isInvalid(S session) {
@@ -35,13 +42,16 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
     
     public CacheResult<R> readCache(S session, V var) {
         if (isInvalid(session)) {
-            return new CacheResult<R>(null, false);
+            return CacheResult.getInvalid();
         }
         return delegate.readCache(session, var);
     }
     
     public void updateCache(S session, V var) {
         if (isInvalid(session)) {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Cache " + getCacheId() + " is invalid for session " + session);
+            }
             return;
         }
         delegate.updateCache(session, var);
@@ -49,6 +59,9 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
 
     public void updateCache(S session, V var, R value) {
         if (isInvalid(session)) {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Read ignored, Cache " + getCacheId() + " is invalid for session " + session);
+            }
             return;
         }
         delegate.updateCache(session, var, value);
@@ -56,6 +69,9 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
 
     public void modifyCache(S session, V var) {
         if (isInvalid(session)) {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Read ignored, Cache " + getCacheId() + " is invalid for session " + session);
+            }
             return;
         }
         delegate.modifyCache(session, var);
@@ -63,6 +79,9 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
 
     public void modifyCache(S session, V var, R value) {
         if (isInvalid(session)) {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Write ignored, Cache " + getCacheId() + " is invalid for session " + session);
+            }
             return;
         }
         delegate.modifyCache(session, var, value);
@@ -73,9 +92,15 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
             return;
         }
         else if (!ignoreTransactions && delegate.getTransactionNesting(session) > 0) {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Cache " + getCacheId() + " invalidated for " + session);
+            }
             sessionsWithCacheDeleted.add(session);
         }
         else {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Cache " + getCacheId() + " invalidated");
+            }
             invalid = true;
             delegate.flush();
             delegate = null;
@@ -88,7 +113,7 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
 
     public void startCompleteCache() {
         if (invalid) {
-           return; 
+            return; 
         }
         delegate.startCompleteCache();
     }
@@ -134,6 +159,9 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
         if (!ignoreTransactions 
                 && delegate.getTransactionNesting(session) == 0 
                 && sessionsWithCacheDeleted.contains(session)) {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Commmited invalidation of cache " + getCacheId());
+            }
             invalid = true;
             delegate.flush();
             delegate = null;
@@ -173,6 +201,10 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
             invalid = true;
         }
         delegate.flush();
+    }
+    
+    public int getCacheId() {
+        return id;
     }
     
 }

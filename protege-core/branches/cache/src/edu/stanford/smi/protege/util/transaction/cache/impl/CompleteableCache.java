@@ -2,7 +2,10 @@ package edu.stanford.smi.protege.util.transaction.cache.impl;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 
@@ -23,6 +26,8 @@ public class CompleteableCache<S, V, R> implements Cache<S, V, R> {
         NORMAL, GETTING_COMPLETE_CACHE, CACHE_COMPLETE;
     };
     
+    private Logger logger = Log.getLogger(CompleteableCache.class);
+    
     private CompletionStatus status = CompletionStatus.NORMAL;
     private Set<V> invalidReads = new HashSet<V>();
     private Cache<S, V, R> delegate;
@@ -36,6 +41,9 @@ public class CompleteableCache<S, V, R> implements Cache<S, V, R> {
         if (result.getResult() == null &&
                 status == CompletionStatus.CACHE_COMPLETE && 
                 !invalidReads.contains(var) && !result.isValid()) {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Cache " + getCacheId() + " is complete - null is valid.");
+            }
             return new CacheResult<R>(null, true);
         }
         return result;
@@ -78,17 +86,28 @@ public class CompleteableCache<S, V, R> implements Cache<S, V, R> {
     }
     
     public void startCompleteCache() {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("Cache "  + getCacheId() + " starting to complete the cache");
+        }
         status = CompletionStatus.GETTING_COMPLETE_CACHE;
         invalidReads = new HashSet<V>();
         delegate.startCompleteCache();
     }
 
     public void finishCompleteCache() {
-        status = CompletionStatus.CACHE_COMPLETE;
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("Cache "  + getCacheId() + " cache completed");
+        }
+        if (status == CompletionStatus.GETTING_COMPLETE_CACHE) {
+            status = CompletionStatus.CACHE_COMPLETE;
+        }
         delegate.finishCompleteCache();
     }
     
     public void abortCompleteCache() {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("Cache "  + getCacheId() + " caching aborted");
+        }
         status = CompletionStatus.NORMAL;
         invalidReads = null;
         delegate.abortCompleteCache();
@@ -122,6 +141,10 @@ public class CompleteableCache<S, V, R> implements Cache<S, V, R> {
     private void localFlush() {
         status = CompletionStatus.NORMAL;
         invalidReads.clear();
+    }
+    
+    public int getCacheId() {
+        return delegate.getCacheId();
     }
 
 
