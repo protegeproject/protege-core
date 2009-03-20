@@ -56,7 +56,6 @@ import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
 import edu.stanford.smi.protege.server.util.FifoReader;
 import edu.stanford.smi.protege.server.util.FifoWriter;
-import edu.stanford.smi.protege.ui.FrameTreeFinder;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.LocalizeUtils;
@@ -1545,8 +1544,9 @@ public class RemoteClientFrameStore implements FrameStore {
                                 Facet facet,
                                 boolean isTemplate) throws RemoteException {
       List values = null;
-      if (isCachedInternal(frame, slot, facet, isTemplate)) {
-        values = readCache(frame, slot, facet, isTemplate);
+      CacheResult<List> cachedResult = readCache(frame, slot, facet, isTemplate);
+      if (cachedResult.isValid()) {
+        values = cachedResult.getResult();
       } else {
         if (log.isLoggable(Level.FINE)) {
           log.fine("cache miss for frame " +
@@ -1585,53 +1585,41 @@ public class RemoteClientFrameStore implements FrameStore {
      * This routine assumes that the caller is holding the cache lock
      */
     private boolean isCachedInternal(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-    	boolean ret;	
-    	Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
-    	if (cache == null) {
-    		ret = false;
-    	}
-    	else if (cache.isDeleted() && transactionNesting == 0) {
-    	    cacheMap.remove(frame);
-    	    cache = null;
-    	    ret = false;
-    	}
-    	else {
-    		CacheResult<List> result = cache.readCache(session, new Sft(slot, facet, isTemplate));
-    		ret = result.isValid();
-    	}
-    	if (cacheLog.isLoggable(Level.FINEST)) {
-    		cacheLog.finest("is " + frame.getFrameID().getName()
-    		                       + ", " + slot.getFrameID().getName() 
-    		                       + ", " + (facet == null ? "null" : facet.getFrameID().getName()) +", " + isTemplate + " cached = " + ret);
-    	}
-    	if (ret) {
-    	    stats.hit++;
-    	}
-    	else {
-    	    stats.miss++;
-    	}
-    	return ret;
+        return readCache(frame, slot, facet, isTemplate).isValid();
     }
 
-    private List readCache(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-    	Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
-    	if (cache == null) {
-    		if (cacheLog.isLoggable(Level.FINE)) {
-    			log.fine("using cache for frame " + frame + " even though not present");
-    		}
-    		return null;
-    	}
-    	CacheResult<List> result = cache.readCache(session, new Sft(slot, facet, isTemplate));
-		if (cacheLog.isLoggable(Level.FINEST)) {
-			log.finest("Cache returns " + result + " for " 
-					     + frame.getFrameID() + ", " + slot.getFrameID() + ", " +  (facet == null ? "null" : facet.getFrameID())  +", " + isTemplate);
-		}
-    	if (!result.isValid()) {
-    		return null;
-    	}
-    	else {
-    		return result.getResult();
-    	}
+    private CacheResult<List> readCache(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+        CacheResult<List> ret;    
+        Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
+        if (cacheLog.isLoggable(Level.FINEST) && cache != null) {
+            cacheLog.finest("Using cache " + cache.getCacheId() + " for " + frame.getFrameID().getName());
+        }
+        if (cache == null) {
+            ret = CacheResult.getInvalid();
+        }
+        else if (cache.isDeleted() && transactionNesting == 0) {
+            if (cacheLog.isLoggable(Level.FINEST)) {
+                cacheLog.finest("Cache is deleted");
+            }
+            cacheMap.remove(frame);
+            cache = null;
+            ret = CacheResult.getInvalid();
+        }
+        else {
+            ret = cache.readCache(session, new Sft(slot, facet, isTemplate));
+        }
+        if (cacheLog.isLoggable(Level.FINEST)) {
+            cacheLog.finest("Cache Result for " + frame.getFrameID().getName()
+                                   + ", " + slot.getFrameID().getName() 
+                                   + ", " + (facet == null ? "null" : facet.getFrameID().getName()) +", " + isTemplate + " returns = " + ret);
+        }
+        if (ret.isValid()) {
+            stats.hit++;
+        }
+        else {
+            stats.miss++;
+        }
+        return ret;
     }
 
 
@@ -1669,6 +1657,9 @@ public class RemoteClientFrameStore implements FrameStore {
     	           = new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsReader);
     	        cache = new DeferredTransactionsCache(cache, session, transactionNesting, reader);
     	        cacheMap.put(frame, (DeferredTransactionsCache) cache);
+    	        if (cacheLog.isLoggable(Level.FINEST)) {
+    	            cacheLog.finest("Created cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
+    	        }
     	    }
     	    cacheUpdate.performUpdate(cache);
     	}
