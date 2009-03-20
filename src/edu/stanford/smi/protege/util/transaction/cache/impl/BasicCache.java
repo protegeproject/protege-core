@@ -23,6 +23,15 @@ public class BasicCache<S, V, R> implements Cache<S, V, R> {
     private Map<V, R> cache = new HashMap<V, R>();
     private Map<S, Integer> transactionNestingMap = new HashMap<S, Integer>();
     
+    private static int idCounter = 0;
+    private int id;
+    
+    public BasicCache() {
+        synchronized (BasicCache.class) {
+            id = (idCounter++);
+        }
+    }
+    
     
     public CacheResult<R> readCache(S session, V var) {
         return new CacheResult<R>(cache.get(var), cache.containsKey(var));
@@ -109,6 +118,10 @@ public class BasicCache<S, V, R> implements Cache<S, V, R> {
     public void flush() {
         transactionNestingMap.clear();
         cache.clear();
+    }
+    
+    public int getCacheId() {
+        return id;
     }
 
 
