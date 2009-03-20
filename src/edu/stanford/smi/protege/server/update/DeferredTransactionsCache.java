@@ -150,4 +150,7 @@ public class DeferredTransactionsCache implements
 		}
 	}
 
+    public int getCacheId() {
+        return delegate.getCacheId();
+    }
 }
