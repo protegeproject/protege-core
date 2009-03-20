@@ -189,4 +189,11 @@ public interface Cache<S, V, R> {
      * method for the implementation.
      */
     int getTransactionNesting(S session);
+    
+    /**
+     * This method returns a unique id for each cache.
+     * This is to give the entire aspect stack of a cache to make logging and 
+     * debugging easier
+     */
+    int getCacheId();
 }
