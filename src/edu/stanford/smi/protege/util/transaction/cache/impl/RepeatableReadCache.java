@@ -115,4 +115,8 @@ public class RepeatableReadCache<S, V, R> implements Cache<S, V, R> {
             repeatableReadCacheMap.remove(session);
         }
     }
+    
+    public int getCacheId() {
+        return delegate.getCacheId();
+    }
 }

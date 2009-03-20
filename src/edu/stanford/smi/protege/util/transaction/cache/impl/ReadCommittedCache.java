@@ -127,5 +127,9 @@ public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
         transactedWriteCache.clear();
         delegate.flush();
     }
+    
+    public int getCacheId() {
+        return delegate.getCacheId();
+    }
 
 }

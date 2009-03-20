@@ -105,5 +105,9 @@ public class ReadUncommittedCache<S, V, R> implements Cache<S, V, R> {
     private void myFlush() {
         transactedModifications.clear();
     }
+    
+    public int getCacheId() {
+        return delegate.getCacheId();
+    }
 
 }
