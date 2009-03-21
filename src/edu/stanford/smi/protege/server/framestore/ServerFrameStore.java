@@ -1026,8 +1026,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
   private void handleKnowledgeBaseEvent(RemoteSession session,
                                       KnowledgeBaseEvent event) {
     int type = event.getEventType();
-    if (type == KnowledgeBaseEvent.CLS_DELETED || type == KnowledgeBaseEvent.SLOT_DELETED
-        || type == KnowledgeBaseEvent.FACET_DELETED || type == KnowledgeBaseEvent.INSTANCE_DELETED) {
+    if (type == KnowledgeBaseEvent.CLS_CREATED || type == KnowledgeBaseEvent.SLOT_CREATED ||
+            type == KnowledgeBaseEvent.FACET_CREATED || type == KnowledgeBaseEvent.INSTANCE_CREATED ||
+            type == KnowledgeBaseEvent.CLS_DELETED || type == KnowledgeBaseEvent.SLOT_DELETED ||
+            type == KnowledgeBaseEvent.FACET_DELETED || type == KnowledgeBaseEvent.INSTANCE_DELETED) {
       Frame deletedFrame = event.getFrame();
 	  addWriteUpdate(session, deletedFrame, 
 		  	         new CacheDelete<RemoteSession, Sft, List>(session));
