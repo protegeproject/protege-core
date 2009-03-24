@@ -56,9 +56,4 @@ public class DirectoryClassLoader extends URLClassLoader {
     public String toString() {
         return StringUtilities.getClassName(this) + "(" + directory + ", " + getParent() + ")";
     }
-    
-    public URL[] getURLs() {
-        return null;
-    }
-
 }

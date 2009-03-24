@@ -977,12 +977,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                         TransactionIsolationLevel level,
                                         KnowledgeBaseEvent event) {
     int type = event.getEventType();
-    if (type == KnowledgeBaseEvent.CLS_CREATED || type == KnowledgeBaseEvent.SLOT_CREATED ||
-            type == KnowledgeBaseEvent.FACET_CREATED || type == KnowledgeBaseEvent.INSTANCE_CREATED ||
-            type == KnowledgeBaseEvent.CLS_DELETED || type == KnowledgeBaseEvent.SLOT_DELETED ||
-            type == KnowledgeBaseEvent.FACET_DELETED || type == KnowledgeBaseEvent.INSTANCE_DELETED) {
-      Frame invalidatedFrame = event.getFrame();
-      removeFrameCache(invalidatedFrame);
+    if (type == KnowledgeBaseEvent.CLS_DELETED || type == KnowledgeBaseEvent.SLOT_DELETED
+        || type == KnowledgeBaseEvent.FACET_DELETED || type == KnowledgeBaseEvent.INSTANCE_DELETED) {
+      Frame deletedFrame = event.getFrame();
+      removeFrameCache(deletedFrame);
     }
   }
 
