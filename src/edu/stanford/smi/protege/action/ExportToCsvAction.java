@@ -201,7 +201,8 @@ public class ExportToCsvAction extends StandardAction {
 
 		writer.println(buffer.toString());
 	}
-	
+
+
 	protected String getSlotValuesExportString(Instance instance, Slot slot) {
 		StringBuffer buffer = new StringBuffer();
 
@@ -215,7 +216,7 @@ public class ExportToCsvAction extends StandardAction {
 				Frame frame = (Frame) value;
 				buffer.append(getExportName(frame));
 			} else {
-				buffer.append(value.toString());
+				buffer.append(getQuotedValule(value.toString()));
 			}
 
 			if (i.hasNext()) {
@@ -223,10 +224,8 @@ public class ExportToCsvAction extends StandardAction {
 			}
 		}
 
-		return getQuotedValule(buffer.toString());
+		return buffer.toString();
 	}
-
-
 
 	protected String getQuotedValule(String value) {
 		if (value == null || value.length() == 0) {
