@@ -31,6 +31,7 @@ import edu.stanford.smi.protege.server.update.FrameEvaluationPartial;
 import edu.stanford.smi.protege.server.update.FrameEvaluationStarted;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
 import edu.stanford.smi.protege.server.util.FifoWriter;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 
 /*
@@ -61,6 +62,23 @@ public class FrameCalculator {
   
   public static long WAIT_FOR_OVERLOADED_CLIENT = 300; // ms
   public static long MAX_WORKINFO_QUEUE = 15000;
+  
+  public static String PERCENTAGE_CONTENDED_CYCLES_RUN    = "server.framecalculator.priority";
+  public static String NANOSECONDS_TO_WAIT_FOR_NEXT_CYCLE = "server.framecalculator.wait.for.ready.nanoseconds";
+  
+  private static int percentageContendedCyclesRun;
+  static {
+      percentageContendedCyclesRun  = ApplicationProperties.getIntegerProperty(PERCENTAGE_CONTENDED_CYCLES_RUN, 50);
+      if (percentageContendedCyclesRun > 100) {
+          percentageContendedCyclesRun = 100;
+      }
+      else if (percentageContendedCyclesRun < 0){
+          percentageContendedCyclesRun = 0;
+      }
+  }
+  
+  private static int nanosecondsToWaitForNextCycle = ApplicationProperties.getIntegerProperty(NANOSECONDS_TO_WAIT_FOR_NEXT_CYCLE, 5);
+  private int shareOfContendedCycles = 0;
 
   private FrameStore fs;
   private final Object kbLock;
@@ -465,11 +483,13 @@ public class FrameCalculator {
    * the expense of the current thread.
    */
   private void letOtherThreadsRun() {
+      if (percentageContendedCyclesRun >= 100) {
+          return;
+      }
       Thread th = Thread.currentThread();
       long myid = th.getId();
-      int count = 4;
       boolean threadsWaiting;
-      do {
+      while (true) {
           threadsWaiting = false;
           for (long otherThreadId : threadManager.getAllThreadIds()) {
               ThreadInfo otherThreadInfo = threadManager.getThreadInfo(otherThreadId);
@@ -479,16 +499,26 @@ public class FrameCalculator {
               }
           }
           if (threadsWaiting) {
-              try {
-                  kbLock.wait(0, 200);
+              shareOfContendedCycles += percentageContendedCyclesRun;
+              if (shareOfContendedCycles < 100) {
+                  try {
+                      kbLock.wait(0, nanosecondsToWaitForNextCycle);
+                  }
+                  catch (InterruptedException e) {
+                      log.log(Level.WARNING, "Unexpected Interrupt - weird but probably harmless", e);
+                  }
               }
-              catch (InterruptedException e) {
-                  log.log(Level.WARNING, "Unexpected Interrupt - weird but probably harmless", e);
-            }
+              else {
+                  shareOfContendedCycles -= 100;
+                  return;
+              }
           }
-      } while (threadsWaiting && count-- > 0);
-  }
+          else {
+              return;
+          }
+      }
 
+  }
   private class FrameCalculatorThread extends Thread {
 
     public FrameCalculatorThread() {
