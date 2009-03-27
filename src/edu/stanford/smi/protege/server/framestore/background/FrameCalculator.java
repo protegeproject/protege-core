@@ -68,7 +68,7 @@ public class FrameCalculator {
   
   private static int percentageContendedCyclesRun;
   static {
-      percentageContendedCyclesRun  = ApplicationProperties.getIntegerProperty(PERCENTAGE_CONTENDED_CYCLES_RUN, 50);
+      percentageContendedCyclesRun  = ApplicationProperties.getIntegerProperty(PERCENTAGE_CONTENDED_CYCLES_RUN, 100);
       if (percentageContendedCyclesRun > 100) {
           percentageContendedCyclesRun = 100;
       }
