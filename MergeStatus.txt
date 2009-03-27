@@ -173,6 +173,24 @@ Merged to trunk revision 13439
     svn merge $p@13424 $p@13439
     svn commit  << no changes
 
+Merged to trunk revision 13532 (preparing for merge to trunk)
+   svn update 
+   svn status
+   p=http://smi-protege/repos/protege/protege-core/trunk
+   svn info $p
+       last changed rev 13532
+   svn merge -r 13439:HEAD $p
+   svn revert src/edu/stanford/smi/protege/server/framestore/background/FrameCalculator.java
+   svn revert src/edu/stanford/smi/protege/server/framestore/ServerFrameStore.java
+   svn status
+       looks right
+   ant clean update
+   svn commit
+   svn info
+         because I merged to head I now need to check that
+         protege-core is at revision 13532
+
+
 ---------------------------------------------------------
 Diffs are actually pretty minimal:
   1. the server.update package is all different (one conflict)
