@@ -86,15 +86,32 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	    }
 	    ResultSet ret = stmt.executeQuery();
 	    if (log.isLoggable(Level.FINER)) {
-	      log.finer("Query took " + (System.nanoTime() - startTime)/1000000.0
-	                  + " milliseconds (more or less)");
+	    	float t = (System.nanoTime() - startTime)/1000000;
+	    	if (t > 10000) {
+	    		Log.getLogger().finer("*** SLOW QUERY: " + t + " msec ***");
+	    	}
+	    	log.finer("Query took " + t
+	                  + " milliseconds (more or less)");	  
 	    }
 	    return ret;
 	}
 
 	protected static int executeUpdate(PreparedStatement stmt) throws SQLException {
 	    traceUpdate(stmt);
-	    return stmt.executeUpdate();
+		long startTime = 0;
+		if (log.isLoggable(Level.FINE)) {
+			startTime = System.nanoTime();
+		}
+		int ret =  stmt.executeUpdate();
+		if (log.isLoggable(Level.FINE)) {
+			float t = (System.nanoTime() - startTime)/1000000;
+	    	if (t > 10000) {
+	    		Log.getLogger().fine("*** SLOW QUERY: " + t + " msec ***");
+	    	}
+	    	log.finer("Query took " + t
+	                  + " milliseconds (more or less)");
+		}
+		return ret;
 	}
 
 	protected static boolean isNullValue(Object o) {
@@ -297,7 +314,7 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 
 	protected ResultSet executeQuery(String text, int maxRows) throws SQLException {
 	    long startTime = 0;
-	    traceQuery(text);
+	    traceQuery(text);	    
 	    Statement statement = getCurrentConnection().getStatement();
 	    // statement.setMaxRows(maxRows);
 	    if (log.isLoggable(Level.FINER)) {
@@ -316,8 +333,17 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	}
 
 	protected int executeUpdate(String text) throws SQLException {
-	    traceUpdate(text);
-	    return getCurrentConnection().getStatement().executeUpdate(text);
+		traceUpdate(text);
+		long startTime = 0;
+		if (log.isLoggable(Level.FINE)) {
+			startTime = System.nanoTime();
+		}
+		int ret =  getCurrentConnection().getStatement().executeUpdate(text);
+		if (log.isLoggable(Level.FINE)) {
+			log.fine("Query took " + (System.nanoTime() - startTime)/1000000.0
+					+ " milliseconds (more or less)");
+		}
+		return ret;
 	}
 
 	public void executeQuery(Query query, final QueryCallback callback) {
