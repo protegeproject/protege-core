@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
@@ -1435,23 +1434,27 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
     		setFrame(updateFrameFieldStatement, 2, original);
     		executeUpdate(updateFrameFieldStatement);
 
-    		if (_updateSlotFieldText == null) {
-    			_updateSlotFieldText = "UPDATE " + _table + " SET " + SLOT_COLUMN + " = ? WHERE ";
-    			_updateSlotFieldText = _updateSlotFieldText + SLOT_COLUMN + " = ?";
+    		if (replacement instanceof Slot) {
+    			if (_updateSlotFieldText == null) {
+    				_updateSlotFieldText = "UPDATE " + _table + " SET " + SLOT_COLUMN + " = ? WHERE ";
+    				_updateSlotFieldText = _updateSlotFieldText + SLOT_COLUMN + " = ?";
+    			}
+    			PreparedStatement updateSlotFieldStatement = getCurrentConnection().getPreparedStatement(_updateSlotFieldText);
+    			setFrame(updateSlotFieldStatement, 1, replacement);
+    			setFrame(updateSlotFieldStatement, 2, original);
+    			executeUpdate(updateSlotFieldStatement);
     		}
-    		PreparedStatement updateSlotFieldStatement = getCurrentConnection().getPreparedStatement(_updateSlotFieldText);
-    		setFrame(updateSlotFieldStatement, 1, replacement);
-    		setFrame(updateSlotFieldStatement, 2, original);
-    		executeUpdate(updateSlotFieldStatement);
 
-    		if (_updateFacetFieldText == null) {
-    			_updateFacetFieldText = "UPDATE " + _table + " SET " + FACET_COLUMN + " = ? WHERE ";
-    			_updateFacetFieldText = _updateFacetFieldText + FACET_COLUMN + " = ?";
+    		if (replacement instanceof Facet) {
+    			if (_updateFacetFieldText == null) {
+    				_updateFacetFieldText = "UPDATE " + _table + " SET " + FACET_COLUMN + " = ? WHERE ";
+    				_updateFacetFieldText = _updateFacetFieldText + FACET_COLUMN + " = ?";
+    			}
+    			PreparedStatement updateFacetFieldStatement = getCurrentConnection().getPreparedStatement(_updateFacetFieldText);
+    			setFrame(updateFacetFieldStatement, 1, replacement);
+    			setFrame(updateFacetFieldStatement, 2, original);
+    			executeUpdate(updateFacetFieldStatement);
     		}
-    		PreparedStatement updateFacetFieldStatement = getCurrentConnection().getPreparedStatement(_updateFacetFieldText);
-    		setFrame(updateFacetFieldStatement, 1, replacement);
-    		setFrame(updateFacetFieldStatement, 2, original);
-    		executeUpdate(updateFacetFieldStatement);
 
     		if (_updateValueFieldText == null) {
     			_updateValueFieldText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ? WHERE ";

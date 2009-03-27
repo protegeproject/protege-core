@@ -652,45 +652,12 @@ public class EventGeneratorFrameStore extends ModificationFrameStore {
     		return;
     	}
     	try {
-    		generateReplacedFrameEvents(original, replacement, level);
-    		inReplaceFrameOperation = true;
-    		if (original instanceof Cls) {
-    			generateDeleteClsEvents((Cls) original, level);
-    		}
-    		else if (original instanceof Slot) {
-    			generateDeleteSlotEvents((Slot) original, level);
-    		}
-    		else if (original instanceof Facet) {
-    			generateDeleteFacetEvents((Facet) original, level);
-    		}
-    		else if (original instanceof SimpleInstance) {
-    			generateDeleteSimpleInstanceEvents((SimpleInstance) original, level);
-    		}
+    		generateReplacedFrameEvents(original, replacement, level);    	
     	}
     	finally {
     		inReplaceFrameOperation=false;
     		getDelegate().replaceFrame(original, replacement);
-    	}
-    	try {
-    		inReplaceFrameOperation = true;
-    		Collection directTypes = getDelegate().getDirectTypes((Instance) replacement);
-    		if (original instanceof Cls) {
-    			generateCreateClsEvents((Cls) replacement, directTypes, level);
-    		}
-    		if (original instanceof Slot) {
-    			generateCreateSlotEvents((Slot) replacement, directTypes, level);
-    		}
-    		if (original instanceof Facet) {
-    			generateCreateFacetEvents((Facet) replacement, directTypes, level);
-    		}
-    		if (original instanceof SimpleInstance) {
-    			generateCreateSimpleInstanceEvents((SimpleInstance) replacement, directTypes, level);
-    		}
-    		generateReplacingFrameEvents(replacement, original, level);
-    	}
-    	finally {
-    		inReplaceFrameOperation = false;
-    	}
+    	}    
     }
 
     public void addCustomEvent(AbstractEvent event) {
