@@ -1,17 +1,53 @@
 package edu.stanford.smi.protege.widget;
 
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
-import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+import javax.swing.TransferHandler;
+import javax.swing.table.TableModel;
 
-import edu.stanford.smi.protege.event.*;
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.event.ClsAdapter;
+import edu.stanford.smi.protege.event.ClsEvent;
+import edu.stanford.smi.protege.event.ClsListener;
+import edu.stanford.smi.protege.event.FrameAdapter;
+import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.event.FrameListener;
+import edu.stanford.smi.protege.event.KnowledgeBaseAdapter;
+import edu.stanford.smi.protege.event.KnowledgeBaseEvent;
+import edu.stanford.smi.protege.event.KnowledgeBaseListener;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.FrameSlotCombination;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Model;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.ui.CardinalityFacetRenderer;
+import edu.stanford.smi.protege.ui.DisplayUtilities;
+import edu.stanford.smi.protege.ui.OtherFacetsRenderer;
+import edu.stanford.smi.protege.ui.SlotPairRenderer;
+import edu.stanford.smi.protege.ui.TypeFacetRenderer;
+import edu.stanford.smi.protege.util.AddAction;
+import edu.stanford.smi.protege.util.AllowableAction;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.CreateAction;
+import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.RemoveAction;
+import edu.stanford.smi.protege.util.RowTableModel;
+import edu.stanford.smi.protege.util.TransferableCollection;
+import edu.stanford.smi.protege.util.ViewAction;
 
 /**
  * Slot widget for displaying the template slots.  We try to display as much facet information as possible.
@@ -63,7 +99,7 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     private KnowledgeBaseListener _knowledgeBaseListener = new KnowledgeBaseAdapter() {
         public void frameReplaced(KnowledgeBaseEvent event) {
-            repaint();
+            reload();
         }
     };
 
