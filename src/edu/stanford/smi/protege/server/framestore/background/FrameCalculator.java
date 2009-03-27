@@ -27,6 +27,7 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.Registration;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheAbortComplete;
@@ -63,6 +64,24 @@ public class FrameCalculator {
   
   public static long WAIT_FOR_OVERLOADED_CLIENT = 300; // ms
   public static long MAX_WORKINFO_QUEUE = 15000;
+  
+  public static String PERCENTAGE_CONTENDED_CYCLES_RUN    = "server.framecalculator.priority";
+  public static String NANOSECONDS_TO_WAIT_FOR_NEXT_CYCLE = "server.framecalculator.wait.for.ready.nanoseconds";
+  
+  private static int percentageContendedCyclesRun;
+  static {
+      percentageContendedCyclesRun  = ApplicationProperties.getIntegerProperty(PERCENTAGE_CONTENDED_CYCLES_RUN, 100);
+      if (percentageContendedCyclesRun > 100) {
+          percentageContendedCyclesRun = 100;
+      }
+      else if (percentageContendedCyclesRun < 0){
+          percentageContendedCyclesRun = 0;
+      }
+  }
+  
+  private static int nanosecondsToWaitForNextCycle = ApplicationProperties.getIntegerProperty(NANOSECONDS_TO_WAIT_FOR_NEXT_CYCLE, 5);
+  private int shareOfContendedCycles = 0;
+
 
   private FrameStore fs;
   private final Object kbLock;
@@ -472,14 +491,17 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
   /*
    * This method assumes that the caller is holding the kbLock.  The idea is to
    * encourage other thread that are waiting on the kbLock to continue running at
-   * the expense of the current thread.
+   * the expense of the current thread.  It has recently been discovered that the thread
+   * Manager implementation is very expensive to invoke so by default this logic is turned off.
    */
   private void letOtherThreadsRun() {
+      if (percentageContendedCyclesRun >= 100) {
+          return;
+      }
       Thread th = Thread.currentThread();
       long myid = th.getId();
-      int count = 4;
       boolean threadsWaiting;
-      do {
+      while (true) {
           threadsWaiting = false;
           for (long otherThreadId : threadManager.getAllThreadIds()) {
               ThreadInfo otherThreadInfo = threadManager.getThreadInfo(otherThreadId);
@@ -489,14 +511,24 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
               }
           }
           if (threadsWaiting) {
-              try {
-                  kbLock.wait(0, 200);
+              shareOfContendedCycles += percentageContendedCyclesRun;
+              if (shareOfContendedCycles < 100) {
+                  try {
+                      kbLock.wait(0, nanosecondsToWaitForNextCycle);
+                  }
+                  catch (InterruptedException e) {
+                      log.log(Level.WARNING, "Unexpected Interrupt - weird but probably harmless", e);
+                  }
               }
-              catch (InterruptedException e) {
-                  log.log(Level.WARNING, "Unexpected Interrupt - weird but probably harmless", e);
-            }
+              else {
+                  shareOfContendedCycles -= 100;
+                  return;
+              }
           }
-      } while (threadsWaiting && count-- > 0);
+          else {
+              return;
+          }
+      }
   }
 
   private class FrameCalculatorThread extends Thread {
