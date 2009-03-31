@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Localizable;
 
@@ -64,6 +65,28 @@ public class FrameWithBrowserText implements Serializable, Localizable {
 		return
 			frame == null ? 42 :
 				frame.getName().length() * 43 + 7 * browserText.length() + 5 * types.size() + 3;
+	}
+	
+	/*
+	 * Util methods
+	 */
+	
+	public static Collection<FrameWithBrowserText> getFramesWithBrowserText(Collection<? extends Frame> frames) {
+		if (frames == null) { return null; }	
+		ArrayList<FrameWithBrowserText> fbts = new ArrayList<FrameWithBrowserText>();
+		for (Frame frame : frames) {
+			FrameWithBrowserText fbt = getFrameWithBrowserText(frame);
+			if (fbt != null) {
+				fbts.add(fbt);
+			}
+		}
+		return fbts;
+	}
+	
+	public static FrameWithBrowserText getFrameWithBrowserText(Frame frame) {
+		if (frame == null) { return null; }
+		return new FrameWithBrowserText(frame, frame.getBrowserText(), 
+				(frame instanceof Instance) ? ((Instance)frame).getDirectTypes() : null);
 	}
 
 }
