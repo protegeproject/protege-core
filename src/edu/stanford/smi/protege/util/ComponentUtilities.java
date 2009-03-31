@@ -47,6 +47,9 @@ import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Slot;
+
 /**
  * Utility methods for dealing with various swing components.
  *
@@ -885,6 +888,22 @@ public class ComponentUtilities {
 			}
 		}
 	}
-
-
+	
+	public static void setSelectedNode(final KnowledgeBase kb, JTree tree, FrameWithBrowserText value) {
+		TreeSelectionHelper<FrameWithBrowserText> selectionHelper = new TreeSelectionHelper<FrameWithBrowserText>(tree) {
+			private Slot superclsesSlot = kb.getSystemFrames().getDirectSuperclassesSlot();  
+			@Override
+			protected Collection<FrameWithBrowserText> getParents(FrameWithBrowserText child) {				 
+				edu.stanford.smi.protege.model.Frame frame = child.getFrame();
+				return FrameWithBrowserText.getFramesWithBrowserText(frame.getOwnSlotValues(superclsesSlot));				
+			}
+			
+			@Override
+			protected boolean isVisible(FrameWithBrowserText element) {
+				edu.stanford.smi.protege.model.Frame frame = element.getFrame(); 
+				return frame.isVisible();
+			}			
+		};
+		selectionHelper.setSelectedNode(value);		
+	}
 }
