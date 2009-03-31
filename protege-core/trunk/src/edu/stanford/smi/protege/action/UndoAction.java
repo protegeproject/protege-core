@@ -1,12 +1,15 @@
 package edu.stanford.smi.protege.action;
 
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.model.framestore.undo.*;
-import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.model.CommandManager;
+import edu.stanford.smi.protege.model.DefaultKnowledgeBase;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.framestore.undo.Command;
+import edu.stanford.smi.protege.resource.ResourceKey;
 
 /**
  * Request that the previous operation be undone.
@@ -44,10 +47,10 @@ public class UndoAction extends ProjectAction {
                 Command command = commandManager.getUndoCommand();
                 if (command != null) {
                     String s = command.getDescription();
-                    if (s.length() > 75) {
+                    if (s!= null && s.length() > 75) {
                         s = s.substring(0, 75) + "...";
                     }
-                    value = value.toString() + " (" + s + ")";
+                    value = value.toString() + " (" + s == null ? "no description" : s + ")";
                 }
             }
         }
