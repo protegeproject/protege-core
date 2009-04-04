@@ -325,8 +325,11 @@ public class SubclassPane extends SelectableContainer {
         Collection paths = new ArrayList();
         Iterator i = clses.iterator();
         while (i.hasNext()) {
-            Cls cls = (Cls) i.next();
-            paths.add(ModelUtilities.getPathToRoot(cls));
+        	Object o = i.next();
+        	if (o instanceof Cls) {
+        		Cls cls = (Cls) o;
+        		paths.add(ModelUtilities.getPathToRoot(cls));
+        	}
         }
         ComponentUtilities.setSelectedObjectPaths(getTree(), paths);
     }
