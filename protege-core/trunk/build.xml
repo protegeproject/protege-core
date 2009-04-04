@@ -295,7 +295,6 @@
                 <pathelement path="${protege.home}/protege.jar"/>
                 <pathelement path="${protege.home}/looks-2.1.3.jar"/>
                 <pathelement path="${protege.home}/unicode_panel.jar"/>
-                <pathelement path="${protege.home}/plugins/edu.stanford.smi.protegex.changes/change-model.jar"/>
                 <fileset dir="./dbdrivers"/>
             </classpath>
         </java>
