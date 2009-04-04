@@ -194,10 +194,14 @@ public abstract class TextComponentWidget extends AbstractSlotWidget {
 
     public void setText(String text) {
         // _isDirty = false;
-        _documentListener.disable();
+    	if (_documentListener != null) {
+    		_documentListener.disable();
+    	}
         _textComponent.setText(text == null ? "" : text);
         onSetText(text);
-        _documentListener.enable();
+        if (_documentListener != null) {
+        	_documentListener.enable();
+        }
         validateText(text);
     }
 
