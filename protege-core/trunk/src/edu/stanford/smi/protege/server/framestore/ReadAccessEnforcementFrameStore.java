@@ -44,7 +44,10 @@ public class ReadAccessEnforcementFrameStore extends AbstractFrameStoreInvocatio
     
     public Object handleInvoke(Method method, Object[] args) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        boolean readOnly = readOnlyUsers.contains(session.getUserName());
+        boolean readOnly = false;
+        if (session != null) {
+            readOnly = readOnlyUsers.contains(session.getUserName());
+        }
         if (readOnly && method.getName().endsWith("Transaction")) {
             return Boolean.TRUE;
         }
