@@ -386,6 +386,10 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
     }
 
     public void setAssociatedCls(Cls cls) {
+        if ((_associatedCls == null && cls ==null) 
+            || (_associatedCls !=null && _associatedCls.equals(cls))) { 
+            return; 
+        }
         if (_associatedCls != null) {
             _associatedCls.removeClsListener(_associatedClsListener);
         }
