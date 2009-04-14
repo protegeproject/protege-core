@@ -24,6 +24,7 @@ public class ExportToCsvUtil {
 	public static final String EXPORT_FILE_EXTENSION_PROPERTY = "query.export.file.extension";
 	public static final String EXPORT_BROWSER_TEXT_PROPERTY = "query.export.browser.text";
 	public static final String EXPORT_METADATA_PROPERTY = "query.export.metadata";
+	public static final String EXPORT_SUPERCLASS_PROPERTY = "query.export.superclass";
 
 	public static String getSlotValuesDelimiter() {
 		return ApplicationProperties.getString(SLOT_VALUES_DELIMITER_PROPERTY, DEFAULT_SLOT_VALUES_DELIMITER);
@@ -60,6 +61,17 @@ public class ExportToCsvUtil {
 		ApplicationProperties.setBoolean(EXPORT_METADATA_PROPERTY, exportQuery);
 	}
 
+
+	public static boolean isExportSuperclass() {
+		return ApplicationProperties.getBooleanProperty(EXPORT_SUPERCLASS_PROPERTY, false);
+	}
+
+	public static void setExportSuperclass(boolean exportSuperclass) {
+		ApplicationProperties.setBoolean(EXPORT_SUPERCLASS_PROPERTY, exportSuperclass);
+	}
+
+
+	
 	/*
 	 * Other getter/setter methods can be added if necessary
 	 */
