@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.action;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.PrintWriter;
@@ -57,9 +58,10 @@ public class ExportToCsvAction extends StandardAction {
 	private boolean exportHeader;
 	private boolean exportTypes;
 	private boolean exportMetadata;
-
+	private boolean exportSuperclass;
+	private boolean exportCompletedSuccessul = false;
+	
 	private ExportConfigurationPanel exportConfigurationPanel;
-
 
 	public ExportToCsvAction(KnowledgeBase kb) {
 		this(kb, "Export Slot Values to file", Icons.getQueryExportIcon());
@@ -71,19 +73,22 @@ public class ExportToCsvAction extends StandardAction {
 	}
 
 	public void actionPerformed(ActionEvent arg0) {
+		exportCompletedSuccessul = false;
 		exportConfigurationPanel = getExportConfigurationPanel();
 		exportConfigurationPanel.setPossibleSlots(getSlotsToExport());
 		exportConfigurationPanel.setExportMetadata(exportMetadataText);
+		exportConfigurationPanel.setInitialExportClasses(getInitialExportClses());
 
-		int sel = ModalDialog.showDialog(ProjectManager.getProjectManager().getCurrentProjectView(), exportConfigurationPanel.getConfigPanel(), "Export configuration", ModalDialog.MODE_OK_CANCEL);
+		int sel = ModalDialog.showDialog(getParentComponent(), exportConfigurationPanel.getConfigPanel(), "Export configuration", ModalDialog.MODE_OK_CANCEL);
 		if (sel == ModalDialog.OPTION_CANCEL) {
 			return;
 		}
-
+		
 		exportFile = exportConfigurationPanel.getExportedFile();
 		slotsToExport = exportConfigurationPanel.getExportedSlots();
 		exportHeader = exportConfigurationPanel.isExportHeaderEnabled();
 		exportTypes = exportConfigurationPanel.isExportTypesEnabled();
+		exportSuperclass = exportConfigurationPanel.isExportSuperclassEnabled();
 		exportMetadata = exportConfigurationPanel.isExportMetadataEnabled();
 
 		//write configuration to protege.properties
@@ -91,15 +96,16 @@ public class ExportToCsvAction extends StandardAction {
 		setSlotValuesDelimiter(exportConfigurationPanel.getSlotValuesDelimiter());
 		setExportBrowserText(exportConfigurationPanel.isExportBrowserTextEnabled());
 		setExportMetadata(exportConfigurationPanel.isExportMetadataEnabled());
-		setExportMetadata(exportConfigurationPanel.getExportMetadataText());
+		setExportSuperclass(exportConfigurationPanel.isExportSuperclassEnabled());
+		setExportMetadata(exportConfigurationPanel.getExportMetadataText());		
 
-		boolean success = export();
+		exportCompletedSuccessul = export();
 
-		String messageText = success ? "Query results exported successfully to:\n" + exportFile.getAbsolutePath() :
+		String messageText = exportCompletedSuccessul ? "Query results exported successfully to:\n" + exportFile.getAbsolutePath() :
 			"There were errors at saving query results.\n" +
 			"Please consult the console for more details.";
 
-		ModalDialog.showMessageDialog(ProjectManager.getProjectManager().getCurrentProjectView(), messageText, success ? "Export successful" : "Errors at export");
+		ModalDialog.showMessageDialog(getParentComponent(), messageText, exportCompletedSuccessul ? "Export successful" : "Errors at export");
 	}
 
 
@@ -112,7 +118,7 @@ public class ExportToCsvAction extends StandardAction {
 			if (outputStream == null) {
 				Log.getLogger().log(Level.WARNING, "Unable to open output file " + exportFile + ".");
 			} else {
-				printResults(outputStream, instancesToExport, slotsToExport);
+				printResults(outputStream, getInstancesToExport(), slotsToExport);
 				success = true;
 			}
 
@@ -162,6 +168,11 @@ public class ExportToCsvAction extends StandardAction {
 			buffer.append("Type(s)");
 			buffer.append(getSlotsDelimiter());
 		}
+		
+		if (exportSuperclass) {
+			buffer.append("Superclass(es)");
+			buffer.append(getSlotsDelimiter());
+		}
 
 		for (Object element : slots) {
 			Slot slot = (Slot) element;
@@ -183,6 +194,18 @@ public class ExportToCsvAction extends StandardAction {
 			while (i.hasNext()) {
 				Cls directType = (Cls) i.next();
 				buffer.append(getExportName(directType));
+				if (i.hasNext()) {
+					buffer.append(getSlotValuesDelimiter());
+				}
+			}
+		}
+		
+		if (exportSuperclass) {
+			buffer.append(ExportToCsvUtil.getSlotsDelimiter());			
+			Iterator<Cls> i = getSuperclassesToExport(instance).iterator();
+			while (i.hasNext()) {
+				Cls supercls = (Cls) i.next();
+				buffer.append(getExportName(supercls));
 				if (i.hasNext()) {
 					buffer.append(getSlotValuesDelimiter());
 				}
@@ -257,7 +280,7 @@ public class ExportToCsvAction extends StandardAction {
 	}
 
 
-	private ExportConfigurationPanel getExportConfigurationPanel() {
+	protected ExportConfigurationPanel getExportConfigurationPanel() {
 		if (exportConfigurationPanel != null) {
 			return exportConfigurationPanel;
 		}
@@ -266,10 +289,28 @@ public class ExportToCsvAction extends StandardAction {
 		return exportConfigurationPanel;
 	}
 
+	protected Collection<Cls> getSuperclassesToExport(Instance inst) {
+		Collection<Cls> superclses = new ArrayList<Cls>();
+		if (!(inst instanceof Cls)) { return superclses; }
+		Cls cls = (Cls) inst;
+		return cls.getDirectSuperclasses();
+	}	
+	
+	protected Component getParentComponent() {
+		return ProjectManager.getProjectManager().getCurrentProjectView();		
+	}
+	
+	protected Collection<Cls> getInitialExportClses() {
+		return new ArrayList<Cls>();
+	}
 
 	/*
 	 * Public setter and getter methods
 	 */
+	
+	public KnowledgeBase getKnowledgeBase() {
+		return kb;
+	}
 
 	public Collection<Instance> getInstancesToExport() {
 		return instancesToExport;
@@ -337,6 +378,15 @@ public class ExportToCsvAction extends StandardAction {
 		this.exportMetadata = exportMetadata;
 		ExportToCsvUtil.setExportMetadata(exportMetadata);
 	}
+		
+	public void setExportSuperclass(boolean exportSuperclass) {
+		this.exportSuperclass = exportSuperclass;
+		ExportToCsvUtil.setExportSuperclass(exportSuperclass);
+	}
+
+	public boolean isExportSuperclass() {
+		return exportSuperclass;
+	}	
 
 	public String getSlotValuesDelimiter() {
 		return ExportToCsvUtil.getSlotValuesDelimiter();
@@ -360,6 +410,10 @@ public class ExportToCsvAction extends StandardAction {
 
 	public void setExportBrowserText(boolean exportBrowserText) {
 		ExportToCsvUtil.setExportBrowserText(exportBrowserText);
+	}
+	
+	public boolean exportCompletedSuccessful() {
+		return exportCompletedSuccessul;
 	}
 
 }

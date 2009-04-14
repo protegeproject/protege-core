@@ -88,5 +88,17 @@ public class FrameWithBrowserText implements Serializable, Localizable {
 		return new FrameWithBrowserText(frame, frame.getBrowserText(), 
 				(frame instanceof Instance) ? ((Instance)frame).getDirectTypes() : null);
 	}
+	
+	public static Collection<Frame> getFrames(Collection<FrameWithBrowserText> framesWithBrowserText) {
+		if (framesWithBrowserText == null) { return null; }	
+		ArrayList<Frame> frames = new ArrayList<Frame>();
+		for (FrameWithBrowserText fbt : framesWithBrowserText) {			
+			Frame frame = fbt.getFrame();
+			if (frame != null) {
+				frames.add(frame);
+			}
+		}
+		return frames;
+	}
 
 }
