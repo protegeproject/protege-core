@@ -62,7 +62,9 @@ public class SelectableList extends JList implements Selectable {
                 clearSelection();
             } else if (isSelectedIndex(index)) {
                 _isMultiSelectPressEvent = true;
-                _isDeferringSelection = true;
+                if (!event.isPopupTrigger()) {
+                	_isDeferringSelection = true;
+                }
             }
         }
         if (_isDeferringSelection && id == MouseEvent.MOUSE_RELEASED) {
