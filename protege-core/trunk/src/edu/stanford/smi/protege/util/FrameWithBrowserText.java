@@ -16,17 +16,27 @@ public class FrameWithBrowserText implements Serializable, Localizable {
 	private Frame frame;
 	private String browserText;
 	private Collection<Cls> types;
-
+	private String iconName;
 
 	public FrameWithBrowserText(Frame frame) {
-		this(frame, null, null);
+		this(frame, null);
 	}
 
+	public FrameWithBrowserText(Frame frame, String browserText) {
+		this(frame, browserText, null, null);
+	}
+	
 	public FrameWithBrowserText(Frame frame, String browserText,
 			Collection<Cls> types) {
+		this(frame, browserText, types, null);
+	}
+	
+	public FrameWithBrowserText(Frame frame, String browserText,
+			Collection<Cls> types, String iconName) {
 		this.frame = frame;
 		this.browserText = browserText == null ? frame.getName() : browserText;
 		this.types = types == null ? new ArrayList<Cls>() : types;
+		this.iconName = iconName;
 	}
 
 	public Frame getFrame() {
@@ -46,6 +56,14 @@ public class FrameWithBrowserText implements Serializable, Localizable {
 	}
 	public void setTypes(Collection<Cls> types) {
 		this.types = types;
+	}
+	
+	public String getIconName() {
+		return iconName;
+	}
+
+	public void setIconName(String iconName) {
+		this.iconName = iconName;
 	}
 
 	public void localize(KnowledgeBase kb) {
