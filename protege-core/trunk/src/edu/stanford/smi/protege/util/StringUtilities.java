@@ -110,6 +110,26 @@ public class StringUtilities {
 		}
 		return name;
 	}
+	
+	private static final char SINGLE_QUOTE = '\'';
+	
+	public static String quote(String text) {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(SINGLE_QUOTE);
+		buffer.append(text);
+		buffer.append(SINGLE_QUOTE);
+		return buffer.toString();
+	}
+	
+	public static String unquote(String text) {
+		if ( text.length() > 0 &&
+			 text.charAt(0) == SINGLE_QUOTE &&
+			 text.charAt(text.length() - 1) == SINGLE_QUOTE) {
+				return text.substring(1, text.length() - 1);
+		}
+		return text;
+	}
+	
 }
 
 
