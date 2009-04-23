@@ -863,21 +863,22 @@ public class ComponentUtilities {
     }
 
 	public static JMenu getMenu(JMenuBar menuBar, String menuText, boolean create, int menuIndex) {
-		JMenu menu = null;
-
-		for (int i = 0; i < menuBar.getMenuCount(); i++) {
-			menu = menuBar.getMenu(i);
-			if (menu.getText().equals(menuText)) {
-				return menu;
+		int menuCount = menuBar.getMenuCount();
+		for (int i = 0; i < menuCount; i++) {
+			JMenu tmpMenu = menuBar.getMenu(i);
+			if (tmpMenu.getText().equals(menuText)) {
+				return tmpMenu;
 			}
 		}
-
+				
 		if (create) {
-			menu = new JMenu(menuText);
+			JMenu menu = new JMenu(menuText);		
 			menuBar.add(menu, menuIndex);
+			menuBar.revalidate();
+			menuBar.repaint();
+			return menu;
 		}
-
-		return menu;
+		return null;
 	}
 
 	public static void removeMenuItem(JMenu menu, String menuItemText) {
