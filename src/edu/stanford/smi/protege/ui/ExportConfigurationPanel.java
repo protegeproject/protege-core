@@ -309,7 +309,7 @@ public class ExportConfigurationPanel {
 	}
 	
 	public boolean isExportSuperclassEnabled(){
-		return exportSuperclassesCheckBox.isSelected();
+		return exportSuperclassesCheckBox != null && exportSuperclassesCheckBox.isSelected();
 	}
 
 	public boolean isExportMetadataEnabled() {
