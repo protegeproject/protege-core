@@ -149,11 +149,16 @@ public class ServerPanel extends JPanel implements Validatable {
 	}
 
 	private RemoteSession createSession(String username, String password) {
-		RemoteSession session = null;
+	    RemoteSession session = null;
 		try {
 			session = _server.openSession(username, SystemUtilities.getMachineIpAddress(), password);
 		} catch (RemoteException e) {
 			Log.getLogger().severe(Log.toString(e));
+		}
+		finally {
+		    if (session == null) {
+		        Log.getLogger().info("Server ref = " + _server);
+		    }
 		}
 		return session;
 	}
