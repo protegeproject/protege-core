@@ -1,13 +1,22 @@
 package edu.stanford.smi.protege.widget;
 
-import java.util.*;
+import java.util.Collection;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JSplitPane;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.resource.*;
-import edu.stanford.smi.protege.ui.*;
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.resource.Icons;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
+import edu.stanford.smi.protege.ui.ClsInverseRelationshipPanel;
+import edu.stanford.smi.protege.ui.ClsesPanel;
+import edu.stanford.smi.protege.ui.InstanceDisplay;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.LabeledComponent;
+import edu.stanford.smi.protege.util.SelectionEvent;
+import edu.stanford.smi.protege.util.SelectionListener;
 
 /**
  * The classes tab.  This tab displays the class hierarchy as a tree and allows the user to select and edit specific
@@ -63,7 +72,7 @@ public class ClsesTab extends AbstractTabWidget {
         });
     }
 
-    private JComponent createMainSplitter() {
+    protected JComponent createMainSplitter() {
         JSplitPane pane = createLeftRightSplitPane("ClsesTab.left_right", 250);
         pane.setLeftComponent(createClsesSplitter());
         pane.setRightComponent(createClsDisplay());
