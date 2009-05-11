@@ -1,4 +1,4 @@
-package edu.stanford.smi.protege.server;
+    package edu.stanford.smi.protege.server;
 
 //ESCA*JAVA0100
 import java.io.BufferedReader;
@@ -85,7 +85,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private Map<RemoteSession, Collection<ServerProject>> _sessionToProjectsMap
         = new HashMap<RemoteSession, Collection<ServerProject>>();
     private Thread _updateThread;
-    private static final int NO_SAVE = -1;
+    public static final int NO_SAVE = -1;
     private int _saveIntervalMsec = NO_SAVE;
     private static final String SAVE_INTERVAL_OPTION = "-saveIntervalSec=";
     private static final String NOPRELOAD_OPTION = "-nopreload";
@@ -151,6 +151,14 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     protected static String getLocalBoundName() {
         return getBoundName();
+    }
+    
+    public int getSaveIntervalMsec() {
+        return _saveIntervalMsec;
+    }
+    
+    public void setSaveIntervalMsec(int saveIntervalMsec) {
+        this._saveIntervalMsec = saveIntervalMsec;
     }
 
     private static Registry getRegistry() throws RemoteException {
@@ -443,9 +451,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
     }
 
-    private synchronized void saveAllProjects() {
-        // Log.enter(this, "update");
-        ///CLOVER:FLUSH
+    public synchronized void saveAllProjects() {
         Iterator<Map.Entry<Project, ServerProject>> i = _projectToServerProjectMap.entrySet().iterator();
         while (i.hasNext()) {
             Map.Entry<Project, ServerProject> entry =  i.next();
