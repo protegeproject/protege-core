@@ -1,9 +1,6 @@
 package edu.stanford.smi.protege.server.framestore.background;
 
 import java.io.Serializable;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -27,7 +24,6 @@ import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.Registration;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
-import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheAbortComplete;
@@ -64,23 +60,6 @@ public class FrameCalculator {
   
   public static long WAIT_FOR_OVERLOADED_CLIENT = 300; // ms
   public static long MAX_WORKINFO_QUEUE = 15000;
-  
-  public static String PERCENTAGE_CONTENDED_CYCLES_RUN    = "server.framecalculator.priority";
-  public static String NANOSECONDS_TO_WAIT_FOR_NEXT_CYCLE = "server.framecalculator.wait.for.ready.nanoseconds";
-  
-  private static int percentageContendedCyclesRun;
-  static {
-      percentageContendedCyclesRun  = ApplicationProperties.getIntegerProperty(PERCENTAGE_CONTENDED_CYCLES_RUN, 100);
-      if (percentageContendedCyclesRun > 100) {
-          percentageContendedCyclesRun = 100;
-      }
-      else if (percentageContendedCyclesRun < 0){
-          percentageContendedCyclesRun = 0;
-      }
-  }
-  
-  private static int nanosecondsToWaitForNextCycle = ApplicationProperties.getIntegerProperty(NANOSECONDS_TO_WAIT_FOR_NEXT_CYCLE, 5);
-  private int shareOfContendedCycles = 0;
 
 
   private FrameStore fs;
@@ -104,9 +83,7 @@ public class FrameCalculator {
   private Set<RemoteSession> disabledSessions = new HashSet<RemoteSession>();
 
   private FrameCalculatorStatsImpl stats = new FrameCalculatorStatsImpl();
-  private ThreadMXBean threadManager = ManagementFactory.getThreadMXBean();
-  private long myid;
-  
+
 
   public FrameCalculator(FrameStore fs,
                          ServerCacheStateMachine machine,
@@ -120,7 +97,6 @@ public class FrameCalculator {
     this.sessionMap = sessionMap;
     innerThread = new FrameCalculatorThread();
     innerThread.start();
-    myid = innerThread.getId();
   }
 
   public void setStateMachine(ServerCacheStateMachine machine) {
@@ -136,15 +112,15 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
     effectiveClient = wi.getClient();
     ServerFrameStore.setCurrentSession(effectiveClient);
     if (log.isLoggable(Level.FINE)) {
+        letOtherThreadsRun();
         synchronized (kbLock) {
-            letOtherThreadsRun();
             log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
         }
     }
     try {
       stats.startWork();
+      letOtherThreadsRun();
       synchronized(kbLock) {
-        letOtherThreadsRun();
         if (server.inTransaction()) {
           if (log.isLoggable(Level.FINE)) {
             log.fine("\tbut transaction in progress");
@@ -157,14 +133,14 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
       Set<Slot> slots = null;
       List values = null;
       Sft sft;
+      letOtherThreadsRun();
       synchronized (kbLock) {
-        letOtherThreadsRun();
         checkAbilityToGenerateFullCache(wi);
         slots = fs.getOwnSlots(frame);
       }
       for (Slot slot : slots) {
+        letOtherThreadsRun();
         synchronized (kbLock) {
-          letOtherThreadsRun();
           checkAbilityToGenerateFullCache(wi);
     	  sft = new Sft(slot, null, false);
           if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES) &&
@@ -183,14 +159,14 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
       }
       if (frame instanceof Cls) {
         Cls cls = (Cls) frame;
+        letOtherThreadsRun();
         synchronized (kbLock) {
-          letOtherThreadsRun();
           checkAbilityToGenerateFullCache(wi);
           slots = fs.getTemplateSlots(cls);
         }
         for (Slot slot : slots) {
+          letOtherThreadsRun();
           synchronized (kbLock) {
-            letOtherThreadsRun();
             checkAbilityToGenerateFullCache(wi);
             sft = new Sft(slot, null, true);
             values = fs.getDirectTemplateSlotValues(cls, slot);
@@ -200,14 +176,14 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
             }
           }
           Set<Facet> facets;
+          letOtherThreadsRun();
           synchronized (kbLock) {
-            letOtherThreadsRun();
             checkAbilityToGenerateFullCache(wi);
             facets = fs.getTemplateFacets(cls, slot);
           }
           for (Facet facet : facets) {
+            letOtherThreadsRun();
             synchronized (kbLock) {
-              letOtherThreadsRun();
               checkAbilityToGenerateFullCache(wi);
               sft = new Sft(slot, facet, true);
               values = fs.getDirectTemplateFacetValues(cls, slot,facet);
@@ -495,40 +471,7 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
    * Manager implementation is very expensive to invoke so by default this logic is turned off.
    */
   private void letOtherThreadsRun() {
-      if (percentageContendedCyclesRun >= 100) {
-          return;
-      }
-      Thread th = Thread.currentThread();
-      long myid = th.getId();
-      boolean threadsWaiting;
-      while (true) {
-          threadsWaiting = false;
-          for (long otherThreadId : threadManager.getAllThreadIds()) {
-              ThreadInfo otherThreadInfo = threadManager.getThreadInfo(otherThreadId);
-              if (otherThreadInfo != null && otherThreadInfo.getThreadId() != myid && otherThreadInfo.getLockOwnerId() == myid) {
-                  threadsWaiting = true;
-                  break;
-              }
-          }
-          if (threadsWaiting) {
-              shareOfContendedCycles += percentageContendedCyclesRun;
-              if (shareOfContendedCycles < 100) {
-                  try {
-                      kbLock.wait(0, nanosecondsToWaitForNextCycle);
-                  }
-                  catch (InterruptedException e) {
-                      log.log(Level.WARNING, "Unexpected Interrupt - weird but probably harmless", e);
-                  }
-              }
-              else {
-                  shareOfContendedCycles -= 100;
-                  return;
-              }
-          }
-          else {
-              return;
-          }
-      }
+	  server.letOtherThreadsRun();
   }
 
   private class FrameCalculatorThread extends Thread {
