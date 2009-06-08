@@ -195,8 +195,8 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
           }
         }
       }
+      letOtherThreadsRun();
       synchronized(kbLock) {
-        letOtherThreadsRun();
         if (wi.isTargetFullCache() && !server.inTransaction()) {
           insertValueUpdate(frame, new CacheCompleted<RemoteSession, Sft, List>());
         } else if (wi.isTargetFullCache()) {
