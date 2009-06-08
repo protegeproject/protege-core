@@ -1,22 +1,19 @@
 package edu.stanford.smi.protege.util;
 
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  * @author Ray Fergerson
  *
  * Description of this class
+ * @deprecated use the transaction cache utilities.
  */
-public class CacheMap<X,Y>  extends WeakHashMap<X,Y> {
-    private static final int INIT_SIZE = 10007;
+@Deprecated
+public class CacheMap<X,Y>  extends HashMap<X,Y> {
+    public static final String DEFAULT_CACHE_MAP_SIZE_PROPERTY="default.cache.map.size";
+    public static final int DEFAULT_CACHE_MAP_SIZE=ApplicationProperties.getIntegerProperty(DEFAULT_CACHE_MAP_SIZE_PROPERTY, 50000);
+    
     private int maxSize;
 
     public CacheMap(int maxSize) {
@@ -25,7 +22,7 @@ public class CacheMap<X,Y>  extends WeakHashMap<X,Y> {
     }
     
     public CacheMap() {
-        this(Integer.MAX_VALUE);
+        this(DEFAULT_CACHE_MAP_SIZE);
     }
 
 
