@@ -264,6 +264,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     	synchronized (runningClientThreads) {
     		while (!runningClientThreads.isEmpty()) {
     			try {
+    				if (log.isLoggable(Level.FINE)) {
+    					log.fine("waitig on threads " + runningClientThreads);
+    				}
 					runningClientThreads.wait();
 				} catch (InterruptedException e) {
 					log.log(Level.WARNING, "Unexpected Interrupt - please don't press that red button again", e);
