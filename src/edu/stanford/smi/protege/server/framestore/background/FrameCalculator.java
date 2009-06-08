@@ -83,7 +83,8 @@ public class FrameCalculator {
   private Set<RemoteSession> disabledSessions = new HashSet<RemoteSession>();
 
   private FrameCalculatorStatsImpl stats = new FrameCalculatorStatsImpl();
-
+  
+  private long startOfLockHeldTime;
 
   public FrameCalculator(FrameStore fs,
                          ServerCacheStateMachine machine,
@@ -116,6 +117,7 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
         synchronized (kbLock) {
             log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
         }
+        afterKbLockHeld();
     }
     try {
       stats.startWork();
@@ -130,6 +132,7 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
           insertValueUpdate(frame, new CacheStartComplete<RemoteSession, Sft, List>());
         }
       }
+      afterKbLockHeld();
       Set<Slot> slots = null;
       List values = null;
       Sft sft;
@@ -138,6 +141,7 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
         checkAbilityToGenerateFullCache(wi);
         slots = fs.getOwnSlots(frame);
       }
+      afterKbLockHeld();
       for (Slot slot : slots) {
         letOtherThreadsRun();
         synchronized (kbLock) {
@@ -156,6 +160,7 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
           }
           addFollowedExprs(frame, slot, values);
         }
+        afterKbLockHeld();
       }
       if (frame instanceof Cls) {
         Cls cls = (Cls) frame;
@@ -164,6 +169,7 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
           checkAbilityToGenerateFullCache(wi);
           slots = fs.getTemplateSlots(cls);
         }
+        afterKbLockHeld();
         for (Slot slot : slots) {
           letOtherThreadsRun();
           synchronized (kbLock) {
@@ -175,12 +181,14 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
             	insertValueUpdate(frame, new CacheRead<RemoteSession, Sft, List>(effectiveClient, sft, result));
             }
           }
+          afterKbLockHeld();
           Set<Facet> facets;
           letOtherThreadsRun();
           synchronized (kbLock) {
             checkAbilityToGenerateFullCache(wi);
             facets = fs.getTemplateFacets(cls, slot);
           }
+          afterKbLockHeld();
           for (Facet facet : facets) {
             letOtherThreadsRun();
             synchronized (kbLock) {
@@ -192,6 +200,7 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
             	insertValueUpdate(frame, new CacheRead<RemoteSession, Sft, List>(effectiveClient, sft, result));
               }
             }
+            afterKbLockHeld();
           }
         }
       }
@@ -203,6 +212,7 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
             insertValueUpdate(frame, new CacheAbortComplete<RemoteSession, Sft, List>());
         }
       }
+      afterKbLockHeld();
     } catch (Throwable t) {
       Log.getLogger().log(Level.SEVERE,
                           "Exception caught caching frame values",
@@ -471,7 +481,16 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
    * Manager implementation is very expensive to invoke so by default this logic is turned off.
    */
   private void letOtherThreadsRun() {
+	  if (log.isLoggable(Level.FINE)) {
+		  startOfLockHeldTime = System.currentTimeMillis();
+	  }
 	  server.letOtherThreadsRun();
+  }
+  
+  private void afterKbLockHeld() {
+	  if (log.isLoggable(Level.FINE)) {
+		  log.fine("Knowledge Base Lock held for " + (System.currentTimeMillis() - startOfLockHeldTime));
+	  }
   }
 
   private class FrameCalculatorThread extends Thread {
