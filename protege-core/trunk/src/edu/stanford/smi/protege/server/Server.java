@@ -899,6 +899,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
 		return success && errors.size() == 0;
 	}
+	
+	public boolean hasValidCredentials(String userName, String password) {
+		return isValid(userName, password);
+	}
+	
 
     public synchronized void shutdown() {
         Log.getLogger().info("Received shutdown request.");
@@ -1218,5 +1223,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         job.fixLoader();
         return job.run();
     }
+
+	
 
 }
