@@ -93,7 +93,9 @@ public interface RemoteServer extends Remote {
     
     boolean isServerOperationAllowed(RemoteSession session, Operation op) throws RemoteException;
     
-    boolean isServerOperationAllowed(RemoteSession session, Operation op, String serverName) throws RemoteException;    
+    boolean isServerOperationAllowed(RemoteSession session, Operation op, String serverName) throws RemoteException;
+    
+    boolean hasValidCredentials(String userName, String password) throws RemoteException;    
     
     /* 
      * Misc
