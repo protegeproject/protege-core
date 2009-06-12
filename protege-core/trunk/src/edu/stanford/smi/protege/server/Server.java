@@ -59,6 +59,7 @@ import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 import edu.stanford.smi.protege.server.socket.RmiSocketFactory;
 import edu.stanford.smi.protege.server.socket.SSLFactory;
+import edu.stanford.smi.protege.server.util.ProjectInfo;
 import edu.stanford.smi.protege.server.util.ServerUtil;
 import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
 import edu.stanford.smi.protege.util.FileUtilities;
@@ -741,6 +742,22 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
     
 
+    public synchronized Collection<ProjectInfo> getAvailableProjectInfo(RemoteSession session) {
+    	List<ProjectInfo> projectInfos = new ArrayList<ProjectInfo>();
+    	Collection<String> projectNames = getAvailableProjectNames(session);
+    	for (String projectName : projectNames) {
+    		//should work, but there is a problem with empty descriptions, therefore the try catch
+    		try {
+    			ProjectInstance prj = metaproject.getProject(projectName);	
+    			User owner = prj.getOwner();
+    			projectInfos.add(new ProjectInfo(prj.getName(), prj.getDescription(), owner == null ? null : owner.getName()));
+			} catch (Exception e) {
+				Log.getLogger().log(Level.WARNING, "Errors at retrieving project instance from metaproject. Project name" + projectName, e);
+			}			
+		}    	
+    	return projectInfos;
+    }
+    
     public synchronized Collection<String> getAllProjectNames() {
        ArrayList<String> prjs = new ArrayList<String>(_nameToProjectStatusMap.keySet());
        Collections.sort(prjs);
@@ -900,7 +917,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 		return success && errors.size() == 0;
 	}
 	
-	public boolean hasValidCredentials(String userName, String password) {
+	public synchronized boolean hasValidCredentials(String userName, String password) {
 		return isValid(userName, password);
 	}
 	
