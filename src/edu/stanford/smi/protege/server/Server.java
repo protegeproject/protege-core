@@ -309,7 +309,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
         projects.add(project);
         project.register(session);
-        Log.getLogger().info("Adding session " + session);
+        Log.getLogger().info("Server: Adding " + session + " on " + new Date());
     }
 
     private void recordDisconnection(RemoteSession session, RemoteServerProject project)
@@ -325,7 +325,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (project instanceof ServerProject) {
           ((ServerProject) project).deregister(session);
         }
-        Log.getLogger().info("Removing session: " + session);
+        Log.getLogger().info("Server: Removing " + session + " on " + new Date());
     }
 
     public synchronized ServerProject getServerProject(String projectName) {
@@ -662,6 +662,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (isValid(username, password)) {
             session = new Session(username, userIpAddress);
             _sessions.add(session);
+        } else {
+        	Log.getLogger().warning("Failed login for user " + username + " IP: " + userIpAddress);
         }
 
         return session;
@@ -772,12 +774,18 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     public synchronized RemoteServerProject openProject(String projectName, RemoteSession session)
     throws ServerSessionLost {
         if (!_sessions.contains(session)) {
+        	Log.getLogger().warning("Failed to open project: Invalid " + session + " tried to open project " +
+        			projectName + ". Most likely user is not logged in.");
             return null;  // user didn't really log in
         }
         if (_nameToProjectStatusMap.get(projectName) == ProjectStatus.CLOSED_FOR_MAINTENANCE) {
+        	Log.getLogger().warning("Failed to open project: " + session + " tried to open project " +
+        			projectName + ", but project is closed for maintenance");
             return null;
         }
         if (!readAllowed(projectName, session)) {
+        	Log.getLogger().warning("Failed to open project: " + session + " tried to open project " +
+        			projectName + ", but user does not have read permission on this project.");
             return null;
         }
         ServerProject serverProject = null;
@@ -793,9 +801,14 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                 return null;
             }
             recordConnection(session, serverProject);
+            Log.getLogger().info("Server: Opened project " + projectName + " for " + session + " on " + new Date());
+        } else {
+        	Log.getLogger().warning("Failed to open project:  " + session + " tried to open project " +
+        			projectName + ", but operation failed." +
+        					"Possible causes: project with this name is not defined in the metaproject;" +
+        					"project is not in the ready status, or project could not be opened by the server" +
+        					"(check previous server logs)");
         }
-
-        Log.getLogger().info("Server: Opened project " + projectName + " for " + session + " on " + new Date());
 
         return serverProject;
     }
