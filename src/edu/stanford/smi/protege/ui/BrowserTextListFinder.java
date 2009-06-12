@@ -9,8 +9,10 @@ import javax.swing.ListModel;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.resource.ResourceKey;
 import edu.stanford.smi.protege.util.FrameWithBrowserText;
+import edu.stanford.smi.protege.util.SimpleListModel;
 import edu.stanford.smi.protege.util.SimpleStringMatcher;
 import edu.stanford.smi.protege.util.StringMatcher;
+import edu.stanford.smi.protege.util.StringUtilities;
 
 public class BrowserTextListFinder extends ListFinder {
 
@@ -31,10 +33,10 @@ public class BrowserTextListFinder extends ListFinder {
 	        int size = model.getSize();
 	        for (int i = 0; i < size; ++i) {
 	            FrameWithBrowserText fbt = (FrameWithBrowserText) model.getElementAt(i);
-	            String browserText = fbt.getBrowserText();	            
+	            String browserText = fbt.getBrowserText();        
 	            if (browserText != null) {      	
 	            	browserText = browserText.toLowerCase();
-	            	if (matcher.isMatch(browserText)) {
+	            	if (matcher.isMatch(browserText) || matcher.isMatch(StringUtilities.unquote(browserText))) {
 	            		matchingInstances.add(fbt.getFrame());
 	            	}
 	            }
@@ -44,10 +46,11 @@ public class BrowserTextListFinder extends ListFinder {
 	 
 	 
 	 protected void select(Object o) {
-		 if (o instanceof Frame) {
+		 if (o instanceof Frame) {			 
 			 _list.setSelectedValue(new FrameWithBrowserText((Frame)o), true);
-		 } else if (o instanceof FrameWithBrowserText) {			 
-			 _list.setSelectedValue(o, true);
+		 } else if (o instanceof FrameWithBrowserText) {	
+			 int ind = ((SimpleListModel)_list.getModel()).indexOf(o);
+			 if (ind >= 0) { _list.setSelectedIndex(ind); }			 
 		 } else {
 			 _list.setSelectedIndex(0);
 		 }
