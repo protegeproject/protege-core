@@ -156,7 +156,9 @@ public class RemoteClientProject extends Project {
 
     @Override
     public void dispose() {
-        Log.getLogger().info("remote project dispose");
+    	if (log.isLoggable(Level.FINE)) {
+    		Log.getLogger().fine("Remote project dispose " + this);
+    	}
         super.dispose();
         attemptClose();
         uninstallShutdownHook();
