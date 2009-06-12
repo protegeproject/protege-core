@@ -7,6 +7,7 @@ import java.util.Collection;
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
 import edu.stanford.smi.protege.server.metaproject.Operation;
+import edu.stanford.smi.protege.server.util.ProjectInfo;
 import edu.stanford.smi.protege.util.ServerJob;
 
 public interface RemoteServer extends Remote {
@@ -41,6 +42,8 @@ public interface RemoteServer extends Remote {
      */
     
     Collection<String> getAvailableProjectNames(RemoteSession session) throws RemoteException;
+    
+    Collection<ProjectInfo> getAvailableProjectInfo(RemoteSession session) throws RemoteException;
     
     RemoteServerProject openProject(String projectName, RemoteSession session) throws RemoteException;    
     
