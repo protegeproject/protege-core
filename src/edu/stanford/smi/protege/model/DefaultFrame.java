@@ -129,6 +129,12 @@ public abstract class DefaultFrame implements Frame, Localizable, Serializable {
     }
 
     private static int compareStrings(String s1, String s2) {
+    	if (s1.charAt(0) == '\'') {
+    		s1 = s1.substring(1);
+    	}
+    	if (s2 != null && s2.charAt(0) == '\'') {
+    		s2 = s2.substring(1);
+    	}
         int result = s1.compareToIgnoreCase(s2);
         if (result == 0) {
             result = s1.compareTo(s2);
