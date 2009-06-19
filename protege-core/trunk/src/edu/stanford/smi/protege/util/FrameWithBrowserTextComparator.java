@@ -11,6 +11,12 @@ public class FrameWithBrowserTextComparator implements
 		String bt1 = fbt1.getBrowserText();
 		String bt2 = fbt2.getBrowserText();
 		if (bt1 != null && bt2 != null) {
+			if (bt1.charAt(0) == '\'') {
+				bt1 = bt1.substring(1);
+			}
+			if (bt2.charAt(0) == '\'') {
+				bt2 = bt2.substring(1);
+			}
 			return bt1.compareTo(bt2);
 		}
 		Frame f1 = fbt1.getFrame();
