@@ -1,4 +1,5 @@
 <?xml version = "1.0" encoding = "utf-8"?>
+<!-- *** CHANGE ME: change the project name -->
 <project name = "Query Plugin" default = "dist" basedir = ".">    
    <property environment="env"/>
    <property name="protege.home" value="${env.PROTEGE_HOME}"/>
@@ -9,29 +10,23 @@
    <property name = "classes"         location = "${build}/classes"/>
    <property name = "plugins"         location = "${build}/plugins"/>
    <property name = "lib"             location = "./lib"/>
+
+   <!-- *** CHANGE ME: change the plugin dist and plugin name name -->
    <property name = "plugin_dist"     value = "uk.ac.man.cs.mig.coode.owlviz"/>
    <property name = "pluginName"      value = "OWLViz"/>
-   <property name = "owl.path"         value = "edu.stanford.smi.protegex.owl"/>
+
+   <property name = "owl.path"        value = "edu.stanford.smi.protegex.owl"/>
+
+   <property name="protege.lib"       location = "${protege.home}/protege.jar"/>
+   <property name="protege.owl.lib"   location = "${protege.home}/plugins/${owl.path}/protege-owl.jar"/>
 
 
    <!-- 
      #  ********** Finding Protege Libraries. *************
      -->
 
-   <target name="checkProtegeHome">
-       <condition property="protege.home.set">
-           <available file="${protege.home}/protege.jar" type="file"/>
-       </condition>
-   </target>
-
-   <target name="useProtegeHome" depends="checkProtegeHome" if="protege.home.set">
-       <echo message="Using Protege Home = ${protege.home} to find protege jars"/>
-       <property name="protege.lib" value="${protege.home}/protege.jar"/>
-       <property name="protege.owl.lib" value="${protege.home}/plugins/${owl.path}/protege-owl.jar"/>
-   </target>
-    
-
-    <target name = "checkProtegeLibs" depends="useProtegeHome">
+    <target name = "checkProtegeLibs">
+      <echo message="Using Protege Home = ${protege.home} to find protege jars"/>
       <condition property="libs.found">
         <and>
           <available file="${protege.lib}" type = "file"/>
@@ -124,7 +119,7 @@
             todir="${protege.home}/plugins/${plugin_dist}"/>
    </target>
 
-   <target name = "install" depends = "checkProtegeHome, dist">
+   <target name = "install" depends = "dist">
       <fail message = "set the protege.home variable to do an install">
          <condition>
             <not>
