@@ -35,7 +35,6 @@ public class CacheMap<X,Y>  extends HashMap<X,Y> {
     
     private void fixSize() {
         if (size() > maxSize) {
-            Log.getLogger().info("removing elements from call cache");
             int count = 0;
             int nremove = maxSize/5;
             Iterator<X> i = keySet().iterator();
