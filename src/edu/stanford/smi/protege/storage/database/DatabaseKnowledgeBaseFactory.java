@@ -269,12 +269,6 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
           errors.add(new MessageError(e, message));
       }
   }
-  
-  protected void insertKB(KnowledgeBase kb, String name, Collection<URI> included) {
-      NarrowFrameStore nfs = createNarrowFrameStore(name);
-      MergingNarrowFrameStore mnfs = getMergingFrameStore((DefaultKnowledgeBase) kb);
-      mnfs.addActiveFrameStore(nfs, included);
-    }
 
   protected void setOwlMode(boolean owlMode) {
       this.owlMode = owlMode;
