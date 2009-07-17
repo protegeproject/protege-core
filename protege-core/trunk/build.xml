@@ -429,7 +429,7 @@
             </classpath>
             <jvmarg value="-Djava.util.logging.config.file=junit-logging.properties"/>
             <jvmarg value="-Xmx${junit.memory}"/>
-
+            <!-- <jvmarg value="-agentlib:jdwp=transport=dt_socket,address=8100,server=y,suspend=y"/> -->
             <batchtest>
               <fileset dir="${junit}">
                 <include name="${junit.includes}"/>
