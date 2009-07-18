@@ -294,6 +294,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 	    RemoteSession session = ServerFrameStore.getCurrentSession();
 	    Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
+        updateServerFramesKeptInCache(session, frame.getFrameID().getName());
 	    if (result.isValid()) {
 	        return new ArrayList(getValues(result));
 	    }
@@ -310,6 +311,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         RemoteSession session = ServerFrameStore.getCurrentSession();
         Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
+        updateServerFramesKeptInCache(session, frame.getFrameID().getName());
         if (result.isValid()) {
             return getValues(result).size();
         }
