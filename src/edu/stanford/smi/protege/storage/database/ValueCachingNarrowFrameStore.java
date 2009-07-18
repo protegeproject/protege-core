@@ -48,10 +48,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     private Sft directInstancesSft;
     
     // Hacks to keep things in memory
-    public static String SERVER_RECENTLY_USED_FRAMES_COUNT= "server.database.cache.count";
-    private int serverRecentlyUsedFramesCount = ApplicationProperties.getIntegerProperty(SERVER_RECENTLY_USED_FRAMES_COUNT, 5 * 1024);
     private MultiMap<RemoteSession, String> framesModifiedInTransaction = new ArrayListMultiMap<RemoteSession, String>();
-    private Set<String> serverRecentlyUsedFrames = new LinkedHashSet<String>();
 
     public ValueCachingNarrowFrameStore(DatabaseFrameDb delegate) {
         if (log.isLoggable(Level.FINE)) {
@@ -96,7 +93,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             }
             String frameName = frame.getFrameID().getName();
             cacheMap.put(frameName, cache);
-            updateServerFramesKeptInCache(session, frameName);
             if (log.isLoggable(Level.FINE)) {
                 log.fine("Created and filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
             }
@@ -138,19 +134,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         RemoteSession session = ServerFrameStore.getCurrentSession();
         if (!getTransactionStatusMonitor().inTransaction()) {
             framesModifiedInTransaction.removeKey(session);
-        }
-    }
-    
-    private void updateServerFramesKeptInCache(RemoteSession session, String newFrameName) {
-        if (session != null) {  // detect the server case... No need to do this in standalone
-            serverRecentlyUsedFrames.remove(newFrameName); // remove and  
-            serverRecentlyUsedFrames.add(newFrameName);    //     add puts the frame at the end of the list.
-            
-            int size = serverRecentlyUsedFrames.size();
-            while (size-- > serverRecentlyUsedFramesCount) {
-                String oldFrameName = serverRecentlyUsedFrames.iterator().next();
-                serverRecentlyUsedFrames.remove(oldFrameName);
-            }
         }
     }
 	
@@ -210,7 +193,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 	    transactions.clear();
 	    directInstancesSft = null;
 	    framesModifiedInTransaction.clear();
-	    serverRecentlyUsedFrames.clear();
 	}
 
 
@@ -294,7 +276,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 	    RemoteSession session = ServerFrameStore.getCurrentSession();
 	    Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
-        updateServerFramesKeptInCache(session, frame.getFrameID().getName());
 	    if (result.isValid()) {
 	        return new ArrayList(getValues(result));
 	    }
@@ -311,7 +292,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         RemoteSession session = ServerFrameStore.getCurrentSession();
         Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
-        updateServerFramesKeptInCache(session, frame.getFrameID().getName());
         if (result.isValid()) {
             return getValues(result).size();
         }
