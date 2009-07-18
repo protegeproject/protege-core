@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.storage.database;
 
+import java.lang.ref.SoftReference;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,6 +12,7 @@ import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
 import edu.stanford.smi.protege.util.transaction.cache.CacheFactory;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
+import edu.stanford.smi.protege.util.transaction.cache.impl.SoftCache;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCacheUpdate;
 
 public class ValueCache implements Cache<RemoteSession, Sft, List> {
@@ -20,12 +22,16 @@ public class ValueCache implements Cache<RemoteSession, Sft, List> {
 	private int point = 0;
 	private List<SerializedCacheUpdate<RemoteSession, Sft, List>> transactions;
 	
-	public ValueCache(TransactionIsolationLevel level, List<SerializedCacheUpdate<RemoteSession, Sft, List>> transactions) {
-		delegate = CacheFactory.createEmptyCache(level);
+	@SuppressWarnings("unchecked")
+    public ValueCache(TransactionIsolationLevel level, 
+	                  List<SerializedCacheUpdate<RemoteSession, Sft, List>> transactions) {
+	    Cache<RemoteSession, Sft, SoftReference<List>> subDelegate = CacheFactory.createEmptyCache(level);
+		delegate = new SoftCache<RemoteSession, Sft, List>(subDelegate);
 		this.transactions = transactions;
 	}
 	
-	private void catchUp() {
+	@SuppressWarnings("unchecked")
+    private void catchUp() {
 	    boolean needsLog = log.isLoggable(Level.FINE) && point < transactions.size();
 	    if (needsLog) {
 	        log.fine("Belatedly catching up with transactions for cache " + getCacheId());
@@ -114,13 +120,15 @@ public class ValueCache implements Cache<RemoteSession, Sft, List> {
         delegate.modifyCache(session, var);
 	}
 
-	public void modifyCache(RemoteSession session, Sft var, List value) {
+	@SuppressWarnings("unchecked")
+    public void modifyCache(RemoteSession session, Sft var, List value) {
         catchUp();
         logEntry("modify cache with known", var);
         delegate.modifyCache(session, var,  value);
 	}
 
-	public CacheResult<List> readCache(RemoteSession session, Sft var) {
+	@SuppressWarnings("unchecked")
+    public CacheResult<List> readCache(RemoteSession session, Sft var) {
         catchUp();
         logEntry("read cache", var);
         return delegate.readCache(session, var);
@@ -144,7 +152,8 @@ public class ValueCache implements Cache<RemoteSession, Sft, List> {
         delegate.updateCache(session, var);
 	}
 
-	public void updateCache(RemoteSession session, Sft var, List value) {
+	@SuppressWarnings("unchecked")
+    public void updateCache(RemoteSession session, Sft var, List value) {
         catchUp();
         logEntry("update cache with known", var);
         delegate.updateCache(session, var, value);
