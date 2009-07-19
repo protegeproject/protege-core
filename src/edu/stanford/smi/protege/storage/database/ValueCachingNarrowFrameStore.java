@@ -1,8 +1,8 @@
 package edu.stanford.smi.protege.storage.database;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +23,6 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
-import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ArrayListMultiMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.MultiMap;
@@ -43,7 +42,8 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCache
 public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     private static Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private DatabaseFrameDb framedb;
-    private WeakHashMap<String, ValueCache> cacheMap = new WeakHashMap<String, ValueCache>();
+    private WeakHashMap<String, SoftReference<ValueCache>> cacheMap 
+                     = new WeakHashMap<String, SoftReference<ValueCache>>();
     private List<SerializedCacheUpdate<RemoteSession, Sft, List>> transactions = new ArrayList<SerializedCacheUpdate<RemoteSession, Sft, List>>();
     private Sft directInstancesSft;
     
@@ -72,7 +72,11 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     
     private ValueCache getCache(Frame  frame, boolean create) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        ValueCache cache = cacheMap.get(frame.getFrameID().getName());
+        SoftReference<ValueCache> reference = cacheMap.get(frame.getFrameID().getName());
+        ValueCache cache = null;
+        if (reference != null) {
+        	cache = reference.get();
+        }
         if (cache == null && create) {
             cache = new ValueCache(getTransactionStatusMonitor().getTransationIsolationLevel(), transactions);
             // sorry - this is a bit ugly...
@@ -92,7 +96,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                 cache.finishCompleteCache();
             }
             String frameName = frame.getFrameID().getName();
-            cacheMap.put(frameName, cache);
+            cacheMap.put(frameName, new SoftReference(cache));
             if (log.isLoggable(Level.FINE)) {
                 log.fine("Created and filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
             }
@@ -135,6 +139,19 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         if (!getTransactionStatusMonitor().inTransaction()) {
             framesModifiedInTransaction.removeKey(session);
         }
+    }
+    
+    public void debugOutOfMemory() {
+    	List<Integer> junk = new ArrayList<Integer>();
+    	junk.add(8);
+    	try {
+    		while (true) {
+    			junk.addAll(junk);
+    		}
+    	}
+    	catch (OutOfMemoryError oops) {
+    		log.info("Out of memory achieved");
+    	}
     }
 	
 	/* ****************************************************************************
@@ -198,7 +215,11 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
 
 	public void deleteFrame(Frame frame) {
-	    cacheMap.remove(frame.getFrameID().getName());
+		ValueCache cache = getCache(frame, false);
+		if (cache != null) {
+			RemoteSession session = ServerFrameStore.getCurrentSession();
+			cache.delete(session);
+		}
 	    getDelegate().deleteFrame(frame);
 	}
 
@@ -272,18 +293,18 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
 	public List getValues(Frame frame, Slot slot, Facet facet,
 	                      boolean isTemplate) {
-	    ValueCache cache = getCache(frame, true);
-	    RemoteSession session = ServerFrameStore.getCurrentSession();
-	    Sft sft = new Sft(slot, facet, isTemplate);
+        ValueCache cache = getCache(frame, true);
+        RemoteSession session = ServerFrameStore.getCurrentSession();
+        Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
-	    if (result.isValid()) {
-	        return new ArrayList(getValues(result));
-	    }
-	    else {
-	        List values = getDelegate().getValues(frame, slot, facet, isTemplate);
-	        cache.updateCache(session, sft, values);
-	        return values;
-	    }
+        if (result.isValid()) {
+            return new ArrayList(getValues(result));
+        }
+        else {
+            List values = getDelegate().getValues(frame, slot, facet, isTemplate);
+            cache.updateCache(session, sft, values);
+            return values;
+        }
 	}
 
 	public int getValuesCount(Frame frame, Slot slot, Facet facet,

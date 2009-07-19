@@ -1,6 +1,5 @@
 package edu.stanford.smi.protege.storage.database;
 
-import java.lang.ref.SoftReference;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,7 +11,6 @@ import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
 import edu.stanford.smi.protege.util.transaction.cache.CacheFactory;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
-import edu.stanford.smi.protege.util.transaction.cache.impl.SoftCache;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCacheUpdate;
 
 public class ValueCache implements Cache<RemoteSession, Sft, List> {
@@ -24,9 +22,8 @@ public class ValueCache implements Cache<RemoteSession, Sft, List> {
 	
 	@SuppressWarnings("unchecked")
     public ValueCache(TransactionIsolationLevel level, 
-	                  List<SerializedCacheUpdate<RemoteSession, Sft, List>> transactions) {
-	    Cache<RemoteSession, Sft, SoftReference<List>> subDelegate = CacheFactory.createEmptyCache(level);
-		delegate = new SoftCache<RemoteSession, Sft, List>(subDelegate);
+	                  List<SerializedCacheUpdate<RemoteSession, Sft, List>> transactions) { 
+		delegate = CacheFactory.createEmptyCache(level);
 		this.transactions = transactions;
 	}
 	
