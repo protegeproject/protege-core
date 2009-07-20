@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.storage.database;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,7 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.ArrayListMultiMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.MultiMap;
@@ -49,6 +51,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     
     // Hacks to keep things in memory
     private MultiMap<RemoteSession, String> framesModifiedInTransaction = new ArrayListMultiMap<RemoteSession, String>();
+    
+    public static String SERVER_KEPT_CACHED_FRAMES_COUNT_PROP = "server.db.keep.frame.cache.count";
+    private int serverKeptCachedFrameCacheCount = ApplicationProperties.getIntegerProperty(SERVER_KEPT_CACHED_FRAMES_COUNT_PROP, 5 * 1024);
+    private LinkedHashSet<ValueCache> serverKeptFrameCaches = new LinkedHashSet<ValueCache>();
 
     public ValueCachingNarrowFrameStore(DatabaseFrameDb delegate) {
         if (log.isLoggable(Level.FINE)) {
@@ -141,6 +147,19 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         }
     }
     
+    private void updateServerCachesHeldInMemory(RemoteSession session, ValueCache  cache) {
+        if (session != null) { // detect server mode.
+            serverKeptFrameCaches.remove(cache);  // remove and
+            serverKeptFrameCaches.add(cache);     //    add puts cache at the end of the list.
+            
+            int size = serverKeptFrameCaches.size();
+            while (size-- > serverKeptCachedFrameCacheCount) {
+                ValueCache oldCache = serverKeptFrameCaches.iterator().next();
+                serverKeptFrameCaches.remove(oldCache);
+            }
+        }
+    }
+    
     public void debugOutOfMemory() {
     	List<Integer> junk = new ArrayList<Integer>();
     	junk.add(8);
@@ -161,7 +180,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 	public void addValues(Frame frame, Slot slot, Facet facet,
 	                      boolean isTemplate, Collection values) {
 	    getDelegate().addValues(frame, slot, facet, isTemplate, values);
-	    ValueCache cache = getCache(frame, false);
+	    ValueCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
 	    if (cache != null) {
 	        RemoteSession session = ServerFrameStore.getCurrentSession();
 	        Sft sft = new Sft(slot, facet, isTemplate);
@@ -210,6 +229,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 	    transactions.clear();
 	    directInstancesSft = null;
 	    framesModifiedInTransaction.clear();
+	    serverKeptFrameCaches.clear();
 	}
 
 
@@ -297,6 +317,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         RemoteSession session = ServerFrameStore.getCurrentSession();
         Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
+        updateServerCachesHeldInMemory(session, cache);
         if (result.isValid()) {
             return new ArrayList(getValues(result));
         }
@@ -313,6 +334,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         RemoteSession session = ServerFrameStore.getCurrentSession();
         Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
+        updateServerCachesHeldInMemory(session, cache);
         if (result.isValid()) {
             return getValues(result).size();
         }
@@ -323,7 +345,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
 	public void moveValue(Frame frame, Slot slot, Facet facet,
 	                      boolean isTemplate, int from, int to) {
-	    ValueCache cache = getCache(frame, false);
+	    ValueCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
 	    if (cache != null) {
 	        RemoteSession session = ServerFrameStore.getCurrentSession();
 	        Sft sft = new Sft(slot, facet, isTemplate);
@@ -339,7 +361,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
 	public void removeValue(Frame frame, Slot slot, Facet facet,
 	                        boolean isTemplate, Object value) {
-        ValueCache cache = getCache(frame, false);
+        ValueCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
         if (cache != null) {
             RemoteSession session = ServerFrameStore.getCurrentSession();
             Sft sft = new Sft(slot, facet, isTemplate);
@@ -370,7 +392,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
 	public void setValues(Frame frame, Slot slot, Facet facet,
 	                      boolean isTemplate, Collection values) {
-	    ValueCache  cache = getCache(frame, false);
+	    ValueCache  cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
 	    if (cache != null) {
 	        RemoteSession session = ServerFrameStore.getCurrentSession();
 	        Sft  sft = new Sft(slot, facet, isTemplate);
