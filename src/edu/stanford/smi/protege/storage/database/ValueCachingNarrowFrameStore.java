@@ -56,6 +56,12 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     private int serverKeptCachedFrameCacheCount = ApplicationProperties.getIntegerProperty(SERVER_KEPT_CACHED_FRAMES_COUNT_PROP, 5 * 1024);
     private LinkedHashSet<ValueCache> serverKeptFrameCaches = new LinkedHashSet<ValueCache>();
 
+    // stats
+    private long totalBuildTime = 0;
+    private int cacheBuilds = 0;
+    private int cacheLost = 0;
+    private int cacheHits = 0;
+
     public ValueCachingNarrowFrameStore(DatabaseFrameDb delegate) {
         if (log.isLoggable(Level.FINE)) {
             log.fine("Constructing ValueCachingNarrowFrameStore with delegate " + delegate);
@@ -85,6 +91,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         }
         if (log.isLoggable(Level.FINE) && reference != null && cache == null) {
             log.fine("Cache for frame " + frame.getFrameID().getName() + " garbage collected");
+            cacheLost++;
         }
         if (cache == null && create) {
             cache = new ValueCache(getTransactionStatusMonitor().getTransationIsolationLevel(), transactions);
@@ -96,6 +103,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                 directInstancesSft = new Sft(directInstancesSlot, null, false);
             }
             if (!getTransactionStatusMonitor().inTransaction() && directInstancesSft != null) {
+                long startTime = System.currentTimeMillis();
                 Map<Sft,List> values = framedb.getFrameValues(frame);
                 cache.startCompleteCache();
                 cache.updateCache(session, directInstancesSft);
@@ -103,11 +111,16 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                     cache.updateCache(session, entry.getKey(), entry.getValue());
                 }
                 cache.finishCompleteCache();
+                totalBuildTime += (System.currentTimeMillis() - startTime);
             }
             String frameName = frame.getFrameID().getName();
             cacheMap.put(frameName, new SoftReference(cache));
+            cacheBuilds++;
             if (log.isLoggable(Level.FINE)) {
                 log.fine("Created and filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
+                log.fine("Caches built " + cacheBuilds + " caches lost " + cacheLost);
+                log.fine("Ave time per build = " + (totalBuildTime / cacheBuilds) + "ms." +
+                		 " Ave hits per build = " + (cacheHits / cacheBuilds));
             }
         }
         return cache;
@@ -322,6 +335,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         CacheResult<List> result = cache.readCache(session, sft);
         updateServerCachesHeldInMemory(session, cache);
         if (result.isValid()) {
+        	cacheHits++;
             return new ArrayList(getValues(result));
         }
         else {
@@ -339,6 +353,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         CacheResult<List> result = cache.readCache(session, sft);
         updateServerCachesHeldInMemory(session, cache);
         if (result.isValid()) {
+        	cacheHits++;
             return getValues(result).size();
         }
         else {
