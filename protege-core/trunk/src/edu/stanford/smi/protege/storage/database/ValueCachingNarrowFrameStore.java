@@ -51,10 +51,9 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     
     // Hacks to keep things in memory
     private MultiMap<RemoteSession, String> framesModifiedInTransaction = new ArrayListMultiMap<RemoteSession, String>();
-    
-    public static String SERVER_KEPT_CACHED_FRAMES_COUNT_PROP = "server.db.keep.frame.cache.count";
-    private int serverKeptCachedFrameCacheCount = ApplicationProperties.getIntegerProperty(SERVER_KEPT_CACHED_FRAMES_COUNT_PROP, 5 * 1024);
-    private LinkedHashSet<ValueCache> serverKeptFrameCaches = new LinkedHashSet<ValueCache>();
+    /*
+     * see svn revision 14782 for code to keep server-side frames in memory...
+     */
 
     // stats
     private long totalBuildTime = 0;
@@ -175,19 +174,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         }
     }
     
-    private void updateServerCachesHeldInMemory(RemoteSession session, ValueCache  cache) {
-        if (session != null) { // detect server mode.
-            serverKeptFrameCaches.remove(cache);  // remove and
-            serverKeptFrameCaches.add(cache);     //    add puts cache at the end of the list.
-            
-            int size = serverKeptFrameCaches.size();
-            while (size-- > serverKeptCachedFrameCacheCount) {
-                ValueCache oldCache = serverKeptFrameCaches.iterator().next();
-                serverKeptFrameCaches.remove(oldCache);
-            }
-        }
-    }
-    
     public void debugOutOfMemory() {
         List<Integer> junk = new ArrayList<Integer>();
         junk.add(8);
@@ -257,7 +243,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             transactions.clear();
             directInstancesSft = null;
             framesModifiedInTransaction.clear();
-            serverKeptFrameCaches.clear();
         }
 
 
@@ -345,7 +330,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         RemoteSession session = ServerFrameStore.getCurrentSession();
         Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
-        updateServerCachesHeldInMemory(session, cache);
         if (result.isValid()) {
         	cacheHits++;
             return new ArrayList(getValues(result));
@@ -363,7 +347,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         RemoteSession session = ServerFrameStore.getCurrentSession();
         Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
-        updateServerCachesHeldInMemory(session, cache);
         if (result.isValid()) {
         	cacheHits++;
             return getValues(result).size();
