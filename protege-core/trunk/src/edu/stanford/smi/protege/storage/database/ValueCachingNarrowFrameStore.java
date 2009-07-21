@@ -81,7 +81,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         SoftReference<ValueCache> reference = cacheMap.get(frame.getFrameID().getName());
         ValueCache cache = null;
         if (reference != null) {
-        	cache = reference.get();
+                cache = reference.get();
+        }
+        if (log.isLoggable(Level.FINE) && reference != null && cache == null) {
+            log.fine("Cache for frame " + frame.getFrameID().getName() + " garbage collected");
         }
         if (cache == null && create) {
             cache = new ValueCache(getTransactionStatusMonitor().getTransationIsolationLevel(), transactions);
@@ -120,20 +123,20 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     
 
     
-	@Override
+        @Override
     public String toString() {
-	    return "ValueCachingFrameStore(" + getName() + ")";
-	}
-	
-	/* ****************************************************************************
-	 * Routines for holding stuff in memory so that  we do not forget.   There are two cases.
-	 * 1. when a cache is modified while in a transaction, we don't want to forget this cache.
-	 *    Otherwise we may start a new cache and forget the changes when the transaction commits.
-	 *    This seems like an unlikely issue to arise but it might be possible in the client-server.
-	 * 2. On the server side, we need a mechanism to keep things in the cache.  Otherwise the 
-	 *    server has no reason to remember cache values.  I have  no idea how big this saved cache should
-	 *    be.
-	 */
+            return "ValueCachingFrameStore(" + getName() + ")";
+        }
+        
+        /* ****************************************************************************
+         * Routines for holding stuff in memory so that  we do not forget.   There are two cases.
+         * 1. when a cache is modified while in a transaction, we don't want to forget this cache.
+         *    Otherwise we may start a new cache and forget the changes when the transaction commits.
+         *    This seems like an unlikely issue to arise but it might be possible in the client-server.
+         * 2. On the server side, we need a mechanism to keep things in the cache.  Otherwise the 
+         *    server has no reason to remember cache values.  I have  no idea how big this saved cache should
+         *    be.
+         */
     private void saveFramesModifiedInTransaction(RemoteSession session, Frame frame) {
         if (getTransactionStatusMonitor().inTransaction()) {
             framesModifiedInTransaction.addValue(session, frame.getFrameID().getName());
@@ -161,158 +164,158 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     }
     
     public void debugOutOfMemory() {
-    	List<Integer> junk = new ArrayList<Integer>();
-    	junk.add(8);
-    	try {
-    		while (true) {
-    			junk.addAll(junk);
-    		}
-    	}
-    	catch (OutOfMemoryError oops) {
-    		log.info("Out of memory achieved");
-    	}
+        List<Integer> junk = new ArrayList<Integer>();
+        junk.add(8);
+        try {
+                while (true) {
+                        junk.addAll(junk);
+                }
+        }
+        catch (OutOfMemoryError oops) {
+                log.info("Out of memory achieved");
+        }
     }
-	
-	/* ****************************************************************************
-	 * Narrow Frame Store interfaces
-	 */
+        
+        /* ****************************************************************************
+         * Narrow Frame Store interfaces
+         */
 
-	public void addValues(Frame frame, Slot slot, Facet facet,
-	                      boolean isTemplate, Collection values) {
-	    getDelegate().addValues(frame, slot, facet, isTemplate, values);
-	    ValueCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
-	    if (cache != null) {
-	        RemoteSession session = ServerFrameStore.getCurrentSession();
-	        Sft sft = new Sft(slot, facet, isTemplate);
-	        CacheResult<List> result = cache.readCache(session, sft);
-	        if (result.isValid()) {
-	            List newValues = new ArrayList(getValues(result));
-	            newValues.addAll(values);
-	            cache.modifyCache(session, sft, newValues);
-	        }
-	        else {
-	            cache.modifyCache(session, sft);
-	        }
-	        saveFramesModifiedInTransaction(session, frame);
-	    }
-	}
+        public void addValues(Frame frame, Slot slot, Facet facet,
+                              boolean isTemplate, Collection values) {
+            getDelegate().addValues(frame, slot, facet, isTemplate, values);
+            ValueCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
+            if (cache != null) {
+                RemoteSession session = ServerFrameStore.getCurrentSession();
+                Sft sft = new Sft(slot, facet, isTemplate);
+                CacheResult<List> result = cache.readCache(session, sft);
+                if (result.isValid()) {
+                    List newValues = new ArrayList(getValues(result));
+                    newValues.addAll(values);
+                    cache.modifyCache(session, sft, newValues);
+                }
+                else {
+                    cache.modifyCache(session, sft);
+                }
+                saveFramesModifiedInTransaction(session, frame);
+            }
+        }
 
-	public boolean beginTransaction(String name) {
-	    transactions.add(new CacheBeginTransaction<RemoteSession, Sft, List>(ServerFrameStore.getCurrentSession()));
-	    return getDelegate().beginTransaction(name);
-	}
-	
-	public boolean commitTransaction() {
-	    transactions.add(new CacheCommitTransaction<RemoteSession, Sft, List>(ServerFrameStore.getCurrentSession()));
-	    try {
-	        return getDelegate().commitTransaction();
-	    }
-	    finally {
-	        unsaveFramesModifiedInTransaction();
-	    }
-	}
-	
-	public boolean rollbackTransaction() {
-	    transactions.add(new CacheRollbackTransaction<RemoteSession, Sft, List>(ServerFrameStore.getCurrentSession()));
-	    try {
-	        return getDelegate().rollbackTransaction();
-	    }
-	    finally {
-	        unsaveFramesModifiedInTransaction();
-	    }
-	}
+        public boolean beginTransaction(String name) {
+            transactions.add(new CacheBeginTransaction<RemoteSession, Sft, List>(ServerFrameStore.getCurrentSession()));
+            return getDelegate().beginTransaction(name);
+        }
+        
+        public boolean commitTransaction() {
+            transactions.add(new CacheCommitTransaction<RemoteSession, Sft, List>(ServerFrameStore.getCurrentSession()));
+            try {
+                return getDelegate().commitTransaction();
+            }
+            finally {
+                unsaveFramesModifiedInTransaction();
+            }
+        }
+        
+        public boolean rollbackTransaction() {
+            transactions.add(new CacheRollbackTransaction<RemoteSession, Sft, List>(ServerFrameStore.getCurrentSession()));
+            try {
+                return getDelegate().rollbackTransaction();
+            }
+            finally {
+                unsaveFramesModifiedInTransaction();
+            }
+        }
 
-	public void close() {
-	    framedb.close();
-	    framedb = null;
-	    cacheMap.clear();
-	    transactions.clear();
-	    directInstancesSft = null;
-	    framesModifiedInTransaction.clear();
-	    serverKeptFrameCaches.clear();
-	}
+        public void close() {
+            framedb.close();
+            framedb = null;
+            cacheMap.clear();
+            transactions.clear();
+            directInstancesSft = null;
+            framesModifiedInTransaction.clear();
+            serverKeptFrameCaches.clear();
+        }
 
 
 
-	public void deleteFrame(Frame frame) {
-		ValueCache cache = getCache(frame, false);
-		if (cache != null) {
-			RemoteSession session = ServerFrameStore.getCurrentSession();
-			cache.delete(session);
-		}
-	    getDelegate().deleteFrame(frame);
-	}
+        public void deleteFrame(Frame frame) {
+                ValueCache cache = getCache(frame, false);
+                if (cache != null) {
+                        RemoteSession session = ServerFrameStore.getCurrentSession();
+                        cache.delete(session);
+                }
+            getDelegate().deleteFrame(frame);
+        }
 
-	public void executeQuery(Query query, QueryCallback callback) {
-	    getDelegate().executeQuery(query, callback);
-	}
+        public void executeQuery(Query query, QueryCallback callback) {
+            getDelegate().executeQuery(query, callback);
+        }
 
-	public Set getClosure(Frame frame, Slot slot, Facet facet,
-	                      boolean isTemplate) {
-	    return getDelegate().getClosure(frame, slot, facet, isTemplate);
-	}
+        public Set getClosure(Frame frame, Slot slot, Facet facet,
+                              boolean isTemplate) {
+            return getDelegate().getClosure(frame, slot, facet, isTemplate);
+        }
 
-	public int getClsCount() {
-	    return getDelegate().getClsCount();
-	}
+        public int getClsCount() {
+            return getDelegate().getClsCount();
+        }
 
-	public int getFacetCount() {
-	    return getDelegate().getFacetCount();
-	}
+        public int getFacetCount() {
+            return getDelegate().getFacetCount();
+        }
 
-	public Frame getFrame(FrameID id) {
-	    return getDelegate().getFrame(id);
-	}
+        public Frame getFrame(FrameID id) {
+            return getDelegate().getFrame(id);
+        }
 
-	public int getFrameCount() {
-	    return getDelegate().getFrameCount();
-	}
+        public int getFrameCount() {
+            return getDelegate().getFrameCount();
+        }
 
-	public Set<Frame> getFrames() {
-	    return getDelegate().getFrames();
-	}
+        public Set<Frame> getFrames() {
+            return getDelegate().getFrames();
+        }
 
-	public Set<Frame> getFrames(Slot slot, Facet facet, boolean isTemplate,
-	                            Object value) {
-		return getDelegate().getFrames(slot, facet, isTemplate, value);
-	}
+        public Set<Frame> getFrames(Slot slot, Facet facet, boolean isTemplate,
+                                    Object value) {
+                return getDelegate().getFrames(slot, facet, isTemplate, value);
+        }
 
-	public Set<Frame> getFramesWithAnyValue(Slot slot, Facet facet,
-			boolean isTemplate) {
-	    return getDelegate().getFramesWithAnyValue(slot, facet, isTemplate);
-	}
+        public Set<Frame> getFramesWithAnyValue(Slot slot, Facet facet,
+                        boolean isTemplate) {
+            return getDelegate().getFramesWithAnyValue(slot, facet, isTemplate);
+        }
 
-	public Set<Frame> getMatchingFrames(Slot slot, Facet facet,
-	                                    boolean isTemplate, String value, int maxMatches) {
-	    return getDelegate().getMatchingFrames(slot, facet, isTemplate, value, maxMatches);
-	}
+        public Set<Frame> getMatchingFrames(Slot slot, Facet facet,
+                                            boolean isTemplate, String value, int maxMatches) {
+            return getDelegate().getMatchingFrames(slot, facet, isTemplate, value, maxMatches);
+        }
 
-	public Set<Reference> getMatchingReferences(String value, int maxMatches) {
-	    return getDelegate().getMatchingReferences(value, maxMatches);
-	}
+        public Set<Reference> getMatchingReferences(String value, int maxMatches) {
+            return getDelegate().getMatchingReferences(value, maxMatches);
+        }
 
-	public String getName() {
-	    return getDelegate().getName();
-	}
+        public String getName() {
+            return getDelegate().getName();
+        }
 
-	public Set<Reference> getReferences(Object value) {
-	    return getDelegate().getReferences(value);
-	}
+        public Set<Reference> getReferences(Object value) {
+            return getDelegate().getReferences(value);
+        }
 
-	public int getSimpleInstanceCount() {
-	    return getDelegate().getSimpleInstanceCount();
-	}
+        public int getSimpleInstanceCount() {
+            return getDelegate().getSimpleInstanceCount();
+        }
 
-	public int getSlotCount() {
-	    return getDelegate().getSlotCount();
-	}
+        public int getSlotCount() {
+            return getDelegate().getSlotCount();
+        }
 
-	public TransactionMonitor getTransactionStatusMonitor() {
-	    return getDelegate().getTransactionStatusMonitor();
-	}
+        public TransactionMonitor getTransactionStatusMonitor() {
+            return getDelegate().getTransactionStatusMonitor();
+        }
 
-	public List getValues(Frame frame, Slot slot, Facet facet,
-	                      boolean isTemplate) {
+        public List getValues(Frame frame, Slot slot, Facet facet,
+                              boolean isTemplate) {
         ValueCache cache = getCache(frame, true);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         Sft sft = new Sft(slot, facet, isTemplate);
@@ -326,10 +329,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             cache.updateCache(session, sft, values);
             return values;
         }
-	}
+        }
 
-	public int getValuesCount(Frame frame, Slot slot, Facet facet,
-	                          boolean isTemplate) {
+        public int getValuesCount(Frame frame, Slot slot, Facet facet,
+                                  boolean isTemplate) {
         ValueCache cache = getCache(frame, true);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         Sft sft = new Sft(slot, facet, isTemplate);
@@ -341,26 +344,26 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         else {
             return getDelegate().getValuesCount(frame, slot, facet, isTemplate);
         }
-	}
+        }
 
-	public void moveValue(Frame frame, Slot slot, Facet facet,
-	                      boolean isTemplate, int from, int to) {
-	    ValueCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
-	    if (cache != null) {
-	        RemoteSession session = ServerFrameStore.getCurrentSession();
-	        Sft sft = new Sft(slot, facet, isTemplate);
-	        cache.modifyCache(session, sft);
-	        saveFramesModifiedInTransaction(session, frame);
-	    }
-	    getDelegate().moveValue(frame, slot, facet, isTemplate, from, to);
-	}
+        public void moveValue(Frame frame, Slot slot, Facet facet,
+                              boolean isTemplate, int from, int to) {
+            ValueCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
+            if (cache != null) {
+                RemoteSession session = ServerFrameStore.getCurrentSession();
+                Sft sft = new Sft(slot, facet, isTemplate);
+                cache.modifyCache(session, sft);
+                saveFramesModifiedInTransaction(session, frame);
+            }
+            getDelegate().moveValue(frame, slot, facet, isTemplate, from, to);
+        }
 
-	public void reinitialize() {
-	    cacheMap.clear();
-	}
+        public void reinitialize() {
+            cacheMap.clear();
+        }
 
-	public void removeValue(Frame frame, Slot slot, Facet facet,
-	                        boolean isTemplate, Object value) {
+        public void removeValue(Frame frame, Slot slot, Facet facet,
+                                boolean isTemplate, Object value) {
         ValueCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
         if (cache != null) {
             RemoteSession session = ServerFrameStore.getCurrentSession();
@@ -374,32 +377,32 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             }
         }
         getDelegate().removeValue(frame, slot, facet, isTemplate, value);
-		
-	}
+                
+        }
 
-	public void replaceFrame(Frame frame) {
-	    getDelegate().replaceFrame(frame);
-	}
+        public void replaceFrame(Frame frame) {
+            getDelegate().replaceFrame(frame);
+        }
 
-	public void replaceFrame(Frame original, Frame replacement) {
-	    cacheMap.remove(original.getFrameID().getName());
-	    getDelegate().replaceFrame(original, replacement);
-	}
+        public void replaceFrame(Frame original, Frame replacement) {
+            cacheMap.remove(original.getFrameID().getName());
+            getDelegate().replaceFrame(original, replacement);
+        }
 
-	public void setName(String name) {
-	    getDelegate().setName(name);
-	}
+        public void setName(String name) {
+            getDelegate().setName(name);
+        }
 
-	public void setValues(Frame frame, Slot slot, Facet facet,
-	                      boolean isTemplate, Collection values) {
-	    ValueCache  cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
-	    if (cache != null) {
-	        RemoteSession session = ServerFrameStore.getCurrentSession();
-	        Sft  sft = new Sft(slot, facet, isTemplate);
-	        cache.modifyCache(session, sft, new ArrayList(values));
-	        saveFramesModifiedInTransaction(session, frame);
-	    }
-	    getDelegate().setValues(frame, slot, facet, isTemplate, values);
-	}
+        public void setValues(Frame frame, Slot slot, Facet facet,
+                              boolean isTemplate, Collection values) {
+            ValueCache  cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
+            if (cache != null) {
+                RemoteSession session = ServerFrameStore.getCurrentSession();
+                Sft  sft = new Sft(slot, facet, isTemplate);
+                cache.modifyCache(session, sft, new ArrayList(values));
+                saveFramesModifiedInTransaction(session, frame);
+            }
+            getDelegate().setValues(frame, slot, facet, isTemplate, values);
+        }
 }
 
