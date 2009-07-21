@@ -130,7 +130,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             log.log(level, "------------------- Database ValueCaching Stats");
             log.log(level, "Caches built " + cacheBuilds + " caches lost " + cacheLost);
             log.log(level, "Garbage collection tax = " + (100.0 * cacheLost) / cacheBuilds + "%");
-            log.log(level, "Ave time per build = " + (totalBuildTime / (1000 * 1000 * cacheBuilds)) + "ms.");
+            log.log(level, "Ave time per build = " + (((float) totalBuildTime) / (1000 * 1000 * cacheBuilds)) + "ms.");
             log.log(level, "Ave hits per build = " + (cacheHits / cacheBuilds));
             log.log(level, "Potentially cached frame count = " + cacheMap.size());
             log.log(level, "------------------- Database ValueCaching Stats");
