@@ -58,9 +58,9 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
     // stats
     private long totalBuildTime = 0;
-    private int cacheBuilds = 0;
-    private int cacheLost = 0;
-    private int cacheHits = 0;
+    private long cacheBuilds = 0;
+    private long cacheLost = 0;
+    private long cacheHits = 0;
 
     public ValueCachingNarrowFrameStore(DatabaseFrameDb delegate) {
         if (log.isLoggable(Level.FINE)) {
@@ -89,8 +89,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         if (reference != null) {
                 cache = reference.get();
         }
-        if (log.isLoggable(Level.FINE) && reference != null && cache == null) {
-            log.fine("Cache for frame " + frame.getFrameID().getName() + " garbage collected");
+        if (reference != null && cache == null) {
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Cache for frame " + frame.getFrameID().getName() + " garbage collected");
+            }
             cacheLost++;
         }
         if (cache == null && create) {
@@ -103,7 +105,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                 directInstancesSft = new Sft(directInstancesSlot, null, false);
             }
             if (!getTransactionStatusMonitor().inTransaction() && directInstancesSft != null) {
-                long startTime = System.currentTimeMillis();
+                long startTime = System.nanoTime();
                 Map<Sft,List> values = framedb.getFrameValues(frame);
                 cache.startCompleteCache();
                 cache.updateCache(session, directInstancesSft);
@@ -111,19 +113,29 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                     cache.updateCache(session, entry.getKey(), entry.getValue());
                 }
                 cache.finishCompleteCache();
-                totalBuildTime += (System.currentTimeMillis() - startTime);
+                totalBuildTime += (System.nanoTime() - startTime);
             }
             String frameName = frame.getFrameID().getName();
             cacheMap.put(frameName, new SoftReference(cache));
             cacheBuilds++;
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Created and filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
-                log.fine("Caches built " + cacheBuilds + " caches lost " + cacheLost);
-                log.fine("Ave time per build = " + (totalBuildTime / cacheBuilds) + "ms." +
-                		 " Ave hits per build = " + (cacheHits / cacheBuilds));
+            logStats(Level.FINE);
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Created and filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
             }
         }
         return cache;
+    }
+    
+    private void logStats(Level level) {
+        if (log.isLoggable(level) && (cacheBuilds % 300 == 0)) {
+            log.log(level, "------------------- Database ValueCaching Stats");
+            log.log(level, "Caches built " + cacheBuilds + " caches lost " + cacheLost);
+            log.log(level, "Garbage collection tax = " + (100.0 * cacheLost) / cacheBuilds + "%");
+            log.log(level, "Ave time per build = " + (totalBuildTime / (1000 * 1000 * cacheBuilds)) + "ms.");
+            log.log(level, "Ave hits per build = " + (cacheHits / cacheBuilds));
+            log.log(level, "Potentially cached frame count = " + cacheMap.size());
+            log.log(level, "------------------- Database ValueCaching Stats");
+        }
     }
     
     private List getValues(CacheResult<List> result) {
