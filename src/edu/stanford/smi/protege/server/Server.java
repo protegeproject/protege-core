@@ -660,7 +660,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
    public synchronized RemoteSession openSession(String username, String userIpAddress, String password) {
         RemoteSession session = null;
         if (isValid(username, password)) {
-            session = new Session(username, userIpAddress);
+            boolean allowsDelegation = isServerOperationAllowed(new Session(username, userIpAddress, false), MetaProjectConstants.OPERATION_DELEGATE);
+            session = new Session(username, userIpAddress, allowsDelegation);
             _sessions.add(session);
         } else {
         	Log.getLogger().warning("Failed login for user " + username + " IP: " + userIpAddress);
@@ -673,7 +674,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (!_sessions.contains(session)) {
             return null;
         }
-        session =  new Session(session.getUserName(), session.getUserIpAddress(), session.getSessionGroup());
+        session =  new Session(session.getUserName(), session.getUserIpAddress(), session.allowDelegation());
         _sessions.add(session);
         return session;
     }
