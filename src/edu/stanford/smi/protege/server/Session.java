@@ -41,23 +41,11 @@ public class Session implements RemoteSession, Serializable {
         return allowDelegation;
     }
 
-    public Session makeDelegate(String delegateUserName) {
+    public void setDelegate(String delegateUserName) {
         if (!allowDelegation) {
             throw new IllegalAccessError("Not allowed to delegate");
         }
-        Session delegate = new Session();
-        
-        delegate.prettyId         = prettyId;
-        delegate.id               = id;
-        delegate.allowDelegation  = false;
-        
-        delegate.userName         = userName;
-        delegate.delegateUserName = delegateUserName;
-        
-        delegate.userIpAddress    = userIpAddress;
-        delegate.startTime        = startTime;
-        
-        return delegate;
+        this.delegateUserName = delegateUserName;
     }
 
     public String getUserName() {

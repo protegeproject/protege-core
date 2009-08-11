@@ -4,7 +4,7 @@ public interface RemoteSession {
 
     int getId();
     boolean allowDelegation();
-    RemoteSession makeDelegate(String delegateUserName);    
+    void setDelegate(String delegateUserName);    
     
     String getUserName();
     String getRealUserName();
