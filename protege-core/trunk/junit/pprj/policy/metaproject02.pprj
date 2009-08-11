@@ -1,4 +1,4 @@
-; Mon Aug 10 17:23:50 PDT 2009
+; Mon Aug 10 23:59:24 PDT 2009
 ; 
 ;+ (version "3.4.1")
 ;+ (build "Build 537")
@@ -6,15 +6,15 @@
 ([BROWSER_SLOT_NAMES] of  Property_List
 
 	(properties
-		[metaproject02_ProjectKB_Class30030]
-		[metaproject02_ProjectKB_Class30031]
-		[metaproject02_ProjectKB_Class30032]
-		[metaproject02_ProjectKB_Class30033]
-		[metaproject02_ProjectKB_Class30034]
-		[metaproject02_ProjectKB_Class30035]
-		[metaproject02_ProjectKB_Class30036]
-		[metaproject02_ProjectKB_Class30037]
-		[metaproject02_ProjectKB_Class30038]))
+		[metaproject02_ProjectKB_Class10]
+		[metaproject02_ProjectKB_Class11]
+		[metaproject02_ProjectKB_Class12]
+		[metaproject02_ProjectKB_Class13]
+		[metaproject02_ProjectKB_Class14]
+		[metaproject02_ProjectKB_Class15]
+		[metaproject02_ProjectKB_Class16]
+		[metaproject02_ProjectKB_Class17]
+		[metaproject02_ProjectKB_Class18]))
 
 ([CLSES_TAB] of  Widget
 
@@ -47,6 +47,9 @@
 	(label "Instances")
 	(property_list [ProjectKB_0036_00038])
 	(widget_class_name "edu.stanford.smi.protege.widget.InstancesTab"))
+
+([KB_069998_Class3] of  Map
+)
 
 ([KB_386249_Instance_0] of  Property_List
 
@@ -426,74 +429,98 @@
 	(x 0)
 	(y 120))
 
-([KB_993918_Class3] of  Map
-)
-
-([metaproject02_ProjectKB_Class30030] of  String
-
-	(name "GroupOperation")
-	(string_value "allowedGroup{+can+}allowedOperation"))
-
-([metaproject02_ProjectKB_Class30031] of  String
+([metaproject02_ProjectKB_Class10] of  String
 
 	(name ":INSTANCE-ANNOTATION")
 	(string_value "%3AANNOTATION-TEXT"))
 
-([metaproject02_ProjectKB_Class30032] of  String
+([metaproject02_ProjectKB_Class11] of  String
+
+	(name "GroupOperation")
+	(string_value "allowedGroup{+can+}allowedOperation"))
+
+([metaproject02_ProjectKB_Class12] of  String
 
 	(name ":META-CLASS")
 	(string_value "%3ANAME"))
 
-([metaproject02_ProjectKB_Class30033] of  String
+([metaproject02_ProjectKB_Class13] of  String
 
 	(name "Server")
 	(string_value "name"))
 
-([metaproject02_ProjectKB_Class30034] of  String
+([metaproject02_ProjectKB_Class14] of  String
 
 	(name "User")
 	(string_value "name"))
 
-([metaproject02_ProjectKB_Class30035] of  String
-
-	(name "Operation")
-	(string_value "name"))
-
-([metaproject02_ProjectKB_Class30036] of  String
+([metaproject02_ProjectKB_Class15] of  String
 
 	(name "Project")
 	(string_value "name"))
 
-([metaproject02_ProjectKB_Class30037] of  String
+([metaproject02_ProjectKB_Class16] of  String
+
+	(name "Operation")
+	(string_value "name"))
+
+([metaproject02_ProjectKB_Class17] of  String
 
 	(name "Group")
 	(string_value "name"))
 
-([metaproject02_ProjectKB_Class30038] of  String
+([metaproject02_ProjectKB_Class18] of  String
 
 	(name ":PAL-CONSTRAINT")
 	(string_value "%3APAL-NAME"))
 
-([metaproject02_ProjectKB_Class30039] of  Map_Entry
+([metaproject02_ProjectKB_Class19] of  Map_Entry
 
 	(key "suppress_instance_counting")
 	(key_class "java.lang.String")
 	(value "false")
 	(value_class "java.lang.String"))
 
-([metaproject02_ProjectKB_Class30040] of  Map_Entry
+([metaproject02_ProjectKB_Class20] of  Map_Entry
 
 	(key "change_tracking_active")
 	(key_class "java.lang.String")
 	(value "false")
 	(value_class "java.lang.String"))
 
-([metaproject02_ProjectKB_Class30041] of  Map_Entry
+([metaproject02_ProjectKB_Class21] of  Map_Entry
 
 	(key "add_name_on_instance_form")
 	(key_class "java.lang.String")
 	(value "false")
 	(value_class "java.lang.String"))
+
+([metaproject02_ProjectKB_Class4] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject02_ProjectKB_Class5])
+	(widget_class_name "edu.stanford.smi.protege.query.LuceneQueryPlugin"))
+
+([metaproject02_ProjectKB_Class5] of  Property_List
+)
+
+([metaproject02_ProjectKB_Class6] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject02_ProjectKB_Class7])
+	(widget_class_name "com.enterprise_architecture.essential.widgets.EasReportTab"))
+
+([metaproject02_ProjectKB_Class7] of  Property_List
+)
+
+([metaproject02_ProjectKB_Class8] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject02_ProjectKB_Class9])
+	(widget_class_name "edu.stanford.bmir.protegex.dark.matter.DarkMatterDetector"))
+
+([metaproject02_ProjectKB_Class9] of  Property_List
+)
 
 ([metaproject_ProjectKB_Class1] of  Widget
 
@@ -1155,15 +1182,6 @@
 	(name "ButtonDisplayed-View References to Value"))
 
 ([metaproject_ProjectKB_Class2] of  Property_List
-)
-
-([metaproject_ProjectKB_Class20004] of  Widget
-
-	(is_hidden TRUE)
-	(property_list [metaproject_ProjectKB_Class20005])
-	(widget_class_name "edu.stanford.smi.protege.query.LuceneQueryPlugin"))
-
-([metaproject_ProjectKB_Class20005] of  Property_List
 )
 
 ([metaproject_ProjectKB_Class20015] of  Widget
@@ -2173,16 +2191,16 @@
 
 	(browser_slot_names [BROWSER_SLOT_NAMES])
 	(customized_instance_widgets
-		[nci_metaproject_ProjectKB_Instance_10082]
 		[INSTANCE_ANNOTATION_FORM_WIDGET]
+		[nci_metaproject_ProjectKB_Instance_10082]
 		[STANDARD_FACET_FORM_WIDGET]
-		[metaproject_ProjectKB_Class10028]
 		[STANDARD_SLOT_FORM_WIDGET]
+		[metaproject_ProjectKB_Class10028]
 		[STANDARD_CLASS_FORM_WIDGET]
 		[metaproject_ProjectKB_Class10015]
 		[projects_ProjectKB_00053]
-		[nci_metaproject_ProjectKB_Instance_20157]
 		[projects_ProjectKB_00106]
+		[nci_metaproject_ProjectKB_Instance_20157]
 		[projects_ProjectKB_00138]
 		[PAL_FORM_WIDGET])
 	(default_cls_metaclass ":STANDARD-CLASS")
@@ -2340,9 +2358,9 @@
 ([projects_ProjectKB_00052] of  Map
 
 	(entries
-		[metaproject02_ProjectKB_Class30039]
-		[metaproject02_ProjectKB_Class30040]
-		[metaproject02_ProjectKB_Class30041]))
+		[metaproject02_ProjectKB_Class19]
+		[metaproject02_ProjectKB_Class20]
+		[metaproject02_ProjectKB_Class21]))
 
 ([projects_ProjectKB_00053] of  Widget
 

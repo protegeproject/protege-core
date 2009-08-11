@@ -1,7 +1,21 @@
-; Mon Aug 10 17:23:49 PDT 2009
+; Mon Aug 10 23:59:24 PDT 2009
 ; 
 ;+ (version "3.4.1")
 ;+ (build "Build 537")
+
+([metaproject02_Class0] of  Group
+
+	(member
+		[metaproject_Class0]
+		[metaproject_Class10001]
+		[metaproject_Instance_10002]
+		[metaproject_Instance_10003]
+		[metaproject_Instance_10004]
+		[metaproject_Instance_10005]
+		[metaproject_Class1]
+		[metaproject_Instance_10006]
+		[metaproject_Instance_10007])
+	(name "Other"))
 
 ([metaproject02_Class20001] of  GroupOperation
 
@@ -10,13 +24,17 @@
 
 ([metaproject_Class0] of  User
 
-	(group [metaproject_Instance_0])
+	(group
+		[metaproject_Instance_0]
+		[metaproject02_Class0])
 	(name "Csongor Nyulas")
 	(password "csongor"))
 
 ([metaproject_Class1] of  User
 
-	(group [metaproject_Instance_0])
+	(group
+		[metaproject_Instance_0]
+		[metaproject02_Class0])
 	(name "Samson Tu")
 	(password "samson"))
 
@@ -27,7 +45,9 @@
 
 ([metaproject_Class10001] of  User
 
-	(group [metaproject_Instance_0])
+	(group
+		[metaproject_Instance_0]
+		[metaproject02_Class0])
 	(name "Dilvan Moreira")
 	(password "dilvan"))
 
@@ -127,43 +147,55 @@
 
 ([metaproject_Instance_10002] of  User
 
-	(group [metaproject_Instance_0])
+	(group
+		[metaproject_Instance_0]
+		[metaproject02_Class0])
 	(name "Guest")
 	(password "guest"))
 
 ([metaproject_Instance_10003] of  User
 
-	(group [metaproject_Instance_0])
+	(group
+		[metaproject_Instance_0]
+		[metaproject02_Class0])
 	(name "Jennifer Vendetti")
 	(password "jenny"))
 
 ([metaproject_Instance_10004] of  User
 
-	(group [metaproject_Instance_0])
+	(group
+		[metaproject_Instance_0]
+		[metaproject02_Class0])
 	(name "Natasha Noy")
 	(password "natalia"))
 
 ([metaproject_Instance_10005] of  User
 
-	(group [metaproject_Instance_0])
+	(group
+		[metaproject_Instance_0]
+		[metaproject02_Class0])
 	(name "Ray Fergerson")
 	(password "claudia"))
 
 ([metaproject_Instance_10006] of  User
 
-	(group [metaproject_Instance_0])
+	(group
+		[metaproject_Instance_0]
+		[metaproject02_Class0])
 	(name "Tania Tudorache")
 	(password "tania"))
 
 ([metaproject_Instance_10007] of  User
 
-	(group [metaproject_Instance_0])
+	(group
+		[metaproject_Instance_0]
+		[metaproject02_Class0])
 	(name "Timothy Redmond")
 	(password "troglodyte"))
 
 ([metaproject_Instance_10008] of  GroupOperation
 
-	(allowedGroup [metaproject_Instance_0])
+	(allowedGroup [metaproject02_Class0])
 	(allowedOperation
 		[nci_metaproject_Instance_60009]
 		[nci_metaproject_Instance_60010]))
