@@ -29,14 +29,14 @@ public class Server_Test extends SimpleTestCase {
     private static transient Logger log = Log.getLogger(Server_Test.class);
     
     public  static final String HOST = "localhost";
-    private static final String USER1 = "Ray Fergerson";
-    private static final String PASSWORD1 = "claudia";
-    private static final String WRONG_PASSWORD = "elle";
-    private static final String PROJECT_NAME = "Newspaper";
-    private static final String USER2 = "Jennifer Vendetti";
-    private static final String PASSWORD2 = "jenny";
+    public static final String USER1 = "Ray Fergerson";
+    public static final String PASSWORD1 = "claudia";
+    public static final String WRONG_PASSWORD = "elle";
+    public static final String PROJECT_NAME = "Newspaper";
+    public static final String USER2 = "Jennifer Vendetti";
+    public static final String PASSWORD2 = "jenny";
 
-    private static final String NAME = "//" + HOST + "/" + Server.getBoundName();
+    public static final String NAME = "//" + HOST + "/" + Server.getBoundName();
     
     public static  final String JAR_PROPERTY="junit.server.protege.jar";
     
