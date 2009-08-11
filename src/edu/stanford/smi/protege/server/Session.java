@@ -1,37 +1,75 @@
 package edu.stanford.smi.protege.server;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 
 public class Session implements RemoteSession, Serializable {
-    private static int nextId = 100;
-    private static int nextSessionGroup = 100;
-    private int id;
-    private int sessionGroup;
+    private static int nextPrettyId = 0;
+    
+    private int prettyId;
+    private UUID id;
+    private boolean allowDelegation;
+    
     private String userName;
+    private String delegateUserName;
+    
     private String userIpAddress;
     private long startTime;
-    private long lastAccessTime;
 
-    public Session(String userName, String userIpAddress) {
-        this(userName, userIpAddress, nextSessionGroup++);
-    }
-
-    public Session(String userName, String userIpAddress, int sessionGroup) {
-        this.id = nextId++;
-        this.sessionGroup = sessionGroup;
+    public Session(String userName, String userIpAddress, boolean allowDelegation) {
+        this.prettyId  = nextPrettyId++;
+        this.id = UUID.randomUUID();
+        this.allowDelegation = allowDelegation;
+        
         this.userName = userName;
+        this.delegateUserName = null;
+        
         this.userIpAddress = userIpAddress;
-
         this.startTime = currentTime();
-        this.lastAccessTime = startTime;
     }
 
     public Session() {
 
     }
 
+    public int getId() {
+    	return prettyId;
+    }
+    
+    public boolean allowDelegation() {
+        return allowDelegation;
+    }
+
+    public Session makeDelegate(String delegateUserName) {
+        if (!allowDelegation) {
+            throw new IllegalAccessError("Not allowed to delegate");
+        }
+        Session delegate = new Session();
+        
+        delegate.prettyId         = prettyId;
+        delegate.id               = id;
+        delegate.allowDelegation  = false;
+        
+        delegate.userName         = userName;
+        delegate.delegateUserName = delegateUserName;
+        
+        delegate.userIpAddress    = userIpAddress;
+        delegate.startTime        = startTime;
+        
+        return delegate;
+    }
+
     public String getUserName() {
+        if (delegateUserName != null) {
+            return delegateUserName;
+        }
+        else {
+            return userName;
+        }
+    }
+    
+    public String getRealUserName() {
         return userName;
     }
 
@@ -39,27 +77,11 @@ public class Session implements RemoteSession, Serializable {
         return userIpAddress;
     }
 
-    public int getSessionGroup() {
-        return sessionGroup;
-    }
-
-    public long getLastAccessTime() {
-        return lastAccessTime;
-    }
-
 	public long getStartTime() {
 		return startTime;
 	}
 
-	public int getId() {
-		return id;
-	}
-
-    public void updateAccessTime() {
-        lastAccessTime = currentTime();
-    }
-
-    private static long currentTime() {
+	private static long currentTime() {
         return System.currentTimeMillis();
     }
 
@@ -68,16 +90,17 @@ public class Session implements RemoteSession, Serializable {
         if (o == null || !(o instanceof Session)) {
             return false;
         }
-        return id == ((Session) o).id;
+        Session other = (Session) o;
+        return id.equals(other.id);
     }
 
     @Override
 	public int hashCode() {
-        return id;
+        return id.hashCode();
     }
-
+    
     @Override
 	public String toString() {
-        return "Session(id=" + id + ", user=" + userName + ")";
+        return "Session(id=" + prettyId + ", user=" + userName + ")";
     }
 }
