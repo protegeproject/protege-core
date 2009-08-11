@@ -45,7 +45,7 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 
 	@Override
     public int hashCode() {
-		return name.hashCode();
+		return name == null ? 42 : name.hashCode();
 	}
 
 	@Override
