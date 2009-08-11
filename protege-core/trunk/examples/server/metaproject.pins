@@ -1,7 +1,7 @@
-; Thu Feb 12 22:45:22 GMT-08:00 2009
+; Mon Aug 10 17:21:09 PDT 2009
 ; 
-;+ (version "3.4")
-;+ (build "Build 522")
+;+ (version "3.4.1")
+;+ (build "Build 537")
 
 ([metaproject_Class0] of  User
 
@@ -30,6 +30,11 @@
 
 	(description "The operation of displaying the project in the project list.\n\nThis is used to control the projects displayed when a user connects to a server.")
 	(name "DisplayInProjectList"))
+
+([metaproject_Class20000] of  Operation
+
+	(description "This  operation allows a user to make alterations to his credentials.  This privilege should probably only be  used by fake \nusers representing server processes.")
+	(name "Delegate"))
 
 ([metaproject_Class20003] of  Group
 
