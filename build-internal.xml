@@ -10,7 +10,7 @@
 	<property name = "build.junit" value = "${build.dir}/junit"/>
 	<property name = "docs.dir" value = "./docs"/>
 	<property name = "build.javadoc" value = "${docs.dir}/apidocs"/>
-	<property name = "build.scripts" value = "./bin"/>
+	<property name = "build.scripts" value = "./etc"/>
 	<property name = "dist.dir" value = "./dist"/>
 	<property name = "lib.dir" value = "./lib"/>
 	<property name = "examples.dir" value = "./examples"/>
@@ -43,7 +43,7 @@
 			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/lib ../${project.name}/lib"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/bin ../${project.name}/bin"/>
+			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/etc ../${project.name}/etc"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
 			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/examples ../${project.name}/examples"/>
@@ -72,7 +72,7 @@
 	<!-- =================================================================== -->
 	<target name = "javacc" depends = "prepare-src">
 
-		<!-- Automatically generate the following files by running JavaCC on /bin/Parser.jj:  -->
+		<!-- Automatically generate the following files by running JavaCC on /etc/Parser.jj:  -->
 		<!-- edu/stanford/smi/protege/storage/clips/ParseException.java  -->
 		<!-- edu/stanford/smi/protege/storage/clips/Parser.java  -->
 		<!-- edu/stanford/smi/protege/storage/clips/ParserConstants.java  -->
@@ -168,7 +168,7 @@
 			<zipfileset dir = "${build.junit}" prefix = "${Name}/junit"/>
 			<zipfileset dir = "${build.javadoc}" prefix = "${Name}/docs/apidocs"/>
 			<zipfileset dir = "." includes = "build.xml,local.properties.template,readme.html,junit-logging.properties,junit.properties.template,logging.properties" prefix = "${Name}"/>
-			<zipfileset dir = "${build.scripts}" includes = "Parser.jj" prefix = "${Name}/bin"/>
+			<zipfileset dir = "${build.scripts}" includes = "Parser.jj" prefix = "${Name}/etc"/>
 			<zipfileset dir = "${lib.dir}" includes = "*.jar" prefix = "${Name}/lib"/>
 		</zip>
 		<zip zipfile = "${dist.dir}/protege-bin-${version}.zip" update = "no">
