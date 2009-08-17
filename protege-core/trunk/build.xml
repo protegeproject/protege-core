@@ -12,16 +12,17 @@
     <property name = "extended.name" value = "${name} ${build.version} ${build.status}"/>
     <property name = "src" value = "./src"/>  
     <property name = "junit" value = "./junit"/>
-    <property name = "classes" value = "./classes"/>  
-    <property name = "junit.classes" value = "./classes.junit"/>  
     <property name = "docs" value = "./docs"/> 
     <property name = "javadocs" value = "${docs}/apidocs"/>
-    <property name = "dist" value = "./dist"/>
     <property name = "lib" value = "./lib"/>
-    <property name = "scripts" value = "./bin"/>
+    <property name = "scripts" value = "./etc"/>
     <property name = "logs" value = "./logs"/>
     <property name = "plugins" value = "./plugins"/>
 
+    <property name = "build"          location ="./build"/>
+    <property name = "classes"        location = "${build}/classes"/>  
+    <property name = "junit.classes"  location = "${build}/classes.junit"/>  
+    <property name = "dist"           location = "${build}/dist"/>
 
     <property environment="env"/>
     <property name="protege.home" value="${env.PROTEGE_HOME}"/>
@@ -110,7 +111,7 @@
 
     <target name = "check-clips">
         <uptodate property="clips-up-to-date" 
-            srcfile="bin/Parser.jj" 
+            srcfile="etc/Parser.jj" 
             targetfile="${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
     </target>
 
@@ -240,12 +241,12 @@
     </target>
 
     <target name="install" depends="jar">
-       <copy file="dist/protege.jar" todir="${protege.home}"/>
+       <copy file="${dist}/protege.jar" todir="${protege.home}"/>
        <copy file="logging.properties" todir="${protege.home}"/>
        <copy file="log4j.xml" todir="${protege.home}"/>
        <copy todir="${protege.home}">
           <fileset dir="./lib" includes="*.jar" excludes="junit.jar"/>
-          <fileset dir="bin">
+          <fileset dir="etc">
              <include name="*.sh"/>
              <include name="*.bat"/>
           </fileset>
@@ -261,7 +262,7 @@
 
     <target name="osx">
         <copy todir="dist/Protege.app">
-            <fileset dir="bin/skeleton.app"/>
+            <fileset dir="etc/skeleton.app"/>
         </copy>
         <chmod file="dist/Protege.app/Contents/MacOS/JavaApplicationStub"
                perm="ugo+x"/>
@@ -341,7 +342,7 @@
         <zip zipfile = "${dist}/protege-src-${build.version}.zip" update = "no">
             <zipfileset dir = "${src}" prefix = "${extended.name}/src"/>
             <zipfileset dir = "${javadocs}" prefix = "${extended.name}/docs/apidocs"/>
-            <zipfileset dir = "${scripts}" includes = "Parser.jj" prefix = "${extended.name}/bin"/>
+            <zipfileset dir = "${scripts}" includes = "Parser.jj" prefix = "${extended.name}/etc"/>
             <zipfileset dir = "${lib}" includes = "*.jar" prefix = "${extended.name}/lib"/>
                         <zipfileset dir = "." includes = "*.properties" prefix = "${extended.name}"/>
         </zip>
