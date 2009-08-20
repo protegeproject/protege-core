@@ -128,8 +128,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     private void logStats(Level level) {
         if (log.isLoggable(level) && (cacheBuilds % 300 == 0)) {
             log.log(level, "------------------- Database ValueCaching Stats");
-            log.log(level, "Caches built = " + cacheBuilds + " caches references still present = " + cacheMap.size());
-            log.log(level, "Caches found but were invalid at time of use = " + cacheLost);
+            log.log(level, "Caches built = " + cacheBuilds + " but only " + cacheMap.size() + " cache references still present.");
+            log.log(level, "Cache references found but were invalid at time of use = " + cacheLost);
             log.log(level, "Ave time per build = " + (((float) totalBuildTime) / (1000 * 1000 * cacheBuilds)) + "ms.");
             log.log(level, "Ave hits per build = " + (cacheHits / cacheBuilds));
             log.log(level, "------------------- Database ValueCaching Stats");
