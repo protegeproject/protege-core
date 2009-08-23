@@ -42,7 +42,7 @@ public class Server_Test extends SimpleTestCase {
     
     private static boolean serverRunning = false;
     
-    private static String protegeJarLocation = "dist/protege.jar";
+    private static String protegeJarLocation = "build/dist/protege.jar";
 
     private RemoteServer _server;
     
