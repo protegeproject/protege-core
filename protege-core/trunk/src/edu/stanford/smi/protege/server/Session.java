@@ -16,6 +16,10 @@ public class Session implements RemoteSession, Serializable {
     
     private String userIpAddress;
     private long startTime;
+    
+    public Session(String userName, String userIpAddress) {
+        this(userName, userIpAddress, false);
+    }
 
     public Session(String userName, String userIpAddress, boolean allowDelegation) {
         this.prettyId  = nextPrettyId++;
