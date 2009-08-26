@@ -34,7 +34,9 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 
 
     public static enum SlotEnum {
-        name, password, location, group, member, allowedGroup, allowedOperation, 
+        name, password, location, 
+        lastLogin, lastRead, lastModification,
+        group, member, allowedGroup, allowedOperation, 
         allowedGroupOperation, owner, description, annotationProject, hostName;
     }
 

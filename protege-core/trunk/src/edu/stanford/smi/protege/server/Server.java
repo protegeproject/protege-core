@@ -452,6 +452,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public synchronized void saveAllProjects() {
         Iterator<Map.Entry<Project, ServerProject>> i = _projectToServerProjectMap.entrySet().iterator();
         while (i.hasNext()) {
@@ -462,6 +463,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             if (serverProject.isDirty()) {
                 save(serverProject, project);
             }
+        }
+        Collection errors  = new ArrayList();
+        metaproject.save(errors);
+        if (!errors.isEmpty()) {
+            log.warning("Errors found saving metaproject");
         }
     }
 
