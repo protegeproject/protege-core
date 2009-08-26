@@ -24,47 +24,12 @@ public class ServerUtil {
 	public static void fixMetaProject(MetaProject metaproject) {
 		if (!(metaproject instanceof MetaProjectImpl)) { return; }
 		boolean changed = false;
-		MetaProjectImpl mp = (MetaProjectImpl) metaproject;
-		KnowledgeBase kb = mp.getKnowledgeBase();		
+		MetaProjectImpl mp = (MetaProjectImpl) metaproject;	
 		try {
-			Cls policyCtrledObjCls = kb.getCls(ClsEnum.PolicyControlledObject.name());
-			if (policyCtrledObjCls == null) {
-				Log.getLogger().info("Fixing up the metaproject to new version. No information will be lost.");			
-				policyCtrledObjCls = kb.createCls(ClsEnum.PolicyControlledObject.name(), kb.getRootClses());
-				changed = true;
-			} 
-			addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.name));
-			addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.description));
-			addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.allowedGroupOperation));
-			Slot hostNameSlot = kb.getSlot(SlotEnum.hostName.name());
-			if (hostNameSlot == null) {
-				hostNameSlot = kb.createSlot(SlotEnum.hostName.name());
-				changed = true;
-			}
-			Cls serverCls = kb.getCls(ClsEnum.Server.name());
-			if (serverCls == null) {
-				serverCls = kb.createCls(ClsEnum.Server.name(), CollectionUtilities.createCollection(policyCtrledObjCls));
-				changed = true;
-			}
-			addTemplateSlot(serverCls, hostNameSlot);
-			Cls projectCls = mp.getCls(ClsEnum.Project);
-			if (!projectCls.hasSuperclass(policyCtrledObjCls)) {
-				projectCls.addDirectSuperclass(policyCtrledObjCls);
-				projectCls.removeDirectSuperclass(kb.getRootCls());
-				changed = true;
-			}
+		    changed = addPolicyControlledObjectClass(mp);
+		    changed = addAccessSlots(mp) || changed;
 
-			/*
-			//causes headless exception - find better way to adapt metaproject
-			if (changed) {
-				try {				
-					kb.getProject().getDesignTimeClsWidget(policyCtrledObjCls).layoutLikeCls(projectCls);
-					kb.getProject().getDesignTimeClsWidget(policyCtrledObjCls).layoutLikeCls(serverCls);
-				} catch (Throwable t) {
-					Log.emptyCatchBlock(t);
-				}
-			}
-			 */
+			/* attempt to use getDesignTimeClsWidget at svn revision 15083 */
 			if (changed) {
 				ArrayList errors = new ArrayList();
 				mp.save(errors);
@@ -80,11 +45,67 @@ public class ServerUtil {
 
 
 	}
+	
+	private static boolean addPolicyControlledObjectClass(MetaProjectImpl mp)  {
+	    boolean changed = false;
+	    KnowledgeBase kb = mp.getKnowledgeBase();
+	    
+        Cls policyCtrledObjCls = kb.getCls(ClsEnum.PolicyControlledObject.name());
+        if (policyCtrledObjCls == null) {
+            Log.getLogger().info("Fixing up the metaproject to new version. No information will be lost.");         
+            policyCtrledObjCls = kb.createCls(ClsEnum.PolicyControlledObject.name(), kb.getRootClses());
+            changed = true;
+        } 
+        addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.name));
+        addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.description));
+        addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.allowedGroupOperation));
+        Slot hostNameSlot = kb.getSlot(SlotEnum.hostName.name());
+        if (hostNameSlot == null) {
+            hostNameSlot = kb.createSlot(SlotEnum.hostName.name());
+            changed = true;
+        }
+        Cls serverCls = kb.getCls(ClsEnum.Server.name());
+        if (serverCls == null) {
+            serverCls = kb.createCls(ClsEnum.Server.name(), CollectionUtilities.createCollection(policyCtrledObjCls));
+            changed = true;
+        }
+        addTemplateSlot(serverCls, hostNameSlot);
+        Cls projectCls = mp.getCls(ClsEnum.Project);
+        if (!projectCls.hasSuperclass(policyCtrledObjCls)) {
+            projectCls.addDirectSuperclass(policyCtrledObjCls);
+            projectCls.removeDirectSuperclass(kb.getRootCls());
+            changed = true;
+        }
+        return changed;
+	}
+	
+	private static boolean addAccessSlots(MetaProjectImpl  mp) {
+	    boolean  changed = false;
+	    KnowledgeBase  kb = mp.getKnowledgeBase();
+	    Cls user = kb.getCls(MetaProjectImpl.ClsEnum.User.toString());
+	    changed = addTemplateSlot(kb, user, MetaProjectImpl.SlotEnum.lastLogin) || changed;
+	    changed = addTemplateSlot(kb, user, MetaProjectImpl.SlotEnum.lastRead) || changed;
+	    changed = addTemplateSlot(kb, user, MetaProjectImpl.SlotEnum.lastModification) || changed;
+	    return changed;
+	}
+	
+	private static boolean addTemplateSlot(KnowledgeBase kb, Cls cls, MetaProjectImpl.SlotEnum slotEnum) {
+	    String slotName = slotEnum.toString();
+	    Slot slot;
+	    boolean changed = false;
+	    if ((slot = kb.getSlot(slotName)) == null) {
+	        slot = kb.createSlot(slotName);
+	        changed = true;
+	    }
+	    return addTemplateSlot(cls, slot) || changed;
+	}
 
-	private static void addTemplateSlot(Cls cls, Slot slot) {
+	private static boolean addTemplateSlot(Cls cls, Slot slot) {
 		if (!cls.hasTemplateSlot(slot)) {
-			cls.addDirectTemplateSlot(slot);			
+			cls.addDirectTemplateSlot(slot);
+			return true;
 		}
+		return false;
 	}
 
 }
