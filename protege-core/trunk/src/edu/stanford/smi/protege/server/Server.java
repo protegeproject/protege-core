@@ -130,15 +130,19 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         System.setProperty("java.rmi.server.RMIClassLoaderSpi", ProtegeRmiClassLoaderSpi.class.getName());
         SystemUtilities.initialize();
         serverInstance = new Server(args);        
+        afterLoad();
+        Log.getLogger().info("Protege server ready to accept connections...");
+    }
+
+    private static void afterLoad() {
         for (Entry<String, Project> entry : serverInstance._nameToOpenProjectMap.entrySet()) {
             String name = entry.getKey();
             Project p = entry.getValue();
             Log.getLogger().info("Loading project plugins for project " + name);
             serverInstance._projectPluginManager.afterLoad(p);
         }
-        Log.getLogger().info("Protege server ready to accept connections...");
     }
-
+    
     public synchronized static Server getInstance() {
         return serverInstance;
     }
@@ -657,7 +661,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     public synchronized void reinitialize() throws RemoteException {
         Log.getLogger().info("Server reinitializing");
         clear();
+        serverInstance = null;
         initialize();
+        serverInstance = this;
+        afterLoad();
     }
  
     /* -----------------------------------------------------------------
