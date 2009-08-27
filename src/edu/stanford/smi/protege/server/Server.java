@@ -80,6 +80,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private URI metaprojectURI;
     private MetaProject metaproject;
+    private ServerProject serverMetaProject;
 
     private List<RemoteSession> _sessions = new ArrayList<RemoteSession>();
     private URI _baseURI;
@@ -235,7 +236,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private void initialize() throws RemoteException {
     	Log.getLogger().info("Using metaproject from: " + metaprojectURI);
-        metaproject = new MetaProjectImpl(metaprojectURI);
+        metaproject = new MetaProjectImpl(metaprojectURI, true);
         bindName();
         ServerUtil.fixMetaProject(metaproject);	
         initializeProjects();
@@ -818,6 +819,19 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
 
         return serverProject;
+    }
+    
+    public synchronized RemoteServerProject openMetaProject(RemoteSession session) throws RemoteException {
+        String metaProjectName = "Meta-Project";
+        if (serverMetaProject == null) {
+            KnowledgeBase metaProjectKb = ((MetaProjectImpl) metaproject).getKnowledgeBase();
+            localizeKB(metaProjectKb);
+            serverMetaProject =  new ServerProject(this, 
+                                                 getURI(metaProjectName), metaproject.getProject(metaProjectName), 
+                                                 metaProjectKb.getProject());
+        }
+        serverMetaProject.register(session);
+        return serverMetaProject;
     }
 
 

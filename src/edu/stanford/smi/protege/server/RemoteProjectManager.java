@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.resource.LocalizedText;
 import edu.stanford.smi.protege.resource.ResourceKey;
 import edu.stanford.smi.protege.server.admin.ServerAdminPanel;
+import edu.stanford.smi.protege.server.metaproject.MetaProject;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.ui.ProjectManager;
 import edu.stanford.smi.protege.util.ComponentFactory;
 import edu.stanford.smi.protege.util.Log;
@@ -101,6 +103,21 @@ public class RemoteProjectManager {
             Log.getLogger().log(Level.WARNING, "Could not connect to remote project " + name, e);
         }
         return p;    	
+    }
+    
+    public MetaProject connectToMetaProject(RemoteServer server, RemoteSession session) {
+        Project p = null;
+        try {
+            RemoteServerProject serverProject = server.openMetaProject(session);
+            if (serverProject == null) {
+                Log.getLogger().warning("Could not open meta project on server.");
+                return null;
+            }
+            p = RemoteClientProject.createProject(server, serverProject, session, true);
+        } catch (Exception e) {
+            Log.getLogger().log(Level.WARNING, "Could not connect to remote meta project ", e);
+        }
+        return new MetaProjectImpl(p);       
     }
     
     public void showServerAdminWindow(RemoteServer server, RemoteSession session) {
