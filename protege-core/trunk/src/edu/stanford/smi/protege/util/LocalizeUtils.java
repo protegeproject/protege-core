@@ -1,5 +1,7 @@
 package edu.stanford.smi.protege.util;
 
+import java.lang.reflect.Proxy;
+import java.rmi.Remote;
 import java.util.*;
 
 import edu.stanford.smi.protege.model.*;
@@ -19,6 +21,8 @@ public class LocalizeUtils {
             localizeMap((Map) o, kb);
         } else if (o instanceof Localizable) {
             ((Localizable) o).localize(kb);
+        } else if (o instanceof Remote && o instanceof Proxy) {
+            ;
         } else if (!isPrimative(o)) {
             Log.getLogger().warning("Unhandled localization: " + o);
         }
