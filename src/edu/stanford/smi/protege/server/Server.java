@@ -829,6 +829,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
     
     public synchronized RemoteServerProject openMetaProject(RemoteSession session) throws RemoteException {
+    	if (!isServerOperationAllowed(session, MetaProjectConstants.OPERATION_ADMINISTER_SERVER)) {
+    		log.warning("Failed attempt to open metaproject by " + session + ". Not enough privileges.");
+    		throw new SecurityException("Not enough privileges to open metaproject.");
+    	}
         String metaProjectName = "Meta-Project";
         if (serverMetaProject == null) {
             KnowledgeBase metaProjectKb = ((MetaProjectImpl) metaproject).getKnowledgeBase();
