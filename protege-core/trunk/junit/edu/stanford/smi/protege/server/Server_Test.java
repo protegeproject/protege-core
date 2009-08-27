@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.server;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -13,6 +14,8 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.framestore.SimpleTestCase;
+import edu.stanford.smi.protege.server.metaproject.MetaProject;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.DeletionHook;
 import edu.stanford.smi.protege.util.DeletionHookUtil;
@@ -146,6 +149,18 @@ public class Server_Test extends SimpleTestCase {
       Cls cls = kb.getCls("Editor");
       assertNotNull(cls);
       p.dispose();
+    }
+    
+    public void testGetMetaProject() throws MalformedURLException, RemoteException, NotBoundException {
+        if (!serverRunning) {
+            return;
+        } 
+        RemoteServer server = (RemoteServer) Naming.lookup("//" + HOST + "/" + Server.getBoundName());
+        RemoteSession session = server.openSession(USER1, SystemUtilities.getMachineIpAddress(), PASSWORD1);
+        MetaProject metaproject = RemoteProjectManager.getInstance().connectToMetaProject(server, session);
+        assertTrue(((MetaProjectImpl) metaproject).getKnowledgeBase().getProject().isMultiUserClient());
+        assertTrue(metaproject.getProjects().size() == 7);
+        assertTrue(metaproject.getProject("Wines") != null);
     }
     
     public void testDeletionHook() {

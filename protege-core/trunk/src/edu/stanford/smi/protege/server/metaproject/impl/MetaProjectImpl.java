@@ -45,14 +45,22 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
     
     private transient KnowledgeBase kb;
 	private transient Policy policy;
+	
+	public MetaProjectImpl(URI metaProjectURI) {
+	    this(metaProjectURI, false);
+	}
 
-	public MetaProjectImpl(URI metaprojectURI) {
+	public MetaProjectImpl(URI metaprojectURI, boolean isMultiUserServer) {
 		Collection errors = new ArrayList();
-		Project project = Project.loadProjectFromURI(metaprojectURI, errors);
+		Project project = Project.loadProjectFromURI(metaprojectURI, errors, isMultiUserServer);
 		if (!errors.isEmpty()) {
 			throw new RuntimeException(errors.iterator().next().toString());
 		}
 		kb = project.getKnowledgeBase();
+	}
+	
+	public MetaProjectImpl(Project p) {
+	    kb = p.getKnowledgeBase();
 	}
 
 
@@ -110,7 +118,8 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 		return getWrappedInstances(MetaProjectImpl.ClsEnum.Project);
 	}
 
-	public ProjectInstance getProject(String name) {
+	@SuppressWarnings("unchecked")
+    public ProjectInstance getProject(String name) {
 		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.name), null, false, name);
 		if (frames == null || frames.isEmpty()) {
 			return null;

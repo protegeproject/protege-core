@@ -1,7 +1,7 @@
-; Mon Aug 10 17:21:09 PDT 2009
+; Wed Aug 26 13:13:18 PDT 2009
 ; 
-;+ (version "3.4.1")
-;+ (build "Build 537")
+;+ (version "3.4.2")
+;+ (build "Build 538")
 
 
 (defclass %3ACLIPS_TOP_LEVEL_SLOT_CLASS "Fake class to save top-level slot information"
@@ -35,6 +35,18 @@
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
+	(single-slot lastModification
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot description
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot lastRead
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
 	(single-slot location
 		(type STRING)
 ;+		(cardinality 0 1)
@@ -49,6 +61,10 @@
 		(default [metaproject_Instance_0])
 ;+		(inverse-slot member)
 		(create-accessor read-write))
+	(single-slot lastLogin
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
 	(multislot allowedOperation
 		(type INSTANCE)
 ;+		(allowed-classes Operation)
@@ -56,10 +72,6 @@
 	(multislot allowedGroupOperation
 		(type INSTANCE)
 ;+		(allowed-classes GroupOperation)
-		(create-accessor read-write))
-	(single-slot description
-		(type STRING)
-;+		(cardinality 0 1)
 		(create-accessor read-write)))
 
 (defclass User
@@ -74,11 +86,23 @@
 ;+		(allowed-classes Group)
 		(default [metaproject_Instance_0])
 		(create-accessor read-write))
+	(single-slot lastLogin
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot lastModification
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
 	(single-slot description
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot name_
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot lastRead
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write)))
@@ -127,13 +151,13 @@
 (defclass PolicyControlledObject
 	(is-a USER)
 	(role concrete)
-	(single-slot description
-		(type STRING)
-;+		(cardinality 0 1)
-		(create-accessor read-write))
 	(multislot allowedGroupOperation
 		(type INSTANCE)
 ;+		(allowed-classes GroupOperation)
+		(create-accessor read-write))
+	(single-slot description
+		(type STRING)
+;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot name_
 		(type STRING)
