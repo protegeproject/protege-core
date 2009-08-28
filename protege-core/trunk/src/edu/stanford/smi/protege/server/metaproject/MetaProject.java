@@ -42,6 +42,8 @@ public interface MetaProject {
     
     @SuppressWarnings("unchecked")
     boolean save(Collection errors);
+    
+    void dispose();
 
 }
 
