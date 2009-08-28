@@ -84,8 +84,7 @@ public class ServerUtil {
 	    KnowledgeBase  kb = mp.getKnowledgeBase();
 	    Cls user = kb.getCls(MetaProjectImpl.ClsEnum.User.toString());
 	    changed = addTemplateSlot(kb, user, MetaProjectImpl.SlotEnum.lastLogin) || changed;
-	    changed = addTemplateSlot(kb, user, MetaProjectImpl.SlotEnum.lastRead) || changed;
-	    changed = addTemplateSlot(kb, user, MetaProjectImpl.SlotEnum.lastModification) || changed;
+	    changed = addTemplateSlot(kb, user, MetaProjectImpl.SlotEnum.lastAccess) || changed;
 	    return changed;
 	}
 	

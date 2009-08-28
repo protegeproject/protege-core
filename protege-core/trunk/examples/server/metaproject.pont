@@ -1,7 +1,7 @@
-; Wed Aug 26 13:13:18 PDT 2009
+; Fri Aug 28 12:42:20 PDT 2009
 ; 
 ;+ (version "3.4.2")
-;+ (build "Build 538")
+;+ (build "Build 541")
 
 
 (defclass %3ACLIPS_TOP_LEVEL_SLOT_CLASS "Fake class to save top-level slot information"
@@ -35,15 +35,11 @@
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
-	(single-slot lastModification
-		(type STRING)
-;+		(cardinality 0 1)
-		(create-accessor read-write))
 	(single-slot description
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
-	(single-slot lastRead
+	(single-slot lastAccess
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
@@ -86,11 +82,11 @@
 ;+		(allowed-classes Group)
 		(default [metaproject_Instance_0])
 		(create-accessor read-write))
-	(single-slot lastLogin
+	(single-slot lastAccess
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
-	(single-slot lastModification
+	(single-slot lastLogin
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
@@ -99,10 +95,6 @@
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot name_
-		(type STRING)
-;+		(cardinality 0 1)
-		(create-accessor read-write))
-	(single-slot lastRead
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write)))

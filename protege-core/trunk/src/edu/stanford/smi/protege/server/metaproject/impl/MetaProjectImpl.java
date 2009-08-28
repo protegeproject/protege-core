@@ -35,7 +35,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 
     public static enum SlotEnum {
         name, password, location, 
-        lastLogin, lastRead, lastModification,
+        lastLogin, lastAccess,
         group, member, allowedGroup, allowedOperation, 
         allowedGroupOperation, owner, description, annotationProject, hostName;
     }
@@ -135,7 +135,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	public Set<User> getUsers() {
 		return getWrappedInstances(MetaProjectImpl.ClsEnum.User);
 	}
-
+	
 	public User getUser(String name) {
 		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.name), null, false, name);
 		if (frames == null || frames.isEmpty()) {

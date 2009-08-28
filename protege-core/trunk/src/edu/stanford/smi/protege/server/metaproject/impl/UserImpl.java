@@ -1,12 +1,15 @@
 package edu.stanford.smi.protege.server.metaproject.impl;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Set;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.metaproject.Group;
 import edu.stanford.smi.protege.server.metaproject.User;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 
 public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serializable {
 	private static final long serialVersionUID = -4416984896523630762L;
@@ -21,7 +24,36 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 		password = (String) ui.getOwnSlotValue(mp.getSlot(MetaProjectImpl.SlotEnum.password));
 	}
 
-	public String getName() {
+	public String getDescription() {
+    	Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.description));
+    	if (!(value instanceof String)) {
+    		throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
+    	}
+    	return (String) value;		
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<Group> getGroups() {
+    	return getSlotValues(MetaProjectImpl.SlotEnum.group, MetaProjectImpl.ClsEnum.Group);
+    }
+    
+    public Date getLastAccess() {
+        Object unparsed = (String) getSlotValue(SlotEnum.lastAccess, null);
+        if (!(unparsed instanceof String)) {
+            throw new OntologyException("The " + MetaProjectImpl.SlotEnum.lastAccess + " slot should take on string values");
+        }
+        return parseDate((String) unparsed);
+    }
+    
+    public Date getLastLogin() {
+        Object unparsed = (String) getSlotValue(SlotEnum.lastLogin, null);
+        if (unparsed != null && !(unparsed instanceof String)) {
+            throw new OntologyException("The " + MetaProjectImpl.SlotEnum.lastLogin + " slot should take on string values");
+        }
+        return parseDate((String) unparsed);
+    }
+
+    public String getName() {
 		return name;
 	}
 
@@ -29,31 +61,19 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 		return password;
 	}
 
-	@SuppressWarnings("unchecked")
-    public Set<Group> getGroups() {
-		return getSlotValues(MetaProjectImpl.SlotEnum.group, MetaProjectImpl.ClsEnum.Group);
+	public void setDescription(String description) {
+    	setSlotValue(MetaProjectImpl.SlotEnum.description, description);
+    }
+	
+	public void setLastAccess(Date time) {
+	    setSlotValue(SlotEnum.lastAccess, new Long(time.getTime()).toString());
+	}
+	
+	public void setLastLogin(Date time) {
+        setSlotValue(SlotEnum.lastLogin, new Long(time.getTime()).toString());
 	}
 
-	@Override
-    public boolean equals(Object o) { 
-		if (!(o instanceof User)) {
-			return false;
-		}
-		User other = (User) o;
-		return name.equals(other.getName());
-	}
-
-	@Override
-    public int hashCode() {
-		return name == null ? 42 : name.hashCode();
-	}
-
-	@Override
-    public String toString() {
-		return name;
-	}
-
-	public void setName(String name) {
+    public void setName(String name) {
 		this.name = name;
 		setSlotValue(MetaProjectImpl.SlotEnum.name, name);
 	}
@@ -62,16 +82,35 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 		setSlotValue(MetaProjectImpl.SlotEnum.password, password);
 	}
 	
-	public String getDescription() {
-		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.description));
-		if (!(value instanceof String)) {
-			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
-		}
-		return (String) value;		
-	}
-	
-	public void setDescription(String description) {
-		setSlotValue(MetaProjectImpl.SlotEnum.description, description);
+	@Override
+    public boolean equals(Object o) { 
+    	if (!(o instanceof User)) {
+    		return false;
+    	}
+    	User other = (User) o;
+    	return name.equals(other.getName());
+    }
+
+    @Override
+    public int hashCode() {
+    	return name == null ? 42 : name.hashCode();
+    }
+
+    @Override
+    public String toString() {
+    	return name;
+    }
+
+    private static Date parseDate(String dateAsLong) {
+	    if (dateAsLong == null) {
+	        return null;
+	    }
+	    try {
+	        return new Date(Long.parseLong(dateAsLong));
+	    }
+	    catch (NumberFormatException nfe) {
+	        return null;
+	    }
 	}
 
 }

@@ -6,6 +6,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,6 +16,7 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.framestore.SimpleTestCase;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
+import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.DeletionHook;
@@ -40,17 +42,15 @@ public class Server_Test extends SimpleTestCase {
     public static final String PASSWORD2 = "jenny";
 
     public static final String NAME = "//" + HOST + "/" + Server.getBoundName();
-    
-    public static  final String JAR_PROPERTY="junit.server.protege.jar";
+    public static final String JAR_PROPERTY="junit.server.protege.jar";
+    public static String protegeJarLocation = "build/dist/protege.jar";
+    public static String metaproject = "examples/server/metaproject.pprj";
+    public static long LONG_TIME_FOR_ACCESS_TESTS=10*1000;
     
     private static boolean serverRunning = false;
     
-    private static String protegeJarLocation = "build/dist/protege.jar";
-
     private RemoteServer _server;
     
-    private static String metaproject = "examples/server/metaproject.pprj";
-
     public void setUp() throws Exception {
       super.setUp();
       try {
@@ -100,6 +100,29 @@ public class Server_Test extends SimpleTestCase {
 
     private static String getMachineIpAddress() {
         return SystemUtilities.getMachineIpAddress();
+    }
+
+    public void testAccessTimes() throws MalformedURLException, RemoteException, NotBoundException, InterruptedException {
+        if (!serverRunning) {
+            return;
+        } 
+        RemoteServer server = (RemoteServer) Naming.lookup("//" + HOST + "/" + Server.getBoundName());
+        RemoteSession session = server.openSession(USER1, SystemUtilities.getMachineIpAddress(), PASSWORD1);
+        MetaProject metaproject = RemoteProjectManager.getInstance().connectToMetaProject(server, session);
+        User u2 = metaproject.getUser(USER2);
+        
+        while (u2.getLastLogin() != null && 
+                u2.getLastLogin().getTime() > System.currentTimeMillis() - LONG_TIME_FOR_ACCESS_TESTS) {
+            Thread.sleep(LONG_TIME_FOR_ACCESS_TESTS);
+        }
+        Project p = RemoteProjectManager.getInstance().getProject(HOST, USER2, PASSWORD2, PROJECT_NAME, true);
+        assertTrue(u2.getLastLogin().getTime() > System.currentTimeMillis() - LONG_TIME_FOR_ACCESS_TESTS);
+        while (u2.getLastAccess() != null && 
+                u2.getLastAccess().getTime() > System.currentTimeMillis() - LONG_TIME_FOR_ACCESS_TESTS) {
+            Thread.sleep(LONG_TIME_FOR_ACCESS_TESTS);
+        }
+        p.getKnowledgeBase().createCls("garbage", null);
+        assertTrue(u2.getLastAccess().getTime() > System.currentTimeMillis() - LONG_TIME_FOR_ACCESS_TESTS);
     }
 
     public void testSession() throws RemoteException {
