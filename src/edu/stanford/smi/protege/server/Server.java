@@ -677,6 +677,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             boolean allowsDelegation = isServerOperationAllowed(new Session(username, userIpAddress, false), MetaProjectConstants.OPERATION_DELEGATE);
             session = new Session(username, userIpAddress, allowsDelegation);
             _sessions.add(session);
+            metaproject.getUser(username).setLastLogin(new Date());
         } else {
         	Log.getLogger().warning("Failed login for user " + username + " IP: " + userIpAddress);
         }

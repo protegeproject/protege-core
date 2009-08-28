@@ -45,8 +45,9 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 	protected Set getSlotValues(MetaProjectImpl.SlotEnum slot, MetaProjectImpl.ClsEnum rangeCls) {
 		Set results = new HashSet();
 		for (Object o : i.getOwnSlotValues(mp.getSlot(slot))) {
-		    if (o instanceof Instance)
-			results.add(mp.wrapInstance(rangeCls, (Instance) o));
+		    if (o instanceof Instance) {
+		        results.add(mp.wrapInstance(rangeCls, (Instance) o));
+		    }
 		}
 		return results;
 	}
@@ -54,7 +55,7 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 	protected Object getSlotValue(MetaProjectImpl.SlotEnum slot, MetaProjectImpl.ClsEnum rangeCls) {
 		Object o = i.getOwnSlotValue(mp.getSlot(slot));
 		
-		if (o != null) {
+		if (o != null && o instanceof Instance) {
 			return mp.wrapInstance(rangeCls, (Instance) o);
 		}
 		return null;

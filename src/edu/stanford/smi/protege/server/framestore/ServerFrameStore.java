@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -242,6 +243,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
       }
       recordCallNoCheck(session);
+      if (projectInstance != null) {
+          projectInstance.getMetaProject().getUser(session.getUserName()).setLastAccess(new Date());
+      }
       synchronized (runningClientThreads) {
     	  runningClientThreads.add(Thread.currentThread());
       }
