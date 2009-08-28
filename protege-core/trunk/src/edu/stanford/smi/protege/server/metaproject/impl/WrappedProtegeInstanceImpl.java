@@ -110,8 +110,9 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 	}
 	
 	
-	public Collection<Instance> getProtegeCollection(Collection collection) {
-		ArrayList<Instance> protegeColl = new ArrayList<Instance>();
+	@SuppressWarnings("unchecked")
+    public Collection getProtegeCollection(Collection collection) {
+		ArrayList protegeColl = new ArrayList();
 		
 		for (Iterator iterator = collection.iterator(); iterator.hasNext();) {
 			Object o = iterator.next();
@@ -119,7 +120,9 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 			if (o instanceof WrappedProtegeInstanceImpl) {
 				WrappedProtegeInstanceImpl wpi = (WrappedProtegeInstanceImpl) o;
 				protegeColl.add(wpi.getProtegeInstance());
-			}			
+			} else {
+			    protegeColl.add(o);
+			}
 		}
 		
 		return protegeColl;
