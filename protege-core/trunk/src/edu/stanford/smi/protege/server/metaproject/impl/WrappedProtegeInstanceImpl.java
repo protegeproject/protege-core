@@ -58,7 +58,7 @@ public class WrappedProtegeInstanceImpl implements Localizable, Serializable {
 		if (o != null && o instanceof Instance) {
 			return mp.wrapInstance(rangeCls, (Instance) o);
 		}
-		return null;
+		return o;
 	}
 
 
