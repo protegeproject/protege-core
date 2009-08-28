@@ -6,7 +6,6 @@ import java.util.Set;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
-import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.metaproject.Group;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
@@ -39,7 +38,7 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
     
     public Date getLastAccess() {
         Object unparsed = (String) getSlotValue(SlotEnum.lastAccess, null);
-        if (!(unparsed instanceof String)) {
+        if (unparsed != null && !(unparsed instanceof String)) {
             throw new OntologyException("The " + MetaProjectImpl.SlotEnum.lastAccess + " slot should take on string values");
         }
         return parseDate((String) unparsed);
