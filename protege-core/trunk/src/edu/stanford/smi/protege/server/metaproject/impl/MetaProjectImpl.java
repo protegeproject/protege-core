@@ -227,6 +227,10 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 		Log.getLogger().info("SERVER: Saved metaproject.");
 		return true;
 	}
+	
+	public void dispose() {
+	    kb.getProject().dispose();
+	}
 
 	public ProjectInstance createProject(String name) {
 		Instance pi = kb.createInstance(name, getCls(MetaProjectImpl.ClsEnum.Project));
