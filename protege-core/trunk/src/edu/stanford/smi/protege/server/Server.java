@@ -241,6 +241,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private void initialize() throws RemoteException {
     	Log.getLogger().info("Using metaproject from: " + metaprojectURI);
         metaproject = new MetaProjectImpl(metaprojectURI, true);
+        serverMetaProject = null;
         bindName();
         ServerUtil.fixMetaProject(metaproject);	
         initializeProjects();
