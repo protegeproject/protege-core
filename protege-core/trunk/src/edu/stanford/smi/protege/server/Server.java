@@ -1279,6 +1279,19 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return policy.isOperationAuthorized(user, op, policyControlledObject);
     }
     
+    public synchronized Collection<Operation> getAllowedOperations(RemoteSession session, String projectName, String userName) {
+    	Collection<Operation> allowedOps = new ArrayList<Operation>();
+    	Policy policy = metaproject.getPolicy();
+    	User user = policy.getUserByName(session.getUserName());
+    	ProjectInstance project = metaproject.getPolicy().getProjectInstanceByName(projectName);
+    	if (user == null || project == null) {  return allowedOps;  }
+    	for (Operation op : policy.getKnownOperations()) {
+			if (policy.isOperationAuthorized(user, op, project)) {
+				allowedOps.add(op);
+			}
+		}
+    	return allowedOps;
+    }
     
      /* -----------------------------------------------------------------
       * Misc
