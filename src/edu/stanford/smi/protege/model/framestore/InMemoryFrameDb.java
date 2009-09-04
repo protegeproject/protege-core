@@ -526,7 +526,9 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     }
 
     public void replaceFrame(Frame frame) {
-        idToFrameMap.put(frame.getFrameID(), frame);
+        if (idToFrameMap.get(frame.getFrameID()) != null) {
+            idToFrameMap.put(frame.getFrameID(), frame);
+        }
         replaceFrameKey(frameToRecordsMap, frame);
         replaceFrameKey(slotToRecordsMap, frame);
         replaceFrameKey(facetToRecordsMap, frame);
