@@ -224,7 +224,10 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 			return false;
 		}
 
-		Log.getLogger().info("SERVER: Saved metaproject.");
+		if (Log.getLogger().isLoggable(Level.FINE)) {
+			Log.getLogger().fine("SERVER: Saved metaproject.");
+		}
+		
 		return true;
 	}
 	
