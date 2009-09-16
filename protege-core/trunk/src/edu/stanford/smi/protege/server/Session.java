@@ -53,7 +53,7 @@ public class Session implements RemoteSession, Serializable {
     }
 
     public String getUserName() {
-        if (delegateUserName != null) {
+        if (allowDelegation && delegateUserName != null) {
             return delegateUserName;
         }
         else {
@@ -83,7 +83,7 @@ public class Session implements RemoteSession, Serializable {
             return false;
         }
         Session other = (Session) o;
-        return id.equals(other.id);
+        return id.equals(other.id) && userName.equals(other.userName) && allowDelegation == other.allowDelegation;
     }
 
     @Override
