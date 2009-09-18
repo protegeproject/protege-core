@@ -26,13 +26,16 @@ import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class RobustConnection {
-	private static final transient Logger log = Log.getLogger(RobustConnection.class);
-	
+    private static final transient Logger log = Log.getLogger(RobustConnection.class);
+        
     private static final int ALLOWANCE = 100;
     private static final int ORACLE_MAX_VARCHAR_SIZE = 3166 - ALLOWANCE;
     private static final int SQLSERVER_MAX_VARCHAR_SIZE = 900 - ALLOWANCE;
     private static final int DEFAULT_MAX_VARCHAR_SIZE = 255;
+    
+    private static int idCounter = 0;
 
+    private int id;
     private Map<String, PreparedStatement> _stringToPreparedStatementMap = new HashMap<String, PreparedStatement>();
     private Object connectionLock = new Object();
     private Connection _connection;
@@ -80,14 +83,15 @@ public class RobustConnection {
      */
     private static long connectionRefreshInterval;
     static {
-    	int minutes = ApplicationProperties.getIntegerProperty(PROPERTY_REFRESH_CONNECTIONS_TIME, 60);
-    	connectionRefreshInterval = minutes * 60 * 1000;
+        int minutes = ApplicationProperties.getIntegerProperty(PROPERTY_REFRESH_CONNECTIONS_TIME, 60);
+        connectionRefreshInterval = minutes * 60 * 1000;
     }
     
     private Integer transactionIsolationLevel = null;
 
     public RobustConnection(String driver, String url, String username, String password,
                             TransactionMonitor transactionMonitor, RemoteSession session) throws SQLException {
+        id = idCounter++;
         _driver = driver;
         _url = url;
         _username = username;
@@ -114,8 +118,8 @@ public class RobustConnection {
     }
 
     private void initializeConnectionReaper() {
-    	connectionReaper = new ConnectionReaperAlgorithm();
-    	connectionReaper.startThread();
+        connectionReaper = new ConnectionReaperAlgorithm();
+        connectionReaper.startThread();
     }
     
     private void initializeDatabaseType() throws SQLException {
@@ -149,41 +153,47 @@ public class RobustConnection {
     }
 
     private void setupConnection() throws SQLException {
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Opening connection for robust connection manager #" + id);
+        }
         _connection = DriverManager.getConnection(_url, _username, _password);
         TransactionIsolationLevel defaultLevel = ServerProperties.getDefaultTransactionIsolationLevel();
         if (defaultLevel != null) {
-          _connection.setTransactionIsolation(defaultLevel.getJdbcLevel());
+            _connection.setTransactionIsolation(defaultLevel.getJdbcLevel());
         }
     }
 
     public void dispose() throws SQLException {
-    	closeConnection();
-    	connectionReaper.stopThread();
+        closeConnection();
+        connectionReaper.stopThread();
     }
     
     private void closeConnection() throws SQLException {
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Closing connection for robust connection manager #" + id);
+        }
         closeStatements();
         synchronized (connectionLock) {
-        	if (_connection != null) {
+            if (_connection != null) {
                 _connection.close();
                 _connection = null;
-        	}
+            }
         }
     }
 
     public void closeStatements() throws SQLException {
-    	synchronized (connectionLock) {
-    		Iterator<PreparedStatement> i = _stringToPreparedStatementMap.values().iterator();
-    		while (i.hasNext()) {
-    			PreparedStatement stmt = i.next();
-    			stmt.close();
-    		}
-    		_stringToPreparedStatementMap.clear();
-    	}
-    	if (_genericStatement != null) {
-    		_genericStatement.close();
-    		_genericStatement = null;
-    	}
+        synchronized (connectionLock) {
+            Iterator<PreparedStatement> i = _stringToPreparedStatementMap.values().iterator();
+            while (i.hasNext()) {
+                PreparedStatement stmt = i.next();
+                stmt.close();
+            }
+            _stringToPreparedStatementMap.clear();
+        }
+        if (_genericStatement != null) {
+            _genericStatement.close();
+            _genericStatement = null;
+        }
     }
 
     private void initializeMaxVarcharSize() throws SQLException {
@@ -250,12 +260,12 @@ public class RobustConnection {
 
     public PreparedStatement getPreparedStatement(String text) throws SQLException {
         synchronized (connectionLock) {
-        	PreparedStatement stmt = (PreparedStatement) _stringToPreparedStatementMap.get(text);
-        	lastAccessTime = System.currentTimeMillis();
-        	if (stmt == null) {
-        		stmt = getConnection().prepareStatement(text);
-        		_stringToPreparedStatementMap.put(text, stmt);
-        	}
+            PreparedStatement stmt = (PreparedStatement) _stringToPreparedStatementMap.get(text);
+            lastAccessTime = System.currentTimeMillis();
+            if (stmt == null) {
+                stmt = getConnection().prepareStatement(text);
+                _stringToPreparedStatementMap.put(text, stmt);
+            }
             return stmt;
         }
     }
@@ -268,14 +278,14 @@ public class RobustConnection {
     }
 
     public void checkConnection() throws SQLException {
-    	synchronized (connectionLock) {
-    		if (_connection == null) {
-    			setupConnection();
-    		} else if (_connection.isClosed()) {
-    			Log.getLogger().warning("Found closed connection, reinitializing...");
-    			closeConnection();
-    		}
-    	}
+        synchronized (connectionLock) {
+            if (_connection == null) {
+                setupConnection();
+            } else if (_connection.isClosed()) {
+                Log.getLogger().warning("Found closed connection, reinitializing...");
+                closeConnection();
+            }
+        }
     }
     
     public  KnownDatabase getKnownDatabaseType() {
@@ -307,11 +317,11 @@ public class RobustConnection {
     }
     
     public int getDatabaseMajorVersion() throws SQLException {
-      return getConnection().getMetaData().getDatabaseMajorVersion();
+        return getConnection().getMetaData().getDatabaseMajorVersion();
     }
     
     public int getDatabaseMinorVersion() throws SQLException {
-      return getConnection().getMetaData().getDatabaseMinorVersion();
+        return getConnection().getMetaData().getDatabaseMinorVersion();
     }
     
     private void initializeDriverTypeNames() throws SQLException {
@@ -332,7 +342,7 @@ public class RobustConnection {
                 log.fine("\tsql data type = " + rs.getInt("DATA_TYPE"));
                 short nullable = rs.getShort("NULLABLE");
                 log.fine("\tnullable = " + (nullable == DatabaseMetaData.typeNoNulls ? "false" : 
-                                               (nullable == DatabaseMetaData.typeNullable ? "true" : "maybe")));
+                                            (nullable == DatabaseMetaData.typeNullable ? "true" : "maybe")));
                 log.fine("\tcase sensitive = " + rs.getBoolean("CASE_SENSITIVE"));
             }
             String name = rs.getString("TYPE_NAME");
@@ -341,64 +351,64 @@ public class RobustConnection {
                 continue;
             }
             switch (type) {
-                case Types.LONGVARCHAR:
-                    if (_driverLongvarcharTypeName == null) {
-                        _driverLongvarcharTypeName = name;
-                    }
-                    break;
-                case Types.LONGVARBINARY:
-                    if (longvarbinaryTypeName == null) {
-                        longvarbinaryTypeName = name;
-                    }
-                    break;
-                case Types.CLOB:
-                    if (clobTypeName == null) {
-                        clobTypeName = name;
-                    }
-                    break;
-                case Types.BLOB:
-                    if (blobTypeName == null) {
-                        blobTypeName = name;
-                    }
-                    break;
-                case Types.TINYINT:
-                    if (_driverTinyIntTypeName == null) {
-                        _driverTinyIntTypeName = name;
-                    }
-                    break;
-                case Types.BIT:
-                    if (_driverBitTypeName == null) {
-                        _driverBitTypeName = name;
-                    }
-                    break;
-                case Types.SMALLINT:
-                    if (_driverSmallIntTypeName == null) {
-                        _driverSmallIntTypeName = name;
-                    }
-                    break;
-                case Types.INTEGER:
-                    if (_driverIntegerTypeName == null) {
-                        _driverIntegerTypeName = name;
-                    }
-                    break;
-                case Types.VARCHAR:
-                    if (_driverVarcharTypeName == null) {
-                        _driverVarcharTypeName = name;
-                    }
-                    break;
-                case Types.VARBINARY:
-                    if (_driverVarBinaryTypeName == null) {
-                        _driverVarBinaryTypeName = name;
-                    }
-                    break;
-                case Types.CHAR:
-                    if (_driverCharTypeName == null) {
-                        _driverCharTypeName = name;
-                    }
-                    break;
-                default:
-                    // do nothing
-                    break;
+            case Types.LONGVARCHAR:
+                if (_driverLongvarcharTypeName == null) {
+                    _driverLongvarcharTypeName = name;
+                }
+                break;
+            case Types.LONGVARBINARY:
+                if (longvarbinaryTypeName == null) {
+                    longvarbinaryTypeName = name;
+                }
+                break;
+            case Types.CLOB:
+                if (clobTypeName == null) {
+                    clobTypeName = name;
+                }
+                break;
+            case Types.BLOB:
+                if (blobTypeName == null) {
+                    blobTypeName = name;
+                }
+                break;
+            case Types.TINYINT:
+                if (_driverTinyIntTypeName == null) {
+                    _driverTinyIntTypeName = name;
+                }
+                break;
+            case Types.BIT:
+                if (_driverBitTypeName == null) {
+                    _driverBitTypeName = name;
+                }
+                break;
+            case Types.SMALLINT:
+                if (_driverSmallIntTypeName == null) {
+                    _driverSmallIntTypeName = name;
+                }
+                break;
+            case Types.INTEGER:
+                if (_driverIntegerTypeName == null) {
+                    _driverIntegerTypeName = name;
+                }
+                break;
+            case Types.VARCHAR:
+                if (_driverVarcharTypeName == null) {
+                    _driverVarcharTypeName = name;
+                }
+                break;
+            case Types.VARBINARY:
+                if (_driverVarBinaryTypeName == null) {
+                    _driverVarBinaryTypeName = name;
+                }
+                break;
+            case Types.CHAR:
+                if (_driverCharTypeName == null) {
+                    _driverCharTypeName = name;
+                }
+                break;
+            default:
+                // do nothing
+                break;
             }
         }
         if (log.isLoggable(Level.FINE)) {
@@ -547,7 +557,7 @@ public class RobustConnection {
 
     public boolean beginTransaction() {
         if (!sessionOk()) {
-          return false;
+            return false;
         }
         boolean begun = false;
         try {
@@ -569,7 +579,7 @@ public class RobustConnection {
 
     public boolean commitTransaction() {
         if (!sessionOk()) {
-          return false;
+            return false;
         }
         boolean committed = false;
         try {
@@ -587,7 +597,7 @@ public class RobustConnection {
         return committed;
     }
 
-	/**
+    /**
      * Refresh the activity monitor on a connection (useful to avoid connection
      * reaping).
      * 
@@ -609,13 +619,13 @@ public class RobustConnection {
 
     public boolean rollbackTransaction() {
         if (!sessionOk()) {
-          return false;
+            return false;
         }
         boolean rolledBack = false;
         try {
             if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
                 transactionMonitor.rollbackTransaction();
-                 if (transactionMonitor.getNesting() == 0) {
+                if (transactionMonitor.getNesting() == 0) {
                     getConnection().rollback();
                     getConnection().setAutoCommit(true);
                 }
@@ -628,44 +638,44 @@ public class RobustConnection {
     }
     
     private boolean sessionOk() {
-      if (ServerFrameStore.getCurrentSession() == null) {
-        return session == null;
-      } else {
-        return ServerFrameStore.getCurrentSession().equals(session);
-      }
+        if (ServerFrameStore.getCurrentSession() == null) {
+            return session == null;
+        } else {
+            return ServerFrameStore.getCurrentSession().equals(session);
+        }
     }
     
     public boolean supportsTransactions() {
-      return _supportsTransactions;
+        return _supportsTransactions;
     }
     
     public int getTransactionIsolationLevel() throws SQLException {
-      if (transactionIsolationLevel != null) {
-        return transactionIsolationLevel;
-      }
-      return transactionIsolationLevel = getConnection().getTransactionIsolation();
+        if (transactionIsolationLevel != null) {
+            return transactionIsolationLevel;
+        }
+        return transactionIsolationLevel = getConnection().getTransactionIsolation();
     }
 
 
     public void setTransactionIsolationLevel(int level) throws SQLException {
-      transactionIsolationLevel = null;
-      try {
-        getConnection().setTransactionIsolation(level);
-      } catch (SQLException sqle) {
-        Log.getLogger().log(Level.WARNING, "Problem setting the transaction isolation level", sqle);
         transactionIsolationLevel = null;
-        throw sqle;
-      }
+        try {
+            getConnection().setTransactionIsolation(level);
+        } catch (SQLException sqle) {
+            Log.getLogger().log(Level.WARNING, "Problem setting the transaction isolation level", sqle);
+            transactionIsolationLevel = null;
+            throw sqle;
+        }
     }
     
     private Connection getConnection() throws SQLException {
-    	synchronized (connectionLock) {
-    		lastAccessTime = System.currentTimeMillis();
-    		if (_connection == null) {
-    			setupConnection();
-    		}
-    		return _connection;
-    	}
+        synchronized (connectionLock) {
+            lastAccessTime = System.currentTimeMillis();
+            if (_connection == null) {
+                setupConnection();
+            }
+            return _connection;
+        }
     }
     
     /*
@@ -673,58 +683,58 @@ public class RobustConnection {
      * 
      */
     private class ConnectionReaperAlgorithm implements Runnable {
-    	private boolean shuttingDown = false;
-    	private Thread thread;
-    	
-    	public void startThread() {
-    		thread = new Thread(this, "Database Connection Reaper");
-    		thread.setDaemon(true);
-    		thread.start();
-    	}
-    	
-		private void stopThread() {
-			synchronized (connectionLock) {
-				shuttingDown = true;
-			}
-			thread.interrupt();
-			thread = null;
-		}
+        private boolean shuttingDown = false;
+        private Thread thread;
+        
+        public void startThread() {
+            thread = new Thread(this, "Database Connection Reaper");
+            thread.setDaemon(true);
+            thread.start();
+        }
+        
+        private void stopThread() {
+            synchronized (connectionLock) {
+                shuttingDown = true;
+            }
+            thread.interrupt();
+            thread = null;
+        }
 
-		public void run() {
-			synchronized (connectionLock) {
-				while (!shuttingDown) {
-					long now = System.currentTimeMillis();
-					if (_connection != null && now - lastAccessTime > connectionRefreshInterval) {
-						try {
-							closeConnection();
-						}
-						catch (Throwable t) {
-							if (log.isLoggable(Level.FINE)) {
-								log.log(Level.FINE, "Exception caught closing connection", t);
-							}
-						}
-						_connection = null;
-					}
-					try {
-						connectionLock.wait(connectionRefreshInterval);
-					}
-					catch (InterruptedException ie) {
-						if (log.isLoggable(Level.FINE)) {
-							log.log(Level.FINE, "Interrupted thread - hopefully because of a close operation", ie);
-						}
-						if (shuttingDown) {
-							return;
-						}
-						else {
-							log.warning("Unexpected interrupt to database connection reaper thread " + ie);
-						}
-					}
-				}
-			}
-		}
-		
+        public void run() {
+            synchronized (connectionLock) {
+                while (!shuttingDown) {
+                    long now = System.currentTimeMillis();
+                    if (_connection != null && now - lastAccessTime > connectionRefreshInterval) {
+                        try {
+                            closeConnection();
+                        }
+                        catch (Throwable t) {
+                            if (log.isLoggable(Level.FINE)) {
+                                log.log(Level.FINE, "Exception caught closing connection", t);
+                            }
+                        }
+                        _connection = null;
+                    }
+                    try {
+                        connectionLock.wait(connectionRefreshInterval);
+                    }
+                    catch (InterruptedException ie) {
+                        if (log.isLoggable(Level.FINE)) {
+                            log.log(Level.FINE, "Interrupted thread - hopefully because of a close operation", ie);
+                        }
+                        if (shuttingDown) {
+                            return;
+                        }
+                        else {
+                            log.warning("Unexpected interrupt to database connection reaper thread " + ie);
+                        }
+                    }
+                }
+            }
+        }
+                
 
-    	
+        
     }
 
     // String driver, String url, String username, String password

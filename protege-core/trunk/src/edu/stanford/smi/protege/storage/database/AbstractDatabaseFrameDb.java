@@ -26,7 +26,7 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 
-	public static Logger	log	= Log.getLogger( AbstractDatabaseFrameDb.class );
+	public static Logger log	= Log.getLogger( AbstractDatabaseFrameDb.class );
 	private static int	traceCount	= 0;
 
 	private static void traceUpdate(PreparedStatement stmt) {
