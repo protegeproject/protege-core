@@ -29,7 +29,6 @@ import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.ReferenceImpl;
 import edu.stanford.smi.protege.model.framestore.Sft;
-import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 
 public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
@@ -761,7 +760,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         return count;
     }
 
-    public CacheMap<Frame, Map<Sft,List>> getFrameValues() {
+    public Map<Frame, Map<Sft,List>> getFrameValues() {
         try {
             return getFrameValuesSQL();
         } catch (SQLException e) {
@@ -827,7 +826,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
     private String _allFrameValuesText;
 
-    private CacheMap<Frame, Map<Sft, List>> getFrameValuesSQL() throws SQLException {
+    private Map<Frame, Map<Sft, List>> getFrameValuesSQL() throws SQLException {
         if (_allFrameValuesText == null) {
             _allFrameValuesText = "SELECT " + FRAME_COLUMN + ", " + FRAME_TYPE_COLUMN;
             _allFrameValuesText += ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN;
@@ -839,7 +838,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         }
         PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_allFrameValuesText);
 
-        CacheMap<Frame, Map<Sft,List>> frameToSftToValueMap = new CacheMap<Frame, Map<Sft, List>>();
+        Map<Frame, Map<Sft,List>> frameToSftToValueMap = new HashMap<Frame, Map<Sft, List>>();
         ResultSet rs = executeQuery(stmt);
         while (rs.next()) {
             Frame frame = getFrame(rs, 1, 2);
@@ -871,7 +870,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         values.add(value);
     }
 
-    private static void addToMap(CacheMap<Frame, Map<Sft,List>> map,
+    private static void addToMap(Map<Frame, Map<Sft,List>> map,
                                  Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
         Map<Sft,List> sftToValueMap = map.get(frame);
         if (sftToValueMap == null) {
