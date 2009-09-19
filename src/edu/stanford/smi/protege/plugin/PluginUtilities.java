@@ -61,14 +61,14 @@ public class PluginUtilities {
     private static final String FACTORY_PLUGIN = "Storage-Factory";
 
     private static Collection<URL> _manifestURLs = new HashSet<URL>();
-    private static Map pluginToNameMap = new HashMap();
-    private static Map _pluginClassNameToClassLoaderMap = new HashMap();
-    private static List _factories;
-    private static Map _defaultSlotWidgetNames = new HashMap();
-    private static Set _pluginComponentNames = new HashSet();
-    private static Map _pluginComponentNameToAboutURLMap = new HashMap();
-    private static Map _pluginComponentNameToDocURLMap = new HashMap();
-    private static Map _pluginPackageToClassLoaderMap = new HashMap();
+    private static Map<String, Collection<String>> pluginToNameMap = new HashMap<String, Collection<String>>();
+    private static Map<String, ClassLoader> _pluginClassNameToClassLoaderMap = new HashMap<String, ClassLoader>();
+    private static List<KnowledgeBaseFactory> _factories;
+    private static Map<DefaultEntry, String> _defaultSlotWidgetNames = new HashMap<DefaultEntry, String>();
+    private static Set<String> _pluginComponentNames = new HashSet<String>();
+    private static Map<String, URL> _pluginComponentNameToAboutURLMap = new HashMap<String, URL>();
+    private static Map<String, URL> _pluginComponentNameToDocURLMap = new HashMap<String, URL>();
+    private static Map<File, ClassLoader> _pluginPackageToClassLoaderMap = new HashMap<File, ClassLoader>();
     private static String defaultFactoryClassName;
     private static Map<String, Collection<Class>> cachedClsesWithAttributeMap = new HashMap<String, Collection<Class>>();
 
@@ -96,9 +96,10 @@ public class PluginUtilities {
         init();
     }
 
+
     public static File getInstallationDirectory(String pluginClassName) {
         File directory = null;
-        ClassLoader loader = (ClassLoader) _pluginClassNameToClassLoaderMap.get(pluginClassName);
+        ClassLoader loader = _pluginClassNameToClassLoaderMap.get(pluginClassName);
         if (loader instanceof DirectoryClassLoader) {
             directory = ((DirectoryClassLoader) loader).getDirectory();
         }
@@ -197,97 +198,101 @@ public class PluginUtilities {
         return clas;
     }
 
-    private static Collection getClassLoaders() {
-        return new HashSet(_pluginClassNameToClassLoaderMap.values());
+    private static Collection<ClassLoader> getClassLoaders() {
+        return new HashSet<ClassLoader>(_pluginClassNameToClassLoaderMap.values());
     }
 
     private static ClassLoader getClassLoader(String name) {
-        ClassLoader loader = (ClassLoader) _pluginClassNameToClassLoaderMap.get(name);
+        ClassLoader loader =  _pluginClassNameToClassLoaderMap.get(name);
         if (loader == null) {
             loader = PluginUtilities.class.getClassLoader();
         }
         return loader;
     }
 
-    public static Collection getAvailableFactories() {
+    public static Collection<KnowledgeBaseFactory> getAvailableFactories() {
         if (_factories == null) {
-            _factories = new ArrayList();
-            Iterator i = getAvailableFactoryClassNames().iterator();
+            _factories = new ArrayList<KnowledgeBaseFactory>();
+            Iterator<String> i = getAvailableFactoryClassNames().iterator();
             while (i.hasNext()) {
                 String name = (String) i.next();
                 if (name.equals(defaultFactoryClassName)) {
-                    _factories.add(0, SystemUtilities.newInstance(name));
+                    _factories.add(0, (KnowledgeBaseFactory) SystemUtilities.newInstance(name));
                 } else {
-                    _factories.add(SystemUtilities.newInstance(name));
+                    _factories.add((KnowledgeBaseFactory) SystemUtilities.newInstance(name));
                 }
             }
         }
         return Collections.unmodifiableCollection(_factories);
     }
 
-    private static Collection getPluginNames(String pluginType) {
-        Collection names = (Collection) pluginToNameMap.get(pluginType);
-        return (names == null) ? Collections.EMPTY_LIST : Collections.unmodifiableCollection(names);
+    private static Collection<String> getPluginNames(String pluginType) {
+        Collection<String> names = pluginToNameMap.get(pluginType);
+        if (names == null) {
+            return Collections.emptyList();
+        } else {
+            return Collections.unmodifiableCollection(names);
+        }
     }
 
-    public static Collection getAvailableFactoryClassNames() {
+    public static Collection<String> getAvailableFactoryClassNames() {
         return getPluginNames(FACTORY_PLUGIN);
     }
 
-    public static Collection getAvailableSlotWidgetClassNames() {
+    public static Collection<String> getAvailableSlotWidgetClassNames() {
         return getPluginNames(SLOT_WIDGET);
     }
 
-    public static Collection getAvailableTabWidgetClassNames() {
+    public static Collection<String> getAvailableTabWidgetClassNames() {
         return getPluginNames(TAB_WIDGET);
     }
 
-    public static Collection getAvailableImportPluginClassNames() {
+    public static Collection<String> getAvailableImportPluginClassNames() {
         return getPluginNames(IMPORT_PLUGIN);
     }
 
-    public static Collection getAvailableCreateProjectPluginClassNames() {
+    public static Collection<String> getAvailableCreateProjectPluginClassNames() {
         return getPluginNames(CREATE_PROJECT_PLUGIN);
     }
 
-    public static Collection getAvailableExportProjectPluginClassNames() {
+    public static Collection<String> getAvailableExportProjectPluginClassNames() {
         return getPluginNames(EXPORT_PROJECT_PLUGIN);
     }
 
-    public static Collection getAvailableExportPluginClassNames() {
+    public static Collection<String> getAvailableExportPluginClassNames() {
         return getPluginNames(EXPORT_PLUGIN);
     }
 
-    public static Collection getAvailableProjectPluginClassNames() {
+    public static Collection<String> getAvailableProjectPluginClassNames() {
         return getPluginNames(PROJECT_PLUGIN);
     }
 
-    public static Collection getPluginComponentNames() {
-        List list = new ArrayList(_pluginComponentNames);
+    public static Collection<String> getPluginComponentNames() {
+        List<String> list = new ArrayList<String>(_pluginComponentNames);
         Collections.sort(list);
         return list;
     }
 
     public static URL getPluginComponentAboutURL(String pluginComponentName) {
-        return (URL) _pluginComponentNameToAboutURLMap.get(pluginComponentName);
+        return _pluginComponentNameToAboutURLMap.get(pluginComponentName);
     }
 
     public static URL getPluginComponentDocURL(String pluginComponentName) {
-        return (URL) _pluginComponentNameToDocURLMap.get(pluginComponentName);
+        return _pluginComponentNameToDocURLMap.get(pluginComponentName);
     }
 
     public static String getDefaultWidgetClassName(Slot slot) {
         DefaultEntry entry = new DefaultEntry(slot);
-        return (String) _defaultSlotWidgetNames.get(entry);
+        return _defaultSlotWidgetNames.get(entry);
     }
 
     public static String getDefaultWidgetClassName(boolean cardinality, ValueType type, Cls allowedCls) {
         DefaultEntry entry = new DefaultEntry(cardinality, type, allowedCls);
-        String name = (String) _defaultSlotWidgetNames.get(entry);
+        String name = _defaultSlotWidgetNames.get(entry);
         if (name == null && type.equals(ValueType.INSTANCE) && allowedCls != null) {
             // now match on any allowed class
             entry = new DefaultEntry(cardinality, type, null);
-            name = (String) _defaultSlotWidgetNames.get(entry);
+            name = _defaultSlotWidgetNames.get(entry);
         }
         return name;
     }
@@ -409,10 +414,10 @@ public class PluginUtilities {
         }
     }
 
-    private static Collection getOrCreatePluginNames(String pluginType) {
-        Collection c = (Collection) pluginToNameMap.get(pluginType);
+    private static Collection<String> getOrCreatePluginNames(String pluginType) {
+        Collection<String> c =  pluginToNameMap.get(pluginType);
         if (c == null) {
-            c = new ArrayList();
+            c = new ArrayList<String>();
             pluginToNameMap.put(pluginType, c);
         }
         return c;
@@ -426,7 +431,7 @@ public class PluginUtilities {
                 Collection names = getOrCreatePluginNames(attributeName);
                 names.add(className);
                 added = true;
-                Object o = _pluginClassNameToClassLoaderMap.put(className, loader);
+                ClassLoader o = _pluginClassNameToClassLoaderMap.put(className, loader);
                 if (o != null && o != loader) {
                     Log.getLogger().warning("Duplicate plugin: " + className);
                 }
@@ -547,10 +552,10 @@ public class PluginUtilities {
     }
 
     private static ClassLoader getClassLoaderForPackage(File file) {
-        ClassLoader loader = (ClassLoader) _pluginPackageToClassLoaderMap.get(file);
+        ClassLoader loader = _pluginPackageToClassLoaderMap.get(file);
         if (loader == null) {
             loadPluginPackage(file);
-            loader = (ClassLoader) _pluginPackageToClassLoaderMap.get(file);
+            loader = _pluginPackageToClassLoaderMap.get(file);
         }
         return loader;
     }
@@ -624,7 +629,8 @@ public class PluginUtilities {
         return properties.getProperty(pluginName, dir.getName());
     }
 
-    private static void loadURL(String name, Properties properties, String property, int i, File dir, Map map) {
+    private static void loadURL(String name, Properties properties, String property, int i, File dir, 
+                                Map<String, URL> map) {
         String filePropertyName = property + "." + i;
         String fileString = properties.getProperty(filePropertyName);
         if (fileString != null) {
@@ -789,6 +795,10 @@ public class PluginUtilities {
         return (value1 == null) ? (value2 == null) : value1.equalsIgnoreCase(value2);
     }
 
+    /**
+     * @deprecated use class loader instead.
+     */
+    @Deprecated
     public static File getPluginsDirectory() {
         return pluginsDir;
     }

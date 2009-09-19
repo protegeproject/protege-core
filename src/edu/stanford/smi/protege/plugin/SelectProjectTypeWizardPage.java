@@ -38,10 +38,10 @@ public class SelectProjectTypeWizardPage extends WizardPage {
     private SelectableList createList() {
         KnowledgeBaseFactory selection = null;
         String selectedFactoryName = ApplicationProperties.getString(SELECTED_FACTORY);
-        Collection factories = PluginUtilities.getAvailableFactories();
-        Iterator i = factories.iterator();
+        Collection<KnowledgeBaseFactory> factories = PluginUtilities.getAvailableFactories();
+        Iterator<KnowledgeBaseFactory> i = factories.iterator();
         while (i.hasNext()) {
-            KnowledgeBaseFactory factory = (KnowledgeBaseFactory) i.next();
+            KnowledgeBaseFactory factory = i.next();
             if (factory.getClass().getName().equals(selectedFactoryName)) {
                 selection = factory;
             }
