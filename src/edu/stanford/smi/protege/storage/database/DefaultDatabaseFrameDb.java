@@ -299,21 +299,25 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         Set<Reference> references = new HashSet<Reference>();
         ResultSet rs = executeQuery(stmt);
-        while (rs.next()) {
-            boolean realMatch = true;
-            if (value instanceof String) {
-                String returnedValue = rs.getString(1);
-                realMatch = value.toString().equals(returnedValue);
-            }
-            if (realMatch) {
-                Frame frame = getFrame(rs, 2, 3);
-                Slot slot = getSlot(rs, 4);
-                Facet facet = getFacet(rs, 5);
-                boolean isTemplate = getIsTemplate(rs, 6);
-                references.add(new ReferenceImpl(frame, slot, facet, isTemplate));
+        try {
+            while (rs.next()) {
+                boolean realMatch = true;
+                if (value instanceof String) {
+                    String returnedValue = rs.getString(1);
+                    realMatch = value.toString().equals(returnedValue);
+                }
+                if (realMatch) {
+                    Frame frame = getFrame(rs, 2, 3);
+                    Slot slot = getSlot(rs, 4);
+                    Facet facet = getFacet(rs, 5);
+                    boolean isTemplate = getIsTemplate(rs, 6);
+                    references.add(new ReferenceImpl(frame, slot, facet, isTemplate));
+                }
             }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return references;
     }
 
@@ -341,14 +345,18 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         Set<Reference> references = new HashSet<Reference>();
         ResultSet rs = executeQuery(text, maxMatches);
-        while (rs.next()) {
-            Frame frame = getFrame(rs, 1, 2);
-            Slot slot = getSlot(rs, 3);
-            Facet facet = getFacet(rs, 4);
-            boolean isTemplate = getIsTemplate(rs, 5);
-            references.add(new ReferenceImpl(frame, slot, facet, isTemplate));
+        try {
+            while (rs.next()) {
+                Frame frame = getFrame(rs, 1, 2);
+                Slot slot = getSlot(rs, 3);
+                Facet facet = getFacet(rs, 4);
+                boolean isTemplate = getIsTemplate(rs, 5);
+                references.add(new ReferenceImpl(frame, slot, facet, isTemplate));
+            }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return references;
     }
 
@@ -486,13 +494,17 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         setFacet(stmt, 3, facet);
         setIsTemplate(stmt, 4, isTemplate);
 
-        ResultSet rs = executeQuery(stmt);
         int index = -1;
-        while (rs.next()) {
-            index = rs.getInt(1);
-            break;
+        ResultSet rs = executeQuery(stmt);
+        try {
+            while (rs.next()) {
+                index = rs.getInt(1);
+                break;
+            }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return index;
     }
 
@@ -552,19 +564,23 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         Set<Frame> results = new HashSet<Frame>();
         ResultSet rs = executeQuery(text);
-        while (rs.next()) {
-            Frame frame = getFrame(rs, 1, 2);
-            String returnedSlot = rs.getString(3);
-            String returnedFacet = rs.getString(4);
-            boolean returnedIsTemplate = rs.getBoolean(5);
-            if (equals(returnedSlot, slot) && equals(returnedFacet, facet) && returnedIsTemplate == isTemplate) {
-                results.add(frame);
-                if (--maxMatches == 0) {
-					break;
-				}
+        try {
+            while (rs.next()) {
+                Frame frame = getFrame(rs, 1, 2);
+                String returnedSlot = rs.getString(3);
+                String returnedFacet = rs.getString(4);
+                boolean returnedIsTemplate = rs.getBoolean(5);
+                if (equals(returnedSlot, slot) && equals(returnedFacet, facet) && returnedIsTemplate == isTemplate) {
+                    results.add(frame);
+                    if (--maxMatches == 0) {
+                        break;
+                    }
+                }
             }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return results;
     }
 
@@ -617,18 +633,22 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         Set results = new HashSet();
         ResultSet rs = executeQuery(stmt);
-        while (rs.next()) {
-            boolean isRealMatch = true;
-            if (value instanceof String) {
-                String returnedValue = rs.getString(1);
-                isRealMatch = value.equals(returnedValue);
-            }
-            if (isRealMatch) {
-                Frame frame = getFrame(rs, 2, 3);
-                results.add(frame);
+        try {
+            while (rs.next()) {
+                boolean isRealMatch = true;
+                if (value instanceof String) {
+                    String returnedValue = rs.getString(1);
+                    isRealMatch = value.equals(returnedValue);
+                }
+                if (isRealMatch) {
+                    Frame frame = getFrame(rs, 2, 3);
+                    results.add(frame);
+                }
             }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return results;
     }
 
@@ -657,11 +677,15 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         Set results = new HashSet();
         ResultSet rs = executeQuery(stmt);
-        while (rs.next()) {
-            Frame frame = getFrame(rs, 1, 2);
-            results.add(frame);
+        try {
+            while (rs.next()) {
+                Frame frame = getFrame(rs, 1, 2);
+                results.add(frame);
+            }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return results;
     }
 
@@ -708,18 +732,22 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         List values = new ArrayList();
         ResultSet rs = executeQuery(stmt);
-        while (rs.next()) {
-            Object value = getShortValue(rs, 1, 2);
-            if (value == null) {
-                int index = getIndex(rs, 3);
-                value = getLongValue(frame, slot, facet, isTemplate, index);
+        try {
+            while (rs.next()) {
+                Object value = getShortValue(rs, 1, 2);
                 if (value == null) {
-                    value = "";
+                    int index = getIndex(rs, 3);
+                    value = getLongValue(frame, slot, facet, isTemplate, index);
+                    if (value == null) {
+                        value = "";
+                    }
                 }
+                values.add(value);
             }
-            values.add(value);
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return values;
     }
 
@@ -751,12 +779,16 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         setFacet(stmt, 3, facet);
         setIsTemplate(stmt, 4, isTemplate);
 
-        ResultSet rs = executeQuery(stmt);
         int count = 0;
-        while (rs.next()) {
-            count = rs.getInt(1);
+        ResultSet rs = executeQuery(stmt);
+        try {
+            while (rs.next()) {
+                count = rs.getInt(1);
+            }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return count;
     }
 
@@ -805,22 +837,26 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         Map<Sft,List> sftToValueMap = new HashMap<Sft,List>();
         ResultSet rs = executeQuery(stmt);
-        while (rs.next()) {
-            // Ignore the returned frame
-            Slot slot = getSlot(rs, 2);
-            Facet facet = getFacet(rs, 3);
-            boolean isTemplate = getIsTemplate(rs, 4);
-            Object value = getShortValue(rs, 5, 6);
-            if (value == null) {
-                int index = getIndex(rs, 7);
-                value = getLongValue(frame, slot, facet, isTemplate, index);
+        try {
+            while (rs.next()) {
+                // Ignore the returned frame
+                Slot slot = getSlot(rs, 2);
+                Facet facet = getFacet(rs, 3);
+                boolean isTemplate = getIsTemplate(rs, 4);
+                Object value = getShortValue(rs, 5, 6);
                 if (value == null) {
-                    value = "";
+                    int index = getIndex(rs, 7);
+                    value = getLongValue(frame, slot, facet, isTemplate, index);
+                    if (value == null) {
+                        value = "";
+                    }
                 }
+                addToMap(sftToValueMap, slot, facet, isTemplate, value);
             }
-            addToMap(sftToValueMap, slot, facet, isTemplate, value);
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return sftToValueMap;
     }
 
@@ -840,23 +876,27 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         Map<Frame, Map<Sft,List>> frameToSftToValueMap = new HashMap<Frame, Map<Sft, List>>();
         ResultSet rs = executeQuery(stmt);
-        while (rs.next()) {
-            Frame frame = getFrame(rs, 1, 2);
-            Slot slot = getSlot(rs, 3);
-            Facet facet = getFacet(rs, 4);
-            boolean isTemplate = getIsTemplate(rs, 5);
-            Object value = getShortValue(rs, 6, 7);
-            if (value == null) {
-                // int index = getIndex(rs, 8);
-                // value = getLongValue(frame, slot, facet, isTemplate, index);
-                value = getLongValue(rs, 9);
+        try {
+            while (rs.next()) {
+                Frame frame = getFrame(rs, 1, 2);
+                Slot slot = getSlot(rs, 3);
+                Facet facet = getFacet(rs, 4);
+                boolean isTemplate = getIsTemplate(rs, 5);
+                Object value = getShortValue(rs, 6, 7);
                 if (value == null) {
-                    value = "";
+                    // int index = getIndex(rs, 8);
+                    // value = getLongValue(frame, slot, facet, isTemplate, index);
+                    value = getLongValue(rs, 9);
+                    if (value == null) {
+                        value = "";
+                    }
                 }
+                addToMap(frameToSftToValueMap, frame, slot, facet, isTemplate, value);
             }
-            addToMap(frameToSftToValueMap, frame, slot, facet, isTemplate, value);
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return frameToSftToValueMap;
     }
 
@@ -913,11 +953,15 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         Object value = null;
         ResultSet rs = executeQuery(stmt);
-        while (rs.next()) {
-            value = getLongValue(rs, 1);
-            break;
+        try {
+            while (rs.next()) {
+                value = getLongValue(rs, 1);
+                break;
+            }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return value;
     }
 
@@ -1323,10 +1367,14 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         setIsTemplate(stmt, 1, false);
         int count = -1;
         ResultSet rs = executeQuery(stmt);
-        while (rs.next()) {
-            count = rs.getInt(1);
+        try {
+            while (rs.next()) {
+                count = rs.getInt(1);
+            }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return count;
     }
 
@@ -1354,10 +1402,14 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         int count = -1;
         ResultSet rs = executeQuery(stmt);
-        while (rs.next()) {
-            count = rs.getInt(1);
+        try {
+            while (rs.next()) {
+                count = rs.getInt(1);
+            }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return count;
     }
 
@@ -1372,11 +1424,15 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
         Set frames = new HashSet();
         ResultSet rs = executeQuery(stmt);
-        while (rs.next()) {
-            Frame frame = getFrame(rs, 1, 2);
-            frames.add(frame);
+        try {
+            while (rs.next()) {
+                Frame frame = getFrame(rs, 1, 2);
+                frames.add(frame);
+            }
         }
-        rs.close();
+        finally  {
+            rs.close();
+        }
         return frames;
     }
 
@@ -1400,10 +1456,14 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
                 // execute the query and retrieve the result frame
                 ResultSet rs = executeQuery(getFrameStmt);
-                while (rs.next()) {
-                    returnFrame = getFrame(rs, 1, 2);
+                try {
+                    while (rs.next()) {
+                        returnFrame = getFrame(rs, 1, 2);
+                    }
                 }
-                rs.close();
+                finally  {
+                    rs.close();
+                }
             }
         } catch (SQLException e) {
             createRuntimeException(e);
