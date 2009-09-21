@@ -6,8 +6,11 @@ import java.util.Set;
 
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 
 public class WorkInfo implements Comparable<WorkInfo> {
+  public static final String WORK_INFO_TIMEOUT_PROPERTY = "edu.stanford.smi.protege.server.framecalculator.work.info.expiration";
+  public static final int WORK_INFO_TIMEOUT = ApplicationProperties.getIntegerProperty(WORK_INFO_TIMEOUT_PROPERTY, 60000);
   private static int counter = 0;
   
   private RemoteSession client;
@@ -18,6 +21,12 @@ public class WorkInfo implements Comparable<WorkInfo> {
   private boolean targetFullCache = true;
   
   private int sequence = counter++;
+  
+  private long timeWorkInfoAdded = System.currentTimeMillis();
+  
+  public boolean expired() {
+      return System.currentTimeMillis() - timeWorkInfoAdded > WORK_INFO_TIMEOUT;
+  }
   
   public RemoteSession getClient() {
     return client;

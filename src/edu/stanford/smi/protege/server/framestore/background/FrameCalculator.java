@@ -322,6 +322,15 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
       return wi;
     }
   }
+  
+  
+  public void removeRequest(WorkInfo wi) {
+      synchronized (requestLock) {
+          requests.remove(wi);
+          requestMap.remove(new ClientAndFrame(wi.getClient(),
+                                               wi.getFrame()));
+      }
+  }
 
 
 
@@ -509,9 +518,7 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
                 long startTime = System.currentTimeMillis();
                 doWork(workInfo);
                 synchronized (requestLock) {
-                    requests.remove(workInfo);
-                    requestMap.remove(new ClientAndFrame(workInfo.getClient(),
-                                                         workInfo.getFrame()));
+                    removeRequest(workInfo);
                 }
                 if (log.isLoggable(Level.FINE)) {
                     log.fine("work on frame " + workInfo.getFrame() + " took " + (System.currentTimeMillis() - startTime));
@@ -527,12 +534,19 @@ private void doWork(WorkInfo wi) throws ServerSessionLost {
   private WorkInfo getWorkInfo() {
       synchronized (requestLock) {
           while  (true) {
+              List<WorkInfo> toRemove = new  ArrayList<WorkInfo>();
               for (WorkInfo wi : requests) {
-                  if (wi.getReasons().contains(CacheRequestReason.PRELOAD)
+                  if (wi.expired())  {
+                      toRemove.add(wi);
+                  }
+                  else if (wi.getReasons().contains(CacheRequestReason.PRELOAD)
                           || wi.getReasons().contains(CacheRequestReason.IMMEDIATE_PRELOAD)
                           || !sessionMap.get(wi.getClient()).getBandWidthPolicy().stopSending()) {
                       return wi;
                   }
+              }
+              for (WorkInfo removeMe : toRemove) {
+                  removeRequest(removeMe);
               }
               try {
                   if (requests.isEmpty()) {
