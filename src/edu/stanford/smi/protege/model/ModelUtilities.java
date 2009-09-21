@@ -1,18 +1,29 @@
 package edu.stanford.smi.protege.model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.Log;
 
 /**
- * Convenience utilities for dealing with the Knowledge Base.  Most of these methods take frame names (strings) rather 
- * than frames and convert them.  Note that there is a serious performance penalty for using these methods if they are 
- * used repeatedly to perform some operation.  For repeat operations you should look up the needed frames once and then
- * store them and use the stored values.  Nevertheless, for some rare or one-off operations these methods can be useful
- * and convenient.
- *  
- *
- * @author    Ray Fergerson <fergerson@smi.stanford.edu>
+ * Convenience utilities for dealing with the Knowledge Base. Most of these
+ * methods take frame names (strings) rather than frames and convert them. Note
+ * that there is a serious performance penalty for using these methods if they
+ * are used repeatedly to perform some operation. For repeat operations you
+ * should look up the needed frames once and then store them and use the stored
+ * values. Nevertheless, for some rare or one-off operations these methods can
+ * be useful and convenient.
+ * 
+ * 
+ * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ModelUtilities {
 
@@ -46,42 +57,42 @@ public class ModelUtilities {
         }
         return facet;
     }
-    
+
     public static Object getOwnSlotValue(Frame frame, String name) {
         Object value;
-       Slot slot = getSlot(frame, name);
-       if (slot == null) {
-           value = null;
-           Log.getLogger().warning("unknown slot: " + name);
-       } else {
-           value = frame.getOwnSlotValue(slot);
-       }
-       return value;
-   }
+        Slot slot = getSlot(frame, name);
+        if (slot == null) {
+            value = null;
+            Log.getLogger().warning("unknown slot: " + name);
+        } else {
+            value = frame.getOwnSlotValue(slot);
+        }
+        return value;
+    }
 
-   public static Object getDirectOwnSlotValue(Frame frame, String name) {
-       Object value;
-       Slot slot = getSlot(frame, name);
-       if (slot == null) {
-           value = null;
-           Log.getLogger().warning("unknown slot: " + name);
-       } else {
-           value = frame.getDirectOwnSlotValue(slot);
-       }
-       return value;
-   }
+    public static Object getDirectOwnSlotValue(Frame frame, String name) {
+        Object value;
+        Slot slot = getSlot(frame, name);
+        if (slot == null) {
+            value = null;
+            Log.getLogger().warning("unknown slot: " + name);
+        } else {
+            value = frame.getDirectOwnSlotValue(slot);
+        }
+        return value;
+    }
 
-   public static Collection getOwnSlotValues(Frame frame, String name) {
-       Collection values;
-       Slot slot = getSlot(frame, name);
-       if (slot == null) {
-           values = Collections.EMPTY_LIST;
-           Log.getLogger().warning("unknown slot: " + name);
-       } else {
-           values = frame.getOwnSlotValues(slot);
-       }
-       return values;
-   }
+    public static Collection getOwnSlotValues(Frame frame, String name) {
+        Collection values;
+        Slot slot = getSlot(frame, name);
+        if (slot == null) {
+            values = Collections.EMPTY_LIST;
+            Log.getLogger().warning("unknown slot: " + name);
+        } else {
+            values = frame.getOwnSlotValues(slot);
+        }
+        return values;
+    }
 
     public static List getDirectOwnSlotValues(Frame frame, String name) {
         List values;
@@ -95,39 +106,79 @@ public class ModelUtilities {
         return values;
     }
 
-    public List getPath(Cls cls, List list) {
+    public List<Cls> getPath(Cls cls, List<Cls> list) {
         list.add(0, cls);
-        Cls superclass = (Cls) CollectionUtilities.getFirstItem(cls.getDirectSuperclasses());
+        Cls superclass = CollectionUtilities.getFirstItem(cls.getDirectSuperclasses());
         if (superclass != null) {
             getPath(superclass, list);
         }
         return list;
     }
 
-    public static List getPathToRoot(Cls cls) {
-        return getPathToRoot(cls, new LinkedList());
+    public static List<Cls> getPathToRoot(Cls cls) {
+        return getPathToRoot(cls, new LinkedList<Cls>());
     }
 
-    private static List getPathToRoot(Cls cls, LinkedList list) {
+    private static List<Cls> getPathToRoot(Cls cls, LinkedList<Cls> list) {
         list.add(0, cls);
-        Iterator i = cls.getDirectSuperclasses().iterator();
+        Iterator<Cls> i = cls.getDirectSuperclasses().iterator();
         Cls rootCls = cls.getKnowledgeBase().getRootCls();
         while (i.hasNext()) {
-            Cls superclass = (Cls) i.next();
-            if (list.contains(superclass))
-            	continue;
+            Cls superclass = i.next();
+            if (list.contains(superclass)) {
+                continue;
+            }
             if (cls.isVisible()) {
-                List copy = new ArrayList(list);
+                List<Cls> copy = new ArrayList<Cls>(list);
                 getPathToRoot(superclass, list);
-                if(list.getFirst().equals(rootCls)) {
+                if (list.getFirst().equals(rootCls)) {
                     break;
-                } 
+                }
                 // Backtracking
                 list.clear();
                 list.addAll(copy);
             }
         }
         return list;
+    }
+
+    /**
+     * Computes all paths from a class to the root node by navigating on the
+     * direct superclasses slot.
+     * 
+     * @param cls
+     *            - the resource
+     * 
+     * @return a collection of the paths from the resource to the root
+     */
+    public static Collection<List<Cls>> getPathsToRoot(Cls cls) {
+        Collection<List<Cls>> results = new ArrayList<List<Cls>>();
+        if (cls.equals(cls.getKnowledgeBase().getRootCls())) {
+            results.add((List<Cls>) cls.getKnowledgeBase().getRootClses());
+            return results;
+        }
+        getPathsToRoot(cls, new LinkedList<Cls>(), results);
+        return results;
+    }
+
+    private static void getPathsToRoot(Cls resource, List<Cls> path, Collection<List<Cls>> pathLists) {
+        path.add(0, resource);
+
+        Cls rootCls = resource.getKnowledgeBase().getRootCls();
+        Collection<Cls> parents = resource.getDirectSuperclasses();
+
+        for (Cls parent : parents) {
+            if (parent.equals(rootCls)) {
+                List<Cls> copyPathList = new ArrayList<Cls>(path);
+                copyPathList.add(0, parent);
+                pathLists.add(copyPathList);
+            } else if (!path.contains(parent)) {
+                //if (ModelUtilities.isVisibleInGUI(parent)) { //TODO: do we want this?
+                List<Cls> copyPath = new ArrayList<Cls>(path);
+                getPathsToRoot(parent, copyPath, pathLists);
+                //}
+            }
+        }
     }
 
     private static Slot getSlot(Frame frame, String slotName) {
@@ -161,9 +212,9 @@ public class ModelUtilities {
         }
         return values;
     }
-    
+
     public static boolean isVisibleInGUI(Frame frame) {
-    	return frame.getProject().getDisplayHiddenFrames() || frame.isVisible();
+        return frame.getProject().getDisplayHiddenFrames() || frame.isVisible();
     }
 
     private static boolean isCopyable(Frame frame) {
@@ -176,19 +227,25 @@ public class ModelUtilities {
     }
 
     public static void setOwnSlotValue(Frame frame, String slotName, Object value) {
-    	Slot slot = getSlot(frame, slotName);
-    	if (slot != null)
-    		frame.setOwnSlotValue(slot, value);
-    	else 
-    		Log.getLogger().warning("Cannot set value of slot " + slotName + " at frame " + frame + " to " + value + " Inexistent slot.");
+        Slot slot = getSlot(frame, slotName);
+        if (slot != null) {
+            frame.setOwnSlotValue(slot, value);
+        } else {
+            Log.getLogger().warning(
+                    "Cannot set value of slot " + slotName + " at frame " + frame + " to " + value
+                            + " Inexistent slot.");
+        }
     }
-    
+
     public static void setOwnSlotValues(Frame frame, String slotName, Collection values) {
-    	Slot slot = getSlot(frame, slotName);
-    	if (slot != null)
-    		frame.setOwnSlotValues(slot, values);
-    	else 
-    		Log.getLogger().warning("Cannot set values of slot " + slotName + " at frame " + frame + " to " + values + " Inexistent slot.");        
+        Slot slot = getSlot(frame, slotName);
+        if (slot != null) {
+            frame.setOwnSlotValues(slot, values);
+        } else {
+            Log.getLogger().warning(
+                    "Cannot set values of slot " + slotName + " at frame " + frame + " to " + values
+                            + " Inexistent slot.");
+        }
     }
 
     public static void setTemplateFacetValue(Cls cls, Slot slot, String facetName, Object value) {
