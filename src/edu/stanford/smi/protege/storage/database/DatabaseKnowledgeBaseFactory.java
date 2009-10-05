@@ -6,7 +6,6 @@ import static edu.stanford.smi.protege.storage.database.DatabaseProperty.TABLENA
 import static edu.stanford.smi.protege.storage.database.DatabaseProperty.URL_PROPERTY;
 import static edu.stanford.smi.protege.storage.database.DatabaseProperty.USERNAME_PROPERTY;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.logging.Level;
 
@@ -90,6 +89,7 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
         return sources.getString(USERNAME_PROPERTY.getName());
     }
     
+    @SuppressWarnings("unchecked")
     public void includeKnowledgeBase(KnowledgeBase kb, 
                                      PropertyList sources, 
                                      Collection errors) {
@@ -215,15 +215,17 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
         setPassword(sources, password);
     }
 
+    @SuppressWarnings("unchecked")
     public void prepareToSaveInFormat(KnowledgeBase kb, KnowledgeBaseFactory factory, Collection errors) {
       return;
     }
 
-   public ValueCachingNarrowFrameStore createNarrowFrameStore(String name) {
+   public NarrowFrameStore createNarrowFrameStore(String name) {
       DatabaseFrameDb store = DatabaseFrameDbFactory.createDatabaseFrameDb(getDatabaseFrameDbClass());
       ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
-      vcnfs.setName(name);
-      return vcnfs;
+      IdleConnectionNarrowFrameStore icnfs = new IdleConnectionNarrowFrameStore(vcnfs);
+      icnfs.setName(name);
+      return icnfs;
     }
     
     protected void initializeKB(KnowledgeBase kb, 

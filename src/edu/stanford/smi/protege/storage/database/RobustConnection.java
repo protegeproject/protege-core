@@ -10,9 +10,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,11 +31,6 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class RobustConnection {
     private static final transient Logger log = Log.getLogger(RobustConnection.class);
-        
-    private static final int ALLOWANCE = 100;
-    private static final int ORACLE_MAX_VARCHAR_SIZE = 3166 - ALLOWANCE;
-    private static final int SQLSERVER_MAX_VARCHAR_SIZE = 900 - ALLOWANCE;
-    private static final int DEFAULT_MAX_VARCHAR_SIZE = 255;
     
     private static int idCounter = 0;
 
@@ -39,7 +38,12 @@ public class RobustConnection {
     private Map<String, PreparedStatement> _stringToPreparedStatementMap = new HashMap<String, PreparedStatement>();
     private Object connectionLock = new Object();
     private Connection _connection;
+    private boolean idleFlag  = true;
     private long lastAccessTime;
+    
+    private static List<RobustConnection> connections = new ArrayList<RobustConnection>();
+    private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
     private ConnectionReaperAlgorithm connectionReaper;
     private KnownDatabase dbType;
     private Statement _genericStatement;
@@ -51,8 +55,6 @@ public class RobustConnection {
     private char _escapeChar;
     private String _escapeClause;
     private boolean _supportsTransactions;
-    private int _maxVarcharSize;
-    private int _maxVarbinarySize;
     
     private RemoteSession session;
     private TransactionMonitor transactionMonitor;
@@ -104,17 +106,15 @@ public class RobustConnection {
         if (clas == null) {
             throw new RuntimeException("class not found: " + driver);
         }
-        // Log.trace("initializing connection", this, "RobustConnection");
         lastAccessTime = System.currentTimeMillis();
         setupConnection();
         initializeConnectionReaper();
         initializeDatabaseType();
-        initializeMaxVarcharSize();
         initializeSupportsBatch();
         initializeSupportsEscapeSyntax();
         initializeDriverTypeNames();
         initializeSupportsTransactions();
-        // dumpTypes();
+        connections.add(this);
     }
 
     private void initializeConnectionReaper() {
@@ -145,11 +145,21 @@ public class RobustConnection {
     }
     
     public void setAutoCommit(boolean b) throws SQLException {
-        getConnection().setAutoCommit(b);
+        try {
+            getConnection().setAutoCommit(b);
+        }
+        finally {
+            setIdle(true);
+        }
     }
 
     public void commit() throws SQLException {
-        getConnection().commit();
+        try {
+            getConnection().commit();
+        }
+        finally {
+            setIdle(true);
+        }
     }
 
     private void setupConnection() throws SQLException {
@@ -166,6 +176,7 @@ public class RobustConnection {
     public void dispose() throws SQLException {
         closeConnection();
         connectionReaper.stopThread();
+        connections.remove(this);
     }
     
     private void closeConnection() throws SQLException {
@@ -196,53 +207,52 @@ public class RobustConnection {
         }
     }
 
-    private void initializeMaxVarcharSize() throws SQLException {
-        _maxVarbinarySize = DEFAULT_MAX_VARCHAR_SIZE;
-
-        String property = SystemUtilities.getSystemProperty("database.varcharsize");
-        if (property != null && property.length() != 0) {
-            _maxVarcharSize = Integer.parseInt(property);
-        } else if (isOracle()) {
-            _maxVarcharSize = ORACLE_MAX_VARCHAR_SIZE;
-        } else if (isSqlServer()) {
-            _maxVarcharSize = SQLSERVER_MAX_VARCHAR_SIZE;
-        } else {
-            _maxVarcharSize = DEFAULT_MAX_VARCHAR_SIZE;
-        }
-
-    }
-
 
     private void initializeSupportsBatch() throws SQLException {
-        _supportsBatch = getConnection().getMetaData().supportsBatchUpdates();
-        if (!_supportsBatch) {
-            String s = "This JDBC driver does not support batch update.";
-            s += " For much better performance try using a newer driver";
-            Log.getLogger().warning(s);
+        try {
+            _supportsBatch = getConnection().getMetaData().supportsBatchUpdates();
+            if (!_supportsBatch) {
+                String s = "This JDBC driver does not support batch update.";
+                s += " For much better performance try using a newer driver";
+                Log.getLogger().warning(s);
+            }
+        }
+        finally {
+            setIdle(true);
         }
     }
 
     private void initializeSupportsTransactions() throws SQLException {
-        _supportsTransactions = getConnection().getMetaData().supportsTransactions();
-        if (!_supportsTransactions) {
-            Log.getLogger().warning("This database does not support transactions");
+        try {
+            _supportsTransactions = getConnection().getMetaData().supportsTransactions();
+            if (!_supportsTransactions) {
+                Log.getLogger().warning("This database does not support transactions");
+            }
+        }
+        finally {
+            setIdle(true);
         }
     }
 
     private void initializeSupportsEscapeSyntax() throws SQLException {
-        _escapeChar = 0;
-        _escapeClause = "";
-        boolean escapeSupported = getConnection().getMetaData().supportsLikeEscapeClause();
-        if (escapeSupported) {
-            if (isMySql()) {
-                _escapeChar = '\\';
-            } else {
-                _escapeChar = '|';
-                _escapeClause = "{ESCAPE '" + _escapeChar + "'}";
+        try {
+            _escapeChar = 0;
+            _escapeClause = "";
+            boolean escapeSupported = getConnection().getMetaData().supportsLikeEscapeClause();
+            if (escapeSupported) {
+                if (isMySql()) {
+                    _escapeChar = '\\';
+                } else {
+                    _escapeChar = '|';
+                    _escapeClause = "{ESCAPE '" + _escapeChar + "'}";
 
+                }
+            } else {
+                Log.getLogger().warning("This driver does not support SQL Escape processing.");
             }
-        } else {
-            Log.getLogger().warning("This driver does not support SQL Escape processing.");
+        }
+        finally {
+            setIdle(true);
         }
     }
 
@@ -261,7 +271,6 @@ public class RobustConnection {
     public PreparedStatement getPreparedStatement(String text) throws SQLException {
         synchronized (connectionLock) {
             PreparedStatement stmt = (PreparedStatement) _stringToPreparedStatementMap.get(text);
-            lastAccessTime = System.currentTimeMillis();
             if (stmt == null) {
                 stmt = getConnection().prepareStatement(text);
                 _stringToPreparedStatementMap.put(text, stmt);
@@ -313,142 +322,162 @@ public class RobustConnection {
     }
 
     public String getDatabaseProductName() throws SQLException {
-        return getConnection().getMetaData().getDatabaseProductName();
+        try {
+            return getConnection().getMetaData().getDatabaseProductName();
+        }
+        finally {
+            setIdle(true);
+        }
     }
     
     public int getDatabaseMajorVersion() throws SQLException {
-        return getConnection().getMetaData().getDatabaseMajorVersion();
+        try {
+            return getConnection().getMetaData().getDatabaseMajorVersion();
+        }
+        finally {
+            setIdle(true);
+        }
     }
-    
+
     public int getDatabaseMinorVersion() throws SQLException {
-        return getConnection().getMetaData().getDatabaseMinorVersion();
+        try {
+            return getConnection().getMetaData().getDatabaseMinorVersion();
+        }
+        finally {
+            setIdle(true);
+        }
     }
     
     private void initializeDriverTypeNames() throws SQLException {
-        String longvarbinaryTypeName = null;
-        String blobTypeName = null;
-        String clobTypeName = null;
+        try {
+            String longvarbinaryTypeName = null;
+            String blobTypeName = null;
+            String clobTypeName = null;
 
 
-        DatabaseMetaData md = getConnection().getMetaData();
-        if (log.isLoggable(Level.FINE)) {
-            log.fine(" ----------------------- type information for "  +  md.getDatabaseProductName());
-            log.fine("See http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Types.html for a list of the sql types");
-        }
-        ResultSet rs = md.getTypeInfo();
-        while (rs.next()) {
+            DatabaseMetaData md = getConnection().getMetaData();
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Info for type " + rs.getString("TYPE_NAME"));
-                log.fine("\tsql data type = " + rs.getInt("DATA_TYPE"));
-                short nullable = rs.getShort("NULLABLE");
-                log.fine("\tnullable = " + (nullable == DatabaseMetaData.typeNoNulls ? "false" : 
-                                            (nullable == DatabaseMetaData.typeNullable ? "true" : "maybe")));
-                log.fine("\tcase sensitive = " + rs.getBoolean("CASE_SENSITIVE"));
+                log.fine(" ----------------------- type information for "  +  md.getDatabaseProductName());
+                log.fine("See http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Types.html for a list of the sql types");
             }
-            String name = rs.getString("TYPE_NAME");
-            int type = rs.getInt("DATA_TYPE");
-            if (name.length() == 0) {
-                continue;
-            }
-            switch (type) {
-            case Types.LONGVARCHAR:
-                if (_driverLongvarcharTypeName == null) {
-                    _driverLongvarcharTypeName = name;
+            ResultSet rs = md.getTypeInfo();
+            while (rs.next()) {
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("Info for type " + rs.getString("TYPE_NAME"));
+                    log.fine("\tsql data type = " + rs.getInt("DATA_TYPE"));
+                    short nullable = rs.getShort("NULLABLE");
+                    log.fine("\tnullable = " + (nullable == DatabaseMetaData.typeNoNulls ? "false" : 
+                                                (nullable == DatabaseMetaData.typeNullable ? "true" : "maybe")));
+                    log.fine("\tcase sensitive = " + rs.getBoolean("CASE_SENSITIVE"));
                 }
-                break;
-            case Types.LONGVARBINARY:
+                String name = rs.getString("TYPE_NAME");
+                int type = rs.getInt("DATA_TYPE");
+                if (name.length() == 0) {
+                    continue;
+                }
+                switch (type) {
+                case Types.LONGVARCHAR:
+                    if (_driverLongvarcharTypeName == null) {
+                        _driverLongvarcharTypeName = name;
+                    }
+                    break;
+                case Types.LONGVARBINARY:
+                    if (longvarbinaryTypeName == null) {
+                        longvarbinaryTypeName = name;
+                    }
+                    break;
+                case Types.CLOB:
+                    if (clobTypeName == null) {
+                        clobTypeName = name;
+                    }
+                    break;
+                case Types.BLOB:
+                    if (blobTypeName == null) {
+                        blobTypeName = name;
+                    }
+                    break;
+                case Types.TINYINT:
+                    if (_driverTinyIntTypeName == null) {
+                        _driverTinyIntTypeName = name;
+                    }
+                    break;
+                case Types.BIT:
+                    if (_driverBitTypeName == null) {
+                        _driverBitTypeName = name;
+                    }
+                    break;
+                case Types.SMALLINT:
+                    if (_driverSmallIntTypeName == null) {
+                        _driverSmallIntTypeName = name;
+                    }
+                    break;
+                case Types.INTEGER:
+                    if (_driverIntegerTypeName == null) {
+                        _driverIntegerTypeName = name;
+                    }
+                    break;
+                case Types.VARCHAR:
+                    if (_driverVarcharTypeName == null) {
+                        _driverVarcharTypeName = name;
+                    }
+                    break;
+                case Types.VARBINARY:
+                    if (_driverVarBinaryTypeName == null) {
+                        _driverVarBinaryTypeName = name;
+                    }
+                    break;
+                case Types.CHAR:
+                    if (_driverCharTypeName == null) {
+                        _driverCharTypeName = name;
+                    }
+                    break;
+                default:
+                    // do nothing
+                    break;
+                }
+            }
+            if (log.isLoggable(Level.FINE)) {
+                log.fine(" ----------------------- end of type information for "  +  md.getDatabaseProductName());
+            }
+            rs.close();
+            if (_driverLongvarcharTypeName == null) {
                 if (longvarbinaryTypeName == null) {
-                    longvarbinaryTypeName = name;
-                }
-                break;
-            case Types.CLOB:
-                if (clobTypeName == null) {
-                    clobTypeName = name;
-                }
-                break;
-            case Types.BLOB:
-                if (blobTypeName == null) {
-                    blobTypeName = name;
-                }
-                break;
-            case Types.TINYINT:
-                if (_driverTinyIntTypeName == null) {
-                    _driverTinyIntTypeName = name;
-                }
-                break;
-            case Types.BIT:
-                if (_driverBitTypeName == null) {
-                    _driverBitTypeName = name;
-                }
-                break;
-            case Types.SMALLINT:
-                if (_driverSmallIntTypeName == null) {
-                    _driverSmallIntTypeName = name;
-                }
-                break;
-            case Types.INTEGER:
-                if (_driverIntegerTypeName == null) {
-                    _driverIntegerTypeName = name;
-                }
-                break;
-            case Types.VARCHAR:
-                if (_driverVarcharTypeName == null) {
-                    _driverVarcharTypeName = name;
-                }
-                break;
-            case Types.VARBINARY:
-                if (_driverVarBinaryTypeName == null) {
-                    _driverVarBinaryTypeName = name;
-                }
-                break;
-            case Types.CHAR:
-                if (_driverCharTypeName == null) {
-                    _driverCharTypeName = name;
-                }
-                break;
-            default:
-                // do nothing
-                break;
-            }
-        }
-        if (log.isLoggable(Level.FINE)) {
-            log.fine(" ----------------------- end of type information for "  +  md.getDatabaseProductName());
-        }
-        rs.close();
-        if (_driverLongvarcharTypeName == null) {
-            if (longvarbinaryTypeName == null) {
-                if (clobTypeName == null) {
-                    _driverLongvarcharTypeName = blobTypeName;
+                    if (clobTypeName == null) {
+                        _driverLongvarcharTypeName = blobTypeName;
+                    } else {
+                        _driverLongvarcharTypeName = clobTypeName;
+                    }
                 } else {
-                    _driverLongvarcharTypeName = clobTypeName;
+                    _driverLongvarcharTypeName = longvarbinaryTypeName;
                 }
-            } else {
-                _driverLongvarcharTypeName = longvarbinaryTypeName;
+                if (_driverLongvarcharTypeName == null && isPostgres()) {
+                    _driverLongvarcharTypeName = "TEXT";
+                }
             }
-            if (_driverLongvarcharTypeName == null && isPostgres()) {
-                _driverLongvarcharTypeName = "TEXT";
+            if (_driverIntegerTypeName == null) {
+                _driverIntegerTypeName = "INTEGER";
+            }
+            if (_driverSmallIntTypeName == null) {
+                _driverSmallIntTypeName = _driverIntegerTypeName;
+            }
+            if (_driverTinyIntTypeName == null) {
+                _driverTinyIntTypeName = _driverSmallIntTypeName;
+            }
+            if (_driverBitTypeName == null) {
+                _driverBitTypeName = _driverTinyIntTypeName;
+            }
+            if (_driverVarcharTypeName == null || isPostgres() || isSqlServer()) {
+                _driverVarcharTypeName = "VARCHAR";
+            }
+            if (_driverVarBinaryTypeName == null) {
+                _driverVarBinaryTypeName = "VARCHAR";
+            }
+            if (isOracle()) { 
+                _driverLongvarcharTypeName = "CLOB";  // can't search on the default LONG.
             }
         }
-        if (_driverIntegerTypeName == null) {
-            _driverIntegerTypeName = "INTEGER";
-        }
-        if (_driverSmallIntTypeName == null) {
-            _driverSmallIntTypeName = _driverIntegerTypeName;
-        }
-        if (_driverTinyIntTypeName == null) {
-            _driverTinyIntTypeName = _driverSmallIntTypeName;
-        }
-        if (_driverBitTypeName == null) {
-            _driverBitTypeName = _driverTinyIntTypeName;
-        }
-        if (_driverVarcharTypeName == null || isPostgres() || isSqlServer()) {
-            _driverVarcharTypeName = "VARCHAR";
-        }
-        if (_driverVarBinaryTypeName == null) {
-            _driverVarBinaryTypeName = "VARCHAR";
-        }
-        if (isOracle()) { 
-            _driverLongvarcharTypeName = "CLOB";  // can't search on the default LONG.
+        finally {
+            setIdle(true);
         }
     }
 
@@ -571,8 +600,12 @@ public class RobustConnection {
                 transactionMonitor.beginTransaction();
             }
             begun = true;
-        } catch (SQLException e) {
+        } 
+        catch (SQLException e) {
             Log.getLogger().warning(e.toString());
+        }
+        finally {
+            setIdle(true);
         }
         return begun;
     }
@@ -591,30 +624,14 @@ public class RobustConnection {
                 }
             }
             committed = true;
-        } catch (SQLException e) {
+        } 
+        catch (SQLException e) {
             Log.getLogger().warning(e.toString());
         }
-        return committed;
-    }
-
-    /**
-     * Refresh the activity monitor on a connection (useful to avoid connection
-     * reaping).
-     * 
-     * @return <code>false</code> if connection is not established, is closed,
-     *         or SQLException occurs <code>true</code> otherwise
-     */
-    public boolean refreshConnection() {
-        try {
-            if( (_connection == null) || _connection.isClosed() )
-                return false;
-        } catch( SQLException e ) {
-            Log.getLogger().warning( e.toString() );
-            return false;
+        finally {
+            setIdle(true);
         }
-
-        lastAccessTime = System.currentTimeMillis();
-        return true;
+        return committed;
     }
 
     public boolean rollbackTransaction() {
@@ -631,8 +648,12 @@ public class RobustConnection {
                 }
             }
             rolledBack = true;
-        } catch (SQLException e) {
+        } 
+        catch (SQLException e) {
             Log.getLogger().warning(e.toString());
+        }
+        finally {
+            setIdle(true);
         }
         return rolledBack;
     }
@@ -653,7 +674,12 @@ public class RobustConnection {
         if (transactionIsolationLevel != null) {
             return transactionIsolationLevel;
         }
-        return transactionIsolationLevel = getConnection().getTransactionIsolation();
+        try {
+            return transactionIsolationLevel = getConnection().getTransactionIsolation();
+        }
+        finally {
+            setIdle(true);
+        }
     }
 
 
@@ -666,18 +692,37 @@ public class RobustConnection {
             transactionIsolationLevel = null;
             throw sqle;
         }
+        finally {
+            setIdle(true);
+        }
     }
     
     private Connection getConnection() throws SQLException {
         synchronized (connectionLock) {
-            lastAccessTime = System.currentTimeMillis();
             if (_connection == null) {
                 setupConnection();
             }
+            setIdle(false);
             return _connection;
         }
     }
     
+    public void setIdle(boolean idleFlag) {
+        this.idleFlag = idleFlag;
+        if (idleFlag) {
+            lastAccessTime = System.currentTimeMillis();
+        }
+    }
+
+    public boolean getIdle() {
+        if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
+            return false;
+        }
+        else {
+            return idleFlag;
+        }
+    }
+
     /*
      * Thanks to Bob Dionne for this approach.
      * 
