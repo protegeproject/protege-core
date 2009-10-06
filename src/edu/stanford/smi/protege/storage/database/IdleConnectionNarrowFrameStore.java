@@ -54,12 +54,7 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
     }
 
     public void close() {
-        try {
-            delegate.close();
-        }
-        finally {
-            setIdle();
-        }
+        delegate.close();
     }
 
     public boolean commitTransaction() {
@@ -311,12 +306,7 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
     }
 
     public void setName(String name) {
-        try {
-            delegate.setName(name);
-        }
-        finally {
-            setIdle();
-        }
+        delegate.setName(name);
     }
 
     public void setValues(Frame frame, Slot slot, Facet facet,
