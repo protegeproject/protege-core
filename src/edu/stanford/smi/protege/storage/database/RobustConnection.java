@@ -4,28 +4,18 @@ package edu.stanford.smi.protege.storage.database;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+import edu.stanford.smi.protege.storage.database.pool.ConnectionPool;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
@@ -37,8 +27,6 @@ public class RobustConnection {
 
 
     public static final String OLD_PROPERTY_LONGVARCHAR_TYPE_NAME = "SimpleJdbcDatabaseManager.longvarcharname";
-    public static final String PROPERTY_MAX_DB_CONNECTIONS = "Database.max.connections";
-    public static final String PROPERTY_REFRESH_CONNECTIONS_TIME="Database.refresh.connections.interval";
     public static final String PROPERTY_LONGVARCHAR_TYPE_NAME = "Database.typename.longvarchar";
     public static final String PROPERTY_FRAME_NAME_TYPE_NAME = "Database.typename.frame.name.type";
     public static final String PROPERTY_SHORT_VALUE_TYPE_NAME = "Database.typename.short.value.type";
@@ -47,34 +35,16 @@ public class RobustConnection {
     public static final String PROPERTY_INTEGER_TYPE_NAME = "Database.typename.integer";
     public static final String PROPERTY_SMALL_INTEGER_TYPE_NAME = "Database.typename.small_integer";
     public static final String PROPERTY_BIT_TYPE_NAME = "Database.typename.bit";
-
-
-    private static long connectionRefreshInterval;
-    static {
-        int minutes = ApplicationProperties.getIntegerProperty(PROPERTY_REFRESH_CONNECTIONS_TIME, 60);
-        connectionRefreshInterval = minutes * 60 * 1000;
-    }
-    private static int maxOpenConnections = ApplicationProperties.getIntegerProperty(PROPERTY_MAX_DB_CONNECTIONS, 50);
     
     private static int idCounter = 0;
 
-    private static List<RobustConnection> connections = new ArrayList<RobustConnection>();
-    private static int openConnectionCount = 0;
-    private static ScheduledExecutorService executor;
-
 
     private int id;
-    private Map<String, PreparedStatement> _stringToPreparedStatementMap = new HashMap<String, PreparedStatement>();
     private Connection connection;
+    private ConnectionPool pool;
     private boolean idleFlag  = true;
-    private long lastAccessTime;
     
     private KnownDatabase dbType;
-    private Statement _genericStatement;
-    private String _driver;
-    private String _url;
-    private String _username;
-    private String _password;
     private boolean _supportsBatch;
     private char _escapeChar;
     private String _escapeClause;
@@ -83,6 +53,7 @@ public class RobustConnection {
     private RemoteSession session;
     private TransactionMonitor transactionMonitor;
     
+    private String driver;
     private String _driverLongvarcharTypeName;
     private String _driverTinyIntTypeName;
     private String _driverBitTypeName;
@@ -99,37 +70,17 @@ public class RobustConnection {
     public RobustConnection(String driver, String url, String username, String password,
                             TransactionMonitor transactionMonitor, RemoteSession session) throws SQLException {
         id = idCounter++;
-        _driver = driver;
-        _url = url;
-        _username = username;
-        _password = password;
+        this.driver = driver;
+        pool = ConnectionPool.getConnectionPool(driver, url, username, password);
         
         this.transactionMonitor = transactionMonitor;
         this.session = session;
 
-        Class clas = SystemUtilities.forName(driver);
-        if (clas == null) {
-            throw new RuntimeException("class not found: " + driver);
-        }
-        lastAccessTime = System.currentTimeMillis();
         initializeDatabaseType();
         initializeSupportsBatch();
         initializeSupportsEscapeSyntax();
         initializeDriverTypeNames();
         initializeSupportsTransactions();
-        synchronized (connections) {
-            connections.add(this);
-            if (executor == null) {
-                executor = Executors.newScheduledThreadPool(1);
-                executor.scheduleAtFixedRate(new Runnable() {
-
-                    public void run() {
-                        cleanup(null);
-                    }
-
-                }, 60, 60, TimeUnit.SECONDS);
-            }
-        }
     }
     
     private void initializeDatabaseType() throws SQLException {
@@ -176,11 +127,7 @@ public class RobustConnection {
         if (log.isLoggable(Level.FINE)) {
             log.fine("Opening connection for robust connection manager #" + id);
         }
-        connection = DriverManager.getConnection(_url, _username, _password);
-        synchronized (connections) {
-            openConnectionCount++;
-        }
-        cleanup(this);
+        connection = pool.getConnection();
         TransactionIsolationLevel defaultLevel = ServerProperties.getDefaultTransactionIsolationLevel();
         if (defaultLevel != null) {
             connection.setTransactionIsolation(defaultLevel.getJdbcLevel());
@@ -188,43 +135,11 @@ public class RobustConnection {
     }
 
     public void dispose() throws SQLException {
-        closeConnection();
-        synchronized (connections) {
-            connections.remove(this);
-            if (connections.isEmpty()) {
-                executor.shutdownNow();
-                executor = null;
-            }
-        }
+        pool.dereference();
     }
     
-    private void closeConnection() throws SQLException {
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("Closing connection for robust connection manager #" + id);
-        }
-        closeStatements();
-        synchronized (this) {
-            if (connection != null) {
-                connection.close();
-                connection = null;
-                synchronized(connections) {
-                    openConnectionCount--;
-                }
-            }
-        }
-    }
-
-    public synchronized void closeStatements() throws SQLException {
-        Iterator<PreparedStatement> i = _stringToPreparedStatementMap.values().iterator();
-        while (i.hasNext()) {
-            PreparedStatement stmt = i.next();
-            stmt.close();
-        }
-        _stringToPreparedStatementMap.clear();
-        if (_genericStatement != null) {
-            _genericStatement.close();
-            _genericStatement = null;
-        }
+    public void closeStatements() throws SQLException {
+        pool.closeStatements(getConnection());
     }
 
 
@@ -288,22 +203,12 @@ public class RobustConnection {
         return _supportsBatch;
     }
 
-    public synchronized PreparedStatement getPreparedStatement(String text) throws SQLException {
-        PreparedStatement stmt = (PreparedStatement) _stringToPreparedStatementMap.get(text);
-        if (stmt == null) {
-            stmt = getConnection().prepareStatement(text);
-            _stringToPreparedStatementMap.put(text, stmt);
-        }
-        setIdle(false);
-        return stmt;
+    public PreparedStatement getPreparedStatement(String text) throws SQLException {
+        return pool.getPreparedStatement(getConnection(), text);
     }
 
-    public synchronized Statement getStatement() throws SQLException {
-        if (_genericStatement == null) {
-            _genericStatement = getConnection().createStatement();
-        }
-        setIdle(false);
-        return _genericStatement;
+    public Statement getStatement() throws SQLException {
+        return pool.getStatement(getConnection());
     }
 
     public synchronized void checkConnection() throws SQLException {
@@ -311,7 +216,8 @@ public class RobustConnection {
             setupConnection();
         } else if (connection.isClosed()) {
             Log.getLogger().warning("Found closed connection, reinitializing...");
-            closeConnection();
+            pool.reportProblem(connection);
+            connection = null;
         }
     }
     
@@ -500,7 +406,7 @@ public class RobustConnection {
     }
 
     private String getName(String typeName, String driverName) {
-        String userTypeName = ApplicationProperties.getApplicationOrSystemProperty(typeName + "." + _driver);
+        String userTypeName = ApplicationProperties.getApplicationOrSystemProperty(typeName + "." + driver);
         return (userTypeName == null || userTypeName.length() == 0) ? driverName : userTypeName;
     }
 
@@ -560,7 +466,7 @@ public class RobustConnection {
     }
     
     public int getMaxVarcharSize() {
-        String propValue = ApplicationProperties.getApplicationOrSystemProperty(PROPERTY_VARCHAR_TYPE_SIZE + "." + _driver);
+        String propValue = ApplicationProperties.getApplicationOrSystemProperty(PROPERTY_VARCHAR_TYPE_SIZE + "." + driver);
         if (propValue  != null) {
             try {
                 return Integer.parseInt(propValue);
@@ -583,7 +489,7 @@ public class RobustConnection {
             defaultValue = dbType.getLongStringType();
         }
         else  {
-            defaultValue =  SystemUtilities.getSystemProperty(OLD_PROPERTY_LONGVARCHAR_TYPE_NAME + "." + _driver);
+            defaultValue =  SystemUtilities.getSystemProperty(OLD_PROPERTY_LONGVARCHAR_TYPE_NAME + "." + driver);
             if (defaultValue == null || defaultValue.length() == 0) {
                 defaultValue = _driverLongvarcharTypeName;
             }
@@ -611,7 +517,7 @@ public class RobustConnection {
             if (_supportsTransactions) {
                 if (transactionMonitor.getNesting() == 0) {
                     if (isMsAccess()) {
-                        closeStatements();
+                        pool.closeStatements(getConnection());
                     }
                     getConnection().setAutoCommit(false);
                 }
@@ -725,8 +631,9 @@ public class RobustConnection {
     
     public void setIdle(boolean idleFlag) {
         this.idleFlag = idleFlag;
-        if (idleFlag) {
-            lastAccessTime = System.currentTimeMillis();
+        if (getIdle() && connection != null) {
+            pool.ungetConnection(connection);
+            connection = null;
         }
     }
 
@@ -736,59 +643,6 @@ public class RobustConnection {
         }
         else {
             return idleFlag;
-        }
-    }
-
-    /*
-     * Thanks to Bob Dionne for this approach.
-     * 
-     */
-    private static void cleanup(RobustConnection skip) {
-        long now = System.currentTimeMillis();
-        List<RobustConnection> connectionList;
-        synchronized (connections) {
-            connectionList = new ArrayList<RobustConnection>(connections);
-        }
-
-        for (RobustConnection connection : connectionList) {
-            if (connection.getIdle() && 
-                now - connection.lastAccessTime > connectionRefreshInterval) {
-                try {
-                    connection.closeConnection();
-                }
-                catch (Throwable t) {
-                    if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, "Exception caught closing connection", t);
-                    }
-                }   
-                
-            }
-        }
-        Collections.sort(connectionList, new Comparator<RobustConnection>() {
-            public int compare(RobustConnection r1, RobustConnection r2) {
-                return (int) (r1.lastAccessTime - r2.lastAccessTime);
-            }
-        });
-        synchronized (connections) {
-            if (openConnectionCount <= maxOpenConnections) {
-                return;
-            }
-        }
-
-        for (RobustConnection connection : connectionList) {
-            synchronized(connections) {
-                if (openConnectionCount <= maxOpenConnections) {
-                    break;
-                }   
-            }
-            if (connection.getIdle() && connection != skip) {
-                try {
-                    connection.closeConnection();
-                }
-                catch (SQLException sql) {
-                    log.log(Level.WARNING, "could not close connection during cleanup", sql);
-                }
-            }
         }
     }
 
