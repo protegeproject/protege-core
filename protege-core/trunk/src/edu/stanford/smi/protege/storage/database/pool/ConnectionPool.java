@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,7 +50,13 @@ public class ConnectionPool {
     private Set<Connection> idleConnections = new HashSet<Connection>();
     private Map<Connection, ConnectionInfo> connectionInfoMap = new HashMap<Connection, ConnectionInfo>();
     
-    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+        public Thread newThread(Runnable r) {
+            Thread th = new Thread(r, "Protege Connection Reaper");
+            th.setDaemon(true);
+            return th;
+        }
+    });
     
     public static ConnectionPool getConnectionPool(String driver, String url, String username, String password) {
         ConnectionPool pool;
