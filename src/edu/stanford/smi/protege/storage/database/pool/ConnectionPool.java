@@ -85,6 +85,7 @@ public class ConnectionPool {
         executor.scheduleAtFixedRate(new Runnable() {
             public void run() {
                 cleanup();
+                setReaperThreadName();
             }
         }, 60, 60, TimeUnit.SECONDS);
     }
@@ -167,7 +168,7 @@ public class ConnectionPool {
     public void closeStatements(Connection connection) throws SQLException {
         ConnectionInfo ci;
         synchronized (this) {
-            ci = connectionInfoMap.remove(connection);
+            ci = connectionInfoMap.get(connection);
             if (ci == null) {
                 throw new IllegalStateException("Connection not managed by this pool");
             }
@@ -240,5 +241,15 @@ public class ConnectionPool {
                 }
             }
         }
+    }
+    
+    private void setReaperThreadName() {
+        int connectionCount;
+        int idleCount;
+        synchronized (this) {
+            connectionCount  = connectionInfoMap.size();
+            idleCount = idleConnections.size();
+        }
+        Thread.currentThread().setName("Connection Reaper [" + connectionCount + ", " + idleCount + "]");
     }
 }
