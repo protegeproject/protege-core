@@ -1,1 +1,2 @@
-javacc.home=c:/javacc-3.2
+skip.javacc.step=true
+
