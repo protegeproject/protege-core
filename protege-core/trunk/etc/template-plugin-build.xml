@@ -143,7 +143,8 @@
                 <pathelement path="${protege.home}/protege.jar"/>
                 <pathelement path="${protege.home}/looks-2.1.3.jar"/>
                 <pathelement path="${protege.home}/unicode_panel.jar"/>
-                <fileset dir="./dbdrivers"/>
+                <pathelement path="${protege.home}/driver.jar"/>
+                <pathelement path="${protege.home}/driver1.jar"/>
             </classpath>
         </java>
     </target>
@@ -155,7 +156,8 @@
                 <pathelement path="${protege.home}/protege.jar"/>
                 <pathelement path="${protege.home}/looks-2.1.3.jar"/>
                 <pathelement path="${protege.home}/unicode_panel.jar"/>
-                <fileset dir="./dbdrivers"/>
+                <pathelement path="${protege.home}/driver.jar"/>
+                <pathelement path="${protege.home}/driver1.jar"/>
             </classpath>
         </java>
     </target>
@@ -163,6 +165,18 @@
 
    <target name = "clean">
      <delete dir = "${build}"/>
+   </target>
+
+   <target name = "usage">
+      <echo message="remember to set the PROTEGE_HOME environment variable"/>
+      <echo message="jar     - make the ${pluginName} jar file"/>
+      <echo message="dist    - build the plugin and make a zip file for distribution"/>
+      <echo message="update  - build the plugin and refresh the plugin jar file"/>
+      <echo message="          in the Protege distribution"/>
+      <echo message="install - build the plugin and install it to Protege"/>
+      <echo message="debug   - install the plugin and start Protege in debug mode"/>
+      <echo message="run     - install the plugin and start Protege"/>
+      <echo message="clean   - remove all built files"/>
    </target>
 
 </project>
