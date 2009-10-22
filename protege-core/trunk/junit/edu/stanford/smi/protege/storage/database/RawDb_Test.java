@@ -6,8 +6,11 @@ import java.sql.Statement;
 import java.util.Random;
 import java.util.logging.Level;
 
+import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.test.APITestCase;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
+import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class RawDb_Test extends APITestCase {
     private Random r = new Random();
@@ -17,7 +20,7 @@ public class RawDb_Test extends APITestCase {
                                     getDBProperty(JUNIT_DB_URL_PROPERTY),
                                     getDBProperty(JUNIT_DB_USER_PROPERTY),
                                     getDBProperty(JUNIT_DB_PASSWORD_PROPERTY),
-                                    null, null);
+                                    new SillyTransactionStatusMonitor(), null);
     }
     
     public void testCaseSensitivity() {
@@ -54,7 +57,6 @@ public class RawDb_Test extends APITestCase {
                 if (!found) {
                     fail("database query failed!");
                 }
-                stmt.close();
             }
         }
         catch (Throwable t) {
@@ -134,5 +136,22 @@ public class RawDb_Test extends APITestCase {
             a[i] = 'a';
         }
         return new String(a);
+    }
+    
+    private class SillyTransactionStatusMonitor extends TransactionMonitor {
+        private TransactionIsolationLevel level = TransactionIsolationLevel.REPEATABLE_READ;
+
+        @Override
+        public TransactionIsolationLevel getTransationIsolationLevel()
+                                                                      throws TransactionException {
+            return level;
+        }
+
+        @Override
+        public void setTransactionIsolationLevel(TransactionIsolationLevel level)
+                                                                                 throws TransactionException {
+            this.level = level;
+        }
+        
     }
 }
