@@ -59,6 +59,7 @@ public class ConnectionInfo {
         preparedStatementMap.clear();
         if (genericStatement != null) {
             genericStatement.close();
+            genericStatement = null;
         }
     }
     
