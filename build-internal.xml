@@ -68,27 +68,9 @@
 	</target>
 
 	<!-- =================================================================== -->
-	<!-- JAVACC -->
-	<!-- =================================================================== -->
-	<target name = "javacc" depends = "prepare-src">
-
-		<!-- Automatically generate the following files by running JavaCC on /etc/Parser.jj:  -->
-		<!-- edu/stanford/smi/protege/storage/clips/ParseException.java  -->
-		<!-- edu/stanford/smi/protege/storage/clips/Parser.java  -->
-		<!-- edu/stanford/smi/protege/storage/clips/ParserConstants.java  -->
-		<!-- edu/stanford/smi/protege/storage/clips/ParserTokenManager.java  -->
-		<!-- edu/stanford/smi/protege/storage/clips/SimpleCharStream.java  -->
-		<!-- edu/stanford/smi/protege/storage/clips/Token.java  -->
-		<!-- edu/stanford/smi/protege/storage/clips/TokenMgrError.java  -->
-
-		<javacc javacchome = "c:/javacc-3.2/bin/lib" target = "${build.scripts}/Parser.jj" outputdirectory = "${build.src}/edu/stanford/smi/protege/storage/clips"/>
-
-	</target>
-
-	<!-- =================================================================== -->
 	<!-- COMPILE -->
 	<!-- =================================================================== -->
-	<target name = "compile" depends = "javacc">
+	<target name = "compile" depends = "prepare-src">
 		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "true" debuglevel = "lines" optimize = "${optimize}" includeAntRuntime = "no" source = "${source}">
 			<classpath>
 				<fileset dir = "${lib.dir}">
