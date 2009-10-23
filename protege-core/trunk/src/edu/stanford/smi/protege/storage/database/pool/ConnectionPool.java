@@ -5,12 +5,14 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -91,18 +93,14 @@ public class ConnectionPool {
     }
     
     public Connection getConnection() throws SQLException {
-        Connection connection;
-        boolean pickIdle;
+        Connection connection = null;
         synchronized (this) {
-            pickIdle = !idleConnections.isEmpty();
-        }
-        if (pickIdle) {
-            synchronized (this) {
+            if (!idleConnections.isEmpty()) {
                 connection = idleConnections.iterator().next();
                 idleConnections.remove(connection);
             }
         }
-        else {
+        if (connection == null) {
             connection = DriverManager.getConnection(url, username, password);
             ConnectionInfo ci = new ConnectionInfo(connection);
             synchronized (this) {
@@ -191,34 +189,35 @@ public class ConnectionPool {
 
     private  void cleanup() {
         long now = System.currentTimeMillis();
-        TreeSet<ConnectionInfo> connections = new TreeSet<ConnectionInfo>(new Comparator<ConnectionInfo>() {
-            public int compare(ConnectionInfo o1, ConnectionInfo o2) {
-                return (int) (o1.getLastAccessTime() - o2.getLastAccessTime());
-            }
-        });
+        List<ConnectionInfo> connections = new ArrayList<ConnectionInfo>();
 
         synchronized (this) {
             for (Connection connection : idleConnections) {
                 connections.add(connectionInfoMap.get(connection));
             }
+            Collections.sort(connections, new Comparator<ConnectionInfo>() {
+                public int compare(ConnectionInfo o1, ConnectionInfo o2) {
+                    return (int) (o1.getLastAccessTime() - o2.getLastAccessTime());
+                }
+            });
         }
         for (ConnectionInfo ci : connections) {
-            if (now - ci.getLastAccessTime() > connectionRefreshInterval) {
-                synchronized (this) {
+            synchronized (this) {
+                if (now - ci.getLastAccessTime() <= connectionRefreshInterval) {
+                    break;
+                }
+                else {
                     idleConnections.remove(ci.getConnection());
                     connectionInfoMap.remove(ci.getConnection());
                 }
-                try {
-                    ci.close();
-                }
-                catch (Throwable t) {
-                    if (log.isLoggable(Level.WARNING)) {
-                        log.log(Level.WARNING, "Exception caught closing connection during cleanup", t);
-                    }
-                }     
             }
-            else {
-                break;
+            try {
+                ci.close();
+            }
+            catch (Throwable t) {
+                if (log.isLoggable(Level.WARNING)) {
+                    log.log(Level.WARNING, "Exception caught closing connection during cleanup", t);
+                }
             }
         }
 
