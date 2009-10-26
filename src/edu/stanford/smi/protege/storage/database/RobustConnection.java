@@ -638,7 +638,8 @@ public class RobustConnection {
     }
 
     public boolean getIdle() {
-        if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
+        if (_supportsTransactions && transactionMonitor != null &&
+        								transactionMonitor.getNesting() > 0) {
             return false;
         }
         else {
