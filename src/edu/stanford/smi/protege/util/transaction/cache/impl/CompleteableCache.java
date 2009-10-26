@@ -109,7 +109,7 @@ public class CompleteableCache<S, V, R> implements Cache<S, V, R> {
             logger.finest("Cache "  + getCacheId() + " caching aborted");
         }
         status = CompletionStatus.NORMAL;
-        invalidReads = null;
+        invalidReads.clear();
         delegate.abortCompleteCache();
     }
     
