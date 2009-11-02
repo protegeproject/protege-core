@@ -1682,8 +1682,11 @@ public class RemoteClientFrameStore implements FrameStore {
 
   public Object executeProtegeJob(ProtegeJob job) throws ProtegeException {
     try {
-      RemoteResponse<Object> response = getRemoteDelegate().executeProtegeJob(job, session);
-      processValueUpdate(response);
+      RemoteResponse<Object> response;
+      synchronized (kb) {
+          response= getRemoteDelegate().executeProtegeJob(job, session);
+          processValueUpdate(response);
+      }
       Object result = response.getResponse();
       LocalizeUtils.localize(result, kb);
       return result;
