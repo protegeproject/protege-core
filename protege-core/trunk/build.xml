@@ -110,14 +110,14 @@
     <!-- JAVACC -->
 
     <target name = "check-clips">
-    	<condition property="clips-up-to-date">
-    		<or>
-       			<uptodate
-            	    srcfile="etc/Parser.jj" 
-            	    targetfile="${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
-    		    <isSet property="skip.javacc.step"/>
-    	    </or>
-    	</condition>
+        <condition property="clips-up-to-date">
+            <or>
+                <isSet property="skip.javacc.step"/>
+                <uptodate
+                     srcfile="etc/Parser.jj" 
+                     targetfile="${src}/edu/stanford/smi/protege/storage/clips/ParseException.java"/>
+            </or>
+        </condition>
     </target>
 
 
@@ -143,13 +143,13 @@
 
     <!-- =================================================================== -->
     <target name = "javacc" 
-    	    depends = "prepare, maybe-clean-clips"
-    	    unless = "clips-up-to-date">
+            depends = "prepare, maybe-clean-clips"
+            unless = "clips-up-to-date">
         <!-- Run JavaCC on Parser.jj to regenerate files that were deleted in above step. -->
         <java classname="javacc" classpath="./tools/javacc-5.0.jar">
-        	<arg value="-OUTPUT_DIRECTORY=${src}/edu/stanford/smi/protege/storage/clips"/>
-        	<arg value="${scripts}/Parser.jj"/>
-	    </java> 
+                <arg value="-OUTPUT_DIRECTORY=${src}/edu/stanford/smi/protege/storage/clips"/>
+                <arg value="${scripts}/Parser.jj"/>
+            </java> 
     </target>  
     <!-- =================================================================== -->
     
