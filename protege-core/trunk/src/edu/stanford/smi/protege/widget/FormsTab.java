@@ -72,7 +72,12 @@ public class FormsTab extends AbstractTabWidget {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static boolean isSuitable(Project project, Collection errors) {
-        return !project.isMultiUserClient();
+        if(project.isMultiUserClient()) {
+            errors.add("Forms don't work in multi-user client mode");
+            return false;
+        }
+        return true;
     }
 }
