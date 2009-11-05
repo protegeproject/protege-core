@@ -9,15 +9,15 @@
     <property file = "./src/edu/stanford/smi/protege/resource/files/build.properties"/>  
     <property file = "local.properties"/>  
     <!-- Set global properties for this build. -->
-    <property name = "extended.name" value = "${name} ${build.version} ${build.status}"/>
-    <property name = "src" value = "./src"/>  
-    <property name = "junit" value = "./junit"/>
-    <property name = "docs" value = "./docs"/> 
-    <property name = "javadocs" value = "${docs}/apidocs"/>
-    <property name = "lib" value = "./lib"/>
-    <property name = "scripts" value = "./etc"/>
-    <property name = "logs" value = "./logs"/>
-    <property name = "plugins" value = "./plugins"/>
+    <property name = "extended.name"  value    = "${name} ${build.version} ${build.status}"/>
+    <property name = "src"            location = "./src"/>  
+    <property name = "junit"          location = "./junit"/>
+    <property name = "docs"           location = "./docs"/> 
+    <property name = "javadocs"       location = "${docs}/apidocs"/>
+    <property name = "lib"            location = "./lib"/>
+    <property name = "logs"           location = "./logs"/>
+    <property name = "plugins"        location = "./plugins"/>
+    <property name = "scripts"        location = "./etc"/>
 
     <property name = "build"          location ="./build"/>
     <property name = "classes"        location = "${build}/classes"/>  
