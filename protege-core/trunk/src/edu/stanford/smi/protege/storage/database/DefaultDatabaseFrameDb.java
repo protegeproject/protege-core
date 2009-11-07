@@ -192,12 +192,23 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         if (log.isLoggable(Level.FINE)) {
         	log.fine("\t..._I2 created (" + timer.lap()/1000 + "s).");
         }
+        
+        // used for searching for values
+        indexString = "CREATE INDEX " + _table + "_I3 ON " + _table;
+        indexString += " (" + LONG_VALUE_COLUMN + ")";
+        executeUpdate(indexString);
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("\t..._I3 created (" + timer.lap()/1000 + "s).");
+        }
 
         // used for getting slots with any value and for counting frames
-        indexString = "CREATE INDEX " + _table + "_I3 ON " + _table;
+        indexString = "CREATE INDEX " + _table + "_I4 ON " + _table;
         indexString += " (" + SLOT_COLUMN + ", " + FRAME_TYPE_COLUMN + ")";
         executeUpdate(indexString);;
-
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("\t..._I4 created (" + timer.lap()/1000 + "s).");
+        }
+        
         if (needsIndexOnLowerValue()) {
             log.info("\t..._I3 created (" + timer.lap()/1000 + "s).");
             createIndexOnLowerValue();
