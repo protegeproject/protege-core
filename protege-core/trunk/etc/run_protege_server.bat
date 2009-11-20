@@ -8,7 +8,7 @@ set CODEBASE_URL=file:/c:/program%%20files/protege_3.4.2/protege.jar
 
 start /D%JDKBIN% /min rmiregistry.exe
 
-set CLASSPATH=protege.jar;looks-2.1.3.jar;unicode_panel.jar;driver.jar;driver0.jar;driver1.jar
+set CLASSPATH=protege.jar;looks.jar;unicode_panel.jar;driver.jar;driver0.jar;driver1.jar
 set MAINCLASS=edu.stanford.smi.protege.server.Server
 set METAPROJECT=examples\server\metaproject.pprj
 
