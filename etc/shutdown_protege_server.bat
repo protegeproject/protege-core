@@ -6,7 +6,7 @@ rem E.g. shutdown_protege_server.bat localhost:5200
 @echo off
 set JDKBIN=jre\bin
 
-set CLASSPATH=protege.jar;looks-2.1.3.jar;unicode_panel.jar;driver.jar;driver0.jar;driver1.jar
+set CLASSPATH=protege.jar;looks.jar;unicode_panel.jar;driver.jar;driver0.jar;driver1.jar
 set MAINCLASS=edu.stanford.smi.protege.server.Shutdown
 
 set MAX_MEMORY=-Xmx200M 
