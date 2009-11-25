@@ -260,7 +260,9 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
 
     @Override
 	public void setBorder(Border border) {
-        _child.setBorder(border);
+        if (_child != null) {
+            _child.setBorder(border);
+        }
     }
 
     public HeaderComponent getHeaderComponent() {
