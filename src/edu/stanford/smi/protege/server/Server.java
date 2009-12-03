@@ -61,7 +61,6 @@ import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.ServerInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
-import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 import edu.stanford.smi.protege.server.socket.RmiSocketFactory;
 import edu.stanford.smi.protege.server.socket.SSLFactory;
@@ -101,8 +100,14 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private static final String OPTION_CHAR = "-";
     private boolean preload = true;
     private ProjectPluginManager _projectPluginManager = new ProjectPluginManager();
+
     //listener used for setting the status of the newly create projects to closed for maintenance.
     private FrameListener metaprojectFrameListener;
+    private FrameListener metaprojectProjectClsListener;
+    //cache for convenience and maybe performance
+    private Cls projectCls;
+    private Slot nameSlot;
+
 
     /**
      * Thread executor for project shutdown
@@ -143,83 +148,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         Log.getLogger().info("Protege server ready to accept connections...");
     }
 
-    private FrameListener getMetaProjectFrameListener() {
-        if (metaprojectFrameListener == null) {
-            metaprojectFrameListener = new FrameAdapter() {
-                @Override
-                public void ownSlotValueChanged(FrameEvent event) {
-                    //System.out.println(event);
-                    Instance frame = (Instance)event.getFrame();
-                    KnowledgeBase kb = frame.getKnowledgeBase();
-                    Slot nameSlot = kb.getSlot(SlotEnum.name.name());
-                    Cls projectCls = kb.getCls(ClsEnum.Project.name());
-                    if (frame.hasType(projectCls) && event.getSlot().equals(nameSlot)) {
-                        List oldValues = event.getOldValues();
-                        String oldName = new String();
-                        if (oldValues != null && oldValues.size() > 0) {
-                            oldName = CollectionUtilities.getFirstItem(oldValues).toString();
-                        }
-
-                        String name = (String) frame.getOwnSlotValue(nameSlot);
-
-                        if (name != null && name.length() > 0) {
-                            if (oldName.length() > 0) {  //new project
-                                _nameToProjectStatusMap.put(name, ProjectStatus.CLOSED_FOR_MAINTENANCE);
-                            } else { //rename of a project
-                                /*
-                                 * This is tricky: we'll keep both the old and the new names in the maps,
-                                 * see if it works
-                                 */
-                                _nameToOpenProjectMap.put(name, _nameToOpenProjectMap.get(oldName));
-                                _nameToProjectStatusMap.put(name, _nameToProjectStatusMap.get(oldName));
-
-                                if (getProjectStatus(oldName) == ProjectStatus.CLOSED_FOR_MAINTENANCE) {
-                                    _nameToOpenProjectMap.remove(oldName);
-                                    _nameToProjectStatusMap.remove(oldName);
-                                }
-                            }
-                        }
-                    }
-                }
-                @Override
-                public void deleted(FrameEvent event) {
-                    //TODO: doesn't work
-                    Instance frame = (Instance)event.getFrame();
-                    KnowledgeBase kb = frame.getKnowledgeBase();
-                    Cls projectCls = kb.getCls(ClsEnum.Project.name());
-                    if (frame.hasType(projectCls)) {
-                        Slot nameSlot = kb.getSlot(SlotEnum.name.name());
-                        String name = (String) frame.getOwnSlotValue(nameSlot);
-                        if (getProjectStatus(name) == ProjectStatus.CLOSED_FOR_MAINTENANCE) {
-                            _nameToOpenProjectMap.remove(name);
-                            _nameToProjectStatusMap.remove(name);
-                        }
-                    }
-                }
-            };
-        }
-        return metaprojectFrameListener;
-    }
-
-    private void addMetaProjectListeners() {
-        if (metaproject != null) {
-            KnowledgeBase kb = ((MetaProjectImpl)metaproject).getKnowledgeBase();
-            ServerFrameStore.requestEventDispatch(kb);
-            metaprojectFrameListener = getMetaProjectFrameListener();
-            kb.addFrameListener(metaprojectFrameListener);
-        }
-    }
-
-    private void removeMetaProjectListeners() {
-        if (metaprojectFrameListener != null) {
-            try {
-                metaprojectFrameListener = getMetaProjectFrameListener();
-                ((MetaProjectImpl)metaproject).getKnowledgeBase().removeFrameListener(metaprojectFrameListener);
-            } catch (Exception e) {
-                log.log(Level.WARNING, "Could not remove metaproject frame listener", e);
-            }
-        }
-    }
 
     private static void afterLoad() {
         for (Entry<String, Project> entry : serverInstance._nameToOpenProjectMap.entrySet()) {
@@ -731,7 +659,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      */
     @Deprecated
     public synchronized Cls getProjectCls()  {
-        return ((MetaProjectImpl) metaproject).getCls(MetaProjectImpl.ClsEnum.Project);
+        if (projectCls == null) {
+            projectCls = ((MetaProjectImpl) metaproject).getCls(MetaProjectImpl.ClsEnum.Project);
+        }
+        return projectCls;
     }
 
     /**
@@ -739,7 +670,100 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      */
     @Deprecated
     public synchronized Slot getNameSlot() {
-        return ((MetaProjectImpl) metaproject).getSlot(SlotEnum.name);
+        if (nameSlot == null) {
+            nameSlot = ((MetaProjectImpl) metaproject).getSlot(SlotEnum.name);
+        }
+        return nameSlot;
+    }
+
+
+    private FrameListener getMetaProjectFrameListener() {
+        if (metaprojectFrameListener == null) {
+            metaprojectFrameListener = new FrameAdapter() {
+                @Override
+                public void ownSlotValueChanged(FrameEvent event) {
+                    Instance frame = (Instance)event.getFrame();
+                    if (frame.hasType(getProjectCls()) && event.getSlot().equals(nameSlot)) {
+                        List oldValues = event.getOldValues();
+                        String oldName = new String();
+                        if (oldValues != null && oldValues.size() > 0) {
+                            oldName = CollectionUtilities.getFirstItem(oldValues).toString();
+                        }
+
+                        String name = (String) frame.getOwnSlotValue(nameSlot);
+                        if (name != null && name.length() > 0) {
+                            if (oldName.length() == 0) {  //new project
+                                _nameToProjectStatusMap.put(name, ProjectStatus.CLOSED_FOR_MAINTENANCE);
+                                log.info("Project instance " + name + " was added to the metaproject.");
+                            } else { //rename of a project
+                                _nameToOpenProjectMap.put(name, _nameToOpenProjectMap.get(oldName));
+                                _nameToProjectStatusMap.put(name, _nameToProjectStatusMap.get(oldName));
+
+                                _nameToOpenProjectMap.remove(oldName);
+                                _nameToProjectStatusMap.remove(oldName);
+                                log.info("Project instance name was changed. Old name: " + oldName + "; New name: " + name);
+                            }
+                        }
+                    }
+                }
+            };
+        }
+        return metaprojectFrameListener;
+    }
+
+    private FrameListener getMetaProjectProjectClsListener() {
+        if (metaprojectProjectClsListener == null) {
+
+            metaprojectProjectClsListener = new FrameAdapter() {
+                @Override
+                public void ownSlotValueChanged(FrameEvent event) {
+                    //need to find out which project instance was deleted..
+                    Set<String> keySet = new HashSet<String>(_nameToProjectStatusMap.keySet());
+                    for (String name : keySet) {
+                        ProjectInstance prj = metaproject.getProject(name);
+                        if (prj == null) {
+                            _nameToOpenProjectMap.remove(name);
+                            _nameToProjectStatusMap.remove(name);
+                            log.info("Project instance " + name + " was removed from the metaproject");
+                        }
+                    }
+                }
+            };
+        }
+        return metaprojectProjectClsListener;
+    }
+
+    private void addMetaProjectListeners() {
+        if (metaproject != null) {
+            projectCls = getProjectCls();
+            nameSlot = getNameSlot();
+
+            KnowledgeBase kb = ((MetaProjectImpl)metaproject).getKnowledgeBase();
+            ServerFrameStore.requestEventDispatch(kb);
+            metaprojectFrameListener = getMetaProjectFrameListener();
+            kb.addFrameListener(metaprojectFrameListener);
+
+            metaprojectProjectClsListener = getMetaProjectProjectClsListener();
+            projectCls.addFrameListener(metaprojectProjectClsListener);
+        }
+    }
+
+    private void removeMetaProjectListeners() {
+        if (metaprojectFrameListener != null) {
+            try {
+                ((MetaProjectImpl)metaproject).getKnowledgeBase().removeFrameListener(metaprojectFrameListener);
+            } catch (Exception e) {
+                log.log(Level.WARNING, "Could not remove metaproject frame listener", e);
+            }
+        }
+
+        if (metaprojectProjectClsListener != null) {
+            try {
+                projectCls.removeFrameListener(metaprojectProjectClsListener);
+            } catch (Exception e) {
+                log.log(Level.WARNING, "Could not remove metaproject cls listener for cls Project", e);
+            }
+        }
     }
 
     /* -----------------------------------------------------------------
