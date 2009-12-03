@@ -48,7 +48,6 @@ public class MetaprojectPanel extends AbstractRefreshableServerPanel {
         instTab.setup(mp_prj.createWidgetDescriptor(), mp_prj);
         instTab.initialize();
 
-
         return instTab;
     }
 
