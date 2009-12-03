@@ -18,8 +18,8 @@ import edu.stanford.smi.protege.util.CollectionUtilities;
 
 public class PolicyImpl implements Policy, Localizable, Serializable {
     private static final long serialVersionUID = 2209527990426609790L;
-    
-    
+
+
     MetaProjectImpl mp;
 
 	public PolicyImpl(MetaProjectImpl mp) {
@@ -29,8 +29,8 @@ public class PolicyImpl implements Policy, Localizable, Serializable {
 	/*
 	 * The project is ignored in this implementation.
 	 */
-	public boolean isOperationAuthorized(User user, 
-	                                     Operation op, 
+	public boolean isOperationAuthorized(User user,
+	                                     Operation op,
 	                                     PolicyControlledObject project) {
 		if (!getKnownOperations().contains(op)) {
 			return true;
@@ -49,6 +49,9 @@ public class PolicyImpl implements Policy, Localizable, Serializable {
 	 */
 	public Set<Operation> getAllowedOperations(User user, ProjectInstance project) {
 		Set<Operation> allowed = new HashSet<Operation>();
+		if (project == null) {
+		    return allowed;
+		}
 		Set<Group> userGroups = user.getGroups();
 		for (GroupOperation ga : project.getAllowedGroupOperations()) {
 			if (userGroups.contains(ga.getAllowedGroup())) {
@@ -61,7 +64,7 @@ public class PolicyImpl implements Policy, Localizable, Serializable {
 	public Set<Operation> getKnownOperations() {
 		return mp.getOperations();
 	}
-	
+
 	public User getUserByName(String userName) {
 	    for (User user : mp.getUsers()) {
 	        if (userName.equals(user.getName())) {
@@ -70,7 +73,7 @@ public class PolicyImpl implements Policy, Localizable, Serializable {
 	    }
 	    return null;
 	}
-	
+
 	public ProjectInstance getProjectInstanceByName(String projectName) {
 	    for (ProjectInstance projectInstance : mp.getProjects()) {
 	        if (projectInstance.getName().equals(projectName)) {
@@ -80,7 +83,7 @@ public class PolicyImpl implements Policy, Localizable, Serializable {
 	    return null;
 	}
 
-	
+
 	public ServerInstance getServerInstanceByName(String serverName) {
 	    for (ServerInstance serverInstance : mp.getServers()) {
 	        if (serverInstance.getName().equals(serverName)) {
@@ -89,8 +92,8 @@ public class PolicyImpl implements Policy, Localizable, Serializable {
 	    }
 	    return null;
 	}
-	
-	public ServerInstance getFirstServerInstance() {		
+
+	public ServerInstance getFirstServerInstance() {
 		return CollectionUtilities.getFirstItem(mp.getServers());
 	}
 
