@@ -67,9 +67,9 @@ public class RemoteProjectManager {
         return project;
     }
 
-    public Project getProject(String serverName, 
-                              String username, 
-                              String password, 
+    public Project getProject(String serverName,
+                              String username,
+                              String password,
                               String projectName,
                               boolean pollForEvents) {
         Project p = null;
@@ -102,9 +102,9 @@ public class RemoteProjectManager {
         } catch (Exception e) {
             Log.getLogger().log(Level.WARNING, "Could not connect to remote project " + name, e);
         }
-        return p;    	
+        return p;
     }
-    
+
     public MetaProject connectToMetaProject(RemoteServer server, RemoteSession session) {
         Project p = null;
         try {
@@ -115,15 +115,18 @@ public class RemoteProjectManager {
             }
             p = RemoteClientProject.createProject(server, serverProject, session, true);
         } catch (Exception e) {
-            Log.getLogger().log(Level.WARNING, "Could not connect to remote meta project ", e);
+            Log.getLogger().warning("Could not connect to remote meta project. Message: " + e.getMessage());
+            if (Log.getLogger().isLoggable(Level.FINE)) {
+                Log.getLogger().log(Level.FINE, "Could not connect to remote meta project ", e);
+            }
         }
-        return new MetaProjectImpl(p);       
+        return p == null ? null : new MetaProjectImpl(p);
     }
-    
+
     public void showServerAdminWindow(RemoteServer server, RemoteSession session) {
     	ProjectManager.getProjectManager().setExitVMOnApplicationExit(false);
     	ProjectManager.getProjectManager().exitApplicationRequest();
-    	JFrame frame = ComponentFactory.showInFrame(new ServerAdminPanel(server, session), 
+    	JFrame frame = ComponentFactory.showInFrame(new ServerAdminPanel(server, session),
     			"Administer Protege Server (Logged in as " + session.getUserName() + ")");
     	frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     	frame.requestFocus();
