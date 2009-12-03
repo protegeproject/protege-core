@@ -74,7 +74,7 @@ public class PolicyControlledObjectImpl extends WrappedProtegeInstanceImpl imple
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return name == null ? 41 : name.hashCode();
     }
 
     @Override
