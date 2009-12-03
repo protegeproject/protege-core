@@ -243,9 +243,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
       }
       recordCallNoCheck(session);
-      if (projectInstance != null) {
-          projectInstance.getMetaProject().getUser(session.getUserName()).setLastAccess(new Date());
-      }
       synchronized (runningClientThreads) {
     	  runningClientThreads.add(Thread.currentThread());
       }
@@ -1805,6 +1802,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     					new Class[] { FrameStore.class }, 
     					readAccessEnforcement), 1);
     		}
+    		LastUsageInvocationHandler lastUsageFrameStore = new LastUsageInvocationHandler(projectInstance);
+    		fsm.insertFrameStore((FrameStore) Proxy.newProxyInstance(getClass().getClassLoader(), 
+    		                                                         new Class<?>[] { FrameStore.class }, 
+    		                                                         lastUsageFrameStore));
     	}
     }
 

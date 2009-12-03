@@ -92,10 +92,8 @@ public abstract class AbstractFrameStoreInvocationHandler implements InvocationH
     public static FrameStore newInstance(Class handlerClass, KnowledgeBase kb) {
         FrameStore fs = null;
         try {
-            AbstractFrameStoreInvocationHandler handler = (AbstractFrameStoreInvocationHandler) getInstance(
-                    handlerClass, kb);
-            fs = (FrameStore) Proxy.newProxyInstance(handlerClass.getClassLoader(), new Class[] { FrameStore.class },
-                    handler);
+            AbstractFrameStoreInvocationHandler handler = (AbstractFrameStoreInvocationHandler) getInstance(handlerClass, kb);
+            fs = (FrameStore) Proxy.newProxyInstance(handlerClass.getClassLoader(), new Class[] { FrameStore.class }, handler);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
         }
