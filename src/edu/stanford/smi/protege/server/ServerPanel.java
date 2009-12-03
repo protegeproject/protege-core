@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
 import java.rmi.UnmarshalException;
@@ -167,6 +168,13 @@ public class ServerPanel extends JPanel implements Validatable {
             ModalDialog.showMessageDialog(this, "There was a connection problem to: " + serverName + "\n\n" +
                     "Most likely cause is that the server and client are running different versions of Protege.",
                     "Unmarshalling exception", ModalDialog.MODE_CLOSE);
+        } catch (NotBoundException e) {
+            log("Not bound exception: " + serverName + ". " + e.getMessage() + " Is the Protege server started?", e);
+            ModalDialog.showMessageDialog(this, "Cannot connect to: " + serverName + "\n\n" +
+                    "Most likely cause of this problem is that the Protege server is not running.\n" +
+                    "Please check also that the hostname and port are correct.\n" +
+                    "This error can also be caused by firewall or network problems.",
+                    "Not bound exception", ModalDialog.MODE_CLOSE);
         } catch (Exception e) {
             log("Error at connecting to: " + serverName + ". " + e.getMessage(), e);
             ModalDialog.showMessageDialog(this, "An error occured at connecting to: " + serverName + "\n\n" +
@@ -183,7 +191,7 @@ public class ServerPanel extends JPanel implements Validatable {
         } catch (Exception e) {
             log("Firewall or network problems when connecting to the server. " + e.getMessage() + " Server ref: " + _server, e);
             ModalDialog.showMessageDialog(this, "Cannot connect to server.\n" +
-                    "Possible causes of this error are firewall or network configuration problems.\n" +
+                    "Possible causes of this error are firewall or network configuration problems.\n",
                     "Unable to connect", ModalDialog.MODE_CLOSE);
             return null;
         }
