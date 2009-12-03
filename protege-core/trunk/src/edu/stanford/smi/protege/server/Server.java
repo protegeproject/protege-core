@@ -163,7 +163,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                         String name = (String) frame.getOwnSlotValue(nameSlot);
 
                         if (name != null && name.length() > 0) {
-                            if (oldName.isEmpty()) {  //new project
+                            if (oldName.length() > 0) {  //new project
                                 _nameToProjectStatusMap.put(name, ProjectStatus.CLOSED_FOR_MAINTENANCE);
                             } else { //rename of a project
                                 /*
@@ -179,7 +179,21 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                                 }
                             }
                         }
-                        //TODO: delete of a project is not treated
+                    }
+                }
+                @Override
+                public void deleted(FrameEvent event) {
+                    //TODO: doesn't work
+                    Instance frame = (Instance)event.getFrame();
+                    KnowledgeBase kb = frame.getKnowledgeBase();
+                    Cls projectCls = kb.getCls(ClsEnum.Project.name());
+                    if (frame.hasType(projectCls)) {
+                        Slot nameSlot = kb.getSlot(SlotEnum.name.name());
+                        String name = (String) frame.getOwnSlotValue(nameSlot);
+                        if (getProjectStatus(name) == ProjectStatus.CLOSED_FOR_MAINTENANCE) {
+                            _nameToOpenProjectMap.remove(name);
+                            _nameToProjectStatusMap.remove(name);
+                        }
                     }
                 }
             };
