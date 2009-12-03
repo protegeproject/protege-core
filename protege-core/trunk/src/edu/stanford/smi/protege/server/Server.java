@@ -32,10 +32,14 @@ import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.stanford.smi.protege.event.FrameAdapter;
+import edu.stanford.smi.protege.event.FrameEvent;
+import edu.stanford.smi.protege.event.FrameListener;
 import edu.stanford.smi.protege.event.ServerProjectNotificationEvent;
 import edu.stanford.smi.protege.event.ServerProjectSessionClosedEvent;
 import edu.stanford.smi.protege.event.ServerProjectStatusChangeEvent;
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.KnowledgeBaseFactory;
 import edu.stanford.smi.protege.model.Project;
@@ -46,6 +50,7 @@ import edu.stanford.smi.protege.plugin.ProjectPluginManager;
 import edu.stanford.smi.protege.resource.Text;
 import edu.stanford.smi.protege.server.ServerProject.ProjectStatus;
 import edu.stanford.smi.protege.server.framestore.LocalizeFrameStoreHandler;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
@@ -56,12 +61,14 @@ import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.ServerInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 import edu.stanford.smi.protege.server.socket.RmiSocketFactory;
 import edu.stanford.smi.protege.server.socket.SSLFactory;
 import edu.stanford.smi.protege.server.util.ProjectInfo;
 import edu.stanford.smi.protege.server.util.ServerUtil;
 import edu.stanford.smi.protege.storage.clips.ClipsKnowledgeBaseFactory;
+import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.FileUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.ServerJob;
@@ -94,6 +101,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private static final String OPTION_CHAR = "-";
     private boolean preload = true;
     private ProjectPluginManager _projectPluginManager = new ProjectPluginManager();
+    //listener used for setting the status of the newly create projects to closed for maintenance.
+    private FrameListener metaprojectFrameListener;
 
     /**
      * Thread executor for project shutdown
@@ -132,6 +141,70 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         serverInstance = new Server(args);
         afterLoad();
         Log.getLogger().info("Protege server ready to accept connections...");
+    }
+
+    private FrameListener getMetaProjectFrameListener() {
+        if (metaprojectFrameListener == null) {
+            metaprojectFrameListener = new FrameAdapter() {
+                @Override
+                public void ownSlotValueChanged(FrameEvent event) {
+                    //System.out.println(event);
+                    Instance frame = (Instance)event.getFrame();
+                    KnowledgeBase kb = frame.getKnowledgeBase();
+                    Slot nameSlot = kb.getSlot(SlotEnum.name.name());
+                    Cls projectCls = kb.getCls(ClsEnum.Project.name());
+                    if (frame.hasType(projectCls) && event.getSlot().equals(nameSlot)) {
+                        List oldValues = event.getOldValues();
+                        String oldName = new String();
+                        if (oldValues != null && oldValues.size() > 0) {
+                            oldName = CollectionUtilities.getFirstItem(oldValues).toString();
+                        }
+
+                        String name = (String) frame.getOwnSlotValue(nameSlot);
+
+                        if (name != null && name.length() > 0) {
+                            if (oldName.isEmpty()) {  //new project
+                                _nameToProjectStatusMap.put(name, ProjectStatus.CLOSED_FOR_MAINTENANCE);
+                            } else { //rename of a project
+                                /*
+                                 * This is tricky: we'll keep both the old and the new names in the maps,
+                                 * see if it works
+                                 */
+                                _nameToOpenProjectMap.put(name, _nameToOpenProjectMap.get(oldName));
+                                _nameToProjectStatusMap.put(name, _nameToProjectStatusMap.get(oldName));
+
+                                if (getProjectStatus(oldName) == ProjectStatus.CLOSED_FOR_MAINTENANCE) {
+                                    _nameToOpenProjectMap.remove(oldName);
+                                    _nameToProjectStatusMap.remove(oldName);
+                                }
+                            }
+                        }
+                        //TODO: delete of a project is not treated
+                    }
+                }
+            };
+        }
+        return metaprojectFrameListener;
+    }
+
+    private void addMetaProjectListeners() {
+        if (metaproject != null) {
+            KnowledgeBase kb = ((MetaProjectImpl)metaproject).getKnowledgeBase();
+            ServerFrameStore.requestEventDispatch(kb);
+            metaprojectFrameListener = getMetaProjectFrameListener();
+            kb.addFrameListener(metaprojectFrameListener);
+        }
+    }
+
+    private void removeMetaProjectListeners() {
+        if (metaprojectFrameListener != null) {
+            try {
+                metaprojectFrameListener = getMetaProjectFrameListener();
+                ((MetaProjectImpl)metaproject).getKnowledgeBase().removeFrameListener(metaprojectFrameListener);
+            } catch (Exception e) {
+                log.log(Level.WARNING, "Could not remove metaproject frame listener", e);
+            }
+        }
     }
 
     private static void afterLoad() {
@@ -235,6 +308,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         _projectToServerProjectMap.clear();
         _sessions.clear();
         _sessionToProjectsMap.clear();
+        removeMetaProjectListeners();
         stopProjectUpdateThread();
     }
 
@@ -245,6 +319,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         bindName();
         ServerUtil.fixMetaProject(metaproject);
         initializeProjects();
+        addMetaProjectListeners();
         startProjectUpdateThread();
     }
 
@@ -492,7 +567,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                 serverInstance._projectPluginManager.afterSave(project);
             }
         }
-        serverProject.setClean();
+        //TODO: ask Tim
+        if (serverProject != null) {
+            serverProject.setClean();
+        }
         dumpErrors(project, errors);
     }
 
@@ -719,11 +797,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         for (ProjectInstance instance : metaproject.getProjects()) {
             if (user != null && (
                     !policy.isOperationAuthorized(user,
-                                                  MetaProjectConstants.OPERATION_DISPLAY_IN_PROJECT_LIST,
-                                                  instance) ||
-                    !policy.isOperationAuthorized(user,
-                                                  MetaProjectConstants.OPERATION_READ,
-                                                  instance))) {
+                            MetaProjectConstants.OPERATION_DISPLAY_IN_PROJECT_LIST,
+                            instance) ||
+                            !policy.isOperationAuthorized(user,
+                                    MetaProjectConstants.OPERATION_READ,
+                                    instance))) {
                 continue;
             }
             String name = instance.getName();
@@ -732,22 +810,26 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                 continue;
             }
             String fileName = instance.getLocation();
-            URI uri = URIUtilities.createURI(fileName);
-            String scheme = uri.getScheme();
-            if (scheme != null && scheme.contains("http")) {
-                BufferedReader reader = URIUtilities.createBufferedReader(uri);
-                if (reader != null) {
-                    names.add(instance.getName());
-                    FileUtilities.close(reader);
-                } else {
-                    Log.getLogger().warning("Missing project at " + fileName);
-                }
+            if (fileName == null || fileName.length() == 0) {
+                log.warning("Project with empty location will be ignored: " + name);
             } else {
-                File file = new File(fileName);
-                if (file.exists() && file.isFile()) {
-                    names.add(instance.getName());
+                URI uri = URIUtilities.createURI(fileName);
+                String scheme = uri.getScheme();
+                if (scheme != null && scheme.contains("http")) {
+                    BufferedReader reader = URIUtilities.createBufferedReader(uri);
+                    if (reader != null) {
+                        names.add(instance.getName());
+                        FileUtilities.close(reader);
+                    } else {
+                        Log.getLogger().warning("Missing project at " + fileName);
+                    }
                 } else {
-                    Log.getLogger().warning("Missing project at " + fileName);
+                    File file = new File(fileName);
+                    if (file.exists() && file.isFile()) {
+                        names.add(instance.getName());
+                    } else {
+                        Log.getLogger().warning("Missing project at " + fileName);
+                    }
                 }
             }
         }
@@ -966,6 +1048,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     public synchronized void shutdown() {
         Log.getLogger().info("Received shutdown request.");
+        removeMetaProjectListeners();
         saveAllProjects();
         Thread thread = new Thread() {
             @Override
