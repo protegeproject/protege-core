@@ -1,7 +1,7 @@
 package edu.stanford.smi.protege.server.util;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.Cls;
@@ -17,45 +17,41 @@ import edu.stanford.smi.protege.util.Log;
 public class ServerUtil {
 
 	/**
-	 * Backwards compatibility check for the metaproject. 
+	 * Backwards compatibility check for the metaproject.
 	 * Add missing classes and slots for new version of metaproject.
 	 * @param metaproject
 	 */
 	public static void fixMetaProject(MetaProject metaproject) {
 		if (!(metaproject instanceof MetaProjectImpl)) { return; }
 		boolean changed = false;
-		MetaProjectImpl mp = (MetaProjectImpl) metaproject;	
+		MetaProjectImpl mp = (MetaProjectImpl) metaproject;
 		try {
 		    changed = addPolicyControlledObjectClass(mp);
 		    changed = addAccessSlots(mp) || changed;
+		    changed = changeGroup(mp) || changed;
 
 			/* attempt to use getDesignTimeClsWidget at svn revision 15083 */
 			if (changed) {
 				ArrayList errors = new ArrayList();
 				mp.save(errors);
-				for (Iterator iterator = errors.iterator(); iterator.hasNext();) {
-					Object object = iterator.next();
-					Log.getLogger().warning("Error at save: " + object);
-				}
+				Log.handleErrors(Log.getLogger(), Level.WARNING, errors);
 			}
 
 		} catch (Throwable t) {
 			Log.getLogger().log(Level.WARNING, "Failed to fix up metaproject to new version.", t);
 		}
-
-
 	}
-	
+
 	private static boolean addPolicyControlledObjectClass(MetaProjectImpl mp)  {
 	    boolean changed = false;
 	    KnowledgeBase kb = mp.getKnowledgeBase();
-	    
+
         Cls policyCtrledObjCls = kb.getCls(ClsEnum.PolicyControlledObject.name());
         if (policyCtrledObjCls == null) {
-            Log.getLogger().info("Fixing up the metaproject to new version. No information will be lost.");         
+            Log.getLogger().info("Fixing up the metaproject to new version. No information will be lost.");
             policyCtrledObjCls = kb.createCls(ClsEnum.PolicyControlledObject.name(), kb.getRootClses());
             changed = true;
-        } 
+        }
         addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.name));
         addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.description));
         addTemplateSlot(policyCtrledObjCls, mp.getSlot(SlotEnum.allowedGroupOperation));
@@ -78,16 +74,36 @@ public class ServerUtil {
         }
         return changed;
 	}
-	
+
 	private static boolean addAccessSlots(MetaProjectImpl  mp) {
-	    boolean  changed = false;
+	    boolean changed = false;
 	    KnowledgeBase  kb = mp.getKnowledgeBase();
 	    Cls user = kb.getCls(MetaProjectImpl.ClsEnum.User.toString());
 	    changed = addTemplateSlot(kb, user, MetaProjectImpl.SlotEnum.lastLogin) || changed;
 	    changed = addTemplateSlot(kb, user, MetaProjectImpl.SlotEnum.lastAccess) || changed;
 	    return changed;
 	}
-	
+
+	private static boolean changeGroup(MetaProjectImpl mp) {
+	    boolean changed = false;
+	    KnowledgeBase  kb = mp.getKnowledgeBase();
+	    Cls policyCtrledObjCls = kb.getCls(ClsEnum.PolicyControlledObject.name());
+	    Cls groupCls = kb.getCls(ClsEnum.Group.name());
+	    if (!groupCls.hasSuperclass(policyCtrledObjCls)) {
+	        groupCls.addDirectSuperclass(policyCtrledObjCls);
+	        groupCls.removeDirectSuperclass(kb.getRootCls());
+
+	        Cls operationCls = kb.getCls(ClsEnum.Operation.name());
+	        Collection<Cls> operationClsColl = CollectionUtilities.createCollection(operationCls);
+	        createCls(kb, "GroupAppliedOperation", operationClsColl);
+	        createCls(kb, "ProjectAppliedOperation", operationClsColl);
+	        createCls(kb, "ServerAppliedOperation", operationClsColl);
+
+	        changed = true;
+	    }
+	    return changed;
+	}
+
 	private static boolean addTemplateSlot(KnowledgeBase kb, Cls cls, MetaProjectImpl.SlotEnum slotEnum) {
 	    String slotName = slotEnum.toString();
 	    Slot slot;
@@ -105,6 +121,14 @@ public class ServerUtil {
 			return true;
 		}
 		return false;
+	}
+
+	private static Cls createCls(KnowledgeBase kb, String name, Collection<Cls> parents) {
+	    Cls cls = kb.getCls(name);
+	    if (cls == null) {
+	        cls = kb.createCls(name, parents);
+	    }
+	    return cls;
 	}
 
 }
