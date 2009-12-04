@@ -1,13 +1,13 @@
 package edu.stanford.smi.protege.storage.database;
 
 public enum KnownDatabase {
-    MYSQL(true, "mysql", 
-          "VARBINARY(333)", 
-          "VARCHAR(333) COLLATE utf8_general_ci", 500,
+    MYSQL(true, "mysql",
+          "VARBINARY(333)",
+          "VARCHAR(333) COLLATE utf8_general_ci", 333,
           "MEDIUMTEXT",
           "BIT", "SMALLINT", "INT"),
     POSTGRESQL(true, "postgresql",
-               "VARCHAR(500)", 
+               "VARCHAR(500)",
                "VARCHAR(500)", 500,
                "TEXT",
                "BOOL", "INT2", "INT4"),
@@ -17,7 +17,7 @@ public enum KnownDatabase {
               "NTEXT",
               "BIT", "SMALLINT", "INT"),
     ORACLE(true, "oracle",
-           "VARCHAR2(1900)", 
+           "VARCHAR2(1900)",
            "VARCHAR2(1900)", 1900,
            "LONG",
            "SMALLINT", "SMALLINT", "INTEGER"),
@@ -39,13 +39,13 @@ public enum KnownDatabase {
     private String  intType;
 
     private KnownDatabase(boolean supported,
-                          String shortName, 
-                          String frameNameType, 
+                          String shortName,
+                          String frameNameType,
                           String shortValueType,
                           int maxShortValueSize,
-                          String longStringType, 
+                          String longStringType,
                           String bitType,
-                          String smallIntType, 
+                          String smallIntType,
                           String intType) {
         this.supported = supported;
         this.shortName = shortName;
@@ -57,7 +57,7 @@ public enum KnownDatabase {
         this.smallIntType = smallIntType;
         this.intType = intType;
     }
-    
+
     public boolean getSupported() {
         return supported;
     }
@@ -96,6 +96,6 @@ public enum KnownDatabase {
 
 
     public static void main(String [] args) {
-        
+
     }
 }
