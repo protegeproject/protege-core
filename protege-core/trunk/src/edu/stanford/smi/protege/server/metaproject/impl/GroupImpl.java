@@ -17,24 +17,11 @@ public class GroupImpl extends PolicyControlledObjectImpl implements Group {
 
 	}
 
-	@Override
-    public String getName() throws OntologyException {
-		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.name));
-		if (!(value instanceof String)) {
-			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
-		}
-		return (String) value;
-	}
-
 	@SuppressWarnings("unchecked")
 	public Set<User> getMembers() {
 		return getSlotValues(MetaProjectImpl.SlotEnum.member, MetaProjectImpl.ClsEnum.User);
 	}
 
-	@Override
-    public String toString() {
-		return getName();
-	}
 
 	public void addMember(User member) {
 		addSlotValue(MetaProjectImpl.SlotEnum.member, member);
@@ -45,21 +32,11 @@ public class GroupImpl extends PolicyControlledObjectImpl implements Group {
 	}
 
 	@Override
-    public void setName(String name) {
-		setSlotValue(MetaProjectImpl.SlotEnum.name, name);
-	}
-
-	@Override
     public String getDescription() {
 		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.description));
 		if (!(value instanceof String)) {
 			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
 		}
 		return (String) value;
-	}
-
-	@Override
-    public void setDescription(String description) {
-		setSlotValue(MetaProjectImpl.SlotEnum.description, description);
 	}
 }
