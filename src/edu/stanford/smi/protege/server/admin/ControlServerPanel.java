@@ -1,14 +1,13 @@
 package edu.stanford.smi.protege.server.admin;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.rmi.RemoteException;
 import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -25,12 +24,16 @@ public class ControlServerPanel extends AbstractRefreshableServerPanel {
 	private static final long serialVersionUID = 6214203367190208198L;
 
 	public ControlServerPanel(RemoteServer server, RemoteSession session) {
-		super(server, session);		
+		super(server, session);
 	}
-	
+
 	@Override
 	protected JComponent createCenterComponent() {
-		JPanel panel = new JPanel(new GridBagLayout());
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+		panel.add(Box.createVerticalStrut(10));
+
 		JButton shutdownButton = new JButton(getShutdownAction());
 		shutdownButton.setText("Shut down the Protege server");
 		boolean hasShutdownRight = hasShutdownRight();
@@ -38,13 +41,20 @@ public class ControlServerPanel extends AbstractRefreshableServerPanel {
 		if (!hasShutdownRight) {
 			shutdownButton.setToolTipText("You do not have permission to shut down the server");
 		}
-		GridBagConstraints c = new GridBagConstraints();
-		c.anchor = GridBagConstraints.FIRST_LINE_START;
-		c.insets = new Insets(10,10,10,10);		
-		c.weightx = 1.0; c.weighty = 1.0	;	
-		c.gridwidth = 5; c.gridx = 0; c.gridy = 0;
-		panel.add(shutdownButton, c);
-		LabeledComponent lc = new LabeledComponent("Control server operation", panel, true);		
+		panel.add(shutdownButton);
+
+		panel.add(Box.createVerticalStrut(20));
+
+		boolean hasSaveRight = hasMetaProjectSaveRight();
+		JButton saveMetaProjectButton = new JButton(getSaveMetaprojectAction());
+		saveMetaProjectButton.setText("Save Metaproject");
+		saveMetaProjectButton.setEnabled(hasSaveRight);
+		if(!hasSaveRight) {
+		    saveMetaProjectButton.setToolTipText("You do not have permission to save the metaproject");
+		}
+		panel.add(saveMetaProjectButton);
+
+		LabeledComponent lc = new LabeledComponent("Control server operation", panel, true);
 		return lc;
 	}
 
@@ -52,8 +62,8 @@ public class ControlServerPanel extends AbstractRefreshableServerPanel {
 	protected void addRefreshButton() {
 		return;
 	}
-	
-	
+
+
 	private Action getShutdownAction() {
 		return new AbstractAction() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -61,12 +71,12 @@ public class ControlServerPanel extends AbstractRefreshableServerPanel {
 						"The Protege server will shut down immediately.\n" +
 						"All server projects will be saved.\n" +
 						"Connected Protege clients might loose work because of this.\n\n" +
-						"Are you really sure you want to shut down the server?", 
+						"Are you really sure you want to shut down the server?",
 						"Really shutdown?", ModalDialog.MODE_YES_NO);
 				if (ret == ModalDialog.OPTION_YES) {
 					shutdownServer();
 				}
-			}			
+			}
 		};
 	}
 
@@ -82,10 +92,34 @@ public class ControlServerPanel extends AbstractRefreshableServerPanel {
 		}
 		ModalDialog.showMessageDialog(this, "Server shutdown successful.", "Success");
 	}
-	
+
 	private boolean hasShutdownRight() {
 		return RemoteProjectUtil.isServerOperationAllowed(getServer(), getSession(), MetaProjectConstants.OPERATION_ADMINISTER_SERVER) ||
 		RemoteProjectUtil.isServerOperationAllowed(getServer(), getSession(), MetaProjectConstants.OPERATION_SHUTDOWN_SERVER);
+	}
+
+
+	private Action getSaveMetaprojectAction()  {
+	    return new AbstractAction() {
+	        public void actionPerformed(ActionEvent ev) {
+	            boolean success = false;
+	            try {
+	                success = getServer().saveMetaProject(getSession());
+	            } catch (RemoteException e) {
+	                Log.getLogger().log(Level.WARNING, "Saving of metaproject has failed.", e);
+	                ModalDialog.showMessageDialog(ControlServerPanel.this, "Saving of metaproject has failed.\n" +
+	                        "See console and logs for more information.");
+	                return;
+	            }
+	            ModalDialog.showMessageDialog(ControlServerPanel.this, success ? "Saving of metaproject was successful." :
+	                    "Saving of metaproject has failed.", success ? "Success":"Failure");
+	        }
+	    };
+	}
+
+
+	private boolean hasMetaProjectSaveRight() {
+        return RemoteProjectUtil.isServerOperationAllowed(getServer(), getSession(), MetaProjectConstants.OPERATION_ADMINISTER_SERVER);
 	}
 
 }
