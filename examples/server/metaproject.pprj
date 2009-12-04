@@ -1,20 +1,20 @@
-; Fri Aug 28 12:42:21 PDT 2009
+; Thu Dec 03 18:26:56 PST 2009
 ; 
 ;+ (version "3.4.2")
-;+ (build "Build 541")
+;+ (build "Build 557")
 
 ([BROWSER_SLOT_NAMES] of  Property_List
 
 	(properties
-		[metaproject_ProjectKB_Class10004]
-		[metaproject_ProjectKB_Class10005]
-		[metaproject_ProjectKB_Class10006]
-		[metaproject_ProjectKB_Class10007]
-		[metaproject_ProjectKB_Class10008]
-		[metaproject_ProjectKB_Class10009]
-		[metaproject_ProjectKB_Class10010]
-		[metaproject_ProjectKB_Class10011]
-		[metaproject_ProjectKB_Class10012]))
+		[metaproject_ProjectKB_Class20018]
+		[metaproject_ProjectKB_Class20019]
+		[metaproject_ProjectKB_Class20020]
+		[metaproject_ProjectKB_Class20021]
+		[metaproject_ProjectKB_Class20022]
+		[metaproject_ProjectKB_Class20023]
+		[metaproject_ProjectKB_Class20024]
+		[metaproject_ProjectKB_Class20025]
+		[metaproject_ProjectKB_Class20026]))
 
 ([CLSES_TAB] of  Widget
 
@@ -426,7 +426,7 @@
 	(x 0)
 	(y 120))
 
-([KB_801294_Class3] of  Map
+([KB_602688_Class3] of  Map
 )
 
 ([metaproject_ProjectKB_Class1] of  Widget
@@ -435,64 +435,14 @@
 	(property_list [metaproject_ProjectKB_Class2])
 	(widget_class_name "edu.stanford.smi.protegex.changes.changesKBViewTab.ChangesKBViewTab"))
 
-([metaproject_ProjectKB_Class10004] of  String
+([metaproject_ProjectKB_Class10004] of  Widget
 
-	(name ":INSTANCE-ANNOTATION")
-	(string_value "%3AANNOTATION-TEXT"))
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class10005])
+	(widget_class_name "edu.stanford.smi.protege.ui.internalKB.InternalKBTab"))
 
-([metaproject_ProjectKB_Class10005] of  String
-
-	(name "GroupOperation")
-	(string_value "allowedGroup{+can+}allowedOperation"))
-
-([metaproject_ProjectKB_Class10006] of  String
-
-	(name ":META-CLASS")
-	(string_value "%3ANAME"))
-
-([metaproject_ProjectKB_Class10007] of  String
-
-	(name "Server")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class10008] of  String
-
-	(name "User")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class10009] of  String
-
-	(name "Project")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class10010] of  String
-
-	(name "Operation")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class10011] of  String
-
-	(name "Group")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class10012] of  String
-
-	(name ":PAL-CONSTRAINT")
-	(string_value "%3APAL-NAME"))
-
-([metaproject_ProjectKB_Class10013] of  Map_Entry
-
-	(key "suppress_instance_counting")
-	(key_class "java.lang.String")
-	(value "false")
-	(value_class "java.lang.String"))
-
-([metaproject_ProjectKB_Class10014] of  Map_Entry
-
-	(key "change_tracking_active")
-	(key_class "java.lang.String")
-	(value "false")
-	(value_class "java.lang.String"))
+([metaproject_ProjectKB_Class10005] of  Property_List
+)
 
 ([metaproject_ProjectKB_Class10015] of  Widget
 
@@ -1174,9 +1124,68 @@
 ([metaproject_ProjectKB_Class20009] of  Property_List
 )
 
-([metaproject_ProjectKB_Class20015] of  Map_Entry
+([metaproject_ProjectKB_Class20018] of  String
+
+	(name ":INSTANCE-ANNOTATION")
+	(string_value "%3AANNOTATION-TEXT"))
+
+([metaproject_ProjectKB_Class20019] of  String
+
+	(name "Group")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class20020] of  String
+
+	(name "GroupOperation")
+	(string_value "allowedGroup{+can+}allowedOperation"))
+
+([metaproject_ProjectKB_Class20021] of  String
+
+	(name "Operation")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class20022] of  String
+
+	(name ":PAL-CONSTRAINT")
+	(string_value "%3APAL-NAME"))
+
+([metaproject_ProjectKB_Class20023] of  String
+
+	(name ":META-CLASS")
+	(string_value "%3ANAME"))
+
+([metaproject_ProjectKB_Class20024] of  String
+
+	(name "User")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class20025] of  String
+
+	(name "Project")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class20026] of  String
+
+	(name "Server")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class20027] of  Map_Entry
 
 	(key "add_name_on_instance_form")
+	(key_class "java.lang.String")
+	(value "false")
+	(value_class "java.lang.String"))
+
+([metaproject_ProjectKB_Class20028] of  Map_Entry
+
+	(key "change_tracking_active")
+	(key_class "java.lang.String")
+	(value "false")
+	(value_class "java.lang.String"))
+
+([metaproject_ProjectKB_Class20029] of  Map_Entry
+
+	(key "suppress_instance_counting")
 	(key_class "java.lang.String")
 	(value "false")
 	(value_class "java.lang.String"))
@@ -1186,6 +1195,277 @@
 	(is_hidden TRUE)
 	(property_list [metaproject_ProjectKB_Class4])
 	(widget_class_name "edu.stanford.smi.protege.widget.ProtegePropertiesTab"))
+
+([metaproject_ProjectKB_Class30006] of  Widget
+
+	(height 120)
+	(is_hidden FALSE)
+	(label "AllowedGroupOperation")
+	(name "allowedGroupOperation")
+	(property_list [metaproject_ProjectKB_Class30007])
+	(widget_class_name "edu.stanford.smi.protegex.widget.instancetable.InstanceTableWidget")
+	(width 500)
+	(x 0)
+	(y 410))
+
+([metaproject_ProjectKB_Class30007] of  Property_List
+
+	(properties
+		[metaproject_ProjectKB_Class30010]
+		[metaproject_ProjectKB_Class30012]
+		[metaproject_ProjectKB_Class30013]
+		[metaproject_ProjectKB_Class30014]
+		[metaproject_ProjectKB_Class30016]
+		[metaproject_ProjectKB_Class30017]
+		[metaproject_ProjectKB_Class30018]
+		[metaproject_ProjectKB_Class30020]
+		[metaproject_ProjectKB_Class30023]
+		[metaproject_ProjectKB_Class30024]
+		[metaproject_ProjectKB_Class30025]
+		[metaproject_ProjectKB_Class30026]
+		[metaproject_ProjectKB_Class30027]
+		[metaproject_ProjectKB_Class30028]
+		[metaproject_ProjectKB_Class30029]
+		[metaproject_ProjectKB_Class30030]
+		[metaproject_ProjectKB_Class30031]
+		[metaproject_ProjectKB_Class30032]
+		[metaproject_ProjectKB_Class30033]
+		[metaproject_ProjectKB_Class30034]
+		[metaproject_ProjectKB_Class30035]
+		[metaproject_ProjectKB_Class30036]
+		[metaproject_ProjectKB_Class30037]
+		[metaproject_ProjectKB_Class30038]
+		[metaproject_ProjectKB_Class30039]
+		[metaproject_ProjectKB_Class30040]
+		[metaproject_ProjectKB_Class30041]
+		[metaproject_ProjectKB_Class30042]
+		[metaproject_ProjectKB_Class30043]
+		[metaproject_ProjectKB_Class30044]
+		[metaproject_ProjectKB_Class30045]
+		[metaproject_ProjectKB_Class30046]
+		[metaproject_ProjectKB_Class30047]
+		[metaproject_ProjectKB_Class30058]
+		[metaproject_ProjectKB_Class30061]
+		[metaproject_ProjectKB_Class30062]))
+
+([metaproject_ProjectKB_Class30010] of  String
+
+	(name "tooltip_text"))
+
+([metaproject_ProjectKB_Class30012] of  String
+
+	(name ":COLUMN:NAME:DESCRIPTORallowedGroup")
+	(string_value "allowedGroup"))
+
+([metaproject_ProjectKB_Class30013] of  Integer
+
+	(integer_value -16777216)
+	(name ":COLOR:RGB:DESCRIPTORallowedGroup"))
+
+([metaproject_ProjectKB_Class30014] of  Integer
+
+	(integer_value 132)
+	(name ":PREFERRED:SIZE:DESCRIPTORallowedGroup"))
+
+([metaproject_ProjectKB_Class30016] of  String
+
+	(name ":COLUMN:NAME:DESCRIPTORallowedOperation")
+	(string_value "allowedOperation"))
+
+([metaproject_ProjectKB_Class30017] of  Integer
+
+	(integer_value -16777216)
+	(name ":COLOR:RGB:DESCRIPTORallowedOperation"))
+
+([metaproject_ProjectKB_Class30018] of  Integer
+
+	(integer_value 131)
+	(name ":PREFERRED:SIZE:DESCRIPTORallowedOperation"))
+
+([metaproject_ProjectKB_Class30020] of  Integer
+
+	(integer_value 2)
+	(name ":Number:Of:Visible:Slots"))
+
+([metaproject_ProjectKB_Class30023] of  Boolean
+
+	(boolean_value FALSE)
+	(name ":Automatically:Select:Insertions"))
+
+([metaproject_ProjectKB_Class30024] of  Boolean
+
+	(boolean_value TRUE)
+	(name ":Create:Form:For:New:Instances"))
+
+([metaproject_ProjectKB_Class30025] of  Boolean
+
+	(boolean_value TRUE)
+	(name ":HighLight:Selected:Row"))
+
+([metaproject_ProjectKB_Class30026] of  Boolean
+
+	(boolean_value FALSE)
+	(name ":Edit:In:Place"))
+
+([metaproject_ProjectKB_Class30027] of  Boolean
+
+	(boolean_value FALSE)
+	(name ":Use:Dialog:To:Select:Instances"))
+
+([metaproject_ProjectKB_Class30028] of  Boolean
+
+	(boolean_value TRUE)
+	(name ":Use:Dialog:To:Select:Classes"))
+
+([metaproject_ProjectKB_Class30029] of  String
+
+	(name ":Dialog:Title:For:Selecting:Instances")
+	(string_value "Select an instance"))
+
+([metaproject_ProjectKB_Class30030] of  String
+
+	(name ":Dialog:Title:For:Selecting:Classes")
+	(string_value "Select a class"))
+
+([metaproject_ProjectKB_Class30031] of  Integer
+
+	(integer_value 1)
+	(name ":Prototype:Depth"))
+
+([metaproject_ProjectKB_Class30032] of  Boolean
+
+	(boolean_value TRUE)
+	(name ":Display:Create:Instance:Button"))
+
+([metaproject_ProjectKB_Class30033] of  Boolean
+
+	(boolean_value TRUE)
+	(name ":Display:Add:Instance:Button"))
+
+([metaproject_ProjectKB_Class30034] of  Boolean
+
+	(boolean_value TRUE)
+	(name ":Display:View:Instance:Button"))
+
+([metaproject_ProjectKB_Class30035] of  Boolean
+
+	(boolean_value TRUE)
+	(name ":Display:Remove:Instance:Button"))
+
+([metaproject_ProjectKB_Class30036] of  Boolean
+
+	(boolean_value FALSE)
+	(name ":Display:Delete:Instance:Button"))
+
+([metaproject_ProjectKB_Class30037] of  Boolean
+
+	(boolean_value FALSE)
+	(name ":Display:Prototype:Button"))
+
+([metaproject_ProjectKB_Class30038] of  Boolean
+
+	(boolean_value FALSE)
+	(name ":Display:Move:Instance:Buttons"))
+
+([metaproject_ProjectKB_Class30039] of  String
+
+	(name ":Create:Instance:Button:Tooltip")
+	(string_value "Create a new instance"))
+
+([metaproject_ProjectKB_Class30040] of  String
+
+	(name ":Add:Instance:Button:Tooltip")
+	(string_value "Select an already existing instance"))
+
+([metaproject_ProjectKB_Class30041] of  String
+
+	(name ":View:Instance:Button:Tooltip")
+	(string_value "View the selected instance"))
+
+([metaproject_ProjectKB_Class30042] of  String
+
+	(name ":Remove:Instance:Button:Tooltip")
+	(string_value "Remove the selected instance(s)"))
+
+([metaproject_ProjectKB_Class30043] of  String
+
+	(name ":Delete:Instance:Button:Tooltip")
+	(string_value "Delete the selected instance(s) from the knowledge base"))
+
+([metaproject_ProjectKB_Class30044] of  String
+
+	(name ":Prototype:Button:Tooltip")
+	(string_value "Create a new instance which is a duplicate of the selected instance"))
+
+([metaproject_ProjectKB_Class30045] of  String
+
+	(name ":Move:Instance:Buttons:Tooltip")
+	(string_value "Move the selected instance"))
+
+([metaproject_ProjectKB_Class30046] of  String
+
+	(name ":Create:Instance:Dialog:Title")
+	(string_value "Create a new instance"))
+
+([metaproject_ProjectKB_Class30047] of  String
+
+	(name ":Add:Instance:Dialog:Title")
+	(string_value "Select an already existing instance"))
+
+([metaproject_ProjectKB_Class30058] of  Property_List
+
+	(name ":Visible:Slot:List")
+	(properties
+		[metaproject_ProjectKB_Class30059]
+		[metaproject_ProjectKB_Class30060]))
+
+([metaproject_ProjectKB_Class30059] of  String
+
+	(name "allowedGroup")
+	(string_value "allowedGroup"))
+
+([metaproject_ProjectKB_Class30060] of  String
+
+	(name "allowedOperation")
+	(string_value "allowedOperation"))
+
+([metaproject_ProjectKB_Class30061] of  String
+
+	(name ":Visible:Slot:Index0")
+	(string_value "allowedGroup"))
+
+([metaproject_ProjectKB_Class30062] of  String
+
+	(name ":Visible:Slot:Index1")
+	(string_value "allowedOperation"))
+
+([metaproject_ProjectKB_Class30081] of  Widget
+
+	(height 60)
+	(is_hidden FALSE)
+	(name "lastAccess")
+	(property_list [metaproject_ProjectKB_Class30082])
+	(widget_class_name "edu.stanford.smi.protege.widget.TextFieldWidget")
+	(width 200)
+	(x 0)
+	(y 400))
+
+([metaproject_ProjectKB_Class30082] of  Property_List
+)
+
+([metaproject_ProjectKB_Class30083] of  Widget
+
+	(height 60)
+	(is_hidden FALSE)
+	(name "lastLogin")
+	(property_list [metaproject_ProjectKB_Class30084])
+	(widget_class_name "edu.stanford.smi.protege.widget.TextFieldWidget")
+	(width 200)
+	(x 0)
+	(y 460))
+
+([metaproject_ProjectKB_Class30084] of  Property_List
+)
 
 ([metaproject_ProjectKB_Class4] of  Property_List
 )
@@ -2002,17 +2282,17 @@
 	(browser_slot_names [BROWSER_SLOT_NAMES])
 	(customized_instance_widgets
 		[INSTANCE_ANNOTATION_FORM_WIDGET]
+		[projects_ProjectKB_00138]
 		[nci_metaproject_ProjectKB_Instance_10082]
-		[STANDARD_FACET_FORM_WIDGET]
 		[STANDARD_SLOT_FORM_WIDGET]
-		[metaproject_ProjectKB_Class10028]
+		[nci_metaproject_ProjectKB_Instance_20157]
+		[STANDARD_FACET_FORM_WIDGET]
+		[PAL_FORM_WIDGET]
 		[STANDARD_CLASS_FORM_WIDGET]
-		[metaproject_ProjectKB_Class10015]
 		[projects_ProjectKB_00053]
 		[projects_ProjectKB_00106]
-		[nci_metaproject_ProjectKB_Instance_20157]
-		[projects_ProjectKB_00138]
-		[PAL_FORM_WIDGET])
+		[metaproject_ProjectKB_Class10028]
+		[metaproject_ProjectKB_Class10015])
 	(default_cls_metaclass ":STANDARD-CLASS")
 	(default_facet_metaclass ":STANDARD-FACET")
 	(default_instance_widget_class_name "edu.stanford.smi.protege.widget.FormWidget")
@@ -2152,9 +2432,9 @@
 ([projects_ProjectKB_00052] of  Map
 
 	(entries
-		[metaproject_ProjectKB_Class10013]
-		[metaproject_ProjectKB_Class10014]
-		[metaproject_ProjectKB_Class20015]))
+		[metaproject_ProjectKB_Class20027]
+		[metaproject_ProjectKB_Class20028]
+		[metaproject_ProjectKB_Class20029]))
 
 ([projects_ProjectKB_00053] of  Widget
 
@@ -2174,7 +2454,9 @@
 		[projects_ProjectKB_00087]
 		[projects_ProjectKB_00095]
 		[projects_ProjectKB_00097]
-		[projects_ProjectKB_00099]))
+		[projects_ProjectKB_00099]
+		[metaproject_ProjectKB_Class30081]
+		[metaproject_ProjectKB_Class30083]))
 
 ([projects_ProjectKB_00085] of  Widget
 
@@ -2182,7 +2464,7 @@
 	(is_hidden FALSE)
 	(name "password")
 	(property_list [projects_ProjectKB_00086])
-	(widget_class_name "edu.stanford.smi.protege.widget.TextFieldWidget")
+	(widget_class_name "edu.stanford.smi.protege.widget.PasswordFieldWidget")
 	(width 250)
 	(x 0)
 	(y 60))
@@ -2410,7 +2692,8 @@
 		[projects_ProjectKB_00140]
 		[projects_ProjectKB_00142]
 		[projects_ProjectKB_00144]
-		[projects_ProjectKB_00145]))
+		[projects_ProjectKB_00145]
+		[metaproject_ProjectKB_Class30006]))
 
 ([projects_ProjectKB_00140] of  Widget
 
