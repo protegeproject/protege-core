@@ -1,7 +1,7 @@
-; Fri Aug 28 12:42:21 PDT 2009
+; Thu Dec 03 18:26:56 PST 2009
 ; 
 ;+ (version "3.4.2")
-;+ (build "Build 541")
+;+ (build "Build 557")
 
 ([metaproject_Class0] of  User
 
@@ -15,7 +15,7 @@
 	(name "Samson Tu")
 	(password "samson"))
 
-([metaproject_Class10000] of  Operation
+([metaproject_Class10000] of  ServerAppliedOperation
 
 	(description "The operation of shutting down the server.")
 	(name "ShutdownServer"))
@@ -26,38 +26,40 @@
 	(name "Dilvan Moreira")
 	(password "dilvan"))
 
-([metaproject_Class2] of  Operation
+([metaproject_Class2] of  ProjectAppliedOperation
 
 	(description "The operation of displaying the project in the project list.\n\nThis is used to control the projects displayed when a user connects to a server.")
 	(name "DisplayInProjectList"))
 
-([metaproject_Class20000] of  Operation
+([metaproject_Class20000] of  ServerAppliedOperation
 
-	(description "This  operation allows a user to make alterations to his credentials.  This privilege should probably only be  used by fake \nusers representing server processes.")
+	(description "This  operation allows a user to make alterations to his credentials.  This privilege should probably only be  used by fake users representing server processes.")
 	(name "Delegate"))
 
 ([metaproject_Class20003] of  Group
 
 	(description "The group of adminsitrators of the Protege server.")
-	(member [metaproject_Class20008])
+	(member
+		[metaproject_Class20008]
+		[metaproject_Class30001])
 	(name "AdminGroup"))
 
-([metaproject_Class20004] of  Operation
+([metaproject_Class20004] of  ServerAppliedOperation
 
 	(description "A super-right: a user who has this right can kill other users' sessions, stop and start server projects without having these rights set for each ptoject individually.")
 	(name "AdministerServer"))
 
-([metaproject_Class20005] of  Operation
+([metaproject_Class20005] of  ServerAppliedOperation
 
 	(description "The operation of killing another user's session.")
 	(name "KillOtherUserSession"))
 
-([metaproject_Class20006] of  Operation
+([metaproject_Class20006] of  ServerAppliedOperation
 
 	(description "The operation of starting a (previously stopped) server project.")
 	(name "StartRemoteProject"))
 
-([metaproject_Class20007] of  Operation
+([metaproject_Class20007] of  ServerAppliedOperation
 
 	(description "The operation of stopping/closing a running server project.")
 	(name "StopRemoteProject"))
@@ -73,7 +75,9 @@
 
 ([metaproject_Class20009] of  Server
 
-	(allowedGroupOperation [metaproject_Class20010])
+	(allowedGroupOperation
+		[metaproject_Class20010]
+		[metaproject_Class30003])
 	(description "The server on which the policies apply.\nCurrent implementaion does not take into account the hostname, so all the policies (allowed group operations) are applied to this one instance.")
 	(name "MyServer"))
 
@@ -92,6 +96,30 @@
 	(allowedGroup [metaproject_Instance_0])
 	(allowedOperation [metaproject_Class2]))
 
+([metaproject_Class30000] of  GroupAppliedOperation
+
+	(description "The operation of adding or removing users to a group. (not enforced)")
+	(name "EditGroup"))
+
+([metaproject_Class30001] of  User
+
+	(group
+		[metaproject_Instance_0]
+		[metaproject_Class30002]
+		[metaproject_Class20003])
+	(name "webprotege")
+	(password "webprotege"))
+
+([metaproject_Class30002] of  Group
+
+	(member [metaproject_Class30001])
+	(name "WebProtegeGroup"))
+
+([metaproject_Class30003] of  GroupOperation
+
+	(allowedGroup [metaproject_Class30002])
+	(allowedOperation [metaproject_Class20000]))
+
 ([metaproject_Instance_0] of  Group
 
 	(description "This group is intended to represent all the users.\n\nNewly created users are added to this group by default.")
@@ -105,7 +133,8 @@
 		[metaproject_Class0]
 		[metaproject_Class1]
 		[metaproject_Class10001]
-		[metaproject_Class20008])
+		[metaproject_Class20008]
+		[metaproject_Class30001])
 	(name "World"))
 
 ([metaproject_Instance_10000] of  Project
@@ -218,12 +247,12 @@
 	(name "Collaborative Pizza Annotations")
 	(owner [metaproject_Instance_10006]))
 
-([nci_metaproject_Instance_60009] of  Operation
+([nci_metaproject_Instance_60009] of  ProjectAppliedOperation
 
 	(description "The operation of reading an ontology project.\n\nThis controls who can open a remote project.")
 	(name "Read"))
 
-([nci_metaproject_Instance_60010] of  Operation
+([nci_metaproject_Instance_60010] of  ProjectAppliedOperation
 
 	(description "The operation of writing to an ontology project.\n\n(Enforcement not implemented yet)")
 	(name "Write"))
