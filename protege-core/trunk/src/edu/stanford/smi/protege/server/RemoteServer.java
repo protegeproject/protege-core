@@ -98,6 +98,8 @@ public interface RemoteServer extends Remote {
 
     boolean isOperationAllowed(RemoteSession session, Operation op, String projectName) throws RemoteException;
 
+    boolean isGroupOperationAllowed(RemoteSession session, Operation op, String groupName) throws RemoteException;
+
     boolean isServerOperationAllowed(RemoteSession session, Operation op) throws RemoteException;
 
     boolean isServerOperationAllowed(RemoteSession session, Operation op, String serverName) throws RemoteException;

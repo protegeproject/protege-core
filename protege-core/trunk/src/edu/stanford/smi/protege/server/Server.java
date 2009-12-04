@@ -1399,6 +1399,10 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     	return isServerOperationAllowed(session, op, metaproject.getPolicy().getServerInstanceByName(serverName));
     }
 
+    public synchronized boolean isGroupOperationAllowed(RemoteSession session, Operation op,  String groupName) {
+        return isServerOperationAllowed(session, op, metaproject.getGroup(groupName));
+    }
+
     private boolean isServerOperationAllowed(RemoteSession session, Operation op, PolicyControlledObject policyControlledObject) {
     	Policy policy = metaproject.getPolicy();
         User user = policy.getUserByName(session.getUserName());
