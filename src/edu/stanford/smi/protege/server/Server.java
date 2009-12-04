@@ -470,6 +470,18 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
     }
 
+    public synchronized boolean saveMetaProject(RemoteSession session) throws RemoteException {
+        Collection errors = new ArrayList();
+        log.info("Saving metaproject...");
+        metaproject.save(errors);
+        if (!errors.isEmpty()) {
+            log.warning("Errors found saving metaproject");
+            dumpErrors(((MetaProjectImpl)metaproject).getKnowledgeBase().getProject(), errors);
+        }
+        return errors.size() == 0;
+    }
+
+
     @SuppressWarnings("unchecked")
     public synchronized void saveAllProjects() {
         Iterator<Map.Entry<Project, ServerProject>> i = _projectToServerProjectMap.entrySet().iterator();
@@ -486,6 +498,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         metaproject.save(errors);
         if (!errors.isEmpty()) {
             log.warning("Errors found saving metaproject");
+            dumpErrors(((MetaProjectImpl)metaproject).getKnowledgeBase().getProject(), errors);
         }
     }
 
