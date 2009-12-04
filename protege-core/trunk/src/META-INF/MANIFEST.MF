@@ -98,6 +98,9 @@ Default-Widget: True
 Default-Widget-For-Type: String
 Default-Widget-For-Cardinality: Single
 
+Name: edu.stanford.smi.protege.widget.PasswordFieldWidget
+Slot-Widget: True
+
 Name: edu/stanford/smi/protege/widget/TextAreaWidget.class
 Slot-Widget: True
 
