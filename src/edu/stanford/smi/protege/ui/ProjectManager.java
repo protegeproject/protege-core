@@ -361,6 +361,8 @@ public class ProjectManager {
             JComponent panel = new ParseErrorPanel(errors);
             _errorFrame = ComponentFactory.showInFrame(panel, label);
             bringErrorFrameToFront();
+        } else {
+            Log.handleErrors(Log.getLogger(), Level.WARNING, errors);
         }
     }
 
@@ -933,7 +935,7 @@ public class ProjectManager {
                     backend = ", " + factory.getDescription();
                 }
                 text = shortname + "  " + programName + "    (" + longname + backend +
-                		(_currentProject.isReadonly() ? " - Read-Only)" : ")");            	
+                		(_currentProject.isReadonly() ? " - Read-Only)" : ")");
             }
         }
         ComponentUtilities.setFrameTitle(_rootPane, text);
