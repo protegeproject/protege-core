@@ -8,16 +8,17 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Group;
 import edu.stanford.smi.protege.server.metaproject.User;
 
-public class GroupImpl extends WrappedProtegeInstanceImpl implements Group {
+public class GroupImpl extends PolicyControlledObjectImpl implements Group {
     private static final long serialVersionUID = -6623180400376787848L;
 
-    protected GroupImpl(MetaProjectImpl mp, Instance group) 
+    protected GroupImpl(MetaProjectImpl mp, Instance group)
 	throws OntologyException {
 		super(mp, group, MetaProjectImpl.ClsEnum.Group);
 
 	}
 
-	public String getName() throws OntologyException {
+	@Override
+    public String getName() throws OntologyException {
 		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.name));
 		if (!(value instanceof String)) {
 			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
@@ -43,19 +44,22 @@ public class GroupImpl extends WrappedProtegeInstanceImpl implements Group {
 		setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum.member, members);
 	}
 
-	public void setName(String name) {
+	@Override
+    public void setName(String name) {
 		setSlotValue(MetaProjectImpl.SlotEnum.name, name);
 	}
-	
-	public String getDescription() {
+
+	@Override
+    public String getDescription() {
 		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.description));
 		if (!(value instanceof String)) {
 			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
 		}
-		return (String) value;		
+		return (String) value;
 	}
-	
-	public void setDescription(String description) {
+
+	@Override
+    public void setDescription(String description) {
 		setSlotValue(MetaProjectImpl.SlotEnum.description, description);
 	}
 }
