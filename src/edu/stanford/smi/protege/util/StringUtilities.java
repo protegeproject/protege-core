@@ -3,9 +3,14 @@ package edu.stanford.smi.protege.util;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
@@ -18,6 +23,8 @@ import edu.stanford.smi.protege.model.Frame;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class StringUtilities {
+	private static Logger log = Log.getLogger(StringUtilities.class);
+	private static Random random = new Random();
 
 	public static String capitalize(String words) {
 		StringBuffer buffer = new StringBuffer();
@@ -129,6 +136,40 @@ public class StringUtilities {
 		}
 		return text;
 	}
+	
+    public static DigestAndSalt makeDigest(String password) {
+        byte[] salt = new byte[8];
+        random.nextBytes(salt);
+        String encodedSalt = encodeBytes(salt);
+        return makeDigest(password, encodedSalt);
+    }
+    
+    public static DigestAndSalt makeDigest(String password, String salt) {
+    	MessageDigest messageDigest;
+    	try {
+    		messageDigest = MessageDigest.getInstance("MD5");
+    	} catch (NoSuchAlgorithmException e) {
+    		log.severe("Did not have MD5 algorithm");
+    		throw new RuntimeException("Did not have MD5 algorithm");
+    	}
+
+    	messageDigest.update(salt.getBytes());
+    	// ToDo Normalization should be done here -- Java 6
+    	messageDigest.update(password.getBytes());
+    	String digest = encodeBytes(messageDigest.digest());
+    	return new DigestAndSalt(digest, salt);
+    }
+    
+    private static String encodeBytes(byte[] bytes) {
+        int stringLength = 2 * bytes.length;
+        BigInteger bi = new BigInteger(1,  bytes);
+        String encoded  = bi.toString(16);
+        while (encoded.length() < stringLength) {
+            encoded = "0" + encoded;
+        }
+        return encoded;
+    }
+
 	
 }
 
