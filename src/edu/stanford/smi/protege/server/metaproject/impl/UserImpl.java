@@ -2,8 +2,6 @@ package edu.stanford.smi.protege.server.metaproject.impl;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Random;
 import java.util.Set;
@@ -14,14 +12,15 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Group;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
+import edu.stanford.smi.protege.util.DigestAndSalt;
 import edu.stanford.smi.protege.util.Log;
+import edu.stanford.smi.protege.util.StringUtilities;
 
 public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serializable {
 	private static final long serialVersionUID = -4416984896523630762L;
 	private static final Logger log = Log.getLogger(UserImpl.class);
 
 	private static Random random;
-	private MessageDigest messageDigest;
 	private String name;
 
 	@SuppressWarnings("unchecked")
@@ -85,7 +84,9 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 	        password = "";
 	    }
 	    if (useDigest()) {
-	        makeDigest(password);
+	        DigestAndSalt encrypted = StringUtilities.makeDigest(password);
+	        setSlotValue(SlotEnum.salt, encrypted.getSalt());
+	        setSlotValue(SlotEnum.digest, encrypted.getDigest());
 	    }
 	    else {
 	        setSlotValue(MetaProjectImpl.SlotEnum.password, password);
@@ -97,7 +98,8 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 	        password = "";
 	    }
 	    if (useDigest()) {
-	        return verifyPasswordWithDigest(password);
+	        DigestAndSalt encodedPassword = StringUtilities.makeDigest(password, (String) getSlotValue(SlotEnum.salt, null));
+	        return encodedPassword.getDigest().equals(getSlotValue(SlotEnum.digest, null));
 	    }
 	    else {
 	        String realPassword  = (String) getSlotValue(MetaProjectImpl.SlotEnum.password, null);
@@ -140,53 +142,7 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 	}
     
     private boolean useDigest() {
-        try {
-            messageDigest = MessageDigest.getInstance("MD5");
-        }
-        catch (NoSuchAlgorithmException nsae) {
-            log.warning("Though digests were specified in the metaproject they don't work because the MD5 algorithm is  not found");
-            return false;
-        }
-        return mp.getKnowledgeBase().getSlot(SlotEnum.digest.toString()) != null;
+        return mp.getKnowledgeBase().getSlot(SlotEnum.digest.toString()) != null &&
+                    mp.getKnowledgeBase().getSlot(SlotEnum.salt.toString()) != null;
     }
-    
-    private boolean verifyPasswordWithDigest(String password) {
-        String encodedPassword = makeDigest(password, (String) getSlotValue(SlotEnum.salt, null));
-        return encodedPassword.equals(getSlotValue(SlotEnum.digest, null));
-    }
-    
-    private void makeDigest(String password) {
-        byte[] salt = new byte[8];
-        random.nextBytes(salt);
-        String encodedSalt = encodeBytes(salt);
-        setSlotValue(SlotEnum.salt, encodedSalt);
-        String digest = makeDigest(password, encodedSalt);
-        
-    }
-    
-    private String makeDigest(String password, String salt) {
-        messageDigest.update(salt.getBytes());
-        // ToDo Normalization should be done here -- Java 6
-        messageDigest.update(password.getBytes());
-        return encodeBytes(messageDigest.digest());
-    }
-    
-    private String encodeBytes(byte[] bytes) {
-        int stringLength = 2 * bytes.length;
-        BigInteger bi = new BigInteger(1,  bytes);
-        String encoded  = bi.toString(16);
-        while (encoded.length() < stringLength) {
-            encoded = "0" + encoded;
-        }
-        return encoded;
-    }
-    
-    private Random getRandom() {
-        if (random == null) {
-            random = new Random();
-        }
-        return random;
-    }
-    
-
 }
