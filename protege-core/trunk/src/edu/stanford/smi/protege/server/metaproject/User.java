@@ -6,9 +6,7 @@ import java.util.Set;
 public interface User {
   
   String getName();
-  
-  String getPassword();
-  
+
   Set<Group> getGroups();
   
   String getDescription();
@@ -26,5 +24,8 @@ public interface User {
   void setLastAccess(Date time);
   
   void setLastLogin(Date time);
+  
+  boolean verifyPassword(String password);
+  
 
 }

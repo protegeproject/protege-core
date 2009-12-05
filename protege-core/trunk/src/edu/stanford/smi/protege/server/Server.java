@@ -439,10 +439,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (user == null) {
             return false;
         }
-        String userpassword = user.getPassword();
-        if (userpassword == null) { userpassword  = new String(); }
-        if (password == null) { password = new String(); }
-        return userpassword.equals(password);
+        return user.verifyPassword(password);
     }
 
     @Override

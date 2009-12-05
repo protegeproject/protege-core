@@ -1,26 +1,33 @@
 package edu.stanford.smi.protege.server.metaproject.impl;
 
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.Random;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Group;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
+import edu.stanford.smi.protege.util.Log;
 
 public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serializable {
 	private static final long serialVersionUID = -4416984896523630762L;
+	private static final Logger log = Log.getLogger(UserImpl.class);
 
+	private static Random random;
+	private MessageDigest messageDigest;
 	private String name;
-	private String password;
 
 	@SuppressWarnings("unchecked")
 	protected UserImpl(MetaProjectImpl mp, Instance ui) {
 		super(mp, ui, MetaProjectImpl.ClsEnum.User);
 		name = (String) ui.getOwnSlotValue(mp.getSlot(MetaProjectImpl.SlotEnum.name));
-		password = (String) ui.getOwnSlotValue(mp.getSlot(MetaProjectImpl.SlotEnum.password));
 	}
 
 	public String getDescription() {
@@ -56,10 +63,6 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 		return name;
 	}
 
-	public String getPassword() {
-		return password;
-	}
-
 	public void setDescription(String description) {
     	setSlotValue(MetaProjectImpl.SlotEnum.description, description);
     }
@@ -78,7 +81,31 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 	}
 
 	public void setPassword(String password) {
-		setSlotValue(MetaProjectImpl.SlotEnum.password, password);
+	    if (password == null) {
+	        password = "";
+	    }
+	    if (useDigest()) {
+	        makeDigest(password);
+	    }
+	    else {
+	        setSlotValue(MetaProjectImpl.SlotEnum.password, password);
+	    }
+	}
+	
+	public boolean verifyPassword(String password) {
+	    if (password == null) {
+	        password = "";
+	    }
+	    if (useDigest()) {
+	        return verifyPasswordWithDigest(password);
+	    }
+	    else {
+	        String realPassword  = (String) getSlotValue(MetaProjectImpl.SlotEnum.password, null);
+	        if (realPassword == null) {
+	            realPassword = "";
+	        }
+	        return realPassword.equals(password);
+	    }
 	}
 	
 	@Override
@@ -111,5 +138,55 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 	        return null;
 	    }
 	}
+    
+    private boolean useDigest() {
+        try {
+            messageDigest = MessageDigest.getInstance("MD5");
+        }
+        catch (NoSuchAlgorithmException nsae) {
+            log.warning("Though digests were specified in the metaproject they don't work because the MD5 algorithm is  not found");
+            return false;
+        }
+        return mp.getKnowledgeBase().getSlot(SlotEnum.digest.toString()) != null;
+    }
+    
+    private boolean verifyPasswordWithDigest(String password) {
+        String encodedPassword = makeDigest(password, (String) getSlotValue(SlotEnum.salt, null));
+        return encodedPassword.equals(getSlotValue(SlotEnum.digest, null));
+    }
+    
+    private void makeDigest(String password) {
+        byte[] salt = new byte[8];
+        random.nextBytes(salt);
+        String encodedSalt = encodeBytes(salt);
+        setSlotValue(SlotEnum.salt, encodedSalt);
+        String digest = makeDigest(password, encodedSalt);
+        
+    }
+    
+    private String makeDigest(String password, String salt) {
+        messageDigest.update(salt.getBytes());
+        // ToDo Normalization should be done here -- Java 6
+        messageDigest.update(password.getBytes());
+        return encodeBytes(messageDigest.digest());
+    }
+    
+    private String encodeBytes(byte[] bytes) {
+        int stringLength = 2 * bytes.length;
+        BigInteger bi = new BigInteger(1,  bytes);
+        String encoded  = bi.toString(16);
+        while (encoded.length() < stringLength) {
+            encoded = "0" + encoded;
+        }
+        return encoded;
+    }
+    
+    private Random getRandom() {
+        if (random == null) {
+            random = new Random();
+        }
+        return random;
+    }
+    
 
 }
