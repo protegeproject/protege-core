@@ -101,6 +101,9 @@ Default-Widget-For-Cardinality: Single
 Name: edu.stanford.smi.protege.widget.PasswordFieldWidget
 Slot-Widget: True
 
+Name: edu.stanford.smi.protege.widget.DigestedPasswordWidget
+Slot-Widget: True
+
 Name: edu/stanford/smi/protege/widget/TextAreaWidget.class
 Slot-Widget: True
 
