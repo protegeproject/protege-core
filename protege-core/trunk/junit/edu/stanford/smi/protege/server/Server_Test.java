@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.framestore.SimpleTestCase;
+import edu.stanford.smi.protege.server.framestore.LastUsageInvocationHandler;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.User;
@@ -178,6 +179,7 @@ public class Server_Test extends SimpleTestCase {
         User u2 = metaproject.getUser(USER2);
         
         long start = System.currentTimeMillis();
+        Thread.sleep(LastUsageInvocationHandler.ACCESS_TIME_GRANULARITY);
         ((MetaProjectImpl) metaproject).getKnowledgeBase().flushEvents();
         assertTrue(u2.getLastLogin() == null || u2.getLastLogin().getTime() < start);
         assertTrue(u2.getLastAccess() == null || u2.getLastAccess().getTime() < start);
@@ -189,12 +191,14 @@ public class Server_Test extends SimpleTestCase {
         Date loginTime = u2.getLastLogin();
         assertTrue(loginTime.getTime() > start);
         assertTrue(u2.getLastAccess().getTime() >  start);
+        
         start  = System.currentTimeMillis();
+        Thread.sleep(LastUsageInvocationHandler.ACCESS_TIME_GRANULARITY);
         assertTrue(loginTime.getTime() < start);
         assertTrue(u2.getLastAccess().getTime() <= start);
         
-        Thread.sleep(1000);
-        
+        Thread.sleep(LastUsageInvocationHandler.ACCESS_TIME_GRANULARITY);
+
         kb.createCls("garbage", Collections.singleton(kb.getRootCls()));
     
         ((MetaProjectImpl) metaproject).getKnowledgeBase().flushEvents();
