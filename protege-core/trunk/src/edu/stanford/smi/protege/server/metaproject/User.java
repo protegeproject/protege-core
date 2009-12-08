@@ -27,5 +27,8 @@ public interface User {
   
   boolean verifyPassword(String password);
   
+  void setEmail(String email);
+  
+  String getEmail(String email);
 
 }
