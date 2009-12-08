@@ -36,7 +36,7 @@ public class Digest_Test extends TestCase {
         assertTrue(ray.verifyPassword(TIMOTHY_PASSWORD));
         
         Instance r = ((UserImpl) ray).getProtegeInstance();
-        assertTrue(r.getOwnSlotValue(p.getKnowledgeBase().getSlot(MetaProjectImpl.SlotEnum.digest.toString())) != null);
+        assertTrue(r.getOwnSlotValue(p.getKnowledgeBase().getSlot(MetaProjectImpl.SlotEnum.password.toString())) != null);
         assertTrue(r.getOwnSlotValue(p.getKnowledgeBase().getSlot(MetaProjectImpl.SlotEnum.salt.toString())) != null);
 
     }
