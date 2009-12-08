@@ -281,7 +281,8 @@ public class ServerAdmin_Test extends APITestCase {
                     ls.stageAchieved(TestKillOtherUser.CONFIRMED, null);
                 }
                 catch (Throwable t) {
-                    ls.exceptionOffMainThread(TestKillOtherUser.CONFIRMED, t);
+                	log.log(Level.SEVERE, t.getMessage(), t);
+                    ls.exceptionOffMainThread(TestKillOtherUser.CONFIRMED, t);                    
                 }
             }
         }.start();
