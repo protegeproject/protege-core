@@ -1,9 +1,7 @@
 package edu.stanford.smi.protege.server.metaproject.impl;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.Date;
-import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -20,7 +18,6 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 	private static final long serialVersionUID = -4416984896523630762L;
 	private static final Logger log = Log.getLogger(UserImpl.class);
 
-	private static Random random;
 	private String name;
 
 	@SuppressWarnings("unchecked")
