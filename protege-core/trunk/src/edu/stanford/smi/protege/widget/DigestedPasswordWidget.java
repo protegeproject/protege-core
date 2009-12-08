@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.ValueType;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
 import edu.stanford.smi.protege.ui.ProjectManager;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.DigestAndSalt;
@@ -30,7 +31,7 @@ public class DigestedPasswordWidget extends TextFieldWidget {
 
 	private static final long serialVersionUID = 7208216346180195394L;
 
-	public static final String SALT_SLOT_NAME = "salt";
+	public static final String SALT_SLOT_NAME = MetaProjectImpl.SlotEnum.salt.name();
 
 	@Override
 	public JComponent createCenterComponent(JTextComponent textComponent) {
