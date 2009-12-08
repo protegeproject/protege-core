@@ -1,4 +1,4 @@
-; Thu Dec 03 18:26:56 PST 2009
+; Mon Dec 07 18:47:27 PST 2009
 ; 
 ;+ (version "3.4.2")
 ;+ (build "Build 557")
@@ -56,11 +56,19 @@
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
+	(single-slot salt
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
 	(single-slot location
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot name_
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot email
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
@@ -81,6 +89,10 @@
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
+	(single-slot salt
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
 	(multislot group
 		(type INSTANCE)
 ;+		(allowed-classes Group)
@@ -91,6 +103,10 @@
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot name_
+		(type STRING)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
+	(single-slot email
 		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
