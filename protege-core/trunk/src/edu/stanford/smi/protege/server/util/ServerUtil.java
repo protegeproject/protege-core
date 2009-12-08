@@ -2,15 +2,19 @@ package edu.stanford.smi.protege.server.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
+import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
+import edu.stanford.smi.protege.server.metaproject.impl.WrappedProtegeInstanceImpl;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.ClsEnum;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
+import edu.stanford.smi.protege.util.ArchiveManager;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 
@@ -29,17 +33,68 @@ public class ServerUtil {
 		    changed = addPolicyControlledObjectClass(mp);
 		    changed = addAccessSlots(mp) || changed;
 		    changed = changeGroup(mp) || changed;
+		    changed = addEmail(mp) | changed;
+		    changed = addSalt(mp) | changed;
 
 			/* attempt to use getDesignTimeClsWidget at svn revision 15083 */
 			if (changed) {
+				//archive old version
+				try {
+					 ArchiveManager manager = ArchiveManager.getArchiveManager();
+				        manager.archive(mp.getKnowledgeBase().getProject(), "Version before the update of the metaproject format from " + new Date());
+				     Log.getLogger().info("Archived original metaproject to archive subfolder.");
+				} catch (Exception e) {
+					Log.getLogger().log(Level.WARNING, "Failed at creating backup of metaproject", e);
+				}
+				
+				//save metaproject
 				ArrayList errors = new ArrayList();
 				mp.save(errors);
+				Log.getLogger().info("The metaproject was updated to a new version. Saved the updated metaproject on " + new Date());
 				Log.handleErrors(Log.getLogger(), Level.WARNING, errors);
 			}
 
 		} catch (Throwable t) {
 			Log.getLogger().log(Level.WARNING, "Failed to fix up metaproject to new version.", t);
 		}
+	}
+
+	private static boolean addEmail(MetaProjectImpl mp) {
+		boolean changed = false;
+	    KnowledgeBase kb = mp.getKnowledgeBase();	    
+	    Slot emailSlot = kb.getSlot(SlotEnum.email.name());
+	    if (emailSlot == null) {
+	    	emailSlot = kb.createSlot(SlotEnum.email.name());
+	    	Cls userCls = mp.getCls(ClsEnum.User);
+	    	userCls.addDirectTemplateSlot(emailSlot);
+	    	changed = true;
+	    }
+		return changed;
+	}
+
+	private static boolean addSalt(MetaProjectImpl mp) {
+		boolean changed = false;
+	    KnowledgeBase kb = mp.getKnowledgeBase();
+	    Slot saltSlot = kb.getSlot(SlotEnum.salt.name());
+	    if (saltSlot == null) {
+	    	saltSlot = kb.createSlot(SlotEnum.salt.name());
+	    	Cls userCls = mp.getCls(ClsEnum.User);
+	    	userCls.addDirectTemplateSlot(saltSlot);
+	    		    	
+	    	//change all existing passwords to digest + salt
+	    	Slot passSlot = mp.getSlot(SlotEnum.password);
+	    	for (User u : mp.getUsers()) {
+	    		WrappedProtegeInstanceImpl ui = (WrappedProtegeInstanceImpl) u;
+	    		String password = (String) ui.getProtegeInstance().getOwnSlotValue(passSlot);
+	    		u.setPassword(password);
+	    	}
+	    	
+	    	changed = true;
+	    	Log.getLogger().info("\tEncoded all user passwords as part of the metaproject upgrade." +
+	    			" Please adjust the User class forms to use the DigestedPassword slot widget for password field.");
+	    }
+	    
+		return changed;
 	}
 
 	private static boolean addPolicyControlledObjectClass(MetaProjectImpl mp)  {
