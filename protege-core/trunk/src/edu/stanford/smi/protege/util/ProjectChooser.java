@@ -266,6 +266,10 @@ public class ProjectChooser extends JFileChooser {
 		ArrayList errors = new ArrayList();
 		
 		File selectedFile = getSelectedFile();
+		if (selectedFile == null) {
+			return null;
+		}
+		
 		String fileName = selectedFile.toString();
 		int lastDotIndex = fileName.lastIndexOf('.');
 		
