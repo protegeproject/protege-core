@@ -1,19 +1,19 @@
-; Sun Jun 22 17:45:42 PDT 2008
+; Tue Dec 08 14:29:12 PST 2009
 ; 
-;+ (version "3.4")
-;+ (build "Build 501")
+;+ (version "3.4.2")
+;+ (build "Build 557")
 
 ([BROWSER_SLOT_NAMES] of  Property_List
 
 	(properties
-		[metaproject_ProjectKB_Class10016]
-		[metaproject_ProjectKB_Class10017]
-		[metaproject_ProjectKB_Class10018]
-		[metaproject_ProjectKB_Class10019]
-		[metaproject_ProjectKB_Class10020]
-		[metaproject_ProjectKB_Class10021]
-		[metaproject_ProjectKB_Class10022]
-		[metaproject_ProjectKB_Class10023]))
+		[metaproject_ProjectKB_Class20016]
+		[metaproject_ProjectKB_Class20017]
+		[metaproject_ProjectKB_Class20018]
+		[metaproject_ProjectKB_Class20019]
+		[metaproject_ProjectKB_Class20020]
+		[metaproject_ProjectKB_Class20021]
+		[metaproject_ProjectKB_Class20022]
+		[metaproject_ProjectKB_Class20023]))
 
 ([CLSES_TAB] of  Widget
 
@@ -47,7 +47,7 @@
 	(property_list [ProjectKB_0036_00038])
 	(widget_class_name "edu.stanford.smi.protege.widget.InstancesTab"))
 
-([KB_622352_Class0] of  Map
+([KB_552583_Class0] of  Map
 )
 
 ([KB_892109_Instance_0] of  Property_List
@@ -442,63 +442,30 @@
 	(boolean_value FALSE)
 	(name "ButtonDisplayed-View References to Value"))
 
-([metaproject_ProjectKB_Class10016] of  String
-
-	(name ":INSTANCE-ANNOTATION")
-	(string_value "%3AANNOTATION-TEXT"))
-
-([metaproject_ProjectKB_Class10017] of  String
-
-	(name "GroupOperation")
-	(string_value "allowedGroup{+can+}allowedOperation"))
-
-([metaproject_ProjectKB_Class10018] of  String
-
-	(name ":META-CLASS")
-	(string_value "%3ANAME"))
-
-([metaproject_ProjectKB_Class10019] of  String
-
-	(name "User")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class10020] of  String
-
-	(name "Operation")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class10021] of  String
-
-	(name "Project")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class10022] of  String
-
-	(name "Group")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class10023] of  String
-
-	(name ":PAL-CONSTRAINT")
-	(string_value "%3APAL-NAME"))
-
 ([metaproject_ProjectKB_Class11] of  Widget
 
 	(is_hidden TRUE)
 	(property_list [metaproject_ProjectKB_Class12])
-	(widget_class_name "edu.stanford.smi.protegex.server_changes.prompt.UsersTab"))
+	(widget_class_name "edu.stanford.smi.protegex.changes.stats.ChangeStatisticsTab"))
 
 ([metaproject_ProjectKB_Class12] of  Property_List
 )
 
-([metaproject_ProjectKB_Class13] of  Widget
+([metaproject_ProjectKB_Class13] of  Boolean
 
-	(is_hidden TRUE)
-	(property_list [metaproject_ProjectKB_Class14])
-	(widget_class_name "edu.stanford.smi.protege.ui.internalKB.InternalKBTab"))
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-View References to Value"))
 
-([metaproject_ProjectKB_Class14] of  Property_List
-)
+([metaproject_ProjectKB_Class14] of  Widget
+
+	(height 60)
+	(is_hidden FALSE)
+	(name "salt")
+	(property_list [metaproject_ProjectKB_Class20015])
+	(widget_class_name "edu.stanford.smi.protege.widget.TextFieldWidget")
+	(width 200)
+	(x 0)
+	(y 400))
 
 ([metaproject_ProjectKB_Class15] of  Boolean
 
@@ -518,6 +485,49 @@
 ([metaproject_ProjectKB_Class2] of  Property_List
 )
 
+([metaproject_ProjectKB_Class20015] of  Property_List
+)
+
+([metaproject_ProjectKB_Class20016] of  String
+
+	(name ":INSTANCE-ANNOTATION")
+	(string_value "%3AANNOTATION-TEXT"))
+
+([metaproject_ProjectKB_Class20017] of  String
+
+	(name "Group")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class20018] of  String
+
+	(name "GroupOperation")
+	(string_value "allowedGroup{+can+}allowedOperation"))
+
+([metaproject_ProjectKB_Class20019] of  String
+
+	(name "Operation")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class20020] of  String
+
+	(name ":PAL-CONSTRAINT")
+	(string_value "%3APAL-NAME"))
+
+([metaproject_ProjectKB_Class20021] of  String
+
+	(name ":META-CLASS")
+	(string_value "%3ANAME"))
+
+([metaproject_ProjectKB_Class20022] of  String
+
+	(name "User")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class20023] of  String
+
+	(name "Project")
+	(string_value "name"))
+
 ([metaproject_ProjectKB_Class3] of  Widget
 
 	(is_hidden TRUE)
@@ -531,7 +541,7 @@
 
 	(is_hidden TRUE)
 	(property_list [metaproject_ProjectKB_Class6])
-	(widget_class_name "edu.stanford.smi.protegex.changes.stats.ChangeStatisticsTab"))
+	(widget_class_name "edu.stanford.smi.protegex.server_changes.prompt.UsersTab"))
 
 ([metaproject_ProjectKB_Class6] of  Property_List
 )
@@ -540,7 +550,7 @@
 
 	(is_hidden TRUE)
 	(property_list [metaproject_ProjectKB_Class8])
-	(widget_class_name "edu.stanford.smi.protegex.datamaster.DataMasterTab"))
+	(widget_class_name "edu.stanford.smi.protegex.chatPlugin.ChatTab"))
 
 ([metaproject_ProjectKB_Class8] of  Property_List
 )
@@ -549,7 +559,7 @@
 
 	(is_hidden TRUE)
 	(property_list [metaproject_ProjectKB_Class10])
-	(widget_class_name "edu.stanford.smi.protegex.chatPlugin.ChatTab"))
+	(widget_class_name "edu.stanford.smi.protege.ui.internalKB.InternalKBTab"))
 
 ([metaproject_ProjectKB_Instance_20047] of  Widget
 
@@ -1580,15 +1590,15 @@
 	(browser_slot_names [BROWSER_SLOT_NAMES])
 	(customized_instance_widgets
 		[INSTANCE_ANNOTATION_FORM_WIDGET]
+		[projects_ProjectKB_00138]
 		[nci_metaproject_ProjectKB_Instance_10082]
-		[STANDARD_FACET_FORM_WIDGET]
+		[nci_metaproject_ProjectKB_Instance_20157]
 		[STANDARD_SLOT_FORM_WIDGET]
+		[STANDARD_FACET_FORM_WIDGET]
+		[PAL_FORM_WIDGET]
 		[STANDARD_CLASS_FORM_WIDGET]
 		[projects_ProjectKB_00053]
-		[nci_metaproject_ProjectKB_Instance_20157]
-		[projects_ProjectKB_00106]
-		[projects_ProjectKB_00138]
-		[PAL_FORM_WIDGET])
+		[projects_ProjectKB_00106])
 	(default_cls_metaclass ":STANDARD-CLASS")
 	(default_facet_metaclass ":STANDARD-FACET")
 	(default_instance_widget_class_name "edu.stanford.smi.protege.widget.FormWidget")
@@ -1761,7 +1771,8 @@
 		[projects_ProjectKB_00087]
 		[projects_ProjectKB_00095]
 		[projects_ProjectKB_00097]
-		[projects_ProjectKB_00099]))
+		[projects_ProjectKB_00099]
+		[metaproject_ProjectKB_Class14]))
 
 ([projects_ProjectKB_00085] of  Widget
 
@@ -1798,7 +1809,8 @@
 		[projects_ProjectKB_00104]
 		[projects_ProjectKB_00105]
 		[nci_metaproject_ProjectKB_Instance_52]
-		[nci_metaproject_ProjectKB_Instance_53]))
+		[nci_metaproject_ProjectKB_Instance_53]
+		[metaproject_ProjectKB_Class13]))
 
 ([projects_ProjectKB_00095] of  Widget
 
