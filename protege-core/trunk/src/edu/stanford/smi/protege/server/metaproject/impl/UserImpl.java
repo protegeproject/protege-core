@@ -27,119 +27,110 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 	}
 
 	public String getDescription() {
-    	Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.description));
-    	if (!(value instanceof String)) {
-    		throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
-    	}
-    	return (String) value;		
-    }
+		Object value = getProtegeInstance().getOwnSlotValue(getMetaProject().getSlot(MetaProjectImpl.SlotEnum.description));
+		if (!(value instanceof String)) {
+			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
+		}
+		return (String) value;		
+	}
 
-    @SuppressWarnings("unchecked")
-    public Set<Group> getGroups() {
-    	return getSlotValues(MetaProjectImpl.SlotEnum.group, MetaProjectImpl.ClsEnum.Group);
-    }
-    
-    public Date getLastAccess() {
-        Object unparsed = (String) getSlotValue(SlotEnum.lastAccess, null);
-        if (unparsed != null && !(unparsed instanceof String)) {
-            throw new OntologyException("The " + MetaProjectImpl.SlotEnum.lastAccess + " slot should take on string values");
-        }
-        return parseDate((String) unparsed);
-    }
-    
-    public Date getLastLogin() {
-        Object unparsed = (String) getSlotValue(SlotEnum.lastLogin, null);
-        if (unparsed != null && !(unparsed instanceof String)) {
-            throw new OntologyException("The " + MetaProjectImpl.SlotEnum.lastLogin + " slot should take on string values");
-        }
-        return parseDate((String) unparsed);
-    }
+	@SuppressWarnings("unchecked")
+	public Set<Group> getGroups() {
+		return getSlotValues(MetaProjectImpl.SlotEnum.group, MetaProjectImpl.ClsEnum.Group);
+	}
 
-    public String getName() {
+	public Date getLastAccess() {
+		Object unparsed = (String) getSlotValue(SlotEnum.lastAccess, null);
+		if (unparsed != null && !(unparsed instanceof String)) {
+			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.lastAccess + " slot should take on string values");
+		}
+		return parseDate((String) unparsed);
+	}
+
+	public Date getLastLogin() {
+		Object unparsed = (String) getSlotValue(SlotEnum.lastLogin, null);
+		if (unparsed != null && !(unparsed instanceof String)) {
+			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.lastLogin + " slot should take on string values");
+		}
+		return parseDate((String) unparsed);
+	}
+
+	public String getName() {
 		return name;
 	}
 
 	public void setDescription(String description) {
-    	setSlotValue(MetaProjectImpl.SlotEnum.description, description);
-    }
-	
-	public void setLastAccess(Date time) {
-	    setSlotValue(SlotEnum.lastAccess, new Long(time.getTime()).toString());
-	}
-	
-	public void setLastLogin(Date time) {
-        setSlotValue(SlotEnum.lastLogin, new Long(time.getTime()).toString());
+		setSlotValue(MetaProjectImpl.SlotEnum.description, description);
 	}
 
-    public void setName(String name) {
+	public void setLastAccess(Date time) {
+		setSlotValue(SlotEnum.lastAccess, new Long(time.getTime()).toString());
+	}
+
+	public void setLastLogin(Date time) {
+		setSlotValue(SlotEnum.lastLogin, new Long(time.getTime()).toString());
+	}
+
+	public void setName(String name) {
 		this.name = name;
 		setSlotValue(MetaProjectImpl.SlotEnum.name, name);
 	}
 
 	public void setPassword(String password) {
-	    if (password == null) {
-	        password = "";
-	    }
-	    if (useDigest()) {
-	        DigestAndSalt encrypted = StringUtilities.makeDigest(password);
-	        setSlotValue(SlotEnum.salt, encrypted.getSalt());
-	        setSlotValue(SlotEnum.digest, encrypted.getDigest());
-	    }
-	    else {
-	        setSlotValue(MetaProjectImpl.SlotEnum.password, password);
-	    }
+		if (password == null) {
+			password = "";
+		}
+
+		DigestAndSalt encrypted = StringUtilities.makeDigest(password);
+		setSlotValue(SlotEnum.salt, encrypted.getSalt());
+		setSlotValue(SlotEnum.password, encrypted.getDigest());
 	}
-	
+
 	public boolean verifyPassword(String password) {
-	    if (password == null) {
-	        password = "";
-	    }
-	    if (useDigest()) {
-	        DigestAndSalt encodedPassword = StringUtilities.makeDigest(password, (String) getSlotValue(SlotEnum.salt, null));
-	        return encodedPassword.getDigest().equals(getSlotValue(SlotEnum.digest, null));
-	    }
-	    else {
-	        String realPassword  = (String) getSlotValue(MetaProjectImpl.SlotEnum.password, null);
-	        if (realPassword == null) {
-	            realPassword = "";
-	        }
-	        return realPassword.equals(password);
-	    }
+		if (password == null) {
+			password = "";
+		}
+
+		DigestAndSalt encodedPassword = StringUtilities.makeDigest(password, (String) getSlotValue(SlotEnum.salt, null));
+		return encodedPassword.getDigest().equals(getSlotValue(SlotEnum.password, null));
 	}
 	
-	@Override
-    public boolean equals(Object o) { 
-    	if (!(o instanceof User)) {
-    		return false;
-    	}
-    	User other = (User) o;
-    	return name.equals(other.getName());
-    }
-
-    @Override
-    public int hashCode() {
-    	return name == null ? 42 : name.hashCode();
-    }
-
-    @Override
-    public String toString() {
-    	return name;
-    }
-
-    private static Date parseDate(String dateAsLong) {
-	    if (dateAsLong == null) {
-	        return null;
-	    }
-	    try {
-	        return new Date(Long.parseLong(dateAsLong));
-	    }
-	    catch (NumberFormatException nfe) {
-	        return null;
-	    }
+	public String getEmail(String email) {
+		return (String) getSlotValue(SlotEnum.email, null);		
 	}
-    
-    private boolean useDigest() {
-        return mp.getKnowledgeBase().getSlot(SlotEnum.digest.toString()) != null &&
-                    mp.getKnowledgeBase().getSlot(SlotEnum.salt.toString()) != null;
-    }
+	
+	public void setEmail(String email) {		
+		setSlotValue(MetaProjectImpl.SlotEnum.email, email);
+	}
+
+	@Override
+	public boolean equals(Object o) { 
+		if (!(o instanceof User)) {
+			return false;
+		}
+		User other = (User) o;
+		return name.equals(other.getName());
+	}
+
+	@Override
+	public int hashCode() {
+		return name == null ? 42 : name.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return name;
+	}
+
+	private static Date parseDate(String dateAsLong) {
+		if (dateAsLong == null) {
+			return null;
+		}
+		try {
+			return new Date(Long.parseLong(dateAsLong));
+		}
+		catch (NumberFormatException nfe) {
+			return null;
+		}
+	}	
 }
