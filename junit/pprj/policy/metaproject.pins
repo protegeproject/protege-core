@@ -1,4 +1,4 @@
-; Tue Dec 08 14:33:46 PST 2009
+; Wed Dec 09 14:36:18 PST 2009
 ; 
 ;+ (version "3.4.2")
 ;+ (build "Build 557")
@@ -13,7 +13,8 @@
 		[metaproject_Instance_2]
 		[metaproject_Instance_10])
 	(name "Natasha Noy")
-	(password "natasha"))
+	(password "f9acfdcc3cebeb9e4868c07a0cec68b1")
+	(salt "4d55536290723e81"))
 
 ([metaproject_Instance_10] of  Group
 
@@ -43,7 +44,8 @@
 		[metaproject_Instance_6]
 		[metaproject_Instance_4])
 	(name "Bond, James Bond")
-	(password "Wouldn't you like to know"))
+	(password "f510f4ff9ddfd93b02cdb5a977c05d16")
+	(salt "f79c58cdd8e60b1f"))
 
 ([metaproject_Instance_15] of  GroupOperation
 
@@ -65,7 +67,8 @@
 
 	(group [metaproject_Instance_4])
 	(name "Bob")
-	(password "bob"))
+	(password "1a316219a251f790c8c8f74c48c4e29c")
+	(salt "bf9a10bebb251ec8"))
 
 ([metaproject_Instance_4] of  Group
 
@@ -78,7 +81,8 @@
 
 	(group [metaproject_Instance_6])
 	(name "Paul")
-	(password "paul"))
+	(password "c9ae50e058a54bc9323c5fdde59b273e")
+	(salt "befd57ea00bd18d1"))
 
 ([metaproject_Instance_6] of  Group
 
