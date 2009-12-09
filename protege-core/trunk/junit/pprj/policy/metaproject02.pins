@@ -1,4 +1,4 @@
-; Tue Dec 08 14:34:49 PST 2009
+; Wed Dec 09 14:46:43 PST 2009
 ; 
 ;+ (version "3.4.2")
 ;+ (build "Build 557")
@@ -28,7 +28,8 @@
 		[metaproject_Instance_0]
 		[metaproject02_Class0])
 	(name "Csongor Nyulas")
-	(password "csongor"))
+	(password "57864e41b9871f55ea89800668f6acaa")
+	(salt "fc2267c4c6d4eb06"))
 
 ([metaproject_Class1] of  User
 
@@ -36,7 +37,8 @@
 		[metaproject_Instance_0]
 		[metaproject02_Class0])
 	(name "Samson Tu")
-	(password "samson"))
+	(password "ba91c429ee696aa45d1640002cbe75cb")
+	(salt "bb89a12ad1a0c574"))
 
 ([metaproject_Class10000] of  Operation
 
@@ -49,7 +51,8 @@
 		[metaproject_Instance_0]
 		[metaproject02_Class0])
 	(name "Dilvan Moreira")
-	(password "dilvan"))
+	(password "cf6a25921d7c295df84c1c3fcbdbfdfd")
+	(salt "8e6507f9087be821"))
 
 ([metaproject_Class2] of  Operation
 
@@ -94,7 +97,8 @@
 		[metaproject_Instance_0]
 		[metaproject_Class20003])
 	(name "Admin")
-	(password "admin"))
+	(password "9b3a13e39d4a402e292bac4b72af991b")
+	(salt "d2fb17524d815c82"))
 
 ([metaproject_Class20009] of  Server
 
@@ -151,7 +155,8 @@
 		[metaproject_Instance_0]
 		[metaproject02_Class0])
 	(name "Guest")
-	(password "guest"))
+	(password "c30cc159413d4405c2dba1f50866fe8c")
+	(salt "b8dc3d152cead095"))
 
 ([metaproject_Instance_10003] of  User
 
@@ -159,7 +164,8 @@
 		[metaproject_Instance_0]
 		[metaproject02_Class0])
 	(name "Jennifer Vendetti")
-	(password "jenny"))
+	(password "d0cd15c4fcd6cadc57b2785b26cfbdef")
+	(salt "1b2d4f96f8208d2a"))
 
 ([metaproject_Instance_10004] of  User
 
@@ -167,7 +173,8 @@
 		[metaproject_Instance_0]
 		[metaproject02_Class0])
 	(name "Natasha Noy")
-	(password "natalia"))
+	(password "0a1024efce6c13203527a30671f97079")
+	(salt "571038dd3ea9ac52"))
 
 ([metaproject_Instance_10005] of  User
 
@@ -175,7 +182,8 @@
 		[metaproject_Instance_0]
 		[metaproject02_Class0])
 	(name "Ray Fergerson")
-	(password "claudia"))
+	(password "dc9e72817a16bce2b49c51cfa680758a")
+	(salt "a16779f995d5f863"))
 
 ([metaproject_Instance_10006] of  User
 
@@ -183,7 +191,8 @@
 		[metaproject_Instance_0]
 		[metaproject02_Class0])
 	(name "Tania Tudorache")
-	(password "tania"))
+	(password "31431b305043c2287ca3169fabeecff8")
+	(salt "fe0825d5baf2a325"))
 
 ([metaproject_Instance_10007] of  User
 
@@ -191,7 +200,8 @@
 		[metaproject_Instance_0]
 		[metaproject02_Class0])
 	(name "Timothy Redmond")
-	(password "troglodyte"))
+	(password "e718ca7006d2e2ee351e3f935d8d6ad2")
+	(salt "6262e0d7c0ccda07"))
 
 ([metaproject_Instance_10008] of  GroupOperation
 

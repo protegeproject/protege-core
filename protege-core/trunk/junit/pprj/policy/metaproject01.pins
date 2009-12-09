@@ -1,4 +1,4 @@
-; Tue Dec 08 14:34:15 PST 2009
+; Wed Dec 09 14:38:04 PST 2009
 ; 
 ;+ (version "3.4.2")
 ;+ (build "Build 557")
@@ -78,7 +78,8 @@
 
 	(group [metaproject_Class10001])
 	(name "Guest")
-	(password "guest"))
+	(password "f6cbe0e8b51b334c28816a9f01ace210")
+	(salt "a396afcff7a7efae"))
 
 ([metaproject_Instance_10003] of  User
 
@@ -86,19 +87,22 @@
 		[metaproject_Class10001]
 		[metaproject_Class10002])
 	(name "Jennifer Vendetti")
-	(password "jenny"))
+	(password "c9afeaad90e160f79d0b4946969514ac")
+	(salt "99c94adf831f4b85"))
 
 ([metaproject_Instance_10004] of  User
 
 	(group [metaproject_Class10001])
 	(name "Natasha Noy")
-	(password "natalia"))
+	(password "a754fd0308924014d6819ad82fed1d0e")
+	(salt "0ba934b7d93304ed"))
 
 ([metaproject_Instance_10005] of  User
 
 	(group [metaproject_Class10001])
 	(name "Ray Fergerson")
-	(password "claudia"))
+	(password "9f570cb0985379ce8fc4dadd2f81a212")
+	(salt "5ade7a615dc0cc23"))
 
 ([metaproject_Instance_10006] of  User
 
@@ -106,7 +110,8 @@
 		[metaproject_Class10001]
 		[metaproject_Class10002])
 	(name "Tania Tudorache")
-	(password "tania"))
+	(password "5042a7a814b025f4eab5069e744fe1fe")
+	(salt "cc2ef2cee0686521"))
 
 ([metaproject_Instance_10007] of  User
 
@@ -115,7 +120,8 @@
 		[metaproject_Class10001]
 		[metaproject_Class10002])
 	(name "Timothy Redmond")
-	(password "troglodyte"))
+	(password "e34da28df85c5fb0b99043064c93e5f2")
+	(salt "991f1efb4cb19286"))
 
 ([metaproject_Instance_20000] of  Project
 
