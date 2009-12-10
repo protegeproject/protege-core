@@ -690,10 +690,15 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private FrameListener getMetaProjectFrameListener() {
         if (metaprojectFrameListener == null) {
             metaprojectFrameListener = new FrameAdapter() {
+                // don't do this  inside the listener method
+                // it takes the Server lock and can deadlock.
+                // note that the listener is invoked by the last access time updater
+                private Cls projectClass = getProjectCls();  
+                
                 @Override
                 public void ownSlotValueChanged(FrameEvent event) {
                     Instance frame = (Instance)event.getFrame();
-                    if (frame.hasType(getProjectCls()) && event.getSlot().equals(nameSlot)) {
+                    if (frame.hasType(projectClass) && event.getSlot().equals(nameSlot)) {
                         List oldValues = event.getOldValues();
                         String oldName = new String();
                         if (oldValues != null && oldValues.size() > 0) {
