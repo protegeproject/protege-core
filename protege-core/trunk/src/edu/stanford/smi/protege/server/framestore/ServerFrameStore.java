@@ -1805,7 +1805,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     		LastUsageInvocationHandler lastUsageFrameStore = new LastUsageInvocationHandler(projectInstance);
     		fsm.insertFrameStore((FrameStore) Proxy.newProxyInstance(getClass().getClassLoader(), 
     		                                                         new Class<?>[] { FrameStore.class }, 
-    		                                                         lastUsageFrameStore));
+    		                                                         lastUsageFrameStore),
+    		                      1); // past the localization frame store
     	}
     }
 
