@@ -7,6 +7,7 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Group;
 import edu.stanford.smi.protege.server.metaproject.GroupOperation;
 import edu.stanford.smi.protege.server.metaproject.Operation;
+import edu.stanford.smi.protege.server.metaproject.PropertyValue;
 
 public class GroupOperationImpl extends WrappedProtegeInstanceImpl implements GroupOperation {
     private static final long serialVersionUID = -3306223096316205528L;
@@ -40,4 +41,18 @@ public class GroupOperationImpl extends WrappedProtegeInstanceImpl implements Gr
 	public void setAllowedGroup(Group group) {
 		setSlotValue(MetaProjectImpl.SlotEnum.allowedGroup, group);
 	}
+	
+	@SuppressWarnings("unchecked")
+	public Set<PropertyValue> getPropertyValues() {
+		return getSlotValues(MetaProjectImpl.SlotEnum.properties, MetaProjectImpl.ClsEnum.PropertyValue);
+	}
+
+	public void setPropertyValues(Collection<PropertyValue> propertyValues) {
+		setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum.properties, propertyValues);		
+	}
+	
+	 public void addPropertyValue(PropertyValue propertyValue) {
+    	 addSlotValue(MetaProjectImpl.SlotEnum.properties, propertyValue);		
+	}
+    
 }

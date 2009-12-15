@@ -1,11 +1,14 @@
 package edu.stanford.smi.protege.server.metaproject.impl;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Set;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.MetaProjectConstants;
 import edu.stanford.smi.protege.server.metaproject.Operation;
+import edu.stanford.smi.protege.server.metaproject.PropertyValue;
 
 public class OperationImpl extends WrappedProtegeInstanceImpl implements Operation, Serializable {
 	private static final long serialVersionUID = 3175714463454087306L;
@@ -56,6 +59,20 @@ public class OperationImpl extends WrappedProtegeInstanceImpl implements Operati
 	public void setDescription(String description) {
 		setSlotValue(MetaProjectImpl.SlotEnum.description, description);
 	}
+	
+	@SuppressWarnings("unchecked")
+	public Set<PropertyValue> getPropertyValues() {
+		return getSlotValues(MetaProjectImpl.SlotEnum.properties, MetaProjectImpl.ClsEnum.PropertyValue);
+	}
+
+	public void setPropertyValues(Collection<PropertyValue> propertyValues) {
+		setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum.properties, propertyValues);		
+	}
+	
+	 public void addPropertyValue(PropertyValue propertyValue) {
+    	 addSlotValue(MetaProjectImpl.SlotEnum.properties, propertyValue);		
+	}
+    
 	
 	// *********************** Deprecated constants *********************** //
 	

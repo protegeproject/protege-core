@@ -8,6 +8,7 @@ import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.GroupOperation;
 import edu.stanford.smi.protege.server.metaproject.PolicyControlledObject;
+import edu.stanford.smi.protege.server.metaproject.PropertyValue;
 
 public class PolicyControlledObjectImpl extends WrappedProtegeInstanceImpl implements PolicyControlledObject,
         Serializable {
@@ -63,6 +64,20 @@ public class PolicyControlledObjectImpl extends WrappedProtegeInstanceImpl imple
         return getSlotValues(MetaProjectImpl.SlotEnum.allowedGroupOperation, MetaProjectImpl.ClsEnum.GroupOperation);
     }
 
+	@SuppressWarnings("unchecked")
+	public Set<PropertyValue> getPropertyValues() {
+		return getSlotValues(MetaProjectImpl.SlotEnum.properties, MetaProjectImpl.ClsEnum.PropertyValue);
+	}
+
+	public void setPropertyValues(Collection<PropertyValue> propertyValues) {
+		setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum.properties, propertyValues);		
+	}
+	
+	 public void addPropertyValue(PropertyValue propertyValue) {
+    	 addSlotValue(MetaProjectImpl.SlotEnum.properties, propertyValue);		
+	}
+    
+    
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof PolicyControlledObject)) {
@@ -81,4 +96,5 @@ public class PolicyControlledObjectImpl extends WrappedProtegeInstanceImpl imple
     public String toString() {
         return name;
     }
+	
 }
