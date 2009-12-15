@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.ValueType;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
@@ -33,8 +34,9 @@ public class ServerUtil {
 		    changed = addPolicyControlledObjectClass(mp);
 		    changed = addAccessSlots(mp) || changed;
 		    changed = changeGroup(mp) || changed;
-		    changed = addEmail(mp) | changed;
-		    changed = addSalt(mp) | changed;
+		    changed = addEmail(mp) || changed;
+		    changed = addSalt(mp) || changed;
+		    changed = addPropertyValues(mp) || changed;
 
 			/* attempt to use getDesignTimeClsWidget at svn revision 15083 */
 			if (changed) {
@@ -58,6 +60,41 @@ public class ServerUtil {
 			Log.getLogger().log(Level.WARNING, "Failed to fix up metaproject to new version.", t);
 		}
 	}
+
+	
+	@SuppressWarnings("unchecked")
+	private static boolean addPropertyValues(MetaProjectImpl mp) {
+		boolean changed = false;
+	    KnowledgeBase kb = mp.getKnowledgeBase();
+	    
+	    Cls propertyValueCls = createCls(kb, ClsEnum.PropertyValue.name(), kb.getRootClses());
+	    changed = addTemplateSlot(kb, propertyValueCls, SlotEnum.propertyName) || changed;
+	    changed = addTemplateSlot(kb, propertyValueCls, SlotEnum.propertyValue) || changed;
+	    	    
+	    Slot propertiesSlot = kb.getSlot(SlotEnum.properties.name());
+	    if (propertiesSlot == null) {
+	    	propertiesSlot = kb.createSlot(SlotEnum.properties.name());
+	    	propertiesSlot.setValueType(ValueType.INSTANCE);
+	    	propertiesSlot.setAllowsMultipleValues(true);
+	    	propertiesSlot.setAllowedClses(CollectionUtilities.createCollection(propertyValueCls));
+	    	changed = true;
+	    }
+	    
+	    Cls userCls = mp.getCls(ClsEnum.User);
+	    changed = addTemplateSlot(kb, userCls, SlotEnum.properties) || changed;
+
+	    Cls policyCtrledObjCls = mp.getCls(ClsEnum.PolicyControlledObject);
+	    changed = addTemplateSlot(kb, policyCtrledObjCls, SlotEnum.properties) || changed;
+
+	    Cls groupOpCls = mp.getCls(ClsEnum.GroupOperation);
+	    changed = addTemplateSlot(kb, groupOpCls, SlotEnum.properties) || changed;
+	    
+	    Cls opCls = mp.getCls(ClsEnum.Operation);
+	    changed = addTemplateSlot(kb, opCls, SlotEnum.properties) || changed;
+	    
+	    return changed;
+	}
+	
 
 	private static boolean addEmail(MetaProjectImpl mp) {
 		boolean changed = false;
