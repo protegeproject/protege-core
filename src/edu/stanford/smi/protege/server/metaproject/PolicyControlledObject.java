@@ -24,5 +24,11 @@ public interface PolicyControlledObject {
 	void setAllowedGroupOperations(Collection<GroupOperation> groupOperations);
 	  
 	void addAllowedGroupOperations(GroupOperation groupOperation);
+	
+	Collection<PropertyValue> getPropertyValues();
+	
+	void setPropertyValues(Collection<PropertyValue> propertyValues);
+	
+	void addPropertyValue(PropertyValue propertyValue);
 
 }
