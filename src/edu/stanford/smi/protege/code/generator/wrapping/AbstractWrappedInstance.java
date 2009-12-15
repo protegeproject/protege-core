@@ -89,7 +89,11 @@ public abstract class AbstractWrappedInstance implements Localizable, Serializab
     		return false;
     	}
 
-    	return ((AbstractWrappedInstance)obj).getWrappedProtegeInstance().equals(getWrappedProtegeInstance());
+    	Instance wrappedProtegeInstance2 = ((AbstractWrappedInstance)obj).getWrappedProtegeInstance();
+    	if (wrappedProtegeInstance2 == null) {
+    		return getWrappedProtegeInstance() == null;
+    	}
+		return wrappedProtegeInstance2.equals(getWrappedProtegeInstance());
     }
 
     @Override
