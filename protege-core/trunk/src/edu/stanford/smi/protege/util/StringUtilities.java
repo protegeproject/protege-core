@@ -137,6 +137,14 @@ public class StringUtilities {
 		return text;
 	}
 	
+	 public static String removeAllQuotes(String text) {
+	        if (text != null && text.length() > 0 && text.charAt(0) == SINGLE_QUOTE
+	                && text.charAt(text.length() - 1) == SINGLE_QUOTE) {
+	            return text.replaceAll("'", "");
+	        }
+	        return text;
+	}
+	
     public static DigestAndSalt makeDigest(String password) {
         byte[] salt = new byte[8];
         random.nextBytes(salt);
