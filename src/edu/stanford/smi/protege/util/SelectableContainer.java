@@ -56,7 +56,7 @@ public class SelectableContainer extends JComponent implements Selectable, Dispo
     }
 
     public Collection getSelection() {
-        return _selectable.getSelection();
+        return _selectable == null ? null : _selectable.getSelection();
     }
     
     /**
