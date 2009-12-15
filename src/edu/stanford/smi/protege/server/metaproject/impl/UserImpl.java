@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.server.metaproject.impl;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -8,6 +9,7 @@ import java.util.logging.Logger;
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.server.metaproject.Group;
+import edu.stanford.smi.protege.server.metaproject.PropertyValue;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 import edu.stanford.smi.protege.util.DigestAndSalt;
@@ -102,7 +104,20 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 	public void setEmail(String email) {		
 		setSlotValue(MetaProjectImpl.SlotEnum.email, email);
 	}
+		
+	@SuppressWarnings("unchecked")
+	public Set<PropertyValue> getPropertyValues() {
+		return getSlotValues(MetaProjectImpl.SlotEnum.properties, MetaProjectImpl.ClsEnum.PropertyValue);
+	}
 
+	public void setPropertyValues(Collection<PropertyValue> propertyValues) {
+		setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum.properties, propertyValues);		
+	}
+	
+	 public void addPropertyValue(PropertyValue propertyValue) {
+    	 addSlotValue(MetaProjectImpl.SlotEnum.properties, propertyValue);		
+	}
+    
 	@Override
 	public boolean equals(Object o) { 
 		if (!(o instanceof User)) {

@@ -29,7 +29,7 @@ import edu.stanford.smi.protege.util.Log;
 public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
     
     public static enum ClsEnum {
-    	Project, User, Group, Operation, GroupOperation, PolicyControlledObject, Server;
+    	Project, User, Group, Operation, GroupOperation, PolicyControlledObject, Server, PropertyValue;
     }
 
 
@@ -37,7 +37,8 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
         name, password, salt, location, email,
         lastLogin, lastAccess,
         group, member, allowedGroup, allowedOperation, 
-        allowedGroupOperation, owner, description, annotationProject, hostName;
+        allowedGroupOperation, owner, description, annotationProject, hostName, 
+        properties, propertyName, propertyValue;
     }
 
 
