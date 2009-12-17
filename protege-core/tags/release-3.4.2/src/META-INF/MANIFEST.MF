@@ -1,0 +1,254 @@
+Manifest-Version: 1.0
+Main-Class: edu/stanford/smi/protege/Application
+
+Name: edu/stanford/smi/protege/storage/clips/ClipsKnowledgeBaseFactory.class
+Storage-Factory: True
+Default-Factory: True
+
+Name: edu/stanford/smi/protege/storage/database/DatabaseKnowledgeBaseFactory.class
+Storage-Factory: True
+
+Name: edu/stanford/smi/protege/storage/xml/XMLKnowledgeBaseFactory.class
+Storage-Factory: True
+
+Name: edu/stanford/smi/protege/widget/ClsesTab.class
+Tab-Widget: True
+
+Name: edu/stanford/smi/protege/widget/ClsesAndInstancesTab.class
+Tab-Widget: True
+
+Name: edu/stanford/smi/protege/widget/SlotsTab.class
+Tab-Widget: True
+
+Name: edu/stanford/smi/protege/widget/FormsTab.class
+Tab-Widget: True
+
+Name: edu/stanford/smi/protege/widget/InstancesTab.class
+Tab-Widget: True
+
+Name: edu/stanford/smi/protege/widget/KAToolTab.class
+Tab-Widget: True
+
+Name: edu/stanford/smi/protege/widget/FormWidget.class
+Cls-Widget: True
+
+Name: edu/stanford/smi/protege/widget/CheckBoxWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Boolean
+Default-Widget-For-Cardinality: Single
+
+Name: edu/stanford/smi/protege/widget/BooleanListWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Boolean
+Default-Widget-For-Cardinality: Multiple
+
+Name: edu/stanford/smi/protege/widget/ClsFieldWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Class
+Default-Widget-For-Cardinality: Single
+
+Name: edu/stanford/smi/protege/widget/ClsListWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Class
+Default-Widget-For-Cardinality: Multiple
+
+Name: edu/stanford/smi/protege/widget/FloatFieldWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Float
+Default-Widget-For-Cardinality: Single
+
+Name: edu/stanford/smi/protege/widget/FloatListWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Float
+Default-Widget-For-Cardinality: Multiple
+
+Name: edu/stanford/smi/protege/widget/InstanceFieldWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Instance
+Default-Widget-For-Cardinality: Single
+
+Name: edu/stanford/smi/protege/widget/InstanceListWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Instance
+Default-Widget-For-Cardinality: Multiple
+
+Name: edu/stanford/smi/protege/widget/IntegerFieldWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Integer
+Default-Widget-For-Cardinality: Single
+
+Name: edu/stanford/smi/protege/widget/IntegerListWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Integer
+Default-Widget-For-Cardinality: Multiple
+
+Name: edu/stanford/smi/protege/widget/TextFieldWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: String
+Default-Widget-For-Cardinality: Single
+
+Name: edu.stanford.smi.protege.widget.PasswordFieldWidget
+Slot-Widget: True
+
+Name: edu.stanford.smi.protege.widget.DigestedPasswordWidget
+Slot-Widget: True
+
+Name: edu/stanford/smi/protege/widget/TextAreaWidget.class
+Slot-Widget: True
+
+Name: edu/stanford/smi/protege/widget/ImageWidget.class
+Slot-Widget: True
+
+Name: edu/stanford/smi/protege/widget/URLWidget.class
+Slot-Widget: True
+
+Name: edu/stanford/smi/protege/widget/StringListWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: String
+Default-Widget-For-Cardinality: Multiple
+
+Name: edu/stanford/smi/protege/widget/ComboBoxWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Symbol
+Default-Widget-For-Cardinality: Single
+
+Name: edu/stanford/smi/protege/widget/SymbolListWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Type: Symbol
+Default-Widget-For-Cardinality: Multiple
+
+Name: edu/stanford/smi/protege/widget/ValueTypeWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :SLOT-VALUE-TYPE
+
+Name: edu/stanford/smi/protege/widget/SuperclassWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :DIRECT-SUPERCLASSES
+
+Name: edu/stanford/smi/protege/widget/SubclassWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :DIRECT-SUBCLASSES
+
+Name: edu/stanford/smi/protege/widget/DirectTypesWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :DIRECT-TYPE
+
+Name: edu/stanford/smi/protege/widget/DirectInstancesWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :DIRECT-INSTANCES
+
+Name: edu/stanford/smi/protege/widget/DirectDomainWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :DIRECT-DOMAIN
+
+Name: edu/stanford/smi/protege/widget/DocumentationWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :DOCUMENTATION
+
+Name: edu/stanford/smi/protege/widget/TemplateSlotsWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :DIRECT-TEMPLATE-SLOTS
+
+Name: edu/stanford/smi/protege/widget/RoleWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :ROLE
+
+Name: edu/stanford/smi/protege/widget/MinimumCardinalityWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :SLOT-MINIMUM-CARDINALITY
+
+Name: edu/stanford/smi/protege/widget/MaximumCardinalityWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :SLOT-MAXIMUM-CARDINALITY
+
+Name: edu/stanford/smi/protege/widget/ConstraintsWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :SLOT-CONSTRAINTS
+
+Name: edu/stanford/smi/protege/widget/InstanceNameWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :NAME
+
+Name: edu/stanford/smi/protege/widget/DefaultValuesWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :SLOT-DEFAULTS
+
+Name: edu/stanford/smi/protege/widget/SlotValuesWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :SLOT-VALUES
+
+Name: edu/stanford/smi/protege/widget/NumericMinimumWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :SLOT-NUMERIC-MINIMUM
+
+Name: edu/stanford/smi/protege/widget/NumericMaximumWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :SLOT-NUMERIC-MAXIMUM
+
+Name: edu/stanford/smi/protege/widget/InverseSlotWidget.class
+Slot-Widget: True
+Default-Widget: True
+Default-Widget-For-Slot: :SLOT-INVERSE
+
+Name: edu/stanford/smi/protege/widget/YellowStickyWidget.class
+Slot-Widget: True
+
+Name: edu/stanford/smi/protege/widget/UniqueStringWidget.class
+Slot-Widget: True
+
+Name: edu/stanford/smi/protege/storage/clips/ClipsImportExportPlugin.class
+Import-Plugin: True
+Export-Plugin: True
+
+Name: edu/stanford/smi/protege/storage/clips/ClipsFilesCreateProjectPlugin.class
+Create-Project-Plugin: True
+
+Name: edu/stanford/smi/protege/storage/clips/ClipsFilesExportProjectPlugin.class
+Export-Project-Plugin: True
+
+Name: edu/stanford/smi/protege/storage/database/DatabaseCreateProjectPlugin.class
+Create-Project-Plugin: True
+
+Name: edu/stanford/smi/protege/widget/ProtegePropertiesTab.class
+Tab-widget: True
+
+Name: edu.stanford.smi.protege.util.Frames1_8_BackwardsCompatibilityProjectFixups.class
+ProjectFixupPlugin: True
+
+Name: edu.stanford.smi.protege.code.generator.wrapping.CodeGeneratorProjectPlugin.class
+Project-Plugin: True
+
+
+
+
