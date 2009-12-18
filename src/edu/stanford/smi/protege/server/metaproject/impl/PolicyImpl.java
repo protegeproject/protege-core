@@ -66,6 +66,9 @@ public class PolicyImpl implements Policy, Localizable, Serializable {
 	}
 
 	public User getUserByName(String userName) {
+	    if (userName == null) {
+	        return null;
+	    }
 	    for (User user : mp.getUsers()) {
 	        if (userName.equals(user.getName())) {
 	            return user;
