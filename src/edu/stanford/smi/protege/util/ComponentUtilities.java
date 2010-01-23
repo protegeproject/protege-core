@@ -614,7 +614,9 @@ public class ComponentUtilities {
             model.removeValue(oldValue);
         } else {
             int index = model.indexOf(oldValue);
-            model.setValue(index, newValue);
+            if (index != -1) {
+                model.setValue(index, newValue);
+            }
         }
     }
 
