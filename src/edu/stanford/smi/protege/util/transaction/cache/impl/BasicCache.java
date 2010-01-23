@@ -57,7 +57,7 @@ public class BasicCache<S, V, R> implements Cache<S, V, R> {
         
     }
     
-    public boolean isDeleted() {
+    public boolean isInvalid() {
         return false;
     }
 
