@@ -131,10 +131,10 @@ public interface Cache<S, V, R> {
     void delete(S session);
     
     /**
-     * This indicates  that the cache has entered the deleted state.  Once in this
-     * state the cache cannot recover.
+     * This indicates  that the cache has entered the deleted state or is otherwise invalid.  
+     * A cache cannot recover from this state.  
      */
-    boolean isDeleted();
+    boolean isInvalid();
     
     /**
      * Try to avoid this.  If this is invoked and you are at READ_COMMITTED or above, the
