@@ -36,19 +36,19 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
         id = delegate.getCacheId();
     }
     
-    private boolean isInvalid(S session) {
+    private boolean isInvalidInternal(S session) {
         return invalid || sessionsWithCacheDeleted.contains(session);
     }
     
     public CacheResult<R> readCache(S session, V var) {
-        if (isInvalid(session)) {
+        if (isInvalidInternal(session)) {
             return CacheResult.getInvalid();
         }
         return delegate.readCache(session, var);
     }
     
     public void updateCache(S session, V var) {
-        if (isInvalid(session)) {
+        if (isInvalidInternal(session)) {
             if (logger.isLoggable(Level.FINEST)) {
                 logger.finest("Cache " + getCacheId() + " is invalid for session " + session);
             }
@@ -58,7 +58,7 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void updateCache(S session, V var, R value) {
-        if (isInvalid(session)) {
+        if (isInvalidInternal(session)) {
             if (logger.isLoggable(Level.FINEST)) {
                 logger.finest("Read ignored, Cache " + getCacheId() + " is invalid for session " + session);
             }
@@ -68,7 +68,7 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void modifyCache(S session, V var) {
-        if (isInvalid(session)) {
+        if (isInvalidInternal(session)) {
             if (logger.isLoggable(Level.FINEST)) {
                 logger.finest("Read ignored, Cache " + getCacheId() + " is invalid for session " + session);
             }
@@ -78,7 +78,7 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
     }
 
     public void modifyCache(S session, V var, R value) {
-        if (isInvalid(session)) {
+        if (isInvalidInternal(session)) {
             if (logger.isLoggable(Level.FINEST)) {
                 logger.finest("Write ignored, Cache " + getCacheId() + " is invalid for session " + session);
             }
@@ -88,7 +88,7 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
     }
     
     public void delete(S session) {
-        if (invalid) {
+        if (isInvalidInternal(session)) {
             return;
         }
         else if (!ignoreTransactions && delegate.getTransactionNesting(session) > 0) {
@@ -101,14 +101,12 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
             if (logger.isLoggable(Level.FINEST)) {
                 logger.finest("Cache " + getCacheId() + " invalidated");
             }
-            invalid = true;
-            delegate.flush();
-            delegate = null;
+            die();
         }
     }
     
-    public boolean isDeleted() {
-        return invalid;
+    public boolean isInvalid() {
+        return invalid || delegate.isInvalid();
     }
 
     public void startCompleteCache() {
@@ -150,22 +148,19 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
         if (invalid) {
             return;
         }
-        if (getTransactionNesting(session) < 0) {
-            invalid = true;
-            flush();
-            return;
+        if (getTransactionNesting(session) <= 0) {
+            die();
         }
-        delegate.commitTransaction(session);
-        if (!ignoreTransactions 
-                && delegate.getTransactionNesting(session) == 0 
-                && sessionsWithCacheDeleted.contains(session)) {
-            if (logger.isLoggable(Level.FINEST)) {
-                logger.finest("Commmited invalidation of cache " + getCacheId());
+        else {
+            delegate.commitTransaction(session);
+            if (!ignoreTransactions 
+                    && delegate.getTransactionNesting(session) == 0 
+                    && sessionsWithCacheDeleted.contains(session)) {
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest("Commmited delete of cache " + getCacheId());
+                }
+                die();
             }
-            invalid = true;
-            delegate.flush();
-            delegate = null;
-            sessionsWithCacheDeleted.clear();
         }
     }
 
@@ -173,19 +168,32 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
         if (invalid) {
             return;
         }
-        if (getTransactionNesting(session) < 0) {
-            invalid = true;
-            flush();
-            return;
+        if (getTransactionNesting(session) <= 0) {
+            die();
         }
         delegate.rollbackTransaction(session);
         if (!ignoreTransactions && delegate.getTransactionNesting(session) == 0) {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Delete of cache rolled back " + getCacheId());
+            }
             sessionsWithCacheDeleted.remove(session);
         }
     }
+    
+    private void die() {
+        invalid = true;
+        try {
+            delegate.flush();
+        }
+        catch (Throwable t) {
+            ;
+        }
+        delegate = null;
+        sessionsWithCacheDeleted.clear();
+    }
 
     public int getTransactionNesting(S session) {
-        if (isInvalid(session)) {
+        if (isInvalidInternal(session)) {
             return 0;
         }
         return delegate.getTransactionNesting(session);
@@ -197,10 +205,11 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
             return;
         }
         if (!sessionsWithCacheDeleted.isEmpty()) {
-            sessionsWithCacheDeleted.clear();
-            invalid = true;
+            die();
         }
-        delegate.flush();
+        else {
+            delegate.flush();
+        }
     }
     
     public int getCacheId() {
