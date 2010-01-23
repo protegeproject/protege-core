@@ -91,7 +91,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         createTableString += LONG_VALUE_COLUMN + " " + getLongValueDataType();
         createTableString += ")";
         if (checkMySQLBug()) {
-          createTableString += " ENGINE = INNODB";
+          createTableString += " ENGINE = INNODB DEFAULT CHARACTER SET 'utf8'";
         }
         try {
             executeUpdate(createTableString);
