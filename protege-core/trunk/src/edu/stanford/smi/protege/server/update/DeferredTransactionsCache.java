@@ -13,13 +13,6 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCache
 
 /**
  * This is a hacky cache designed to solve two problems seen by the remote client frame store.
- * First, it is sometimes necessary to start a cache when the invoker is already in a transaction.
- * This is bad.  It can lead to incorrect data in the untransacted cache and missing rollbacks.  However, 
- * since this cache will only be used by the invoker, I believe that all this badness is countered by 
- * flushing the cache when the invokers transaction completes.  I also believe that all transactions will
- * be closed when this flush is called making it a clean flush.  This is true because the server sends
- * the begin and end of transactions made by other clients (not the invoker) in a group.
- * 
  * Second, the begin/commit/rollback transaction operations apply to all the frame caches 
  * in the RemoteClientFrameStore.  It is clear that updating all of these caches on such an operation
  * is expensive.  So we defer telling the frame caches about transaction operations until that cache is 
@@ -27,17 +20,35 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCache
  * been seen by its various caches.  When this 
  * cache is needed it can read through all the transaction operations that it has not seen and it will be
  * ready to perform the needed operation.
+ * <p/>
+ * Second, it is sometimes necessary to start a cache when the invoker is already in a transaction.
+ * This is bad.  It can lead to incorrect data in the untransacted cache and missing rollbacks.  The generic
+ * more robust solution is implemented by the InvalidatableCache.  If this guys sees a rollback or commit
+ * transaction that takes the transaction nesting to a negative number, it invalidates the cache.  This cache
+ * can then be discarded later when it is noticed that the cache is bad.
+ * <p/>
+ * There is an alternative more delicate option that is perhaps unnecessary. Suppose that
+ * <li> only one known session will be in a transaction at the time that the cache is created and the transaction 
+ *      nesting is known at this time</li>
+ * <li> no other session will be in a transaction at the time that the cache is created.</li>
+ * I believe that these conditions are satisfied by the RemoteClientFrameStore.  In this case theDeferredTransactionsCache
+ * can flush the cache when the transaction nesting gets for the session gets down to zero.
  * 
  * @author tredmond
  *
  */
-public class DeferredTransactionsCache implements
-		Cache<RemoteSession, Sft, List> {
+public class DeferredTransactionsCache implements Cache<RemoteSession, Sft, List> {
 	private FifoReader<SerializedCacheUpdate<RemoteSession, Sft, List>> transactionUpdates;
 	private Cache<RemoteSession, Sft, List> delegate;
 	
 	private RemoteSession invoker;
 	private boolean needsEndOfTransactionFlush = false;
+	
+	@SuppressWarnings("unchecked")
+    public DeferredTransactionsCache(Cache<RemoteSession, Sft, List> delegate, 
+	                                 FifoReader<SerializedCacheUpdate<RemoteSession, Sft, List>> transactionUpdates) {
+	    this(delegate, null, 0, transactionUpdates);
+	}
 	
 	@SuppressWarnings("unchecked")
     public DeferredTransactionsCache(Cache<RemoteSession, Sft, List> delegate, 
@@ -85,9 +96,9 @@ public class DeferredTransactionsCache implements
 		delegate.delete(session);
 	}
 	
-    public boolean isDeleted() {
+    public boolean isInvalid() {
         catchUp();
-        return delegate.isDeleted();
+        return delegate.isInvalid();
     }
 	
 	public void flush() {
