@@ -1597,7 +1597,7 @@ public class RemoteClientFrameStore implements FrameStore {
         if (cache == null) {
             ret = CacheResult.getInvalid();
         }
-        else if (cache.isDeleted() && transactionNesting == 0) {
+        else if (cache.isInvalid()) {
             if (cacheLog.isLoggable(Level.FINEST)) {
                 cacheLog.finest("Cache is deleted");
             }
@@ -1651,6 +1651,10 @@ public class RemoteClientFrameStore implements FrameStore {
     	}
     	try {
     	    Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
+    	    if (cache.isInvalid()) {
+    	        cache = null;
+    	        cacheMap.remove(frame);
+    	    }
     	    if (cache == null) {
     	        cache = CacheFactory.createEmptyCache(getTransactionIsolationLevel());
     	        FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> reader 
