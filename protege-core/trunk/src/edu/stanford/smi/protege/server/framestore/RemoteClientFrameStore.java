@@ -1651,7 +1651,7 @@ public class RemoteClientFrameStore implements FrameStore {
     	}
     	try {
     	    Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
-    	    if (cache.isInvalid()) {
+    	    if (cache != null && cache.isInvalid()) {
     	        cache = null;
     	        cacheMap.remove(frame);
     	    }
