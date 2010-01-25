@@ -83,7 +83,8 @@ public class ReadPolicy_Test extends APITestCase {
         checkReadAccess(session, WINES_PROJECT, true);
     }
 
-    private void checkReadAccess(RemoteSession session, String project, boolean allowed) {
+    private void checkReadAccess(RemoteSession session, String project, boolean allowed) throws RemoteException {
+        session = clientsRemoteServer.cloneSession(session);
         Project p = RemoteProjectManager.getInstance().connectToProject(clientsRemoteServer, session, project);
         if (!allowed) {
             assertTrue(p == null);
@@ -100,6 +101,7 @@ public class ReadPolicy_Test extends APITestCase {
         else if (project.equals(WINES_PROJECT)) {
             assertNotNull(kb.getCls("Wine"));
         }
+        p.dispose();
     }
 
 
