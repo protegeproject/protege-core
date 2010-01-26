@@ -171,12 +171,14 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
         if (getTransactionNesting(session) <= 0) {
             die();
         }
-        delegate.rollbackTransaction(session);
-        if (!ignoreTransactions && delegate.getTransactionNesting(session) == 0) {
-            if (logger.isLoggable(Level.FINEST)) {
-                logger.finest("Delete of cache rolled back " + getCacheId());
+        else {
+            delegate.rollbackTransaction(session);
+            if (!ignoreTransactions && delegate.getTransactionNesting(session) == 0) {
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest("Delete of cache rolled back " + getCacheId());
+                }
+                sessionsWithCacheDeleted.remove(session);
             }
-            sessionsWithCacheDeleted.remove(session);
         }
     }
     
