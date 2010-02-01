@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.action;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import javax.swing.JComponent;
@@ -28,10 +29,7 @@ public class ShowAboutBox extends ProjectAction {
         String title = LocalizedText.getText(ResourceKey.ABOUT_APPLICATION_DIALOG_TITLE, Text.getProgramName());
         URL url = Text.getAboutURL();
         
-        // Passing in null as second parameter because default dialog size 
-        // is fine. Do not need to adjust preferred size.
-        AboutBox aboutProtege = new AboutBox(url, null);
-
+        AboutBox aboutProtege = new AboutBox(url, new Dimension(575, 525));
         ModalDialog.showDialog(pane, aboutProtege, title, ModalDialog.MODE_CLOSE);
     }
 }
