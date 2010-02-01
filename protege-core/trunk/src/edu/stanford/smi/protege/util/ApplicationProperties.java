@@ -388,7 +388,7 @@ public class ApplicationProperties {
     }
 
     public static String getUsersGuideURLString() {
-        return "http://protege.stanford.edu/doc/users_guide";
+        return "http://protegewiki.stanford.edu/index.php/PrF_UG";
     }
 
     public static String getAllHelpURLString() {
