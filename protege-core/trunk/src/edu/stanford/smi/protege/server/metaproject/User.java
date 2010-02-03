@@ -30,7 +30,7 @@ public interface User {
 
 	void setEmail(String email);
 
-	String getEmail(String email);
+	String getEmail();
 
 	Collection<PropertyValue> getPropertyValues();
 

@@ -33,7 +33,7 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 		if (!(value instanceof String)) {
 			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.name + " slot should take on string values");
 		}
-		return (String) value;		
+		return (String) value;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -42,7 +42,7 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 	}
 
 	public Date getLastAccess() {
-		Object unparsed = (String) getSlotValue(SlotEnum.lastAccess, null);
+		Object unparsed = getSlotValue(SlotEnum.lastAccess, null);
 		if (unparsed != null && !(unparsed instanceof String)) {
 			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.lastAccess + " slot should take on string values");
 		}
@@ -50,7 +50,7 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 	}
 
 	public Date getLastLogin() {
-		Object unparsed = (String) getSlotValue(SlotEnum.lastLogin, null);
+		Object unparsed = getSlotValue(SlotEnum.lastLogin, null);
 		if (unparsed != null && !(unparsed instanceof String)) {
 			throw new OntologyException("The " + MetaProjectImpl.SlotEnum.lastLogin + " slot should take on string values");
 		}
@@ -96,30 +96,30 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 		DigestAndSalt encodedPassword = StringUtilities.makeDigest(password, (String) getSlotValue(SlotEnum.salt, null));
 		return encodedPassword.getDigest().equals(getSlotValue(SlotEnum.password, null));
 	}
-	
-	public String getEmail(String email) {
-		return (String) getSlotValue(SlotEnum.email, null);		
+
+	public String getEmail() {
+		return (String) getSlotValue(SlotEnum.email, null);
 	}
-	
-	public void setEmail(String email) {		
+
+	public void setEmail(String email) {
 		setSlotValue(MetaProjectImpl.SlotEnum.email, email);
 	}
-		
+
 	@SuppressWarnings("unchecked")
 	public Set<PropertyValue> getPropertyValues() {
 		return getSlotValues(MetaProjectImpl.SlotEnum.properties, MetaProjectImpl.ClsEnum.PropertyValue);
 	}
 
 	public void setPropertyValues(Collection<PropertyValue> propertyValues) {
-		setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum.properties, propertyValues);		
+		setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum.properties, propertyValues);
 	}
-	
+
 	 public void addPropertyValue(PropertyValue propertyValue) {
-    	 addSlotValue(MetaProjectImpl.SlotEnum.properties, propertyValue);		
+    	 addSlotValue(MetaProjectImpl.SlotEnum.properties, propertyValue);
 	}
-    
+
 	@Override
-	public boolean equals(Object o) { 
+	public boolean equals(Object o) {
 		if (!(o instanceof User)) {
 			return false;
 		}
@@ -147,5 +147,5 @@ public class UserImpl extends WrappedProtegeInstanceImpl implements User, Serial
 		catch (NumberFormatException nfe) {
 			return null;
 		}
-	}	
+	}
 }
