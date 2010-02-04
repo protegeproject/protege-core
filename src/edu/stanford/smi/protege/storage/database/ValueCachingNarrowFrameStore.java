@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.storage.database;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +51,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     private Sft directInstancesSft;
     private FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>> transactions
          = new FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>>();
+    
+    private Set<RemoteSession> unCachingSessions;
     /*
      * see svn revision 14782 for code to keep server-side frames in memory...
      */
@@ -65,6 +68,28 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             log.fine("Constructing ValueCachingNarrowFrameStore with delegate " + delegate);
         }
         framedb  = delegate;
+    }
+    
+    public void addUnCachingSession(RemoteSession session) {
+        if (unCachingSessions == null) {
+            unCachingSessions = new HashSet<RemoteSession>();
+        }
+        unCachingSessions.add(session);
+    }
+    
+    public boolean removeUnCachingSession(RemoteSession session) {
+        if (unCachingSessions == null) {
+            return false;
+        }
+        boolean ret = unCachingSessions.remove(session);
+        if (unCachingSessions.isEmpty()) {
+            unCachingSessions = null;
+        }
+        return ret;
+    }
+    
+    private boolean cachingDisabledForSession() {
+        return unCachingSessions != null && unCachingSessions.contains(ServerFrameStore.getCurrentSession());
     }
 
     public void setFrameDb(DatabaseFrameDb framedb) {
@@ -99,33 +124,40 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             cacheLost++;
         }
         if (cache == null && create) {
+            
+            String frameName = frame.getFrameID().getName();
             Cache delegateCache = CacheFactory.createEmptyCache(getTransactionStatusMonitor().getTransationIsolationLevel());
             cache = new DeferredTransactionsCache(delegateCache, new FifoReader<SerializedCacheUpdate<RemoteSession,Sft,List>>(transactions));
-            
-            // sorry - this is a bit ugly...
-            // better would be to have a setter for the system frames.
-            if (directInstancesSft == null && frame.getKnowledgeBase() != null) {
-                SystemFrames frames = frame.getKnowledgeBase().getSystemFrames();
-                Slot directInstancesSlot = frames.getDirectInstancesSlot();
-                directInstancesSft = new Sft(directInstancesSlot, null, false);
-            }
-            if (!getTransactionStatusMonitor().inTransaction() && directInstancesSft != null) {
-                long startTime = System.nanoTime();
-                Map<Sft,List> values = framedb.getFrameValues(frame);
-                cache.startCompleteCache();
-                cache.updateCache(session, directInstancesSft);
-                for (Entry<Sft, List> entry : values.entrySet()) {
-                    cache.updateCache(session, entry.getKey(), entry.getValue());
-                }
-                cache.finishCompleteCache();
-                totalBuildTime += (System.nanoTime() - startTime);
-            }
-            String frameName = frame.getFrameID().getName();
-            cacheMap.put(frameName, new SoftReference(cache));
-            cacheBuilds++;
-            logStats(Level.FINE);
             if (log.isLoggable(Level.FINER)) {
-                log.finer("Created and filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
+                log.finer("Created cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
+            }
+            cacheMap.put(frameName, new SoftReference(cache));
+            
+            if (!cachingDisabledForSession()) {
+                // sorry - this is a bit ugly...
+                // better would be to have a setter for the system frames.
+                if (directInstancesSft == null && frame.getKnowledgeBase() != null) {
+                    SystemFrames frames = frame.getKnowledgeBase().getSystemFrames();
+                    Slot directInstancesSlot = frames.getDirectInstancesSlot();
+                    directInstancesSft = new Sft(directInstancesSlot, null, false);
+                }
+                if (!getTransactionStatusMonitor().inTransaction() && directInstancesSft != null) {
+                    long startTime = System.nanoTime();
+                    Map<Sft,List> values = framedb.getFrameValues(frame);
+                    cache.startCompleteCache();
+                    cache.updateCache(session, directInstancesSft);
+                    for (Entry<Sft, List> entry : values.entrySet()) {
+                        cache.updateCache(session, entry.getKey(), entry.getValue());
+                    }
+                    cache.finishCompleteCache();
+                    totalBuildTime += (System.nanoTime() - startTime);
+                }
+
+                cacheBuilds++;
+                logStats(Level.FINE);
+                if (log.isLoggable(Level.FINER)) {
+                    log.finer("Filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
+                }
             }
         }
         return cache;
