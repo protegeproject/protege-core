@@ -1362,22 +1362,6 @@ public class RemoteClientFrameStore implements FrameStore {
     }
 
 
-
-    // -----------------------------------------------------------
-
-    // This code is copied from SimpleFrameStore
-    // Old implementation
-/*    private Collection getCacheOwnFacetValues(Frame frame, Slot slot, Facet facet) {
-        Collection values = new ArrayList();
-        Iterator i = getDirectTypes((Instance) frame).iterator();
-        while (i.hasNext()) {
-            Cls cls = (Cls) i.next();
-            values.addAll(getTemplateFacetValues(cls, slot, facet));
-        }
-        return values;
-    }
-*/
-
     // TT 2007/01/09:  This code is copied from SimpleFrameStore
     public Collection getCacheOwnFacetValues(Frame frame, Slot slot, Facet facet) {
         Collection values = new ArrayList();
@@ -1643,6 +1627,10 @@ public class RemoteClientFrameStore implements FrameStore {
     		continue;
     	}
     	Frame frame = vu.getFrame();
+    	if (frame == null && cacheUpdate instanceof CacheDelete) {
+    	    deferredTransactionsWriter.write(cacheUpdate);
+    	    continue;
+    	}
     	if (frameNameToFrameMap.get(frame.getName()) == null // be aggressive about cleaning the negative cache
     	        || cacheUpdate instanceof CacheDelete        // deleted guys might get a new type
     	        || cacheUpdate instanceof CacheModify)       // could be modifying the type.
@@ -1769,10 +1757,15 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             OntologyUpdate vu = getRemoteDelegate().replaceFrame(original, replacement, session);
             processValueUpdate(vu);
+            DeferredTransactionsCache replacementCache = cacheMap.get(replacement);
+            if (replacementCache != null) {
+                replacementCache.invalidate(session);  //  because the events that would update this state don't happen
+            }
         } catch (RemoteException e) {
             throw convertException(e);
         }
     }
+    
 
 
 }
