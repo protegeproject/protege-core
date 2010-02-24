@@ -11,7 +11,7 @@ public class CacheDelete<S, V, R> extends SerializedCacheUpdate<S, V, R> {
 
     @Override
     public void performUpdate(Cache<S, V, R> cache) {
-        cache.delete(getSession());
+        cache.invalidate(getSession());
     }
     
     public String toString() {
