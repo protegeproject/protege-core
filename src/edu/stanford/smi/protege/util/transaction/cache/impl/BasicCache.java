@@ -53,7 +53,7 @@ public class BasicCache<S, V, R> implements Cache<S, V, R> {
         cache.put(var, value);
     }
     
-    public void delete(S session) {
+    public void invalidate(S session) {
         
     }
     
