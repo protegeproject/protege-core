@@ -24,7 +24,7 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
-import edu.stanford.smi.protege.server.update.DeferredTransactionsCache;
+import edu.stanford.smi.protege.server.update.DeferredOperationCache;
 import edu.stanford.smi.protege.server.util.FifoReader;
 import edu.stanford.smi.protege.server.util.FifoWriter;
 import edu.stanford.smi.protege.util.Log;
@@ -46,8 +46,8 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCache
 public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     private static Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private DatabaseFrameDb framedb;
-    private WeakHashMap<String, SoftReference<DeferredTransactionsCache>> cacheMap  
-                      = new WeakHashMap<String, SoftReference<DeferredTransactionsCache>>();
+    private WeakHashMap<String, SoftReference<DeferredOperationCache>> cacheMap  
+                      = new WeakHashMap<String, SoftReference<DeferredOperationCache>>();
     private Sft directInstancesSft;
     private FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>> transactions
          = new FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>>();
@@ -106,10 +106,10 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     }
 
     @SuppressWarnings("unchecked")
-    private DeferredTransactionsCache getCache(Frame  frame, boolean create) {
+    private DeferredOperationCache getCache(Frame  frame, boolean create) {
         RemoteSession session = ServerFrameStore.getCurrentSession();
-        SoftReference<DeferredTransactionsCache> reference = cacheMap.get(frame.getFrameID().getName());
-        DeferredTransactionsCache cache = null;
+        SoftReference<DeferredOperationCache> reference = cacheMap.get(frame.getFrameID().getName());
+        DeferredOperationCache cache = null;
         if (reference != null) {
             cache = reference.get();
         }
@@ -127,7 +127,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             
             String frameName = frame.getFrameID().getName();
             Cache delegateCache = CacheFactory.createEmptyCache(getTransactionStatusMonitor().getTransationIsolationLevel());
-            cache = new DeferredTransactionsCache(delegateCache, new FifoReader<SerializedCacheUpdate<RemoteSession,Sft,List>>(transactions));
+            cache = new DeferredOperationCache(delegateCache, new FifoReader<SerializedCacheUpdate<RemoteSession,Sft,List>>(transactions));
             if (log.isLoggable(Level.FINER)) {
                 log.finer("Created cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
             }
@@ -209,7 +209,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     public void addValues(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate, Collection values) {
         getDelegate().addValues(frame, slot, facet, isTemplate, values);
-        DeferredTransactionsCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
+        DeferredOperationCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
         if (cache != null) {
             RemoteSession session = ServerFrameStore.getCurrentSession();
             Sft sft = new Sft(slot, facet, isTemplate);
@@ -273,7 +273,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         }
         else {
             RemoteSession session = ServerFrameStore.getCurrentSession();
-            DeferredTransactionsCache cache = getCache(frame, false);
+            DeferredOperationCache cache = getCache(frame, false);
             if (cache != null) {
                 cache.invalidate(session);
             }
@@ -357,7 +357,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     @SuppressWarnings("unchecked")
     public List getValues(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate) {
-        DeferredTransactionsCache cache = getCache(frame, true);
+        DeferredOperationCache cache = getCache(frame, true);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
@@ -374,7 +374,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
     public int getValuesCount(Frame frame, Slot slot, Facet facet,
                               boolean isTemplate) {
-        DeferredTransactionsCache cache = getCache(frame, true);
+        DeferredOperationCache cache = getCache(frame, true);
         RemoteSession session = ServerFrameStore.getCurrentSession();
         Sft sft = new Sft(slot, facet, isTemplate);
         CacheResult<List> result = cache.readCache(session, sft);
@@ -389,7 +389,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
     public void moveValue(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate, int from, int to) {
-        DeferredTransactionsCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
+        DeferredOperationCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
         if (cache != null) {
             RemoteSession session = ServerFrameStore.getCurrentSession();
             Sft sft = new Sft(slot, facet, isTemplate);
@@ -404,7 +404,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
     public void removeValue(Frame frame, Slot slot, Facet facet,
                             boolean isTemplate, Object value) {
-        DeferredTransactionsCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
+        DeferredOperationCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
         if (cache != null) {
             RemoteSession session = ServerFrameStore.getCurrentSession();
             Sft sft = new Sft(slot, facet, isTemplate);
@@ -434,7 +434,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
     public void setValues(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate, Collection values) {
-        DeferredTransactionsCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
+        DeferredOperationCache cache = getCache(frame, getTransactionStatusMonitor().inTransaction());
         if (cache != null) {
             RemoteSession session = ServerFrameStore.getCurrentSession();
             Sft  sft = new Sft(slot, facet, isTemplate);
