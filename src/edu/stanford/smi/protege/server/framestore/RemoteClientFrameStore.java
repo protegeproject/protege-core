@@ -50,7 +50,7 @@ import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculatorStats;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.socket.SimulateDelayAspect;
-import edu.stanford.smi.protege.server.update.DeferredTransactionsCache;
+import edu.stanford.smi.protege.server.update.DeferredOperationCache;
 import edu.stanford.smi.protege.server.update.OntologyUpdate;
 import edu.stanford.smi.protege.server.update.RemoteResponse;
 import edu.stanford.smi.protege.server.update.ValueUpdate;
@@ -110,7 +110,7 @@ public class RemoteClientFrameStore implements FrameStore {
      * thing. Frames with equal frame id are constantly being seen and garbage collected, so with a weak hash map,
      * the cacheMap is far too empty.
      */
-    private Map<Frame, DeferredTransactionsCache> cacheMap = new HashMap<Frame, DeferredTransactionsCache>();
+    private Map<Frame, DeferredOperationCache> cacheMap = new HashMap<Frame, DeferredOperationCache>();
 
     private TransactionIsolationLevel transactionLevel;
     private int transactionNesting = 0;
@@ -1647,8 +1647,8 @@ public class RemoteClientFrameStore implements FrameStore {
     	        cache = CacheFactory.createEmptyCache(getTransactionIsolationLevel());
     	        FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>> reader 
     	           = new FifoReader<SerializedCacheUpdate<RemoteSession, Sft,  List>>(deferredTransactionsReader);
-    	        cache = new DeferredTransactionsCache(cache, session, transactionNesting, reader);
-    	        cacheMap.put(frame, (DeferredTransactionsCache) cache);
+    	        cache = new DeferredOperationCache(cache, reader);
+    	        cacheMap.put(frame, (DeferredOperationCache) cache);
     	        if (cacheLog.isLoggable(Level.FINEST)) {
     	            cacheLog.finest("Created cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
     	        }
@@ -1757,7 +1757,7 @@ public class RemoteClientFrameStore implements FrameStore {
         try {
             OntologyUpdate vu = getRemoteDelegate().replaceFrame(original, replacement, session);
             processValueUpdate(vu);
-            DeferredTransactionsCache replacementCache = cacheMap.get(replacement);
+            DeferredOperationCache replacementCache = cacheMap.get(replacement);
             if (replacementCache != null) {
                 replacementCache.invalidate(session);  //  because the events that would update this state don't happen
             }
