@@ -13,8 +13,8 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCache
 
 /**
  * This is a hacky cache designed to solve two problems seen by the remote client frame store.
- * Second, the begin/commit/rollback transaction operations apply to all the frame caches 
- * in the RemoteClientFrameStore.  It is clear that updating all of these caches on such an operation
+ * Second, the begin/commit/rollback transaction and in some cases CacheDelete operations apply to all the frame caches 
+ * in the RemoteClientFrameStore. It is clear that updating all of these caches on such an operation
  * is expensive.  So we defer telling the frame caches about transaction operations until that cache is 
  * needed.  The RemoteClientFrameStore uses a Fifo writer to track the transactions that have not 
  * been seen by its various caches.  When this 
@@ -91,9 +91,9 @@ public class DeferredTransactionsCache implements Cache<RemoteSession, Sft, List
 		delegate.modifyCache(session, var, value);
 	}
 	
-	public void delete(RemoteSession session) {
+	public void invalidate(RemoteSession session) {
 		catchUp();
-		delegate.delete(session);
+		delegate.invalidate(session);
 	}
 	
     public boolean isInvalid() {
