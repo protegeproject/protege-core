@@ -38,7 +38,7 @@ public class ConnectionPool {
     
     private static long connectionRefreshInterval;
     static {
-        int minutes = ApplicationProperties.getIntegerProperty(ConnectionPool.PROPERTY_REFRESH_CONNECTIONS_TIME, 60);
+        int minutes = ApplicationProperties.getIntegerProperty(ConnectionPool.PROPERTY_REFRESH_CONNECTIONS_TIME, 5);
         connectionRefreshInterval = minutes * 60 * 1000;
     }
     private static int maxOpenConnections = ApplicationProperties.getIntegerProperty(ConnectionPool.PROPERTY_MAX_DB_CONNECTIONS, 3);
