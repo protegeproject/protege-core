@@ -275,12 +275,12 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             RemoteSession session = ServerFrameStore.getCurrentSession();
             DeferredTransactionsCache cache = getCache(frame, false);
             if (cache != null) {
-                cache.delete(session);
+                cache.invalidate(session);
             }
             for (Reference reference : framedb.getReferences(frame)) {
                 cache = getCache(reference.getFrame(),false);
                 if (cache != null) {
-                    cache.delete(session);
+                    cache.invalidate(session);
                 }
             }
         }
