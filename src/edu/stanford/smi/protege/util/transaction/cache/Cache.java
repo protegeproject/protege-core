@@ -119,16 +119,14 @@ public interface Cache<S, V, R> {
     void modifyCache(S session, V var, R value);
     
     /**
-     * This notifies the cache that the caller has made deleted the object
-     * that this cache represents.  If this change is outside a transaction or 
-     * gets committed, the cache enters the deleted state.  Once in the deleted 
-     * state all attempts to get a value return a value null value.  Attempts to 
-     * modify the cache after it has entered the deleted state will bring the 
-     * cache back.
+     * This notifies the cache that this cache is now invalid either because the object that 
+     * this cache represents is deleted or for any other reason.  If this change is outside a transaction or 
+     * gets committed, the cache enters the invalid state.  Once in the invalidated  
+     * state all attempts to get a value return a value null value. 
      * 
      * @param session
      */
-    void delete(S session);
+    void invalidate(S session);
     
     /**
      * This indicates  that the cache has entered the deleted state or is otherwise invalid.  
