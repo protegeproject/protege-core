@@ -97,9 +97,9 @@ public class BasicCache<S, V, R> implements Cache<S, V, R> {
     private void decrementTransaction(S session) {
         Integer nesting = transactionNestingMap.get(session);
         if (nesting == null)  {
-            ;
+            transactionNestingMap.put(session, -1);
         }
-        else if (nesting == 1) {
+        else if (nesting.intValue() == 1) {
             transactionNestingMap.remove(session);
         }
         else {
