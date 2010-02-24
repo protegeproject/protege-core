@@ -87,7 +87,7 @@ public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
         delegate.modifyCache(session, var, value);
     }
     
-    public void delete(S session) {
+    public void invalidate(S session) {
         if (isInvalidInternal(session)) {
             return;
         }

@@ -88,8 +88,8 @@ public class ReadCommittedCache<S, V, R> implements Cache<S, V, R> {
         transactedModifications.get(session).add(new CacheModify<S, V, R>(session, var, result));
     }
 
-    public void delete(S session) {
-        delegate.delete(session);
+    public void invalidate(S session) {
+        delegate.invalidate(session);
     }
 
     public boolean isInvalid() {

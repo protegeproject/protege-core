@@ -77,8 +77,8 @@ public class CompleteableCache<S, V, R> implements Cache<S, V, R> {
         delegate.modifyCache(session, var, value);
     }
     
-    public void delete(S session) {
-        delegate.delete(session);
+    public void invalidate(S session) {
+        delegate.invalidate(session);
     }
 
     public boolean isInvalid() {
