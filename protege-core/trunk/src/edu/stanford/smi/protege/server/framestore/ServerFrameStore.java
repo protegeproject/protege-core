@@ -1255,6 +1255,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                               TransactionIsolationLevel level,
                               AbstractEvent event)  {
       /* ---------------> Look for other relevant event types!!! and fix for nullness--- */
+      if (event.getEventType() != FrameEvent.REPLACE_FRAME && event.isReplacementEvent()) {
+          return;
+      }
       if (event instanceof FrameEvent) {
         handleFrameEvent(session, (FrameEvent) event);
       } else if (event instanceof ClsEvent) {
@@ -1279,6 +1282,22 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     
     Sft sft = null;
 
+    if (type == FrameEvent.REPLACE_FRAME || type == FrameEvent.DELETED)  {
+        if (frame instanceof Slot || frame instanceof Facet) {
+            addWriteUpdate(session, null, new CacheDelete<RemoteSession, Sft, List>(session));
+        }
+        else {
+            Set<Frame> framesToWipe = new HashSet<Frame>();
+            framesToWipe.add(frame);
+            for (Reference ref : getDelegate().getReferences(frame)) {
+                framesToWipe.add(ref.getFrame());
+            }
+            for (Frame f : framesToWipe) {
+                addWriteUpdate(session, f, new CacheDelete<RemoteSession, Sft, List>(session));
+            }
+        }
+        return;
+    }
     if (type == FrameEvent.OWN_SLOT_ADDED) {
         Slot slot = frameEvent.getSlot();
         CacheResult<List> result = CacheResult.getInvalid();
@@ -1297,9 +1316,6 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         sft = new Sft(slot, null, false);        
         addWriteUpdate(session, frame, 
 	                    new CacheModify<RemoteSession, Sft, List>(session, sft, result));
-      } else if (type == FrameEvent.DELETED) {
-    	  addWriteUpdate(session, frame, 
-    			  	     new CacheDelete<RemoteSession, Sft, List>(session));
       }
   }
   
