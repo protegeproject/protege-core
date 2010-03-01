@@ -44,7 +44,7 @@ public class MultiSlotPanel extends JPanel {
         }
 
         //sort
-        Collections.sort(slots, new FrameComparator());
+        Collections.sort(slots, new FrameComparator<Slot>());
 
     	// label
         c.gridx = 0;
