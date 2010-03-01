@@ -277,7 +277,7 @@ public class JavaCodeGeneratorPanel extends JPanel {
 
     	List<Cls> clsesList = new ArrayList<Cls>(c);
 
-    	Collections.sort(clsesList, new FrameComparator());
+    	Collections.sort(clsesList, new FrameComparator<Cls>());
     	return clsesList;
     }
 
