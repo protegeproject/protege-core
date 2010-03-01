@@ -150,7 +150,7 @@ public class SelectInstancesPanel extends JComponent {
     }
 
     protected void loadInstances() {
-        ArrayList instances = new ArrayList();
+        ArrayList<Instance> instances = new ArrayList<Instance>();
         Iterator i = ComponentUtilities.getSelection(_clsTree).iterator();
         while (i.hasNext()) {
             Cls cls = (Cls) i.next();
@@ -163,8 +163,8 @@ public class SelectInstancesPanel extends JComponent {
         }
     }
     
-    protected Comparator getInstancesComparator() {
-    	return new FrameComparator();
+    protected Comparator<Instance> getInstancesComparator() {
+    	return new FrameComparator<Instance>();
     }
 
     protected Collection<Instance> getInstances(Cls cls) {
