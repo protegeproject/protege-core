@@ -206,8 +206,8 @@ public class ExportConfigurationPanel {
 				allSlots.add(kb.getNameSlot());
 				allSlots.addAll(possibleSlots);
 
-				List allSlotsList = new ArrayList<Slot>(allSlots);
-				Collections.sort(allSlotsList, new FrameComparator());
+				List<Slot> allSlotsList = new ArrayList<Slot>(allSlots);
+				Collections.sort(allSlotsList, new FrameComparator<Slot>());
 
 				// Show util window for multiple slot selection
 				Collection<Slot> newSlots = DisplayUtilities.pickSlots(configPanel, allSlotsList, "Select slots to export (multiple selection)");
@@ -245,7 +245,7 @@ public class ExportConfigurationPanel {
 				HashSet<Cls> allClses = new HashSet<Cls>();
 				
 				List<Cls> allClsesList = new ArrayList<Cls>(allClses);
-				Collections.sort(allClsesList, new FrameComparator());
+				Collections.sort(allClsesList, new FrameComparator<Cls>());
 
 				// Show util window for multiple slot selection
 				Collection<Cls> newClses = DisplayUtilities.pickClses(configPanel, kb, kb.getRootClses());
