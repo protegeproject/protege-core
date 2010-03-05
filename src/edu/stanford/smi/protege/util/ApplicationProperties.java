@@ -118,6 +118,11 @@ public class ApplicationProperties {
                     sep + "examples" + sep + "pizza" + sep + "pizza.owl.pprj";
                 uri = URIUtilities.createURI(exampleProjectName);
                 addProjectToMRUList(uri);
+                
+                exampleProjectName = getApplicationDirectory().getPath() + 
+                	sep + "examples" + sep + "sqwrl" + sep + "SQWRLExamples.pprj";
+                uri = URIUtilities.createURI(exampleProjectName);
+                addProjectToMRUList(uri);
             }
 
             exampleProjectName = getApplicationDirectory().getPath() +
