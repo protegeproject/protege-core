@@ -10,6 +10,8 @@ import java.util.Map;
 
 
 public class ConnectionInfo {
+    private static int nextId = 0;
+    private int id = nextId++;
     private Connection connection;
     private long lastAccessTime;
     private Map<String, PreparedStatement> preparedStatementMap = new HashMap<String, PreparedStatement>();
@@ -17,6 +19,10 @@ public class ConnectionInfo {
     
     public ConnectionInfo(Connection connection) {
         this.connection = connection;
+    }
+    
+    public int getId() {
+        return id;
     }
     
     public Connection getConnection() {

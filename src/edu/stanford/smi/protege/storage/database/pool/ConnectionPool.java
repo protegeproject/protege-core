@@ -92,6 +92,11 @@ public class ConnectionPool {
         }, 60, 60, TimeUnit.SECONDS);
     }
     
+    public int getId(Connection connection) {
+        ConnectionInfo ci = connectionInfoMap.get(connection);
+        return ci != null ? ci.getId() : -1;
+    }
+    
     public Connection getConnection() throws SQLException {
         Connection connection = null;
         synchronized (this) {
@@ -107,6 +112,10 @@ public class ConnectionPool {
                 connectionInfoMap.put(connection, ci);
             }
         }
+        if (log.isLoggable(Level.FINE)) {
+            ConnectionInfo ci = connectionInfoMap.get(connection);
+            log.fine("Thread " + Thread.currentThread() + " caller allocated Connection with id = " + ci.getId());
+        }
         return connection;
     }
     
@@ -118,6 +127,9 @@ public class ConnectionPool {
                 throw new IllegalStateException("Returning connection to the wrong pool");
             }
             idleConnections.add(connection);
+        }
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Thread " + Thread.currentThread() +" deallocated connection with id = " + ci.getId());
         }
         ci.touch();
         cleanup();
