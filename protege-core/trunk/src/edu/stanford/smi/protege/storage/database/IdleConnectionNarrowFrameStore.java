@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
@@ -13,9 +14,11 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
+    private static Logger logger = Log.getLogger(IdleConnectionNarrowFrameStore.class);
     private NarrowFrameStore delegate;
     private AbstractDatabaseFrameDb databaseNfs;
     

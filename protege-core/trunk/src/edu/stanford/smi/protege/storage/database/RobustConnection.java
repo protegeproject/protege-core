@@ -135,6 +135,9 @@ public class RobustConnection {
     }
 
     public void dispose() throws SQLException {
+        if (connection != null) {
+            pool.ungetConnection(connection);
+        }
         pool.dereference();
     }
     
@@ -524,6 +527,9 @@ public class RobustConnection {
                 transactionMonitor.beginTransaction();
             }
             begun = true;
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Thead " + Thread.currentThread() + " locking connection " + pool.getId(getConnection()));
+            }
         } 
         catch (SQLException e) {
             Log.getLogger().warning(e.toString());
