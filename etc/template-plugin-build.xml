@@ -67,6 +67,9 @@
      <mkdir dir = "${classes}"/>
      <mkdir dir = "${plugins}"/>
      <mkdir dir = "${plugins}/${plugin_dist}"/>
+	 <echo message="******************************************" />
+     <echo message="Using Java version to compile: ${ant.java.version}" />
+	 <echo message="******************************************" />
    </target>  
 
    <target name = "compile" depends = "init, checkProtegeLibsAndReport">
