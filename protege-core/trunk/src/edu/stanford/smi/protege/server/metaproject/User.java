@@ -34,8 +34,18 @@ public interface User {
 
 	Collection<PropertyValue> getPropertyValues();
 
+	Collection<String> getPropertyValuesAsString(String prop);
+
+    String getPropertyValue(String prop);
+
 	void setPropertyValues(Collection<PropertyValue> propertyValues);
 
 	void addPropertyValue(PropertyValue propertyValue);
+
+	void addPropertyValue(String prop, String value);
+
+	void removePropertyValue(PropertyValue propertyValue);
+
+	void removePropertyValue(String prop, String value);
 
 }

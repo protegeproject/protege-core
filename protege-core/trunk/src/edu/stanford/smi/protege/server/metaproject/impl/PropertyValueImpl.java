@@ -37,4 +37,18 @@ public class PropertyValueImpl extends WrappedProtegeInstanceImpl implements
 		setSlotValue(MetaProjectImpl.SlotEnum.propertyValue, value);
 	}
 
+	@Override
+	public boolean equals(Object o) {
+	    if (!(o instanceof PropertyValue) || o == null) { return false; }
+	    PropertyValue pv = (PropertyValue) o;
+	    return getPropertyName().equals(pv.getPropertyName()) && getPropertyValue().equals(pv.getPropertyValue());
+	}
+
+	@Override
+	public int hashCode() {
+	    String propertyName = getPropertyName();
+	    String propertyValue = getPropertyValue();
+        return (propertyName == null ? 43 : propertyName.hashCode()) + (propertyValue == null ? 51 : propertyValue.hashCode());
+	}
+
 }

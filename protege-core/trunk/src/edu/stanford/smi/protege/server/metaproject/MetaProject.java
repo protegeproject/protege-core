@@ -39,10 +39,11 @@ public interface MetaProject {
 
     Policy getPolicy();
 
-    
+    PropertyValue createPropertyValue();
+
     @SuppressWarnings("unchecked")
     boolean save(Collection errors);
-    
+
     void dispose();
 
 }

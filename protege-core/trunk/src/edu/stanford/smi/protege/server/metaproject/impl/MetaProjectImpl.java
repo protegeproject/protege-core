@@ -22,12 +22,13 @@ import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
+import edu.stanford.smi.protege.server.metaproject.PropertyValue;
 import edu.stanford.smi.protege.server.metaproject.ServerInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.util.Log;
 
 public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
-    
+
     public static enum ClsEnum {
     	Project, User, Group, Operation, GroupOperation, PolicyControlledObject, Server, PropertyValue;
     }
@@ -36,17 +37,17 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
     public static enum SlotEnum {
         name, password, salt, location, email,
         lastLogin, lastAccess,
-        group, member, allowedGroup, allowedOperation, 
-        allowedGroupOperation, owner, description, annotationProject, hostName, 
+        group, member, allowedGroup, allowedOperation,
+        allowedGroupOperation, owner, description, annotationProject, hostName,
         properties, propertyName, propertyValue;
     }
 
 
     private static final long serialVersionUID = -7866511885264147967L;
-    
+
     private transient KnowledgeBase kb;
 	private transient Policy policy;
-	
+
 	public MetaProjectImpl(URI metaProjectURI) {
 	    this(metaProjectURI, false);
 	}
@@ -59,7 +60,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 		}
 		kb = project.getKnowledgeBase();
 	}
-	
+
 	public MetaProjectImpl(Project p) {
 	    kb = p.getKnowledgeBase();
 	}
@@ -136,7 +137,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	public Set<User> getUsers() {
 		return getWrappedInstances(MetaProjectImpl.ClsEnum.User);
 	}
-	
+
 	public User getUser(String name) {
 		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.name), null, false, name);
 		if (frames == null || frames.isEmpty()) {
@@ -148,7 +149,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 		}
 		return new UserImpl(this, (Instance) frame);
 	}
-	
+
 	public Operation getOperation(String name) {
 		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.name), null, false, name);
 		if (frames == null || frames.isEmpty()) {
@@ -160,13 +161,13 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 		}
 		return new OperationImpl(this, (Instance) frame);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public Set<Operation> getOperations() {
 		return getWrappedInstances(MetaProjectImpl.ClsEnum.Operation);
 	}
 
-	
+
 	public Group getGroup(String name) {
 		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.name), null, false, name);
 		if (frames == null || frames.isEmpty()) {
@@ -184,18 +185,18 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	public Set<Group> getGroups() {
 		return getWrappedInstances(MetaProjectImpl.ClsEnum.Group);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public Set<GroupOperation> getGroupOperations() {
 	    return getWrappedInstances(MetaProjectImpl.ClsEnum.GroupOperation);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public Set<ServerInstance> getServers() {
 		return getWrappedInstances(MetaProjectImpl.ClsEnum.Server);
 	}
-	
-	
+
+
 	public Policy getPolicy() {
 		if (policy == null) {
 			policy = new  PolicyImpl(this);
@@ -210,7 +211,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	public boolean save(Collection errors) {
 		ArrayList saveErrors = new ArrayList();
 
-		try {			
+		try {
 			kb.getProject().save(saveErrors);
 
 			if (saveErrors.size() > 0) {
@@ -228,19 +229,17 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 		if (Log.getLogger().isLoggable(Level.FINE)) {
 			Log.getLogger().fine("SERVER: Saved metaproject.");
 		}
-		
+
 		return true;
 	}
-	
+
 	public void dispose() {
 	    kb.getProject().dispose();
 	}
 
 	public ProjectInstance createProject(String name) {
 		Instance pi = kb.createInstance(name, getCls(MetaProjectImpl.ClsEnum.Project));
-		
 		ProjectInstance project = new ProjectInstanceImpl(this, pi);
-		
 		project.setName(name);
 		return project;
 	}
@@ -254,39 +253,39 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 
 		return userInstance;
 	}
-	
+
 	public Group createGroup(String name) {
 		Instance pi = kb.createInstance(name, getCls(MetaProjectImpl.ClsEnum.Group));
-		
 		Group group = new GroupImpl(this, pi);
-		
 		group.setName(name);
 		return group;
 	}
-	
+
 
 	public Operation createOperation(String name) {
 		Instance pi = kb.createInstance(name, getCls(MetaProjectImpl.ClsEnum.Operation));
-		
 		Operation op = new OperationImpl(this, pi);
-		
 		op.setName(name);
 		return op;
 	}
-	
-	
+
+
 	public GroupOperation createGroupOperation() {
 		Instance pi = kb.createInstance(null, getCls(MetaProjectImpl.ClsEnum.GroupOperation));
-		
 		GroupOperation groupOp = new GroupOperationImpl(this, pi);
-		
 		return groupOp;
 	}
 
+    public PropertyValue createPropertyValue() {
+        Instance pi = kb.createInstance(null, getCls(MetaProjectImpl.ClsEnum.PropertyValue));
+        PropertyValue pv = new PropertyValueImpl(this, pi);
+        return pv;
+    }
 
     public void localize(KnowledgeBase kb) {
         this.kb = kb;
         policy = null;
     }
+
 
 }
