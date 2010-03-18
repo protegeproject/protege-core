@@ -101,6 +101,8 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 			return new ServerInstanceImpl(this, i);
 		case PolicyControlledObject:
 			return new PolicyControlledObjectImpl(this, i);
+		case PropertyValue:
+		    return new PropertyValueImpl(this, i);
 		default:
 			throw new UnsupportedOperationException("Unexpected cls " + cls);
 		}
