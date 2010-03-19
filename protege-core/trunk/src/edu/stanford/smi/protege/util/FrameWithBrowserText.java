@@ -82,7 +82,7 @@ public class FrameWithBrowserText implements Serializable, Localizable {
 	public int hashCode() {
 		return
 			frame == null ? 42 :
-				frame.getName().length() * 43 + 7 * browserText.length() + 5 * types.size() + 3;
+				frame.getName().length() * 43 + frame.getName().hashCode();
 	}
 	
 	/*
