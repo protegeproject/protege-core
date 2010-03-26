@@ -41,10 +41,17 @@ public abstract class WrappedProtegeInstanceWithPropsImpl extends WrappedProtege
     }
 
     public void removePropertyValue(String prop, String value) {
-        PropertyValue pv = getMetaProject().createPropertyValue();
-        pv.setPropertyName(prop);
-        pv.setPropertyValue(value);
-        removePropertyValue(pv); //TODO: check if this works
+        Collection<PropertyValue> propVals = getPropertyValues();
+        for (PropertyValue propVal : propVals) {
+            String propertyName = propVal.getPropertyName();
+            String propertyValue = propVal.getPropertyValue();
+            if (
+                ((prop == null && propertyName == null) || (prop != null && prop.equals(propertyName))) &&
+                ((value == null && propertyValue == null) || (value != null &&  value.equals(propertyValue)))
+               ) {
+                    ((WrappedProtegeInstanceImpl)propVal).getProtegeInstance().delete();
+            }
+        }
     }
 
     public Collection<String> getPropertyValuesAsString(String prop) {
