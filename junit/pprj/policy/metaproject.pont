@@ -1,4 +1,4 @@
-; Fri Mar 26 14:22:00 PDT 2010
+; Fri Mar 26 14:41:11 PDT 2010
 ; 
 ;+ (version "3.4.4")
 ;+ (build "Build 577")
@@ -22,7 +22,7 @@
 	(multislot group
 		(type INSTANCE)
 ;+		(allowed-classes Group)
-		(default [metaproject_Instance_0])
+		(default [metaproject_Instance_13])
 ;+		(inverse-slot member)
 		(create-accessor read-write))
 	(single-slot hostName
@@ -112,7 +112,7 @@
 	(multislot group
 		(type INSTANCE)
 ;+		(allowed-classes Group)
-		(default [metaproject_Instance_0])
+		(default [metaproject_Instance_13])
 		(create-accessor read-write))
 	(single-slot password
 		(type STRING)

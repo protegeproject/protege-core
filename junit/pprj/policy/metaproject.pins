@@ -1,13 +1,10 @@
-; Fri Mar 26 14:22:00 PDT 2010
+; Fri Mar 26 14:41:11 PDT 2010
 ; 
 ;+ (version "3.4.4")
 ;+ (build "Build 577")
 
 ([metaproject_Class0] of  Project
-
-	(allowedGroupOperation
-		[metaproject_Instance_10008]
-		[metaproject_Class3]))
+)
 
 ([metaproject_Instance_0] of  Operation
 
