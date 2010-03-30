@@ -16,6 +16,7 @@ import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -42,6 +43,7 @@ public abstract class Finder extends JComponent {
     private Action _findButtonAction;
     private static final int MAX_MATCHES;
     private static final int DEFAULT_MAX_MATCHES = 100;
+    private ListCellRenderer cellRenderer;
 
     static {
         MAX_MATCHES = ApplicationProperties.getIntegerProperty(Finder.class.getName() + ".max_matches",
@@ -149,7 +151,7 @@ public abstract class Finder extends JComponent {
                 }
                 String title = "Select from search results (" + matches.size() + " matches)";
                 int initialSelection = getBestMatch(matches, text);
-                Object o = DisplayUtilities.pickInstanceFromCollection(this, matches, initialSelection, title);
+                Object o = DisplayUtilities.pickInstanceFromCollection(this, matches, initialSelection, title, cellRenderer);
                 if (o != null) {
                     WaitCursor cursor = new WaitCursor(this);
                     select(o);
@@ -181,6 +183,10 @@ public abstract class Finder extends JComponent {
     	super.setEnabled(enabled);
     	_comboBox.setEnabled(enabled);
     	_findButtonAction.setEnabled(enabled);
+    }
+    
+    public void setCellRenderer(ListCellRenderer cellRenderer) {
+        this.cellRenderer = cellRenderer;
     }
     
 }

@@ -1,10 +1,22 @@
 package edu.stanford.smi.protege.ui;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Component;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 
-import edu.stanford.smi.protege.model.*;
-import edu.stanford.smi.protege.util.*;
+import javax.swing.ListCellRenderer;
+
+import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Project;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.util.Assert;
+import edu.stanford.smi.protege.util.CollectionUtilities;
+import edu.stanford.smi.protege.util.ModalDialog;
+import edu.stanford.smi.protege.util.Validator;
 
 /**
  * A bunch of generic utilities for popping up dialogs that allow the user to do something.  Most of these methods
@@ -218,10 +230,23 @@ public class DisplayUtilities {
         return (Instance) CollectionUtilities.getFirstItem(pickInstances(component, allowedClses, label));
     }
 
-    public static Instance pickInstanceFromCollection(Component component, Collection collection, int initialSelection,
-            String label) {
+    public static Instance pickInstanceFromCollection(Component component, 
+                                                      Collection collection, 
+                                                      int initialSelection,
+                                                      String label) {
+        return pickInstanceFromCollection(component, collection, initialSelection, label, null);
+    }
+    
+    public static Instance pickInstanceFromCollection(Component component, 
+                                                      Collection collection, 
+                                                      int initialSelection,
+                                                      String label,
+                                                      ListCellRenderer cellRenderer) {
         Instance instance;
         SelectInstanceFromCollectionPanel panel = new SelectInstanceFromCollectionPanel(collection, initialSelection);
+        if (cellRenderer != null) {
+            panel.setCellRenderer(cellRenderer);
+        }
         int result = ModalDialog.showDialog(component, panel, label, ModalDialog.MODE_OK_CANCEL);
         if (result == ModalDialog.OPTION_OK) {
             instance = panel.getSelection();

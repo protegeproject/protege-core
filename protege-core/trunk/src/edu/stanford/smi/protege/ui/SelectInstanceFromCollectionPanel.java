@@ -101,4 +101,10 @@ public class SelectInstanceFromCollectionPanel extends JComponent {
             }
         });
     }
+    
+    public void setCellRenderer(ListCellRenderer cellRenderer) {
+        if (cellRenderer != null) {
+            _list.setCellRenderer(cellRenderer); 
+        }
+    }
 }

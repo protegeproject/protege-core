@@ -22,13 +22,13 @@ public class BrowserTextListFinder extends ListFinder {
 		super(list, key);	
 	}
 
-	 protected List getMatches(String text, int maxMatches) {
+	 protected List<Frame> getMatches(String text, int maxMatches) {
 	        if (!text.endsWith("*")) {
 	            text += "*";
 	        }
 
 	        StringMatcher matcher = new SimpleStringMatcher(text);
-	        List matchingInstances = new ArrayList();
+	        List<Frame> matchingInstances = new ArrayList<Frame >();
 	        ListModel model = _list.getModel();
 	        int size = model.getSize();
 	        for (int i = 0; i < size; ++i) {
