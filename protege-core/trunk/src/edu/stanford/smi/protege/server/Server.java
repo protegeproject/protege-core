@@ -693,8 +693,8 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                 // don't do this  inside the listener method
                 // it takes the Server lock and can deadlock.
                 // note that the listener is invoked by the last access time updater
-                private Cls projectClass = getProjectCls();  
-                
+                private Cls projectClass = getProjectCls();
+
                 @Override
                 public void ownSlotValueChanged(FrameEvent event) {
                     Instance frame = (Instance)event.getFrame();
@@ -1417,7 +1417,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     public synchronized Collection<Operation> getAllowedOperations(RemoteSession session, String projectName, String userName) {
     	Collection<Operation> allowedOps = new ArrayList<Operation>();
     	Policy policy = metaproject.getPolicy();
-    	User user = policy.getUserByName(session.getUserName());
+    	User user = policy.getUserByName(userName);
     	ProjectInstance project = metaproject.getPolicy().getProjectInstanceByName(projectName);
     	if (user == null || project == null) {  return allowedOps;  }
     	for (Operation op : policy.getKnownOperations()) {
