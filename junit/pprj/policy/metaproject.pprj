@@ -1,21 +1,21 @@
-; Fri Mar 26 14:41:11 PDT 2010
+; Wed Apr 07 22:49:42 PDT 2010
 ; 
 ;+ (version "3.4.4")
-;+ (build "Build 577")
+;+ (build "Build 579")
 
 ([BROWSER_SLOT_NAMES] of  Property_List
 
 	(properties
-		[metaproject_ProjectKB_Class20020]
-		[metaproject_ProjectKB_Class20021]
-		[metaproject_ProjectKB_Class20022]
-		[metaproject_ProjectKB_Class20023]
-		[metaproject_ProjectKB_Class20024]
-		[metaproject_ProjectKB_Class20025]
-		[metaproject_ProjectKB_Class20026]
-		[metaproject_ProjectKB_Class20027]
-		[metaproject_ProjectKB_Class20028]
-		[metaproject_ProjectKB_Class20029]))
+		[metaproject_ProjectKB_Class20006]
+		[metaproject_ProjectKB_Class20007]
+		[metaproject_ProjectKB_Class20008]
+		[metaproject_ProjectKB_Class20009]
+		[metaproject_ProjectKB_Class20010]
+		[metaproject_ProjectKB_Class20011]
+		[metaproject_ProjectKB_Class20012]
+		[metaproject_ProjectKB_Class20013]
+		[metaproject_ProjectKB_Class20014]
+		[metaproject_ProjectKB_Class20015]))
 
 ([CLSES_TAB] of  Widget
 
@@ -48,6 +48,9 @@
 	(label "Instances")
 	(property_list [ProjectKB_0036_00038])
 	(widget_class_name "edu.stanford.smi.protege.widget.InstancesTab"))
+
+([KB_049313_Class3] of  Map
+)
 
 ([KB_386249_Instance_0] of  Property_List
 
@@ -427,9 +430,6 @@
 	(x 0)
 	(y 120))
 
-([KB_869591_Class3] of  Map
-)
-
 ([metaproject_ProjectKB_Class1] of  Widget
 
 	(is_hidden TRUE)
@@ -438,14 +438,12 @@
 
 ([metaproject_ProjectKB_Class10004] of  Widget
 
-	(is_hidden FALSE)
-	(name ":UNDEFINED")
+	(is_hidden TRUE)
 	(property_list [metaproject_ProjectKB_Class10005])
-	(widget_class_name "edu.stanford.smi.protege.widget.FormWidget"))
+	(widget_class_name "edu.stanford.smi.protege.ui.internalKB.InternalKBTab"))
 
 ([metaproject_ProjectKB_Class10005] of  Property_List
-
-	(properties [metaproject_ProjectKB_Class20006]))
+)
 
 ([metaproject_ProjectKB_Class10006] of  Widget
 
@@ -793,75 +791,71 @@
 	(boolean_value FALSE)
 	(name "readOnly_configured"))
 
-([metaproject_ProjectKB_Class20006] of  Property_List
-
-	(name "layout properties"))
-
-([metaproject_ProjectKB_Class20020] of  String
+([metaproject_ProjectKB_Class20006] of  String
 
 	(name ":INSTANCE-ANNOTATION")
 	(string_value "%3AANNOTATION-TEXT"))
 
-([metaproject_ProjectKB_Class20021] of  String
+([metaproject_ProjectKB_Class20007] of  String
 
 	(name "Group")
 	(string_value "name"))
 
-([metaproject_ProjectKB_Class20022] of  String
+([metaproject_ProjectKB_Class20008] of  String
 
 	(name "GroupOperation")
 	(string_value "allowedGroup{+can+}allowedOperation"))
 
-([metaproject_ProjectKB_Class20023] of  String
+([metaproject_ProjectKB_Class20009] of  String
 
 	(name "Operation")
 	(string_value "name"))
 
-([metaproject_ProjectKB_Class20024] of  String
-
-	(name ":PAL-CONSTRAINT")
-	(string_value "%3APAL-NAME"))
-
-([metaproject_ProjectKB_Class20025] of  String
+([metaproject_ProjectKB_Class20010] of  String
 
 	(name ":META-CLASS")
 	(string_value "%3ANAME"))
 
-([metaproject_ProjectKB_Class20026] of  String
+([metaproject_ProjectKB_Class20011] of  String
+
+	(name ":PAL-CONSTRAINT")
+	(string_value "%3APAL-NAME"))
+
+([metaproject_ProjectKB_Class20012] of  String
 
 	(name "User")
 	(string_value "name"))
 
-([metaproject_ProjectKB_Class20027] of  String
-
-	(name "Project")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class20028] of  String
+([metaproject_ProjectKB_Class20013] of  String
 
 	(name "PropertyValue")
 	(string_value "propertyName{+%3D+}propertyValue"))
 
-([metaproject_ProjectKB_Class20029] of  String
+([metaproject_ProjectKB_Class20014] of  String
+
+	(name "Project")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class20015] of  String
 
 	(name "Server")
 	(string_value "name"))
 
-([metaproject_ProjectKB_Class20030] of  Map_Entry
+([metaproject_ProjectKB_Class20016] of  Map_Entry
 
 	(key "add_name_on_instance_form")
 	(key_class "java.lang.String")
 	(value "false")
 	(value_class "java.lang.String"))
 
-([metaproject_ProjectKB_Class20031] of  Map_Entry
+([metaproject_ProjectKB_Class20017] of  Map_Entry
 
 	(key "change_tracking_active")
 	(key_class "java.lang.String")
 	(value "false")
 	(value_class "java.lang.String"))
 
-([metaproject_ProjectKB_Class20032] of  Map_Entry
+([metaproject_ProjectKB_Class20018] of  Map_Entry
 
 	(key "suppress_instance_counting")
 	(key_class "java.lang.String")
@@ -4571,9 +4565,9 @@
 ([projects_ProjectKB_00052] of  Map
 
 	(entries
-		[metaproject_ProjectKB_Class20030]
-		[metaproject_ProjectKB_Class20031]
-		[metaproject_ProjectKB_Class20032]))
+		[metaproject_ProjectKB_Class20016]
+		[metaproject_ProjectKB_Class20017]
+		[metaproject_ProjectKB_Class20018]))
 
 ([projects_ProjectKB_00053] of  Widget
 

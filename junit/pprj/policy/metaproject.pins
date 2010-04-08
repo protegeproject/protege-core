@@ -1,10 +1,7 @@
-; Fri Mar 26 14:41:11 PDT 2010
+; Wed Apr 07 22:49:42 PDT 2010
 ; 
 ;+ (version "3.4.4")
-;+ (build "Build 577")
-
-([metaproject_Class0] of  Project
-)
+;+ (build "Build 579")
 
 ([metaproject_Instance_0] of  Operation
 
