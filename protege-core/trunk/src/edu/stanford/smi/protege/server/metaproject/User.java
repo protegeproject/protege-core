@@ -32,6 +32,8 @@ public interface User {
 
 	String getEmail();
 
+	String getSalt();
+
 	Collection<PropertyValue> getPropertyValues();
 
 	Collection<String> getPropertyValuesAsString(String prop);

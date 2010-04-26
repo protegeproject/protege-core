@@ -102,6 +102,9 @@ public class UserImpl extends WrappedProtegeInstanceWithPropsImpl implements Use
         setSlotValue(MetaProjectImpl.SlotEnum.email, email);
     }
 
+    public String getSalt() {
+        return (String) getSlotValue(SlotEnum.salt, null);
+    }
 
     @Override
     public boolean equals(Object o) {
