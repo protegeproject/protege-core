@@ -238,7 +238,7 @@ public class ExportToCsvAction extends StandardAction {
 				Frame frame = (Frame) value;
 				buffer.append(getExportName(frame));
 			} else {
-				buffer.append(value.toString());
+				buffer.append(getExportDataValueName(value));
 			}
 
 			if (i.hasNext()) {
@@ -265,11 +265,15 @@ public class ExportToCsvAction extends StandardAction {
 			}
 		}
 
-		if (value.indexOf(NEW_LINE) >= 0 || value.indexOf(getSlotValuesDelimiter()) > -1
-				|| value.indexOf(this.getSlotsDelimiter()) > -1) {
-			buffer.insert(0, QUOTE_CHAR);
-			buffer.insert(buffer.length(), QUOTE_CHAR);
-		}
+		/* 
+		 * at svn 18655 there was a conditional here.  It did not 
+		 * work as it did not take into account that the slot/slot-value
+		 * delimiter was a string and not just a character.
+		 * 
+		 * Why not just always quote?
+		 */
+		buffer.insert(0, QUOTE_CHAR);
+		buffer.insert(buffer.length(), QUOTE_CHAR);
 		
 		return buffer.toString();
 	}
@@ -277,6 +281,10 @@ public class ExportToCsvAction extends StandardAction {
 
 	protected String getExportName(Frame frame) {
 		return isExportBrowserTextEnabled() ? frame.getBrowserText() : frame.getName();
+	}
+	
+	protected String getExportDataValueName(Object data) {
+	    return  data.toString();
 	}
 
 
