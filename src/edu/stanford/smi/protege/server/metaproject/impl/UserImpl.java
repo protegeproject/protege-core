@@ -106,6 +106,10 @@ public class UserImpl extends WrappedProtegeInstanceWithPropsImpl implements Use
         return (String) getSlotValue(SlotEnum.salt, null);
     }
 
+    public String getDigestedPassword() {
+        return (String) getSlotValue(SlotEnum.password, null);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof User)) {

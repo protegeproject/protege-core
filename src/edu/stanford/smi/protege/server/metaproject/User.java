@@ -34,6 +34,8 @@ public interface User {
 
 	String getSalt();
 
+	String getDigestedPassword();
+
 	Collection<PropertyValue> getPropertyValues();
 
 	Collection<String> getPropertyValuesAsString(String prop);
