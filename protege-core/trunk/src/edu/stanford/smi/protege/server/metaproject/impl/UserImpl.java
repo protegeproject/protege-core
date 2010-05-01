@@ -110,6 +110,11 @@ public class UserImpl extends WrappedProtegeInstanceWithPropsImpl implements Use
         return (String) getSlotValue(SlotEnum.password, null);
     }
 
+    public void setDigestedPassword(String hashedPassword, String salt) {
+        setSlotValue(SlotEnum.password, hashedPassword);
+        setSlotValue(SlotEnum.salt, salt);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof User)) {
