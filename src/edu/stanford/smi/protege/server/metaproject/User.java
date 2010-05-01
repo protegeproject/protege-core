@@ -36,6 +36,8 @@ public interface User {
 
 	String getDigestedPassword();
 
+	void setDigestedPassword(String hashedPassword, String salt);
+
 	Collection<PropertyValue> getPropertyValues();
 
 	Collection<String> getPropertyValuesAsString(String prop);
