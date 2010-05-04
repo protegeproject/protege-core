@@ -62,6 +62,7 @@ import edu.stanford.smi.protege.util.ProtegeJob;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
+import edu.stanford.smi.protege.util.transaction.cache.impl.CompleteableCache;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheBeginTransaction;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheCommitTransaction;
 import edu.stanford.smi.protege.util.transaction.cache.serialize.CacheDelete;
@@ -113,7 +114,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     private static transient Logger log = Log.getLogger(ServerFrameStore.class);
 
-    public static final transient Logger cacheLog = Logger.getLogger("org.protege.client.cache");
+    /*
+     * Arrange that this Logger is activated when a developer activates the other cache logs.
+     */
+    public static final transient Logger cacheLog = Logger.getLogger(CompleteableCache.class.getPackage().getName() + ".ClientServer");
 
     private FrameStore _delegate;
     private KnowledgeBase _kb;
