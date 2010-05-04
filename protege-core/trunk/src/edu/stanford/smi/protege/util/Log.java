@@ -90,7 +90,7 @@ public class Log {
         String rootDir = getApplicationDirectory().getAbsolutePath();
         if (System.getProperty(logProperty) != null) {
           if (debug) {
-            System.out.println("Already configured...");
+            System.out.println("Logger already configured...");
           }
           // already configured...
           configuredByFile = true;

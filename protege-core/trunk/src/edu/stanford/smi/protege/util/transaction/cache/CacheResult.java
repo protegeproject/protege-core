@@ -1,8 +1,10 @@
 package edu.stanford.smi.protege.util.transaction.cache;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 public class CacheResult<R> implements Serializable {
+    private static final long serialVersionUID = -8134642352504821785L;
     private R result;
     private boolean isValid;
     
@@ -60,7 +62,15 @@ public class CacheResult<R> implements Serializable {
         	}
         	else {
         	    sb.append(" of type ");
+        	    // It is tempting to just print getResult() here.  I think though that I remember
+        	    // this causes problems in the logs when printing getResult() involves going back 
+        	    // to the cache...
         	    sb.append(getResult().getClass());
+        	    if (getResult() instanceof Collection<?>) {
+        	        sb.append(" (size=");
+        	        sb.append(((Collection<?>) getResult()).size());
+        	        sb.append(")");
+        	    }
         	}
     		sb.append("]");
     		return sb.toString();
