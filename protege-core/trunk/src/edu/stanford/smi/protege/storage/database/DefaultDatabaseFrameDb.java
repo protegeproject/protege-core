@@ -1360,7 +1360,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         StringBuffer command = new StringBuffer();
         command.append("SELECT COUNT(*) FROM " + _table);
         command.append(" WHERE " + SLOT_COLUMN + " = '" + getValue(Model.SlotID.NAME));
-        command.append("' AND " + FACET_COLUMN + " = \"\"");
+        command.append("' AND " + FACET_COLUMN + " = ''");
         command.append(" AND " + IS_TEMPLATE_COLUMN + " = ?");
         command.append(" AND (");
         boolean isFirst = true;
