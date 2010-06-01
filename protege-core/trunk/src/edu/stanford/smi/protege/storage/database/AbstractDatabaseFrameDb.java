@@ -20,33 +20,32 @@ import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
-
 	public static Logger log	= Log.getLogger( AbstractDatabaseFrameDb.class );
+	public static final String SLOW_QUERY_PROPERTY = "slow.jdbc.query.milliseconds";
+	private static final int slowQueryTime = ApplicationProperties.getIntegerProperty(SLOW_QUERY_PROPERTY, 15 * 1000);
+
 	private static int	traceCount	= 0;
 
-	private static void traceUpdate(PreparedStatement stmt) {
-	    traceUpdate(stmt, "");
+	private static void traceUpdate(PreparedStatement stmt, Level level) {
+	    traceUpdate(stmt, "", level);
 	}
 
-	private static void traceUpdate(PreparedStatement stmt, String append) {
-	  if (log.isLoggable(Level.FINE)) {
-	    trace(stmt, append, Level.FINE);
+	private static void traceUpdate(PreparedStatement stmt, String append, Level level) {
+	  if (log.isLoggable(level)) {
+	    trace(stmt, append, level);
 	  }
 	}
 
-	private static void traceQuery(PreparedStatement stmt) {
-	  if (log.isLoggable(Level.FINER)) {
-	    trace(stmt, "", Level.FINER);
+	private static void traceQuery(PreparedStatement stmt, Level level) {
+	  if (log.isLoggable(level)) {
+	    trace(stmt, "", level);
 	  }
-	}
-
-	private static boolean isDead(RemoteSession session) {
-		return session != null && !Server.getInstance().isActive( session );
 	}
 
 	private static void trace(PreparedStatement stmt, String append, Level level) {
@@ -66,55 +65,63 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	  log.log(level, ++traceCount + " SQL: " + text);
 	}
 
-	private static void traceQuery(String text) {
-	  if (log.isLoggable(Level.FINER)) {
-	    trace(text, Level.FINER);
+	private static void traceQuery(String text, Level level) {
+	  if (log.isLoggable(level)) {
+	    trace(text, level);
 	  }
 	}
 
-	private static void traceUpdate(String text) {
-	  if (log.isLoggable(Level.FINE)) {
-	    trace(text, Level.FINE);
+	private static void traceUpdate(String text, Level level) {
+	  if (log.isLoggable(level)) {
+	    trace(text, level);
 	  }
 	}
 
 	protected static ResultSet executeQuery(PreparedStatement stmt) throws SQLException {
-	    long startTime = 0;
-	    traceQuery(stmt);
-	    if (log.isLoggable(Level.FINER)) {
-	      startTime = System.nanoTime();
-	    }
+	    Level traceLevel = Level.FINER;
+	    traceQuery(stmt, traceLevel);
+	    
+	    long startTime = System.nanoTime();
 	    ResultSet ret = stmt.executeQuery();
-	    if (log.isLoggable(Level.FINER)) {
-	    	float t = (System.nanoTime() - startTime)/1000000;
-	    	if (t > 10000) {
-	    		Log.getLogger().finer("*** SLOW QUERY: " + t + " msec ***");
-	    	}
-	    	log.finer("Query took " + t
-	                  + " milliseconds (more or less)");	  
-	    }
+        double t = (System.nanoTime() - startTime)/1000000.0;
+        
+        if (t > slowQueryTime) {
+            if (!log.isLoggable(traceLevel)) {
+                traceQuery(stmt, Level.INFO);
+            }
+            log.info("*** SLOW QUERY: " + t + " msec ***");
+        }
+        else if (log.isLoggable(traceLevel)) {
+            log.log(traceLevel, "Query took " + t + " milliseconds (more or less)");	  
+        }
 	    return ret;
 	}
 
 	protected static int executeUpdate(PreparedStatement stmt) throws SQLException {
-	    traceUpdate(stmt);
-		long startTime = 0;
-		if (log.isLoggable(Level.FINE)) {
-			startTime = System.nanoTime();
-		}
+        Level traceLevel = Level.FINE;
+	    traceUpdate(stmt, traceLevel);
+
+		long startTime = System.nanoTime();
 		int ret =  stmt.executeUpdate();
-		if (log.isLoggable(Level.FINE)) {
-			float t = (System.nanoTime() - startTime)/1000000;
-	    	if (t > 10000) {
-	    		Log.getLogger().fine("*** SLOW QUERY: " + t + " msec ***");
-	    	}
-	    	log.finer("Query took " + t
-	                  + " milliseconds (more or less)");
-		}
+        double t = (System.nanoTime() - startTime)/1000000.0;
+
+        if (t > slowQueryTime) {
+            if (!log.isLoggable(traceLevel)) {
+                traceQuery(stmt, Level.INFO);
+            }
+            log.info("*** SLOW QUERY: " + t + " msec ***");
+        }
+        else if (log.isLoggable(traceLevel)) {
+            log.log(traceLevel, "Query took " + t + " milliseconds (more or less)");	  
+        }
 		return ret;
 	}
 
-	protected static boolean isNullValue(Object o) {
+	private static boolean isDead(RemoteSession session) {
+    	return session != null && !Server.getInstance().isActive( session );
+    }
+
+    protected static boolean isNullValue(Object o) {
 	    boolean isNull = o == null;
 	    if (o instanceof String) {
 	        String s = (String) o;
@@ -308,41 +315,51 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 		frameDbName = name;
 	}
 
-	protected ResultSet executeQuery(String text) throws SQLException {
+	public String getTableName() {
+        return _table;
+    }
+
+    protected ResultSet executeQuery(String text) throws SQLException {
 	    return executeQuery(text, 0);
 	}
 
 	protected ResultSet executeQuery(String text, int maxRows) throws SQLException {
-	    long startTime = 0;
-	    traceQuery(text);	    
+	    Level traceLevel = Level.FINER;
+	    traceQuery(text, traceLevel);	    
+
 	    Statement statement = getCurrentConnection().getStatement();
-	    // statement.setMaxRows(maxRows);
-	    if (log.isLoggable(Level.FINER)) {
-	      startTime = System.nanoTime();
-	    }
+	    long startTime = System.nanoTime();
 	    ResultSet ret = statement.executeQuery(text);
-	    if (log.isLoggable(Level.FINER)) {
-	      log.finer("Query took " + (System.nanoTime() - startTime)/1000000.0
-	                  + " milliseconds (more or less)");
-	    }
+	    double t = (System.nanoTime() - startTime)/1000000.0;
+
+        if (t > slowQueryTime) {
+            if (!log.isLoggable(traceLevel)) {
+                traceQuery(text, Level.INFO);
+            }
+            log.info("*** SLOW QUERY: " + t + " msec ***");
+        }
+        else if (log.isLoggable(traceLevel)) {
+            log.log(traceLevel, "Query took " + t + " milliseconds (more or less)");	  
+        }
 	    return ret;
 	}
 
-	public String getTableName() {
-	    return _table;
-	}
-
+	/*
+	 * WARNING - this routine does not have the slow query logging logic because it is 
+	 *           used in initialization routines such as createIndicies(), createTable(),
+	 *           dropTableIfExists(), and overwriteKB(KnowledgeBase, boolean).
+	 */
 	protected int executeUpdate(String text) throws SQLException {
-		traceUpdate(text);
-		long startTime = 0;
-		if (log.isLoggable(Level.FINE)) {
-			startTime = System.nanoTime();
-		}
+	    Level traceLevel = Level.FINE;
+		traceUpdate(text, traceLevel);
+
+		long startTime = System.nanoTime();
 		int ret =  getCurrentConnection().getStatement().executeUpdate(text);
-		if (log.isLoggable(Level.FINE)) {
-			log.fine("Query took " + (System.nanoTime() - startTime)/1000000.0
-					+ " milliseconds (more or less)");
-		}
+        double t = (System.nanoTime() - startTime)/1000000.0;
+
+        if (log.isLoggable(traceLevel)) {
+            log.log(traceLevel, "Query took " + t + " milliseconds (more or less)");	  
+        }
 		return ret;
 	}
 
