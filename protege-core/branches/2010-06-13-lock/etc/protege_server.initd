@@ -1,0 +1,138 @@
+#!/bin/sh
+#
+# Script to put in the init.d directory.
+#
+
+#=========================================================
+# Set the following information for your environment
+#
+
+#
+# The user running the protege server.  Required for now.
+#
+PROTEGE_USER=tredmond
+
+#
+# Set the JAVA_PATH to a directory where the 
+# java and rmiregistry jars live.
+#
+#JAVA_PATH=/opt/jdk1.5.0_06/bin
+JAVA_PATH=/usr/bin
+
+#
+# Set PROTEGE_HOME to the directory where Protege
+# lives
+#
+PROTEGE_HOME=/Users/tredmond/dev/Protege
+#
+# Memory to allocate to the server
+#
+MAX_MEMORY=-Xmx200M
+#
+# Sometimes the hostname parameter is not set correctly (e.g. localhost)
+#
+#HOSTNAME=smi-tredmond-li.stanford.edu
+#
+# Transaction isolation Level
+#
+TX="-Dtransaction.level=READ_COMMITTED"
+#
+# The port that the user uses to access the server from his machine.
+# All relevant firewalls need to let this port through.
+#
+RMI_REGISTRY_PORT=5200
+#
+# The port used by the client to access the server.
+# All relevant firewalls need to let this port through. 
+#
+SERVER_PORT=5300
+
+#
+# Tells the server to save projects periodically after any change.
+#
+SAVE_INTERVAL=-saveIntervalSec=120
+#
+# The location of the meta-project.
+METAPROJECT=examples/server/metaproject.pprj
+
+#=========================================================
+# Commands
+#
+ECHO=/bin/echo
+SU=/usr/bin/su
+NOHUP=/usr/bin/nohup
+KILL=/bin/kill
+SLEEP=/bin/sleep
+
+#=========================================================
+# End of User customizations
+#
+
+
+
+if [ ! -e $JAVA_BIN ]; then
+	${ECHO} Java VM could not be found. Please check settings in the init.d script
+	exit 1
+fi
+
+CLASSPATH=protege.jar:looks.jar:unicode_panel.jar:driver.jar:driver0.jar:driver1.jar:driver2.jar:plugins/edu.stanford.smi.protegex.changes/change-model.jar
+
+
+start() {
+   # ------------------- JVM Options ------------------- 
+   HEADLESS=-Djava.awt.headless=true
+   CODEBASE_URL=file:${PROTEGE_HOME}/protege.jar
+   CODEBASE=-Djava.rmi.server.codebase=$CODEBASE_URL
+   HOSTNAME_PARAM=-Djava.rmi.server.hostname=$HOSTNAME
+
+
+   OPTIONS="$MAX_MEMORY $HEADLESS $CODEBASE $HOSTNAME_PARAM ${TX}"
+
+   PORTOPTS="-Dprotege.rmi.server.port=${SERVER_PORT} -Dprotege.rmi.registry.port=${RMI_REGISTRY_PORT}"
+
+   OPTIONS="${OPTIONS} ${PORTOPTS}"
+   # ------------------- JVM Options ------------------- 
+
+   ${SU} ${PROTEGE_USER}<<EOF
+      cd ${PROTEGE_HOME}
+      ${ECHO} "Starting server: " `date` >> logs/server.log
+      ${JAVA_PATH}/rmiregistry ${RMI_REGISTRY_PORT} > /dev/null  2>&1 &
+      ${NOHUP} ${JAVA_PATH}/java -cp ${CLASSPATH} $TX $OPTIONS \
+        edu.stanford.smi.protege.server.Server \
+        $SAVE_INTERVAL $METAPROJECT >> logs/server.log 2>&1 &
+EOF
+   echo "Server starting..."
+}
+
+stop() {
+   echo -n  Stopping server...
+   ${SU} ${PROTEGE_USER} <<EOF2
+     cd ${PROTEGE_HOME}
+     $JAVA_PATH/java -cp $CLASSPATH  \
+         edu.stanford.smi.protege.server.Shutdown \
+         localhost:${RMI_REGISTRY_PORT} >> logs/shutdown.log 2>&1
+     # killing the rmiregistry is tricky - let it go for now.
+     ${ECHO} "Server Stopped: " `date` >> logs/server.log
+     echo OK.
+EOF2
+}
+
+
+case "$1" in 
+   start)
+     start
+     ;;
+   stop)
+     stop
+     ;;
+   restart)
+     stop
+     ${SLEEP} 5
+     start
+     ;;
+   *)
+   echo "Usage: $prog {start|stop|restart}"
+   exit 1
+esac
+
+exit $?
