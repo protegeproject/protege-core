@@ -20,8 +20,7 @@ import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
-public class SynchronizationFrameStore implements FrameStore {
-	private FrameStore delegate;
+public class SynchronizationFrameStore extends AbstractFrameStore {
 	private ReadWriteLock locks = new ReentrantReadWriteLock();
 	
 	public Lock getReaderLock() {
@@ -32,19 +31,11 @@ public class SynchronizationFrameStore implements FrameStore {
 		return locks.writeLock();
 	}
 	
-	public FrameStore getDelegate() {
-		return delegate;
-	}
-
-	public void setDelegate(FrameStore delegate) {
-		this.delegate = delegate;
-    }
-	
 
 	public void addDirectSuperclass(Cls cls, Cls superclass) {
 		locks.writeLock().lock();
 		try {
-			delegate.addDirectSuperclass(cls, superclass);
+			getDelegate().addDirectSuperclass(cls, superclass);
 		}
 		finally {
 			locks.writeLock().unlock();
@@ -54,7 +45,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void addDirectSuperslot(Slot slot, Slot superslot) {
         locks.writeLock().lock();
         try {
-            delegate.addDirectSuperslot(slot, superslot);
+            getDelegate().addDirectSuperslot(slot, superslot);
         }
         finally {
             locks.writeLock().unlock();
@@ -64,7 +55,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void addDirectTemplateSlot(Cls cls, Slot slot) {
         locks.writeLock().lock();
         try {
-            delegate.addDirectTemplateSlot(cls, slot);
+            getDelegate().addDirectTemplateSlot(cls, slot);
         }
         finally {
             locks.writeLock().unlock();
@@ -74,7 +65,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void addDirectType(Instance instance, Cls type) {
         locks.writeLock().lock();
         try {
-            delegate.addDirectType(instance, type);
+            getDelegate().addDirectType(instance, type);
         }
         finally {
             locks.writeLock().unlock();
@@ -84,21 +75,17 @@ public class SynchronizationFrameStore implements FrameStore {
 	public boolean beginTransaction(String name) {
         locks.writeLock().lock();
         try {
-            return delegate.beginTransaction(name);
+            return getDelegate().beginTransaction(name);
         }
         finally {
             locks.writeLock().unlock();
         }
 	}
-
-	public void close() {
-		delegate.close();
-	}
-
+	
 	public boolean commitTransaction() {
         locks.writeLock().lock();
         try {
-            return delegate.commitTransaction();
+            return getDelegate().commitTransaction();
         }
         finally {
             locks.writeLock().unlock();
@@ -111,7 +98,7 @@ public class SynchronizationFrameStore implements FrameStore {
                          boolean loadDefaultValues) {
         locks.writeLock().lock();
         try {
-		return delegate.createCls(id, directTypes, directSuperclasses,
+		return getDelegate().createCls(id, directTypes, directSuperclasses,
 				loadDefaultValues);
         }
         finally {
@@ -124,7 +111,7 @@ public class SynchronizationFrameStore implements FrameStore {
                              boolean loadDefaultValues) {
         locks.writeLock().lock();
         try {
-            return delegate.createFacet(id, directTypes, loadDefaultValues);
+            return getDelegate().createFacet(id, directTypes, loadDefaultValues);
         }
         finally {
             locks.writeLock().unlock();
@@ -136,7 +123,7 @@ public class SynchronizationFrameStore implements FrameStore {
 			Collection directTypes, boolean loadDefaultValues) {
         locks.writeLock().lock();
         try {
-            return delegate
+            return getDelegate()
 				.createSimpleInstance(id, directTypes, loadDefaultValues);
         }
         finally {
@@ -149,7 +136,7 @@ public class SynchronizationFrameStore implements FrameStore {
 			Collection directSuperslots, boolean loadDefaultValues) {
         locks.writeLock().lock();
         try {
-            return delegate.createSlot(id, directTypes, directSuperslots,
+            return getDelegate().createSlot(id, directTypes, directSuperslots,
                                        loadDefaultValues);
         }
         finally {
@@ -160,7 +147,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void deleteCls(Cls cls) {
         locks.writeLock().lock();
         try {
-            delegate.deleteCls(cls);
+            getDelegate().deleteCls(cls);
         }
         finally {
             locks.writeLock().unlock();
@@ -170,7 +157,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void deleteFacet(Facet facet) {
         locks.writeLock().lock();
         try {
-            delegate.deleteFacet(facet);
+            getDelegate().deleteFacet(facet);
         }
         finally {
             locks.writeLock().unlock();
@@ -180,7 +167,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void deleteSimpleInstance(SimpleInstance simpleInstance) {
         locks.writeLock().lock();
         try {
-            delegate.deleteSimpleInstance(simpleInstance);
+            getDelegate().deleteSimpleInstance(simpleInstance);
         }
         finally {
             locks.writeLock().unlock();
@@ -190,7 +177,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void deleteSlot(Slot slot) {
         locks.writeLock().lock();
         try {
-            delegate.deleteSlot(slot);
+            getDelegate().deleteSlot(slot);
         }
         finally {
             locks.writeLock().unlock();
@@ -200,7 +187,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void executeQuery(Query query, QueryCallback callback) {
         locks.readLock().lock();
         try {
-            delegate.executeQuery(query, callback);
+            getDelegate().executeQuery(query, callback);
         }
         finally {
             locks.readLock().unlock();
@@ -210,7 +197,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public int getClsCount() {
         locks.readLock().lock();
         try {
-            return delegate.getClsCount();
+            return getDelegate().getClsCount();
         }
         finally {
             locks.readLock().unlock();
@@ -220,7 +207,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Cls> getClses() {
         locks.readLock().lock();
         try {
-            return delegate.getClses();
+            return getDelegate().getClses();
         }
         finally {
             locks.readLock().unlock();
@@ -230,7 +217,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getClsesWithAnyDirectTemplateSlotValue(slot);
+            return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
         }
         finally {
             locks.readLock().unlock();
@@ -242,7 +229,7 @@ public class SynchronizationFrameStore implements FrameStore {
 			Object value) {
         locks.readLock().lock();
         try {
-            return delegate
+            return getDelegate()
 				.getClsesWithDirectTemplateFacetValue(slot, facet, value);
         }
         finally {
@@ -253,7 +240,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value) {
         locks.readLock().lock();
         try {
-            return delegate.getClsesWithDirectTemplateSlotValue(slot, value);
+            return getDelegate().getClsesWithDirectTemplateSlotValue(slot, value);
         }
         finally {
             locks.readLock().unlock();
@@ -264,7 +251,7 @@ public class SynchronizationFrameStore implements FrameStore {
 			Collection superclasses, int maxMatches) {
         locks.readLock().lock();
         try {
-            return delegate.getClsesWithMatchingBrowserText(string, superclasses,
+            return getDelegate().getClsesWithMatchingBrowserText(string, superclasses,
                                                             maxMatches);
         }
         finally {
@@ -276,7 +263,7 @@ public class SynchronizationFrameStore implements FrameStore {
 			Facet facet, String value, int maxMatches) {
         locks.readLock().lock();
         try {
-            return delegate.getClsesWithMatchingDirectTemplateFacetValue(slot,
+            return getDelegate().getClsesWithMatchingDirectTemplateFacetValue(slot,
                                                                          facet, value, maxMatches);
         }
         finally {
@@ -288,7 +275,7 @@ public class SynchronizationFrameStore implements FrameStore {
 			String value, int maxMatches) {
         locks.readLock().lock();
         try {
-            return delegate.getClsesWithMatchingDirectTemplateSlotValue(slot,
+            return getDelegate().getClsesWithMatchingDirectTemplateSlotValue(slot,
                                                                         value, maxMatches);
         }
         finally {
@@ -299,7 +286,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List getDirectDomain(Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectDomain(slot);
+            return getDelegate().getDirectDomain(slot);
         }
         finally {
             locks.readLock().unlock();
@@ -309,7 +296,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List<Instance> getDirectInstances(Cls cls) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectInstances(cls);
+            return getDelegate().getDirectInstances(cls);
         }
         finally {
             locks.readLock().unlock();
@@ -319,7 +306,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectlyOverriddenTemplateFacets(cls, slot);
+            return getDelegate().getDirectlyOverriddenTemplateFacets(cls, slot);
         }
         finally {
             locks.readLock().unlock();
@@ -329,7 +316,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getDirectlyOverriddenTemplateSlots(Cls cls) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectlyOverriddenTemplateSlots(cls);
+            return getDelegate().getDirectlyOverriddenTemplateSlots(cls);
         }
         finally {
             locks.readLock().unlock();
@@ -339,7 +326,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List getDirectOwnSlotValues(Frame frame, Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectOwnSlotValues(frame, slot);
+            return getDelegate().getDirectOwnSlotValues(frame, slot);
         }
         finally {
             locks.readLock().unlock();
@@ -349,7 +336,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectOwnSlotValuesClosure(frame, slot);
+            return getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
         }
         finally {
             locks.readLock().unlock();
@@ -359,7 +346,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public int getDirectOwnSlotValuesCount(Frame frame, Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectOwnSlotValuesCount(frame, slot);
+            return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
         }
         finally {
             locks.readLock().unlock();
@@ -369,7 +356,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List<Cls> getDirectSubclasses(Cls cls) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectSubclasses(cls);
+            return getDelegate().getDirectSubclasses(cls);
         }
         finally {
             locks.readLock().unlock();
@@ -379,7 +366,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List getDirectSubslots(Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectSubslots(slot);
+            return getDelegate().getDirectSubslots(slot);
         }
         finally {
             locks.readLock().unlock();
@@ -389,7 +376,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List<Cls> getDirectSuperclasses(Cls cls) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectSuperclasses(cls);
+            return getDelegate().getDirectSuperclasses(cls);
         }
         finally {
             locks.readLock().unlock();
@@ -399,7 +386,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List getDirectSuperslots(Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectSuperslots(slot);
+            return getDelegate().getDirectSuperslots(slot);
         }
         finally {
             locks.readLock().unlock();
@@ -409,7 +396,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectTemplateFacetValues(cls, slot, facet);
+            return getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
         }
         finally {
             locks.readLock().unlock();
@@ -419,7 +406,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List getDirectTemplateSlots(Cls cls) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectTemplateSlots(cls);
+            return getDelegate().getDirectTemplateSlots(cls);
         }
         finally {
             locks.readLock().unlock();
@@ -429,7 +416,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List getDirectTemplateSlotValues(Cls cls, Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectTemplateSlotValues(cls, slot);
+            return getDelegate().getDirectTemplateSlotValues(cls, slot);
         }
         finally {
             locks.readLock().unlock();
@@ -439,7 +426,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List getDirectTypes(Instance instance) {
         locks.readLock().lock();
         try {
-            return delegate.getDirectTypes(instance);
+            return getDelegate().getDirectTypes(instance);
         }
         finally {
             locks.readLock().unlock();
@@ -449,7 +436,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getDomain(Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getDomain(slot);
+            return getDelegate().getDomain(slot);
         }
         finally {
             locks.readLock().unlock();
@@ -459,7 +446,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public List<AbstractEvent> getEvents() {
         locks.readLock().lock();
         try {
-            return delegate.getEvents();
+            return getDelegate().getEvents();
         }
         finally {
             locks.readLock().unlock();
@@ -469,7 +456,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public int getFacetCount() {
         locks.readLock().lock();
         try {
-            return delegate.getFacetCount();
+            return getDelegate().getFacetCount();
         }
         finally {
             locks.readLock().unlock();
@@ -479,7 +466,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Facet> getFacets() {
         locks.readLock().lock();
         try {
-            return delegate.getFacets();
+            return getDelegate().getFacets();
         }
         finally {
             locks.readLock().unlock();
@@ -489,7 +476,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Frame getFrame(FrameID id) {
         locks.readLock().lock();
         try {
-            return delegate.getFrame(id);
+            return getDelegate().getFrame(id);
         }
         finally {
             locks.readLock().unlock();
@@ -499,7 +486,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Frame getFrame(String name) {
         locks.readLock().lock();
         try {
-            return delegate.getFrame(name);
+            return getDelegate().getFrame(name);
         }
         finally {
             locks.readLock().unlock();
@@ -509,7 +496,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public int getFrameCount() {
         locks.readLock().lock();
         try {
-            return delegate.getFrameCount();
+            return getDelegate().getFrameCount();
         }
         finally {
             locks.readLock().unlock();
@@ -519,7 +506,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public String getFrameName(Frame frame) {
         locks.readLock().lock();
         try {
-            return delegate.getFrameName(frame);
+            return getDelegate().getFrameName(frame);
         }
         finally {
             locks.readLock().unlock();
@@ -529,7 +516,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Frame> getFrames() {
         locks.readLock().lock();
         try {
-            return delegate.getFrames();
+            return getDelegate().getFrames();
         }
         finally {
             locks.readLock().unlock();
@@ -539,7 +526,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getFramesWithAnyDirectOwnSlotValue(slot);
+            return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
         }
         finally {
             locks.readLock().unlock();
@@ -549,7 +536,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
         locks.readLock().lock();
         try {
-            return delegate.getFramesWithDirectOwnSlotValue(slot, value);
+            return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
         }
         finally {
             locks.readLock().unlock();
@@ -560,7 +547,7 @@ public class SynchronizationFrameStore implements FrameStore {
 			String value, int maxMatches) {
         locks.readLock().lock();
         try {
-            return delegate.getFramesWithMatchingDirectOwnSlotValue(slot, value,
+            return getDelegate().getFramesWithMatchingDirectOwnSlotValue(slot, value,
                                                                     maxMatches);
         }
         finally {
@@ -571,7 +558,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Instance> getInstances(Cls cls) {
         locks.readLock().lock();
         try {
-            return delegate.getInstances(cls);
+            return getDelegate().getInstances(cls);
         }
         finally {
             locks.readLock().unlock();
@@ -581,17 +568,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Reference> getMatchingReferences(String string, int maxMatches) {
         locks.readLock().lock();
         try {
-            return delegate.getMatchingReferences(string, maxMatches);
-        }
-        finally {
-            locks.readLock().unlock();
-        }
-    }
-
-	public String getName() {
-        locks.readLock().lock();
-        try {
-            return delegate.getName();
+            return getDelegate().getMatchingReferences(string, maxMatches);
         }
         finally {
             locks.readLock().unlock();
@@ -601,7 +578,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getOverriddenTemplateFacets(Cls cls, Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getOverriddenTemplateFacets(cls, slot);
+            return getDelegate().getOverriddenTemplateFacets(cls, slot);
         }
         finally {
             locks.readLock().unlock();
@@ -611,7 +588,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getOverriddenTemplateSlots(Cls cls) {
         locks.readLock().lock();
         try {
-            return delegate.getOverriddenTemplateSlots(cls);
+            return getDelegate().getOverriddenTemplateSlots(cls);
         }
         finally {
             locks.readLock().unlock();
@@ -621,7 +598,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getOwnFacets(Frame frame, Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getOwnFacets(frame, slot);
+            return getDelegate().getOwnFacets(frame, slot);
         }
         finally {
             locks.readLock().unlock();
@@ -631,7 +608,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet) {
         locks.readLock().lock();
         try {
-            return delegate.getOwnFacetValues(frame, slot, facet);
+            return getDelegate().getOwnFacetValues(frame, slot, facet);
         }
         finally {
             locks.readLock().unlock();
@@ -641,7 +618,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Slot> getOwnSlots(Frame frame) {
         locks.readLock().lock();
         try {
-            return delegate.getOwnSlots(frame);
+            return getDelegate().getOwnSlots(frame);
         }
         finally {
             locks.readLock().unlock();
@@ -651,7 +628,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Collection getOwnSlotValues(Frame frame, Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getOwnSlotValues(frame, slot);
+            return getDelegate().getOwnSlotValues(frame, slot);
         }
         finally {
             locks.readLock().unlock();
@@ -661,7 +638,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Reference> getReferences(Object object) {
         locks.readLock().lock();
         try {
-            return delegate.getReferences(object);
+            return getDelegate().getReferences(object);
         }
         finally {
             locks.readLock().unlock();
@@ -671,7 +648,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public int getSimpleInstanceCount() {
         locks.readLock().lock();
         try {
-            return delegate.getSimpleInstanceCount();
+            return getDelegate().getSimpleInstanceCount();
         }
         finally {
             locks.readLock().unlock();
@@ -681,7 +658,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public int getSlotCount() {
         locks.readLock().lock();
         try {
-            return delegate.getSlotCount();
+            return getDelegate().getSlotCount();
         }
         finally {
             locks.readLock().unlock();
@@ -691,7 +668,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Slot> getSlots() {
         locks.readLock().lock();
         try {
-            return delegate.getSlots();
+            return getDelegate().getSlots();
         }
         finally {
             locks.readLock().unlock();
@@ -701,7 +678,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Cls> getSubclasses(Cls cls) {
         locks.readLock().lock();
         try {
-            return delegate.getSubclasses(cls);
+            return getDelegate().getSubclasses(cls);
         }
         finally {
             locks.readLock().unlock();
@@ -711,7 +688,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getSubslots(Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getSubslots(slot);
+            return getDelegate().getSubslots(slot);
         }
         finally {
             locks.readLock().unlock();
@@ -721,7 +698,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getSuperclasses(Cls cls) {
         locks.readLock().lock();
         try {
-            return delegate.getSuperclasses(cls);
+            return getDelegate().getSuperclasses(cls);
         }
         finally {
             locks.readLock().unlock();
@@ -731,7 +708,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getSuperslots(Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getSuperslots(slot);
+            return getDelegate().getSuperslots(slot);
         }
         finally {
             locks.readLock().unlock();
@@ -741,7 +718,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getTemplateFacets(cls, slot);
+            return getDelegate().getTemplateFacets(cls, slot);
         }
         finally {
             locks.readLock().unlock();
@@ -751,7 +728,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
         locks.readLock().lock();
         try {
-            return delegate.getTemplateFacetValues(cls, slot, facet);
+            return getDelegate().getTemplateFacetValues(cls, slot, facet);
         }
         finally {
             locks.readLock().unlock();
@@ -761,7 +738,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getTemplateSlots(Cls cls) {
         locks.readLock().lock();
         try {
-            return delegate.getTemplateSlots(cls);
+            return getDelegate().getTemplateSlots(cls);
         }
         finally {
             locks.readLock().unlock();
@@ -771,7 +748,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Collection getTemplateSlotValues(Cls cls, Slot slot) {
         locks.readLock().lock();
         try {
-            return delegate.getTemplateSlotValues(cls, slot);
+            return getDelegate().getTemplateSlotValues(cls, slot);
         }
         finally {
             locks.readLock().unlock();
@@ -781,7 +758,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public TransactionMonitor getTransactionStatusMonitor() {
         locks.readLock().lock();
         try {
-            return delegate.getTransactionStatusMonitor();
+            return getDelegate().getTransactionStatusMonitor();
         }
         finally {
             locks.readLock().unlock();
@@ -791,7 +768,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public Set getTypes(Instance instance) {
         locks.readLock().lock();
         try {
-            return delegate.getTypes(instance);
+            return getDelegate().getTypes(instance);
         }
         finally {
             locks.readLock().unlock();
@@ -802,7 +779,7 @@ public class SynchronizationFrameStore implements FrameStore {
 			int indexTo) {
         locks.writeLock().lock();
         try {
-            delegate.moveDirectOwnSlotValue(frame, slot, indexFrom, indexTo);
+            getDelegate().moveDirectOwnSlotValue(frame, slot, indexFrom, indexTo);
         }
         finally {
             locks.writeLock().unlock();
@@ -812,7 +789,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
         locks.writeLock().lock();
         try {
-            delegate.moveDirectSubclass(cls, subclass, index);
+            getDelegate().moveDirectSubclass(cls, subclass, index);
         }
         finally {
             locks.writeLock().unlock();
@@ -822,7 +799,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void moveDirectSubslot(Slot slot, Slot subslot, int index) {
         locks.writeLock().lock();
         try {
-            delegate.moveDirectSubslot(slot, subslot, index);
+            getDelegate().moveDirectSubslot(slot, subslot, index);
         }
         finally {
             locks.writeLock().unlock();
@@ -832,7 +809,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void moveDirectTemplateSlot(Cls cls, Slot slot, int index) {
         locks.writeLock().lock();
         try {
-            delegate.moveDirectTemplateSlot(cls, slot, index);
+            getDelegate().moveDirectTemplateSlot(cls, slot, index);
         }
         finally {
             locks.writeLock().unlock();
@@ -842,7 +819,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void moveDirectType(Instance instance, Cls type, int index) {
         locks.writeLock().lock();
         try {
-            delegate.moveDirectType(instance, type, index);
+            getDelegate().moveDirectType(instance, type, index);
         }
         finally {
             locks.writeLock().unlock();
@@ -852,7 +829,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void reinitialize() {
         locks.writeLock().lock();
         try {
-            delegate.reinitialize();
+            getDelegate().reinitialize();
         }
         finally {
             locks.writeLock().unlock();
@@ -862,7 +839,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void removeDirectSuperclass(Cls cls, Cls superclass) {
         locks.writeLock().lock();
         try {
-            delegate.removeDirectSuperclass(cls, superclass);
+            getDelegate().removeDirectSuperclass(cls, superclass);
         }
         finally {
             locks.writeLock().unlock();
@@ -872,7 +849,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void removeDirectSuperslot(Slot slot, Slot superslot) {
         locks.writeLock().lock();
         try {
-            delegate.removeDirectSuperslot(slot, superslot);
+            getDelegate().removeDirectSuperslot(slot, superslot);
         }
         finally {
             locks.writeLock().unlock();
@@ -882,7 +859,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
         locks.writeLock().lock();
         try {
-            delegate.removeDirectTemplateFacetOverrides(cls, slot);
+            getDelegate().removeDirectTemplateFacetOverrides(cls, slot);
         }
         finally {
             locks.writeLock().unlock();
@@ -892,7 +869,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void removeDirectTemplateSlot(Cls cls, Slot slot) {
         locks.writeLock().lock();
         try {
-            delegate.removeDirectTemplateSlot(cls, slot);
+            getDelegate().removeDirectTemplateSlot(cls, slot);
         }
         finally {
             locks.writeLock().unlock();
@@ -902,7 +879,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void removeDirectType(Instance instance, Cls type) {
         locks.writeLock().lock();
         try {
-            delegate.removeDirectType(instance, type);
+            getDelegate().removeDirectType(instance, type);
         }
         finally {
             locks.writeLock().unlock();
@@ -912,7 +889,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void replaceFrame(Frame original, Frame replacement) {
         locks.writeLock().lock();
         try {
-            delegate.replaceFrame(original, replacement);
+            getDelegate().replaceFrame(original, replacement);
         }
         finally {
             locks.writeLock().unlock();
@@ -922,7 +899,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public boolean rollbackTransaction() {
         locks.writeLock().lock();
         try {
-            return delegate.rollbackTransaction();
+            return getDelegate().rollbackTransaction();
         }
         finally {
             locks.writeLock().unlock();
@@ -933,7 +910,7 @@ public class SynchronizationFrameStore implements FrameStore {
 	public void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
         locks.writeLock().lock();
         try {
-            delegate.setDirectOwnSlotValues(frame, slot, values);
+            getDelegate().setDirectOwnSlotValues(frame, slot, values);
         }
         finally {
             locks.writeLock().unlock();
@@ -944,18 +921,18 @@ public class SynchronizationFrameStore implements FrameStore {
 			Collection values) {
         locks.writeLock().lock();
         try {
-            delegate.setDirectTemplateFacetValues(cls, slot, facet, values);
+            getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
         }
         finally {
             locks.writeLock().unlock();
         }
     }
 
-	public void setDirectTemplateSlotValues(Cls cls, Slot slot,
-			Collection values) {
+	@SuppressWarnings("unchecked")
+	public void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values) {
         locks.writeLock().lock();
         try {
-            delegate.setDirectTemplateSlotValues(cls, slot, values);
+            getDelegate().setDirectTemplateSlotValues(cls, slot, values);
         }
         finally {
             locks.writeLock().unlock();
