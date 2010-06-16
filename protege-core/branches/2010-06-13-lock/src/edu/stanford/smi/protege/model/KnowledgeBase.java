@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 import edu.stanford.smi.protege.event.ClsListener;
 import edu.stanford.smi.protege.event.FacetListener;
@@ -28,6 +29,10 @@ public interface KnowledgeBase extends Disposable {
     int MAXIMUM_CARDINALITY_UNBOUNDED = -1;
     int UNLIMITED_MATCHES = -1;
 
+    Lock getReaderLock();
+    
+    Lock getWriterLock();
+    
     /**
      * This method requires some background information.  When Protege wants to
      * create a simple instance in the kb it creates an instance of the java

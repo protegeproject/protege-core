@@ -79,7 +79,7 @@ public class ServerNarrowFrameStore
       }
       localize(args);
       try {
-        synchronized (kb) {
+        synchronized (kb.getWriterLock()) {  // writer lock is conservative but this  should be rare.
           return method.invoke(delegate, args);
         }
       } catch (InvocationTargetException ite) {
@@ -251,7 +251,7 @@ public class ServerNarrowFrameStore
 
   public Collection<Frame> executeQuery(Query query, RemoteSession session) throws RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
-    final SynchronizeQueryCallback callback = new SynchronizeQueryCallback(kb);
+    final SynchronizeQueryCallback callback = new SynchronizeQueryCallback(kb.getReaderLock());
     fixedDelegate.executeQuery(query, callback);
     return callback.waitForResults();
   }

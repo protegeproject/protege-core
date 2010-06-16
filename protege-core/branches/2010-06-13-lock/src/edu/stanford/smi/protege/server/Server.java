@@ -507,22 +507,27 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
          * OWLFrameStore code (which holds the knowledgebase lock) that makes calls
          * to the internal project knowledge base to get configuration parameters.
          */
-        synchronized (project.getKnowledgeBase()) {
-            synchronized (project.getInternalProjectKnowledgeBase()) {
-            	/* TT: Save only the domain kb, not the prj kb.
-            	 * Saving the prj kb while a client opens a
-            	 * remote project can corrupt the client prj kb.
-            	 */
-            	KnowledgeBase kb = project.getKnowledgeBase();
-            	KnowledgeBaseFactory factory = kb.getKnowledgeBaseFactory();
-            	factory.saveKnowledgeBase(kb, project.getSources(), errors);
-                serverInstance._projectPluginManager.afterSave(project);
+        try {
+            project.getKnowledgeBase().getWriterLock().lock();
+            project.getInternalProjectKnowledgeBase().getWriterLock().lock();
+            /* TT: Save only the domain kb, not the prj kb.
+             * Saving the prj kb while a client opens a
+             * remote project can corrupt the client prj kb.
+             */
+            KnowledgeBase kb = project.getKnowledgeBase();
+            KnowledgeBaseFactory factory = kb.getKnowledgeBaseFactory();
+            factory.saveKnowledgeBase(kb, project.getSources(), errors);
+            serverInstance._projectPluginManager.afterSave(project);
+            
+            if (serverProject != null) {
+                serverProject.setClean();
             }
         }
-        //TODO: ask Tim
-        if (serverProject != null) {
-            serverProject.setClean();
+        finally {
+            project.getInternalProjectKnowledgeBase().getWriterLock().unlock();
+            project.getKnowledgeBase().getWriterLock().unlock();
         }
+        //TODO: ask Tim
         dumpErrors(project, errors);
     }
 
@@ -1115,15 +1120,19 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                      * OWLFrameStore code (which holds the knowledgebase lock) that makes calls
                      * to the internal project knowledge base to get configuration parameters.
                      */
-                    synchronized(p.getKnowledgeBase()) {
-                        synchronized (p.getInternalProjectKnowledgeBase()) {
-                            try {
-                                _projectPluginManager.beforeClose(p);
-                            }
-                            catch (Exception e) {
-                                Log.getLogger().log(Level.INFO, "Exception caught cleaning up", e);
-                            }
+                    try {
+                        p.getKnowledgeBase().getWriterLock().lock();
+                        p.getInternalProjectKnowledgeBase().getWriterLock().lock();
+                        try {
+                            _projectPluginManager.beforeClose(p);
                         }
+                        catch (Exception e) {
+                            Log.getLogger().log(Level.INFO, "Exception caught cleaning up", e);
+                        }
+                    }
+                    finally {
+                        p.getInternalProjectKnowledgeBase().getWriterLock().unlock();
+                        p.getKnowledgeBase().getWriterLock().unlock();
                     }
                 }
               } catch (Exception e) {
