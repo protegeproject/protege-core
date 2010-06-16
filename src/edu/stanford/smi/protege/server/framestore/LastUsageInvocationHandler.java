@@ -3,8 +3,8 @@ package edu.stanford.smi.protege.server.framestore;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
@@ -22,7 +22,7 @@ public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHand
     public static long ACCESS_TIME_GRANULARITY = 15 * 1000;
     private ProjectInstance projectInstance;
     private MetaProject metaproject;
-    private Map<User, Date> lastAccessTimeMap = new HashMap<User, Date>();
+    private Map<User, Date> lastAccessTimeMap = new ConcurrentHashMap<User, Date>();
     
     public LastUsageInvocationHandler(ProjectInstance projectInstance) {
         this.projectInstance = projectInstance;
@@ -60,7 +60,7 @@ public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHand
     @Override
     protected Object handleInvoke(Method method, Object[] args) {
         if (!method.getName().equals("getEvents")) {
-            updateLastAccessTime();
+        	updateLastAccessTime();
         }
         return invoke(method, args);
     }
@@ -70,8 +70,8 @@ public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHand
         if (session == null) {
             return;
         }
-        User u = metaproject.getUser(session.getUserName());
-        Date now = new Date();
+        final User u = metaproject.getUser(session.getUserName());
+        final Date now = new Date();
         Date then = lastAccessTimeMap.get(u);
         if (then == null || now.getTime() > then.getTime() + ACCESS_TIME_GRANULARITY) {
             u.setLastAccess(now);

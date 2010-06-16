@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -102,6 +103,14 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return new FrameStoreManager(this);
     }
 
+    public Lock getReaderLock() {
+    	return _frameStoreManager.getKnowledgeBaseReaderLock();
+    }
+    
+    public Lock getWriterLock() {
+    	return _frameStoreManager.getKnowledgeBaseWriterLock();
+    }
+    
     public FrameStoreManager getFrameStoreManager() {
         return _frameStoreManager;
     }
@@ -123,52 +132,52 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     public DefaultKnowledgeBase() {
     }
 
-    public synchronized SystemFrames getSystemFrames() {
+    public SystemFrames getSystemFrames() {
         return _systemFrames;
     }
 
-    public synchronized FrameFactory getFrameFactory() {
+    public FrameFactory getFrameFactory() {
         return _frameFactory;
     }
 
-    public synchronized void close() {
+    public void close() {
         _frameStoreManager.close();
     }
 
-    public synchronized boolean setCleanDispatchEnabled(boolean b) {
+    public boolean setCleanDispatchEnabled(boolean b) {
         return _frameStoreManager.setCleanDispatchEnabled(b);
     }
 
-    public synchronized boolean setArgumentCheckingEnabled(boolean b) {
+    public boolean setArgumentCheckingEnabled(boolean b) {
         return _frameStoreManager.setArgumentCheckingEnabled(b);
     }
 
-    public synchronized boolean isJournalingEnabled() {
+    public boolean isJournalingEnabled() {
         return _frameStoreManager.isJournalingEnabled();
     }
 
-    public synchronized boolean isCallCachingEnabled() {
+    public boolean isCallCachingEnabled() {
         return _frameStoreManager.isCallCachingEnabled();
     }
 
 
-    public synchronized boolean setJournalingEnabled(boolean b) {
+    public boolean setJournalingEnabled(boolean b) {
         return _frameStoreManager.setJournalingEnabled(b);
     }
 
-    public synchronized boolean setUndoEnabled(boolean b) {
+    public boolean setUndoEnabled(boolean b) {
         return _frameStoreManager.setUndoEnabled(b);
     }
 
-    public synchronized boolean setEventDispatchEnabled(boolean b) {
+    public boolean setEventDispatchEnabled(boolean b) {
         return _frameStoreManager.setEventDispatchEnabled(b);
     }
 
-    public synchronized boolean setCallCachingEnabled(boolean b) {
+    public boolean setCallCachingEnabled(boolean b) {
         return _frameStoreManager.setCallCachingEnabled(b);
     }
 
-    public synchronized boolean setGenerateEventsEnabled(boolean b) {
+    public boolean setGenerateEventsEnabled(boolean b) {
         return _frameStoreManager.setGenerateEventsEnabled(b);
     }
 
@@ -176,7 +185,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return _frameStoreManager.getUndoFrameStore();
     }
 
-    public synchronized boolean isUndoEnabled() {
+    public boolean isUndoEnabled() {
         return _frameStoreManager.isUndoEnabled();
     }
 
@@ -184,16 +193,16 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
       _frameStoreManager.flushEvents();
     }
 
-    public synchronized List getDirectOwnSlotValues(Frame frame, Slot slot) {
+    public List getDirectOwnSlotValues(Frame frame, Slot slot) {
         return getHeadFrameStore().getDirectOwnSlotValues(frame, slot);
     }
 
-    public synchronized Cls createCls(String name, Collection directSuperclasses, Collection directTypes,
+    public Cls createCls(String name, Collection directSuperclasses, Collection directTypes,
             boolean loadDefaults) {
       return createCls(new FrameID(name), directSuperclasses, directTypes, loadDefaults);
     }
 
-    public synchronized Cls createCls(FrameID id, Collection directSuperclasses, Collection directTypes,
+    public Cls createCls(FrameID id, Collection directSuperclasses, Collection directTypes,
             boolean loadDefaults) {
         //        if (directTypes.isEmpty()) {
         //            Cls directType;
@@ -208,11 +217,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().createCls(id, directTypes, directSuperclasses, loadDefaults);
     }
 
-    public synchronized Slot createSlot(String name, Cls directType, Collection superslots, boolean loadDefaults) {
+    public Slot createSlot(String name, Cls directType, Collection superslots, boolean loadDefaults) {
         return createSlot(new FrameID(name), CollectionUtilities.createCollection(directType), superslots, loadDefaults);
     }
 
-    public synchronized Slot createSlot(FrameID id, Collection directTypes, Collection superslots,
+    public Slot createSlot(FrameID id, Collection directTypes, Collection superslots,
             boolean loadDefaults) {
         //        if (directTypes.isEmpty()) {
         //            directTypes = new ArrayList();
@@ -221,22 +230,22 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().createSlot(id, directTypes, superslots, loadDefaults);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(String name, Cls directType, boolean loadDefaults) {
+    public SimpleInstance createSimpleInstance(String name, Cls directType, boolean loadDefaults) {
         return createSimpleInstance(new FrameID(name), directType, loadDefaults);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, Collection types,
+    public SimpleInstance createSimpleInstance(FrameID id, Collection types,
             boolean loadDefaults) {
         return getHeadFrameStore().createSimpleInstance(id, types, loadDefaults);
     }
 
-    public synchronized SimpleInstance createSimpleInstance(FrameID id, Cls directType,
+    public SimpleInstance createSimpleInstance(FrameID id, Cls directType,
             boolean loadDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
         return createSimpleInstance(id, types, loadDefaults);
     }
 
-    public synchronized void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
+    public void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
         if (frame instanceof Slot && slot.equals(_systemFrames.getValueTypeSlot())) {
             ValueType type = ValueTypeConstraint.getType(values);
             values = CollectionUtilities.removeFirst(values);
@@ -246,36 +255,36 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    public synchronized Frame getFrame(FrameID id) {
+    public Frame getFrame(FrameID id) {
         return getHeadFrameStore().getFrame(id);
     }
 
-    public synchronized Frame getFrame(String name) {
+    public Frame getFrame(String name) {
         return getHeadFrameStore().getFrame(name);
     }
 
-    public synchronized Collection getOwnSlotValues(Frame frame, Slot slot) {
+    public Collection getOwnSlotValues(Frame frame, Slot slot) {
         return getHeadFrameStore().getOwnSlotValues(frame, slot);
     }
 
-    public synchronized Object getDirectOwnSlotValue(Frame frame, Slot slot) {
+    public Object getDirectOwnSlotValue(Frame frame, Slot slot) {
         List values = getDirectOwnSlotValues(frame, slot);
         return CollectionUtilities.getFirstItem(values);
     }
 
-    public synchronized Collection<Slot> getOwnSlots(Frame frame) {
+    public Collection<Slot> getOwnSlots(Frame frame) {
         return getHeadFrameStore().getOwnSlots(frame);
     }
 
-    public synchronized Collection getTemplateSlots(Cls cls) {
+    public Collection getTemplateSlots(Cls cls) {
         return getHeadFrameStore().getTemplateSlots(cls);
     }
 
-    public synchronized Collection<Reference> getReferences(Frame frame) {
+    public Collection<Reference> getReferences(Frame frame) {
         return getHeadFrameStore().getReferences(frame);
     }
 
-    public synchronized void deleteFrame(Frame frame) {
+    public void deleteFrame(Frame frame) {
         if (frame instanceof Cls) {
             deleteCls((Cls) frame);
         } else if (frame instanceof Slot) {
@@ -291,7 +300,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated Use #setGenerateEventsEnabled(boolean)
      */
     @Deprecated
-    public synchronized boolean setEventsEnabled(boolean b) {
+    public boolean setEventsEnabled(boolean b) {
         return setGenerateEventsEnabled(b);
     }
 
@@ -299,58 +308,64 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated Use #getGenerateEventsEnabled(boolean)
      */
     @Deprecated
-    public synchronized boolean getEventsEnabled() {
+    public boolean getEventsEnabled() {
         return getGenerateEventsEnabled();
     }
 
-    public synchronized boolean getGenerateEventsEnabled() {
+    public boolean getGenerateEventsEnabled() {
         return _frameStoreManager.getGenerateEventsEnabled();
     }
 
-    public synchronized boolean getDispatchEventsEnabled() {
+    public boolean getDispatchEventsEnabled() {
         return _frameStoreManager.getDispatchEventsEnabled();
     }
 
-    public synchronized boolean setDispatchEventsEnabled(boolean b) {
+    public boolean setDispatchEventsEnabled(boolean b) {
         return _frameStoreManager.setEventDispatchEnabled(b);
     }
 
-    public synchronized boolean setChangeMonitorEnabled(boolean b) {
+    public boolean setChangeMonitorEnabled(boolean b) {
         return _frameStoreManager.setChangeMonitorEnabled(b);
     }
 
-    public synchronized Cls getDirectType(Instance instance) {
+    public Cls getDirectType(Instance instance) {
         Collection types = getDirectTypes(instance);
         return (Cls) CollectionUtilities.getFirstItem(types);
     }
 
-    public synchronized Collection<Cls> getDirectSuperclasses(Cls cls) {
+    public Collection<Cls> getDirectSuperclasses(Cls cls) {
         return getHeadFrameStore().getDirectSuperclasses(cls);
     }
 
-    public synchronized String getName(Frame frame) {
+    public String getName(Frame frame) {
         return getHeadFrameStore().getFrameName(frame);
     }
 
-    public synchronized void addJavaLoadPackage(String packageName) {
+    public void addJavaLoadPackage(String packageName) {
         _frameFactory.addJavaPackage(packageName);
     }
 
-    public synchronized boolean areValidOwnSlotValues(Frame frame, Slot slot, Collection values) {
-        boolean result = true;
-        Iterator i = getOwnSlotFacets(frame, slot).iterator();
-        while (result && i.hasNext()) {
-            Facet facet = (Facet) i.next();
-            result = facet.areValidValues(frame, slot, values);
-        }
-        return result;
+    public boolean areValidOwnSlotValues(Frame frame, Slot slot, Collection values) {
+    	try {
+    		getReaderLock().lock();
+    		boolean result = true;
+    		Iterator i = getOwnSlotFacets(frame, slot).iterator();
+    		while (result && i.hasNext()) {
+    			Facet facet = (Facet) i.next();
+    			result = facet.areValidValues(frame, slot, values);
+    		}
+    		return result;
+    	}
+    	finally {
+    		getReaderLock().unlock();
+    	}
     }
 
-    public synchronized boolean containsFrame(String name) {
+    public boolean containsFrame(String name) {
         return getFrame(name) != null;
     }
 
-    public synchronized Cls createCls(String name, Collection superclasses) {
+    public Cls createCls(String name, Collection superclasses) {
         return createCls(name, superclasses, getDefaultClsMetaCls(superclasses));
     }
 
@@ -365,29 +380,29 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return clsMetaCls;
     }
 
-    public synchronized Cls createCls(String name, Collection superclasses, Cls directType) {
+    public Cls createCls(String name, Collection superclasses, Cls directType) {
         return createCls(name, superclasses, directType, true);
     }
 
-    public synchronized Cls createCls(String name, Collection superclasses, Cls directType, boolean initializeDefaults) {
+    public Cls createCls(String name, Collection superclasses, Cls directType, boolean initializeDefaults) {
         Collection directTypes = CollectionUtilities.createCollection(directType);
         return createCls(name, superclasses, directTypes, initializeDefaults);
     }
 
-    public synchronized Facet createFacet(String name) {
+    public Facet createFacet(String name) {
         return createFacet(name, _defaultFacetMetaCls);
     }
 
-    public synchronized Facet createFacet(String name, Cls directType) {
+    public Facet createFacet(String name, Cls directType) {
         return createFacet(name, directType, true);
     }
 
-    public synchronized Facet createFacet(String name, Cls directType, boolean initializeDefaults) {
+    public Facet createFacet(String name, Cls directType, boolean initializeDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
         return createFacet(new FrameID(name), types, initializeDefaults);
     }
 
-    public synchronized Facet createFacet(FrameID id, Collection directTypes, boolean initializeDefaults) {
+    public Facet createFacet(FrameID id, Collection directTypes, boolean initializeDefaults) {
         if (directTypes.isEmpty()) {
             directTypes = new ArrayList();
             directTypes.add(_defaultFacetMetaCls);
@@ -395,24 +410,24 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getHeadFrameStore().createFacet(id, directTypes, initializeDefaults);
     }
 
-    public synchronized Instance createInstance(String name, Cls directType) {
+    public Instance createInstance(String name, Cls directType) {
         return createInstance(name, directType, true);
     }
 
-    public synchronized Instance createInstance(String name, Collection directTypes) {
+    public Instance createInstance(String name, Collection directTypes) {
         return createInstance(new FrameID(name), directTypes, true);
     }
 
-    public synchronized Instance createInstance(String name, Cls directType, boolean initializeDefaults) {
+    public Instance createInstance(String name, Cls directType, boolean initializeDefaults) {
         return createInstance(new FrameID(name), directType, initializeDefaults);
     }
 
-    public synchronized Instance createInstance(FrameID id, Cls directType, boolean initializeDefaults) {
+    public Instance createInstance(FrameID id, Cls directType, boolean initializeDefaults) {
         Collection types = CollectionUtilities.createCollection(directType);
         return createInstance(id, types, initializeDefaults);
     }
 
-    public synchronized Instance createInstance(FrameID id, Collection directTypes,
+    public Instance createInstance(FrameID id, Collection directTypes,
             boolean initializeDefaults) {
         Instance instance;
         // should do better than this
@@ -433,15 +448,15 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return instance;
     }
 
-    public synchronized Slot createSlot(String name) {
+    public Slot createSlot(String name) {
         return createSlot(name, _defaultSlotMetaCls);
     }
 
-    public synchronized Slot createSlot(String name, Cls directType) {
+    public Slot createSlot(String name, Cls directType) {
         return createSlot(name, directType, true);
     }
 
-    public synchronized Slot createSlot(String name, Cls directType, boolean loadDefaults) {
+    public Slot createSlot(String name, Cls directType, boolean loadDefaults) {
         return createSlot(name, directType, Collections.EMPTY_LIST, loadDefaults);
     }
 
@@ -459,25 +474,31 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * If the class has instances then they become instances of its parent classes. If the class has subclasses then
      * they become subclasses of its parent classes.
      */
-    public synchronized void deleteCls(Cls cls) {
-        if (true) {
-            if (!getInstances(cls).isEmpty()) {
-                throw new RuntimeException("Delete of class with instances.");
-            }
-            getHeadFrameStore().deleteCls(cls);
-            markAsDeleted(cls);
-        } else {
-            Collection parents = getDirectSuperclasses(cls);
-            try {
-                beginTransaction("delete class " + cls.getBrowserText(), cls.getName());
-                moveInstancesToParents(cls, parents);
-                moveSubclassesToParents(cls, parents);
+    public void deleteCls(Cls cls) {
+        try {
+            getWriterLock().lock();
+            if (true) {
+                if (!getInstances(cls).isEmpty()) {
+                    throw new RuntimeException("Delete of class with instances.");
+                }
                 getHeadFrameStore().deleteCls(cls);
-                commitTransaction();				
-			} catch (Exception e) {
-				rollbackTransaction();
-				Log.getLogger().warning("Error at deleting cls: " + cls);
-			}
+                markAsDeleted(cls);
+            } else {
+                Collection parents = getDirectSuperclasses(cls);
+                try {
+                    beginTransaction("delete class " + cls.getBrowserText(), cls.getName());
+                    moveInstancesToParents(cls, parents);
+                    moveSubclassesToParents(cls, parents);
+                    getHeadFrameStore().deleteCls(cls);
+                    commitTransaction();				
+                } catch (Exception e) {
+                    rollbackTransaction();
+                    Log.getLogger().warning("Error at deleting cls: " + cls);
+                }
+            }
+        }
+        finally {
+            getWriterLock().unlock();
         }
     }
 
@@ -521,22 +542,22 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    public synchronized void deleteFacet(Facet facet) {
+    public void deleteFacet(Facet facet) {
         getHeadFrameStore().deleteFacet(facet);
         markAsDeleted(facet);
     }
 
-    public synchronized void deleteInstance(Instance instance) {
+    public void deleteInstance(Instance instance) {
         deleteFrame(instance);
     }
 
-    public synchronized void deleteSimpleInstance(SimpleInstance simpleInstance) {
+    public void deleteSimpleInstance(SimpleInstance simpleInstance) {
         getHeadFrameStore().deleteSimpleInstance(simpleInstance);
         markAsDeleted(simpleInstance);
 
     }
 
-    public synchronized void deleteSlot(Slot slot) {
+    public void deleteSlot(Slot slot) {
         getHeadFrameStore().deleteSlot(slot);
         markAsDeleted(slot);
     }
@@ -545,15 +566,15 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         frame.markDeleted(true);
     }
 
-    public synchronized String getBuildString() {
+    public String getBuildString() {
         return _buildString;
     }
 
-    public synchronized Object getClientInformation(Object key) {
+    public Object getClientInformation(Object key) {
         return _clientInformation.get(key);
     }
 
-    public synchronized Cls getCls(String name) {
+    public Cls getCls(String name) {
         return (Cls) getFrameOfType(name, Cls.class);
     }
 
@@ -567,19 +588,19 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return frame;
     }
 
-    public synchronized int getClsCount() {
+    public int getClsCount() {
         return getHeadFrameStore().getClsCount();
     }
 
-    public synchronized int getSimpleInstanceCount() {
+    public int getSimpleInstanceCount() {
         return getHeadFrameStore().getSimpleInstanceCount();
     }
 
-    public synchronized Collection<Cls> getClses() {
+    public Collection<Cls> getClses() {
         return getHeadFrameStore().getClses();
     }
 
-    public synchronized Collection getClsNameMatches(String name, int maxMatches) {
+    public Collection getClsNameMatches(String name, int maxMatches) {
         Collection frames = getFrameNameMatches(name, maxMatches);
         Iterator i = frames.iterator();
         while (i.hasNext()) {
@@ -591,55 +612,55 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return frames;
     }
 
-    public synchronized Cls getDefaultClsMetaCls() {
+    public Cls getDefaultClsMetaCls() {
         return _defaultClsMetaCls;
     }
 
-    public synchronized Cls getDefaultFacetMetaCls() {
+    public Cls getDefaultFacetMetaCls() {
         return _defaultFacetMetaCls;
     }
 
-    public synchronized Cls getDefaultSlotMetaCls() {
+    public Cls getDefaultSlotMetaCls() {
         return _defaultSlotMetaCls;
     }
 
-    public synchronized Facet getFacet(String name) {
+    public Facet getFacet(String name) {
         return (Facet) getFrameOfType(name, Facet.class);
     }
 
-    public synchronized int getFacetCount() {
+    public int getFacetCount() {
         return getHeadFrameStore().getFacetCount();
     }
 
-    public synchronized Collection getFacets() {
+    public Collection getFacets() {
         return getHeadFrameStore().getFacets();
     }
 
-    public synchronized int getFrameCount() {
+    public int getFrameCount() {
         return getHeadFrameStore().getFrameCount();
     }
 
-    public synchronized String getFrameCreationTimestamp(Frame frame) {
+    public String getFrameCreationTimestamp(Frame frame) {
         return (String) getOwnSlotValue(frame, _systemFrames.getCreationTimestampSlot());
     }
 
-    public synchronized String getFrameCreator(Frame frame) {
+    public String getFrameCreator(Frame frame) {
         return (String) getOwnSlotValue(frame, _systemFrames.getCreatorSlot());
     }
 
-    public synchronized String getFrameLastModificationTimestamp(Frame frame) {
+    public String getFrameLastModificationTimestamp(Frame frame) {
         return (String) getOwnSlotValue(frame, _systemFrames.getModificationTimestampSlot());
     }
 
-    public synchronized String getFrameLastModifier(Frame frame) {
+    public String getFrameLastModifier(Frame frame) {
         return (String) getOwnSlotValue(frame, _systemFrames.getModifierSlot());
     }
 
-    public synchronized Collection<Frame> getFrameNameMatches(String name, int maxMatches) {
+    public Collection<Frame> getFrameNameMatches(String name, int maxMatches) {
         return getFramesWithMatchingDirectOwnSlotValue(_systemFrames.getNameSlot(), name, maxMatches);
     }
 
-    public synchronized Collection getFramesWithValue(Slot slot, Facet facet, boolean isTemplate, Object value) {
+    public Collection getFramesWithValue(Slot slot, Facet facet, boolean isTemplate, Object value) {
         Collection frames;
         if (facet == null) {
             if (isTemplate) {
@@ -653,27 +674,27 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return frames;
     }
 
-    public synchronized Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
+    public Set getFramesWithMatchingDirectOwnSlotValue(Slot slot, String value, int maxMatches) {
         return getHeadFrameStore().getFramesWithMatchingDirectOwnSlotValue(slot, value, maxMatches);
     }
 
-    public synchronized String getFrameNamePrefix() {
+    public String getFrameNamePrefix() {
         return _frameNamePrefix;
     }
 
-    public synchronized Collection getFrames() {
+    public Collection getFrames() {
         return getHeadFrameStore().getFrames();
     }
 
-    public synchronized Instance getInstance(String name) {
+    public Instance getInstance(String name) {
         return (Instance) getFrame(name);
     }
 
-    public synchronized SimpleInstance getSimpleInstance(String name) {
+    public SimpleInstance getSimpleInstance(String name) {
         return (SimpleInstance) getFrame(name);
     }
 
-    public synchronized Collection<Instance> getInstances() {
+    public Collection<Instance> getInstances() {
         return getFrames();
     }
 
@@ -681,36 +702,47 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated
      */
     @Deprecated
-    public synchronized Collection<Instance> getInstances(Cls cls) {
+    public Collection<Instance> getInstances(Cls cls) {
         return getHeadFrameStore().getInstances(cls);
     }
 
-    public synchronized String getInvalidOwnSlotValuesText(Frame frame, Slot slot, Collection values) {
-        String result = null;
-        Iterator i = getOwnSlotFacets(frame, slot).iterator();
-        while (result == null && i.hasNext()) {
-            Facet facet = (Facet) i.next();
-            result = facet.getInvalidValuesText(frame, slot, values);
+    public String getInvalidOwnSlotValuesText(Frame frame, Slot slot, Collection values) {
+        try {
+            getReaderLock().lock();
+            String result = null;
+            Iterator i = getOwnSlotFacets(frame, slot).iterator();
+            while (result == null && i.hasNext()) {
+                Facet facet = (Facet) i.next();
+                result = facet.getInvalidValuesText(frame, slot, values);
+            }
+            return result;
         }
-        return result;
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
-    public synchronized String getInvalidOwnSlotValueText(Frame frame, Slot slot, Object value) {
-        String result = null;
-        Iterator i = getOwnSlotFacets(frame, slot).iterator();
-        while (result == null && i.hasNext()) {
-            Facet facet = (Facet) i.next();
-            result = facet.getInvalidValueText(frame, slot, value);
+    public String getInvalidOwnSlotValueText(Frame frame, Slot slot, Object value) {
+        try {
+            getReaderLock().lock();
+            String result = null;
+            Iterator i = getOwnSlotFacets(frame, slot).iterator();
+            while (result == null && i.hasNext()) {
+                Facet facet = (Facet) i.next();
+                result = facet.getInvalidValueText(frame, slot, value);
+            }
+            return result;
         }
-        return result;
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
-    public synchronized KnowledgeBaseFactory getKnowledgeBaseFactory() {
+    public KnowledgeBaseFactory getKnowledgeBaseFactory() {
         return _knowledgeBaseFactory;
     }
 
-    public synchronized Collection getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value,
-            int maxMatches) {
+    public Collection getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches) {
         Collection frames;
         if (facet == null) {
             if (isTemplate) {
@@ -732,15 +764,15 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated No longer implemented
      */
     @Deprecated
-    public synchronized int getNextFrameNumber() {
+    public int getNextFrameNumber() {
         return 0;
     }
 
-    public synchronized Project getProject() {
+    public Project getProject() {
         return _project;
     }
 
-    public synchronized Collection getReachableSimpleInstances(Collection rootInstances) {
+    public Collection getReachableSimpleInstances(Collection rootInstances) {
         Collection reachableInstances = new HashSet();
         Iterator i = rootInstances.iterator();
         while (i.hasNext()) {
@@ -761,7 +793,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    private synchronized void addInstances(Instance instance, Slot slot, Collection reachableInstances) {
+    private void addInstances(Instance instance, Slot slot, Collection reachableInstances) {
         if (instance.getOwnSlotValueType(slot) == ValueType.INSTANCE) {
             Iterator i = instance.getOwnSlotValues(slot).iterator();
             while (i.hasNext()) {
@@ -773,59 +805,65 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    public synchronized Collection getReferences(Object object, int maxRefs) {
+    public Collection getReferences(Object object, int maxRefs) {
         return getHeadFrameStore().getReferences(object);
     }
 
-    public synchronized Collection<Reference> getMatchingReferences(String s, int maxRefs) {
+    public Collection<Reference> getMatchingReferences(String s, int maxRefs) {
         return getHeadFrameStore().getMatchingReferences(s, maxRefs);
     }
 
-    public synchronized Collection<Cls> getClsesWithMatchingBrowserText(String s, Collection superclasses, int maxMatches) {
+    public Collection<Cls> getClsesWithMatchingBrowserText(String s, Collection superclasses, int maxMatches) {
         return getHeadFrameStore().getClsesWithMatchingBrowserText(s, superclasses, maxMatches);
     }
 
-    public synchronized Cls getRootCls() {
+    public Cls getRootCls() {
         return _systemFrames.getRootCls();
     }
 
-    public synchronized Collection getRootClses() {
+    public Collection getRootClses() {
         return CollectionUtilities.createCollection(getRootCls());
     }
 
-    public synchronized Cls getRootClsMetaCls() {
+    public Cls getRootClsMetaCls() {
         return _systemFrames.getRootClsMetaCls();
     }
 
-    public synchronized Cls getRootFacetMetaCls() {
+    public Cls getRootFacetMetaCls() {
         return _systemFrames.getRootFacetMetaCls();
     }
 
-    public synchronized Cls getRootSlotMetaCls() {
+    public Cls getRootSlotMetaCls() {
         return _systemFrames.getRootSlotMetaCls();
     }
 
-    public synchronized Collection getRootSlots() {
-        Collection slots = new ArrayList(getSlots());
-        Iterator i = slots.iterator();
-        while (i.hasNext()) {
-            Slot slot = (Slot) i.next();
-            if (getDirectSuperslotCount(slot) > 0) {
-                i.remove();
+    public Collection getRootSlots() {
+        try {
+            getReaderLock().lock();
+            Collection slots = new ArrayList(getSlots());
+            Iterator i = slots.iterator();
+            while (i.hasNext()) {
+                Slot slot = (Slot) i.next();
+                if (getDirectSuperslotCount(slot) > 0) {
+                    i.remove();
+                }
             }
+            return slots;
         }
-        return slots;
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
-    public synchronized Slot getSlot(String name) {
+    public Slot getSlot(String name) {
         return (Slot) getFrameOfType(name, Slot.class);
     }
 
-    public synchronized int getSlotCount() {
+    public int getSlotCount() {
         return getHeadFrameStore().getSlotCount();
     }
 
-    public synchronized Collection<Slot> getSlots() {
+    public Collection<Slot> getSlots() {
         return getHeadFrameStore().getSlots();
     }
 
@@ -833,7 +871,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated this functionality is no longer available
      */
     @Deprecated
-    public synchronized String getSlotValueLastModificationTimestamp(Frame frame, Slot slot, boolean isTemplate) {
+    public String getSlotValueLastModificationTimestamp(Frame frame, Slot slot, boolean isTemplate) {
         return null;
     }
 
@@ -841,15 +879,15 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated this functionality is no longer available
      */
     @Deprecated
-    public synchronized String getSlotValueLastModifier(Frame frame, Slot slot, boolean isTemplate) {
+    public String getSlotValueLastModifier(Frame frame, Slot slot, boolean isTemplate) {
         return null;
     }
 
-    public synchronized Collection getSubclasses(Cls cls) {
+    public Collection getSubclasses(Cls cls) {
         return getHeadFrameStore().getSubclasses(cls);
     }
 
-    public synchronized Collection getUnreachableSimpleInstances(Collection rootInstances) {
+    public Collection getUnreachableSimpleInstances(Collection rootInstances) {
         Collection instances = new HashSet(getFrames());
         instances.removeAll(getClses());
         instances.removeAll(getSlots());
@@ -860,7 +898,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     
     private String _userName;
     public final static String SERVER_PROCESS_USER = "**Server Process UserId**";
-    public synchronized String getUserName() {
+    public String getUserName() {
         if (_userName != null) {
             return _userName;
         }
@@ -883,22 +921,22 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
 
-    public synchronized String getVersionString() {
+    public String getVersionString() {
         return _versionString;
     }
 
-    public synchronized boolean hasChanged() {
+    public boolean hasChanged() {
         return _frameStoreManager.hasChanged();
     }
 
     /**
      * TODO implement or deprecate isAutoUpdatingFacetValues
      */
-    public synchronized boolean isAutoUpdatingFacetValues() {
+    public boolean isAutoUpdatingFacetValues() {
         return false;
     }
 
-    public synchronized boolean isClsMetaCls(Cls cls) {
+    public boolean isClsMetaCls(Cls cls) {
         // Log.enter(this, "isClsMetaCls", cls);
         Cls rootMetaCls = getRootClsMetaCls();
         return equals(cls, rootMetaCls) || hasSuperclass(cls, rootMetaCls);
@@ -908,44 +946,50 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return SystemUtilities.equals(o1, o2);
     }
 
-    public synchronized boolean isDefaultClsMetaCls(Cls cls) {
+    public boolean isDefaultClsMetaCls(Cls cls) {
         return equals(cls, _defaultClsMetaCls);
     }
 
-    public synchronized boolean isDefaultFacetMetaCls(Cls cls) {
+    public boolean isDefaultFacetMetaCls(Cls cls) {
         return equals(cls, _defaultFacetMetaCls);
     }
 
-    public synchronized boolean isDefaultSlotMetaCls(Cls cls) {
+    public boolean isDefaultSlotMetaCls(Cls cls) {
         return equals(cls, _defaultSlotMetaCls);
     }
 
-    public synchronized boolean isFacetMetaCls(Cls cls) {
+    public boolean isFacetMetaCls(Cls cls) {
         return hasSuperclass(cls, getRootFacetMetaCls());
     }
 
     /**
      * TODO implement or deprecate isLoading
      */
-    public synchronized boolean isLoading() {
+    public boolean isLoading() {
         return false;
     }
 
-    public synchronized boolean isSlotMetaCls(Cls cls) {
+    public boolean isSlotMetaCls(Cls cls) {
         return hasSuperclass(cls, getRootSlotMetaCls());
     }
 
-    public synchronized boolean isValidOwnSlotValue(Frame frame, Slot slot, Object value) {
-        boolean result = true;
-        Iterator i = getOwnSlotFacets(frame, slot).iterator();
-        while (result && i.hasNext()) {
-            Facet facet = (Facet) i.next();
-            result = facet.isValidValue(frame, slot, value);
+    public boolean isValidOwnSlotValue(Frame frame, Slot slot, Object value) {
+        try {
+            getReaderLock().lock();
+            boolean result = true;
+            Iterator i = getOwnSlotFacets(frame, slot).iterator();
+            while (result && i.hasNext()) {
+                Facet facet = (Facet) i.next();
+                result = facet.isValidValue(frame, slot, value);
+            }
+            return result;
         }
-        return result;
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
-    public synchronized void removeJavaLoadPackage(String packageName) {
+    public void removeJavaLoadPackage(String packageName) {
         _frameFactory.removeJavaPackage(packageName);
     }
 
@@ -953,29 +997,29 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated Use setModificationRecordUpdatingEnabled
      */
     @Deprecated
-    public synchronized void setAutoUpdateFacetValues(boolean autoUpdate) {
+    public void setAutoUpdateFacetValues(boolean autoUpdate) {
         setModificationRecordUpdatingEnabled(autoUpdate);
     }
 
-    public synchronized boolean setModificationRecordUpdatingEnabled(boolean enabled) {
+    public boolean setModificationRecordUpdatingEnabled(boolean enabled) {
         return _frameStoreManager.setModificationRecordUpdatingEnabled(enabled);
     }
 
-    public synchronized void setBuildString(String buildString) {
+    public void setBuildString(String buildString) {
         _buildString = buildString;
     }
 
-    public synchronized void setChanged(boolean changed) {
+    public void setChanged(boolean changed) {
         _frameStoreManager.setChanged(changed);
     }
 
-    public synchronized Object setClientInformation(Object key, Object value) {
+    public Object setClientInformation(Object key, Object value) {
         Object oldValue = _clientInformation.get(key);
         _clientInformation.put(key, value);
         return oldValue;
     }
 
-    public synchronized void setDefaultClsMetaCls(Cls cls) {
+    public void setDefaultClsMetaCls(Cls cls) {
         if (cls == null || isClsMetaCls(cls)) {
             _defaultClsMetaCls = cls;
         } else {
@@ -983,7 +1027,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    public synchronized void setDefaultFacetMetaCls(Cls cls) {
+    public void setDefaultFacetMetaCls(Cls cls) {
         if (cls == null || isFacetMetaCls(cls)) {
             _defaultFacetMetaCls = cls;
         } else {
@@ -991,7 +1035,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    public synchronized void setDefaultSlotMetaCls(Cls cls) {
+    public void setDefaultSlotMetaCls(Cls cls) {
         if (cls == null || isSlotMetaCls(cls)) {
             _defaultSlotMetaCls = cls;
         } else {
@@ -999,18 +1043,18 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    public synchronized void setFrameNamePrefix(String prefix) {
+    public void setFrameNamePrefix(String prefix) {
         _frameNamePrefix = prefix;
     }
 
     /**
      * TODO implement or deprecate setLoading
      */
-    public synchronized void setLoading(boolean loading) {
+    public void setLoading(boolean loading) {
         setEventsEnabled(!loading);
     }
 
-    public synchronized void setName(String name) {
+    public void setName(String name) {
         _name = name;
     }
 
@@ -1018,12 +1062,12 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated This functionality is no longer available
      */
     @Deprecated
-    public synchronized void setNextFrameNumber(int number) {
+    public void setNextFrameNumber(int number) {
     }
 
     private boolean clientServerAdjusted = false;
     
-    public synchronized void setProject(Project project) {
+    public void setProject(Project project) {
         _project = project;
         if (!clientServerAdjusted) {
             if (project.isMultiUserClient()) {
@@ -1055,19 +1099,19 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated Use #setFacetCheckingEnabled(boolean)
      */
     @Deprecated
-    public synchronized void setValueChecking(boolean checking) {
+    public void setValueChecking(boolean checking) {
         setFacetCheckingEnabled(checking);
     }
 
-    public synchronized boolean setFacetCheckingEnabled(boolean enabled) {
+    public boolean setFacetCheckingEnabled(boolean enabled) {
         return _frameStoreManager.setFacetCheckingEnabled(enabled);
     }
 
-    public synchronized void setVersionString(String versionString) {
+    public void setVersionString(String versionString) {
         _versionString = versionString;
     }
 
-    public synchronized void dispose() {
+    public void dispose() {
     	if (_frameStoreManager != null) {
     		_frameStoreManager.close();
     	}
@@ -1075,425 +1119,473 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         _project = null;
     }
 
-    public synchronized boolean isClosed() {
+    public boolean isClosed() {
         return _frameStoreManager != null;
     }
 
-    public synchronized Collection getReachableSimpleInstances(Frame frame) {
+    public Collection getReachableSimpleInstances(Frame frame) {
         return getReachableSimpleInstances(CollectionUtilities.createCollection(frame));
     }
 
     /** @deprecated use #addDirectOwnSlotValues */
     @Deprecated
-    public synchronized void addOwnSlotValue(Frame frame, Slot slot, Object value) {
-        List values = new ArrayList(getDirectOwnSlotValues(frame, slot));
-        values.add(value);
-        setDirectOwnSlotValues(frame, slot, values);
+    public void addOwnSlotValue(Frame frame, Slot slot, Object value) {
+        try {
+            getWriterLock().lock();
+            List values = new ArrayList(getDirectOwnSlotValues(frame, slot));
+            values.add(value);
+            setDirectOwnSlotValues(frame, slot, values);
+        }
+        finally {
+            getWriterLock().unlock();
+        }
     }
 
-    public synchronized Collection getDocumentation(Frame frame) {
+    public Collection getDocumentation(Frame frame) {
         return getOwnSlotValues(frame, _systemFrames.getDocumentationSlot());
     }
 
-    public synchronized boolean getOwnSlotAllowsMultipleValues(Frame frame, Slot slot) {
-        Cls type = ((Instance) frame).getDirectType();
-        return getTemplateSlotAllowsMultipleValues(type, slot);
+    public boolean getOwnSlotAllowsMultipleValues(Frame frame, Slot slot) {
+        try {
+            getReaderLock().lock();
+            Cls type = ((Instance) frame).getDirectType();
+            return getTemplateSlotAllowsMultipleValues(type, slot);
+        }
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
     /** @deprecated use getOwnSlotValues */
     @Deprecated
-    public synchronized Collection getOwnSlotAndSubslotValues(Frame frame, Slot slot) {
+    public Collection getOwnSlotAndSubslotValues(Frame frame, Slot slot) {
         return getOwnSlotValues(frame, slot);
     }
 
-    public synchronized Collection getOwnSlotDefaultValues(Frame frame, Slot slot) {
-        Collection values = new LinkedHashSet();
-        Iterator i = ((Instance) frame).getDirectTypes().iterator();
-        while (i.hasNext()) {
-            Cls type = (Cls) i.next();
-            values.addAll(getTemplateSlotDefaultValues(type, slot));
+    public Collection getOwnSlotDefaultValues(Frame frame, Slot slot) {
+        try {
+            getReaderLock().lock();
+            Collection values = new LinkedHashSet();
+            Iterator i = ((Instance) frame).getDirectTypes().iterator();
+            while (i.hasNext()) {
+                Cls type = (Cls) i.next();
+                values.addAll(getTemplateSlotDefaultValues(type, slot));
+            }
+            return values;
         }
-        return values;
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
     /** @deprecated renamed to #getOwnFacets */
     @Deprecated
-    public synchronized Collection getOwnSlotFacets(Frame frame, Slot slot) {
+    public Collection getOwnSlotFacets(Frame frame, Slot slot) {
         return getOwnFacets(frame, slot);
     }
 
     /** @deprecated renamed to #getOwnFacetValues */
     @Deprecated
-    public synchronized Collection getOwnSlotFacetValues(Frame frame, Slot slot, Facet facet) {
+    public Collection getOwnSlotFacetValues(Frame frame, Slot slot, Facet facet) {
         return getOwnFacetValues(frame, slot, facet);
     }
 
-    public synchronized Collection getOwnFacets(Frame frame, Slot slot) {
+    public Collection getOwnFacets(Frame frame, Slot slot) {
         return getHeadFrameStore().getOwnFacets(frame, slot);
     }
 
-    public synchronized Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet) {
+    public Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet) {
         return getHeadFrameStore().getOwnFacetValues(frame, slot, facet);
     }
 
-    public synchronized Object getOwnSlotValue(Frame frame, Slot slot) {
+    public Object getOwnSlotValue(Frame frame, Slot slot) {
         Collection c = getOwnSlotValues(frame, slot);
         return c.isEmpty() ? null : c.iterator().next();
     }
 
-    public synchronized int getOwnSlotValueCount(Frame frame, Slot slot) {
+    public int getOwnSlotValueCount(Frame frame, Slot slot) {
         return getOwnSlotValues(frame, slot).size();
     }
 
-    public synchronized ValueType getOwnSlotValueType(Frame frame, Slot slot) {
+    public ValueType getOwnSlotValueType(Frame frame, Slot slot) {
         Collection values = getOwnFacetValues(frame, slot, _systemFrames.getValueTypeFacet());
         return ValueTypeConstraint.getType(values);
     }
 
-    public synchronized boolean hasOwnSlot(Frame frame, Slot slot) {
+    public boolean hasOwnSlot(Frame frame, Slot slot) {
         return getOwnSlots(frame).contains(slot);
     }
 
-    public synchronized void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
+    public void moveDirectOwnSlotValue(Frame frame, Slot slot, int from, int to) {
         getHeadFrameStore().moveDirectOwnSlotValue(frame, slot, from, to);
     }
 
     /** @deprecated use #setDirectOwnSlotValues */
     @Deprecated
-    public synchronized void removeOwnSlotValue(Frame frame, Slot slot, Object value) {
-        List values = new ArrayList(getDirectOwnSlotValues(frame, slot));
-        values.remove(value);
-        setDirectOwnSlotValues(frame, slot, values);
+    public void removeOwnSlotValue(Frame frame, Slot slot, Object value) {
+        try {
+            getWriterLock().lock();
+            List values = new ArrayList(getDirectOwnSlotValues(frame, slot));
+            values.remove(value);
+            setDirectOwnSlotValues(frame, slot, values);
+        }
+        finally {
+            getWriterLock().unlock();
+        }
     }
 
-    public synchronized void setDocumentation(Frame frame, String text) {
+    public void setDocumentation(Frame frame, String text) {
         setDirectOwnSlotValue(frame, _systemFrames.getDocumentationSlot(), text);
     }
 
-    public synchronized void setDocumentation(Frame frame, Collection text) {
+    public void setDocumentation(Frame frame, Collection text) {
         setDirectOwnSlotValues(frame, _systemFrames.getDocumentationSlot(), text);
     }
 
     /** @deprecated renamed to #setDirectOwnSlotValue */
     @Deprecated
-    public synchronized void setOwnSlotValue(Frame frame, Slot slot, Object value) {
+    public void setOwnSlotValue(Frame frame, Slot slot, Object value) {
         setDirectOwnSlotValue(frame, slot, value);
     }
 
-    public synchronized void setDirectOwnSlotValue(Frame frame, Slot slot, Object value) {
+    public void setDirectOwnSlotValue(Frame frame, Slot slot, Object value) {
         Collection values = CollectionUtilities.createCollection(value);
         setDirectOwnSlotValues(frame, slot, values);
     }
 
     /** @deprecated renamed to setDirectOwnSlotValues */
     @Deprecated
-    public synchronized void setOwnSlotValues(Frame frame, Slot slot, Collection values) {
+    public void setOwnSlotValues(Frame frame, Slot slot, Collection values) {
         setDirectOwnSlotValues(frame, slot, values);
     }
 
     /**
      * TODO implement notifyVisibilityChanged
      */
-    public synchronized void notifyVisibilityChanged(Frame frame) {
+    public void notifyVisibilityChanged(Frame frame) {
     }
 
-    public synchronized Slot getAssociatedSlot(Facet facet) {
+    public Slot getAssociatedSlot(Facet facet) {
         return (Slot) getOwnSlotValue(facet, _systemFrames.getAssociatedSlotSlot());
     }
 
-    public synchronized void setAssociatedSlot(Facet facet, Slot slot) {
+    public void setAssociatedSlot(Facet facet, Slot slot) {
         setDirectOwnSlotValue(facet, _systemFrames.getAssociatedSlotSlot(), slot);
     }
 
-    public synchronized void addDirectSuperclass(Cls cls, Cls superclass) {
+    public void addDirectSuperclass(Cls cls, Cls superclass) {
         getHeadFrameStore().addDirectSuperclass(cls, superclass);
     }
 
-    public synchronized void removeDirectSuperclass(Cls cls, Cls superclass) {
+    public void removeDirectSuperclass(Cls cls, Cls superclass) {
         getHeadFrameStore().removeDirectSuperclass(cls, superclass);
     }
 
-    public synchronized void addDirectType(Instance instance, Cls directType) {
+    public void addDirectType(Instance instance, Cls directType) {
         getHeadFrameStore().addDirectType(instance, directType);
     }
 
-    public synchronized void removeDirectType(Instance instance, Cls directType) {
+    public void removeDirectType(Instance instance, Cls directType) {
         getHeadFrameStore().removeDirectType(instance, directType);
     }
 
-    public synchronized void moveDirectType(Instance instance, Cls directType, int index) {
+    public void moveDirectType(Instance instance, Cls directType, int index) {
         getHeadFrameStore().moveDirectType(instance, directType, index);
     }
 
-    public synchronized void addDirectTemplateSlot(Cls cls, Slot slot) {
+    public void addDirectTemplateSlot(Cls cls, Slot slot) {
         getHeadFrameStore().addDirectTemplateSlot(cls, slot);
     }
 
-    public synchronized void removeDirectTemplateSlot(Cls cls, Slot slot) {
+    public void removeDirectTemplateSlot(Cls cls, Slot slot) {
         getHeadFrameStore().removeDirectTemplateSlot(cls, slot);
     }
 
     /** @deprecated use #setDirectTemplateFacetValues */
     @Deprecated
-    public synchronized void addTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
-        Collection values = new ArrayList(getDirectTemplateFacetValues(cls, slot, facet));
-        values.add(value);
-        setDirectTemplateFacetValues(cls, slot, facet, values);
+    public void addTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
+        try {
+            getWriterLock().lock();
+            Collection values = new ArrayList(getDirectTemplateFacetValues(cls, slot, facet));
+            values.add(value);
+            setDirectTemplateFacetValues(cls, slot, facet, values);
+        }
+        finally {
+            getWriterLock().unlock();
+        }
     }
 
     /** @deprecated use #setDirectTemplateSlotValues */
     @Deprecated
-    public synchronized void addTemplateSlotValue(Cls cls, Slot slot, Object value) {
-        Collection values = new ArrayList(getHeadFrameStore().getDirectTemplateSlotValues(cls, slot));
-        values.add(value);
-        setDirectTemplateSlotValues(cls, slot, values);
+    public void addTemplateSlotValue(Cls cls, Slot slot, Object value) {
+        try {
+            getWriterLock().lock();
+            Collection values = new ArrayList(getHeadFrameStore().getDirectTemplateSlotValues(cls, slot));
+            values.add(value);
+            setDirectTemplateSlotValues(cls, slot, values);
+        }
+        finally {
+            getWriterLock().unlock();
+        }
     }
 
-    public synchronized Slot getNameSlot() {
+    public Slot getNameSlot() {
         return _systemFrames.getNameSlot();
     }
 
-    public synchronized int getDirectInstanceCount(Cls cls) {
+    public int getDirectInstanceCount(Cls cls) {
         return getDirectInstances(cls).size();
     }
 
-    public synchronized Collection<Instance> getDirectInstances(Cls cls) {
+    public Collection<Instance> getDirectInstances(Cls cls) {
         return getHeadFrameStore().getDirectInstances(cls);
     }
 
-    public synchronized int getDirectSubclassCount(Cls cls) {
+    public int getDirectSubclassCount(Cls cls) {
         // return getDirectSubclasses(cls).size();
         return getHeadFrameStore().getDirectOwnSlotValuesCount(cls, _systemFrames.getDirectSubclassesSlot());
     }
 
-    public synchronized Collection getDirectSubclasses(Cls cls) {
+    public Collection getDirectSubclasses(Cls cls) {
         return getHeadFrameStore().getDirectSubclasses(cls);
     }
 
-    public synchronized int getDirectSuperclassCount(Cls cls) {
+    public int getDirectSuperclassCount(Cls cls) {
         return getDirectSuperclasses(cls).size();
     }
 
-    public synchronized List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
+    public List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
         return getHeadFrameStore().getDirectTemplateFacetValues(cls, slot, facet);
     }
 
-    public synchronized Collection getDirectTemplateSlots(Cls cls) {
+    public Collection getDirectTemplateSlots(Cls cls) {
         return getHeadFrameStore().getDirectTemplateSlots(cls);
     }
 
-    public synchronized List getDirectTemplateSlotValues(Cls cls, Slot slot) {
+    public List getDirectTemplateSlotValues(Cls cls, Slot slot) {
         return getHeadFrameStore().getDirectTemplateSlotValues(cls, slot);
     }
 
-    public synchronized int getInstanceCount(Cls cls) {
+    public int getInstanceCount(Cls cls) {
         return getInstances(cls).size();
     }
 
-    public synchronized Collection getSuperclasses(Cls cls) {
+    public Collection getSuperclasses(Cls cls) {
         return getHeadFrameStore().getSuperclasses(cls);
     }
 
-    public synchronized Collection getTemplateFacets(Cls cls, Slot slot) {
+    public Collection getTemplateFacets(Cls cls, Slot slot) {
         return getHeadFrameStore().getTemplateFacets(cls, slot);
     }
 
-    public synchronized Object getTemplateFacetValue(Cls cls, Slot slot, Facet facet) {
+    public Object getTemplateFacetValue(Cls cls, Slot slot, Facet facet) {
         Collection values = getTemplateFacetValues(cls, slot, facet);
         return CollectionUtilities.getFirstItem(values);
     }
 
-    public synchronized Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
+    public Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
         return getHeadFrameStore().getTemplateFacetValues(cls, slot, facet);
     }
 
-    public synchronized Collection getTemplateSlotAllowedClses(Cls cls, Slot slot) {
+    public Collection getTemplateSlotAllowedClses(Cls cls, Slot slot) {
         Collection values = getTemplateFacetValues(cls, slot, _systemFrames.getValueTypeFacet());
         return ValueTypeConstraint.getAllowedClses(values);
     }
 
-    public synchronized Collection getTemplateSlotAllowedParents(Cls cls, Slot slot) {
+    public Collection getTemplateSlotAllowedParents(Cls cls, Slot slot) {
         Collection values = getTemplateFacetValues(cls, slot, _systemFrames.getValueTypeFacet());
         return ValueTypeConstraint.getAllowedParents(values);
     }
 
-    public synchronized Collection getTemplateSlotAllowedValues(Cls cls, Slot slot) {
+    public Collection getTemplateSlotAllowedValues(Cls cls, Slot slot) {
         Collection values = getTemplateFacetValues(cls, slot, _systemFrames.getValueTypeFacet());
         return ValueTypeConstraint.getAllowedValues(values);
     }
 
-    public synchronized boolean getTemplateSlotAllowsMultipleValues(Cls cls, Slot slot) {
+    public boolean getTemplateSlotAllowsMultipleValues(Cls cls, Slot slot) {
         Integer value = getTemplateSlotMaximumCardinality2(cls, slot);
         return MaximumCardinalityConstraint.allowsMultipleValues(value);
     }
 
-    public synchronized Collection getTemplateSlotDefaultValues(Cls cls, Slot slot) {
+    public Collection getTemplateSlotDefaultValues(Cls cls, Slot slot) {
         return getTemplateFacetValues(cls, slot, _systemFrames.getDefaultValuesFacet());
     }
 
-    public synchronized Collection getTemplateSlotDocumentation(Cls cls, Slot slot) {
+    public Collection getTemplateSlotDocumentation(Cls cls, Slot slot) {
         return getTemplateFacetValues(cls, slot, _systemFrames.getDocumentationFacet());
     }
 
-    public synchronized int getTemplateSlotMaximumCardinality(Cls cls, Slot slot) {
+    public int getTemplateSlotMaximumCardinality(Cls cls, Slot slot) {
         Integer i = getTemplateSlotMaximumCardinality2(cls, slot);
         return MaximumCardinalityConstraint.getValue(i);
     }
 
-    public synchronized Integer getTemplateSlotMaximumCardinality2(Cls cls, Slot slot) {
+    public Integer getTemplateSlotMaximumCardinality2(Cls cls, Slot slot) {
         return (Integer) getTemplateFacetValue(cls, slot, _systemFrames.getMaximumCardinalityFacet());
     }
 
-    public synchronized Integer getTemplateSlotMinimumCardinality2(Cls cls, Slot slot) {
+    public Integer getTemplateSlotMinimumCardinality2(Cls cls, Slot slot) {
         return (Integer) getTemplateFacetValue(cls, slot, _systemFrames.getMinimumCardinalityFacet());
     }
 
-    public synchronized Number getTemplateSlotMaximumValue(Cls cls, Slot slot) {
+    public Number getTemplateSlotMaximumValue(Cls cls, Slot slot) {
         return (Number) getTemplateFacetValue(cls, slot, _systemFrames.getMaximumValueFacet());
     }
 
-    public synchronized int getTemplateSlotMinimumCardinality(Cls cls, Slot slot) {
+    public int getTemplateSlotMinimumCardinality(Cls cls, Slot slot) {
         Integer i = getTemplateSlotMinimumCardinality2(cls, slot);
         return MinimumCardinalityConstraint.getValue(i);
     }
 
-    public synchronized Number getTemplateSlotMinimumValue(Cls cls, Slot slot) {
+    public Number getTemplateSlotMinimumValue(Cls cls, Slot slot) {
         return (Number) getTemplateFacetValue(cls, slot, _systemFrames.getMinimumValueFacet());
     }
 
-    public synchronized Object getTemplateSlotValue(Cls cls, Slot slot) {
+    public Object getTemplateSlotValue(Cls cls, Slot slot) {
         Collection values = getTemplateSlotValues(cls, slot);
         return CollectionUtilities.getFirstItem(values);
     }
 
-    public synchronized Collection getTemplateSlotValues(Cls cls, Slot slot) {
+    public Collection getTemplateSlotValues(Cls cls, Slot slot) {
         return getHeadFrameStore().getTemplateSlotValues(cls, slot);
     }
 
-    public synchronized ValueType getTemplateSlotValueType(Cls cls, Slot slot) {
+    public ValueType getTemplateSlotValueType(Cls cls, Slot slot) {
         Collection values = getTemplateFacetValues(cls, slot, _systemFrames.getValueTypeFacet());
         return ValueTypeConstraint.getType(values);
     }
 
-    public synchronized boolean hasDirectlyOverriddenTemplateFacet(Cls cls, Slot slot, Facet facet) {
+    public boolean hasDirectlyOverriddenTemplateFacet(Cls cls, Slot slot, Facet facet) {
         Collection values = getDirectTemplateFacetValues(cls, slot, facet);
         return !values.isEmpty();
     }
 
-    public synchronized boolean hasDirectlyOverriddenTemplateSlot(Cls cls, Slot slot) {
+    public boolean hasDirectlyOverriddenTemplateSlot(Cls cls, Slot slot) {
         return getDirectlyOverriddenTemplateSlots(cls).contains(slot);
     }
 
-    public synchronized Collection getDirectlyOverriddenTemplateSlots(Cls cls) {
+    public Collection getDirectlyOverriddenTemplateSlots(Cls cls) {
         return getHeadFrameStore().getDirectlyOverriddenTemplateSlots(cls);
     }
 
-    public synchronized Collection getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot) {
+    public Collection getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot) {
         return getHeadFrameStore().getDirectlyOverriddenTemplateFacets(cls, slot);
     }
 
-    public synchronized boolean hasDirectSuperslot(Slot slot, Slot superslot) {
+    public boolean hasDirectSuperslot(Slot slot, Slot superslot) {
         return getDirectSuperslots(slot).contains(superslot);
     }
 
-    public synchronized boolean hasSuperslot(Slot slot, Slot superslot) {
+    public boolean hasSuperslot(Slot slot, Slot superslot) {
         return getSuperslots(slot).contains(superslot);
     }
 
-    public synchronized boolean hasDirectSuperclass(Cls cls, Cls superclass) {
+    public boolean hasDirectSuperclass(Cls cls, Cls superclass) {
         return getDirectSuperclasses(cls).contains(superclass);
     }
 
-    public synchronized boolean hasDirectTemplateSlot(Cls cls, Slot slot) {
+    public boolean hasDirectTemplateSlot(Cls cls, Slot slot) {
         return getDirectTemplateSlots(cls).contains(slot);
     }
 
-    public synchronized boolean hasInheritedTemplateSlot(Cls cls, Slot slot) {
+    public boolean hasInheritedTemplateSlot(Cls cls, Slot slot) {
         return getInheritedTemplateSlots(cls).contains(slot);
     }
 
-    public synchronized Collection getInheritedTemplateSlots(Cls cls) {
+    public Collection getInheritedTemplateSlots(Cls cls) {
         Collection slots = new HashSet(getTemplateSlots(cls));
         slots.removeAll(getDirectTemplateSlots(cls));
         return slots;
     }
 
-    public synchronized boolean hasOverriddenTemplateSlot(Cls cls, Slot slot) {
+    public boolean hasOverriddenTemplateSlot(Cls cls, Slot slot) {
         return getOverriddenTemplateSlots(cls).contains(slot);
     }
 
-    public synchronized Collection getOverriddenTemplateSlots(Cls cls) {
+    public Collection getOverriddenTemplateSlots(Cls cls) {
         return getHeadFrameStore().getOverriddenTemplateSlots(cls);
     }
 
-    public synchronized boolean hasOverriddenTemplateFacet(Cls cls, Slot slot, Facet facet) {
+    public boolean hasOverriddenTemplateFacet(Cls cls, Slot slot, Facet facet) {
         return getOverriddenTemplateFacets(cls, slot).contains(facet);
     }
 
-    public synchronized Collection getOverriddenTemplateFacets(Cls cls, Slot slot) {
+    public Collection getOverriddenTemplateFacets(Cls cls, Slot slot) {
         return getHeadFrameStore().getOverriddenTemplateFacets(cls, slot);
     }
 
     /** @deprecated renamed to #removeDirectTemplateFacetOverrides */
     @Deprecated
-    public synchronized void removeTemplateFacetOverrides(Cls cls, Slot slot) {
+    public void removeTemplateFacetOverrides(Cls cls, Slot slot) {
         removeDirectTemplateFacetOverrides(cls, slot);
     }
 
-    public synchronized void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
+    public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
         getHeadFrameStore().removeDirectTemplateFacetOverrides(cls, slot);
     }
 
-    public synchronized boolean hasSuperclass(Cls cls, Cls superclass) {
+    public boolean hasSuperclass(Cls cls, Cls superclass) {
         return getSuperclasses(cls).contains(superclass);
     }
 
-    public synchronized boolean hasTemplateSlot(Cls cls, Slot slot) {
+    public boolean hasTemplateSlot(Cls cls, Slot slot) {
         return getTemplateSlots(cls).contains(slot);
     }
 
-    public synchronized boolean isAbstract(Cls cls) {
+    public boolean isAbstract(Cls cls) {
         String s = (String) getOwnSlotValue(cls, _systemFrames.getRoleSlot());
         return RoleConstraint.isAbstract(s);
     }
 
-    public synchronized boolean isMetaCls(Cls cls) {
+    public boolean isMetaCls(Cls cls) {
         return hasSuperclass(cls, _systemFrames.getRootMetaCls());
     }
 
-    public synchronized void moveDirectSubclass(Cls cls, Cls subclass, Cls afterclass) {
-        List subclasses = new ArrayList(getDirectSubclasses(cls));
-        int currentIndex = subclasses.indexOf(subclass);
-        int index = (afterclass == null) ? 0 : subclasses.indexOf(afterclass);
-        if (currentIndex > index) {
-            ++index;
+    public void moveDirectSubclass(Cls cls, Cls subclass, Cls afterclass) {
+        try {
+            getWriterLock().lock();
+            List subclasses = new ArrayList(getDirectSubclasses(cls));
+            int currentIndex = subclasses.indexOf(subclass);
+            int index = (afterclass == null) ? 0 : subclasses.indexOf(afterclass);
+            if (currentIndex > index) {
+                ++index;
+            }
+            moveDirectSubclass(cls, subclass, index);
         }
-        moveDirectSubclass(cls, subclass, index);
+        finally {
+            getWriterLock().unlock();
+        }
     }
 
-    public synchronized void moveDirectSubclass(Cls cls, Cls subclass, int index) {
+    public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
         getHeadFrameStore().moveDirectSubclass(cls, subclass, index);
     }
 
-    public synchronized void moveDirectSubslot(Slot slot, Slot subslot, Slot afterslot) {
-        List subclasses = new ArrayList(getDirectSubslots(slot));
-        int currentIndex = subclasses.indexOf(subslot);
-        int index = (afterslot == null) ? 0 : subclasses.indexOf(afterslot);
-        if (currentIndex > index) {
-            ++index;
+    public void moveDirectSubslot(Slot slot, Slot subslot, Slot afterslot) {
+        try {
+            getWriterLock().lock();
+            List subclasses = new ArrayList(getDirectSubslots(slot));
+            int currentIndex = subclasses.indexOf(subslot);
+            int index = (afterslot == null) ? 0 : subclasses.indexOf(afterslot);
+            if (currentIndex > index) {
+                ++index;
+            }
+            moveDirectSubslot(slot, subslot, index);
         }
-        moveDirectSubslot(slot, subslot, index);
+        finally {
+            getWriterLock().unlock();
+        }
     }
 
-    public synchronized void moveDirectSubslot(Slot slot, Slot subslot, int index) {
+    public void moveDirectSubslot(Slot slot, Slot subslot, int index) {
         getHeadFrameStore().moveDirectSubslot(slot, subslot, index);
     }
 
-    public synchronized void moveDirectTemplateSlot(Cls cls, Slot slot, int toIndex) {
+    public void moveDirectTemplateSlot(Cls cls, Slot slot, int toIndex) {
         getHeadFrameStore().moveDirectTemplateSlot(cls, slot, toIndex);
     }
 
-    public synchronized void setAbstract(Cls cls, boolean isAbstract) {
+    public void setAbstract(Cls cls, boolean isAbstract) {
         String value = isAbstract ? RoleConstraint.ABSTRACT : RoleConstraint.CONCRETE;
         setDirectOwnSlotValue(cls, _systemFrames.getRoleSlot(), value);
     }
@@ -1501,32 +1593,38 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /*
      * One of the few methods in this class that actually does something. It seems misplaced.
      */
-    public synchronized void setDirectTypeOfSubclasses(Cls cls, Cls type) {
-        Iterator i = getSubclasses(cls).iterator();
-        while (i.hasNext()) {
-            Cls subclass = (Cls) i.next();
-            setDirectType(subclass, type);
+    public void setDirectTypeOfSubclasses(Cls cls, Cls type) {
+        try {
+            getWriterLock().lock();
+            Iterator i = getSubclasses(cls).iterator();
+            while (i.hasNext()) {
+                Cls subclass = (Cls) i.next();
+                setDirectType(subclass, type);
+            }
+        }
+        finally {
+            getWriterLock().unlock();
         }
     }
 
     /** @deprecated renamed to #setDirectTemplateFacetValue */
     @Deprecated
-    public synchronized void setTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
+    public void setTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
         setDirectTemplateFacetValue(cls, slot, facet, value);
     }
 
-    public synchronized void setDirectTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
+    public void setDirectTemplateFacetValue(Cls cls, Slot slot, Facet facet, Object value) {
         Collection values = CollectionUtilities.createCollection(value);
         setDirectTemplateFacetValues(cls, slot, facet, values);
     }
 
     /** @deprecated renamed to #setDirectTemplateFacetValues */
     @Deprecated
-    public synchronized void setTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
+    public void setTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
         setDirectTemplateFacetValues(cls, slot, facet, values);
     }
 
-    public synchronized void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
+    public void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet, Collection values) {
         if (facet.equals(_systemFrames.getValueTypeFacet())) {
             setTemplateSlotValueTypeValues(cls, slot, values);
         } else {
@@ -1539,78 +1637,78 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 
-    public synchronized void setTemplateSlotAllowedClses(Cls cls, Slot slot, Collection values) {
+    public void setTemplateSlotAllowedClses(Cls cls, Slot slot, Collection values) {
         if (!values.isEmpty()) {
             values = ValueTypeConstraint.getValues(ValueType.INSTANCE, values);
         }
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 
-    public synchronized void setTemplateSlotAllowedParents(Cls cls, Slot slot, Collection values) {
+    public void setTemplateSlotAllowedParents(Cls cls, Slot slot, Collection values) {
         if (!values.isEmpty()) {
             values = ValueTypeConstraint.getValues(ValueType.CLS, values);
         }
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 
-    public synchronized void setTemplateSlotAllowedValues(Cls cls, Slot slot, Collection values) {
+    public void setTemplateSlotAllowedValues(Cls cls, Slot slot, Collection values) {
         if (!values.isEmpty()) {
             values = ValueTypeConstraint.getValues(ValueType.SYMBOL, values);
         }
         setTemplateSlotValueTypeValues(cls, slot, values);
     }
 
-    public synchronized void setTemplateSlotAllowsMultipleValues(Cls cls, Slot slot, boolean allowsMultiple) {
+    public void setTemplateSlotAllowsMultipleValues(Cls cls, Slot slot, boolean allowsMultiple) {
         Integer value = MaximumCardinalityConstraint.getValue(allowsMultiple);
         setDirectTemplateFacetValue(cls, slot, _systemFrames.getMaximumCardinalityFacet(), value);
     }
 
-    public synchronized void setTemplateSlotDefaultValues(Cls cls, Slot slot, Collection values) {
+    public void setTemplateSlotDefaultValues(Cls cls, Slot slot, Collection values) {
         setDirectTemplateFacetValues(cls, slot, _systemFrames.getDefaultValuesFacet(), values);
     }
 
-    public synchronized void setTemplateSlotDocumentation(Cls cls, Slot slot, String doc) {
+    public void setTemplateSlotDocumentation(Cls cls, Slot slot, String doc) {
         setDirectTemplateFacetValue(cls, slot, _systemFrames.getDocumentationFacet(), doc);
     }
 
-    public synchronized void setTemplateSlotDocumentation(Cls cls, Slot slot, Collection docs) {
+    public void setTemplateSlotDocumentation(Cls cls, Slot slot, Collection docs) {
         setDirectTemplateFacetValues(cls, slot, _systemFrames.getDocumentationFacet(), docs);
     }
 
-    public synchronized void setTemplateSlotMaximumCardinality(Cls cls, Slot slot, int value) {
+    public void setTemplateSlotMaximumCardinality(Cls cls, Slot slot, int value) {
         Integer facetValue = MaximumCardinalityConstraint.getValue(value);
         setDirectTemplateFacetValue(cls, slot, _systemFrames.getMaximumCardinalityFacet(), facetValue);
     }
 
-    public synchronized void setTemplateSlotMaximumValue(Cls cls, Slot slot, Number value) {
+    public void setTemplateSlotMaximumValue(Cls cls, Slot slot, Number value) {
         setDirectTemplateFacetValue(cls, slot, _systemFrames.getMaximumValueFacet(), value);
     }
 
-    public synchronized void setTemplateSlotMinimumCardinality(Cls cls, Slot slot, int value) {
+    public void setTemplateSlotMinimumCardinality(Cls cls, Slot slot, int value) {
         Integer facetValue = MinimumCardinalityConstraint.getValue(value);
         setDirectTemplateFacetValue(cls, slot, _systemFrames.getMinimumCardinalityFacet(), facetValue);
     }
 
-    public synchronized void setTemplateSlotMinimumValue(Cls cls, Slot slot, Number value) {
+    public void setTemplateSlotMinimumValue(Cls cls, Slot slot, Number value) {
         setDirectTemplateFacetValue(cls, slot, _systemFrames.getMinimumValueFacet(), value);
     }
 
-    public synchronized void setTemplateSlotValue(Cls cls, Slot slot, Object value) {
+    public void setTemplateSlotValue(Cls cls, Slot slot, Object value) {
         Collection values = CollectionUtilities.createCollection(value);
         setDirectTemplateSlotValues(cls, slot, values);
     }
 
     /** @deprecated renamed to #setDirectTemplateSlotValues */
     @Deprecated
-    public synchronized void setTemplateSlotValues(Cls cls, Slot slot, Collection values) {
+    public void setTemplateSlotValues(Cls cls, Slot slot, Collection values) {
         setDirectTemplateSlotValues(cls, slot, values);
     }
 
-    public synchronized void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values) {
+    public void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values) {
         getHeadFrameStore().setDirectTemplateSlotValues(cls, slot, values);
     }
 
-    public synchronized void setTemplateSlotValueType(Cls cls, Slot slot, ValueType type) {
+    public void setTemplateSlotValueType(Cls cls, Slot slot, ValueType type) {
         if (!getTemplateSlotValueType(cls, slot).equals(type)) {
             setTemplateSlotValueTypeValues(cls, slot, type, Collections.EMPTY_LIST);
         }
@@ -1619,32 +1717,38 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * TODO: Implement addInstance
      */
-    public synchronized void addInstance(Instance instance, String name, Cls type, boolean isNew) {
+    public void addInstance(Instance instance, String name, Cls type, boolean isNew) {
     }
 
-    public synchronized String getBrowserText(Instance instance) {
-        String value;
-        if (instance.isDeleted()) {
-            value = "<<deleted>>";
-        } else {
-            Cls directType = instance.getDirectType();
-            if (_project == null) {
-                value = getName(instance);
-            } else if (directType == null) {
-                value = getMissingTypeString(instance);
+    public String getBrowserText(Instance instance) {
+        try {
+            getReaderLock().lock();
+            String value;
+            if (instance.isDeleted()) {
+                value = "<<deleted>>";
             } else {
-                BrowserSlotPattern slotPattern = _project.getBrowserSlotPattern(directType);
-                if (slotPattern == null) {
-                    value = getDisplaySlotNotSetString(instance);
+                Cls directType = instance.getDirectType();
+                if (_project == null) {
+                    value = getName(instance);
+                } else if (directType == null) {
+                    value = getMissingTypeString(instance);
                 } else {
-                    value = slotPattern.getBrowserText(instance);
-                    if (value == null) {
-                        value = getDisplaySlotPatternValueNotSetString(instance, slotPattern);
+                    BrowserSlotPattern slotPattern = _project.getBrowserSlotPattern(directType);
+                    if (slotPattern == null) {
+                        value = getDisplaySlotNotSetString(instance);
+                    } else {
+                        value = slotPattern.getBrowserText(instance);
+                        if (value == null) {
+                            value = getDisplaySlotPatternValueNotSetString(instance, slotPattern);
+                        }
                     }
                 }
             }
+            return value;
         }
-        return value;
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
     //ESCA-JAVA0130 
@@ -1681,72 +1785,102 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return o.toString();
     }
 
-    public synchronized Collection getDirectTypes(Instance instance) {
+    public Collection getDirectTypes(Instance instance) {
         return getHeadFrameStore().getDirectTypes(instance);
     }
 
-    public synchronized boolean hasDirectType(Instance instance, Cls cls) {
+    public boolean hasDirectType(Instance instance, Cls cls) {
         return getDirectTypes(instance).contains(cls);
     }
 
-    public synchronized boolean hasType(Instance instance, Cls cls) {
+    public boolean hasType(Instance instance, Cls cls) {
         return getTypes(instance).contains(cls);
     }
 
-    public synchronized Collection getTypes(Instance instance) {
+    public Collection getTypes(Instance instance) {
         return getHeadFrameStore().getTypes(instance);
     }
 
     /**
      * TODO setDirectType should return void
      */
-    public synchronized Instance setDirectType(Instance instance, Cls type) {
+    public Instance setDirectType(Instance instance, Cls type) {
         Collection types = CollectionUtilities.createCollection(type);
         return setDirectTypes(instance, types);
     }
 
-    public synchronized Instance setDirectTypes(Instance instance, Collection newTypes) {
-        Collection oldTypes = new ArrayList(getDirectTypes(instance));
-        Collection typesToRemove = new ArrayList(oldTypes);
-        typesToRemove.removeAll(newTypes);
-        Collection typesToAdd = new ArrayList(newTypes);
-        typesToAdd.removeAll(oldTypes);
-        addDirectTypes(instance, typesToAdd);
-        removeDirectTypes(instance, typesToRemove);
-        return instance;
-    }
-
-    public synchronized void addDirectTypes(Instance instance, Collection types) {
-        Iterator i = types.iterator();
-        while (i.hasNext()) {
-            Cls type = (Cls) i.next();
-            getHeadFrameStore().addDirectType(instance, type);
+    public Instance setDirectTypes(Instance instance, Collection newTypes) {
+        try {
+            getWriterLock().lock();
+            Collection oldTypes = new ArrayList(getDirectTypes(instance));
+            Collection typesToRemove = new ArrayList(oldTypes);
+            typesToRemove.removeAll(newTypes);
+            Collection typesToAdd = new ArrayList(newTypes);
+            typesToAdd.removeAll(oldTypes);
+            addDirectTypes(instance, typesToAdd);
+            removeDirectTypes(instance, typesToRemove);
+            return instance;
+        }
+        finally {
+            getWriterLock().unlock();
         }
     }
 
-    public synchronized void removeDirectTypes(Instance instance, Collection types) {
-        Iterator i = types.iterator();
-        while (i.hasNext()) {
-            Cls type = (Cls) i.next();
-            getHeadFrameStore().removeDirectType(instance, type);
+    public void addDirectTypes(Instance instance, Collection types) {
+        try {
+            getWriterLock().lock();
+            Iterator i = types.iterator();
+            while (i.hasNext()) {
+                Cls type = (Cls) i.next();
+                getHeadFrameStore().addDirectType(instance, type);
+            }
+        }
+        finally {
+            getWriterLock().unlock();
         }
     }
 
-    public synchronized void addDirectSuperslot(Slot slot, Slot superslot) {
+    public void removeDirectTypes(Instance instance, Collection types) {
+        try {
+            getWriterLock().lock();
+            Iterator i = types.iterator();
+            while (i.hasNext()) {
+                Cls type = (Cls) i.next();
+                getHeadFrameStore().removeDirectType(instance, type);
+            }
+        }
+        finally {
+            getWriterLock().unlock();
+        }
+    }
+
+    public void addDirectSuperslot(Slot slot, Slot superslot) {
         getHeadFrameStore().addDirectSuperslot(slot, superslot);
     }
 
-    public synchronized Collection getAllowedClses(Slot slot) {
-        Collection values = getStandardSlotValues(slot, _systemFrames.getValueTypeSlot());
-        return ValueTypeConstraint.getAllowedClses(values);
+    public Collection getAllowedClses(Slot slot) {
+        try {
+            getReaderLock().lock();
+            Collection values = getStandardSlotValues(slot, _systemFrames.getValueTypeSlot());
+            return ValueTypeConstraint.getAllowedClses(values);
+        }
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
-    public synchronized Collection getAllowedParents(Slot slot) {
-        Collection values = getStandardSlotValues(slot, _systemFrames.getValueTypeSlot());
-        return ValueTypeConstraint.getAllowedParents(values);
+    public Collection getAllowedParents(Slot slot) {
+        try {
+            getReaderLock().lock();
+            Collection values = getStandardSlotValues(slot, _systemFrames.getValueTypeSlot());
+            return ValueTypeConstraint.getAllowedParents(values);
+        }
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
-    public synchronized Collection getAllowedValues(Slot slot) {
+    public Collection getAllowedValues(Slot slot) {
         Collection values = getStandardSlotValues(slot, _systemFrames.getValueTypeSlot());
         return ValueTypeConstraint.getAllowedValues(values);
     }
@@ -1757,19 +1891,31 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     }
 
     private Collection getStandardSlotValues(Slot slot, Slot associatedSlot) {
-        Collection values = getDirectOwnSlotValues(slot, associatedSlot);
-        if (values.isEmpty()) {
-            values = getOwnSlotValues(slot, associatedSlot);
+        try {
+            getReaderLock().lock();
+            Collection values = getDirectOwnSlotValues(slot, associatedSlot);
+            if (values.isEmpty()) {
+                values = getOwnSlotValues(slot, associatedSlot);
+            }
+            return values;
         }
-        return values;
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
-    public synchronized boolean getAllowsMultipleValues(Slot slot) {
-        Integer value = getMaximumCardinality2(slot);
-        return MaximumCardinalityConstraint.allowsMultipleValues(value);
+    public boolean getAllowsMultipleValues(Slot slot) {
+        try {
+            getReaderLock().lock();
+            Integer value = getMaximumCardinality2(slot);
+            return MaximumCardinalityConstraint.allowsMultipleValues(value);
+        }
+        finally {
+            getReaderLock().unlock();
+        }
     }
 
-    public synchronized Facet getAssociatedFacet(Slot slot) {
+    public Facet getAssociatedFacet(Slot slot) {
         Facet facet = null;
         Object o = getOwnSlotValue(slot, _systemFrames.getAssociatedFacetSlot());
         if (o instanceof Facet) {
@@ -1780,73 +1926,73 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return facet;
     }
 
-    public synchronized Collection getDefaultValues(Slot slot) {
+    public Collection getDefaultValues(Slot slot) {
         return getOwnSlotValues(slot, _systemFrames.getDefaultValuesSlot());
     }
 
-    public synchronized int getDirectSubslotCount(Slot slot) {
+    public int getDirectSubslotCount(Slot slot) {
         return getDirectSubslots(slot).size();
     }
 
-    public synchronized Collection getDirectSubslots(Slot slot) {
+    public Collection getDirectSubslots(Slot slot) {
         return getHeadFrameStore().getDirectSubslots(slot);
     }
 
-    public synchronized Collection getDirectSuperslots(Slot slot) {
+    public Collection getDirectSuperslots(Slot slot) {
         return getHeadFrameStore().getDirectSuperslots(slot);
     }
 
-    public synchronized int getDirectSuperslotCount(Slot slot) {
+    public int getDirectSuperslotCount(Slot slot) {
         return getDirectSuperslots(slot).size();
     }
 
-    public synchronized Slot getInverseSlot(Slot slot) {
+    public Slot getInverseSlot(Slot slot) {
         return (Slot) getOwnSlotValue(slot, _systemFrames.getInverseSlotSlot());
     }
 
-    public synchronized Integer getMaximumCardinality2(Slot slot) {
+    public Integer getMaximumCardinality2(Slot slot) {
         return (Integer) getStandardSlotValue(slot, _systemFrames.getMaximumCardinalitySlot());
     }
 
-    public synchronized int getMaximumCardinality(Slot slot) {
+    public int getMaximumCardinality(Slot slot) {
         Integer value = getMaximumCardinality2(slot);
         return MaximumCardinalityConstraint.getValue(value);
     }
 
-    public synchronized Number getMaximumValue(Slot slot) {
+    public Number getMaximumValue(Slot slot) {
         return (Number) getStandardSlotValue(slot, _systemFrames.getMaximumValueSlot());
     }
 
-    public synchronized int getMinimumCardinality(Slot slot) {
+    public int getMinimumCardinality(Slot slot) {
         Integer value = (Integer) getOwnSlotValue(slot, _systemFrames.getMinimumCardinalitySlot());
         return MinimumCardinalityConstraint.getValue(value);
     }
 
-    public synchronized Number getMinimumValue(Slot slot) {
+    public Number getMinimumValue(Slot slot) {
         return (Number) getOwnSlotValue(slot, _systemFrames.getMinimumValueSlot());
     }
 
-    public synchronized Collection getSubslots(Slot slot) {
+    public Collection getSubslots(Slot slot) {
         return getHeadFrameStore().getSubslots(slot);
     }
 
-    public synchronized Collection getSuperslots(Slot slot) {
+    public Collection getSuperslots(Slot slot) {
         return getHeadFrameStore().getSuperslots(slot);
     }
 
-    public synchronized Collection getDirectDomain(Slot slot) {
+    public Collection getDirectDomain(Slot slot) {
         return getHeadFrameStore().getDirectDomain(slot);
     }
 
-    public synchronized Collection getDomain(Slot slot) {
+    public Collection getDomain(Slot slot) {
         return getHeadFrameStore().getDomain(slot);
     }
 
-    public synchronized Collection getValues(Slot slot) {
+    public Collection getValues(Slot slot) {
         return getOwnSlotValues(slot, _systemFrames.getValuesSlot());
     }
 
-    public synchronized ValueType getValueType(Slot slot) {
+    public ValueType getValueType(Slot slot) {
         Collection values = getStandardSlotValues(slot, _systemFrames.getValueTypeSlot());
         return ValueTypeConstraint.getType(values);
     }
@@ -1854,11 +2000,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
     /**
      * TODO implement or deprecate hasSlotValueAtSomeFrame
      */
-    public synchronized boolean hasSlotValueAtSomeFrame(Slot slot) {
+    public boolean hasSlotValueAtSomeFrame(Slot slot) {
         return false;
     }
 
-    public synchronized void removeDirectSuperslot(Slot slot, Slot superslot) {
+    public void removeDirectSuperslot(Slot slot, Slot superslot) {
         getHeadFrameStore().removeDirectSuperslot(slot, superslot);
     }
 
@@ -1971,15 +2117,15 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    public synchronized void setAllowedClses(Slot slot, Collection clses) {
+    public void setAllowedClses(Slot slot, Collection clses) {
         setValueTypeValues(slot, ValueType.INSTANCE, clses);
     }
 
-    public synchronized void setAllowedParents(Slot slot, Collection parents) {
+    public void setAllowedParents(Slot slot, Collection parents) {
         setValueTypeValues(slot, ValueType.CLS, parents);
     }
 
-    public synchronized void setAllowedValues(Slot slot, Collection values) {
+    public void setAllowedValues(Slot slot, Collection values) {
         setValueTypeValues(slot, ValueType.SYMBOL, values);
     }
 
@@ -2007,23 +2153,23 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * (Instance) i.next(); if (hasType(value, allowedClses)) { validValues.add(value); } } return validValues; }
      */
 
-    public synchronized void setAllowsMultipleValues(Slot slot, boolean allowsMultiple) {
+    public void setAllowsMultipleValues(Slot slot, boolean allowsMultiple) {
         Number value = MaximumCardinalityConstraint.getValue(allowsMultiple);
         setDirectOwnSlotValue(slot, _systemFrames.getMaximumCardinalitySlot(), value);
     }
 
-    public synchronized void setAssociatedFacet(Slot slot, Facet facet) {
+    public void setAssociatedFacet(Slot slot, Facet facet) {
         setDirectOwnSlotValue(slot, _systemFrames.getAssociatedFacetSlot(), facet);
     }
 
-    public synchronized void setDefaultValues(Slot slot, Collection values) {
+    public void setDefaultValues(Slot slot, Collection values) {
         setDirectOwnSlotValues(slot, _systemFrames.getDefaultValuesSlot(), values);
     }
 
     /**
      * TODO do we need this?
      */
-    public synchronized void setDirectTypeOfSubslots(Slot slot, Cls type) {
+    public void setDirectTypeOfSubslots(Slot slot, Cls type) {
         Iterator i = getSubslots(slot).iterator();
         while (i.hasNext()) {
             Slot subslot = (Slot) i.next();
@@ -2031,136 +2177,136 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         }
     }
 
-    public synchronized void setInverseSlot(Slot slot, Slot inverseSlot) {
+    public void setInverseSlot(Slot slot, Slot inverseSlot) {
         setDirectOwnSlotValue(slot, _systemFrames.getInverseSlotSlot(), inverseSlot);
     }
 
-    public synchronized void setMaximumCardinality(Slot slot, int max) {
+    public void setMaximumCardinality(Slot slot, int max) {
         Integer value = MaximumCardinalityConstraint.getValue(max);
         setDirectOwnSlotValue(slot, _systemFrames.getMaximumCardinalitySlot(), value);
     }
 
-    public synchronized void setMaximumValue(Slot slot, Number max) {
+    public void setMaximumValue(Slot slot, Number max) {
         setDirectOwnSlotValue(slot, _systemFrames.getMaximumValueSlot(), max);
     }
 
-    public synchronized void setMinimumCardinality(Slot slot, int min) {
+    public void setMinimumCardinality(Slot slot, int min) {
         Integer value = MinimumCardinalityConstraint.getValue(min);
         setDirectOwnSlotValue(slot, _systemFrames.getMinimumCardinalitySlot(), value);
     }
 
-    public synchronized void setMinimumValue(Slot slot, Number min) {
+    public void setMinimumValue(Slot slot, Number min) {
         setDirectOwnSlotValue(slot, _systemFrames.getMinimumValueSlot(), min);
     }
 
-    public synchronized void setValues(Slot slot, Collection values) {
+    public void setValues(Slot slot, Collection values) {
         setDirectOwnSlotValues(slot, _systemFrames.getValuesSlot(), values);
     }
 
-    public synchronized void setValueType(Slot slot, ValueType newType) {
+    public void setValueType(Slot slot, ValueType newType) {
         if (!getValueType(slot).equals(newType)) {
             setValueTypeValues(slot, newType, Collections.EMPTY_LIST);
         }
     }
     
-    public synchronized void setUserName(String userName) {
+    public void setUserName(String userName) {
 		_userName = userName;
 	}
 
-    public synchronized void addFrameListener(Frame frame, FrameListener listener) {
+    public void addFrameListener(Frame frame, FrameListener listener) {
         addListener(FrameListener.class, frame, listener);
     }
 
-    public synchronized void addFrameListener(FrameListener listener) {
+    public void addFrameListener(FrameListener listener) {
         addFrameListener(null, listener);
     }
 
-    public synchronized void removeFrameListener(Frame frame, FrameListener listener) {
+    public void removeFrameListener(Frame frame, FrameListener listener) {
         removeListener(FrameListener.class, frame, listener);
     }
 
-    public synchronized void removeFrameListener(FrameListener listener) {
+    public void removeFrameListener(FrameListener listener) {
         removeFrameListener(null, listener);
     }
 
-    public synchronized void addSlotListener(Slot slot, SlotListener listener) {
+    public void addSlotListener(Slot slot, SlotListener listener) {
         addListener(SlotListener.class, slot, listener);
     }
 
-    public synchronized void addSlotListener(SlotListener listener) {
+    public void addSlotListener(SlotListener listener) {
         addSlotListener(null, listener);
     }
 
-    public synchronized void removeSlotListener(Slot slot, SlotListener listener) {
+    public void removeSlotListener(Slot slot, SlotListener listener) {
         removeListener(SlotListener.class, slot, listener);
     }
 
-    public synchronized void removeSlotListener(SlotListener listener) {
+    public void removeSlotListener(SlotListener listener) {
         removeSlotListener(null, listener);
     }
 
-    public synchronized void addInstanceListener(Instance instance, InstanceListener listener) {
+    public void addInstanceListener(Instance instance, InstanceListener listener) {
         addListener(InstanceListener.class, instance, listener);
     }
 
-    public synchronized void addInstanceListener(InstanceListener listener) {
+    public void addInstanceListener(InstanceListener listener) {
         addInstanceListener(null, listener);
     }
 
-    public synchronized void removeInstanceListener(Instance instance, InstanceListener listener) {
+    public void removeInstanceListener(Instance instance, InstanceListener listener) {
         removeListener(InstanceListener.class, instance, listener);
     }
 
-    public synchronized void removeInstanceListener(InstanceListener listener) {
+    public void removeInstanceListener(InstanceListener listener) {
         removeInstanceListener(null, listener);
     }
 
-    public synchronized void addClsListener(ClsListener listener) {
+    public void addClsListener(ClsListener listener) {
         addClsListener(null, listener);
     }
 
-    public synchronized void addClsListener(Cls cls, ClsListener listener) {
+    public void addClsListener(Cls cls, ClsListener listener) {
         addListener(ClsListener.class, cls, listener);
     }
 
-    public synchronized void removeClsListener(Cls cls, ClsListener listener) {
+    public void removeClsListener(Cls cls, ClsListener listener) {
         removeListener(ClsListener.class, cls, listener);
     }
 
-    public synchronized void removeClsListener(ClsListener listener) {
+    public void removeClsListener(ClsListener listener) {
         removeClsListener(null, listener);
     }
 
-    public synchronized void addKnowledgeBaseListener(KnowledgeBaseListener listener) {
+    public void addKnowledgeBaseListener(KnowledgeBaseListener listener) {
         addListener(KnowledgeBaseListener.class, this, listener);
     }
 
-    public synchronized void removeKnowledgeBaseListener(KnowledgeBaseListener listener) {
+    public void removeKnowledgeBaseListener(KnowledgeBaseListener listener) {
         removeListener(KnowledgeBaseListener.class, this, listener);
     }
 
-    public synchronized void addFacetListener(Facet facet, FacetListener listener) {
+    public void addFacetListener(Facet facet, FacetListener listener) {
         addListener(FacetListener.class, this, listener);
     }
 
-    public synchronized void addFacetListener(FacetListener listener) {
+    public void addFacetListener(FacetListener listener) {
         addFacetListener(null, listener);
     }
 
-    public synchronized void removeFacetListener(Facet facet, FacetListener listener) {
+    public void removeFacetListener(Facet facet, FacetListener listener) {
         removeListener(FacetListener.class, facet, listener);
     }
 
-    public synchronized void removeFacetListener(FacetListener listener) {
+    public void removeFacetListener(FacetListener listener) {
         removeFacetListener(null, listener);
     }
     
-    public synchronized void addServerProjectListener(ServerProjectListener listener) {
+    public void addServerProjectListener(ServerProjectListener listener) {
         String projectName = (String) new GetServerProjectName(this).execute();
         addListener(ServerProjectListener.class, projectName, listener);
     }
     
-    public synchronized void removeServerProjectListener(ServerProjectListener listener) {
+    public void removeServerProjectListener(ServerProjectListener listener) {
         String projectName = (String) new GetServerProjectName(this).execute();
         removeListener(ServerProjectListener.class, projectName, listener);
     }
@@ -2178,26 +2324,26 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return StringUtilities.getClassName(this) + "(" + getName() + ")";
     }
 
-    public synchronized Collection getCurrentUsers() {
+    public Collection getCurrentUsers() {
         return Collections.EMPTY_LIST;
     }
 
-    public synchronized boolean beginTransaction(String name) {
+    public boolean beginTransaction(String name) {
         return getHeadFrameStore().beginTransaction(name);
     }
     
-    public synchronized boolean beginTransaction(String name, String appliedToFrameName) {
+    public boolean beginTransaction(String name, String appliedToFrameName) {
     	if (appliedToFrameName == null) {
     		return beginTransaction(name);
     	}
     	return beginTransaction(name + Transaction.APPLY_TO_TRAILER_STRING + appliedToFrameName);		
 	}
 
-    public synchronized boolean commitTransaction() {
+    public boolean commitTransaction() {
         return getHeadFrameStore().commitTransaction();
     }
 
-    public synchronized boolean rollbackTransaction() {
+    public boolean rollbackTransaction() {
         return getHeadFrameStore().rollbackTransaction();
     }
 
@@ -2205,7 +2351,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated Use #commitTransaction or #rollbackTransaction
      */
     @Deprecated
-    public synchronized boolean endTransaction(boolean doCommit) {
+    public boolean endTransaction(boolean doCommit) {
         boolean committed;
         if (doCommit) {
             committed = commitTransaction();
@@ -2219,11 +2365,11 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @deprecated Use #commitTransaction
      */
     @Deprecated
-    public synchronized boolean endTransaction() {
+    public boolean endTransaction() {
     	return commitTransaction();
     }
     
-    public synchronized void setFrameFactory(FrameFactory factory) {
+    public void setFrameFactory(FrameFactory factory) {
         _frameFactory = factory;
     }
 
@@ -2231,15 +2377,15 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getUndoFrameStore();
     }
 
-    public synchronized void setFrameNameValidator(FrameNameValidator validator) {
+    public void setFrameNameValidator(FrameNameValidator validator) {
         _frameNameValidator = validator;
     }
 
-    public synchronized boolean isValidFrameName(String name, Frame frame) {
+    public boolean isValidFrameName(String name, Frame frame) {
         return (_frameNameValidator == null) ? true : _frameNameValidator.isValid(name, frame);
     }
 
-    public synchronized String getInvalidFrameNameDescription(String name, Frame frame) {
+    public String getInvalidFrameNameDescription(String name, Frame frame) {
         String description = null;
         if (_frameNameValidator != null) {
             description = _frameNameValidator.getErrorMessage(name, frame);
@@ -2247,7 +2393,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return description;
     }
 
-    public synchronized void setPollForEvents(boolean b) {
+    public void setPollForEvents(boolean b) {
         _frameStoreManager.setPollForEvents(b);
     }
 
@@ -2257,37 +2403,37 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * @param slot
      */
     @Deprecated
-    public synchronized void setDirectBrowserSlot(Cls cls, Slot slot) {
+    public void setDirectBrowserSlot(Cls cls, Slot slot) {
         setDirectBrowserSlotPattern(cls, new BrowserSlotPattern(slot));
     }
 
-    public synchronized void setDirectBrowserSlotPattern(Cls cls, BrowserSlotPattern slotPattern) {
+    public void setDirectBrowserSlotPattern(Cls cls, BrowserSlotPattern slotPattern) {
         getProject().setDirectBrowserSlotPattern(cls, slotPattern);
         _frameStoreManager.notifyInstancesOfBrowserTextChange(cls);
     }
 
-    public synchronized void removeFrameStore(FrameStore frameStore) {
+    public void removeFrameStore(FrameStore frameStore) {
         _frameStoreManager.removeFrameStore(frameStore);
     }
 
-    public synchronized void insertFrameStore(FrameStore newFrameStore) {
+    public void insertFrameStore(FrameStore newFrameStore) {
         _frameStoreManager.insertFrameStore(newFrameStore);
     }
 
-    public synchronized void insertFrameStore(FrameStore newFrameStore, int position) {
+    public void insertFrameStore(FrameStore newFrameStore, int position) {
         _frameStoreManager.insertFrameStore(newFrameStore, position);
     }
 
-    public synchronized List<FrameStore> getFrameStores() {
+    public List<FrameStore> getFrameStores() {
         return _frameStoreManager.getFrameStores();
     }
 
-    public synchronized void setTerminalFrameStore(FrameStore store) {
+    public void setTerminalFrameStore(FrameStore store) {
         _frameStoreManager.setTerminalFrameStore(store);
 
     }
 
-    public synchronized FrameStore getTerminalFrameStore() {
+    public FrameStore getTerminalFrameStore() {
         return _frameStoreManager.getTerminalFrameStore();
     }
 
@@ -2296,7 +2442,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * 
      * @see edu.stanford.smi.protege.model.KnowledgeBase#clearAllListeners()
      */
-    public synchronized void clearAllListeners() {
+    public void clearAllListeners() {
         _frameStoreManager.clearAllListeners();
     }
 
@@ -2305,7 +2451,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
      * 
      * @see edu.stanford.smi.protege.model.KnowledgeBase#getFrameCounts()
      */
-    public synchronized FrameCounts getFrameCounts() {
+    public FrameCounts getFrameCounts() {
         return getProject().getFrameCounts();
     }
 
@@ -2317,7 +2463,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         getProject().setDirectBrowserSlotPattern(cls, pattern);
     }
 
-    public synchronized Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot) {
+    public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot) {
         return getHeadFrameStore().getDirectOwnSlotValuesClosure(frame, slot);
     }
 
@@ -2329,7 +2475,7 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         return getFacetCheckingEnabled();
     }
 
-    public synchronized boolean getFacetCheckingEnabled() {
+    public boolean getFacetCheckingEnabled() {
         return _frameStoreManager.getFacetCheckingEnabled();
     }
 
@@ -2341,36 +2487,36 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         _frameStoreManager.stopJournaling();
     }
 
-    public synchronized boolean setGenerateDeletingFrameEventsEnabled(boolean enabled) {
+    public boolean setGenerateDeletingFrameEventsEnabled(boolean enabled) {
         return _frameStoreManager.setGenerateDeletingFrameEventsEnabled(enabled);
     }
 
-    public synchronized void flushCache() {
+    public void flushCache() {
         getFrameStoreManager().reinitialize();
     }
 
-    public synchronized Cls getReifiedRelationCls() {
+    public Cls getReifiedRelationCls() {
         return _systemFrames.getRelationCls();
     }
 
-    public synchronized Slot getReifedRelationFromSlot() {
+    public Slot getReifedRelationFromSlot() {
         return _systemFrames.getFromSlot();
     }
 
-    public synchronized Slot getReifedRelationToSlot() {
+    public Slot getReifedRelationToSlot() {
         return _systemFrames.getToSlot();
     }
     
-    public synchronized void addTransactionListener(TransactionListener listener) {
+    public void addTransactionListener(TransactionListener listener) {
         addListener(TransactionListener.class, this, listener);
     }
     
-    public synchronized void removeTransactionListener(TransactionListener listener) {
+    public void removeTransactionListener(TransactionListener listener) {
         removeListener(TransactionListener.class, this, listener);
     }
     
     public Collection<Frame> executeQuery(Query q) {
-      SynchronizeQueryCallback callback = new SynchronizeQueryCallback(this);
+      SynchronizeQueryCallback callback = new SynchronizeQueryCallback(getReaderLock());
       getHeadFrameStore().executeQuery(q, callback);
       return callback.waitForResults();
     }

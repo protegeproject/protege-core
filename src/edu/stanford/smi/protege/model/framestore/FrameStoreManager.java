@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +30,7 @@ import edu.stanford.smi.protege.util.Log;
  */
 public class FrameStoreManager {
     private static transient Logger log = Log.getLogger(FrameStoreManager.class);
+    private SynchronizationFrameStore synchronizationFrameStore;
     private FrameStore immutableNamesFrameStore;
     private FrameStore deleteSimplificationFrameStore;
     private FrameStore argumentCheckingFrameStore;
@@ -122,6 +124,7 @@ public class FrameStoreManager {
         add(cleanDispatchFrameStore, true);
         add(deleteSimplificationFrameStore, true);
         add(immutableNamesFrameStore, true);
+        add(synchronizationFrameStore, true);
 
         // for testing
         add(traceFrameStore, false);
@@ -190,6 +193,7 @@ public class FrameStoreManager {
         closeFrameStores();
         frameStores = null;
         kb = null;
+        synchronizationFrameStore = null;
         immutableNamesFrameStore = null;
         deleteSimplificationFrameStore = null;
         argumentCheckingFrameStore = null;
@@ -239,7 +243,15 @@ public class FrameStoreManager {
     public UndoFrameStore getUndoFrameStore() {
         return undoFrameStore;
     }
-
+    
+    public Lock getKnowledgeBaseReaderLock() {
+    	return synchronizationFrameStore.getReaderLock();
+    }
+    
+    public Lock getKnowledgeBaseWriterLock() {
+    	return synchronizationFrameStore.getWriterLock();
+    }
+    
     public void insertFrameStore(FrameStore newFrameStore, int position) {
         frameStores.add(position, newFrameStore);
         FrameStore fs = getPreceedingEnabledFrameStore(position);
@@ -283,7 +295,7 @@ public class FrameStoreManager {
     }
 
     public void insertFrameStore(FrameStore newFrameStore) {
-        insertFrameStore(newFrameStore, 0);
+        insertFrameStore(newFrameStore, 1);
     }
 
     public boolean isUndoEnabled() {
@@ -378,6 +390,7 @@ public class FrameStoreManager {
     }
 
     private void createSystemFrameStores() {
+        synchronizationFrameStore = (SynchronizationFrameStore) create(SynchronizationFrameStore.class);
         immutableNamesFrameStore = create(ImmutableNamesFrameStore.class);
         deleteSimplificationFrameStore = create(DeleteSimplificationFrameStore.class);
         argumentCheckingFrameStore = create(ArgumentCheckingFrameStore.class);

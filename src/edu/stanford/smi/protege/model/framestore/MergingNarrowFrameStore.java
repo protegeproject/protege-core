@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,7 +40,7 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 public class MergingNarrowFrameStore implements NarrowFrameStore {
     private static Logger log = Log.getLogger(MergingNarrowFrameStore.class);
     
-    private Object kbLock;
+    private KnowledgeBase kb;
 	
     private static final NarrowFrameStore ROOT_NODE = new PlaceHolderNarrowFrameStore();
 
@@ -57,10 +58,10 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     private Tree<NarrowFrameStore> frameStoreTree 
       = new Tree<NarrowFrameStore>(ROOT_NODE);
 
-    public MergingNarrowFrameStore(Object kbLock) {
+    public MergingNarrowFrameStore(KnowledgeBase kb) {
         systemFrameStore = new InMemoryFrameDb("system");
         addActiveFrameStore(systemFrameStore);
-        this.kbLock = kbLock;
+        this.kb = kb;
     }
 
     /**
@@ -554,7 +555,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
       new Thread() {
         public void run() {
           try {
-            SynchronizeQueryCallback sync = new SynchronizeQueryCallback(kbLock);
+            SynchronizeQueryCallback sync = new SynchronizeQueryCallback(kb.getReaderLock());
             Set<Frame> results = new HashSet<Frame>();
             Iterator<NarrowFrameStore> i = availableFrameStores.iterator();
             while (i.hasNext()) {

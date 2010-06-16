@@ -67,7 +67,8 @@ public abstract class Transaction<X> {
      */
     public boolean execute() {
         boolean commited = false;
-        synchronized (_knowledgeBase) {
+        try {
+            _knowledgeBase.getWriterLock().lock();
             boolean transactionComplete = false;
             try {
                 _knowledgeBase.beginTransaction(transactionName, applyTo);
@@ -85,6 +86,9 @@ public abstract class Transaction<X> {
                     _knowledgeBase.rollbackTransaction();
                 }
             }
+        }
+        finally {
+            _knowledgeBase.getWriterLock().unlock();
         }
         return commited;
     }
