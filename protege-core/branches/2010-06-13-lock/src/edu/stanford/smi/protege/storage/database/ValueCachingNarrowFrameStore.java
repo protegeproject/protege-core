@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,8 +52,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     public static final transient Logger cacheLog = Logger.getLogger(CompleteableCache.class.getPackage().getName() + ".ValueCachingNFS");
     private static Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private DatabaseFrameDb framedb;
-    private WeakHashMap<String, SoftReference<DeferredOperationCache>> cacheMap  
-                      = new WeakHashMap<String, SoftReference<DeferredOperationCache>>();
+    private Map<String, SoftReference<FutureTask<DeferredOperationCache>>> cacheMap  
+                      = new WeakHashMap<String, SoftReference<FutureTask<DeferredOperationCache>>>();
     private Sft directInstancesSft;
     private FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>> transactions
          = new FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>>();
@@ -90,7 +94,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         return ret;
     }
     
-    private boolean cachingDisabledForSession() {
+    private boolean completeCachingDisabledForSession() {
         return unCachingSessions != null && unCachingSessions.contains(ServerFrameStore.getCurrentSession());
     }
 
@@ -109,62 +113,100 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
     @SuppressWarnings("unchecked")
     private DeferredOperationCache getCache(Frame  frame, boolean create) {
-        RemoteSession session = ServerFrameStore.getCurrentSession();
-        SoftReference<DeferredOperationCache> reference = cacheMap.get(frame.getFrameID().getName());
-        DeferredOperationCache cache = null;
-        if (reference != null) {
-            cache = reference.get();
-        }
-        if (cache != null && cache.isInvalid()) {  // Cache's created in a transaction are short-lived.
-            cache = null;
-            cacheMap.remove(frame.getFrameID().getName());
-        }
-        if (reference != null && cache == null) {
-            if (cacheLog.isLoggable(Level.FINER)) {
-                cacheLog.finer("Cache for frame " + frame.getFrameID().getName() + " garbage collected");
-            }
-            cacheLost++;
-        }
-        if (cache == null && create && !cachingDisabledForSession()) {
-            cache = fillCache(frame, session);
-        }
-        return cache;
+    	RemoteSession session = ServerFrameStore.getCurrentSession();
+    	FutureTask<DeferredOperationCache> future = null;
+    	DeferredOperationCache cache = null;
+    	SoftReference<FutureTask<DeferredOperationCache>> reference;
+
+    	synchronized (cacheMap) {
+    		reference = cacheMap.get(frame.getFrameID().getName());
+    	}
+
+    	if (reference != null) {
+    		future = reference.get();
+    	}
+    	if (future != null) {
+    		try {
+    			cache = future.get();
+    		} catch (Exception e) {
+    			throw new RuntimeException(e);
+    		}
+    	}
+    	if (cache == null || cache.isInvalid()) {  // Cache's created in a transaction are short-lived.
+    		cache = null;
+    		cacheMap.remove(frame.getFrameID().getName());
+    	}
+    	if (reference != null && cache == null) {
+    		if (cacheLog.isLoggable(Level.FINER)) {
+    			cacheLog.finer("Cache for frame " + frame.getFrameID().getName() + " garbage collected or invalidated");
+    		}
+    		cacheLost++;
+    	}
+    	if (cache == null && create) {
+    		future = new FutureTask<DeferredOperationCache>(new FillCacheCallable(frame, session));
+    		reference = new SoftReference(future);
+    		synchronized  (cacheMap) {
+    			cacheMap.put(frame.getFrameID().getName(), reference);    					
+    		}
+    		future.run();
+    		try {
+    			cache = future.get();
+    		} catch (Exception e) {
+    			throw new RuntimeException(e);
+    		}
+    	}
+    	return cache;
     }
 
-    private DeferredOperationCache fillCache(Frame frame, RemoteSession session) {
-        String frameName = frame.getFrameID().getName();
-        Cache<RemoteSession, Sft, List> delegateCache = CacheFactory.createEmptyCache(getTransactionStatusMonitor().getTransationIsolationLevel());
-        DeferredOperationCache cache = new DeferredOperationCache(delegateCache, new FifoReader<SerializedCacheUpdate<RemoteSession,Sft,List>>(transactions));
-        if (cacheLog.isLoggable(Level.FINER)) {
-            cacheLog.finer("Created cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
-        }
-        cacheMap.put(frameName, new SoftReference(cache));
-            
-        // sorry - this is a bit ugly...
-        // better would be to have a setter for the system frames.
-        if (directInstancesSft == null && frame.getKnowledgeBase() != null) {
-            SystemFrames frames = frame.getKnowledgeBase().getSystemFrames();
-            Slot directInstancesSlot = frames.getDirectInstancesSlot();
-            directInstancesSft = new Sft(directInstancesSlot, null, false);
-        }
-        if (!getTransactionStatusMonitor().inTransaction() && directInstancesSft != null) {
-            long startTime = System.nanoTime();
-            Map<Sft,List> values = framedb.getFrameValues(frame);
-            cache.startCompleteCache();
-            cache.updateCache(session, directInstancesSft);
-            for (Entry<Sft, List> entry : values.entrySet()) {
-                cache.updateCache(session, entry.getKey(), entry.getValue());
-            }
-            cache.finishCompleteCache();
-            totalBuildTime += (System.nanoTime() - startTime);
-        }
+    private class FillCacheCallable implements Callable<DeferredOperationCache> {
+    	private Frame frame;
+    	private RemoteSession session;
+    	
+    	
+    	
+    	public FillCacheCallable(Frame frame, RemoteSession session) {
+			super();
+			this.frame = frame;
+			this.session = session;
+		}
 
-        cacheBuilds++;
-        logStats(Level.FINE);
-        if (cacheLog.isLoggable(Level.FINER)) {
-            cacheLog.finer("Filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
-        }
-        return cache;
+		@Override
+    	public DeferredOperationCache call() throws Exception {
+	        String frameName = frame.getFrameID().getName();
+
+            Cache<RemoteSession, Sft, List> delegateCache = CacheFactory.createEmptyCache(getTransactionStatusMonitor().getTransationIsolationLevel());
+            DeferredOperationCache cache = new DeferredOperationCache(delegateCache, new FifoReader<SerializedCacheUpdate<RemoteSession,Sft,List>>(transactions));
+            if (cacheLog.isLoggable(Level.FINER)) {
+                cacheLog.finer("Created cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
+            }
+            cacheMap.put(frameName, new SoftReference(cache));
+                
+            // sorry - this is a bit ugly...
+            // better would be to have a setter for the system frames.
+            if (directInstancesSft == null && frame.getKnowledgeBase() != null) {
+                SystemFrames frames = frame.getKnowledgeBase().getSystemFrames();
+                Slot directInstancesSlot = frames.getDirectInstancesSlot();
+                directInstancesSft = new Sft(directInstancesSlot, null, false);
+            }
+            if (!getTransactionStatusMonitor().inTransaction() && directInstancesSft != null && !completeCachingDisabledForSession()) {
+                long startTime = System.nanoTime();
+                Map<Sft,List> values = framedb.getFrameValues(frame);
+                cache.startCompleteCache();
+                cache.updateCache(session, directInstancesSft);
+                for (Entry<Sft, List> entry : values.entrySet()) {
+                    cache.updateCache(session, entry.getKey(), entry.getValue());
+                }
+                cache.finishCompleteCache();
+                totalBuildTime += (System.nanoTime() - startTime);
+            }
+
+            cacheBuilds++;
+            logStats(Level.FINE);
+            if (cacheLog.isLoggable(Level.FINER)) {
+                cacheLog.finer("Filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
+            }
+            return cache;
+    	}
     }
 
     private void logStats(Level level) {
