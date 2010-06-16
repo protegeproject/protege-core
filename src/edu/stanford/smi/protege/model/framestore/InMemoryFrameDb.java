@@ -44,7 +44,6 @@ public class InMemoryFrameDb implements NarrowFrameStore {
     private Map<Facet, Set<Record>> facetToRecordsMap = new HashMap<Facet, Set<Record>>(INITIAL_MAP_SIZE);
     private Map<Object, Set<Record>> valueToRecordsMap = new LinkedHashMap<Object, Set<Record>>(INITIAL_MAP_SIZE);
 
-    private Record lookupRecord = new Record();
     private String frameDBName;
 
     public InMemoryFrameDb(String name) {
@@ -129,7 +128,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
 
 
     private Record lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
-        lookupRecord.set(frame, slot, facet, isTemplate);
+    	Record  lookupRecord = new Record(frame, slot, facet, isTemplate);
         return referenceToRecordMap.get(lookupRecord);
     }
 
@@ -518,7 +517,6 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         slotToRecordsMap = null;
         facetToRecordsMap = null;
         valueToRecordsMap = null;
-        lookupRecord = null;
     }
 
     public Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate) {

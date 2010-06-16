@@ -17,16 +17,20 @@ public class Record {
     private boolean isTemplate;
     private List values;
     private int hashCode;
+    
+    public Record(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+        set(frame, slot, facet, isTemplate);
+    }
 
     public Record(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
-        set(frame, slot, facet, isTemplate);
+        this(frame, slot, facet, isTemplate);
         setValues(values);
     }
 
     Record() {
     }
 
-    void set(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+    private void set(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         this.frame = frame;
         this.slot = slot;
         this.facet = facet;
