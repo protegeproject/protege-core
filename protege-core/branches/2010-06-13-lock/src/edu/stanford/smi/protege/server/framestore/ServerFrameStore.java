@@ -178,7 +178,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                               this,
                                               _sessionToRegistrationMap);
         
-        fsm.insertFrameStore(new FrameCalculatorFrameStore(frameCalculator), 2); // after  the localization frame  store.
+        fsm.insertFrameStore(new FrameCalculatorFrameStore(frameCalculator), 
+                             FrameStoreManager.AFTER_SYNCHRONIZATION_AND_LOCALIZATION_FS);
         
         _delegate = fsm.getHeadFrameStore();
         transactionMonitor = _delegate.getTransactionStatusMonitor();
@@ -1856,9 +1857,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     		FrameStoreManager fsm = _kb.getFrameStoreManager();
     		ReadAccessEnforcementFrameStore readAccessEnforcement = new ReadAccessEnforcementFrameStore(this);
     		if (readAccessEnforcement.isApplicable()) {
-    			fsm.insertFrameStore((FrameStore) Proxy.newProxyInstance(getClass().getClassLoader(), 
-    					new Class[] { FrameStore.class }, 
-    					readAccessEnforcement), 2);
+    			fsm.insertFrameStore(
+                   (FrameStore) Proxy.newProxyInstance(
+                                       getClass().getClassLoader(), 
+                                       new Class[] { FrameStore.class }, 
+                                       readAccessEnforcement),
+                   FrameStoreManager.AFTER_SYNCHRONIZATION_AND_LOCALIZATION_FS);
     		}
     		LastUsageInvocationHandler lastUsageFrameStore = new LastUsageInvocationHandler(projectInstance);
     		fsm.insertFrameStore((FrameStore) Proxy.newProxyInstance(getClass().getClassLoader(), 

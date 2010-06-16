@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
@@ -74,8 +77,8 @@ public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHand
         final Date now = new Date();
         Date then = lastAccessTimeMap.get(u);
         if (then == null || now.getTime() > then.getTime() + ACCESS_TIME_GRANULARITY) {
-            u.setLastAccess(now);
-            lastAccessTimeMap.put(u, now);
+        	u.setLastAccess(now);
+        	lastAccessTimeMap.put(u, now);
         }
     }
 

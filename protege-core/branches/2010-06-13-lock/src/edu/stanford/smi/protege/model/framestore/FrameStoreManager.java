@@ -29,6 +29,9 @@ import edu.stanford.smi.protege.util.Log;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameStoreManager {
+	public static final int AFTER_SYNCHRONIZATION_FS = 1;
+	public static final int AFTER_SYNCHRONIZATION_AND_LOCALIZATION_FS=2;
+	
     private static transient Logger log = Log.getLogger(FrameStoreManager.class);
     private SynchronizationFrameStore synchronizationFrameStore;
     private FrameStore immutableNamesFrameStore;
@@ -124,10 +127,14 @@ public class FrameStoreManager {
         add(cleanDispatchFrameStore, true);
         add(deleteSimplificationFrameStore, true);
         add(immutableNamesFrameStore, true);
-        add(synchronizationFrameStore, true);
-
+        
         // for testing
         add(traceFrameStore, false);
+        
+        // must be closest to head frame store
+        add(synchronizationFrameStore, true);
+
+
         // head frame store
     }
 
@@ -295,7 +302,7 @@ public class FrameStoreManager {
     }
 
     public void insertFrameStore(FrameStore newFrameStore) {
-        insertFrameStore(newFrameStore, 1);
+        insertFrameStore(newFrameStore, AFTER_SYNCHRONIZATION_FS);
     }
 
     public boolean isUndoEnabled() {
