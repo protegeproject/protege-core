@@ -1,5 +1,6 @@
 package edu.stanford.smi.protege.model.framestore;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
@@ -23,7 +25,6 @@ import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.AbstractEvent;
-import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SimpleStringMatcher;
@@ -37,7 +38,7 @@ public class SimpleFrameStore implements FrameStore {
     private SystemFrames _systemFrames;
     private NarrowFrameStore _helper;
     private Set<Slot> _inheritedSuperslotSlots = new HashSet<Slot>();
-    private CacheMap<String, Frame> nameToFrameMap = new CacheMap<String, Frame>();
+    private WeakHashMap<String, SoftReference<Frame>> nameToFrameMap = new WeakHashMap<String, SoftReference<Frame>>();
 
     // private Map frameIdToFrameMap = new HashMap();
 
@@ -396,11 +397,19 @@ public class SimpleFrameStore implements FrameStore {
     }
 
     public Frame getFrame(String name) {
-        Frame frame = nameToFrameMap.get(name);
+        Frame frame = null;
+        synchronized (nameToFrameMap) {
+            SoftReference<Frame> soft = nameToFrameMap.get(name);
+            if (soft != null) {
+                frame = soft.get();
+            }
+        }
         if (frame == null) {
         	frame = getFrame(new FrameID(name));
             if (frame != null) {
-                nameToFrameMap.put(name, frame);
+                synchronized (nameToFrameMap) {
+                    nameToFrameMap.put(name, new SoftReference<Frame>(frame));
+                }
             }
         }
         return frame;
@@ -410,7 +419,8 @@ public class SimpleFrameStore implements FrameStore {
         return _helper.getFrame(id);
     }
 
-    public Set<Slot> getOwnSlots(Frame frame) {
+    @SuppressWarnings("unchecked")
+	public Set<Slot> getOwnSlots(Frame frame) {
         Collection types = getTypes((Instance) frame);
         Set<Slot> ownSlots = collectOwnSlotValues(types, _systemFrames.getDirectTemplateSlotsSlot());
         /*
@@ -554,7 +564,7 @@ public class SimpleFrameStore implements FrameStore {
             }
             updateNewInstance(newInstance, instance);
             _helper.replaceFrame(newInstance);
-            nameToFrameMap.put(getFrameName(newInstance), newInstance);
+            nameToFrameMap.put(getFrameName(newInstance), new SoftReference<Frame>(newInstance));
         }
     }
 

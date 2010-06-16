@@ -163,12 +163,14 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         return closure;
     }
 
-    private Map<Frame,Set> lookup(Slot slot, Facet facet, boolean isTemplate) {
+    @SuppressWarnings("unchecked")
+	private synchronized Map<Frame,Set> lookup(Slot slot, Facet facet, boolean isTemplate) {
         Sft lookupSft = new Sft(slot, facet, isTemplate);
         return _sftToFrameToClosureMap.get(lookupSft);
     }
 
-    private Set lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+    @SuppressWarnings("unchecked")
+	private synchronized Set lookup(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         Set closure = null;
         Map<Frame,Set> frameToClosureMap = lookup(slot, facet, isTemplate);
         if (frameToClosureMap != null) {
@@ -177,7 +179,7 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
         return closure;
     }
 
-    private void insert(Frame frame, Slot slot, Facet facet, boolean isTemplate, Set closure) {
+    private synchronized void insert(Frame frame, Slot slot, Facet facet, boolean isTemplate, Set closure) {
         Map<Frame, Set> frameToClosureMap = lookup(slot, facet, isTemplate);
         if (frameToClosureMap == null) {
             frameToClosureMap = new HashMap();

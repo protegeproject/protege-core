@@ -1,22 +1,23 @@
 package edu.stanford.smi.protege.model.framestore;
 
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.WeakHashMap;
 
 import edu.stanford.smi.protege.exception.TransactionException;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
-import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class CallCachingFrameStore extends AbstractFrameStoreInvocationHandler {
-    private static final int MAX_SIZE = 100 * 1000;
-    private CacheMap _cache = new CacheMap(MAX_SIZE);
     private MethodCall _lookupMethodCall = new MethodCall();
     private TransactionMonitor transactionMonitor;
+    private WeakHashMap<MethodCall, SoftReference<Object>> _cache = new WeakHashMap<MethodCall, SoftReference<Object>>();
 
-    protected Object handleInvoke(Method method, Object[] args) {
+    @SuppressWarnings("unchecked")
+	protected Object handleInvoke(Method method, Object[] args) {
         Object result;
         /*
          * I think that the theory is that this first check (for events) will make the 
@@ -63,7 +64,13 @@ public class CallCachingFrameStore extends AbstractFrameStoreInvocationHandler {
           mustRead = true;
         }
         _lookupMethodCall.set(method, args);
-        Object o = _cache.get(_lookupMethodCall);
+        Object o = null;
+        synchronized (_cache) {
+            SoftReference<Object> soft = _cache.get(_lookupMethodCall);
+            if (soft != null) {
+                o = soft.get();
+            }
+        }
         if (o == null || mustRead) {
             ++miss;
             o = invoke(method, args);
@@ -72,7 +79,9 @@ public class CallCachingFrameStore extends AbstractFrameStoreInvocationHandler {
              * different values.
              */
             if (transactionMonitor == null || !transactionMonitor.existsTransaction()) {
-              _cache.put(new MethodCall(method, args), o);
+                synchronized (_cache) {
+                    _cache.put(new MethodCall(method, args), new SoftReference<Object>(o));
+                }
             }
         } else {
             ++hit;
