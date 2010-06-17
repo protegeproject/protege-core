@@ -27,9 +27,17 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
         databaseNfs = (AbstractDatabaseFrameDb) delegate.getFrameDb();
     }
     
-    private void setIdle() {
+    private void referenceConnection() {
+    	try {
+			databaseNfs.getCurrentConnection().reference();
+		} catch (SQLException e) {
+            throw new RuntimeException(e);
+		}
+    }
+    
+    private void dereferenceConnection() {
         try {
-            databaseNfs.getCurrentConnection().setIdle(true);
+            databaseNfs.getCurrentConnection().dereference();
         }
         catch (SQLException sqle) {
             throw new RuntimeException(sqle);
@@ -40,19 +48,21 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
     public void addValues(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate, Collection values) {
         try {
+            referenceConnection();
             delegate.addValues(frame, slot, facet, isTemplate, values);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public boolean beginTransaction(String name) {
         try {
+            referenceConnection();
             return delegate.beginTransaction(name);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
@@ -62,48 +72,53 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
 
     public boolean commitTransaction() {
         try {
+            referenceConnection();
             return delegate.commitTransaction();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public void deleteFrame(Frame frame) {
         try {
+            referenceConnection();
             delegate.deleteFrame(frame);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
 
     }
 
     public void executeQuery(Query query, QueryCallback callback) {
         try {
+            referenceConnection();
             delegate.executeQuery(query, callback);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public Set getClosure(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate) {
         try {
+            referenceConnection();
             return delegate.getClosure(frame, slot, facet, isTemplate);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public int getClsCount() {
         try {
+            referenceConnection();
             return delegate.getClsCount();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
@@ -113,57 +128,63 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
 
     public int getFacetCount() {
         try {
+            referenceConnection();
             return delegate.getFacetCount();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public Frame getFrame(FrameID id) {
         try {
+            referenceConnection();
             return delegate.getFrame(id);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public int getFrameCount() {
         try {
+            referenceConnection();
             return delegate.getFrameCount();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public Set<Frame> getFrames() {
         try {
+            referenceConnection();
             return delegate.getFrames();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public Set<Frame> getFrames(Slot slot, Facet facet, boolean isTemplate,
                                 Object value) {
         try {
+            referenceConnection();
             return delegate.getFrames(slot, facet, isTemplate, value);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public Set<Frame> getFramesWithAnyValue(Slot slot, Facet facet,
                                             boolean isTemplate) {
         try {
+            referenceConnection();
             return delegate.getFramesWithAnyValue(slot, facet, isTemplate);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
@@ -171,140 +192,155 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
                                         boolean isTemplate, String value,
                                         int maxMatches) {
         try {
+            referenceConnection();
             return delegate.getMatchingFrames(slot, facet, isTemplate, value, maxMatches);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public Set<Reference> getMatchingReferences(String value, int maxMatches) {
         try {
+            referenceConnection();
             return delegate.getMatchingReferences(value, maxMatches);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public String getName() {
         try {
+            referenceConnection();
             return delegate.getName();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public Set<Reference> getReferences(Object value) {
         try {
+            referenceConnection();
             return delegate.getReferences(value);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public int getSimpleInstanceCount() {
         try {
+            referenceConnection();
             return delegate.getSimpleInstanceCount();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public int getSlotCount() {
         try {
+            referenceConnection();
             return delegate.getSlotCount();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public TransactionMonitor getTransactionStatusMonitor() {
         try {
+            referenceConnection();
             return delegate.getTransactionStatusMonitor();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public List getValues(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate) {
         try {
+            referenceConnection();
             return delegate.getValues(frame, slot, facet, isTemplate);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public int getValuesCount(Frame frame, Slot slot, Facet facet,
                               boolean isTemplate) {
         try {
+            referenceConnection();
             return delegate.getValuesCount(frame, slot, facet, isTemplate);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public void moveValue(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate, int from, int to) {
         try {
+            referenceConnection();
             delegate.moveValue(frame, slot, facet, isTemplate, from, to);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public void reinitialize() {
         try {
+            referenceConnection();
             delegate.reinitialize();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public void removeValue(Frame frame, Slot slot, Facet facet,
                             boolean isTemplate, Object value) {
         try {
+            referenceConnection();
             delegate.removeValue(frame, slot, facet, isTemplate, value);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public void replaceFrame(Frame frame) {
         try {
+            referenceConnection();
             delegate.replaceFrame(frame);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public void replaceFrame(Frame original, Frame replacement) {
         try {
+            referenceConnection();
             delegate.replaceFrame(original, replacement);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
     public boolean rollbackTransaction() {
         try {
+            referenceConnection();
             return delegate.rollbackTransaction();
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 
@@ -315,10 +351,11 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
     public void setValues(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate, Collection values) {
         try {
+            referenceConnection();
             delegate.setValues(frame, slot, facet, isTemplate, values);
         }
         finally {
-            setIdle();
+            dereferenceConnection();
         }
     }
 

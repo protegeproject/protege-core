@@ -65,7 +65,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     public static final int DELAY_MSEC = 5 * 1000;
     private Map<Class<?>, Map<Object, Collection<EventListener>>> _listeners 
     			= new HashMap<Class<?>, Map<Object, Collection<EventListener>>>();
-    private Thread _eventThread;
+    private volatile Thread _eventThread;
     private KnowledgeBase kb;
     
     private boolean passThrough = false;
@@ -181,15 +181,11 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 		public void run() {
             while (true) {
               try {
-                synchronized (kb) {
-                  if (_eventThread != this) {
+                if (_eventThread != this) {
                     return;
-                  }
                 }
                 flushEvents();
-                synchronized (kb) {
-                  kb.wait(DELAY_MSEC);
-                }
+                Thread.sleep(DELAY_MSEC);
               } catch (Exception e) {
                 Log.getLogger().warning(e.toString());
                 log.log(Level.FINE, "Exception caught", e);
@@ -232,12 +228,11 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     @SuppressWarnings("unchecked")
     private void dispatchEvents(boolean ignoreExceptions) {
     	try {
-    	synchronized (kb) {
+            kb.getWriterLock().lock();
     		Collection<AbstractEvent> events = getDispatchableEvents();
     		if (!events.isEmpty()) {
     			dispatchEvents(events, ignoreExceptions);
     		}
-    	}
     	}
     	catch (Throwable t) {
             do {
@@ -249,6 +244,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
                 }
             } while ((t = t.getCause()) != null);
     	}
+        finally {
+            kb.getWriterLock().unlock();
+        }
     }
 
 
