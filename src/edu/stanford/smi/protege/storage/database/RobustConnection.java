@@ -42,7 +42,10 @@ public class RobustConnection {
     private int id;
     private Connection connection;
     private ConnectionPool pool;
-    private boolean idleFlag  = true;
+    
+    private int    referenceCount = 0;
+    private Thread referencingThread = null;
+    private Object referenceMonitor = new Object();
     
     private KnownDatabase dbType;
     private boolean _supportsBatch;
@@ -107,19 +110,21 @@ public class RobustConnection {
     
     public void setAutoCommit(boolean b) throws SQLException {
         try {
+            reference();
             getConnection().setAutoCommit(b);
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
 
     public void commit() throws SQLException {
         try {
+            reference();
             getConnection().commit();
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
 
@@ -148,6 +153,7 @@ public class RobustConnection {
 
     private void initializeSupportsBatch() throws SQLException {
         try {
+            reference();
             _supportsBatch = getConnection().getMetaData().supportsBatchUpdates();
             if (!_supportsBatch) {
                 String s = "This JDBC driver does not support batch update.";
@@ -156,24 +162,26 @@ public class RobustConnection {
             }
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
 
     private void initializeSupportsTransactions() throws SQLException {
         try {
+            reference();
             _supportsTransactions = getConnection().getMetaData().supportsTransactions();
             if (!_supportsTransactions) {
                 Log.getLogger().warning("This database does not support transactions");
             }
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
 
     private void initializeSupportsEscapeSyntax() throws SQLException {
         try {
+            reference();
             _escapeChar = 0;
             _escapeClause = "";
             boolean escapeSupported = getConnection().getMetaData().supportsLikeEscapeClause();
@@ -190,7 +198,7 @@ public class RobustConnection {
             }
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
 
@@ -250,33 +258,37 @@ public class RobustConnection {
 
     public String getDatabaseProductName() throws SQLException {
         try {
+            reference();
             return getConnection().getMetaData().getDatabaseProductName();
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
     
     public int getDatabaseMajorVersion() throws SQLException {
         try {
+            reference();
             return getConnection().getMetaData().getDatabaseMajorVersion();
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
 
     public int getDatabaseMinorVersion() throws SQLException {
         try {
+            reference();
             return getConnection().getMetaData().getDatabaseMinorVersion();
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
     
     private void initializeDriverTypeNames() throws SQLException {
         try {
+            reference();
             String longvarbinaryTypeName = null;
             String blobTypeName = null;
             String clobTypeName = null;
@@ -404,7 +416,7 @@ public class RobustConnection {
             }
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
 
@@ -517,6 +529,7 @@ public class RobustConnection {
         }
         boolean begun = false;
         try {
+            reference();
             if (_supportsTransactions) {
                 if (transactionMonitor.getNesting() == 0) {
                     if (isMsAccess()) {
@@ -535,7 +548,7 @@ public class RobustConnection {
             Log.getLogger().warning(e.toString());
         }
         finally {
-            setIdle(true);
+            dereference();
         }
         return begun;
     }
@@ -546,6 +559,7 @@ public class RobustConnection {
         }
         boolean committed = false;
         try {
+            reference();
             if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
                 transactionMonitor.commitTransaction();
                 if (transactionMonitor.getNesting() == 0) {
@@ -559,7 +573,7 @@ public class RobustConnection {
             Log.getLogger().warning(e.toString());
         }
         finally {
-            setIdle(true);
+            dereference();
         }
         return committed;
     }
@@ -570,6 +584,7 @@ public class RobustConnection {
         }
         boolean rolledBack = false;
         try {
+            reference();
             if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
                 transactionMonitor.rollbackTransaction();
                 if (transactionMonitor.getNesting() == 0) {
@@ -583,7 +598,7 @@ public class RobustConnection {
             Log.getLogger().warning(e.toString());
         }
         finally {
-            setIdle(true);
+            dereference();
         }
         return rolledBack;
     }
@@ -605,10 +620,11 @@ public class RobustConnection {
             return transactionIsolationLevel;
         }
         try {
+            reference();
             return transactionIsolationLevel = getConnection().getTransactionIsolation();
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
 
@@ -616,6 +632,7 @@ public class RobustConnection {
     public void setTransactionIsolationLevel(int level) throws SQLException {
         transactionIsolationLevel = null;
         try {
+            reference();
             getConnection().setTransactionIsolation(level);
         } catch (SQLException sqle) {
             Log.getLogger().log(Level.WARNING, "Problem setting the transaction isolation level", sqle);
@@ -623,7 +640,7 @@ public class RobustConnection {
             throw sqle;
         }
         finally {
-            setIdle(true);
+            dereference();
         }
     }
     
@@ -631,26 +648,44 @@ public class RobustConnection {
         if (connection == null) {
             setupConnection();
         }
-        setIdle(false);
         return connection;
     }
     
-    public void setIdle(boolean idleFlag) {
-        this.idleFlag = idleFlag;
-        if (getIdle() && connection != null) {
-            pool.ungetConnection(connection);
-            connection = null;
-        }
+    public void reference() {
+    	synchronized (referenceMonitor) {
+    		Thread me = Thread.currentThread();
+		
+    		while (referencingThread != null && referencingThread != me) {
+    			try {
+    				referenceMonitor.wait();
+    			} catch (InterruptedException e) {
+    				log.log(Level.WARNING, "Shouldn't happen", e);
+    			}
+    		}
+    		
+    		referenceCount++;
+    		referencingThread = me;
+    	}
+    }
+    
+    public synchronized void dereference() {
+    	synchronized (referenceMonitor) {
+    		referenceCount--;
+    		
+    		if (referenceCount == 0) {
+    			referencingThread = null;
+    			referenceMonitor.notify();
+    			
+    			if (connection != null && !currentConnectionNeededToCompleteTransaction()) {
+    				pool.ungetConnection(connection);
+    				connection = null;
+    			}
+    		}
+    	}
     }
 
-    public boolean getIdle() {
-        if (_supportsTransactions && transactionMonitor != null &&
-        								transactionMonitor.getNesting() > 0) {
-            return false;
-        }
-        else {
-            return idleFlag;
-        }
+    private boolean currentConnectionNeededToCompleteTransaction() {
+    	return _supportsTransactions && transactionMonitor != null && transactionMonitor.getNesting() > 0;
     }
 
 

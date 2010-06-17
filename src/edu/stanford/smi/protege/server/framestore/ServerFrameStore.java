@@ -142,7 +142,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     
     private Facet valuesFacet;
 
-    private static Map<Thread,RemoteSession> sessionMap = new ConcurrentHashMap<Thread, RemoteSession>();
+    private static Map<Thread,RemoteSession> sessionMap = new HashMap<Thread, RemoteSession>();
 
     private FrameCalculator frameCalculator;
 
@@ -291,11 +291,15 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     }
 
     public static void setCurrentSession(RemoteSession session) {
-        sessionMap.put(Thread.currentThread(), session);
+        synchronized (sessionMap) {
+            sessionMap.put(Thread.currentThread(), session);
+        }
     }
 
     public static RemoteSession getCurrentSession() {
-        return sessionMap.get(Thread.currentThread());
+        synchronized (sessionMap) {
+            return sessionMap.get(Thread.currentThread());
+        }
     }
 
     public int getClsCount(RemoteSession session) throws ServerSessionLost {
