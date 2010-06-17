@@ -228,7 +228,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     @SuppressWarnings("unchecked")
     private void dispatchEvents(boolean ignoreExceptions) {
     	try {
-            kb.getWriterLock().lock();
+            kb.getReaderLock().lock();
     		Collection<AbstractEvent> events = getDispatchableEvents();
     		if (!events.isEmpty()) {
     			dispatchEvents(events, ignoreExceptions);
@@ -245,7 +245,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             } while ((t = t.getCause()) != null);
     	}
         finally {
-            kb.getWriterLock().unlock();
+            kb.getReaderLock().unlock();
         }
     }
 
