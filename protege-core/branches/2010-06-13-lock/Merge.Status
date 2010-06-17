@@ -1,3 +1,6 @@
 revision=19132
-p=http://smi-protege.stanford.edu/repos/protege/protege-core
-svn diff ${p}/trunk@${revision} ${p}/branches/2010-06-13-lock
+source=http://smi-protege.stanford.edu/repos/protege/protege-core/trunk
+target=http://smi-protege.stanford.edu/repos/protege/protege-core/branches/2010-06-13-lock
+
+svn diff ${source}@${revision} ${target} > /tmp/core.patch
+svn merge ${source}@${revision} ${source}
