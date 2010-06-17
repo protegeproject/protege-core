@@ -10,8 +10,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -178,9 +176,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             DeferredOperationCache cache = new DeferredOperationCache(delegateCache, new FifoReader<SerializedCacheUpdate<RemoteSession,Sft,List>>(transactions));
             if (cacheLog.isLoggable(Level.FINER)) {
                 cacheLog.finer("Created cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
-            }
-            cacheMap.put(frameName, new SoftReference(cache));
-                
+            }                
             // sorry - this is a bit ugly...
             // better would be to have a setter for the system frames.
             if (directInstancesSft == null && frame.getKnowledgeBase() != null) {

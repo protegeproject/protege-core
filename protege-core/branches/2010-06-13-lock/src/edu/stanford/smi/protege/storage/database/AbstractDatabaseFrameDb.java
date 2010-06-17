@@ -155,17 +155,19 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	}
 
 	private void clearDeadConnections() throws SQLException {
-		Iterator<Map.Entry<RemoteSession, RobustConnection>> i = _connections.entrySet().iterator();
-		while( i.hasNext() ) {
-			Map.Entry<RemoteSession, RobustConnection> entry = i.next();
-			RemoteSession session = entry.getKey();
-			if( isDead( session ) ) {
-				RobustConnection connection = entry.getValue();
-				// Log.getLogger().info("Clearing dead connection: " + session);
-				connection.dispose();
-				i.remove();
-			}
-		}
+        synchronized (_connections) {
+            Iterator<Map.Entry<RemoteSession, RobustConnection>> i = _connections.entrySet().iterator();
+            while( i.hasNext() ) {
+                Map.Entry<RemoteSession, RobustConnection> entry = i.next();
+                RemoteSession session = entry.getKey();
+                if( isDead( session ) ) {
+                    RobustConnection connection = entry.getValue();
+                    // Log.getLogger().info("Clearing dead connection: " + session);
+                    connection.dispose();
+                    i.remove();
+                }
+            }
+        }
 	}
 
 	public void close() {
@@ -198,15 +200,17 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	}
 
 	protected RobustConnection createConnection() throws SQLException {
-		clearDeadConnections();
-		RemoteSession currentSession = getCurrentSession();
-		RobustConnection connection = new RobustConnection( _driver, _url, _user, _password,
-				getTransactionStatusMonitor(), currentSession );
-		_connections.put( currentSession, connection );
-		if( log.isLoggable( Level.FINE ) ) {
-			log.fine( "Created connection for " + currentSession );
-		}
-		return connection;
+        synchronized (_connections) {
+            clearDeadConnections();
+            RemoteSession currentSession = getCurrentSession();
+            RobustConnection connection = new RobustConnection( _driver, _url, _user, _password,
+                                                                getTransactionStatusMonitor(), currentSession );
+            _connections.put( currentSession, connection );
+            if( log.isLoggable( Level.FINE ) ) {
+                log.fine( "Created connection for " + currentSession );
+            }
+            return connection;
+        }
 	}
 
 	protected RuntimeException createRuntimeException(SQLException e) {
@@ -225,13 +229,15 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	}
 
 	public RobustConnection getCurrentConnection() throws SQLException {
-		RemoteSession currentSession = getCurrentSession();
-		RobustConnection connection = _connections.get( currentSession );
-		if( connection == null ) {
-			connection = createConnection();
-			_connections.put( currentSession, connection );
-		}
-		return connection;
+        synchronized (_connections) {
+            RemoteSession currentSession = getCurrentSession();
+            RobustConnection connection = _connections.get( currentSession );
+            if( connection == null ) {
+                connection = createConnection();
+                _connections.put( currentSession, connection );
+            }
+            return connection;
+        }
 	}
 
 	public FrameFactory getFrameFactory() {
