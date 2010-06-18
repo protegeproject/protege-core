@@ -222,10 +222,10 @@ public class DatabaseKnowledgeBaseFactory implements KnowledgeBaseFactory2 {
 
    public NarrowFrameStore createNarrowFrameStore(String name) {
       DatabaseFrameDb store = DatabaseFrameDbFactory.createDatabaseFrameDb(getDatabaseFrameDbClass());
-      ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(store);
-      IdleConnectionNarrowFrameStore icnfs = new IdleConnectionNarrowFrameStore(vcnfs);
-      icnfs.setName(name);
-      return icnfs;
+      IdleConnectionNarrowFrameStore icnfs = new IdleConnectionNarrowFrameStore(store);
+      ValueCachingNarrowFrameStore vcnfs = new ValueCachingNarrowFrameStore(icnfs);
+      vcnfs.setName(name);
+      return vcnfs;
     }
     
     protected void initializeKB(KnowledgeBase kb, 
