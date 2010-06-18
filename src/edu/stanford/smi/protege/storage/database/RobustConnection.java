@@ -22,7 +22,7 @@ import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
-public class RobustConnection {
+public class RobustConnection extends SessionConnectionManager {
     private static final transient Logger log = Log.getLogger(RobustConnection.class);
 
 
@@ -36,25 +36,12 @@ public class RobustConnection {
     public static final String PROPERTY_SMALL_INTEGER_TYPE_NAME = "Database.typename.small_integer";
     public static final String PROPERTY_BIT_TYPE_NAME = "Database.typename.bit";
     
-    private static int idCounter = 0;
-
-
-    private int id;
-    private Connection connection;
-    private ConnectionPool pool;
-    
-    private int    referenceCount = 0;
-    private Thread referencingThread = null;
-    private Object referenceMonitor = new Object();
     
     private KnownDatabase dbType;
     private boolean _supportsBatch;
     private char _escapeChar;
     private String _escapeClause;
     private boolean _supportsTransactions;
-    
-    private RemoteSession session;
-    private TransactionMonitor transactionMonitor;
     
     private String driver;
     private String _driverLongvarcharTypeName;
@@ -66,19 +53,14 @@ public class RobustConnection {
     private String _driverVarBinaryTypeName;
     private String _driverCharTypeName;
     
-    
-    private Integer transactionIsolationLevel = null;
 
     @SuppressWarnings("unchecked")
     public RobustConnection(String driver, String url, String username, String password,
                             TransactionMonitor transactionMonitor, RemoteSession session) throws SQLException {
-        id = idCounter++;
-        this.driver = driver;
-        pool = ConnectionPool.getConnectionPool(driver, url, username, password);
-        
-        this.transactionMonitor = transactionMonitor;
-        this.session = session;
+        super(driver, url, username, password, transactionMonitor,session);
 
+        this.driver = driver;
+        
         initializeDatabaseType();
         initializeSupportsBatch();
         initializeSupportsEscapeSyntax();
@@ -126,28 +108,6 @@ public class RobustConnection {
         finally {
             dereference();
         }
-    }
-
-    private void setupConnection() throws SQLException {
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("Opening connection for robust connection manager #" + id);
-        }
-        connection = pool.getConnection();
-        TransactionIsolationLevel defaultLevel = ServerProperties.getDefaultTransactionIsolationLevel();
-        if (defaultLevel != null) {
-            connection.setTransactionIsolation(defaultLevel.getJdbcLevel());
-        }
-    }
-
-    public void dispose() throws SQLException {
-        if (connection != null) {
-            pool.ungetConnection(connection);
-        }
-        pool.dereference();
-    }
-    
-    public void closeStatements() throws SQLException {
-        pool.closeStatements(getConnection());
     }
 
 
@@ -214,24 +174,6 @@ public class RobustConnection {
         return _supportsBatch;
     }
 
-    public PreparedStatement getPreparedStatement(String text) throws SQLException {
-        return pool.getPreparedStatement(getConnection(), text);
-    }
-
-    public Statement getStatement() throws SQLException {
-        return pool.getStatement(getConnection());
-    }
-
-    public synchronized void checkConnection() throws SQLException {
-        if (connection == null) {
-            setupConnection();
-        } else if (connection.isClosed()) {
-            Log.getLogger().warning("Found closed connection, reinitializing...");
-            pool.reportProblem(connection);
-            connection = null;
-        }
-    }
-    
     public  KnownDatabase getKnownDatabaseType() {
         return dbType;
     }
@@ -523,176 +465,17 @@ public class RobustConnection {
         return isOracle() || isPostgres();
     }
 
-    public boolean beginTransaction() {
-        if (!sessionOk()) {
-            return false;
-        }
-        boolean begun = false;
-        try {
-            reference();
-            if (_supportsTransactions) {
-                if (transactionMonitor.getNesting() == 0) {
-                    if (isMsAccess()) {
-                        pool.closeStatements(getConnection());
-                    }
-                    getConnection().setAutoCommit(false);
-                }
-                transactionMonitor.beginTransaction();
-            }
-            begun = true;
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Thead " + Thread.currentThread() + " locking connection " + pool.getId(getConnection()));
-            }
-        } 
-        catch (SQLException e) {
-            Log.getLogger().warning(e.toString());
-        }
-        finally {
-            dereference();
-        }
-        return begun;
-    }
-
-    public boolean commitTransaction() {
-        if (!sessionOk()) {
-            return false;
-        }
-        boolean committed = false;
-        try {
-            reference();
-            if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
-                transactionMonitor.commitTransaction();
-                if (transactionMonitor.getNesting() == 0) {
-                    getConnection().commit();
-                    getConnection().setAutoCommit(true);
-                }
-            }
-            committed = true;
-        } 
-        catch (SQLException e) {
-            Log.getLogger().warning(e.toString());
-        }
-        finally {
-            dereference();
-        }
-        return committed;
-    }
-
-    public boolean rollbackTransaction() {
-        if (!sessionOk()) {
-            return false;
-        }
-        boolean rolledBack = false;
-        try {
-            reference();
-            if (_supportsTransactions && transactionMonitor.getNesting() > 0) {
-                transactionMonitor.rollbackTransaction();
-                if (transactionMonitor.getNesting() == 0) {
-                    getConnection().rollback();
-                    getConnection().setAutoCommit(true);
-                }
-            }
-            rolledBack = true;
-        } 
-        catch (SQLException e) {
-            Log.getLogger().warning(e.toString());
-        }
-        finally {
-            dereference();
-        }
-        return rolledBack;
-    }
-    
-    private boolean sessionOk() {
-        if (ServerFrameStore.getCurrentSession() == null) {
-            return session == null;
-        } else {
-            return ServerFrameStore.getCurrentSession().equals(session);
-        }
-    }
     
     public boolean supportsTransactions() {
         return _supportsTransactions;
     }
     
-    public int getTransactionIsolationLevel() throws SQLException {
-        if (transactionIsolationLevel != null) {
-            return transactionIsolationLevel;
-        }
-        try {
-            reference();
-            return transactionIsolationLevel = getConnection().getTransactionIsolation();
-        }
-        finally {
-            dereference();
-        }
-    }
-
-
-    public void setTransactionIsolationLevel(int level) throws SQLException {
-        transactionIsolationLevel = null;
-        try {
-            reference();
-            getConnection().setTransactionIsolation(level);
-        } catch (SQLException sqle) {
-            Log.getLogger().log(Level.WARNING, "Problem setting the transaction isolation level", sqle);
-            transactionIsolationLevel = null;
-            throw sqle;
-        }
-        finally {
-            dereference();
-        }
-    }
     
-    private synchronized Connection getConnection() throws SQLException {
-        if (connection == null) {
-            setupConnection();
-        }
-        return connection;
-    }
-    
-    public void reference() {
-    	synchronized (referenceMonitor) {
-    		Thread me = Thread.currentThread();
-		
-    		while (referencingThread != null && referencingThread != me) {
-    			try {
-    				referenceMonitor.wait();
-    			} catch (InterruptedException e) {
-    				log.log(Level.WARNING, "Shouldn't happen", e);
-    			}
-    		}
-    		
-    		referenceCount++;
-    		referencingThread = me;
-    	}
-    }
-    
-    public synchronized void dereference() {
-    	synchronized (referenceMonitor) {
-    		referenceCount--;
-    		
-    		if (referenceCount == 0) {
-    			referencingThread = null;
-    			referenceMonitor.notify();
-    			
-    			if (connection != null && !currentConnectionNeededToCompleteTransaction()) {
-    				pool.ungetConnection(connection);
-    				connection = null;
-    			}
-    		}
-    	}
-    }
-
-    private boolean currentConnectionNeededToCompleteTransaction() {
-    	return _supportsTransactions && transactionMonitor != null && transactionMonitor.getNesting() > 0;
-    }
-
 
     // String driver, String url, String username, String password
     public static void main(String[] args) throws SQLException {
         RobustConnection connection = new RobustConnection(args[0], args[1], args[2], args[3], null, null);
-        ResultSet rs = connection.connection.getMetaData().getTypeInfo();
+        ResultSet rs = connection.getConnection().getMetaData().getTypeInfo();
         while (rs.next()) {
             System.out.println("TYPE_NAME: " + rs.getString(1));
             System.out.println("\tDATA_TYPE: " + rs.getInt(2));

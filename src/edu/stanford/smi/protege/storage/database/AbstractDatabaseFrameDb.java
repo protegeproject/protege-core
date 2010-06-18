@@ -214,13 +214,6 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	}
 
 	protected RuntimeException createRuntimeException(SQLException e) {
-		try {
-			if( getCurrentConnection() != null ) {
-				getCurrentConnection().checkConnection();
-			}
-		} catch( SQLException ex ) {
-			// do nothing
-		}
 		log.info( Log.toString( e ) );
 
 		RuntimeException runtimeEx = new RuntimeException( e.getMessage() );
