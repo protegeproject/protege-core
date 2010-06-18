@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.storage.database;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -12,6 +13,7 @@ import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
+import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.Log;
@@ -19,17 +21,15 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
     private static Logger logger = Log.getLogger(IdleConnectionNarrowFrameStore.class);
-    private NarrowFrameStore delegate;
-    private AbstractDatabaseFrameDb databaseNfs;
+    private DatabaseFrameDb delegate;
     
-    public IdleConnectionNarrowFrameStore(ValueCachingNarrowFrameStore delegate) {
+    public IdleConnectionNarrowFrameStore(DatabaseFrameDb delegate) {
         this.delegate = delegate;
-        databaseNfs = (AbstractDatabaseFrameDb) delegate.getFrameDb();
     }
     
     private void referenceConnection() {
     	try {
-			databaseNfs.getCurrentConnection().reference();
+			delegate.getCurrentConnection().reference();
 		} catch (SQLException e) {
             throw new RuntimeException(e);
 		}
@@ -37,11 +37,33 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
     
     private void dereferenceConnection() {
         try {
-            databaseNfs.getCurrentConnection().dereference();
+            delegate.getCurrentConnection().dereference();
         }
         catch (SQLException sqle) {
             throw new RuntimeException(sqle);
         }
+    }
+    
+    public String getName() {
+		return delegate.getName();
+	}
+
+	public void setName(String name) {
+	    delegate.setName(name);
+	}
+
+	public NarrowFrameStore getDelegate() {
+	    return delegate;
+	}
+
+	public Map<Sft,List> getFrameValues(Frame frame) {
+    	try {
+    		referenceConnection();
+    		return delegate.getFrameValues(frame);
+    	}
+    	finally {
+    		dereferenceConnection();
+    	}
     }
     
 
@@ -122,10 +144,6 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
         }
     }
 
-    public NarrowFrameStore getDelegate() {
-        return delegate;
-    }
-
     public int getFacetCount() {
         try {
             referenceConnection();
@@ -204,16 +222,6 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
         try {
             referenceConnection();
             return delegate.getMatchingReferences(value, maxMatches);
-        }
-        finally {
-            dereferenceConnection();
-        }
-    }
-
-    public String getName() {
-        try {
-            referenceConnection();
-            return delegate.getName();
         }
         finally {
             dereferenceConnection();
@@ -342,10 +350,6 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
         finally {
             dereferenceConnection();
         }
-    }
-
-    public void setName(String name) {
-        delegate.setName(name);
     }
 
     public void setValues(Frame frame, Slot slot, Facet facet,
