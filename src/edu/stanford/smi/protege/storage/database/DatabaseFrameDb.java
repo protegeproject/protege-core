@@ -20,6 +20,8 @@ public interface DatabaseFrameDb extends NarrowFrameStore {
                            String url, String user, String pass, String table,
                            boolean isInclude);
     
+    RobustConnection getCurrentConnection() throws SQLException;
+    
     void close();
     
     String getTableName();
