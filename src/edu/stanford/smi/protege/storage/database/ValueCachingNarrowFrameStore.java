@@ -49,7 +49,7 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCache
 public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     public static final transient Logger cacheLog = Logger.getLogger(CompleteableCache.class.getPackage().getName() + ".ValueCachingNFS");
     private static Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
-    private DatabaseFrameDb framedb;
+    private IdleConnectionNarrowFrameStore delegate;
     private Map<String, SoftReference<FutureTask<DeferredOperationCache>>> cacheMap  
                       = new WeakHashMap<String, SoftReference<FutureTask<DeferredOperationCache>>>();
     private Sft directInstancesSft;
@@ -67,11 +67,11 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     private long cacheLost = 0;
     private long cacheHits = 0;
 
-    public ValueCachingNarrowFrameStore(DatabaseFrameDb delegate) {
+    public ValueCachingNarrowFrameStore(IdleConnectionNarrowFrameStore delegate) {
         if (log.isLoggable(Level.FINE)) {
             log.fine("Constructing ValueCachingNarrowFrameStore with delegate " + delegate);
         }
-        framedb  = delegate;
+        this.delegate  = delegate;
     }
     
     public void addUnCachingSession(RemoteSession session) {
@@ -96,17 +96,17 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         return unCachingSessions != null && unCachingSessions.contains(ServerFrameStore.getCurrentSession());
     }
 
-    public void setFrameDb(DatabaseFrameDb framedb) {
-        this.framedb = framedb;
+    public void setFrameDb(IdleConnectionNarrowFrameStore delegate) {
+        this.delegate = delegate;
     }
 
-    public DatabaseFrameDb getFrameDb() {
-        return framedb;
+    public IdleConnectionNarrowFrameStore getFrameDb() {
+        return delegate;
     }
 
 
-    public DatabaseFrameDb getDelegate() {
-        return framedb;
+    public IdleConnectionNarrowFrameStore getDelegate() {
+        return delegate;
     }
 
     @SuppressWarnings("unchecked")
@@ -186,7 +186,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             }
             if (!getTransactionStatusMonitor().inTransaction() && directInstancesSft != null && !completeCachingDisabledForSession()) {
                 long startTime = System.nanoTime();
-                Map<Sft,List> values = framedb.getFrameValues(frame);
+                Map<Sft,List> values = delegate.getFrameValues(frame);
                 cache.startCompleteCache();
                 cache.updateCache(session, directInstancesSft);
                 for (Entry<Sft, List> entry : values.entrySet()) {
@@ -295,8 +295,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     }
 
     public void close() {
-        framedb.close();
-        framedb = null;
+        delegate.close();
+        delegate = null;
         cacheMap.clear();
         directInstancesSft = null;
         transactions = null;
@@ -319,7 +319,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             if (cache != null) {
                 cache.invalidate(session);
             }
-            for (Reference reference : framedb.getReferences(frame)) {
+            for (Reference reference : delegate.getReferences(frame)) {
                 cache = getCache(reference.getFrame(),false);
                 if (cache != null) {
                     cache.invalidate(session);
