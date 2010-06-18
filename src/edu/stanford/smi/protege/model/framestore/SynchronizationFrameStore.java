@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.model.framestore;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -18,10 +19,15 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.util.AbstractEvent;
+import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class SynchronizationFrameStore extends AbstractFrameStore {
+	public static final String SEQUENTIAL_TRANSACTION_PROP = "execute.transactions.in.sequence";
+	private boolean sequentialTransactions = ApplicationProperties.getBooleanProperty(SEQUENTIAL_TRANSACTION_PROP, false);
+	
 	private ReadWriteLock locks = new ReentrantReadWriteLock();
+	private Condition transactionCondition = locks.writeLock().newCondition();
 	
 	public Lock getReaderLock() {
 		return locks.readLock();
@@ -31,6 +37,70 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
 		return locks.writeLock();
 	}
 	
+	public void setSequentialTransactions(boolean sequentialTransactions) {
+		this.sequentialTransactions = sequentialTransactions;
+	}
+	
+	public boolean beginTransaction(String name) {
+	    locks.writeLock().lock();
+	    try {
+            waitForOtherTransactions();
+	        return getDelegate().beginTransaction(name);
+	    }
+	    finally {
+	        locks.writeLock().unlock();
+	    }
+	}
+
+	public boolean commitTransaction() {
+	    locks.writeLock().lock();
+	    try {
+	        boolean result = getDelegate().commitTransaction();
+            letOtherTransactionsProceed();
+	        return result;
+	    }
+	    finally {
+	        locks.writeLock().unlock();
+	    }
+	}
+
+	public boolean rollbackTransaction() {
+	    locks.writeLock().lock();
+	    try {
+	        boolean result = getDelegate().rollbackTransaction();
+            letOtherTransactionsProceed();
+	        return result;
+	    }
+	    finally {
+	        locks.writeLock().unlock();
+	    }
+	}
+
+    private void waitForOtherTransactions() {
+        if (!sequentialTransactions) {
+            return;
+        }
+        TransactionMonitor tm = getTransactionStatusMonitor();
+        while (tm != null && !tm.inTransaction() && tm.existsTransaction()) {
+            transactionCondition.awaitUninterruptibly();
+        }
+    }
+
+    private void letOtherTransactionsProceed() {
+        if (!sequentialTransactions) {
+            return;
+        }
+        TransactionMonitor tm = getTransactionStatusMonitor();
+        if (tm != null && !tm.existsTransaction()) {
+            transactionCondition.signalAll();
+        }
+    }
+
+
+
+    /* -----------------------------------------------------------------
+     * Other Narrow Frame Store interfaces - repetitive code alert
+     */
 
 	public void addDirectSuperclass(Cls cls, Cls superclass) {
 		locks.writeLock().lock();
@@ -66,26 +136,6 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
         locks.writeLock().lock();
         try {
             getDelegate().addDirectType(instance, type);
-        }
-        finally {
-            locks.writeLock().unlock();
-        }
-	}
-
-	public boolean beginTransaction(String name) {
-        locks.writeLock().lock();
-        try {
-            return getDelegate().beginTransaction(name);
-        }
-        finally {
-            locks.writeLock().unlock();
-        }
-	}
-	
-	public boolean commitTransaction() {
-        locks.writeLock().lock();
-        try {
-            return getDelegate().commitTransaction();
         }
         finally {
             locks.writeLock().unlock();
@@ -895,17 +945,6 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
             locks.writeLock().unlock();
         }
     }
-
-	public boolean rollbackTransaction() {
-        locks.writeLock().lock();
-        try {
-            return getDelegate().rollbackTransaction();
-        }
-        finally {
-            locks.writeLock().unlock();
-        }
-    }
-
 
 	public void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
         locks.writeLock().lock();
