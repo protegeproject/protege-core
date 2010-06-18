@@ -6,10 +6,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -201,13 +197,18 @@ public abstract class SessionConnectionManager {
     		referenceCount--;
     		
     		if (referenceCount == 0) {
-    			if (connection != null) {
+    			if (connection != null && !singleConnectionRequiredUntilTransactionComplete()) {
     				pool.ungetConnection(connection);
+    				connection = null;
     			}
     			connectionOwner = null;
     			connectionMonitor.notifyAll();
     		}
     	}
+    }
+    
+    private boolean singleConnectionRequiredUntilTransactionComplete() {
+    	return supportsTransactions() && transactionMonitor.getNesting() > 0;
     }
 
 
