@@ -33,6 +33,7 @@ import edu.stanford.smi.protege.model.framestore.DeleteSimplificationFrameStore;
 import edu.stanford.smi.protege.model.framestore.EventGeneratorFrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
+import edu.stanford.smi.protege.model.framestore.SynchronizationFrameStore;
 import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
@@ -1089,6 +1090,8 @@ public class DefaultKnowledgeBase implements KnowledgeBase {
         if (egfs != null) {
             _frameStoreManager.setEnabled(egfs, false);
         }
+        SynchronizationFrameStore sfs = _frameStoreManager.getFrameStoreFromClass(SynchronizationFrameStore.class);
+        sfs.setSequentialTransactions(false);
     }
     
     protected void adjustForServer() {
