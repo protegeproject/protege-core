@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,11 +26,11 @@ public abstract class SessionConnectionManager {
 
     private int id;
 
-    private Object          connectionMonitor = new Object();
-    private int             referenceCounter = 0;
-    private Thread          connectionOwner;
-    private Connection      connection;
-    private ConnectionPool  pool;
+    private boolean                  singleConnectionOnly  = false;
+    private Map<Thread,Integer>      referenceMap          = new HashMap<Thread,Integer>();
+    private Map<Thread,Connection>   connections           = new HashMap<Thread,Connection>();
+    private Connection               transactionConnection = null;
+    private ConnectionPool           pool;
     
     private int    referenceCount = 0;
     
@@ -68,14 +70,22 @@ public abstract class SessionConnectionManager {
 
 
     public void dispose() throws SQLException {
-    	if (connection != null) {
-    		pool.ungetConnection(connection);
+    	synchronized (connections) {
+    		for (Connection connection : connections.values()) {
+    	    	if (connection != null) {
+    	    		pool.ungetConnection(connection);
+    	    	}		
+    		}
     	}
     	pool.dereference();
     }
     
     public void closeStatements() throws SQLException {
-    	pool.closeStatements(connection);
+    	synchronized (connections) {
+    		for (Connection connection : connections.values()) {
+    			pool.closeStatements(connection);
+    		}
+    	}
     }
 
 
@@ -97,6 +107,7 @@ public abstract class SessionConnectionManager {
             reference();
             if (supportsTransactions()) {
                 if (transactionMonitor.getNesting() == 0) {
+                	toSingleThreadedMode();
                     if (isMsAccess()) {
                         pool.closeStatements(getConnection());
                     }
@@ -130,6 +141,7 @@ public abstract class SessionConnectionManager {
                 if (transactionMonitor.getNesting() == 0) {
                     getConnection().commit();
                     getConnection().setAutoCommit(true);
+                    toMultiThreadedMode();
                 }
             }
             committed = true;
@@ -155,6 +167,7 @@ public abstract class SessionConnectionManager {
                 if (transactionMonitor.getNesting() == 0) {
                     getConnection().rollback();
                     getConnection().setAutoCommit(true);
+                    toMultiThreadedMode();
                 }
             }
             rolledBack = true;
@@ -168,41 +181,91 @@ public abstract class SessionConnectionManager {
         return rolledBack;
     }
     
-    protected synchronized Connection getConnection() throws SQLException {
-    	synchronized (connectionMonitor) {
-    		if (connection == null) {
-    			connection = newConnection();
+    private void toSingleThreadedMode() {
+    	synchronized (connections) {
+    		Thread me = Thread.currentThread();
+    		Connection connection = connections.remove(me);
+    		if (connection != null) {
+    			pool.ungetConnection(connection);
     		}
-    		return connection;
+    		// because I hold the knowledge base write lock I am the only one with a reference
+    		// this is the perfect time to go from multi-threaded, multiple connections to single threaded one connection.
+    		singleConnectionOnly = true;  
+    	}
+    }
+    
+    private void toMultiThreadedMode() {
+    	synchronized (connections) {
+    		if (transactionConnection != null) {
+    			pool.ungetConnection(transactionConnection);
+    			transactionConnection = null;
+    		}
+    		singleConnectionOnly = false;
+    	}
+    }
+    
+    protected synchronized Connection getConnection() throws SQLException {
+    	synchronized (connections) {
+    		Thread me = Thread.currentThread();
+    		if (singleConnectionOnly) {
+    			if (transactionConnection == null) {
+    				transactionConnection = newConnection();
+    			}
+    			return transactionConnection;
+    		}
+    		else {
+    			Connection connection = connections.get(me);
+    			if (connection == null) {
+    				connection = newConnection();
+    				connections.put(me, connection);
+    			}
+    			return connection;
+    		}
     	}
     }
     
 	public void reference() {
-		synchronized (connectionMonitor) {
+		synchronized (connections) {
 			Thread me = Thread.currentThread();
-			while (connectionOwner != null && !connectionOwner.equals(me)) {
-				try {
-					connectionMonitor.wait();
-				} catch (InterruptedException e) {
-					log.log(Level.WARNING, "shouldn't", e);
+			Integer referenceCount = referenceMap.get(me);
+			if (referenceCount == null) {
+				while (singleConnectionOnly && !referenceMap.isEmpty()) {
+					try {
+						connections.wait();
+					} catch (InterruptedException e) {
+						log.log(Level.WARNING, "shouldn't", e);
+					}
 				}
+				referenceCount = 1;
 			}
-			referenceCount++;
-			connectionOwner = me;
+			else  {
+				referenceCount++;
+			}
+			referenceMap.put(me, referenceCount);
 		}
     }
     
     public synchronized void dereference() {
-    	synchronized (connectionMonitor) {
-    		referenceCount--;
+    	synchronized (connections) {
+			Thread me = Thread.currentThread();
+    		int referenceCount = referenceMap.get(me) - 1;
+    		if (referenceCount == 0) {
+    			referenceMap.remove(me);
+    		}
+    		else {
+    			referenceMap.put(me, referenceCount);
+    		}
     		
     		if (referenceCount == 0) {
-    			if (connection != null && !singleConnectionRequiredUntilTransactionComplete()) {
+    			Connection connection = connections.remove(me);
+    			if (connection != null) {
     				pool.ungetConnection(connection);
-    				connection = null;
     			}
-    			connectionOwner = null;
-    			connectionMonitor.notifyAll();
+    			if (transactionConnection != null && !singleConnectionRequiredUntilTransactionComplete()) {
+    				pool.ungetConnection(transactionConnection);
+    				transactionConnection = null;
+    			}
+    			connections.notifyAll();
     		}
     	}
     }
