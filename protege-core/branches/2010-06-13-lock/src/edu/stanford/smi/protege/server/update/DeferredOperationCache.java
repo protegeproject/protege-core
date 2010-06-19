@@ -26,7 +26,7 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCache
  * @author tredmond
  *
  */
-public class DeferredOperationCache implements Cache<RemoteSession, Sft, List> {
+public  class DeferredOperationCache implements Cache<RemoteSession, Sft, List> {
 	private FifoReader<SerializedCacheUpdate<RemoteSession, Sft, List>> transactionUpdates;
 	private Cache<RemoteSession, Sft, List> delegate;
 	
@@ -37,81 +37,81 @@ public class DeferredOperationCache implements Cache<RemoteSession, Sft, List> {
 		this.transactionUpdates = transactionUpdates;
 	}
 	
-	public CacheResult<List> readCache(RemoteSession session, Sft var) {
+	public synchronized CacheResult<List> readCache(RemoteSession session, Sft var) {
 		catchUp();
 		return delegate.readCache(session, var);
 	}
 	
-	public void updateCache(RemoteSession session, Sft var) {
+	public synchronized void updateCache(RemoteSession session, Sft var) {
 		catchUp();
 		delegate.updateCache(session, var);
 	}
 	
-	public void updateCache(RemoteSession session, Sft var, List value) {
+	public synchronized void updateCache(RemoteSession session, Sft var, List value) {
 		catchUp();
 		delegate.updateCache(session, var, value);
 	}
 	
-	public void modifyCache(RemoteSession session, Sft var) {
+	public synchronized void modifyCache(RemoteSession session, Sft var) {
 		catchUp();
 		delegate.modifyCache(session, var);
 	}
 	
-	public void modifyCache(RemoteSession session, Sft var, List value) {
+	public synchronized void modifyCache(RemoteSession session, Sft var, List value) {
 		catchUp();
 		delegate.modifyCache(session, var, value);
 	}
 	
-	public void invalidate(RemoteSession session) {
+	public synchronized void invalidate(RemoteSession session) {
 		catchUp();
 		delegate.invalidate(session);
 	}
 	
-    public boolean isInvalid() {
+    public synchronized boolean isInvalid() {
         catchUp();
         return delegate.isInvalid();
     }
 	
-	public void flush() {
+	public synchronized void flush() {
 		while (transactionUpdates.read() != null) {
 			;
 		}
 		delegate.flush();
 	}
 	
-	public void startCompleteCache() {
+	public synchronized void startCompleteCache() {
 		catchUp();
 		delegate.startCompleteCache();
 	}
 	
-	public void finishCompleteCache() {
+	public synchronized void finishCompleteCache() {
 		catchUp();
 		delegate.finishCompleteCache();
 	}
 	
-	public void abortCompleteCache() {
+	public synchronized void abortCompleteCache() {
 		catchUp();
 		delegate.abortCompleteCache();
 	}
 	
-	public boolean isCacheComplete() {
+	public synchronized boolean isCacheComplete() {
 		catchUp();
 		return delegate.isCacheComplete();
 	}
 	
-	public void beginTransaction(RemoteSession session) {
+	public synchronized void beginTransaction(RemoteSession session) {
 		throw new UnsupportedOperationException("transactions are deferred");
 	}
 	
-	public void commitTransaction(RemoteSession session) {
+	public synchronized void commitTransaction(RemoteSession session) {
 		throw new UnsupportedOperationException("transactions are deferred");
 	}
 	
-	public void rollbackTransaction(RemoteSession session) {
+	public synchronized void rollbackTransaction(RemoteSession session) {
 		throw new UnsupportedOperationException("transactions are deferred");
 	}
 	
-	public int getTransactionNesting(RemoteSession session) {
+	public synchronized int getTransactionNesting(RemoteSession session) {
 		catchUp();
 		return delegate.getTransactionNesting(session);
 	}
@@ -124,7 +124,7 @@ public class DeferredOperationCache implements Cache<RemoteSession, Sft, List> {
 		}
 	}
 
-    public int getCacheId() {
+    public synchronized int getCacheId() {
         return delegate.getCacheId();
     }
 }
