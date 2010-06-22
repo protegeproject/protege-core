@@ -22,12 +22,13 @@ import edu.stanford.smi.protege.model.Localizable;
  */
 
 public class SynchronizeQueryCallback implements QueryCallback, Localizable {
-  private Lock      readerLock;
-  private Condition queryCondition;
-  private Object    result;
+  private Lock               readerLock;
+  private Condition          queryCondition;
+  private volatile Object    result;
 
   public SynchronizeQueryCallback(Lock readerLock) {
     this.readerLock = readerLock;
+    queryCondition = readerLock.newCondition();
   }
 
   public void provideQueryResults(Collection<Frame> frames) {
