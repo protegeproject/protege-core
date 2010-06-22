@@ -28,7 +28,6 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
 
   public SynchronizeQueryCallback(Lock readerLock) {
     this.readerLock = readerLock;
-    queryCondition = readerLock.newCondition();
   }
 
   public void provideQueryResults(Collection<Frame> frames) {
