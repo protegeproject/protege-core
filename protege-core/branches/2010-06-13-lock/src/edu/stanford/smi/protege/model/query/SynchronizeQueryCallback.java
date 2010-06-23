@@ -3,6 +3,8 @@ package edu.stanford.smi.protege.model.query;
 import java.util.Collection;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
@@ -10,6 +12,7 @@ import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Localizable;
+import edu.stanford.smi.protege.util.Log;
 
 /**
  * This class is a QueryCallback that provides utilities for making the 
@@ -22,9 +25,10 @@ import edu.stanford.smi.protege.model.Localizable;
  */
 
 public class SynchronizeQueryCallback implements QueryCallback, Localizable {
-  private Lock               readerLock;
-  private Condition          queryCondition;
-  private volatile Object    result;
+  private transient Logger   logger = Log.getLogger(SynchronizeQueryCallback.class);
+  private transient Lock     readerLock;
+  private transient Object   queryCondition = new Object();
+  private volatile  Object   result;
 
   public SynchronizeQueryCallback(Lock readerLock) {
     this.readerLock = readerLock;
@@ -34,7 +38,9 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
     try {
       readerLock.lock();
       result = frames;
-      queryCondition.signalAll();
+      synchronized (queryCondition) {
+    	  queryCondition.notifyAll();
+      }
     }
     finally {
       readerLock.unlock();
@@ -45,7 +51,9 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
       try {
           readerLock.lock();
           result = pe;
-          queryCondition.signalAll();
+          synchronized (queryCondition) {
+        	  queryCondition.notifyAll();
+          }
       }
       finally {
           readerLock.unlock();
@@ -65,16 +73,22 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
   }
 
   public Collection<Frame> waitForResults() throws OntologyException, ProtegeIOException {
-    Object o = null;
-    try {
-        readerLock.lock();
-        while (result == null) {
-          queryCondition.await();
-        }
-        o = result;
-    } catch (InterruptedException e) {
-      throw new ProtegeIOException(e);
-    } finally {
+	  Object o = null;
+	  try {
+		  readerLock.lock();
+		  synchronized (queryCondition) {
+			  while (result == null) {
+				  try {
+					  queryCondition.wait();
+				  }
+				  catch (InterruptedException e) {
+					  logger.log(Level.WARNING, "Ouch - I certainly didn't expect that!", e);
+				  }
+			  }
+		  }
+		  o = result;
+	  }
+    finally {
       readerLock.unlock();
       result = null;
     }
@@ -94,7 +108,6 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
 
   public void localize(KnowledgeBase kb) {
       readerLock = kb.getReaderLock();
-      queryCondition = readerLock.newCondition();
   }
 }
 
