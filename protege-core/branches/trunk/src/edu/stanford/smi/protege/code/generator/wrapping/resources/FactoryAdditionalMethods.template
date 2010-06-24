@@ -1,0 +1,75 @@
+
+
+    /*
+     * Methods for ontology classes that do not have a corresponding generated Java class
+     */
+
+
+    @SuppressWarnings("unchecked")
+	public Object createObject(String name, String protegeClsName) {
+    	Cls cls = kb.getCls(protegeClsName);
+    	if (cls == null) {
+    		return null;
+    	}
+
+    	//check if there is a java implmenetation for this cls first
+    	Class<?> javaInterface = FactoryUtil.getJavaInterface(cls);
+    	if (javaInterface != null) {
+    		return FactoryUtil.createJavaObjectAs(name, cls, javaInterface);
+    	}
+
+    	/*
+    	 * Iterate through the superclasses, and find the first one that has a Java class
+    	 * correspondent and use that one
+    	 */
+
+    	//maybe go through the direct superclasses and up to be as specific as possible
+    	for (Iterator iterator = cls.getSuperclasses().iterator(); iterator.hasNext();) {
+			Cls supercls = (Cls) iterator.next();
+
+			javaInterface = FactoryUtil.getJavaInterface(supercls);
+			if (javaInterface != null) {
+				return FactoryUtil.createJavaObjectAs(name, cls, javaInterface);
+			}
+		}
+
+    	//what should we do in this case?
+    	return null;
+    }
+
+
+    public <X> X createObjectAs(String name, Class<? extends X> javaInterface) {
+    	String clsName = javaInterface.getSimpleName();
+    	Cls cls = kb.getCls(clsName);
+    	if (cls == null) {
+    		return null;
+    	}
+    	Instance inst = kb.getInstance(name);
+    	if (inst != null) { //instance with this name already exists
+    		return null;
+    	}
+    	inst = cls.createDirectInstance(name);
+    	return FactoryUtil.createJavaObject(javaInterface, inst);
+    }
+
+
+    @SuppressWarnings("unchecked")
+	public <X> X getObjectAs(String name, Class<? extends X> javaInterface) {
+    	Instance inst = kb.getInstance(name);
+    	if (inst == null) {
+    		return null;
+    	}
+
+    	//try to see if inst has a type with the name of the java interface
+    	String javaName = javaInterface.getSimpleName();
+    	Cls cls = kb.getCls(javaName);
+    	if (cls == null) {
+    		return null;
+    	}
+
+    	if (inst.hasType(cls)) {
+    		return FactoryUtil.createJavaObjectAs(name, cls, (Class<? extends X>) FactoryUtil.getJavaInterface(cls));
+    	}
+
+    	return null;
+    }
