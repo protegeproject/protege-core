@@ -1,0 +1,4 @@
+
+source=http://smi-protege.stanford.edu/repos/protege/protege-core/trunk
+revision=19131
+target=http://smi-protege.stanford.edu/repos/protege/protege-core/branches/2010-06-24-unlocked-database
