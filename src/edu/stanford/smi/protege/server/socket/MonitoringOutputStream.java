@@ -115,10 +115,10 @@ public class MonitoringOutputStream extends OutputStream {
         bytesWritten += n;
         bytesToBeFlushed += n;
 
-        if (log.isLoggable(Level.FINER)) {
+        if (log.isLoggable(Level.FINE)) {
             int newMB = bytesWritten / (KB * KB);
             if (newMB > previousMB) {
-                log.finer(logPrefix() + newMB + " megabytes written");
+                log.fine(logPrefix() + newMB + " megabytes written");
             }
         }
     }
