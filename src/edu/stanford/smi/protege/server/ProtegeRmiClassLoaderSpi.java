@@ -27,7 +27,9 @@ public class ProtegeRmiClassLoaderSpi extends RMIClassLoaderSpi {
         	} catch (ClassNotFoundException e) {
         		clas = PluginUtilities.forName(name, true);
         	}
-        	cache.putIfAbsent(name, clas);
+        	if (clas != null) {
+        	    cache.putIfAbsent(name, clas);
+        	}
         }
         return clas;
     }
