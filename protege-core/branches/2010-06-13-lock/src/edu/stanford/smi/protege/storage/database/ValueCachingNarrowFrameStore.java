@@ -168,7 +168,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 			this.session = session;
 		}
 
-		@Override
     	public DeferredOperationCache call() throws Exception {
 	        String frameName = frame.getFrameID().getName();
 
@@ -226,7 +225,6 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
 
 
-    @Override
     public String toString() {
         return "ValueCachingFrameStore(" + getName() + ")";
     }
