@@ -369,7 +369,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().removeDirectTemplateSlot(cls, slot);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -384,7 +384,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().moveDirectTemplateSlot(cls, slot, index);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -399,7 +399,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().addDirectSuperclass(cls, superclass);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -414,7 +414,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().removeDirectSuperslot(slot, superslot);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -429,7 +429,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().removeDirectSuperclass(cls, superclass);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -444,7 +444,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().moveDirectSubclass(cls, subclass, index);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -459,7 +459,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             writerLock.lock();
             getDelegate().replaceFrame(original, replacement);
             markDirty();
-            return new OntologyUpdate(getValueUpdates(session));
+            return new OntologyUpdate(getValueUpdates(session, true));
         }
         finally {
             writerLock.unlock();
@@ -480,7 +480,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           Sft sft = new Sft(slot, null, true);
           CacheResult<List> cacheValues = new CacheResult<List>(values, true);
           addReadUpdate(session, cls, new CacheRead<RemoteSession, Sft, List>(session, sft, cacheValues));
-          return new RemoteResponse<List>(values, getValueUpdates(session));
+          return new RemoteResponse<List>(values, getValueUpdates(session, false));
       }
       finally {
           readerLock.unlock();
@@ -495,7 +495,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           readerLock.lock();
           Set<Instance> instances = getDelegate().getInstances(cls);
           return new  RemoteResponse<Set<Instance>>(instances,
-                                                    getValueUpdates(session));
+                                                    getValueUpdates(session, false));
       }
       finally {
           readerLock.unlock();
@@ -619,7 +619,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           Sft sft = new Sft(slot, facet, true);
           CacheResult<List> cacheValues = new CacheResult<List>(values, true);
           addReadUpdate(session, cls, new CacheRead<RemoteSession, Sft, List>(session, sft, cacheValues));
-          return new RemoteResponse<List>(values, getValueUpdates(session));
+          return new RemoteResponse<List>(values, getValueUpdates(session, false));
       }
       finally {
           readerLock.unlock();
@@ -656,7 +656,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       try {
           readerLock.lock();
           Frame frame = getDelegate().getFrame(name);
-          return new RemoteResponse<Frame>(frame, getValueUpdates(session));
+          return new RemoteResponse<Frame>(frame, getValueUpdates(session, false));
       }
       finally {
           readerLock.unlock();
@@ -703,7 +703,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           Sft sft = new Sft(slot, null, false);
           CacheResult<List> cacheValues = new CacheResult<List>(values, true);
           addReadUpdate(session, frame, new CacheRead<RemoteSession, Sft, List>(session, sft, cacheValues));
-          return new RemoteResponse<List>(values, getValueUpdates(session));
+          return new RemoteResponse<List>(values, getValueUpdates(session, false));
       }
       finally {
           readerLock.unlock();
@@ -728,7 +728,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           Sft sft = new Sft(slot, facet, true);
           CacheResult<List> cacheValues = new CacheResult<List>((List) values, true);
           addWriteUpdate(session, cls, new CacheModify<RemoteSession, Sft, List>(session, sft, cacheValues));
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -745,7 +745,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             writerLock.lock();
             markDirty();
             Facet facet = getDelegate().createFacet(id, directTypes, loadDefaults);
-            return new RemoteResponse<Facet>(facet, getValueUpdates(session));
+            return new RemoteResponse<Facet>(facet, getValueUpdates(session, true));
         }
         finally {
             writerLock.unlock();
@@ -780,7 +780,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           Sft sft = new Sft(slot, null, true);
           CacheResult<List> cacheValues = new CacheResult<List>((List) values, true);
           addWriteUpdate(session, cls, new CacheModify<RemoteSession, Sft, List>(session, sft, cacheValues));
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -807,7 +807,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().deleteCls(cls);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -821,7 +821,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().deleteSlot(slot);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -835,7 +835,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().deleteFacet(facet);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -849,7 +849,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().deleteSimpleInstance(simpleInstance);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -865,7 +865,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           markDirty();
           Slot slot =  getDelegate().createSlot(id, directTypes, directSuperslots, loadDefaults);
-          return new RemoteResponse<Slot>(slot, getValueUpdates(session));
+          return new RemoteResponse<Slot>(slot, getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -880,7 +880,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().addDirectSuperslot(slot, superslot);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -894,7 +894,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().addDirectTemplateSlot(cls, slot);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -909,7 +909,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().moveDirectOwnSlotValue(frame, slot, from, to);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -931,7 +931,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           Sft sft = new Sft(slot, null, true);
           CacheResult<List> cacheValues = new CacheResult<List>((List) values, true);
           addReadUpdate(session, frame, new CacheModify<RemoteSession, Sft, List>(session, sft, cacheValues));
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -949,7 +949,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           markDirty();
           Cls cls = getDelegate().createCls(id,directTypes, directSuperclasses, loadDefaults);
-          return new RemoteResponse(cls, getValueUpdates(session));
+          return new RemoteResponse(cls, getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -982,7 +982,12 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           finally {
               readerLock.unlock();
           }
-          return new RemoteResponse<Collection<Frame>>(callback.waitForResults(), getValueUpdates(session));
+          /*
+           *  WARNING... this is a weird case.  I believe that I am deliberatly waiting outside the lock.  So even though 
+           *             I am reading, since I am outside the lock there might be writes that occur before the return statement
+           *             starts.  If it is moved back in the lock then getValueUpdates should take a false argument.
+           */
+          return new RemoteResponse<Collection<Frame>>(callback.waitForResults(), getValueUpdates(session, true));
       }
       finally {
           unrecordCall();
@@ -995,7 +1000,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().removeDirectType(instance, directType);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -1052,7 +1057,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           recordCall(session);
           markDirty();
           SimpleInstance si = getDelegate().createSimpleInstance(id, directTypes, loadDefaults);
-          return new RemoteResponse<SimpleInstance>(si, getValueUpdates(session));
+          return new RemoteResponse<SimpleInstance>(si, getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -1066,7 +1071,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().addDirectType(instance, type);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -1080,7 +1085,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().moveDirectType(instance, cls, index);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -1154,7 +1159,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           writerLock.lock();
           getDelegate().removeDirectTemplateFacetOverrides(cls, slot);
           markDirty();
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -1180,11 +1185,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         }
         Object ret = job.run();
         try {
-          readerLock.lock();
-          return new RemoteResponse<Object>(ret, getValueUpdates(session));
+          writerLock.lock();
+          return new RemoteResponse<Object>(ret, getValueUpdates(session, true));
         }
         finally {
-            readerLock.unlock();
+            writerLock.unlock();
         }
       } catch (ProtegeException pe) {
         Log.getLogger().log(Level.WARNING, "Exception on remote execution", pe);
@@ -1224,8 +1229,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
     public RemoteResponse<List<AbstractEvent>> getEvents(RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       try {
-          readerLock.lock();
-          updateEvents(session);
+          writerLock.lock();
+          updateEvents(session, true);
           List<AbstractEvent> events = new ArrayList<AbstractEvent>();
           Registration reg = _sessionToRegistrationMap.get(session);
           if (reg == null) {
@@ -1236,19 +1241,21 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           while ((eo = clientEvents.read()) != null) {
               events.add(eo);
           }
-          return new RemoteResponse<List<AbstractEvent>>(events, getValueUpdates(session));
+          return new RemoteResponse<List<AbstractEvent>>(events, getValueUpdates(session, false));
       }
       finally {
-          readerLock.unlock();
+          writerLock.unlock();
           unrecordCall();
       }
     }
 
-    public void updateEvents(RemoteSession session) {
+    public void updateEvents(RemoteSession session, boolean writeOperation) {
       Registration registration = _sessionToRegistrationMap.get(session);
       TransactionIsolationLevel level = getTransactionIsolationLevel();
-      for (AbstractEvent eo : getDelegate().getEvents()) {
-        addEvent(session, registration, level, eo);
+      if (writeOperation) {
+    	  for (AbstractEvent eo : getDelegate().getEvents()) {
+    		  addEvent(session, registration, level, eo);
+    	  }
       }
     }
 
@@ -1263,8 +1270,8 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       _eventWriter.write(eo);
     }
 
-    private List<ValueUpdate> getValueUpdates(RemoteSession session) {
-      updateEvents(session);
+    private List<ValueUpdate> getValueUpdates(RemoteSession session, boolean writeOperation) {
+      updateEvents(session, writeOperation);
       List<ValueUpdate> ret = _sessionToRegistrationMap.get(session).getAndClearValueUpdates();
       int size = ret.size();
       if (size != 0) {
@@ -1427,11 +1434,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           if (cacheLog.isLoggable(Level.FINE)) {
               cacheLog.fine("Begin Transaction for session " + session);
           }
-          updateEvents(session);
+          updateEvents(session, true);
           boolean success = getDelegate().beginTransaction(name);
           addWriteUpdate(session, null,
                          new CacheBeginTransaction<RemoteSession, Sft, List>(session));
-          return new RemoteResponse<Boolean>(success, getValueUpdates(session));
+          return new RemoteResponse<Boolean>(success, getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -1462,7 +1469,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           addWriteUpdate(session, null, 
                          new CacheCommitTransaction<RemoteSession, Sft, List>(session));
           boolean success = getDelegate().commitTransaction();
-          updateEvents(session);
+          updateEvents(session, true);
           if (!inTransaction()) {
               Registration registration = _sessionToRegistrationMap.get(session);
               List<ValueUpdate> committedUpdates = registration.getCommits();
@@ -1479,7 +1486,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           if (!existsTransaction()) { // who am i waking?
               transactionInProgressCondition.signalAll();
           }
-          return new RemoteResponse<Boolean>(success, getValueUpdates(session));
+          return new RemoteResponse<Boolean>(success, getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -1511,7 +1518,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           if (cacheLog.isLoggable(Level.FINE)) {
               cacheLog.fine("Rollback Transaction for session " + session);
           }
-          updateEvents(session);
+          updateEvents(session, true);
           addWriteUpdate(session, null, 
                          new CacheRollbackTransaction<RemoteSession, Sft, List>(session));
           boolean success = getDelegate().rollbackTransaction();
@@ -1522,7 +1529,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           if (!existsTransaction()) {  // who am i waking?
               transactionInProgressCondition.signalAll();
           }
-          return new RemoteResponse<Boolean>(success, getValueUpdates(session));
+          return new RemoteResponse<Boolean>(success, getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -1617,7 +1624,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       try {
           writerLock.lock();
           getDelegate().moveDirectSubslot(slot, subslot, index);
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           writerLock.unlock();
@@ -1655,23 +1662,19 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                                              RemoteSession session) throws ServerSessionLost {
       recordCall(session);
       try {
+          readerLock.lock();
           Set values = null;
-          try {
-              readerLock.lock();
-              values = getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
-          }
-          finally {
-              readerLock.unlock();
-          }
+          values = getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
+          return new RemoteResponse<Set>(values, getValueUpdates(session, false));
+      }
+      finally {
+          readerLock.unlock();
           LocalizeUtils.localize(missing, _kb);
           if (!frameCalculator.isDisabled(session))  {
               for (Frame value : missing) {
                   frameCalculator.addRequest(value, session, CacheRequestReason.USER_CLOSURE_REQUEST);
               }
           }
-          return new RemoteResponse<Set>(values, getValueUpdates(session));
-      }
-      finally {
           unrecordCall();
       }
     }
@@ -1690,7 +1693,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                   values.addAll(newValues);
               }
           }
-          return new RemoteResponse<Set>(values, getValueUpdates(session));
+          return new RemoteResponse<Set>(values, getValueUpdates(session, false));
       }
       finally {
           readerLock.unlock();
@@ -1729,7 +1732,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
               addUserFrames(session, userFrames);
               addSystemClasses(session);
           }
-          return new OntologyUpdate(getValueUpdates(session));
+          return new OntologyUpdate(getValueUpdates(session, true));
       }
       finally {
           unrecordCall();
