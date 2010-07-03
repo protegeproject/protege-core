@@ -228,7 +228,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     @SuppressWarnings("unchecked")
     private void dispatchEvents(boolean ignoreExceptions) {
     	try {
-            kb.getReaderLock().lock();
+            kb.getWriterLock().lock();
     		Collection<AbstractEvent> events = getDispatchableEvents();
     		if (!events.isEmpty()) {
     			dispatchEvents(events, ignoreExceptions);
@@ -245,7 +245,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
             } while ((t = t.getCause()) != null);
     	}
         finally {
-            kb.getReaderLock().unlock();
+            kb.getWriterLock().unlock();
         }
     }
 
@@ -615,12 +615,14 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     
     public Collection<EventListener> getListeners(Class<?> c, Object o) {
         Collection<EventListener> allListeners = null;
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
-        if (listeners != null) {
-            Collection<EventListener> objectListeners = listeners.get(o);
-            allListeners = addListeners(objectListeners, allListeners);
-            Collection<EventListener> globalListeners = listeners.get(null);
-            allListeners = addListeners(globalListeners, allListeners);
+        synchronized (_listeners) {
+        	Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
+        	if (listeners != null) {
+        		Collection<EventListener> objectListeners = listeners.get(o);
+        		allListeners = addListeners(objectListeners, allListeners);
+        		Collection<EventListener> globalListeners = listeners.get(null);
+        		allListeners = addListeners(globalListeners, allListeners);
+        	}
         }
         if (allListeners == null) {
         	return Collections.emptyList();
@@ -643,14 +645,18 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
 
     public void clearListeners() {
-	    _listeners.clear();
-	}
+    	synchronized (_listeners) {
+    		_listeners.clear();
+    	}
+    }
 
-	private void removeListeners(Class<?> listenerType, Frame frame) {
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(listenerType);
-        if (listeners != null) {
-            listeners.remove(frame);
-        }
+    private void removeListeners(Class<?> listenerType, Frame frame) {
+    	synchronized (_listeners) {
+    		Map<Object, Collection<EventListener>> listeners = _listeners.get(listenerType);
+    		if (listeners != null) {
+    			listeners.remove(frame);
+    		}
+    	}
     }
 
     private void removeClsListeners(Cls cls) {
@@ -692,13 +698,16 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
 
     private Collection<Cls> getListenedToSubclasses(Class<?> c, Cls cls) {
+        Set<Object> listenedToObjects = null;
+        synchronized (_listeners) {
+        	Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
+        	if (listeners != null) {
+        		listenedToObjects = new HashSet<Object>(listeners.keySet());
+        	}
+        }
         Set<Cls> listenedToSubclasses = new HashSet<Cls>();
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
-        if (listeners != null) {
-            Set<Object> listenedToObjects = listeners.keySet();
-            Iterator<Object> i = listenedToObjects.iterator();
-            while (i.hasNext()) {
-                Object o = i.next();
+        if (listenedToObjects != null) {
+            for (Object o : listenedToObjects) {
                 if (o instanceof Cls) {
                     Cls listenedToCls = (Cls) o;
                     if (getSuperclasses(listenedToCls).contains(cls)) {
@@ -711,47 +720,53 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
 
     private Collection<Instance> getListenedToInstances(Class<?> c, Cls cls) {
+        Set<Object> listenedToObjects = null;
+        synchronized (_listeners) {
+        	Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
+        	if (listeners != null) {
+        		listenedToObjects = new HashSet<Object>(listeners.keySet());
+        	}
+        }
         Set<Instance> listenedToInstances = new HashSet<Instance>();
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
-        if (listeners != null) {
-            Set<Object> listenedToObjects = listeners.keySet();
-            Iterator<Object> i = listenedToObjects.iterator();
-            while (i.hasNext()) {
-                Object o = i.next();
-                if (o instanceof Instance) {
-                    Instance instance = (Instance) o;
-                    if (instance.hasType(cls)) {
-                        listenedToInstances.add(instance);
-                    }
-                }
-            }
+        if (listenedToObjects != null) {
+        	for (Object o : listenedToObjects) {
+        		if (o instanceof Instance) {
+        			Instance instance = (Instance) o;
+        			if (instance.hasType(cls)) {
+        				listenedToInstances.add(instance);
+        			}
+        		}
+        	}
         }
         return listenedToInstances;
     }
 
     public void addListener(Class<?> c, Object o, EventListener listener) {
-        // Log.enter(this, "addListener", c, o, listener);
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
-        if (listeners == null) {
-            listeners = new HashMap<Object, Collection<EventListener>>();
-            _listeners.put(c, listeners);
-        }
-        Collection<EventListener> objectListeners = listeners.get(o);
-        if (objectListeners == null) {
-            objectListeners = new ArrayList<EventListener>();
-            listeners.put(o, objectListeners);
-        }
-        objectListeners.add(listener);
+    	synchronized (_listeners) {
+    		Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
+    		if (listeners == null) {
+    			listeners = new HashMap<Object, Collection<EventListener>>();
+    			_listeners.put(c, listeners);
+    		}
+    		Collection<EventListener> objectListeners = listeners.get(o);
+    		if (objectListeners == null) {
+    			objectListeners = new ArrayList<EventListener>();
+    			listeners.put(o, objectListeners);
+    		}
+    		objectListeners.add(listener);
+    	}
     }
 
     public void removeListener(Class<?> c, Object o, EventListener listener) {
-        Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
-        if (listeners != null) {
-            Collection<EventListener> objectListeners = listeners.get(o);
-            if (objectListeners != null) {
-                objectListeners.remove(listener);
-            }
-        }
+    	synchronized (_listeners) {
+    		Map<Object, Collection<EventListener>> listeners = _listeners.get(c);
+    		if (listeners != null) {
+    			Collection<EventListener> objectListeners = listeners.get(o);
+    			if (objectListeners != null) {
+    				objectListeners.remove(listener);
+    			}
+    		}
+    	}
     }
 
 
@@ -920,41 +935,49 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
     
     private void replaceListeners(Frame original, Frame replacement) {
-    	for (Map<Object,  Collection<EventListener>> map : _listeners.values()) {
-    		Collection<EventListener> listeners = map.remove(original);
-    		if (listeners != null) {
-    			Collection<EventListener> existingListeners = map.get(replacement);
-    			if (existingListeners != null) {
-    				listeners.addAll(existingListeners);
+    	synchronized (_listeners) {
+    		for (Map<Object,  Collection<EventListener>> map : _listeners.values()) {
+    			Collection<EventListener> listeners = map.remove(original);
+    			if (listeners != null) {
+    				Collection<EventListener> existingListeners = map.get(replacement);
+    				if (existingListeners != null) {
+    					listeners.addAll(existingListeners);
+    				}
+    				map.put(replacement, listeners);
     			}
-    			map.put(replacement, listeners);
     		}
     	}
     }
     
-    public void printListenersByHashCode(int hash) {
-    	System.out.println("Printing out FrameListeners that have hash code " + hash);
-    	for (java.util.Map.Entry<Object, Collection<EventListener>> entry : _listeners.get(FrameListener.class).entrySet()) {
-    		Object o  = entry.getKey();
-    		Collection<EventListener> listeners = entry.getValue();
-    		for (EventListener listener :  listeners) {
-    			if (listener.hashCode() == hash) {
-    			   System.out.println("Found listener " + listener + " at " + o);
-    			}
+    public void printListenersByHashCode(int hash, Level level) {
+    	synchronized (_listeners) {
+    		if (log.isLoggable(level)) {
+    			log.log(level, "Printing out FrameListeners that have hash code " + hash);
+    			for (java.util.Map.Entry<Object, Collection<EventListener>> entry : _listeners.get(FrameListener.class).entrySet()) {
+    				Object o  = entry.getKey();
+    				Collection<EventListener> listeners = entry.getValue();
+    				for (EventListener listener :  listeners) {
+    					if (listener.hashCode() == hash) {
+    						log.log(level, "Found listener " + listener + " at " + o);
+    					}
+    				}
+    			}  
     		}
-    	}    	
+    	}
     }
-    
+
     public void dumpListeners(Level level) {
-    	if (!log.isLoggable(level)) {
-    		return;
-    	}
-    	log.log(level, "-----------------------printing listeners======================");
-    	for (Map<Object,  Collection<EventListener>> map : _listeners.values()) {
-    		for (Entry<Object, Collection<EventListener>> entry : map.entrySet()) {
-    			log.log(level, "listeners for object " + entry.getKey());
-    			for (EventListener listener : entry.getValue()) {
-    				log.log(level, "\t" + listener);
+    	synchronized (_listeners) {
+    		if (!log.isLoggable(level)) {
+    			return;
+    		}
+    		log.log(level, "-----------------------printing listeners======================");
+    		for (Map<Object,  Collection<EventListener>> map : _listeners.values()) {
+    			for (Entry<Object, Collection<EventListener>> entry : map.entrySet()) {
+    				log.log(level, "listeners for object " + entry.getKey());
+    				for (EventListener listener : entry.getValue()) {
+    					log.log(level, "\t" + listener);
+    				}
     			}
     		}
     	}
