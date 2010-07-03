@@ -1454,7 +1454,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     public void testFrameStoreInsertion() {
         final Boolean[] fired = new Boolean[1];
         fired[0] = Boolean.FALSE;
-        FrameStore originalHead = ((DefaultKnowledgeBase) getDomainKB()).getHeadFrameStore();
+        FrameStore fsUnderSync = ((DefaultKnowledgeBase) getDomainKB()).getHeadFrameStore().getDelegate();
         FrameStore testFs = new FrameStoreAdapter() {
             public Slot createSlot(FrameID id, Collection superslots, Collection types, boolean init) {
                 fired[0] = Boolean.TRUE;
@@ -1462,7 +1462,7 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
             }
         };
         getDomainKB().insertFrameStore(testFs);
-        assertEquals(originalHead, testFs.getDelegate());
+        assertEquals(fsUnderSync, testFs.getDelegate());
         getDomainKB().createSlot(null);
         assertTrue(fired[0].booleanValue());
     }
