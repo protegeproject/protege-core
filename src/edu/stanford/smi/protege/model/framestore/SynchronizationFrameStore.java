@@ -37,6 +37,16 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
 		return locks.writeLock();
 	}
 	
+	public List<AbstractEvent> getEvents() {
+		locks.writeLock().lock();
+		try {
+			return getDelegate().getEvents();			
+		}
+		finally {
+			locks.writeLock().unlock();
+		}
+	}
+
 	public void setSequentialTransactions(boolean sequentialTransactions) {
 		this.sequentialTransactions = sequentialTransactions;
 	}
@@ -487,16 +497,6 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
         locks.readLock().lock();
         try {
             return getDelegate().getDomain(slot);
-        }
-        finally {
-            locks.readLock().unlock();
-        }
-    }
-
-	public List<AbstractEvent> getEvents() {
-        locks.readLock().lock();
-        try {
-            return getDelegate().getEvents();
         }
         finally {
             locks.readLock().unlock();
