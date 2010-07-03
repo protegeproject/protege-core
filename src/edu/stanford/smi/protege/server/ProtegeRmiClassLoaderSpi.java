@@ -32,7 +32,8 @@ public class ProtegeRmiClassLoaderSpi extends RMIClassLoaderSpi {
         return clas;
     }
 
-    public Class loadProxyClass(String codebase, String[] interfaces, ClassLoader defaultLoader)
+    @SuppressWarnings("unchecked")
+	public Class loadProxyClass(String codebase, String[] interfaces, ClassLoader defaultLoader)
             throws MalformedURLException, ClassNotFoundException {
         return sun.rmi.server.LoaderHandler.loadProxyClass(codebase, interfaces, defaultLoader);
     }
