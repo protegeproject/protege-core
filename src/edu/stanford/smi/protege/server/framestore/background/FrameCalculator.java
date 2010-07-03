@@ -373,7 +373,7 @@ public class FrameCalculator {
         return;
     }
     registration.getBandWidthPolicy().addItemToWaitList();
-    server.updateEvents(effectiveClient);
+    server.updateEvents(effectiveClient, false);
     server.addReadUpdate(effectiveClient, frame, update);
   }
 
