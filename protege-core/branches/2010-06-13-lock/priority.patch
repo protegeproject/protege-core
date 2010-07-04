@@ -1,0 +1,1532 @@
+Index: src/edu/stanford/smi/protege/model/KnowledgeBase.java
+===================================================================
+--- src/edu/stanford/smi/protege/model/KnowledgeBase.java	(revision 19377)
++++ src/edu/stanford/smi/protege/model/KnowledgeBase.java	(working copy)
+@@ -33,6 +33,8 @@
+     
+     Lock getWriterLock();
+     
++    void setPriority(float priority);
++    
+     /**
+      * This method requires some background information.  When Protege wants to
+      * create a simple instance in the kb it creates an instance of the java
+Index: src/edu/stanford/smi/protege/model/DefaultKnowledgeBase.java
+===================================================================
+--- src/edu/stanford/smi/protege/model/DefaultKnowledgeBase.java	(revision 19377)
++++ src/edu/stanford/smi/protege/model/DefaultKnowledgeBase.java	(working copy)
+@@ -105,13 +105,17 @@
+     }
+ 
+     public Lock getReaderLock() {
+-    	return _frameStoreManager.getKnowledgeBaseReaderLock();
++    	return _frameStoreManager.getSynchronizationFrameStore().getReaderLock();
+     }
+     
+     public Lock getWriterLock() {
+-    	return _frameStoreManager.getKnowledgeBaseWriterLock();
++    	return _frameStoreManager.getSynchronizationFrameStore().getWriterLock();
+     }
+     
++    public void setPriority(float priority) {
++    	_frameStoreManager.getSynchronizationFrameStore().setPriority(priority);
++    }
++    
+     public FrameStoreManager getFrameStoreManager() {
+         return _frameStoreManager;
+     }
+Index: src/edu/stanford/smi/protege/model/framestore/FrameStoreManager.java
+===================================================================
+--- src/edu/stanford/smi/protege/model/framestore/FrameStoreManager.java	(revision 19377)
++++ src/edu/stanford/smi/protege/model/framestore/FrameStoreManager.java	(working copy)
+@@ -251,14 +251,10 @@
+         return undoFrameStore;
+     }
+     
+-    public Lock getKnowledgeBaseReaderLock() {
+-    	return synchronizationFrameStore.getReaderLock();
++    public SynchronizationFrameStore getSynchronizationFrameStore() {
++    	return synchronizationFrameStore;
+     }
+     
+-    public Lock getKnowledgeBaseWriterLock() {
+-    	return synchronizationFrameStore.getWriterLock();
+-    }
+-    
+     public void insertFrameStore(FrameStore newFrameStore, int position) {
+         frameStores.add(position, newFrameStore);
+         FrameStore fs = getPreceedingEnabledFrameStore(position);
+Index: src/edu/stanford/smi/protege/model/framestore/SynchronizationFrameStore.java
+===================================================================
+--- src/edu/stanford/smi/protege/model/framestore/SynchronizationFrameStore.java	(revision 19377)
++++ src/edu/stanford/smi/protege/model/framestore/SynchronizationFrameStore.java	(working copy)
+@@ -7,6 +7,8 @@
+ import java.util.concurrent.locks.Lock;
+ import java.util.concurrent.locks.ReadWriteLock;
+ import java.util.concurrent.locks.ReentrantReadWriteLock;
++import java.util.logging.Level;
++import java.util.logging.Logger;
+ 
+ import edu.stanford.smi.protege.model.Cls;
+ import edu.stanford.smi.protege.model.Facet;
+@@ -20,15 +22,22 @@
+ import edu.stanford.smi.protege.model.query.QueryCallback;
+ import edu.stanford.smi.protege.util.AbstractEvent;
+ import edu.stanford.smi.protege.util.ApplicationProperties;
++import edu.stanford.smi.protege.util.Log;
+ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
+ 
+ public class SynchronizationFrameStore extends AbstractFrameStore {
++	private static Logger logger = Log.getLogger(SynchronizationFrameStore.class);
+ 	public static final String SEQUENTIAL_TRANSACTION_PROP = "execute.transactions.in.sequence";
+ 	private boolean sequentialTransactions = ApplicationProperties.getBooleanProperty(SEQUENTIAL_TRANSACTION_PROP, false);
+ 	
+ 	private ReadWriteLock locks = new ReentrantReadWriteLock();
+ 	private Condition transactionCondition = locks.writeLock().newCondition();
+ 	
++	private ThreadLocal<Float>   priority = new ThreadLocal<Float>();
++	private ThreadLocal<Integer> runs     = new ThreadLocal<Integer>();
++	private ThreadLocal<Integer> tries    = new ThreadLocal<Integer>();
++	private volatile int sleepers         = 0;
++	
+ 	public Lock getReaderLock() {
+ 		return locks.readLock();
+ 	}
+@@ -37,52 +46,106 @@
+ 		return locks.writeLock();
+ 	}
+ 	
+-	public List<AbstractEvent> getEvents() {
+-		locks.writeLock().lock();
+-		try {
+-			return getDelegate().getEvents();			
++	public void setSequentialTransactions(boolean sequentialTransactions) {
++		this.sequentialTransactions = sequentialTransactions;
++	}
++
++	public void setPriority(float priority) {
++		if (priority < 0F || priority >= 1F) {
++			this.priority.set(null);
+ 		}
+-		finally {
+-			locks.writeLock().unlock();
++		else {
++			this.priority.set(priority);
++			runs.set(0);
++			tries.set(0);
+ 		}
+ 	}
+ 
+-	public void setSequentialTransactions(boolean sequentialTransactions) {
+-		this.sequentialTransactions = sequentialTransactions;
++	public void lockWithPriority(boolean write) {
++		Lock lock = write ? getWriterLock() : getReaderLock();
++		Float priority = this.priority.get();	
++		if (priority == null) {
++			lock.lock();
++		}
++		else {
++			boolean locked = false;
++			int runs = this.runs.get();
++			int tries = this.tries.get();
++			synchronized (this.priority) {
++				while (!locked && runs > priority * tries) {
++					sleepers++;
++					if (locked = lock.tryLock()) {
++						;
++					}
++					else {
++						tries++;
++						try {
++							this.priority.wait();
++						}
++						catch (InterruptedException ie) {
++							logger.log(Level.WARNING, "shouldn't", ie);
++						}
++					}
++					sleepers--;
++				}
++				if (!locked) {
++					tries++;
++					runs++;
++					lock.lock();
++					locked = true;
++				}
++				this.runs.set(runs);
++				this.tries.set(tries);
++			}
++		}
+ 	}
+ 	
++	public void unlockWithPriority(boolean write) {
++		if (write) {
++			getWriterLock().unlock();
++		}
++		else {
++			getReaderLock().unlock();
++		}
++		if (sleepers != 0) {
++			synchronized (priority) {
++				priority.notifyAll();
++			}
++		}
++	}
++	
+ 	public boolean beginTransaction(String name) {
+-	    locks.writeLock().lock();
++	    lockWithPriority(true);
+ 	    try {
+             waitForOtherTransactions();
+ 	        return getDelegate().beginTransaction(name);
+ 	    }
+ 	    finally {
+-	        locks.writeLock().unlock();
++	        unlockWithPriority(true);
+ 	    }
+ 	}
+ 
+ 	public boolean commitTransaction() {
+-	    locks.writeLock().lock();
++	    lockWithPriority(true);
+ 	    try {
+ 	        boolean result = getDelegate().commitTransaction();
+             letOtherTransactionsProceed();
+ 	        return result;
+ 	    }
+ 	    finally {
+-	        locks.writeLock().unlock();
++	        unlockWithPriority(true);
+ 	    }
+ 	}
+ 
+ 	public boolean rollbackTransaction() {
+-	    locks.writeLock().lock();
++	    lockWithPriority(true);
+ 	    try {
+ 	        boolean result = getDelegate().rollbackTransaction();
+             letOtherTransactionsProceed();
+ 	        return result;
+ 	    }
+ 	    finally {
+-	        locks.writeLock().unlock();
++	        unlockWithPriority(true);
+ 	    }
+ 	}
+ 
+@@ -113,42 +176,42 @@
+      */
+ 
+ 	public void addDirectSuperclass(Cls cls, Cls superclass) {
+-		locks.writeLock().lock();
++		lockWithPriority(true);
+ 		try {
+ 			getDelegate().addDirectSuperclass(cls, superclass);
+ 		}
+ 		finally {
+-			locks.writeLock().unlock();
++			unlockWithPriority(true);
+ 		}
+ 	}
+ 
+ 	public void addDirectSuperslot(Slot slot, Slot superslot) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().addDirectSuperslot(slot, superslot);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+ 	}
+ 
+ 	public void addDirectTemplateSlot(Cls cls, Slot slot) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().addDirectTemplateSlot(cls, slot);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+ 	}
+ 
+ 	public void addDirectType(Instance instance, Cls type) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().addDirectType(instance, type);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+ 	}
+ 
+@@ -156,825 +219,835 @@
+ 	public Cls createCls(FrameID id, Collection directTypes,
+                          Collection directSuperclasses, 
+                          boolean loadDefaultValues) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+ 		return getDelegate().createCls(id, directTypes, directSuperclasses,
+ 				loadDefaultValues);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	@SuppressWarnings("unchecked")
+ 	public Facet createFacet(FrameID id, Collection directTypes,
+                              boolean loadDefaultValues) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             return getDelegate().createFacet(id, directTypes, loadDefaultValues);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	@SuppressWarnings("unchecked")
+ 	public SimpleInstance createSimpleInstance(FrameID id,
+ 			Collection directTypes, boolean loadDefaultValues) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             return getDelegate()
+ 				.createSimpleInstance(id, directTypes, loadDefaultValues);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	@SuppressWarnings("unchecked")
+ 	public Slot createSlot(FrameID id, Collection directTypes,
+ 			Collection directSuperslots, boolean loadDefaultValues) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             return getDelegate().createSlot(id, directTypes, directSuperslots,
+                                        loadDefaultValues);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void deleteCls(Cls cls) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().deleteCls(cls);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void deleteFacet(Facet facet) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().deleteFacet(facet);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void deleteSimpleInstance(SimpleInstance simpleInstance) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().deleteSimpleInstance(simpleInstance);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void deleteSlot(Slot slot) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().deleteSlot(slot);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void executeQuery(Query query, QueryCallback callback) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             getDelegate().executeQuery(query, callback);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public int getClsCount() {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getClsCount();
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Cls> getClses() {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getClses();
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Cls> getClsesWithAnyDirectTemplateSlotValue(Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getClsesWithAnyDirectTemplateSlotValue(slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	@SuppressWarnings("unchecked")
+ 	public Set getClsesWithDirectTemplateFacetValue(Slot slot, Facet facet,
+ 			Object value) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate()
+ 				.getClsesWithDirectTemplateFacetValue(slot, facet, value);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getClsesWithDirectTemplateSlotValue(Slot slot, Object value) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getClsesWithDirectTemplateSlotValue(slot, value);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Cls> getClsesWithMatchingBrowserText(String string,
+ 			Collection superclasses, int maxMatches) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getClsesWithMatchingBrowserText(string, superclasses,
+                                                             maxMatches);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getClsesWithMatchingDirectTemplateFacetValue(Slot slot,
+ 			Facet facet, String value, int maxMatches) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getClsesWithMatchingDirectTemplateFacetValue(slot,
+                                                                          facet, value, maxMatches);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getClsesWithMatchingDirectTemplateSlotValue(Slot slot,
+ 			String value, int maxMatches) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getClsesWithMatchingDirectTemplateSlotValue(slot,
+                                                                         value, maxMatches);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List getDirectDomain(Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectDomain(slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List<Instance> getDirectInstances(Cls cls) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectInstances(cls);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getDirectlyOverriddenTemplateFacets(Cls cls, Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectlyOverriddenTemplateFacets(cls, slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getDirectlyOverriddenTemplateSlots(Cls cls) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectlyOverriddenTemplateSlots(cls);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List getDirectOwnSlotValues(Frame frame, Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectOwnSlotValues(frame, slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getDirectOwnSlotValuesClosure(Frame frame, Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectOwnSlotValuesClosure(frame, slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public int getDirectOwnSlotValuesCount(Frame frame, Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectOwnSlotValuesCount(frame, slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List<Cls> getDirectSubclasses(Cls cls) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectSubclasses(cls);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List getDirectSubslots(Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectSubslots(slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List<Cls> getDirectSuperclasses(Cls cls) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectSuperclasses(cls);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List getDirectSuperslots(Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectSuperslots(slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List getDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectTemplateFacetValues(cls, slot, facet);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List getDirectTemplateSlots(Cls cls) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectTemplateSlots(cls);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List getDirectTemplateSlotValues(Cls cls, Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectTemplateSlotValues(cls, slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public List getDirectTypes(Instance instance) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDirectTypes(instance);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getDomain(Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getDomain(slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
++	public List<AbstractEvent> getEvents() {
++		lockWithPriority(true);
++		try {
++			return getDelegate().getEvents();			
++		}
++		finally {
++			unlockWithPriority(true);
++		}
++	}
++
+ 	public int getFacetCount() {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getFacetCount();
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Facet> getFacets() {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getFacets();
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Frame getFrame(FrameID id) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getFrame(id);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Frame getFrame(String name) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getFrame(name);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public int getFrameCount() {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getFrameCount();
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public String getFrameName(Frame frame) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getFrameName(frame);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Frame> getFrames() {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getFrames();
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Frame> getFramesWithAnyDirectOwnSlotValue(Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getFramesWithAnyDirectOwnSlotValue(slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Frame> getFramesWithDirectOwnSlotValue(Slot slot, Object value) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getFramesWithDirectOwnSlotValue(slot, value);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Frame> getFramesWithMatchingDirectOwnSlotValue(Slot slot,
+ 			String value, int maxMatches) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getFramesWithMatchingDirectOwnSlotValue(slot, value,
+                                                                     maxMatches);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Instance> getInstances(Cls cls) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getInstances(cls);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Reference> getMatchingReferences(String string, int maxMatches) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getMatchingReferences(string, maxMatches);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getOverriddenTemplateFacets(Cls cls, Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getOverriddenTemplateFacets(cls, slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getOverriddenTemplateSlots(Cls cls) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getOverriddenTemplateSlots(cls);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getOwnFacets(Frame frame, Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getOwnFacets(frame, slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Collection getOwnFacetValues(Frame frame, Slot slot, Facet facet) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getOwnFacetValues(frame, slot, facet);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Slot> getOwnSlots(Frame frame) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getOwnSlots(frame);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Collection getOwnSlotValues(Frame frame, Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getOwnSlotValues(frame, slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Reference> getReferences(Object object) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getReferences(object);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public int getSimpleInstanceCount() {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getSimpleInstanceCount();
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public int getSlotCount() {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getSlotCount();
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Slot> getSlots() {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getSlots();
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Cls> getSubclasses(Cls cls) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getSubclasses(cls);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getSubslots(Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getSubslots(slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getSuperclasses(Cls cls) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getSuperclasses(cls);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getSuperslots(Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getSuperslots(slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set<Facet> getTemplateFacets(Cls cls, Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getTemplateFacets(cls, slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Collection getTemplateFacetValues(Cls cls, Slot slot, Facet facet) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getTemplateFacetValues(cls, slot, facet);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getTemplateSlots(Cls cls) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getTemplateSlots(cls);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Collection getTemplateSlotValues(Cls cls, Slot slot) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getTemplateSlotValues(cls, slot);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public TransactionMonitor getTransactionStatusMonitor() {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getTransactionStatusMonitor();
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public Set getTypes(Instance instance) {
+-        locks.readLock().lock();
++        lockWithPriority(false);
+         try {
+             return getDelegate().getTypes(instance);
+         }
+         finally {
+-            locks.readLock().unlock();
++            unlockWithPriority(false);
+         }
+     }
+ 
+ 	public void moveDirectOwnSlotValue(Frame frame, Slot slot, int indexFrom,
+ 			int indexTo) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().moveDirectOwnSlotValue(frame, slot, indexFrom, indexTo);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void moveDirectSubclass(Cls cls, Cls subclass, int index) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().moveDirectSubclass(cls, subclass, index);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void moveDirectSubslot(Slot slot, Slot subslot, int index) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().moveDirectSubslot(slot, subslot, index);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void moveDirectTemplateSlot(Cls cls, Slot slot, int index) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().moveDirectTemplateSlot(cls, slot, index);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void moveDirectType(Instance instance, Cls type, int index) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().moveDirectType(instance, type, index);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void reinitialize() {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().reinitialize();
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void removeDirectSuperclass(Cls cls, Cls superclass) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().removeDirectSuperclass(cls, superclass);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void removeDirectSuperslot(Slot slot, Slot superslot) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().removeDirectSuperslot(slot, superslot);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void removeDirectTemplateFacetOverrides(Cls cls, Slot slot) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().removeDirectTemplateFacetOverrides(cls, slot);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void removeDirectTemplateSlot(Cls cls, Slot slot) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().removeDirectTemplateSlot(cls, slot);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void removeDirectType(Instance instance, Cls type) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().removeDirectType(instance, type);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void replaceFrame(Frame original, Frame replacement) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().replaceFrame(original, replacement);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void setDirectOwnSlotValues(Frame frame, Slot slot, Collection values) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().setDirectOwnSlotValues(frame, slot, values);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	public void setDirectTemplateFacetValues(Cls cls, Slot slot, Facet facet,
+ 			Collection values) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().setDirectTemplateFacetValues(cls, slot, facet, values);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 
+ 	@SuppressWarnings("unchecked")
+ 	public void setDirectTemplateSlotValues(Cls cls, Slot slot, Collection values) {
+-        locks.writeLock().lock();
++        lockWithPriority(true);
+         try {
+             getDelegate().setDirectTemplateSlotValues(cls, slot, values);
+         }
+         finally {
+-            locks.writeLock().unlock();
++            unlockWithPriority(true);
+         }
+     }
+ 	
+Index: src/edu/stanford/smi/protege/server/framestore/background/FrameCalculator.java
+===================================================================
+--- src/edu/stanford/smi/protege/server/framestore/background/FrameCalculator.java	(revision 19377)
++++ src/edu/stanford/smi/protege/server/framestore/background/FrameCalculator.java	(working copy)
+@@ -21,6 +21,7 @@
+ import edu.stanford.smi.protege.model.Slot;
+ import edu.stanford.smi.protege.model.framestore.FrameStore;
+ import edu.stanford.smi.protege.model.framestore.Sft;
++import edu.stanford.smi.protege.model.framestore.SynchronizationFrameStore;
+ import edu.stanford.smi.protege.server.RemoteSession;
+ import edu.stanford.smi.protege.server.framestore.Registration;
+ import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
+@@ -63,8 +64,7 @@
+   public static long MAX_WORKINFO_QUEUE = 15000;
+ 
+ 
+-  private FrameStore fs;
+-  private final Lock readerLock;
++  private SynchronizationFrameStore fs;
+   private ServerFrameStore server;
+   private RemoteSession effectiveClient;
+ 
+@@ -86,14 +86,12 @@
+   private FrameCalculatorStatsImpl stats = new FrameCalculatorStatsImpl();
+   
+ 
+-  public FrameCalculator(FrameStore fs,
++  public FrameCalculator(SynchronizationFrameStore fs,
+                          ServerCacheStateMachine machine,
+-                         Lock readerLock,
+                          ServerFrameStore server,
+                          Map<RemoteSession, Registration> sessionMap) {
+     this.fs = fs;
+     this.machine = machine;
+-    this.readerLock = readerLock;
+     this.server = server;
+     this.sessionMap = sessionMap;
+     innerThread = new FrameCalculatorThread();
+@@ -113,20 +111,18 @@
+     effectiveClient = wi.getClient();
+     ServerFrameStore.setCurrentSession(effectiveClient);
+     if (log.isLoggable(Level.FINE)) {
+-        letOtherThreadsRun();
+         try {
+-            readerLock.lock();
++            fs.lockWithPriority(false);
+             log.fine("Precalculating " + fs.getFrameName(frame) + "/" + frame.getFrameID());
+         }
+         finally {
+-            readerLock.unlock();
++            fs.unlockWithPriority(false);
+         }
+     }
+     try {
+       stats.startWork();
+-      letOtherThreadsRun();
+       try {
+-        readerLock.lock();
++        fs.lockWithPriority(false);
+         if (server.inTransaction()) {
+           if (log.isLoggable(Level.FINE)) {
+             log.fine("\tbut transaction in progress");
+@@ -137,24 +133,22 @@
+         }
+       }
+       finally {
+-          readerLock.unlock();
++          fs.unlockWithPriority(false);
+       }
+       Set<Slot> slots = null;
+       List values = null;
+       Sft sft;
+-      letOtherThreadsRun();
+       try {
+-        readerLock.lock();
++        fs.lockWithPriority(false);
+         checkAbilityToGenerateFullCache(wi);
+         slots = fs.getOwnSlots(frame);
+       }
+       finally {
+-        readerLock.unlock();
++        fs.unlockWithPriority(false);
+       }
+       for (Slot slot : slots) {
+-        letOtherThreadsRun();
+         try {
+-          readerLock.lock();
++          fs.lockWithPriority(false);
+           checkAbilityToGenerateFullCache(wi);
+     	  sft = new Sft(slot, null, false);
+           if (slot.getFrameID().equals(Model.SlotID.DIRECT_INSTANCES) &&
+@@ -171,24 +165,22 @@
+           addFollowedExprs(frame, slot, values);
+         }
+         finally {
+-            readerLock.unlock();
++            fs.unlockWithPriority(false);
+         }
+       }
+       if (frame instanceof Cls) {
+         Cls cls = (Cls) frame;
+-        letOtherThreadsRun();
+         try {
+-          readerLock.lock();
++          fs.lockWithPriority(false);
+           checkAbilityToGenerateFullCache(wi);
+           slots = fs.getTemplateSlots(cls);
+         }
+         finally {
+-          readerLock.unlock();
++          fs.unlockWithPriority(false);
+         }
+         for (Slot slot : slots) {
+-          letOtherThreadsRun();
+           try {
+-            readerLock.lock();
++            fs.lockWithPriority(false);
+             checkAbilityToGenerateFullCache(wi);
+             sft = new Sft(slot, null, true);
+             values = fs.getDirectTemplateSlotValues(cls, slot);
+@@ -198,22 +190,20 @@
+             }
+           }
+           finally {
+-            readerLock.unlock();
++            fs.unlockWithPriority(false);
+           }
+           Set<Facet> facets;
+-          letOtherThreadsRun();
+           try {
+-            readerLock.lock();
++            fs.lockWithPriority(false);
+             checkAbilityToGenerateFullCache(wi);
+             facets = fs.getTemplateFacets(cls, slot);
+           }
+           finally {
+-            readerLock.unlock();
++            fs.unlockWithPriority(false);
+           }
+           for (Facet facet : facets) {
+-            letOtherThreadsRun();
+             try {
+-              readerLock.lock();
++              fs.lockWithPriority(false);
+               checkAbilityToGenerateFullCache(wi);
+               sft = new Sft(slot, facet, true);
+               values = fs.getDirectTemplateFacetValues(cls, slot,facet);
+@@ -223,14 +213,13 @@
+               }
+             }
+             finally {
+-              readerLock.unlock();
++              fs.unlockWithPriority(false);
+             }
+           }
+         }
+       }
+-      letOtherThreadsRun();
+       try {
+-        readerLock.lock();
++        fs.lockWithPriority(false);
+         if (wi.isTargetFullCache() && !server.inTransaction()) {
+           insertValueUpdate(frame, new CacheCompleted<RemoteSession, Sft, List>());
+         } else if (wi.isTargetFullCache()) {
+@@ -238,7 +227,7 @@
+         }
+       }
+       finally {
+-        readerLock.unlock();
++        fs.unlockWithPriority(false);
+       }
+     } catch (Throwable t) {
+       Log.getLogger().log(Level.SEVERE,
+@@ -510,16 +499,6 @@
+       }
+   }
+   
+-  /*
+-   * This method assumes that the caller is holding the kbLock.  The idea is to
+-   * encourage other thread that are waiting on the kbLock to continue running at
+-   * the expense of the current thread.  It has recently been discovered that the thread
+-   * Manager implementation is very expensive to invoke so by default this logic is turned off.
+-   */
+-  private void letOtherThreadsRun() {
+-	  server.letOtherThreadsRun();
+-  }
+-  
+   private class FrameCalculatorThread extends Thread {
+ 
+     public FrameCalculatorThread() {
+@@ -528,6 +507,7 @@
+ 
+     @Override
+     public void run() {
++    	fs.setPriority(.25F);
+         WorkInfo workInfo;
+ 
+         while (true) {
+Index: src/edu/stanford/smi/protege/server/framestore/ServerFrameStore.java
+===================================================================
+--- src/edu/stanford/smi/protege/server/framestore/ServerFrameStore.java	(revision 19377)
++++ src/edu/stanford/smi/protege/server/framestore/ServerFrameStore.java	(working copy)
+@@ -36,6 +36,7 @@
+ import edu.stanford.smi.protege.model.framestore.FrameStore;
+ import edu.stanford.smi.protege.model.framestore.FrameStoreManager;
+ import edu.stanford.smi.protege.model.framestore.Sft;
++import edu.stanford.smi.protege.model.framestore.SynchronizationFrameStore;
+ import edu.stanford.smi.protege.model.query.Query;
+ import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
+ import edu.stanford.smi.protege.server.RemoteSession;
+@@ -147,8 +148,6 @@
+     private FrameCalculator frameCalculator;
+ 
+     private static Set<KnowledgeBase> requiresEventDispatch = new HashSet<KnowledgeBase>();
+-    
+-    private Set<Thread> runningClientThreads = new HashSet<Thread>();
+ 
+ 
+     //ESCA-JAVA0160
+@@ -172,9 +171,8 @@
+             requiresEventDispatch.remove(kb);
+         }
+         valuesFacet = _kb.getSystemFrames().getValuesFacet();
+-        frameCalculator = new FrameCalculator(fsm.getHeadFrameStore(),
++        frameCalculator = new FrameCalculator((SynchronizationFrameStore) fsm.getHeadFrameStore(),
+                                               ((DefaultKnowledgeBase) _kb).getCacheMachine(),
+-                                              readerLock,
+                                               this,
+                                               _sessionToRegistrationMap);
+         
+@@ -257,9 +255,6 @@
+       }
+ 
+       recordCallNoCheck(session);
+-      synchronized (runningClientThreads) {
+-    	  runningClientThreads.add(Thread.currentThread());
+-      }
+     }
+ 
+     public static void recordCallNoCheck(RemoteSession session) {
+@@ -267,28 +262,8 @@
+     }
+     
+     public void unrecordCall() {
+-    	synchronized (runningClientThreads) {
+-    		runningClientThreads.remove(Thread.currentThread());
+-    		if (runningClientThreads.isEmpty()) {
+-    			runningClientThreads.notifyAll();
+-    		}
+-    	}
++    	;
+     }
+-    
+-    public void letOtherThreadsRun() {
+-    	synchronized (runningClientThreads) {
+-    		while (!runningClientThreads.isEmpty()) {
+-    			try {
+-    				if (log.isLoggable(Level.FINE)) {
+-    					log.fine("waitig on threads " + runningClientThreads);
+-    				}
+-					runningClientThreads.wait();
+-				} catch (InterruptedException e) {
+-					log.log(Level.WARNING, "Unexpected Interrupt - please don't press that red button again", e);
+-				}
+-    		}
+-    	}
+-    }
+ 
+     public static void setCurrentSession(RemoteSession session) {
+         synchronized (sessionMap) {
