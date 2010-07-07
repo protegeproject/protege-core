@@ -98,6 +98,7 @@ public class ResourceKey {
     public static final ResourceKey HELP_MENU_PLUGINS = key("help_menu.plugins");
     public static final ResourceKey HELP_MENU_ABOUT = key("help_menu.about");
     public static final ResourceKey HELP_MENU_ABOUT_PLUGINS = key("help_menu.about_plugins");
+    public static final ResourceKey HELP_MENU_CITE_PROTEGE = key("help_menu.cite_protege");
 
     public static final ResourceKey CLASS_NOTE = key("class_note");
     public static final ResourceKey CLASS_NOTE_CREATE = key("class_note.create");
