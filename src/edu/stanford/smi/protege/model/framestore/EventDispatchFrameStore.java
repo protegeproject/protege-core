@@ -72,7 +72,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private List<AbstractEvent> savedEvents = new ArrayList<AbstractEvent>();
     private ArrayListMultiMap<RemoteSession, AbstractEvent> transactedEvents = new ArrayListMultiMap<RemoteSession, AbstractEvent>();
 
-    public EventDispatchFrameStore(KnowledgeBase kb) {
+    private boolean dispatchToSubclassesEnabled = true;
+
+	public EventDispatchFrameStore(KnowledgeBase kb) {
     	this.kb = kb;
     }
     
@@ -462,11 +464,16 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
         }
     }
 
-    private static boolean doDispatchToSubclasses(ClsEvent event) {
+    private boolean doDispatchToSubclasses(ClsEvent event) {
         int type = event.getEventType();
-        return type == ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED || type == ClsEvent.TEMPLATE_FACET_VALUE_CHANGED
-                || type == ClsEvent.TEMPLATE_SLOT_ADDED || type == ClsEvent.TEMPLATE_SLOT_REMOVED;
+        return dispatchToSubclassesEnabled &&
+                 (type == ClsEvent.TEMPLATE_SLOT_VALUE_CHANGED || type == ClsEvent.TEMPLATE_FACET_VALUE_CHANGED
+                     || type == ClsEvent.TEMPLATE_SLOT_ADDED || type == ClsEvent.TEMPLATE_SLOT_REMOVED);
     }
+    
+    public void setDispatchToSubclassesEnabled(boolean dispatchToSubclassesEnabled) {
+		this.dispatchToSubclassesEnabled = dispatchToSubclassesEnabled;
+	}
 
     private void dispatchFrameEventAsClsFacetEvent(FrameEvent event) {
         Facet facet = getFacet(event);
