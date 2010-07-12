@@ -43,6 +43,7 @@ public interface MetaProject {
     Set<ServerInstance> getServers();
     
     ServerInstance createServer(String name);
+
     
     PropertyValue createPropertyValue();
 
@@ -50,8 +51,7 @@ public interface MetaProject {
     boolean save(Collection errors);
 
     void dispose();
-
-    String getServerProperty(String name);
+    
 }
 
 

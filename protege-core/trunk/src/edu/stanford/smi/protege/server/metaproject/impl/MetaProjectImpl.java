@@ -296,10 +296,4 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
         policy = null;
     }
 
-     public String getServerProperty(String name) {
-        final Instance instance = kb.getInstance(name);
-        final String value = ((PropertyValue) instance).getPropertyValue();
-        return value;
-	}
-
 }
