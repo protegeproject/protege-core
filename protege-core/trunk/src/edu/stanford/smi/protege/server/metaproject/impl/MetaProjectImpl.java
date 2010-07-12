@@ -283,6 +283,13 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
         PropertyValue pv = new PropertyValueImpl(this, pi);
         return pv;
     }
+    
+    public ServerInstance createServer(String name) {
+        Instance pi = kb.createInstance(null, getCls(MetaProjectImpl.ClsEnum.Server));
+        ServerInstance si = new ServerInstanceImpl(this, pi);
+        si.setName(name);
+        return si;
+    }
 
     public void localize(KnowledgeBase kb) {
         this.kb = kb;
