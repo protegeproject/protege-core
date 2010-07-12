@@ -46,6 +46,7 @@ public interface MetaProject {
 
     void dispose();
 
+    String getServerProperty(String name);
 }
 
 
