@@ -39,7 +39,7 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
         lastLogin, lastAccess,
         group, member, allowedGroup, allowedOperation,
         allowedGroupOperation, owner, description, annotationProject, hostName,
-        properties, propertyName, propertyValue;
+        properties, propertyName, propertyValue, server;
     }
 
 
@@ -289,5 +289,10 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
         policy = null;
     }
 
+     public String getServerProperty(String name) {
+        final Instance instance = kb.getInstance(name);
+        final String value = ((PropertyValue) instance).getPropertyValue();
+        return value;
+	}
 
 }
