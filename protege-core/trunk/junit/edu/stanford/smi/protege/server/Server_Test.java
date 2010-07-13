@@ -16,8 +16,6 @@ import edu.stanford.smi.protege.model.Frame;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Project;
 import edu.stanford.smi.protege.model.framestore.SimpleTestCase;
-import edu.stanford.smi.protege.server.framestore.LastUsageInvocationHandler;
-import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.User;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl;
@@ -56,6 +54,7 @@ public class Server_Test extends SimpleTestCase {
     private RemoteServer _server;
     private int updateCounter;
     
+    @Override
     public void setUp() throws Exception {
       super.setUp();
       try {
@@ -179,7 +178,7 @@ public class Server_Test extends SimpleTestCase {
         User u2 = metaproject.getUser(USER2);
         
         long start = System.currentTimeMillis();
-        Thread.sleep(LastUsageInvocationHandler.ACCESS_TIME_GRANULARITY);
+        Thread.sleep(ServerProperties.getMetaProjectLastAccessTimeUpdateFrequency());
         ((MetaProjectImpl) metaproject).getKnowledgeBase().flushEvents();
         assertTrue(u2.getLastLogin() == null || u2.getLastLogin().getTime() < start);
         assertTrue(u2.getLastAccess() == null || u2.getLastAccess().getTime() < start);
@@ -193,11 +192,11 @@ public class Server_Test extends SimpleTestCase {
         assertTrue(u2.getLastAccess().getTime() >  start);
         
         start  = System.currentTimeMillis();
-        Thread.sleep(LastUsageInvocationHandler.ACCESS_TIME_GRANULARITY);
+        Thread.sleep(ServerProperties.getMetaProjectLastAccessTimeUpdateFrequency());
         assertTrue(loginTime.getTime() < start);
         assertTrue(u2.getLastAccess().getTime() <= start);
         
-        Thread.sleep(LastUsageInvocationHandler.ACCESS_TIME_GRANULARITY);
+        Thread.sleep(ServerProperties.getMetaProjectLastAccessTimeUpdateFrequency());
 
         kb.createCls("garbage", Collections.singleton(kb.getRootCls()));
     
@@ -238,6 +237,7 @@ public class Server_Test extends SimpleTestCase {
             super(kb);
         }
         
+        @Override
         public Boolean run() {
             if (!installed) {
                 DeletionHookUtil.addDeletionHook(getKnowledgeBase(), new DeletionHook() {
