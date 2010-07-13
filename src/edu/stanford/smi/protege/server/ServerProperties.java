@@ -30,7 +30,7 @@ public class ServerProperties {
   public static final String DELAY_MSEC = "server.delay";
   public static final String DELAY_KBS_DOWNLOAD = "server.download.kilobytes.second";
   public static final String DELAY_KBS_UPLOAD = "server.upload.kilobytes.second";
-  public static final String MIN_PRELOAD_FRAMES = "preload.frame.limit";
+  public static final String PRELOAD_FRAME_LIMIT = "preload.frame.limit";
   public static final String DISABLE_HEARTBEAT = "server.disable.heartbeat";
   public static final String TX_LEVEL = "transaction.level";
   public final static String SERVER_ALLOW_CREATE_USERS = "server.allow.create.users";
@@ -38,6 +38,8 @@ public class ServerProperties {
 
   public final static String PROTEGE_RMI_USE_COMPRESSION = "server.use.compression";
   public final static String PROTEGE_RMI_TOO_SMALL_TO_COMPRESS = "server.too.small.to.compress";
+  
+  public final static String METAPROJECT_LAST_ACCESS_TIME_UPDATE_FREQUENCY = "metaproject.last.accesstime.update.freq"; //default 15 secs
   
   public static boolean skipPreload() {
 	  return SystemUtilities.getSystemBooleanProperty(SKIP_PRELOAD, false);
@@ -67,8 +69,8 @@ public class ServerProperties {
     return true;
   }
   
-  public static int minimumPreloadedFrames() {
-    return SystemUtilities.getSystemIntegerProperty(MIN_PRELOAD_FRAMES, 5000);
+  public static int getPreloadFrameLimit() {
+    return SystemUtilities.getSystemIntegerProperty(PRELOAD_FRAME_LIMIT, 5000);
   }
   
   public static TransactionIsolationLevel getDefaultTransactionIsolationLevel() {
@@ -136,4 +138,13 @@ public class ServerProperties {
       }
   }
   
+  public static long getMetaProjectLastAccessTimeUpdateFrequency() {      
+      String val = ApplicationProperties.getApplicationOrSystemProperty(DELAY_KBS_UPLOAD, "15000");
+      try {
+          return Long.parseLong(val);
+      }
+      catch (NumberFormatException nfe) {
+          return 15 * 1000;
+      }  
+  }
 }
