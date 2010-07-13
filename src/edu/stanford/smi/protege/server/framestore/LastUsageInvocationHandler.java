@@ -5,6 +5,11 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
@@ -14,19 +19,41 @@ import edu.stanford.smi.protege.model.framestore.AbstractFrameStoreInvocationHan
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.ServerProperties;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 
 public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHandler {
-    public static long ACCESS_TIME_GRANULARITY = 15 * 1000;
-    private ProjectInstance projectInstance;
-    private MetaProject metaproject;
-    private Map<User, Date> lastAccessTimeMap = new HashMap<User, Date>();
+   
+    private final MetaProject metaproject;
+    private final Map<String, Date> lastAccessTimeMap = new HashMap<String, Date>();
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+         public Thread newThread(Runnable r) {
+             Thread th = new Thread(r, "Update MetaProject Thread");
+             th.setDaemon(true);
+             return th;
+        }
+    });
     
     public LastUsageInvocationHandler(ProjectInstance projectInstance) {
-        this.projectInstance = projectInstance;
         metaproject = projectInstance.getMetaProject();
+        final long updateFrequency = ServerProperties.getMetaProjectLastAccessTimeUpdateFrequency();
+        executor.scheduleWithFixedDelay(new Runnable() {
+            public void run() {
+                Map<String, Date> lastAccessTimeUpdates;
+                synchronized (lastAccessTimeMap) {
+                    lastAccessTimeUpdates = new HashMap<String, Date>(lastAccessTimeMap);
+                    lastAccessTimeMap.clear();
+                }
+                for (Entry<String, Date> entry : lastAccessTimeUpdates.entrySet()) {
+                    String userName = entry.getKey();
+                    Date date = entry.getValue();
+                    User u = metaproject.getUser(userName);
+                    u.setLastAccess(date);
+                }
+            }
+        }, updateFrequency, updateFrequency, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -64,18 +91,16 @@ public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHand
         }
         return invoke(method, args);
     }
-    
+
     private void updateLastAccessTime() {
         RemoteSession session = ServerFrameStore.getCurrentSession();
         if (session == null) {
             return;
         }
-        User u = metaproject.getUser(session.getUserName());
         Date now = new Date();
-        Date then = lastAccessTimeMap.get(u);
-        if (then == null || now.getTime() > then.getTime() + ACCESS_TIME_GRANULARITY) {
-            u.setLastAccess(now);
-            lastAccessTimeMap.put(u, now);
+        String userName = session.getUserName();
+        synchronized (lastAccessTimeMap) {
+            lastAccessTimeMap.put(userName, now);
         }
     }
 
