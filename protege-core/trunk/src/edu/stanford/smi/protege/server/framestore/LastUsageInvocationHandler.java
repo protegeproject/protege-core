@@ -15,17 +15,18 @@ import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.AbstractFrameStoreInvocationHandler;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.ServerProperties;
+import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 
 public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHandler {
-   
     private final MetaProject metaproject;
     private final Map<String, Date> lastAccessTimeMap = new HashMap<String, Date>();
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
@@ -35,8 +36,10 @@ public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHand
              return th;
         }
     });
+    private FrameCalculator frameCalculator;
     
-    public LastUsageInvocationHandler(ProjectInstance projectInstance) {
+    public LastUsageInvocationHandler(ProjectInstance projectInstance, FrameCalculator frameCalculator) {
+        this.frameCalculator = frameCalculator;
         metaproject = projectInstance.getMetaProject();
         final long updateFrequency = ServerProperties.getMetaProjectLastAccessTimeUpdateFrequency();
         executor.scheduleWithFixedDelay(new Runnable() {
@@ -93,6 +96,9 @@ public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHand
     }
 
     private void updateLastAccessTime() {
+        if (frameCalculator != null && frameCalculator.inFrameCalculatorThread()) {
+            return;
+        }
         RemoteSession session = ServerFrameStore.getCurrentSession();
         if (session == null) {
             return;

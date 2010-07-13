@@ -62,7 +62,9 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 	}
 
 	private static void trace(String text, Level level) {
-	  log.log(level, ++traceCount + " SQL: " + text);
+        if (log.isLoggable(level)) {
+            log.log(level, ++traceCount + " SQL: " + text);
+        }
 	}
 
 	private static void traceQuery(String text, Level level) {
