@@ -190,7 +190,7 @@ public interface RemoteServerFrameStore extends Remote {
 
     void close(RemoteSession session) throws RemoteException;
     
-    RemoteResponse<Object> executeProtegeJob(ProtegeJob job, RemoteSession session) throws ProtegeException, RemoteException;
+    Object executeProtegeJob(ProtegeJob job, RemoteSession session) throws ProtegeException, RemoteException;
 
     RemoteResponse<Boolean> beginTransaction(String name, RemoteSession session) throws RemoteException;
 
