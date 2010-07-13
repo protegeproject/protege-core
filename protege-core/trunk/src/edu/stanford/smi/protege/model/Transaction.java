@@ -98,4 +98,13 @@ public abstract class Transaction<X> {
         index += Transaction.APPLY_TO_TRAILER_STRING.length();
         return beginString.substring(index);
     }
+
+    public static String removeApplyTo(String beginString) {
+        if (beginString == null){
+            return null;
+        }
+        int index = beginString.indexOf(Transaction.APPLY_TO_TRAILER_STRING);
+        if (index < 0) return beginString;
+        return beginString.substring(0, index);
+    }
 }
