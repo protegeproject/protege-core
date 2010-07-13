@@ -5,7 +5,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -119,32 +118,32 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      */
     public static final transient Logger cacheLog = Logger.getLogger(CompleteableCache.class.getPackage().getName() + ".ClientServer");
 
-    private FrameStore _delegate;
-    private KnowledgeBase _kb;
+    private final FrameStore _delegate;
+    private final KnowledgeBase _kb;
 
-    private TransactionMonitor transactionMonitor;
+    private final TransactionMonitor transactionMonitor;
 
     private ProjectInstance projectInstance;
 
-    private FifoWriter<AbstractEvent> _eventWriter = new FifoWriter<AbstractEvent>();
+    private final FifoWriter<AbstractEvent> _eventWriter = new FifoWriter<AbstractEvent>();
     {
       _eventWriter.setLogger(cacheLog, "New Event");
     }
 
-    private Map<RemoteSession, Registration> _sessionToRegistrationMap
+    private final Map<RemoteSession, Registration> _sessionToRegistrationMap
       = new HashMap<RemoteSession, Registration>();
     private boolean _isDirty;
     private final Object _kbLock;
 
-    private Facet valuesFacet;
+    private final Facet valuesFacet;
 
     private static Map<Thread,RemoteSession> sessionMap = new HashMap<Thread, RemoteSession>();
 
-    private FrameCalculator frameCalculator;
+    private final FrameCalculator frameCalculator;
 
     private static Set<KnowledgeBase> requiresEventDispatch = new HashSet<KnowledgeBase>();
     
-    private Set<Thread> runningClientThreads = new HashSet<Thread>();
+    private final Set<Thread> runningClientThreads = new HashSet<Thread>();
 
 
     //ESCA-JAVA0160
@@ -1153,7 +1152,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCallNoCheck(session);
     }
 
-    public RemoteResponse<Object> executeProtegeJob(ProtegeJob job,
+    public Object executeProtegeJob(ProtegeJob job,
                                                     RemoteSession session)
                                                     throws ProtegeException, ServerSessionLost {
       recordCall(session);
@@ -1161,10 +1160,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         synchronized(_kbLock) {
           job.localize(_kb);
         }
-        Object ret = job.run();
-        synchronized(_kbLock) {
-          return new RemoteResponse<Object>(ret, getValueUpdates(session));
-        }
+        return job.run();
       } catch (ProtegeException pe) {
         Log.getLogger().log(Level.WARNING, "Exception on remote execution", pe);
         throw pe;
@@ -1668,30 +1664,31 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           unrecordCall();
       }
     }
-
+    
     public OntologyUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) throws ServerSessionLost {
-      recordCall(session);
-      try {
-          int frameCount = 0;
-          synchronized (_kbLock) {
-              frameCount = getDelegate().getFrameCount();
-          }
-          if (all ||  frameCount < ServerProperties.minimumPreloadedFrames()) {
-              synchronized (_kbLock) {
-                  for (Frame frame : getDelegate().getFrames()) {
-                      frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
-                  }
-              }
-          } else {
-              addUserFrames(session, userFrames);
-              addSystemClasses(session);
-          }
-          return new OntologyUpdate(getValueUpdates(session));
+        recordCall(session);
+        try {
+            if (all) {
+                int preloadFrameLimit = ServerProperties.getPreloadFrameLimit();
+                int preloaded = 0;
+                synchronized (_kbLock) {
+                    for (Frame frame : getDelegate().getFrames()) {
+                        if (++preloaded > preloadFrameLimit) {
+                            break;
+                        }
+                        frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
+                    }
+                }
+            } else {
+                addUserFrames(session, userFrames);
+                addSystemClasses(session);
+            }
+            return new OntologyUpdate(getValueUpdates(session));
+        }
+        finally {
+            unrecordCall();
+        }
       }
-      finally {
-          unrecordCall();
-      }
-    }
 
     private void addSystemClasses(RemoteSession session) {
       Set<Frame> frames = new LinkedHashSet<Frame>();
