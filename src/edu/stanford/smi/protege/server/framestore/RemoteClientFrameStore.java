@@ -103,14 +103,14 @@ public class RemoteClientFrameStore implements FrameStore {
     private RemoteServerFrameStore proxiedDelegate;
     private RemoteServerFrameStore remoteDelegate;
     
-    private FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>> deferredTransactionsWriter 
+    private final FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>> deferredTransactionsWriter 
         = new FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>>();
     /*
      * It is true that this cacheMap is a memory leak on the client but a weak hash map does not do the right
      * thing. Frames with equal frame id are constantly being seen and garbage collected, so with a weak hash map,
      * the cacheMap is far too empty.
      */
-    private Map<Frame, DeferredOperationCache> cacheMap = new HashMap<Frame, DeferredOperationCache>();
+    private final Map<Frame, DeferredOperationCache> cacheMap = new HashMap<Frame, DeferredOperationCache>();
 
     private TransactionIsolationLevel transactionLevel;
     private int transactionNesting = 0;
@@ -118,9 +118,9 @@ public class RemoteClientFrameStore implements FrameStore {
     //FIXME: frameNameToFrameMap may not handle transactions or type updates correctly
     // Any positive result from this map is checked against the cache (more reliable)
     // The negative cache is aggressively cleared and hopefully is accurate.
-    private Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
+    private final Map<String, Frame> frameNameToFrameMap = new HashMap<String, Frame>();
 
-    private RemoteClientStatsImpl stats = new RemoteClientStatsImpl();
+    private final RemoteClientStatsImpl stats = new RemoteClientStatsImpl();
     private Set<Operation> allowedOps;
     private Set<Operation> knownOps;
 
@@ -1674,12 +1674,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
   public Object executeProtegeJob(ProtegeJob job) throws ProtegeException {
     try {
-      RemoteResponse<Object> response;
-      synchronized (kb) {
-          response= getRemoteDelegate().executeProtegeJob(job, session);
-          processValueUpdate(response);
-      }
-      Object result = response.getResponse();
+      Object result = getRemoteDelegate().executeProtegeJob(job, session);
       LocalizeUtils.localize(result, kb);
       return result;
     } catch (RemoteException remote) {
