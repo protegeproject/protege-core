@@ -12,46 +12,46 @@ public class WorkInfo implements Comparable<WorkInfo> {
   public static final String WORK_INFO_TIMEOUT_PROPERTY = "edu.stanford.smi.protege.server.framecalculator.work.info.expiration";
   public static final int WORK_INFO_TIMEOUT = ApplicationProperties.getIntegerProperty(WORK_INFO_TIMEOUT_PROPERTY, 60000);
   private static int counter = 0;
-  
+
   private RemoteSession client;
   private Frame frame;
-  private Set<ServerCachedState> states = new HashSet<ServerCachedState>();
-  private EnumSet<CacheRequestReason> reasons = EnumSet.noneOf(CacheRequestReason.class);
-  private boolean skipDirectInstances = false;
+  private final Set<ServerCachedState> states = new HashSet<ServerCachedState>();
+  private final EnumSet<CacheRequestReason> reasons = EnumSet.noneOf(CacheRequestReason.class);
+  private boolean skipDirectInstances = true;
   private boolean targetFullCache = true;
-  
+
   private int sequence = counter++;
-  
-  private long timeWorkInfoAdded = System.currentTimeMillis();
-  
+
+  private final long timeWorkInfoAdded = System.currentTimeMillis();
+
   public boolean expired() {
       return System.currentTimeMillis() - timeWorkInfoAdded > WORK_INFO_TIMEOUT;
   }
-  
+
   public RemoteSession getClient() {
     return client;
   }
-  
+
   public void setClient(RemoteSession client) {
     this.client = client;
   }
-  
+
   public void addState(ServerCachedState state) {
     states.add(state);
   }
-  
+
   public Set<ServerCachedState> getStates() {
     return states;
   }
-  
+
   public void addReason(CacheRequestReason reason) {
     reasons.add(reason);
   }
-  
+
   public EnumSet<CacheRequestReason> getReasons() {
     return reasons;
   }
-  
+
   public boolean skipDirectInstances() {
     return skipDirectInstances;
   }
@@ -59,11 +59,11 @@ public class WorkInfo implements Comparable<WorkInfo> {
   public void setSkipDirectInstances(boolean skipDirectInstances) {
     this.skipDirectInstances = skipDirectInstances;
   }
-  
+
   public int getSequence() {
     return sequence;
   }
-  
+
   public void setNewest() {
     sequence = counter++;
   }
@@ -92,7 +92,7 @@ public class WorkInfo implements Comparable<WorkInfo> {
   public void setTargetFullCache(boolean targetFullCache) {
     this.targetFullCache = targetFullCache;
   }
-  
+
   public ClientAndFrame getClientAndFrame() {
     return new ClientAndFrame(client, frame);
   }
