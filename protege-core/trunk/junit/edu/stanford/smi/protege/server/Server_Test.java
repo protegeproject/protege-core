@@ -189,18 +189,23 @@ public class Server_Test extends SimpleTestCase {
         ((MetaProjectImpl) metaproject).getKnowledgeBase().flushEvents();
         Date loginTime = u2.getLastLogin();
         assertTrue(loginTime.getTime() > start);
+        Thread.sleep(ServerProperties.getMetaProjectLastAccessTimeUpdateFrequency());
+        ((MetaProjectImpl) metaproject).getKnowledgeBase().flushEvents();
+        
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Last access time for user " + u2 + " is " + u2.getLastAccess());
+        }
         assertTrue(u2.getLastAccess().getTime() >  start);
         
         start  = System.currentTimeMillis();
         Thread.sleep(ServerProperties.getMetaProjectLastAccessTimeUpdateFrequency());
         assertTrue(loginTime.getTime() < start);
         assertTrue(u2.getLastAccess().getTime() <= start);
-        
-        Thread.sleep(ServerProperties.getMetaProjectLastAccessTimeUpdateFrequency());
-
+         
         kb.createCls("garbage", Collections.singleton(kb.getRootCls()));
-    
+        Thread.sleep(ServerProperties.getMetaProjectLastAccessTimeUpdateFrequency());
         ((MetaProjectImpl) metaproject).getKnowledgeBase().flushEvents();
+        
         assertTrue(loginTime.equals(u2.getLastLogin()));
         assertTrue(u2.getLastAccess().getTime() > start);
         assertTrue(u2.getLastAccess().getTime() <= System.currentTimeMillis());
