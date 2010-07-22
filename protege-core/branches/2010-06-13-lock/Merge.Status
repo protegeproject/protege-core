@@ -1,6 +1,13 @@
-revision=19333
+revision=19562
 source=http://smi-protege.stanford.edu/repos/protege/protege-core/trunk
 target=http://smi-protege.stanford.edu/repos/protege/protege-core/branches/2010-06-13-lock
 
 svn diff ${source}@${revision} ${target} > /tmp/core.patch
 svn merge ${source}@${revision} ${source}
+
+
+
+conflicts
+
+src/edu/stanford/smi/protege/server/framestore/ServerFrameStore.java
+src/edu/stanford/smi/protege/server/framestore/LastUsageInvocationHandler.java

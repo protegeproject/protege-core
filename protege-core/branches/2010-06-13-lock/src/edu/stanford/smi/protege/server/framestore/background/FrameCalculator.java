@@ -17,11 +17,14 @@ import java.util.logging.Logger;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.framestore.FrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.Server;
+import edu.stanford.smi.protege.server.ServerProject;
 import edu.stanford.smi.protege.server.framestore.Registration;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.ServerSessionLost;
@@ -581,7 +584,16 @@ public class FrameCalculator {
       }
   }
 
-  public static class FrameCalculatorStatsImpl implements FrameCalculatorStats, Serializable {
+  public static FrameCalculator getFrameCalculator(KnowledgeBase kb) {
+    ServerProject sp = Server.getInstance().getServerProject(kb.getProject());
+    if (sp == null) {
+        return null;
+    }
+    ServerFrameStore sfs = (ServerFrameStore) sp.getDomainKbFrameStore(null);
+    return sfs.getFrameCalculator();
+}
+
+public static class FrameCalculatorStatsImpl implements FrameCalculatorStats, Serializable {
     private static final long serialVersionUID = -573113660316027300L;
 
     private long startWorkTime;

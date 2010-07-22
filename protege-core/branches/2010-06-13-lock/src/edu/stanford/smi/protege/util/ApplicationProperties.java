@@ -403,6 +403,10 @@ public class ApplicationProperties {
     public static String getOntology101URLString() {
         return "http://protege.stanford.edu/publications/ontology_development/ontology101.html";
     }
+    
+    public static String getHowToCiteProtegeURLString() {
+    	return "http://protegewiki.stanford.edu/wiki/HowToCiteProtege";
+    }
 
     public static String getUserName() {
         return getApplicationOrSystemProperty("user.name");

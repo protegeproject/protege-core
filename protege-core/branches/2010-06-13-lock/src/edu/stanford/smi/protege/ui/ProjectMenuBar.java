@@ -84,6 +84,8 @@ public class ProjectMenuBar extends JMenuBar {
         menu.addSeparator();
         ComponentFactory.addMenuItemNoIcon(menu, new ShowAboutBox());
         ComponentFactory.addMenuItemNoIcon(menu, new ShowAboutPluginsBox());
+        ComponentFactory.addMenuItemNoIcon(menu, new DisplayHtml(ResourceKey.HELP_MENU_CITE_PROTEGE, 
+        		ApplicationProperties.getHowToCiteProtegeURLString()));
 
     }
 
