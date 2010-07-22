@@ -8,7 +8,6 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.AbstractFrameStoreInvocationHandler;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
-import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.framestore.background.FrameCalculator;
 import edu.stanford.smi.protege.util.Log;
 
@@ -26,12 +25,7 @@ public class ServerActivityFrameStore extends
     
     private FrameCalculator getFrameCalculator() {
         if (frameCalculator == null) {
-            ServerProject sp = Server.getInstance().getServerProject(kb.getProject());
-            if (sp == null) {
-                return null;
-            }
-            ServerFrameStore sfs = (ServerFrameStore) sp.getDomainKbFrameStore(null);
-            frameCalculator = sfs.getFrameCalculator();
+            frameCalculator = FrameCalculator.getFrameCalculator(kb);
         }
         return frameCalculator;
     }

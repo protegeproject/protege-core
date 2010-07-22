@@ -121,14 +121,14 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
      */
     public static final transient Logger cacheLog = Logger.getLogger(CompleteableCache.class.getPackage().getName() + ".ClientServer");
 
-    private FrameStore _delegate;
-    private KnowledgeBase _kb;
+    private final FrameStore _delegate;
+    private final KnowledgeBase _kb;
 
-    private TransactionMonitor transactionMonitor;
+    private final TransactionMonitor transactionMonitor;
 
     private ProjectInstance projectInstance;
 
-    private FifoWriter<AbstractEvent> _eventWriter = new FifoWriter<AbstractEvent>();
+    private final FifoWriter<AbstractEvent> _eventWriter = new FifoWriter<AbstractEvent>();
     {
       _eventWriter.setLogger(cacheLog, "New Event");
     }
@@ -144,11 +144,11 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     private static Map<Thread,RemoteSession> sessionMap = new HashMap<Thread, RemoteSession>();
 
-    private FrameCalculator frameCalculator;
+    private final FrameCalculator frameCalculator;
 
     private static Set<KnowledgeBase> requiresEventDispatch = new HashSet<KnowledgeBase>();
     
-    private Set<Thread> runningClientThreads = new HashSet<Thread>();
+    private final Set<Thread> runningClientThreads = new HashSet<Thread>();
 
 
     //ESCA-JAVA0160
@@ -1171,7 +1171,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
       recordCallNoCheck(session);
     }
 
-    public RemoteResponse<Object> executeProtegeJob(ProtegeJob job,
+    public Object executeProtegeJob(ProtegeJob job,
                                                     RemoteSession session)
                                                     throws ProtegeException, ServerSessionLost {
       recordCall(session);
@@ -1183,14 +1183,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         finally {
             readerLock.unlock();
         }
-        Object ret = job.run();
-        try {
-          writerLock.lock();
-          return new RemoteResponse<Object>(ret, getValueUpdates(session, true));
-        }
-        finally {
-            writerLock.unlock();
-        }
+        return job.run();
       } catch (ProtegeException pe) {
         Log.getLogger().log(Level.WARNING, "Exception on remote execution", pe);
         throw pe;
@@ -1706,36 +1699,34 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
           }
       }
     }
-
+    
     public OntologyUpdate preload(Set<String> userFrames, boolean all, RemoteSession session) throws ServerSessionLost {
       recordCall(session);
-      try {
-          int frameCount = 0;
+      if (all) {
+          int preloadFrameLimit = ServerProperties.getPreloadFrameLimit();
+          int preloaded = 0;
           try {
               readerLock.lock();
-              frameCount = getDelegate().getFrameCount();
+              for (Frame frame : getDelegate().getFrames()) {
+                  if (++preloaded > preloadFrameLimit) {
+                      break;
+                  }
+                  frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
+              }
           }
           finally {
               readerLock.unlock();
           }
-          if (all ||  frameCount < ServerProperties.minimumPreloadedFrames()) {
-              try {
-                  readerLock.lock();
-                  for (Frame frame : getDelegate().getFrames()) {
-                      frameCalculator.addRequest(frame, session, CacheRequestReason.PRELOAD);
-                  }
-              }
-              finally {
-                  readerLock.unlock();
-              }
-          } else {
-              addUserFrames(session, userFrames);
-              addSystemClasses(session);
-          }
-          return new OntologyUpdate(getValueUpdates(session, true));
+      } else {
+          addUserFrames(session, userFrames);
+          addSystemClasses(session);
+      }
+      try {
+          readerLock.lock();
+          return new OntologyUpdate(getValueUpdates(session, false));
       }
       finally {
-          unrecordCall();
+          readerLock.unlock();
       }
     }
 
@@ -1871,7 +1862,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
                                        readAccessEnforcement),
                    FrameStoreManager.AFTER_SYNCHRONIZATION_AND_LOCALIZATION_FS);
     		}
-    		LastUsageInvocationHandler lastUsageFrameStore = new LastUsageInvocationHandler(projectInstance);
+    		LastUsageInvocationHandler lastUsageFrameStore = new LastUsageInvocationHandler(projectInstance, frameCalculator);
     		fsm.insertFrameStore((FrameStore) Proxy.newProxyInstance(getClass().getClassLoader(), 
     		                                                         new Class<?>[] { FrameStore.class }, 
     		                                                         lastUsageFrameStore),

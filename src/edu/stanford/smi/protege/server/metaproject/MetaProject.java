@@ -39,13 +39,19 @@ public interface MetaProject {
 
     Policy getPolicy();
 
+    
+    Set<ServerInstance> getServers();
+    
+    ServerInstance createServer(String name);
+
+    
     PropertyValue createPropertyValue();
 
     @SuppressWarnings("unchecked")
     boolean save(Collection errors);
 
     void dispose();
-
+    
 }
 
 
