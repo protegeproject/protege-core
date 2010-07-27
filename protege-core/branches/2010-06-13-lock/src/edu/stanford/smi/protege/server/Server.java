@@ -88,7 +88,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private MetaProject metaproject;
     private ServerProject serverMetaProject;
 
-    private List<RemoteSession> _sessions = new ArrayList<RemoteSession>();
+    private List<RemoteSession> _sessions = Collections.synchronizedList(new ArrayList<RemoteSession>());
     private URI _baseURI;
     private Map<RemoteSession, Collection<ServerProject>> _sessionToProjectsMap
         = new HashMap<RemoteSession, Collection<ServerProject>>();
@@ -584,7 +584,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      */
 
 
-    public synchronized boolean isActive(RemoteSession session) {
+    public boolean isActive(RemoteSession session) {
         return _sessions.contains(session);
     }
 
