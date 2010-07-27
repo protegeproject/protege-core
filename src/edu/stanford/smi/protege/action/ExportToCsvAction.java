@@ -280,7 +280,7 @@ public class ExportToCsvAction extends StandardAction {
 
 
 	protected String getExportName(Frame frame) {
-		return isExportBrowserTextEnabled() ? frame.getBrowserText() : frame.getName();
+		return getQuotedValule(isExportBrowserTextEnabled() ? frame.getBrowserText() : frame.getName());
 	}
 	
 	protected String getExportDataValueName(Object data) {
