@@ -1,0 +1,276 @@
+Index: src/edu/stanford/smi/protege/storage/database/DefaultDatabaseFrameDb.java
+===================================================================
+--- src/edu/stanford/smi/protege/storage/database/DefaultDatabaseFrameDb.java	(revision 19628)
++++ src/edu/stanford/smi/protege/storage/database/DefaultDatabaseFrameDb.java	(working copy)
+@@ -1297,20 +1297,45 @@
+         executeUpdate(stmt);
+     }
+ 
+-    private String replaceValueTypeCommand;
++    private String _matchingFramesCommandForSwizzle;
++    private String _updateValueTypeCommandForSwizzle;
+ 
+     private void replaceValueTypeSQL(Frame frame, int newTypeId) throws SQLException {
+-        if (replaceValueTypeCommand == null) {
+-            replaceValueTypeCommand = "UPDATE " + _table + " SET " + VALUE_TYPE_COLUMN + " = ?";
+-            replaceValueTypeCommand += " WHERE " + SHORT_VALUE_COLUMN + " = ?";
+-            replaceValueTypeCommand += " AND " + VALUE_TYPE_COLUMN + " > 4";
++        if (_matchingFramesCommandForSwizzle == null) {
++            _matchingFramesCommandForSwizzle = "SELECT " + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN + ", " + VALUE_INDEX_COLUMN + ", " + 
++                                                SHORT_VALUE_COLUMN + 
++                                      " FROM " + _table + 
++                                      " WHERE " + SHORT_VALUE_COLUMN + " = ?  AND " + VALUE_TYPE_COLUMN + " >= " + DatabaseUtils.BASE_FRAME_TYPE_VALUE;
+         }
+-        PreparedStatement stmt = getCurrentConnection().getPreparedStatement(replaceValueTypeCommand);
+-
+-        DatabaseUtils.setValueType(stmt, 1, newTypeId);
+-        DatabaseUtils.setFrame(stmt, 2, frame);
+-        // DatabaseUtils.setValueType(stmt, 3, currentTypeId);
+-        executeUpdate(stmt);
++        if (_updateValueTypeCommandForSwizzle == null) {
++            _updateValueTypeCommandForSwizzle  = "UPDATE " + _table + " SET " + VALUE_TYPE_COLUMN + " = ? " +
++                                         " WHERE " + FRAME_COLUMN + " = ? " + " AND " + SLOT_COLUMN  + " = ? AND " + FACET_COLUMN + " = ? AND " + IS_TEMPLATE_COLUMN + " = ?" +
++                                                 " AND " + VALUE_INDEX_COLUMN + " = ?";
++        }
++        PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_matchingFramesCommandForSwizzle);
++        
++        setFrame(stmt, 1, frame);
++        
++        ResultSet rs = executeQuery(stmt);
++        try {
++            while (rs.next()) {
++                if (frame.getName().equals(rs.getString(6))) {
++                    PreparedStatement exe = getCurrentConnection().getPreparedStatement(_updateValueTypeCommandForSwizzle);
++                    exe.setInt(1, newTypeId);
++                    
++                    exe.setString(2, rs.getString(1));     // frame column
++                    exe.setString(3, rs.getString(2));     // slot column
++                    exe.setString(4, rs.getString(3));     // facet column
++                    exe.setBoolean(5, rs.getBoolean(4));   // isTemplate column
++                    exe.setInt(6, rs.getInt(5));           // value index
++                    executeUpdate(exe);
++                }
++            }
++            
++        }
++        finally {
++            rs.close();
++        }
+     }
+ 
+     public int getClsCount() {
+@@ -1492,7 +1517,6 @@
+     private String _updateFrameFieldText;
+     private String _updateSlotFieldText;
+     private String _updateFacetFieldText;
+-    private String _updateValueFieldText;
+     private String _replaceNameText;
+ 
+     public void replaceFrame(Frame original, Frame replacement) {
+@@ -1528,15 +1552,7 @@
+     			executeUpdate(updateFacetFieldStatement);
+     		}
+ 
+-    		if (_updateValueFieldText == null) {
+-    			_updateValueFieldText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ? WHERE ";
+-    			_updateValueFieldText = _updateValueFieldText + SHORT_VALUE_COLUMN + " = ? AND ";
+-    			_updateValueFieldText = _updateValueFieldText + VALUE_TYPE_COLUMN + " >= " + DatabaseUtils.BASE_FRAME_TYPE_VALUE;
+-    		}
+-    		PreparedStatement updateValueFieldStatement = getCurrentConnection().getPreparedStatement(_updateValueFieldText);
+-    		setFrame(updateValueFieldStatement, 1, replacement);
+-    		setFrame(updateValueFieldStatement, 2, original);
+-    		executeUpdate(updateValueFieldStatement);
++    		replaceFrameShortValueField(original, replacement);
+ 
+     		if (_replaceNameText == null) {
+     			_replaceNameText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ?," +  VALUE_TYPE_COLUMN + " = ? WHERE ";
+@@ -1553,7 +1569,49 @@
+     		createRuntimeException(sqle);
+     	}
+     }
++    
++    private String _matchingFramesCommandForRename;
++    private String _updateValueFieldTextForRename;
++    
++    private void replaceFrameShortValueField(Frame original, Frame replacement) throws SQLException {
++        if (_matchingFramesCommandForRename == null) {
++            _matchingFramesCommandForRename = "SELECT " + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN + ", " + VALUE_INDEX_COLUMN + ", " + 
++                                                SHORT_VALUE_COLUMN + 
++                                      " FROM " + _table + 
++                                      " WHERE " + SHORT_VALUE_COLUMN + " = ?  AND " + VALUE_TYPE_COLUMN + " >= " + DatabaseUtils.BASE_FRAME_TYPE_VALUE;
++        }
++        if (_updateValueFieldTextForRename == null) {
++            _updateValueFieldTextForRename  = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ? " +
++                                         " WHERE " + FRAME_COLUMN + " = ? " + " AND " + SLOT_COLUMN  + " = ? AND " + FACET_COLUMN + " = ? AND " + IS_TEMPLATE_COLUMN + " = ?" +
++                                                 " AND " + VALUE_INDEX_COLUMN + " = ?";
++        }
+ 
++      PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_matchingFramesCommandForRename);
++        
++        setFrame(stmt, 1, original);
++        
++        ResultSet rs = executeQuery(stmt);
++        try {
++            while (rs.next()) {
++                if (original.getName().equals(rs.getString(6))) {
++                    PreparedStatement exe = getCurrentConnection().getPreparedStatement(_updateValueFieldTextForRename);
++                    setFrame(exe, 1, replacement);
++                    
++                    exe.setString(2, rs.getString(1));     // frame column
++                    exe.setString(3, rs.getString(2));     // slot column
++                    exe.setString(4, rs.getString(3));     // facet column
++                    exe.setBoolean(5, rs.getBoolean(4));   // isTemplate column
++                    exe.setInt(6, rs.getInt(5));           // value index
++                    executeUpdate(exe);
++                }
++            }
++            
++        }
++        finally {
++            rs.close();
++        }
++    }
++
+     public void reinitialize()  {
+     }
+ 
+Index: junit/edu/stanford/smi/protege/storage/database/DatabaseKnowledgeBase_Test.java
+===================================================================
+--- junit/edu/stanford/smi/protege/storage/database/DatabaseKnowledgeBase_Test.java	(revision 19628)
++++ junit/edu/stanford/smi/protege/storage/database/DatabaseKnowledgeBase_Test.java	(working copy)
+@@ -1,15 +1,22 @@
+ package edu.stanford.smi.protege.storage.database;
+ 
+ import java.util.Collection;
++import java.util.Collections;
++import java.util.UUID;
+ 
+ import edu.stanford.smi.protege.model.Cls;
++import edu.stanford.smi.protege.model.DefaultCls;
+ import edu.stanford.smi.protege.model.DefaultKnowledgeBase_Test;
++import edu.stanford.smi.protege.model.Frame;
++import edu.stanford.smi.protege.model.FrameID;
+ import edu.stanford.smi.protege.model.Instance;
+ import edu.stanford.smi.protege.model.KnowledgeBase;
+ import edu.stanford.smi.protege.model.Model;
+ import edu.stanford.smi.protege.model.Reference;
+ import edu.stanford.smi.protege.model.Slot;
++import edu.stanford.smi.protege.model.SystemFrames;
+ import edu.stanford.smi.protege.model.ValueType;
++import edu.stanford.smi.protege.model.framestore.SimpleFrameStore;
+ import edu.stanford.smi.protege.test.APITestCase;
+ 
+ public class DatabaseKnowledgeBase_Test extends APITestCase {
+@@ -149,5 +156,112 @@
+       assertEquals("direct instance count after reload", 4, cls.getDirectInstanceCount());
+     }
+   }
++  
++  public void testSwizzleCaseSensitivity() {
++      for (DBType dbt : DBType.values()) {
++          setDBType(dbt);
++          if (!dbConfigured()) {
++            continue;
++          }
++          setDatabaseProject();
++          KnowledgeBase kb = getDomainKB();
++          String prefix = "PrEFiX";
++          String suffix = UUID.randomUUID().toString();
++          SystemFrames sframes = kb.getSystemFrames();
++          Instance i = createInstance(sframes.getRootCls());
++          Slot s = createSlot();
++          
++          Cls c1 = createCls(prefix + suffix);
++          i.addOwnSlotValue(s, c1);
++          Cls c2 = createCls(prefix.toLowerCase()  + suffix);
++          i.addOwnSlotValue(s, c2);
++          
++          SimpleFrameStore sfs = kb.getFrameStoreManager().getFrameStoreFromClass(SimpleFrameStore.class);
++          assertTrue(sfs != null);
++          sfs.setDirectOwnSlotValues(c1, sframes.getDirectTypesSlot(), Collections.singleton(sframes.getStandardSlotMetaCls()));
++          kb.flushCache();
++          
++          assertTrue(kb.getFrame(prefix + suffix) instanceof Cls);
++          assertTrue(kb.getFrame(prefix.toLowerCase() + suffix) instanceof Cls);
++          int count = 0;
++          for (Object o : i.getOwnSlotValues(s)) {
++              assertTrue(o instanceof Cls);
++              count++;
++          }
++          assertTrue(count == 2);
++          
++          sfs.swizzleInstance(c1);
++          kb.flushCache();
++          
++          assertTrue(kb.getFrame(prefix + suffix) instanceof Slot);
++          assertTrue(kb.getFrame(prefix.toLowerCase() + suffix) instanceof Cls);
++          count = 0;
++          for (Object o : i.getOwnSlotValues(s)) {
++              if  (((Frame) o).getName().equals(prefix.toLowerCase() + suffix)) {
++                  assertTrue(o instanceof Cls);
++              }
++              else {
++                  assertTrue(o instanceof Slot);
++              }
++              count++;
++          }
++          assertTrue(count == 2);
++      }
++  }
++  
++  public void testRenameCaseSensitivity() {
++      for (DBType dbt : DBType.values()) {
++          setDBType(dbt);
++          if (!dbConfigured()) {
++            continue;
++          }
++          setDatabaseProject();
++          KnowledgeBase kb = getDomainKB();
++          String prefix = "PrEFiX";
++          String suffix = UUID.randomUUID().toString();
++          SystemFrames sframes = kb.getSystemFrames();
++          Instance i = createInstance(sframes.getRootCls());
++          Slot s = createSlot();
++          
++          Cls c1 = createCls(prefix + suffix);
++          i.addOwnSlotValue(s, c1);
++          Cls c2 = createCls(prefix.toLowerCase()  + suffix);
++          i.addOwnSlotValue(s, c2);
++          
++          SimpleFrameStore sfs = kb.getFrameStoreManager().getFrameStoreFromClass(SimpleFrameStore.class);
++          assertTrue(sfs != null);
++          sfs.setDirectOwnSlotValues(c1, sframes.getDirectTypesSlot(), Collections.singleton(sframes.getStandardSlotMetaCls()));
++          kb.flushCache();
++          
++          boolean foundC1 = false;
++          boolean foundC2 = false;
++          for (Object o : i.getOwnSlotValues(s)) {
++              if (((Frame) o).getName().equals(c1.getName()))  {
++                  foundC1 = true;
++              }
++              else if (((Frame) o).getName().equals(c2.getName())) {
++                  foundC2 = true;
++              }
++          }
++          assertTrue(foundC1);
++          assertTrue(foundC2);
++          
++          sfs.replaceFrame(c1, new DefaultCls(kb, new FrameID(suffix)));
++          kb.flushCache();
++          
++          foundC1 = false;
++          foundC2 = false;
++          for (Object o : i.getOwnSlotValues(s)) {
++              if (((Frame) o).getName().equals(suffix))  {
++                  foundC1 = true;
++              }
++              else if (((Frame) o).getName().equals(c2.getName())) {
++                  foundC2 = true;
++              }
++          }
++          assertTrue(foundC1);
++          assertTrue(foundC2);
++      }
++  }
+ 
+ }
