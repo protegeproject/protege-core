@@ -252,11 +252,16 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 				public TransactionIsolationLevel getTransationIsolationLevel()
 						throws TransactionException {
 					int jdbcLevel = Connection.TRANSACTION_NONE;
+					RobustConnection connection = null;
 					try {
-						RobustConnection connection = getCurrentConnection();
+						connection = getCurrentConnection();
 						jdbcLevel = connection.getTransactionIsolationLevel();
 					} catch( SQLException sqle ) {
 						throw new TransactionException( sqle );
+					}
+					finally {
+                        // WARNING... what if this is called while the database nfs is doing something?
+					    connection.setIdle(true);
 					}
 					return TransactionIsolationLevel.getTransactionLevel( jdbcLevel );
 				}
@@ -265,14 +270,20 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 				public void setTransactionIsolationLevel(TransactionIsolationLevel level)
 						throws TransactionException {
 					int jdbcLevel = level.getJdbcLevel();
+					RobustConnection connection = null;
 					try {
-						RobustConnection connection = getCurrentConnection();
+						connection = getCurrentConnection();
 						if( connection != null ) {
 							connection.setTransactionIsolationLevel( jdbcLevel );
 						}
 					} catch( SQLException e ) {
 						throw new TransactionException( e );
 					}
+					finally {
+                        // WARNING... what if this is called while the database nfs is doing something?
+					    connection.setIdle(true);
+					}
+					
 				}
 
 			};
