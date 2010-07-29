@@ -1297,20 +1297,45 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         executeUpdate(stmt);
     }
 
-    private String replaceValueTypeCommand;
+    private String _matchingFramesCommandForSwizzle;
+    private String _updateValueTypeCommandForSwizzle;
 
     private void replaceValueTypeSQL(Frame frame, int newTypeId) throws SQLException {
-        if (replaceValueTypeCommand == null) {
-            replaceValueTypeCommand = "UPDATE " + _table + " SET " + VALUE_TYPE_COLUMN + " = ?";
-            replaceValueTypeCommand += " WHERE " + SHORT_VALUE_COLUMN + " = ?";
-            replaceValueTypeCommand += " AND " + VALUE_TYPE_COLUMN + " > 4";
+        if (_matchingFramesCommandForSwizzle == null) {
+            _matchingFramesCommandForSwizzle = "SELECT " + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN + ", " + VALUE_INDEX_COLUMN + ", " + 
+                                                SHORT_VALUE_COLUMN + 
+                                      " FROM " + _table + 
+                                      " WHERE " + SHORT_VALUE_COLUMN + " = ?  AND " + VALUE_TYPE_COLUMN + " >= " + DatabaseUtils.BASE_FRAME_TYPE_VALUE;
         }
-        PreparedStatement stmt = getCurrentConnection().getPreparedStatement(replaceValueTypeCommand);
-
-        DatabaseUtils.setValueType(stmt, 1, newTypeId);
-        DatabaseUtils.setFrame(stmt, 2, frame);
-        // DatabaseUtils.setValueType(stmt, 3, currentTypeId);
-        executeUpdate(stmt);
+        if (_updateValueTypeCommandForSwizzle == null) {
+            _updateValueTypeCommandForSwizzle  = "UPDATE " + _table + " SET " + VALUE_TYPE_COLUMN + " = ? " +
+                                         " WHERE " + FRAME_COLUMN + " = ? " + " AND " + SLOT_COLUMN  + " = ? AND " + FACET_COLUMN + " = ? AND " + IS_TEMPLATE_COLUMN + " = ?" +
+                                                 " AND " + VALUE_INDEX_COLUMN + " = ?";
+        }
+        PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_matchingFramesCommandForSwizzle);
+        
+        setFrame(stmt, 1, frame);
+        
+        ResultSet rs = executeQuery(stmt);
+        try {
+            while (rs.next()) {
+                if (frame.getName().equals(rs.getString(6))) {
+                    PreparedStatement exe = getCurrentConnection().getPreparedStatement(_updateValueTypeCommandForSwizzle);
+                    exe.setInt(1, newTypeId);
+                    
+                    exe.setString(2, rs.getString(1));     // frame column
+                    exe.setString(3, rs.getString(2));     // slot column
+                    exe.setString(4, rs.getString(3));     // facet column
+                    exe.setBoolean(5, rs.getBoolean(4));   // isTemplate column
+                    exe.setInt(6, rs.getInt(5));           // value index
+                    executeUpdate(exe);
+                }
+            }
+            
+        }
+        finally {
+            rs.close();
+        }
     }
 
     public int getClsCount() {
@@ -1492,7 +1517,6 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
     private String _updateFrameFieldText;
     private String _updateSlotFieldText;
     private String _updateFacetFieldText;
-    private String _updateValueFieldText;
     private String _replaceNameText;
 
     public void replaceFrame(Frame original, Frame replacement) {
@@ -1528,15 +1552,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
     			executeUpdate(updateFacetFieldStatement);
     		}
 
-    		if (_updateValueFieldText == null) {
-    			_updateValueFieldText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ? WHERE ";
-    			_updateValueFieldText = _updateValueFieldText + SHORT_VALUE_COLUMN + " = ? AND ";
-    			_updateValueFieldText = _updateValueFieldText + VALUE_TYPE_COLUMN + " >= " + DatabaseUtils.BASE_FRAME_TYPE_VALUE;
-    		}
-    		PreparedStatement updateValueFieldStatement = getCurrentConnection().getPreparedStatement(_updateValueFieldText);
-    		setFrame(updateValueFieldStatement, 1, replacement);
-    		setFrame(updateValueFieldStatement, 2, original);
-    		executeUpdate(updateValueFieldStatement);
+    		replaceFrameShortValueField(original, replacement);
 
     		if (_replaceNameText == null) {
     			_replaceNameText = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ?," +  VALUE_TYPE_COLUMN + " = ? WHERE ";
@@ -1552,6 +1568,48 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
     	catch (SQLException sqle) {
     		createRuntimeException(sqle);
     	}
+    }
+    
+    private String _matchingFramesCommandForRename;
+    private String _updateValueFieldTextForRename;
+    
+    private void replaceFrameShortValueField(Frame original, Frame replacement) throws SQLException {
+        if (_matchingFramesCommandForRename == null) {
+            _matchingFramesCommandForRename = "SELECT " + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN + ", " + VALUE_INDEX_COLUMN + ", " + 
+                                                SHORT_VALUE_COLUMN + 
+                                      " FROM " + _table + 
+                                      " WHERE " + SHORT_VALUE_COLUMN + " = ?  AND " + VALUE_TYPE_COLUMN + " >= " + DatabaseUtils.BASE_FRAME_TYPE_VALUE;
+        }
+        if (_updateValueFieldTextForRename == null) {
+            _updateValueFieldTextForRename  = "UPDATE " + _table + " SET " + SHORT_VALUE_COLUMN + " = ? " +
+                                         " WHERE " + FRAME_COLUMN + " = ? " + " AND " + SLOT_COLUMN  + " = ? AND " + FACET_COLUMN + " = ? AND " + IS_TEMPLATE_COLUMN + " = ?" +
+                                                 " AND " + VALUE_INDEX_COLUMN + " = ?";
+        }
+
+      PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_matchingFramesCommandForRename);
+        
+        setFrame(stmt, 1, original);
+        
+        ResultSet rs = executeQuery(stmt);
+        try {
+            while (rs.next()) {
+                if (original.getName().equals(rs.getString(6))) {
+                    PreparedStatement exe = getCurrentConnection().getPreparedStatement(_updateValueFieldTextForRename);
+                    setFrame(exe, 1, replacement);
+                    
+                    exe.setString(2, rs.getString(1));     // frame column
+                    exe.setString(3, rs.getString(2));     // slot column
+                    exe.setString(4, rs.getString(3));     // facet column
+                    exe.setBoolean(5, rs.getBoolean(4));   // isTemplate column
+                    exe.setInt(6, rs.getInt(5));           // value index
+                    executeUpdate(exe);
+                }
+            }
+            
+        }
+        finally {
+            rs.close();
+        }
     }
 
     public void reinitialize()  {
