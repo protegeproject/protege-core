@@ -54,7 +54,7 @@ public class ConnectionPool {
     
     private static long connectionLongTime;
     static {
-        int longTime = ApplicationProperties.getIntegerProperty(PROPERTY_LONG_RUNNING_CONNECTIONS, 60);
+        int longTime = ApplicationProperties.getIntegerProperty(PROPERTY_LONG_RUNNING_CONNECTIONS, -1);
         connectionLongTime = longTime * 60 * 1000;
     }
     
@@ -129,6 +129,11 @@ public class ConnectionPool {
             ConnectionInfo ci = new ConnectionInfo(connection);
             synchronized (this) {
                 connectionInfoMap.put(connection, ci);
+            }
+        }
+        if (connectionLongTime > 0) {
+            synchronized (this) {
+                ConnectionInfo ci = connectionInfoMap.get(connection);
                 ci.touch();
                 ci.setInformedUserOfLongConnectionTime(false);
                 ci.setConnectionCallStack(new Exception("getConnection stack trace"));
@@ -242,7 +247,7 @@ public class ConnectionPool {
                 if (now - ci.getLastAccessTime() <= connectionRefreshInterval) {
                     break;
                 }
-                else if (!idleConnections.contains(ci.getConnection())  {
+                else if (!idleConnections.contains(ci.getConnection()))  {
                     continue;
                 }
                 else {
@@ -265,7 +270,7 @@ public class ConnectionPool {
                 if (idleConnections.size() <= maxOpenConnections) {
                     break;
                 }
-                else if (!idleConnections.contains(ci.getConnection()) {
+                else if (!idleConnections.contains(ci.getConnection())) {
                     continue;
                 }
                 else {
@@ -282,8 +287,9 @@ public class ConnectionPool {
                 }
             }
         }
-        
-        checkLongRunningConnections();
+        if (connectionLongTime > 0) {
+            checkLongRunningConnections();
+        }
     }
     
     private void checkLongRunningConnections() { 
