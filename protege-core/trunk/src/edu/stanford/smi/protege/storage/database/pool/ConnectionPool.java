@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -24,8 +25,14 @@ import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SystemUtilities;
 
-/*
- * for now I am only worrying about race conditions between the caller and the cleanup thread.
+/**
+ * A Connection Pool
+ * <p></p>
+ *
+ * <p></p>
+ * 
+ * <b>Thread Safety:</b> get/ungetConnection are thread safe.  Once a jdbc Connection has been obtained, it should only be handled 
+ * in a single thread.
  */
 
 
@@ -35,13 +42,22 @@ public class ConnectionPool {
     
     public static final String PROPERTY_REFRESH_CONNECTIONS_TIME="Database.refresh.connections.interval";
     public static final String PROPERTY_MAX_DB_CONNECTIONS = "Database.max.connections";
+    public static final String PROPERTY_LONG_RUNNING_CONNECTIONS="Database.long.running.connection.time";
     
     private static long connectionRefreshInterval;
     static {
         int minutes = ApplicationProperties.getIntegerProperty(ConnectionPool.PROPERTY_REFRESH_CONNECTIONS_TIME, 5);
         connectionRefreshInterval = minutes * 60 * 1000;
     }
+    
     private static int maxOpenConnections = ApplicationProperties.getIntegerProperty(ConnectionPool.PROPERTY_MAX_DB_CONNECTIONS, 3);
+    
+    private static long connectionLongTime;
+    static {
+        int longTime = ApplicationProperties.getIntegerProperty(PROPERTY_LONG_RUNNING_CONNECTIONS, 60);
+        connectionLongTime = longTime * 60 * 1000;
+    }
+    
     
     private String driver;
     private String url;
@@ -93,7 +109,10 @@ public class ConnectionPool {
     }
     
     public int getId(Connection connection) {
-        ConnectionInfo ci = connectionInfoMap.get(connection);
+        ConnectionInfo ci;
+        synchronized (this) {
+            ci = connectionInfoMap.get(connection);
+        }
         return ci != null ? ci.getId() : -1;
     }
     
@@ -110,6 +129,9 @@ public class ConnectionPool {
             ConnectionInfo ci = new ConnectionInfo(connection);
             synchronized (this) {
                 connectionInfoMap.put(connection, ci);
+                ci.touch();
+                ci.setInformedUserOfLongConnectionTime(false);
+                ci.setConnectionCallStack(new Exception("getConnection stack trace"));
             }
         }
         if (log.isLoggable(Level.FINE)) {
@@ -127,11 +149,11 @@ public class ConnectionPool {
                 throw new IllegalStateException("Returning connection to the wrong pool");
             }
             idleConnections.add(connection);
+            ci.touch();
         }
         if (log.isLoggable(Level.FINE)) {
             log.fine("Thread " + Thread.currentThread() +" deallocated connection with id = " + ci.getId());
         }
-        ci.touch();
         cleanup();
     }
     
@@ -142,6 +164,7 @@ public class ConnectionPool {
             if (ci == null) {
                 throw new IllegalStateException("Connection not managed by this pool");
             }
+            ci.touch();
         }
         return ci.getStatement();
     }
@@ -153,6 +176,7 @@ public class ConnectionPool {
             if (ci == null) {
                 throw new IllegalStateException("Connection not managed by this pool");
             }
+            ci.touch();
         }
         return ci.getPreparedStatement(text);
     }
@@ -201,22 +225,25 @@ public class ConnectionPool {
 
     private  void cleanup() {
         long now = System.currentTimeMillis();
-        List<ConnectionInfo> connections = new ArrayList<ConnectionInfo>();
+        List<ConnectionInfo> myIdleConnections = new ArrayList<ConnectionInfo>();
 
         synchronized (this) {
-            for (Connection connection : idleConnections) {
-                connections.add(connectionInfoMap.get(connection));
+            for (Connection connection : this.idleConnections) {
+                myIdleConnections.add(connectionInfoMap.get(connection));
             }
-            Collections.sort(connections, new Comparator<ConnectionInfo>() {
+            Collections.sort(myIdleConnections, new Comparator<ConnectionInfo>() {
                 public int compare(ConnectionInfo o1, ConnectionInfo o2) {
                     return (int) (o1.getLastAccessTime() - o2.getLastAccessTime());
                 }
             });
         }
-        for (ConnectionInfo ci : connections) {
+        for (ConnectionInfo ci : myIdleConnections) {
             synchronized (this) {
                 if (now - ci.getLastAccessTime() <= connectionRefreshInterval) {
                     break;
+                }
+                else if (!idleConnections.contains(ci.getConnection())  {
+                    continue;
                 }
                 else {
                     idleConnections.remove(ci.getConnection());
@@ -233,10 +260,13 @@ public class ConnectionPool {
             }
         }
 
-        for (ConnectionInfo ci : connections) {
+        for (ConnectionInfo ci : myIdleConnections) {
             synchronized(this) {
                 if (idleConnections.size() <= maxOpenConnections) {
                     break;
+                }
+                else if (!idleConnections.contains(ci.getConnection()) {
+                    continue;
                 }
                 else {
                     idleConnections.remove(ci.getConnection());
@@ -249,6 +279,26 @@ public class ConnectionPool {
             catch (Throwable t) {
                 if (log.isLoggable(Level.WARNING)) {
                     log.log(Level.WARNING, "Exception caught closing connection during cleanup", t);
+                }
+            }
+        }
+        
+        checkLongRunningConnections();
+    }
+    
+    private void checkLongRunningConnections() { 
+        long now = System.currentTimeMillis();
+        synchronized (this) {
+            for (Entry<Connection, ConnectionInfo> entry : connectionInfoMap.entrySet()) {
+                Connection connection = entry.getKey();
+                ConnectionInfo ci = entry.getValue();
+                if (!ci.getInformedUserOfLongConnectionTime() 
+                        && now - ci.getLastAccessTime() > connectionLongTime
+                        && !idleConnections.contains(connection)) {
+                    log.log(Level.WARNING, 
+                            "Connection has been active for a long time (" + (now - ci.getLastAccessTime()) + "ms).  Call stack follows.", 
+                            ci.getConnectionCallStack());
+                    ci.setInformedUserOfLongConnectionTime(true);
                 }
             }
         }
