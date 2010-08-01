@@ -131,10 +131,10 @@ public class ConnectionPool {
                 connectionInfoMap.put(connection, ci);
             }
         }
-        if (connectionLongTime > 0) {
-            synchronized (this) {
-                ConnectionInfo ci = connectionInfoMap.get(connection);
-                ci.touch();
+        synchronized (this) {
+            ConnectionInfo ci = connectionInfoMap.get(connection);
+            ci.touch();
+            if (connectionLongTime > 0) {
                 ci.setInformedUserOfLongConnectionTime(false);
                 ci.setConnectionCallStack(new Exception("getConnection stack trace"));
             }
@@ -302,7 +302,7 @@ public class ConnectionPool {
                         && now - ci.getLastAccessTime() > connectionLongTime
                         && !idleConnections.contains(connection)) {
                     log.log(Level.WARNING, 
-                            "Connection has been active for a long time (" + (now - ci.getLastAccessTime()) + "ms).  Call stack follows.", 
+                            "Connection has been reserved but idle for a long time (" + (now - ci.getLastAccessTime()) + "ms).  Call stack follows.", 
                             ci.getConnectionCallStack());
                     ci.setInformedUserOfLongConnectionTime(true);
                 }
