@@ -1,4 +1,4 @@
-    package edu.stanford.smi.protege.server;
+package edu.stanford.smi.protege.server;
 
 //ESCA*JAVA0100
 import java.io.BufferedReader;
@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,28 +80,88 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private static final transient Logger log = Log.getLogger(Server.class);
 
-    private static Server serverInstance;
-    private Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
-    private Map<String, ProjectStatus> _nameToProjectStatusMap = new  TreeMap<String, ProjectStatus>(); //sorted map by keys
-    private Map<Project, ServerProject> _projectToServerProjectMap = new HashMap<Project, ServerProject>();
-
-    private URI metaprojectURI;
-    private MetaProject metaproject;
-    private ServerProject serverMetaProject;
-
-    private List<RemoteSession> _sessions = new ArrayList<RemoteSession>();
-    private URI _baseURI;
-    private Map<RemoteSession, Collection<ServerProject>> _sessionToProjectsMap
-        = new HashMap<RemoteSession, Collection<ServerProject>>();
-    private Thread _updateThread;
     public static final int NO_SAVE = -1;
-    private int _saveIntervalMsec = NO_SAVE;
     private static final String SAVE_INTERVAL_OPTION = "-saveIntervalSec=";
     private static final String NOPRELOAD_OPTION = "-nopreload";
     private static final String OPTION_CHAR = "-";
-    private boolean preload = true;
-    private ProjectPluginManager _projectPluginManager = new ProjectPluginManager();
 
+    private ThreadFactory daemonizingThreadFactory = new ThreadFactory() {
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread th = new Thread(r);
+            th.setDaemon(true);
+            return th;
+        }
+    };
+
+    /* Synchronization - Lock sequence and deadlocks:
+     * The serverInstance monitor is taken before any other locks.
+     * The Server.class monitor is no longer used - this protection is
+     * ensured by not exposing the Server instance to RMI until the
+     * server is initialized. 
+     */
+      
+    private final ExecutorService serverExecutor = Executors.newCachedThreadPool(daemonizingThreadFactory);
+
+    /* Synchronization:
+     * There may be a delay before a change to the meta project is
+     * seen by  the server variables.  But the server variables need
+     * to be synchronized when they are updated and they need to be
+     * updated in a sequence that matches the updates to the meta
+     * project.  The synchronization of the server variables cannot be
+     * done within the metaproject listener threads  because those
+     * threads will hold the metaproject knowledge base lock.
+     */
+    private  final ExecutorService singleJobAtATimeExecutor = Executors.newSingleThreadExecutor(daemonizingThreadFactory);
+
+
+    /* Synchronization:
+     * These guys are essentially constant.  They are set during
+     * initialization and then used elsewhere.
+     */
+    private URI metaprojectURI;
+    private URI _baseURI;
+    private boolean preload = true;
+
+    /* Synchronization:
+     * This variable is set atomically and there are no relevant invariants.
+     */
+    private volatile int _saveIntervalMsec = NO_SAVE;
+
+
+    /* Synchronization:
+     * This variable is assigned atomically during initialization and
+     * reinitialization.  This assignment should not be exposed
+     * because the name should not be bound (and accessible through
+     * RMI) until initialization is complete.  In particular look at
+     * the usage of bind/unBind name in reinitialize.
+     */
+    private static volatile Server serverInstance;
+
+
+    /* Synchronization:
+     * This variable is changed from null to a value in
+     * openMetaProject which is synchronized by the serverInstance
+     * monitor.
+     */
+    private ServerProject serverMetaProject;
+
+    /* Synchronization:
+     * This variable is protected by the serverInstance monitor.
+     */
+    private volatile Thread _updateThread;
+
+    /* Synchronization:
+     * These variables are only set during initialization and
+     * shutdown.  Race conditions should not occur because the server
+     * name is unbound before reinitialization or shutdown are bound
+     * only at the end of the initialization sequence.  Internally
+     * these classes (metaproject, projectCls, nameSlot) do their own
+     * synchronization. 
+     */
+
+    private MetaProject metaproject;
     //listener used for setting the status of the newly create projects to closed for maintenance.
     private FrameListener metaprojectFrameListener;
     private FrameListener metaprojectProjectClsListener;
@@ -109,15 +170,39 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private Slot nameSlot;
 
 
-    /**
-     * Thread executor for project shutdown
+    /* Synchronization:
+     * I think that after initialization the contents of this variable
+     * are essentially constant (?).
      */
-    private ExecutorService prjShutdownExecutor = Executors.newCachedThreadPool();
-    private Map<String, FutureTask<Object>> _prjNameToTaskMap = new HashMap<String, FutureTask<Object>>();
+    private final ProjectPluginManager _projectPluginManager = new ProjectPluginManager();
 
-    public enum ServerStatus  {
-        READY, SHUTTING_DOWN, SHUTDOWN;
-    }
+    /* Synchronization:
+     * These variables are final but their contents needs to be
+     * protected.  They are protected by the Server instance monitor. I
+     * am considering making these synchronized maps but there are
+     * invariants relating these variables that need to be protected
+     * as well.  For instance a project with sessions should be an
+     * open project.
+     */
+    private final Map<String, Project> _nameToOpenProjectMap = new HashMap<String, Project>();
+    private final Map<String, ProjectStatus> _nameToProjectStatusMap = new  TreeMap<String, ProjectStatus>(); //sorted map by keys
+    private final Map<Project, ServerProject> _projectToServerProjectMap = new HashMap<Project, ServerProject>();
+    private final Map<RemoteSession, Collection<ServerProject>> _sessionToProjectsMap
+        = new HashMap<RemoteSession, Collection<ServerProject>>();
+
+    /* Synchronization:
+     * By and large this list is synchronized by the the server
+     * instance monitor.  But it is ok for the isActive method to  
+     * return slightly stale data and synchronizing this method will
+     * cause a  deadlock.  For this reason this is a synchronized list.
+     */
+    private List<RemoteSession> _sessions = Collections.synchronizedList(new ArrayList<RemoteSession>());
+
+
+    /* Synchronization:
+     * This variable is protected by the serverInstance monitor.
+     */
+    private final Map<String, FutureTask<Object>> projectToShutdownTaskNotificationMap = new HashMap<String, FutureTask<Object>>();
 
     public static void main(String[] args) {
         try {
@@ -138,14 +223,26 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      *             if the socket factory has already been set
      * @see RMISocketFactory#setSocketFactory(RMISocketFactory)
      */
-    public synchronized static void startServer(String[] args) throws IOException {
+    public static void startServer(String[] args) throws IOException {
     	Log.getLogger().info("Protege server is starting...");
+    	checkRegistry();
     	SystemUtilities.logSystemInfo();
         System.setProperty("java.rmi.server.RMIClassLoaderSpi", ProtegeRmiClassLoaderSpi.class.getName());
         SystemUtilities.initialize();
         serverInstance = new Server(args);
         afterLoad();
+        serverInstance.bindName();
         Log.getLogger().info("Protege server ready to accept connections...");
+    }
+    
+    private static void checkRegistry() throws IOException {
+        try {
+            getRegistry().list();
+        }
+        catch (RemoteException re) {
+            log.log(Level.WARNING, "Is the registry running?", re);
+            throw new IOException("Could not connect to the rmi registry task");
+        }
     }
 
 
@@ -158,11 +255,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         }
     }
 
-    public synchronized static Server getInstance() {
+    public static Server getInstance() {
         return serverInstance;
     }
 
-    public synchronized static Policy getPolicy() {
+    public static Policy getPolicy() {
       return serverInstance.metaproject.getPolicy();
     }
 
@@ -258,7 +355,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     	Log.getLogger().info("Using metaproject from: " + metaprojectURI);
         metaproject = new MetaProjectImpl(metaprojectURI, true);
         serverMetaProject = null;
-        bindName();
         ServerUtil.fixMetaProject(metaproject);
         initializeProjects();
         addMetaProjectListeners();
@@ -288,6 +384,19 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             String boundName = getLocalBoundName();
             getRegistry().rebind(boundName, this);
             _baseURI = new URI("rmi://" + getMachineName() + "/" + boundName);
+        } catch (Exception e) {
+            Log.getLogger().severe(Log.toString(e));
+            if (e instanceof RemoteException) {
+                throw (RemoteException) e;
+            }
+            throw new RemoteException(e.getMessage());
+        }
+    }
+    
+    protected void unBindName() throws RemoteException {
+        try {
+            String boundName = getLocalBoundName();
+            getRegistry().unbind(boundName);
         } catch (Exception e) {
             Log.getLogger().severe(Log.toString(e));
             if (e instanceof RemoteException) {
@@ -376,7 +485,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         _projectToServerProjectMap.put(p, sp);
     }
 
-    public Project getOrCreateProject(String name) {
+    public synchronized Project getOrCreateProject(String name) {
         Project project = getProject(name);
         if (project == null) {
             project = createProject(name);
@@ -447,7 +556,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return "Server";
     }
 
-    private void startProjectUpdateThread() {
+    private synchronized void startProjectUpdateThread() {
         if (_saveIntervalMsec != NO_SAVE) {
             _updateThread = new Thread("Save Projects") {
                 @Override
@@ -465,6 +574,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             _updateThread.setDaemon(true);
             _updateThread.start();
         }
+    }
+
+
+    private synchronized void stopProjectUpdateThread() {
+        _updateThread = null;
     }
 
     public synchronized boolean saveMetaProject(RemoteSession session) throws RemoteException {
@@ -534,11 +648,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     }
 
 
-
-    private void stopProjectUpdateThread() {
-        _updateThread = null;
-    }
-
     private void closeProject(String name) {
         Project p = _nameToOpenProjectMap.get(name);
         ServerProject sp = _projectToServerProjectMap.get(p);
@@ -579,7 +688,12 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      */
 
 
-    public synchronized boolean isActive(RemoteSession session) {
+    /* Synchronization:
+     * This method can't be synchronized because it is used locally
+     * by the database backend.  So it may return stale data and the
+     * _sessions list must be a synchronized list.
+     */
+    public boolean isActive(RemoteSession session) {
         return _sessions.contains(session);
     }
 
@@ -620,7 +734,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
 
     public synchronized  Collection<RemoteSession> getCurrentSessions() {
-        return _sessions;
+        return new ArrayList<RemoteSession>(_sessions);
     }
 
     public synchronized Collection<RemoteSession> getCurrentSessions(RemoteServerProject project) {
@@ -690,9 +804,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private FrameListener getMetaProjectFrameListener() {
         if (metaprojectFrameListener == null) {
             metaprojectFrameListener = new FrameAdapter() {
-                // don't do this  inside the listener method
-                // it takes the Server lock and can deadlock.
-                // note that the listener is invoked by the last access time updater
+                /* Synchronization:
+                 * don't do this  inside the listener method
+                 * it takes the Server lock and can deadlock.
+                 * note that the listener is invoked by the last access time updater
+                 */
                 private Cls projectClass = getProjectCls();
 
                 @Override
@@ -700,25 +816,29 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                     Instance frame = (Instance)event.getFrame();
                     if (frame.hasType(projectClass) && event.getSlot().equals(nameSlot)) {
                         List oldValues = event.getOldValues();
-                        String oldName = new String();
-                        if (oldValues != null && oldValues.size() > 0) {
-                            oldName = CollectionUtilities.getFirstItem(oldValues).toString();
-                        }
+                        final String oldName = 
+                            (oldValues != null && oldValues.size() > 0) ? CollectionUtilities.getFirstItem(oldValues).toString() : new String();
 
-                        String name = (String) frame.getOwnSlotValue(nameSlot);
-                        if (name != null && name.length() > 0) {
-                            if (oldName.length() == 0) {  //new project
-                                _nameToProjectStatusMap.put(name, ProjectStatus.CLOSED_FOR_MAINTENANCE);
-                                log.info("Project instance " + name + " was added to the metaproject.");
-                            } else { //rename of a project
-                                _nameToOpenProjectMap.put(name, _nameToOpenProjectMap.get(oldName));
-                                _nameToProjectStatusMap.put(name, _nameToProjectStatusMap.get(oldName));
+                            final String name = (String) frame.getOwnSlotValue(nameSlot);
+                            singleJobAtATimeExecutor.submit(new Runnable() {
+                                public void run() {
+                                    synchronized (Server.this) {
+                                        if (name != null && name.length() > 0) {
+                                            if (oldName.length() == 0) {  //new project
+                                                _nameToProjectStatusMap.put(name, ProjectStatus.CLOSED_FOR_MAINTENANCE);
+                                                log.info("Project instance " + name + " was added to the metaproject.");
+                                            } else { //rename of a project
+                                                _nameToOpenProjectMap.put(name, _nameToOpenProjectMap.get(oldName));
+                                                _nameToProjectStatusMap.put(name, _nameToProjectStatusMap.get(oldName));
 
-                                _nameToOpenProjectMap.remove(oldName);
-                                _nameToProjectStatusMap.remove(oldName);
-                                log.info("Project instance name was changed. Old name: " + oldName + "; New name: " + name);
-                            }
-                        }
+                                                _nameToOpenProjectMap.remove(oldName);
+                                                _nameToProjectStatusMap.remove(oldName);
+                                                log.info("Project instance name was changed. Old name: " + oldName + "; New name: " + name);
+                                            }
+                                        }
+                                    }
+                                }
+                            });
                     }
                 }
             };
@@ -732,16 +852,26 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
             metaprojectProjectClsListener = new FrameAdapter() {
                 @Override
                 public void ownSlotValueChanged(FrameEvent event) {
-                    //need to find out which project instance was deleted..
-                    Set<String> keySet = new HashSet<String>(_nameToProjectStatusMap.keySet());
-                    for (String name : keySet) {
-                        ProjectInstance prj = metaproject.getProject(name);
-                        if (prj == null) {
-                            _nameToOpenProjectMap.remove(name);
-                            _nameToProjectStatusMap.remove(name);
-                            log.info("Project instance " + name + " was removed from the metaproject");
+                    singleJobAtATimeExecutor.submit(new Runnable() {
+                        public void run() {
+                            synchronized (Server.this) {
+                                //need to find out which project instance was deleted..
+                                Set<String> keySet = new HashSet<String>(_nameToProjectStatusMap.keySet());
+                                for (String name : keySet) {
+                                    ProjectInstance prj = metaproject.getProject(name);
+                                    if (prj == null) {
+                                        Project p = _nameToOpenProjectMap.remove(name);
+                                        _nameToProjectStatusMap.remove(name);
+                                        if (p != null) {
+                                            _projectToServerProjectMap.remove(p);
+                                            p.dispose();
+                                        }
+                                        log.info("Project instance " + name + " was removed from the metaproject");
+                                    }
+                                }
+                            }
                         }
-                    }
+                    });
                 }
             };
         }
@@ -750,15 +880,15 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private void addMetaProjectListeners() {
         if (metaproject != null) {
-            projectCls = getProjectCls();
-            nameSlot = getNameSlot();
+            getProjectCls();
+            getNameSlot();
 
             KnowledgeBase kb = ((MetaProjectImpl)metaproject).getKnowledgeBase();
             ServerFrameStore.requestEventDispatch(kb);
-            metaprojectFrameListener = getMetaProjectFrameListener();
+            getMetaProjectFrameListener();
             kb.addFrameListener(metaprojectFrameListener);
 
-            metaprojectProjectClsListener = getMetaProjectProjectClsListener();
+            getMetaProjectProjectClsListener();
             projectCls.addFrameListener(metaprojectProjectClsListener);
         }
     }
@@ -785,13 +915,22 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      * RemoteServer Interfaces
      */
 
+    /* Synchronization:
+     * This routine is currently only called by Junit code.  If it is
+     * called elsewhere we need to be  sure that there is no residual
+     * use of serverInstance when it is set to null and that the
+     * server interfaces are not exposed before serverInstance is
+     * reassigned.
+     */
     public synchronized void reinitialize() throws RemoteException {
         Log.getLogger().info("Server reinitializing");
+        unBindName();
         clear();
         serverInstance = null;
         initialize();
         serverInstance = this;
         afterLoad();
+        bindName();
     }
 
     /* -----------------------------------------------------------------
@@ -1100,34 +1239,42 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
 
     public synchronized void shutdown() {
-        Log.getLogger().info("Received shutdown request.");
+        log.info("Received shutdown request.");
+        try {
+            unBindName();
+        }
+        catch (RemoteException re) {
+            log.log(Level.WARNING, "Exception caught unbinding server name", re);
+        }
         removeMetaProjectListeners();
         saveAllProjects();
         Thread thread = new Thread() {
             @Override
 			public void run() {
               try {
-                SystemUtilities.sleepMsec(100);
-                Log.getLogger().info("Server exiting.");
-                for (Project p : _projectToServerProjectMap.keySet()) {
-                    /*
-                     * The order of these synchronize statements is critical.  There is some
-                     * OWLFrameStore code (which holds the knowledgebase lock) that makes calls
-                     * to the internal project knowledge base to get configuration parameters.
-                     */
-                    synchronized(p.getKnowledgeBase()) {
-                        synchronized (p.getInternalProjectKnowledgeBase()) {
-                            try {
-                                _projectPluginManager.beforeClose(p);
-                            }
-                            catch (Exception e) {
-                                Log.getLogger().log(Level.INFO, "Exception caught cleaning up", e);
-                            }
-                        }
-                    }
-                }
+                  SystemUtilities.sleepMsec(100);  // what  is this for?
+                  Log.getLogger().info("Server exiting.");
+                  synchronized (Server.this) {
+                      for (Project p : _projectToServerProjectMap.keySet()) {
+                          /* Synchronization
+                           * The order of these synchronize statements is critical.  There is some
+                           * OWLFrameStore code (which holds the knowledgebase lock) that makes calls
+                           * to the internal project knowledge base to get configuration parameters.
+                           */
+                          synchronized(p.getKnowledgeBase()) {
+                              synchronized (p.getInternalProjectKnowledgeBase()) {
+                                  try {
+                                      _projectPluginManager.beforeClose(p);
+                                  }
+                                  catch (Exception e) {
+                                      Log.getLogger().log(Level.INFO, "Exception caught cleaning up", e);
+                                  }
+                              }
+                          }
+                      }
+                  }
               } catch (Exception e) {
-                Log.getLogger().log(Level.INFO, "Exception caught", e);
+                  Log.getLogger().log(Level.INFO, "Exception caught", e);
               }
               finally {
                   System.exit(0);
@@ -1296,14 +1443,14 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 		Runnable projShutdownNotificaitonThread = getProjectShutdownRunnable(session, projectName,
 				warningTimesInSeconds, finalGracePeriodInSeconds);
 		FutureTask<Object> task = new FutureTask<Object>(projShutdownNotificaitonThread, null);
-		prjShutdownExecutor.submit(task);
-		_prjNameToTaskMap.put(projectName, task);
+		serverExecutor.submit(task);
+		projectToShutdownTaskNotificationMap.put(projectName, task);
 	}
 
 	public synchronized boolean cancelShutdownProject(RemoteSession session, String projectName) {
 		boolean success = false;
 		FutureTask<Object> task = null;
-		task = _prjNameToTaskMap.get(projectName);
+		task = projectToShutdownTaskNotificationMap.get(projectName);
 		if (task == null || task.isDone()) { return false; }
 		success = task.cancel(true);
 
@@ -1311,7 +1458,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 			log.info("Could not cancel task: " + task);
 		} else {
 			log.info("Task canceled: " + task);
-			_prjNameToTaskMap.remove(projectName);
+			projectToShutdownTaskNotificationMap.remove(projectName);
 			setProjectStatus(projectName, ProjectStatus.READY);
 			notifyProject(projectName, "Shut down of project " + projectName + " has been canceled by the administrator.", session);
 		}
@@ -1340,7 +1487,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 			        catch (InterruptedException e) {
 			        	FutureTask<Object> task;
 			        	synchronized (Server.this) {
-			        		task = _prjNameToTaskMap.get(projectName);
+			        		task = projectToShutdownTaskNotificationMap.get(projectName);
 						}
 			        	if (task != null && task.isCancelled()) {
 				            log.warning("Thread for shutting down project " + projectName + " has been interrupted.");
@@ -1359,7 +1506,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 			        } catch (InterruptedException e) {
 			        	FutureTask<Object> task;
 			        	synchronized (Server.this) {
-			        		task = _prjNameToTaskMap.get(projectName);
+			        		task = projectToShutdownTaskNotificationMap.get(projectName);
 						}
 			        	if (task != null && task.isCancelled()) {
 				            log.warning("Thread for shutting down project " + projectName + " has been interrupted.");
@@ -1372,7 +1519,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
 			    synchronized (Server.this) {
 			    	shutdown(projectName, session);
-			    	_prjNameToTaskMap.remove(projectName);
+			    	projectToShutdownTaskNotificationMap.remove(projectName);
 				}
 			}
 		};
