@@ -87,7 +87,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
 
     private ThreadFactory daemonizingThreadFactory = new ThreadFactory() {
 
-        @Override
         public Thread newThread(Runnable r) {
             Thread th = new Thread(r);
             th.setDaemon(true);
@@ -551,7 +550,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         return user.verifyPassword(password);
     }
 
-    @Override
 	public String toString() {
         return "Server";
     }
@@ -559,7 +557,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     private synchronized void startProjectUpdateThread() {
         if (_saveIntervalMsec != NO_SAVE) {
             _updateThread = new Thread("Save Projects") {
-                @Override
 				public void run() {
                     try {
                         while (_updateThread == this) {
@@ -811,7 +808,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
                  */
                 private Cls projectClass = getProjectCls();
 
-                @Override
                 public void ownSlotValueChanged(FrameEvent event) {
                     Instance frame = (Instance)event.getFrame();
                     if (frame.hasType(projectClass) && event.getSlot().equals(nameSlot)) {
@@ -850,7 +846,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         if (metaprojectProjectClsListener == null) {
 
             metaprojectProjectClsListener = new FrameAdapter() {
-                @Override
                 public void ownSlotValueChanged(FrameEvent event) {
                     singleJobAtATimeExecutor.submit(new Runnable() {
                         public void run() {
@@ -1249,7 +1244,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         removeMetaProjectListeners();
         saveAllProjects();
         Thread thread = new Thread() {
-            @Override
 			public void run() {
               try {
                   SystemUtilities.sleepMsec(100);  // what  is this for?
@@ -1302,7 +1296,6 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
     public void killOtherUserSession(final RemoteSession sessionToKill, final RemoteSession session, final int finalGracePeriod) {
     	//TODO: check permission for session kill
     	Thread killSessionThread = new Thread("Kill other session thread") {
-    		@Override
     		public void run() {
 				Collection<ServerProject> projectsWithSessionRemoved = new HashSet<ServerProject>();
 				Collection<ServerProject> candidateProjectsToKill = new HashSet<ServerProject>();
