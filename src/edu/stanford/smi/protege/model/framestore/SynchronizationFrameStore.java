@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.Condition;
@@ -19,8 +18,6 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
-import edu.stanford.smi.protege.server.RemoteSession;
-import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
@@ -28,8 +25,6 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 public class SynchronizationFrameStore extends AbstractFrameStore {
 	public static final String SEQUENTIAL_TRANSACTION_PROP = "execute.transactions.in.sequence";
 	private boolean sequentialTransactions = ApplicationProperties.getBooleanProperty(SEQUENTIAL_TRANSACTION_PROP, false);
-	private Set<RemoteSession> sessionsExcludedFromSequentialTransactions = new HashSet<RemoteSession>();
-
 	
 	private ReadWriteLock locks = new ReentrantReadWriteLock();
 	private Condition transactionCondition = locks.writeLock().newCondition();
@@ -54,15 +49,6 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
 
 	public void setSequentialTransactions(boolean sequentialTransactions) {
 		this.sequentialTransactions = sequentialTransactions;
-	}
-	
-	public void setSessionExcludedFromSequentialTransactions(RemoteSession session, boolean excluded) {
-		if (excluded) {
-			sessionsExcludedFromSequentialTransactions.add(session);
-		}
-		else {
-			sessionsExcludedFromSequentialTransactions.remove(session);
-		}
 	}
 	
 	public boolean beginTransaction(String name) {
@@ -101,8 +87,7 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
 	}
 
     private void waitForOtherTransactions() {
-        if (!sequentialTransactions 
-        		|| sessionsExcludedFromSequentialTransactions.contains(ServerFrameStore.getCurrentSession())) {
+        if (!sequentialTransactions) {
             return;
         }
         TransactionMonitor tm = getTransactionStatusMonitor();
@@ -112,8 +97,7 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
     }
 
     private void letOtherTransactionsProceed() {
-        if (!sequentialTransactions 
-        		|| sessionsExcludedFromSequentialTransactions.contains(ServerFrameStore.getCurrentSession())) {
+        if (!sequentialTransactions) {
             return;
         }
         TransactionMonitor tm = getTransactionStatusMonitor();
