@@ -1,6 +1,7 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.Condition;
@@ -18,6 +19,8 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.util.AbstractEvent;
 import edu.stanford.smi.protege.util.ApplicationProperties;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
@@ -28,6 +31,7 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
 	
 	private ReadWriteLock locks = new ReentrantReadWriteLock();
 	private Condition transactionCondition = locks.writeLock().newCondition();
+	private Set<RemoteSession> excludedFromSequentialTransactions = new HashSet<RemoteSession>();
 	
 	public Lock getReaderLock() {
 		return locks.readLock();
@@ -49,6 +53,22 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
 
 	public void setSequentialTransactions(boolean sequentialTransactions) {
 		this.sequentialTransactions = sequentialTransactions;
+	}
+	
+	public void setExcludedFromSequentialTransactions(RemoteSession session, boolean exclude) {
+		locks.writeLock().lock();
+		try {
+			if (exclude) {
+				excludedFromSequentialTransactions.add(session);
+			}
+			else {
+				excludedFromSequentialTransactions.remove(session);
+			}
+			transactionCondition.signalAll();
+		}
+		finally {
+			locks.writeLock().unlock();
+		}
 	}
 	
 	public boolean beginTransaction(String name) {
@@ -91,9 +111,18 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
             return;
         }
         TransactionMonitor tm = getTransactionStatusMonitor();
-        while (tm != null && !tm.inTransaction() && tm.existsTransaction()) {
-            transactionCondition.awaitUninterruptibly();
+        if (tm != null) {
+        	while (true) {
+        		Set<RemoteSession> sessionsInTransaction = new HashSet<RemoteSession>(tm.getSessions());
+        		sessionsInTransaction.remove(ServerFrameStore.getCurrentSession());
+        		sessionsInTransaction.removeAll(excludedFromSequentialTransactions);
+        		if (sessionsInTransaction.isEmpty()) {
+        			break;
+        		}
+        		transactionCondition.awaitUninterruptibly();
+        	}
         }
+
     }
 
     private void letOtherTransactionsProceed() {
@@ -101,7 +130,7 @@ public class SynchronizationFrameStore extends AbstractFrameStore {
             return;
         }
         TransactionMonitor tm = getTransactionStatusMonitor();
-        if (tm != null && !tm.existsTransaction()) {
+        if (tm != null && !tm.inTransaction()) {
             transactionCondition.signalAll();
         }
     }
