@@ -224,9 +224,11 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
      */
     public static void startServer(String[] args) throws IOException {
     	Log.getLogger().info("Protege server is starting...");
-    	checkRegistry();
     	SystemUtilities.logSystemInfo();
         System.setProperty("java.rmi.server.RMIClassLoaderSpi", ProtegeRmiClassLoaderSpi.class.getName());
+        // WARNING!!! the checkRegistry must go after the setProperty above or there will be class loader problems
+        // not really understood...
+        checkRegistry();
         SystemUtilities.initialize();
         serverInstance = new Server(args);
         afterLoad();
