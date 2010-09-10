@@ -160,8 +160,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
             kb.setDispatchEventsEnabled(false);
         }
         else {
-            EventDispatchFrameStore dispatcher = fsm.getFrameStoreFromClass(EventDispatchFrameStore.class);
-            dispatcher.setPassThrough(true);
+            kb.getFrameStoreManager().setDispatchEventsPassThrough(true);
             requiresEventDispatch.remove(kb);
         }
         valuesFacet = _kb.getSystemFrames().getValuesFacet();
@@ -183,6 +182,7 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
 
     public static void requestEventDispatch(KnowledgeBase kb) {
         kb.setDispatchEventsEnabled(true);
+        kb.getFrameStoreManager().setDispatchEventsPassThrough(true);
         requiresEventDispatch.add(kb);
     }
 
