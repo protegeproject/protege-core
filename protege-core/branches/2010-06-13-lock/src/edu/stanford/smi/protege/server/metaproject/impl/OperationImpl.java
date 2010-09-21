@@ -98,7 +98,7 @@ public class OperationImpl extends WrappedProtegeInstanceImpl implements Operati
 	 * @deprecated - Use constants from {@link MetaProjectConstants}
 	 */
 	@Deprecated
-	public final static Operation PROPERTY_TAB_WRITE = MetaProjectConstants.OPERATION_ONTOLOGY_TAB_WRITE;
+	public final static Operation PROPERTY_TAB_WRITE = MetaProjectConstants.OPERATION_PROPERTY_TAB_WRITE;
 	
 	/**
 	 * @deprecated - Use constants from {@link MetaProjectConstants}

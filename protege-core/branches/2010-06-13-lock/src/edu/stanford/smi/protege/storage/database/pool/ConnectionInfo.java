@@ -12,10 +12,14 @@ import java.util.Map;
 public class ConnectionInfo {
     private static int nextId = 0;
     private int id = nextId++;
+
     private Connection connection;
-    private long lastAccessTime;
     private Map<String, PreparedStatement> preparedStatementMap = new HashMap<String, PreparedStatement>();
     private Statement genericStatement;
+    
+    private long lastAccessTime;
+    private boolean InformedUserOfLongConnectionTime = false;
+    private Exception connectionCallStack;
     
     public ConnectionInfo(Connection connection) {
         this.connection = connection;
@@ -25,16 +29,39 @@ public class ConnectionInfo {
         return id;
     }
     
-    public Connection getConnection() {
-        return connection;
-    }
     
+    /**
+     * Synchronized by the connection pool.
+     */
     public void touch() {
         lastAccessTime = System.currentTimeMillis();
     }
     
+    /**
+     * Synchronized by the connection pool.
+     */
     public long getLastAccessTime() {
         return lastAccessTime;
+    }
+    
+    public boolean getInformedUserOfLongConnectionTime() {
+        return InformedUserOfLongConnectionTime;
+    }
+    
+    public void setInformedUserOfLongConnectionTime(boolean informedUserOfLongConnectionTime) {
+        InformedUserOfLongConnectionTime = informedUserOfLongConnectionTime;
+    }
+    
+    public Exception getConnectionCallStack() {
+        return connectionCallStack;
+    }
+    
+    public void setConnectionCallStack(Exception connectionCallStack) {
+        this.connectionCallStack = connectionCallStack;
+    }
+    
+    public Connection getConnection() {
+        return connection;
     }
     
     public PreparedStatement getPreparedStatement(String text) throws SQLException {

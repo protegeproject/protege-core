@@ -10,11 +10,25 @@ public class MetaProjectConstants {
 	public final static Operation OPERATION_READ = new UnbackedOperationImpl("Read", null);
 	public final static Operation OPERATION_WRITE = new UnbackedOperationImpl("Write", null);
 
+	/**
+     * @deprecated - Use constants from {@link OwlMetaProjectConstants}
+     */
+    @Deprecated
 	public final static Operation OPERATION_PROPERTY_TAB_READ = new UnbackedOperationImpl("PropertyTabRead", null);
-	public final static Operation OPERATION_PROPERTY_TAB_WRITE = new UnbackedOperationImpl("PropertyTabWrite", null);
-
+    /**
+     * @deprecated - Use constants from {@link OwlMetaProjectConstants}
+     */
+    @Deprecated	public final static Operation OPERATION_PROPERTY_TAB_WRITE = new UnbackedOperationImpl("PropertyTabWrite", null);
+    /**
+     * @deprecated - Use constants from {@link OwlMetaProjectConstants}
+     */
+    @Deprecated
 	public final static Operation OPERATION_ONTOLOGY_TAB_READ = new UnbackedOperationImpl("OntologyTabRead", null);
-	public final static Operation OPERATION_ONTOLOGY_TAB_WRITE = new UnbackedOperationImpl("OntologyTabWrite", null);
+    /**
+     * @deprecated - Use constants from {@link OwlMetaProjectConstants}
+     */
+    @Deprecated
+    public final static Operation OPERATION_ONTOLOGY_TAB_WRITE = new UnbackedOperationImpl("OntologyTabWrite", null);
 
 	public final static Operation OPERATION_ADMINISTER_SERVER = new UnbackedOperationImpl("AdministerServer", null);
 

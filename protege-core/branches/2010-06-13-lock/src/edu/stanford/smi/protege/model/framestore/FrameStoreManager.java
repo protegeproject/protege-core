@@ -372,6 +372,10 @@ public class FrameStoreManager {
         eventDispatchFrameStore.setPollForEvents(b);
     }
     
+    public void setDispatchEventsPassThrough(boolean b) {
+        eventDispatchFrameStore.setPassThrough(b);
+    }
+    
     public void flushEvents() throws ProtegeException {
       try {
         eventDispatchFrameStore.flushEvents();
