@@ -254,14 +254,16 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 					RobustConnection connection = null;
 					try {
 						connection = getCurrentConnection();
-						connection.reference();
-						jdbcLevel = connection.getTransactionIsolationLevel();
+						try {
+							connection.reference();
+							jdbcLevel = connection.getTransactionIsolationLevel();
+						}
+						finally {
+	                        // WARNING... what if this is called while the database nfs is doing something?
+						    connection.dereference();
+						}
 					} catch( SQLException sqle ) {
 						throw new TransactionException( sqle );
-					}
-					finally {
-                        // WARNING... what if this is called while the database nfs is doing something?
-					    connection.dereference();
 					}
 					return TransactionIsolationLevel.getTransactionLevel( jdbcLevel );
 				}
@@ -274,17 +276,19 @@ public abstract class AbstractDatabaseFrameDb implements DatabaseFrameDb {
 					try {
 						connection = getCurrentConnection();
 						if( connection != null ) {
-							connection.reference();
-							connection.setTransactionIsolationLevel( jdbcLevel );
+							try {
+								connection.reference();
+								connection.setTransactionIsolationLevel( jdbcLevel );
+							}
+							finally {
+		                        // WARNING... what if this is called while the database nfs is doing something?
+								if (connection != null) {
+									connection.dereference();
+								}
+							}
 						}
 					} catch( SQLException e ) {
 						throw new TransactionException( e );
-					}
-					finally {
-                        // WARNING... what if this is called while the database nfs is doing something?
-						if (connection != null) {
-							connection.dereference();
-						}
 					}
 					
 				}
