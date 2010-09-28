@@ -204,6 +204,9 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     
     private void stopEventThread() {
         _eventThread = null;
+        synchronized (kb){
+            kb.notifyAll();
+        }
     }
     
     public void flushEvents() throws InterruptedException {
