@@ -176,7 +176,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
     
     private void startEventThread() {
-        _eventThread = new Thread("EventDispatchFrameStoreHandler.startEventThread ("  + kb.getName() + ")") {
+        _eventThread = new Thread("EventDispatchFrameStoreHandler.startEventThread") {
           @Override
 		public void run() {
             while (true) {
