@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.model.query;
 
 import java.util.Collection;
-import java.util.Set;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
@@ -21,8 +20,9 @@ import edu.stanford.smi.protege.model.Localizable;
  */
 
 public class SynchronizeQueryCallback implements QueryCallback, Localizable {
-  Object kbLock;
-  Object result;
+  private Object kbLock;
+  private Object result;
+  private boolean ready = false;
 
   public SynchronizeQueryCallback(Object kbLock) {
     this.kbLock = kbLock;
@@ -31,6 +31,7 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
   public void provideQueryResults(Collection<Frame> frames) {
     synchronized (kbLock) {
       result = frames;
+      ready = true;
       kbLock.notifyAll();
     }
   }
@@ -38,6 +39,7 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
   private void passException(Exception pe) {
     synchronized (kbLock) {
       result = pe;
+      ready = true;
       kbLock.notifyAll();
     } 
   }
@@ -58,7 +60,7 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
     Object o = null;
     try {
       synchronized (kbLock) {
-        while (result == null) {
+        while (!ready) {
           kbLock.wait();
         }
         o = result;
@@ -66,7 +68,10 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
     } catch (InterruptedException e) {
       throw new ProtegeIOException(e);
     } finally {
-      result = null;
+        synchronized (kbLock) {
+            ready = false;
+            result = null;
+        }
     }
     if (o instanceof Collection) {
       return (Collection<Frame>) o;
