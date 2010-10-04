@@ -90,7 +90,19 @@
    </target>
 
    <target name = "jar" depends = "compile">
-     <!-- *** CHANGE ME: is your manifest really in etc/meta-inf/manifest.mf? -->
+     <!-- *** CHANGE ME ***
+          Is your manifest really in etc/meta-inf/manifest.mf? 
+          A sample manifest looks like this:
+
+              Manifest-Version: 1.0
+              Created-By: 1.4.2_01 (Sun Microsystems Inc.)
+
+              Name: edu/stanford/bmir/job/ProjectPlugin.class
+              Project-Plugin: True
+
+          More information can be  found at
+             http://protegewiki.stanford.edu/wiki/PluginManifestsAndJars
+       -->
      <copy tofile="${build}/manifest.mf" 
            file="etc/meta-inf/manifest.mf" overwrite="true"/>
      <manifest file="${build}/manifest.mf" 
@@ -106,6 +118,15 @@
        <!-- *** CHANGE ME: do you have a lib directory? -->
        <fileset dir="${lib}" excludes="junit*.jar"/>
      </copy>
+     <!-- *** CHANGE ME ***
+          Is this the right location for your plugin.properties file?
+          A sample plugin.properties file looks like this:
+
+             plugin.component.count=1
+             plugin.component.name.0=ExampleJobPlugin
+             plugin.dependency.count=1
+             plugin.dependency.0=edu.stanford.smi.protegex.owl
+       -->
      <copy  todir="${plugins}/${plugin_dist}" file="./etc/plugin.properties"/>
    </target>
 

@@ -29,15 +29,18 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
   private transient Lock     readerLock;
   private transient Object   queryCondition = new Object();
   private volatile  Object   result;
+  private volatile boolean   ready = false;
 
   public SynchronizeQueryCallback(Lock readerLock) {
     this.readerLock = readerLock;
+    ready = false;
   }
 
   public void provideQueryResults(Collection<Frame> frames) {
     try {
       readerLock.lock();
       result = frames;
+      ready = true;
       synchronized (queryCondition) {
     	  queryCondition.notifyAll();
       }
@@ -51,6 +54,7 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
       try {
           readerLock.lock();
           result = pe;
+          ready = true;
           synchronized (queryCondition) {
         	  queryCondition.notifyAll();
           }
@@ -77,7 +81,7 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
 	  try {
 		  readerLock.lock();
 		  synchronized (queryCondition) {
-			  while (result == null) {
+			  while (!ready) {
 				  try {
 					  queryCondition.wait();
 				  }
@@ -91,6 +95,7 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
     finally {
       readerLock.unlock();
       result = null;
+      ready = false;
     }
     if (o instanceof Collection) {
       return (Collection<Frame>) o;
