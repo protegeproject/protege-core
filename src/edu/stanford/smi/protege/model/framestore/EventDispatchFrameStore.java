@@ -66,6 +66,7 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     private Map<Class<?>, Map<Object, Collection<EventListener>>> _listeners 
     			= new HashMap<Class<?>, Map<Object, Collection<EventListener>>>();
     private volatile Thread _eventThread;
+    private Object eventThreadLock = new Object();
     private KnowledgeBase kb;
     
     private boolean passThrough = false;
@@ -178,30 +179,39 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
     }
     
     private void startEventThread() {
-        _eventThread = new Thread("EventDispatchFrameStoreHandler.startEventThread") {
-          @Override
-		public void run() {
-            while (true) {
-              try {
-                if (_eventThread != this) {
-                    return;
-                }
-                flushEvents();
-                Thread.sleep(DELAY_MSEC);
-              } catch (Exception e) {
-                Log.getLogger().warning(e.toString());
-                log.log(Level.FINE, "Exception caught", e);
-              }
-            }
-          }
-        };
-        _eventThread.setPriority(Thread.MIN_PRIORITY);
-        _eventThread.setDaemon(true);
-        _eventThread.start();
+    	synchronized (eventThreadLock) {
+    		_eventThread = new Thread("EventDispatchFrameStoreHandler.startEventThread") {
+    			@Override
+    			public void run() {
+    				while (true) {
+    					try {
+    						synchronized (eventThreadLock) {
+    							if (_eventThread != this) {
+    								return;
+    							}
+    						}
+    						flushEvents();
+    						synchronized  (eventThreadLock) {
+    							eventThreadLock.wait(DELAY_MSEC);
+    						}
+    					} catch (Exception e) {
+    						Log.getLogger().warning(e.toString());
+    						log.log(Level.FINE, "Exception caught", e);
+    					}
+    				}
+    			}
+    		};
+    		_eventThread.setPriority(Thread.MIN_PRIORITY);
+    		_eventThread.setDaemon(true);
+    		_eventThread.start();
+    	}
     }
     
     private void stopEventThread() {
-        _eventThread = null;
+    	synchronized (eventThreadLock) {
+    		_eventThread = null;
+    		eventThreadLock.notifyAll();
+    	}
     }
     
     public void flushEvents() throws InterruptedException {
