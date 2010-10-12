@@ -23,12 +23,17 @@ public class ClosureUtils {
             Facet facet,
             boolean isTemplate) {
         KnowledgeBase kb = frame.getKnowledgeBase();
+        boolean isInitializing = (kb.getFrameStoreManager() == null);
         try {
-            new CacheControlJob(kb, false, true).execute();  // TODO - breaks layering - we really should have a generic NarrowFrameStore method
+            if (!isInitializing) {
+                new CacheControlJob(kb, false, true).execute();  // TODO - breaks layering - we really should have a generic NarrowFrameStore method
+            }
             return calculateClosure(store, frame, slot, facet, isTemplate, new LinkedHashSet());
         }
         finally {
-            new CacheControlJob(kb, false, false).execute();
+            if (!isInitializing) {
+                new CacheControlJob(kb, false, false).execute();
+            }
         }
     }
 
