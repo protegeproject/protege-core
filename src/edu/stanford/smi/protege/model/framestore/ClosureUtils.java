@@ -1,25 +1,38 @@
 package edu.stanford.smi.protege.model.framestore;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-import edu.stanford.smi.protege.model.*;
+import edu.stanford.smi.protege.model.Facet;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.KnowledgeBase;
+import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.server.job.CacheControlJob;
 
 /**
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ClosureUtils {
 
     public static Set calculateClosure(
-        NarrowFrameStore store,
-        Frame frame,
-        Slot slot,
-        Facet facet,
-        boolean isTemplate) {
-        return calculateClosure(store, frame, slot, facet, isTemplate, new LinkedHashSet());
+            NarrowFrameStore store,
+            Frame frame,
+            Slot slot,
+            Facet facet,
+            boolean isTemplate) {
+        KnowledgeBase kb = frame.getKnowledgeBase();
+        try {
+            new CacheControlJob(kb, false, true).execute();  // TODO - breaks layering - we really should have a generic NarrowFrameStore method
+            return calculateClosure(store, frame, slot, facet, isTemplate, new LinkedHashSet());
+        }
+        finally {
+            new CacheControlJob(kb, false, false).execute();
+        }
     }
 
-    // TODO It would be preferable if this method returned a breadth first closure 
+    // TODO It would be preferable if this method returned a breadth first closure
     private static Set calculateClosure(
         NarrowFrameStore store,
         Frame frame,
