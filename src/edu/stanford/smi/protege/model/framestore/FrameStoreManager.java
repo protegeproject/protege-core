@@ -20,11 +20,12 @@ import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.cleandispatch.CleanDispatchFrameStore;
 import edu.stanford.smi.protege.model.framestore.undo.UndoFrameStore;
+import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.Assert;
 import edu.stanford.smi.protege.util.Log;
 
 /**
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameStoreManager {
@@ -62,7 +63,7 @@ public class FrameStoreManager {
     public FrameStore getHeadFrameStore() {
         return headFrameStore;
     }
-    
+
     public<X> X getFrameStoreFromClass(Class<? extends X> clazz) {
       for (FrameStore fs = headFrameStore;  fs != null ; fs = fs.getDelegate()) {
         Object o = fs;
@@ -96,10 +97,10 @@ public class FrameStoreManager {
     private static boolean isHandlerClass(Class clas) {
         return AbstractFrameStoreInvocationHandler.class.isAssignableFrom(clas);
     }
-    
+
     /*
      * During the early phase of initialization when there is the knowledge base has
-     * no project, we assume that we are not multiuser client.  We will fix  any 
+     * no project, we assume that we are not multiuser client.  We will fix  any
      * mistakes in KnowledgeBase.setProject(Project).
      */
     private boolean isMultiUserClient() {
@@ -144,7 +145,7 @@ public class FrameStoreManager {
     private FrameStore getPreceedingEnabledFrameStore(int index) {
         FrameStore preceedingEnabled = null;
         ListIterator i = frameStores.listIterator(index);
-        //ESCA-JAVA0281 
+        //ESCA-JAVA0281
         while (i.hasPrevious()) {
             FrameStore prev = (FrameStore) i.previous();
             if (isEnabled(prev)) {
@@ -258,7 +259,7 @@ public class FrameStoreManager {
           log.fine("connected " + frameStore2);
           dumpFrameStores();
         }
-            
+
     }
 
     private void disconnect(FrameStore frameStore1, FrameStore frameStore2) {
@@ -293,7 +294,7 @@ public class FrameStoreManager {
     public boolean isCallCachingEnabled() {
         return isEnabled(cachingFrameStore);
     }
-    
+
 
     public boolean setEnabled(FrameStore fs, boolean b) {
         return b ? enable(fs) : disable(fs);
@@ -306,7 +307,7 @@ public class FrameStoreManager {
     public boolean setCallCachingEnabled(boolean b) {
         return setEnabled(cachingFrameStore, b);
     }
-    
+
 
     public boolean setCleanDispatchEnabled(boolean b) {
         return setEnabled(cleanDispatchFrameStore, b);
@@ -352,11 +353,11 @@ public class FrameStoreManager {
     public void setPollForEvents(boolean b) {
         eventDispatchFrameStore.setPollForEvents(b);
     }
-    
+
     public void setDispatchEventsPassThrough(boolean b) {
         eventDispatchFrameStore.setPassThrough(b);
     }
-    
+
     public void flushEvents() throws ProtegeException {
       try {
         eventDispatchFrameStore.flushEvents();
@@ -417,6 +418,10 @@ public class FrameStoreManager {
         terminalFrameStore.reinitialize();
     }
 
+    public boolean setCaching(RemoteSession session, boolean doCache) {
+        return ((InMemoryFrameStore) terminalFrameStore).getHelper().setCaching(session, doCache);
+    }
+
     public FrameStore getTerminalFrameStore() {
         return terminalFrameStore;
     }
@@ -455,7 +460,7 @@ public class FrameStoreManager {
     public boolean setGenerateDeletingFrameEventsEnabled(boolean b) {
         return eventGeneratorFrameStore.setDeletingFrameEventsEnabled(b);
     }
-    
+
     public void dumpFrameStores() {
       if (log.isLoggable(Level.FINE)) {
         log.fine("+-+-+-+-+-+-+-+-+-+-+-+-Dumping Frame Stores+-+-+-+-+-+-+-+-+-+-+-+-");

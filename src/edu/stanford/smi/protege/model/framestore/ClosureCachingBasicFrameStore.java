@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.CacheMap;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
@@ -26,15 +27,15 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * @author Ray Fergerson
- * 
+ *
  * Description of this class
  */
 public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     private static Logger log = Log.getLogger(ClosureCachingBasicFrameStore.class);
-	
+
     private NarrowFrameStore _delegate;
 
-    private CacheMap<Sft, Map<Frame,Set>> _sftToFrameToClosureMap 
+    private final CacheMap<Sft, Map<Frame,Set>> _sftToFrameToClosureMap
       = new CacheMap<Sft, Map<Frame, Set>>();
 
     public ClosureCachingBasicFrameStore(NarrowFrameStore delegate) {
@@ -156,7 +157,7 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
             }
         } else {
           if (log.isLoggable(Level.FINER)) {
-            log.finer("closure cache hit for frame = " + frame + " slot = " + slot + 
+            log.finer("closure cache hit for frame = " + frame + " slot = " + slot +
                       "facet = " + facet + " isTemplate = " + isTemplate);
           }
         }
@@ -238,7 +239,7 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
        * is aware of all reads.
        */
       try {
-        if (monitor != null && !monitor.existsTransaction() && 
+        if (monitor != null && !monitor.existsTransaction() &&
             monitor.getTransationIsolationLevel() == TransactionIsolationLevel.SERIALIZABLE) {
           clearCache();
         }
@@ -277,17 +278,21 @@ public class ClosureCachingBasicFrameStore implements NarrowFrameStore {
     public static boolean equals(Object o1, Object o2) {
         return SystemUtilities.equals(o1, o2);
     }
-    
+
     public void reinitialize() {
     	clearCache();
     	if (getDelegate() != null) {
     		getDelegate().reinitialize();
     	}
     }
-    
+
     public void replaceFrame(Frame original, Frame replacement) {
       clearCache();
       _delegate.replaceFrame(original, replacement);
+    }
+
+    public boolean setCaching(RemoteSession session, boolean doCache) {
+        return _delegate.setCaching(session, doCache);
     }
 
 }

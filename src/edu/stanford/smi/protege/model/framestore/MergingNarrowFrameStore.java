@@ -25,6 +25,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
 import edu.stanford.smi.protege.model.query.SynchronizeQueryCallback;
+import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.StringUtilities;
@@ -33,28 +34,28 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * All queries go to all frame stores. Writes go to the primary (delegate) frame store.
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class MergingNarrowFrameStore implements NarrowFrameStore {
     private static Logger log = Log.getLogger(MergingNarrowFrameStore.class);
-    
-    private Object kbLock;
-	
+
+    private final Object kbLock;
+
     private static final NarrowFrameStore ROOT_NODE = new PlaceHolderNarrowFrameStore();
 
     private NarrowFrameStore activeFrameStore;
-    private Collection<NarrowFrameStore> removeFrameStores 
+    private final Collection<NarrowFrameStore> removeFrameStores
                                 = new LinkedHashSet<NarrowFrameStore>();
-    private Collection<NarrowFrameStore> availableFrameStores 
+    private final Collection<NarrowFrameStore> availableFrameStores
                                = new LinkedHashSet<NarrowFrameStore>();
     private NarrowFrameStore topFrameStore;
-    private NarrowFrameStore systemFrameStore;
-    
+    private final NarrowFrameStore systemFrameStore;
+
     private boolean queryAllFrameStores = false;
     private boolean suppressDuplicates = false;
-    
-    private Tree<NarrowFrameStore> frameStoreTree 
+
+    private final Tree<NarrowFrameStore> frameStoreTree
       = new Tree<NarrowFrameStore>(ROOT_NODE);
 
     public MergingNarrowFrameStore(Object kbLock) {
@@ -64,7 +65,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     }
 
     /**
-     * A utility hack to get the merging frame store from a kb until I can decide 
+     * A utility hack to get the merging frame store from a kb until I can decide
      * what sort of "real" API access to provide.
      */
     public static MergingNarrowFrameStore get(KnowledgeBase kb) {
@@ -78,7 +79,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
                 	if (nfs instanceof MergingNarrowFrameStore) {
                         return (MergingNarrowFrameStore) nfs;
                     }
-                }                
+                }
             }
         }
         return null;
@@ -87,7 +88,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
     public static NarrowFrameStore getSystemFrameStore(KnowledgeBase kb) {
         return get(kb).getSystemFrameStore();
     }
-    
+
     public static NarrowFrameStore getNarrowFrameStore(KnowledgeBase kb, Class clazz) {
       NarrowFrameStore nfs = MergingNarrowFrameStore.get(kb);
       while ((nfs = nfs.getDelegate()) != null) {
@@ -136,7 +137,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public NarrowFrameStore getFrameStore(String name) {
         NarrowFrameStore frameStore = null;
-        Iterator<NarrowFrameStore> i 
+        Iterator<NarrowFrameStore> i
           = frameStoreTree.getDescendents(ROOT_NODE).iterator();
         while (i.hasNext()) {
             NarrowFrameStore testFrameStore = i.next();
@@ -150,7 +151,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public void addRelation(String parent, String child) {
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Adding frame store relation between " 
+            log.fine("Adding frame store relation between "
                      + parent + " and " + child);
         }
         NarrowFrameStore parentFs = getFrameStore(parent);
@@ -168,7 +169,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
             updateQueryableFrameStores();
         }
     }
-    
+
     public void dumpFrameStores() {
         dumpFrameStores(Level.INFO);
     }
@@ -204,7 +205,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         frameStoreTree.addChild(parentFrameStore, childFrameStore);
         setActiveFrameStore(childFrameStore);
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Adding child frame store (and making active?) " 
+            log.fine("Adding child frame store (and making active?) "
                      + childFrameStore);
             dumpFrameStores(Level.FINE);
         }
@@ -240,7 +241,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
             dumpFrameStores(Level.FINE);
         }
     }
-    
+
     public Slot getNameSlot() {
       return (Slot) systemFrameStore.getFrame(Model.SlotID.NAME);
     }
@@ -276,7 +277,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
         queryAllFrameStores = b;
         updateQueryableFrameStores();
     }
-    
+
     public void setSuppressDuplicates(boolean suppressDuplicates) {
         this.suppressDuplicates = suppressDuplicates;
     }
@@ -552,6 +553,7 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 
     public void executeQuery(final Query query, final QueryCallback callback) {
       new Thread() {
+        @Override
         public void run() {
           try {
             SynchronizeQueryCallback sync = new SynchronizeQueryCallback(kbLock);
@@ -627,6 +629,14 @@ public class MergingNarrowFrameStore implements NarrowFrameStore {
 		for (NarrowFrameStore nfs : availableFrameStores) {
 			nfs.reinitialize();
 		}
+	}
+
+	public boolean setCaching(RemoteSession session, boolean doCache) {
+	    boolean ret = false;
+        for (NarrowFrameStore nfs : availableFrameStores) {
+            ret = ret | nfs.setCaching(session, doCache);
+        }
+        return ret;
 	}
 
     public void replaceFrame(Frame original, Frame replacement) {

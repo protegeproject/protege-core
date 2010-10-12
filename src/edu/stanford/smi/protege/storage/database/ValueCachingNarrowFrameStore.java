@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,12 +48,12 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     public static final transient Logger cacheLog = Logger.getLogger(CompleteableCache.class.getPackage().getName() + ".ValueCachingNFS");
     private static Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private DatabaseFrameDb framedb;
-    private WeakHashMap<String, SoftReference<DeferredOperationCache>> cacheMap  
+    private final WeakHashMap<String, SoftReference<DeferredOperationCache>> cacheMap
                       = new WeakHashMap<String, SoftReference<DeferredOperationCache>>();
     private Sft directInstancesSft;
     private FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>> transactions
          = new FifoWriter<SerializedCacheUpdate<RemoteSession, Sft,  List>>();
-    
+
     private Set<RemoteSession> unCachingSessions;
     /*
      * see svn revision 14782 for code to keep server-side frames in memory...
@@ -71,25 +71,21 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         }
         framedb  = delegate;
     }
-    
-    public void addUnCachingSession(RemoteSession session) {
+
+    public boolean setCaching(RemoteSession session, boolean doCache) {
         if (unCachingSessions == null) {
             unCachingSessions = new HashSet<RemoteSession>();
         }
-        unCachingSessions.add(session);
-    }
-    
-    public boolean removeUnCachingSession(RemoteSession session) {
-        if (unCachingSessions == null) {
-            return false;
+        boolean ret = !unCachingSessions.contains(session);
+        if (doCache) {
+            unCachingSessions.remove(session);
         }
-        boolean ret = unCachingSessions.remove(session);
-        if (unCachingSessions.isEmpty()) {
-            unCachingSessions = null;
+        else {
+            unCachingSessions.add(session);
         }
         return ret;
     }
-    
+
     private boolean cachingDisabledForSession() {
         return unCachingSessions != null && unCachingSessions.contains(ServerFrameStore.getCurrentSession());
     }
@@ -126,7 +122,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             cacheLost++;
         }
         if (cache == null && create) {
-            
+
             String frameName = frame.getFrameID().getName();
             Cache delegateCache = CacheFactory.createEmptyCache(getTransactionStatusMonitor().getTransationIsolationLevel());
             cache = new DeferredOperationCache(delegateCache, new FifoReader<SerializedCacheUpdate<RemoteSession,Sft,List>>(transactions));
@@ -134,7 +130,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                 cacheLog.finer("Created cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
             }
             cacheMap.put(frameName, new SoftReference(cache));
-            
+
             if (!cachingDisabledForSession()) {
                 // sorry - this is a bit ugly...
                 // better would be to have a setter for the system frames.
@@ -268,7 +264,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         removeFrameReferences(frame);
         getDelegate().deleteFrame(frame);
     }
-    
+
     private void removeFrameReferences(Frame frame) {
         if (frame instanceof Slot || frame instanceof Facet) {
             cacheMap.clear(); // OUCH!
