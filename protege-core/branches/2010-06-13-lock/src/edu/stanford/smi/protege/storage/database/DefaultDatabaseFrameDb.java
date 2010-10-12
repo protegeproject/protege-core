@@ -29,6 +29,7 @@ import edu.stanford.smi.protege.model.framestore.MergingNarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.ReferenceImpl;
 import edu.stanford.smi.protege.model.framestore.Sft;
+import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.Log;
 
 public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
@@ -192,7 +193,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         if (log.isLoggable(Level.FINE)) {
         	log.fine("\t..._I2 created (" + timer.lap()/1000 + "s).");
         }
-        
+
         /*
         // used for searching for values
         indexString = "CREATE INDEX " + _table + "_I3 ON " + _table;
@@ -210,7 +211,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         if (log.isLoggable(Level.FINE)) {
             log.fine("\t..._I4 created (" + timer.lap()/1000 + "s).");
         }
-        
+
         if (needsIndexOnLowerValue()) {
             log.info("\t..._I3 created (" + timer.lap()/1000 + "s).");
             createIndexOnLowerValue();
@@ -1302,9 +1303,9 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
 
     private void replaceValueTypeSQL(Frame frame, int newTypeId) throws SQLException {
         if (_matchingFramesCommandForSwizzle == null) {
-            _matchingFramesCommandForSwizzle = "SELECT " + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN + ", " + VALUE_INDEX_COLUMN + ", " + 
-                                                SHORT_VALUE_COLUMN + 
-                                      " FROM " + _table + 
+            _matchingFramesCommandForSwizzle = "SELECT " + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN + ", " + VALUE_INDEX_COLUMN + ", " +
+                                                SHORT_VALUE_COLUMN +
+                                      " FROM " + _table +
                                       " WHERE " + SHORT_VALUE_COLUMN + " = ?  AND " + VALUE_TYPE_COLUMN + " >= " + DatabaseUtils.BASE_FRAME_TYPE_VALUE;
         }
         if (_updateValueTypeCommandForSwizzle == null) {
@@ -1313,16 +1314,16 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
                                                  " AND " + VALUE_INDEX_COLUMN + " = ?";
         }
         PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_matchingFramesCommandForSwizzle);
-        
+
         setFrame(stmt, 1, frame);
-        
+
         ResultSet rs = executeQuery(stmt);
         try {
             while (rs.next()) {
                 if (frame.getName().equals(rs.getString(6))) {
                     PreparedStatement exe = getCurrentConnection().getPreparedStatement(_updateValueTypeCommandForSwizzle);
                     exe.setInt(1, newTypeId);
-                    
+
                     exe.setString(2, rs.getString(1));     // frame column
                     exe.setString(3, rs.getString(2));     // slot column
                     exe.setString(4, rs.getString(3));     // facet column
@@ -1331,7 +1332,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
                     executeUpdate(exe);
                 }
             }
-            
+
         }
         finally {
             rs.close();
@@ -1569,15 +1570,15 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
     		createRuntimeException(sqle);
     	}
     }
-    
+
     private String _matchingFramesCommandForRename;
     private String _updateValueFieldTextForRename;
-    
+
     private void replaceFrameShortValueField(Frame original, Frame replacement) throws SQLException {
         if (_matchingFramesCommandForRename == null) {
-            _matchingFramesCommandForRename = "SELECT " + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN + ", " + VALUE_INDEX_COLUMN + ", " + 
-                                                SHORT_VALUE_COLUMN + 
-                                      " FROM " + _table + 
+            _matchingFramesCommandForRename = "SELECT " + FRAME_COLUMN + ", " + SLOT_COLUMN + ", " + FACET_COLUMN + ", " + IS_TEMPLATE_COLUMN + ", " + VALUE_INDEX_COLUMN + ", " +
+                                                SHORT_VALUE_COLUMN +
+                                      " FROM " + _table +
                                       " WHERE " + SHORT_VALUE_COLUMN + " = ?  AND " + VALUE_TYPE_COLUMN + " >= " + DatabaseUtils.BASE_FRAME_TYPE_VALUE;
         }
         if (_updateValueFieldTextForRename == null) {
@@ -1587,16 +1588,16 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
         }
 
       PreparedStatement stmt = getCurrentConnection().getPreparedStatement(_matchingFramesCommandForRename);
-        
+
         setFrame(stmt, 1, original);
-        
+
         ResultSet rs = executeQuery(stmt);
         try {
             while (rs.next()) {
                 if (original.getName().equals(rs.getString(6))) {
                     PreparedStatement exe = getCurrentConnection().getPreparedStatement(_updateValueFieldTextForRename);
                     setFrame(exe, 1, replacement);
-                    
+
                     exe.setString(2, rs.getString(1));     // frame column
                     exe.setString(3, rs.getString(2));     // slot column
                     exe.setString(4, rs.getString(3));     // facet column
@@ -1605,7 +1606,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
                     executeUpdate(exe);
                 }
             }
-            
+
         }
         finally {
             rs.close();
@@ -1615,6 +1616,10 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
     public void reinitialize()  {
     }
 
+    public boolean setCaching(RemoteSession session, boolean doCache) {
+        return false;
+    }
+
 
     @Override
     public String toString() {
@@ -1622,7 +1627,7 @@ public class DefaultDatabaseFrameDb extends AbstractDatabaseFrameDb {
     }
 
     private class LapTimer {
-        private long start;
+        private final long start;
         private long lapStart;
 
         public LapTimer() {

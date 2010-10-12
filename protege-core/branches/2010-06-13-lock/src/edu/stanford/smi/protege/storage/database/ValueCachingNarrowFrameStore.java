@@ -74,6 +74,20 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
         this.delegate  = delegate;
     }
     
+    public boolean setCaching(RemoteSession session, boolean doCache) {
+         if (unCachingSessions == null) {
+             unCachingSessions = new HashSet<RemoteSession>();
+         }
+         boolean ret = !unCachingSessions.contains(session);
+         if (doCache) {
+             unCachingSessions.remove(session);
+         }
+         else {
+             unCachingSessions.add(session);
+         }
+         return ret;
+    }
+
     public void addUnCachingSession(RemoteSession session) {
         if (unCachingSessions == null) {
             unCachingSessions = new HashSet<RemoteSession>();

@@ -16,17 +16,18 @@ import edu.stanford.smi.protege.model.framestore.NarrowFrameStore;
 import edu.stanford.smi.protege.model.framestore.Sft;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
     private static Logger logger = Log.getLogger(IdleConnectionNarrowFrameStore.class);
     private DatabaseFrameDb delegate;
-    
+
     public IdleConnectionNarrowFrameStore(DatabaseFrameDb delegate) {
         this.delegate = delegate;
     }
-    
+
     private void referenceConnection() {
     	try {
 			delegate.getCurrentConnection().reference();
@@ -43,10 +44,10 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
             throw new RuntimeException(sqle);
         }
     }
-    
     public String getName() {
 		return delegate.getName();
 	}
+
 
 	public void setName(String name) {
 	    delegate.setName(name);
@@ -66,7 +67,6 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
     	}
     }
     
-
     public void addValues(Frame frame, Slot slot, Facet facet,
                           boolean isTemplate, Collection values) {
         try {
@@ -309,6 +309,10 @@ public class IdleConnectionNarrowFrameStore implements NarrowFrameStore {
         finally {
             dereferenceConnection();
         }
+    }
+
+    public boolean setCaching(RemoteSession session, boolean doCache) {
+        return delegate.setCaching(session, doCache);
     }
 
     public void removeValue(Frame frame, Slot slot, Facet facet,

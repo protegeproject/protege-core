@@ -30,32 +30,32 @@ import edu.stanford.smi.protege.util.LocalizeUtils;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
-public class ServerNarrowFrameStore 
+public class ServerNarrowFrameStore
   extends UnicastRemoteObject implements RemoteServerNarrowFrameStore {
   private static final long serialVersionUID = 1996943880174792714L;
-  
-  private static transient Logger log = Log.getLogger(ServerNarrowFrameStore.class);
-  
-  private NarrowFrameStore delegate;
-  private NarrowFrameStore fixedDelegate;
-  private KnowledgeBase kb;
 
-  
-  public ServerNarrowFrameStore(NarrowFrameStore delegate, 
+  private static transient Logger log = Log.getLogger(ServerNarrowFrameStore.class);
+
+  private final NarrowFrameStore delegate;
+  private final NarrowFrameStore fixedDelegate;
+  private final KnowledgeBase kb;
+
+
+  public ServerNarrowFrameStore(NarrowFrameStore delegate,
                                 KnowledgeBase kb) throws RemoteException {
     super(SSLFactory.getServerPort(SSLFactory.Context.ALWAYS),
           new RmiSocketFactory(SSLFactory.Context.ALWAYS),
           new RmiSocketFactory(SSLFactory.Context.ALWAYS));
     this.delegate = delegate;
     this.kb = kb;
-    fixedDelegate 
+    fixedDelegate
       = (NarrowFrameStore) Proxy.newProxyInstance(kb.getClass().getClassLoader(),
                                                   new Class[] {NarrowFrameStore.class},
                                                   new ServerInvocationHandler());
   }
-  
 
-  
+
+
   private class ServerInvocationHandler implements InvocationHandler {
 
     public Object invoke(Object object, Method method, Object[] args) throws Throwable {
@@ -86,7 +86,7 @@ public class ServerNarrowFrameStore
         throw ite.getCause();
       }
     }
-    
+
   }
 
   private void localize(Object[] args) {
@@ -181,7 +181,7 @@ public class ServerNarrowFrameStore
 
 
 
-  public void addValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values, RemoteSession session) 
+  public void addValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values, RemoteSession session)
     throws RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
     fixedDelegate.addValues(frame, slot, facet, isTemplate, values);
@@ -189,7 +189,7 @@ public class ServerNarrowFrameStore
 
 
 
-  public void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to, RemoteSession session) 
+  public void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to, RemoteSession session)
     throws RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
     fixedDelegate.moveValue(frame, slot, facet, isTemplate, from, to);
@@ -197,7 +197,7 @@ public class ServerNarrowFrameStore
 
 
 
-  public void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value, RemoteSession session) 
+  public void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value, RemoteSession session)
     throws RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
     fixedDelegate.removeValue(frame, slot, facet, isTemplate, value);
@@ -205,7 +205,7 @@ public class ServerNarrowFrameStore
 
 
 
-  public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values, RemoteSession session) 
+  public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values, RemoteSession session)
     throws RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
     fixedDelegate.setValues(frame, slot, facet, isTemplate, values);
@@ -305,14 +305,19 @@ public class ServerNarrowFrameStore
     return fixedDelegate.rollbackTransaction();
   }
 
-  public TransactionMonitor getTransactionStatusMonitor(RemoteSession session) 
+  public TransactionMonitor getTransactionStatusMonitor(RemoteSession session)
   throws TransactionException, RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
     return fixedDelegate.getTransactionStatusMonitor();
   }
-  
+
   public void replaceFrame(Frame original, Frame replacement, RemoteSession session) throws RemoteException {
     ServerFrameStore.recordCallNoCheck(session);
     fixedDelegate.replaceFrame(original, replacement);
-  }  
+  }
+
+  public boolean setCaching(RemoteSession session, boolean doCache) {
+      ServerFrameStore.recordCallNoCheck(session);
+      return fixedDelegate.setCaching(session, doCache);
+    }
 }
