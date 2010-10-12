@@ -25,6 +25,7 @@ import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.CollectionUtilities;
 import edu.stanford.smi.protege.util.Log;
 import edu.stanford.smi.protege.util.SimpleStringMatcher;
@@ -32,12 +33,12 @@ import edu.stanford.smi.protege.util.StringUtilities;
 import edu.stanford.smi.protege.util.SystemUtilities;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
-//ESCA-JAVA0100 
+//ESCA-JAVA0100
 public class InMemoryFrameDb implements NarrowFrameStore {
     private static Logger log = Log.getLogger(InMemoryFrameDb.class);
-    
+
     private static final int INITIAL_MAP_SIZE = 32771;
-    private Map<FrameID, Frame> idToFrameMap = new HashMap<FrameID, Frame>(INITIAL_MAP_SIZE);
+    private final Map<FrameID, Frame> idToFrameMap = new HashMap<FrameID, Frame>(INITIAL_MAP_SIZE);
     private Map<Record, Record> referenceToRecordMap = new HashMap<Record, Record>(INITIAL_MAP_SIZE);
     private Map<Frame, Set<Record>> frameToRecordsMap = new HashMap<Frame, Set<Record>>(INITIAL_MAP_SIZE);
     private Map<Slot, Set<Record>> slotToRecordsMap = new HashMap<Slot, Set<Record>>(INITIAL_MAP_SIZE);
@@ -77,6 +78,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
 
 
 
+    @Override
     public String toString() {
         return StringUtilities.getClassName(this) + "(" + frameDBName + ")";
     }
@@ -115,7 +117,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         int frameCount = 0;
         Slot nameSlot = getNameSlot();
         if (nameSlot != null) {
-            Collection records = (Collection) slotToRecordsMap.get(nameSlot);
+            Collection records = slotToRecordsMap.get(nameSlot);
             Iterator i = records.iterator();
             while (i.hasNext()) {
                 Record record = (Record) i.next();
@@ -223,7 +225,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         if (records == null || records.isEmpty()) {
           idToFrameMap.remove(record.getFrame().getFrameID());
         }
-    
+
     }
 
     public static <X> void removeRecord(Map<X, Set<Record>> map, Object key, Record record) {
@@ -276,9 +278,9 @@ public class InMemoryFrameDb implements NarrowFrameStore {
                                           (Facet) replacement : r.getFacet(),
                                       r.isTemplate(),
                                       r.getValues());
-        if (newRecord.getFrame().equals(replacement) 
+        if (newRecord.getFrame().equals(replacement)
             && newRecord.getSlot().getFrameID().equals(Model.SlotID.NAME)
-            && newRecord.getFacet() == null 
+            && newRecord.getFacet() == null
             && !newRecord.isTemplate()) {
           List values = Collections.singletonList(replacement.getName());
           newRecord.setValues(values);
@@ -344,7 +346,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         int count = 0;
         Slot slot = getNameSlot();
         if (slot != null) {
-            Collection records = (Collection) slotToRecordsMap.get(slot);
+            Collection records = slotToRecordsMap.get(slot);
             if (records != null) {
                 count = records.size();
             }
@@ -420,7 +422,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
                 removeRecord(record);
             }
         }
-    
+
     }
 
     public void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
@@ -533,7 +535,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         replaceFrameKey(slotToRecordsMap, frame);
         replaceFrameKey(facetToRecordsMap, frame);
         replaceFrameKey(valueToRecordsMap, frame);
-        
+
         Set<Record> records = valueToRecordsMap.get(frame);
         if (records != null) {
             for (Record record : records)  {
@@ -561,6 +563,10 @@ public class InMemoryFrameDb implements NarrowFrameStore {
 	public void reinitialize() {
 	}
 
+	public boolean setCaching(RemoteSession session, boolean doCache) {
+	    return false;
+	}
+
     @SuppressWarnings("unchecked")
     public void replaceFrame(Frame original, Frame replacement) {
       if (original.equals(replacement)) {
@@ -570,7 +576,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         idToFrameMap.remove(original.getFrameID());
         idToFrameMap.put(replacement.getFrameID(),  replacement);
       }
-      
+
       Set<Record> recordsToChange = new HashSet<Record>();
       if (frameToRecordsMap.get(original) != null) {
         for (Record r : frameToRecordsMap.get(original)) {
@@ -588,7 +594,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
         }
       }
       replaceRecords(original, replacement, recordsToChange);
-      
+
       if (valueToRecordsMap.get(original) != null) {
         for (Record r : valueToRecordsMap.get(original)) {
           List values = r.getValues();
@@ -604,7 +610,7 @@ public class InMemoryFrameDb implements NarrowFrameStore {
       }
       deleteFrame(original);
     }
-    
+
 
 
 }
