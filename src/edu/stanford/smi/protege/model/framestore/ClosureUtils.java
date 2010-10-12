@@ -6,9 +6,9 @@ import java.util.Set;
 
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Slot;
-import edu.stanford.smi.protege.server.job.CacheControlJob;
+import edu.stanford.smi.protege.server.RemoteSession;
+import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 
 /**
  *
@@ -22,18 +22,13 @@ public class ClosureUtils {
             Slot slot,
             Facet facet,
             boolean isTemplate) {
-        KnowledgeBase kb = frame.getKnowledgeBase();
-        boolean isInitializing = (kb.getFrameStoreManager() == null);
+        RemoteSession session = ServerFrameStore.getCurrentSession();
         try {
-            if (!isInitializing) {
-                new CacheControlJob(kb, false, true).execute();  // TODO - breaks layering - we really should have a generic NarrowFrameStore method
-            }
+            store.setCaching(session, false);
             return calculateClosure(store, frame, slot, facet, isTemplate, new LinkedHashSet());
         }
         finally {
-            if (!isInitializing) {
-                new CacheControlJob(kb, false, false).execute();
-            }
+            store.setCaching(session, true);
         }
     }
 
