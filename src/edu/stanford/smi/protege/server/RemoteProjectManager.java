@@ -115,10 +115,7 @@ public class RemoteProjectManager {
             }
             p = RemoteClientProject.createProject(server, serverProject, session, true);
         } catch (Exception e) {
-            Log.getLogger().warning("Could not connect to remote meta project. Message: " + e.getMessage());
-            if (Log.getLogger().isLoggable(Level.FINE)) {
-                Log.getLogger().log(Level.FINE, "Could not connect to remote meta project ", e);
-            }
+            Log.getLogger().log(Level.WARNING, "Could not connect to remote meta project ", e);
         }
         return p == null ? null : new MetaProjectImpl(p);
     }
