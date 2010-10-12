@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.model.framestore;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -15,41 +14,42 @@ import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
+import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /*
- * svn revision 8468 had code that did not rely on the frame name being set correctly in the 
+ * svn revision 8468 had code that did not rely on the frame name being set correctly in the
  * delegate.  But this code is pretty trivial to add...
  */
 public class ImmutableNamesNarrowFrameStore implements NarrowFrameStore {
 
 	private String name;
-	
+
 	private NarrowFrameStore delegate;
 
-	private Slot nameSlot;
-	
+	private final Slot nameSlot;
+
 	public ImmutableNamesNarrowFrameStore(KnowledgeBase kb, NarrowFrameStore delegate) {
 		this.delegate = delegate;
 		nameSlot = new DefaultSlot(kb, Model.SlotID.NAME);
 	}
-	
+
 	private boolean isNameSlot(Slot slot) {
 		return slot != null && slot.getFrameID().equals(Model.SlotID.NAME);
 	}
-	
+
 	private boolean isNameSft(Slot slot, Facet facet, boolean isTemplate) {
 		return isNameSlot(slot) && facet == null && !isTemplate;
 	}
-	
+
 	private void checkNotNameSft(Slot slot, Facet facet, boolean isTemplate) {
 		if (isNameSft(slot, facet, isTemplate)) {
 			throw new IllegalArgumentException("Should not be modifying name slot values");
 		}
 	}
-	
+
 	/*
-	 *	Narrow Frame Store Interfaces 
+	 *	Narrow Frame Store Interfaces
 	 */
 
 	public void addValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values) {
@@ -158,6 +158,10 @@ public class ImmutableNamesNarrowFrameStore implements NarrowFrameStore {
 	public void reinitialize() {
 		delegate.reinitialize();
 	}
+
+    public boolean setCaching(RemoteSession session, boolean doCache) {
+        return delegate.setCaching(session, doCache);
+    }
 
 	public void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value) {
 		checkNotNameSft(slot, facet, isTemplate);
