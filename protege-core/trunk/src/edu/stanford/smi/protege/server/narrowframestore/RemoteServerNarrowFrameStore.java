@@ -19,9 +19,9 @@ import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 /**
  * A variation of the NarrowFrameStore interface that throws the RemoteException.
- * 
+ *
  * Unfortunate that I need to write this.
- * 
+ *
  * @author tredmond
  *
  */
@@ -48,36 +48,36 @@ public interface RemoteServerNarrowFrameStore extends Remote {
 
   Frame getFrame(FrameID id, RemoteSession session) throws RemoteException;
 
-  List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, RemoteSession session) 
+  List getValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, RemoteSession session)
     throws RemoteException;
 
-  int getValuesCount(Frame frame, Slot slot, Facet facet, boolean isTemplate, RemoteSession session) 
+  int getValuesCount(Frame frame, Slot slot, Facet facet, boolean isTemplate, RemoteSession session)
     throws RemoteException;
 
-  void addValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values, RemoteSession session) 
+  void addValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values, RemoteSession session)
     throws RemoteException;
 
-  void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to, RemoteSession session) 
+  void moveValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, int from, int to, RemoteSession session)
     throws RemoteException;
 
-  void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value, RemoteSession session) 
+  void removeValue(Frame frame, Slot slot, Facet facet, boolean isTemplate, Object value, RemoteSession session)
     throws RemoteException;
 
-  void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values, RemoteSession session) 
+  void setValues(Frame frame, Slot slot, Facet facet, boolean isTemplate, Collection values, RemoteSession session)
     throws RemoteException;
 
-  Set<Frame> getFrames(Slot slot, Facet facet, boolean isTemplate, Object value, RemoteSession session) 
+  Set<Frame> getFrames(Slot slot, Facet facet, boolean isTemplate, Object value, RemoteSession session)
     throws RemoteException;
 
-  Set<Frame> getFramesWithAnyValue(Slot slot, Facet facet, boolean isTemplate, RemoteSession session) 
+  Set<Frame> getFramesWithAnyValue(Slot slot, Facet facet, boolean isTemplate, RemoteSession session)
     throws RemoteException;
 
-  Set<Frame> getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches, RemoteSession session) 
+  Set<Frame> getMatchingFrames(Slot slot, Facet facet, boolean isTemplate, String value, int maxMatches, RemoteSession session)
     throws RemoteException;
 
   Set<Reference> getReferences(Object value, RemoteSession session) throws RemoteException;
 
-  Set<Reference> getMatchingReferences(String value, int maxMatches, RemoteSession session) 
+  Set<Reference> getMatchingReferences(String value, int maxMatches, RemoteSession session)
     throws RemoteException;
 
   Collection<Frame> executeQuery(Query query, RemoteSession session) throws RemoteException;
@@ -86,7 +86,7 @@ public interface RemoteServerNarrowFrameStore extends Remote {
 
   void close(RemoteSession session) throws RemoteException;
 
-  Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate, RemoteSession session) 
+  Set getClosure(Frame frame, Slot slot, Facet facet, boolean isTemplate, RemoteSession session)
     throws RemoteException;
 
   void replaceFrame(Frame frame, RemoteSession session) throws RemoteException;
@@ -101,5 +101,5 @@ public interface RemoteServerNarrowFrameStore extends Remote {
 
    void replaceFrame(Frame original, Frame replacement, RemoteSession session) throws RemoteException;
 
-
+   boolean setCaching(RemoteSession session, boolean doCache);
 }
