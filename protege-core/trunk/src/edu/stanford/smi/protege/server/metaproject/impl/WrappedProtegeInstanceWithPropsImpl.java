@@ -2,6 +2,7 @@ package edu.stanford.smi.protege.server.metaproject.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import edu.stanford.smi.protege.model.Instance;
@@ -23,6 +24,22 @@ public abstract class WrappedProtegeInstanceWithPropsImpl extends WrappedProtege
 
     public void setPropertyValues(Collection<PropertyValue> propertyValues) {
         setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum.properties, propertyValues);
+    }
+
+    /**
+     * Will replace any existing PropertyValue sharing the same propertyName with the PropertyValue passed in.
+     * @param propertyValue
+     */
+    public void setPropertyValue(PropertyValue propertyValue) {
+        final Set<PropertyValue> propertyValues = getPropertyValues();
+        final Set<PropertyValue> propertyValuesToSet = new HashSet<PropertyValue>();
+        for (PropertyValue value : propertyValues) {
+            if (!value.getPropertyName().equals(propertyValue.getPropertyName())){
+                propertyValuesToSet.add(value);
+            }
+        }
+        propertyValuesToSet.add(propertyValue);
+        setPropertyValues(propertyValuesToSet);
     }
 
     public void addPropertyValue(PropertyValue propertyValue) {
@@ -72,5 +89,6 @@ public abstract class WrappedProtegeInstanceWithPropsImpl extends WrappedProtege
         }
         return null;
     }
+    
 
 }
