@@ -44,6 +44,8 @@ public interface User {
 
     String getPropertyValue(String prop);
 
+    void setPropertyValue(PropertyValue propertyValue);
+
 	void setPropertyValues(Collection<PropertyValue> propertyValues);
 
 	void addPropertyValue(PropertyValue propertyValue);
