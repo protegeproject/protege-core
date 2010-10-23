@@ -120,9 +120,22 @@ public class RemoteClientFrameStore implements FrameStore {
      * thing. Frames with equal frame id are constantly being seen and garbage collected, so with a weak hash map,
      * the cacheMap is far too empty.
      */
+    /*
+     * Synchronization: For read operations, cacheMap is synchronized by this. For write operations we do not have to 
+     *                  worry because there is only one writer.  I don't believe that there is any deadlock issue here
+     *                  because this synchronization only surrounds some cacheMap read operations.
+     */
     private final Map<Frame, DeferredOperationCache> cacheMap = new HashMap<Frame, DeferredOperationCache>();
 
+    /*
+     * Synchronization: Protected by this. Currently the only getter occurs during a write operation
+     *                  and this cannot lead to a deadlock because there is only one thread that gets anywhere
+     *                  near this depth.  Seems like a weird reason to know that there is no deadlock.
+     */
     private TransactionIsolationLevel transactionLevel;
+    /*
+     * Synchronization: This only changes during a write operation and there is then only one thread.
+     */
     private int transactionNesting = 0;
 
     /*
@@ -241,7 +254,10 @@ public class RemoteClientFrameStore implements FrameStore {
         if (rcfs == null) {
             return true;
         }
-        Cache<RemoteSession, Sft, List> cache = rcfs.cacheMap.get(frame);
+        Cache<RemoteSession, Sft, List> cache;
+        synchronized (rcfs) {
+        	cache = rcfs.cacheMap.get(frame);
+        }
         if (cache == null) {
         	return false;
         }
@@ -1251,7 +1267,7 @@ public class RemoteClientFrameStore implements FrameStore {
       return frameStore.getTransactionIsolationLevel();
     }
 
-    public  TransactionIsolationLevel getTransactionIsolationLevel() throws TransactionException {
+    public synchronized TransactionIsolationLevel getTransactionIsolationLevel() throws TransactionException {
       if (transactionLevel != null) {
         return transactionLevel;
       }
@@ -1598,7 +1614,7 @@ public class RemoteClientFrameStore implements FrameStore {
         return readCache(frame, slot, facet, isTemplate).isValid();
     }
 
-    private CacheResult<List> readCache(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
+    private synchronized CacheResult<List> readCache(Frame frame, Slot slot, Facet facet, boolean isTemplate) {
         CacheResult<List> ret;    
         Cache<RemoteSession, Sft, List> cache = cacheMap.get(frame);
         if (cacheLog.isLoggable(Level.FINEST) && cache != null) {
@@ -1688,7 +1704,7 @@ public class RemoteClientFrameStore implements FrameStore {
     }
   }
 
-  public  void flushCache() {
+  public synchronized void flushCache() {
     if (cacheLog.isLoggable(Level.FINE)) {
       cacheLog.fine("Flushing client cache");
     }
