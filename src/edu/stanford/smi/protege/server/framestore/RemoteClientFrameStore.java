@@ -1650,7 +1650,7 @@ public class RemoteClientFrameStore implements FrameStore {
 
 
 
-  private void processValueUpdate(OntologyUpdate updates) {
+  private synchronized void processValueUpdate(OntologyUpdate updates) {
     if (cacheLog.isLoggable(Level.FINE) && updates.getValueUpdates().size() != 0) {
       cacheLog.fine("received " + updates.getValueUpdates().size() + " value updates for Knowledge base " + kb);
     }
