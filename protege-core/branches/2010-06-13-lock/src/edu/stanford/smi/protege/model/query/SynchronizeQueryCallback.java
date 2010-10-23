@@ -1,7 +1,6 @@
 package edu.stanford.smi.protege.model.query;
 
 import java.util.Collection;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
