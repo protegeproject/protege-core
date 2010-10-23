@@ -79,11 +79,13 @@ public class ServerNarrowFrameStore
       }
       localize(args);
       try {
-        synchronized (kb.getWriterLock()) {  // writer lock is conservative but this  should be rare.
+    	  kb.getWriterLock().lock();
           return method.invoke(delegate, args);
-        }
       } catch (InvocationTargetException ite) {
         throw ite.getCause();
+      }
+      finally {
+    	  kb.getWriterLock().unlock();
       }
     }
 
