@@ -56,5 +56,9 @@ public class MessageError {
 	public Severity getSeverity() {
 	    return severity;
 	}
+	
+	public String toString() {
+	    return severity.toString() + ": " + (message != null ? message : exception.getMessage());
+	}
 
 }
