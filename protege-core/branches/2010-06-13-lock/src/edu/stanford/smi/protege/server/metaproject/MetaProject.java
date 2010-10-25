@@ -51,7 +51,8 @@ public interface MetaProject {
     boolean save(Collection errors);
 
     void dispose();
-    
+
+    Collection<PropertyValue> getMatchingPropertyValues(String propertyName, String propertyValue);
 }
 
 
