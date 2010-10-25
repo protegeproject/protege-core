@@ -283,6 +283,17 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
         PropertyValue pv = new PropertyValueImpl(this, pi);
         return pv;
     }
+
+    public Collection<PropertyValue> getMatchingPropertyValues(String propertyName, String propertyValue) {
+        final Collection<Frame> matchingFrames = kb.getMatchingFrames(getSlot(SlotEnum.propertyName), null, false, propertyName, -1);
+        Collection<PropertyValue> collector = new HashSet<PropertyValue>();
+        for (Frame matchingFrame : matchingFrames) {
+                if (propertyValue.equals(matchingFrame.getOwnSlotValue(getSlot(MetaProjectImpl.SlotEnum.propertyValue)))){
+                    collector.add(new PropertyValueImpl(this, kb.getInstance(matchingFrame.getName())));
+            }
+        }
+        return collector;
+    }
     
     public ServerInstance createServer(String name) {
         Instance pi = kb.createInstance(null, getCls(MetaProjectImpl.ClsEnum.Server));
