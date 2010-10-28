@@ -284,17 +284,35 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
         return pv;
     }
 
-    public Collection<PropertyValue> getMatchingPropertyValues(String propertyName, String propertyValue) {
-        final Collection<Frame> matchingFrames = kb.getMatchingFrames(getSlot(SlotEnum.propertyName), null, false, propertyName, -1);
-        Collection<PropertyValue> collector = new HashSet<PropertyValue>();
+    public PropertyValue createPropertyValue(String propertyName, String propertyValue) {
+        PropertyValue pv = createPropertyValue();
+        pv.setPropertyName(propertyName);
+        pv.setPropertyValue(propertyValue);
+        return pv;
+    }
+
+
+    public Collection<PropertyValue> getPropertyValues(String propertyName, String propertyValue) {
+        @SuppressWarnings("unchecked")
+        final Collection<Frame> matchingFrames = kb.getFramesWithValue(getSlot(SlotEnum.propertyName), null, false, propertyName);
+
+        Collection<PropertyValue> propertyValues = new ArrayList<PropertyValue>();
+
+        Slot propValueSlot = getSlot(MetaProjectImpl.SlotEnum.propertyValue);
+        Cls propValueCls = getCls(MetaProjectImpl.ClsEnum.PropertyValue);
+
         for (Frame matchingFrame : matchingFrames) {
-                if (propertyValue.equals(matchingFrame.getOwnSlotValue(getSlot(MetaProjectImpl.SlotEnum.propertyValue)))){
-                    collector.add(new PropertyValueImpl(this, kb.getInstance(matchingFrame.getName())));
+            if (((Instance)matchingFrame).hasType(propValueCls)) {
+                Object value = matchingFrame.getOwnSlotValue(propValueSlot);
+                if (    (value == null && propertyValue == null) ||
+                        (propertyValue != null && propertyValue.equals(value))){
+                    propertyValues.add(new PropertyValueImpl(this, (Instance) matchingFrame));
+                }
             }
         }
-        return collector;
+        return propertyValues;
     }
-    
+
     public ServerInstance createServer(String name) {
         Instance pi = kb.createInstance(null, getCls(MetaProjectImpl.ClsEnum.Server));
         ServerInstance si = new ServerInstanceImpl(this, pi);
