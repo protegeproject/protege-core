@@ -37,22 +37,28 @@ public interface MetaProject {
 
     GroupOperation createGroupOperation();
 
+
     Policy getPolicy();
 
-    
+
     Set<ServerInstance> getServers();
-    
+
     ServerInstance createServer(String name);
 
-    
+
+    Collection<PropertyValue> getPropertyValues(String propertyName, String propertyValue);
+
     PropertyValue createPropertyValue();
 
-    @SuppressWarnings("unchecked")
+    PropertyValue createPropertyValue(String propertyName, String propertyValue);
+
+
+    @SuppressWarnings("rawtypes")
     boolean save(Collection errors);
 
     void dispose();
 
-    Collection<PropertyValue> getMatchingPropertyValues(String propertyName, String propertyValue);
+
 }
 
 
