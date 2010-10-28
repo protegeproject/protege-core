@@ -30,15 +30,19 @@ public abstract class WrappedProtegeInstanceWithPropsImpl extends WrappedProtege
      * Will replace any existing PropertyValue sharing the same propertyName with the PropertyValue passed in.
      * @param propertyValue
      */
-    public void setPropertyValue(PropertyValue propertyValue) {
+    public void setPropertyValue(String propertyName, String propertyValue) {
         final Set<PropertyValue> propertyValues = getPropertyValues();
         final Set<PropertyValue> propertyValuesToSet = new HashSet<PropertyValue>();
         for (PropertyValue value : propertyValues) {
-            if (!value.getPropertyName().equals(propertyValue.getPropertyName())){
+            if (!value.getPropertyName().equals(propertyValue)){
                 propertyValuesToSet.add(value);
             }
         }
-        propertyValuesToSet.add(propertyValue);
+        PropertyValue propValue = getMetaProject().createPropertyValue();
+        propValue.setPropertyName(propertyName);
+        propValue.setPropertyValue(propertyValue);
+        propertyValuesToSet.add(propValue);
+
         setPropertyValues(propertyValuesToSet);
     }
 
@@ -89,6 +93,6 @@ public abstract class WrappedProtegeInstanceWithPropsImpl extends WrappedProtege
         }
         return null;
     }
-    
+
 
 }
