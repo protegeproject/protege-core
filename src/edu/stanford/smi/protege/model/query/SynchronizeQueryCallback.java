@@ -73,7 +73,10 @@ public class SynchronizeQueryCallback implements QueryCallback, Localizable {
             result = null;
         }
     }
-    if (o instanceof Collection) {
+    if (o == null) {
+        return null;
+    }
+    else if (o instanceof Collection) {
       return (Collection<Frame>) o;
     } 
     else if (o instanceof OntologyException) {
