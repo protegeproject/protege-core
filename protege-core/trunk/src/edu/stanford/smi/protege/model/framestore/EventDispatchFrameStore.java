@@ -87,8 +87,8 @@ public class EventDispatchFrameStore extends ModificationFrameStore {
 	@Override
 	public void close() {
 	    super.close();
-	    _listeners = null;
 	    stopEventThread();
+        _listeners = null;
 	}
 
     /*------------------------------------------------------------------------------
