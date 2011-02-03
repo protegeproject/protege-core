@@ -45,8 +45,8 @@ import edu.stanford.smi.protege.util.transaction.cache.serialize.SerializedCache
  */
 
 public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
-    public static final transient Logger cacheLog = Logger.getLogger(CompleteableCache.class.getPackage().getName() + ".ValueCachingNFS");
-    private static Logger log = Log.getLogger(ValueCachingNarrowFrameStore.class);
+    public static final transient Logger CACHE_LOG = Logger.getLogger(CompleteableCache.class.getPackage().getName() + ".ValueCachingNFS");
+    public static final Logger LOGGER = Log.getLogger(ValueCachingNarrowFrameStore.class);
     private DatabaseFrameDb framedb;
     private final WeakHashMap<String, SoftReference<DeferredOperationCache>> cacheMap
                       = new WeakHashMap<String, SoftReference<DeferredOperationCache>>();
@@ -66,8 +66,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     private long cacheHits = 0;
 
     public ValueCachingNarrowFrameStore(DatabaseFrameDb delegate) {
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("Constructing ValueCachingNarrowFrameStore with delegate " + delegate);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Constructing ValueCachingNarrowFrameStore with delegate " + delegate);
         }
         framedb  = delegate;
     }
@@ -116,8 +116,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             cacheMap.remove(frame.getFrameID().getName());
         }
         if (reference != null && cache == null) {
-            if (cacheLog.isLoggable(Level.FINER)) {
-                cacheLog.finer("Cache for frame " + frame.getFrameID().getName() + " garbage collected");
+            if (CACHE_LOG.isLoggable(Level.FINER)) {
+                CACHE_LOG.finer("Cache for frame " + frame.getFrameID().getName() + " garbage collected");
             }
             cacheLost++;
         }
@@ -126,8 +126,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             String frameName = frame.getFrameID().getName();
             Cache delegateCache = CacheFactory.createEmptyCache(getTransactionStatusMonitor().getTransationIsolationLevel());
             cache = new DeferredOperationCache(delegateCache, new FifoReader<SerializedCacheUpdate<RemoteSession,Sft,List>>(transactions));
-            if (cacheLog.isLoggable(Level.FINER)) {
-                cacheLog.finer("Created cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
+            if (CACHE_LOG.isLoggable(Level.FINER)) {
+                CACHE_LOG.finer("Created cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
             }
             cacheMap.put(frameName, new SoftReference(cache));
 
@@ -153,8 +153,8 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
 
                 cacheBuilds++;
                 logStats(Level.FINE);
-                if (cacheLog.isLoggable(Level.FINER)) {
-                    cacheLog.finer("Filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
+                if (CACHE_LOG.isLoggable(Level.FINER)) {
+                    CACHE_LOG.finer("Filled cache " + cache.getCacheId() + " for frame " + frame.getFrameID().getName());
                 }
             }
         }
@@ -162,13 +162,13 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
     }
 
     private void logStats(Level level) {
-        if (cacheLog.isLoggable(level) && (cacheBuilds % 300 == 0)) {
-            cacheLog.log(level, "------------------- Database ValueCaching Stats");
-            cacheLog.log(level, "Caches built = " + cacheBuilds + " but only " + cacheMap.size() + " cache references still present.");
-            cacheLog.log(level, "Cache references found but were invalid at time of use = " + cacheLost);
-            cacheLog.log(level, "Ave time per build = " + (((float) totalBuildTime) / (1000 * 1000 * cacheBuilds)) + "ms.");
-            cacheLog.log(level, "Ave hits per build = " + (cacheHits / cacheBuilds));
-            cacheLog.log(level, "------------------- Database ValueCaching Stats");
+        if (CACHE_LOG.isLoggable(level) && (cacheBuilds % 300 == 0)) {
+            CACHE_LOG.log(level, "------------------- Database ValueCaching Stats");
+            CACHE_LOG.log(level, "Caches built = " + cacheBuilds + " but only " + cacheMap.size() + " cache references still present.");
+            CACHE_LOG.log(level, "Cache references found but were invalid at time of use = " + cacheLost);
+            CACHE_LOG.log(level, "Ave time per build = " + (((float) totalBuildTime) / (1000 * 1000 * cacheBuilds)) + "ms.");
+            CACHE_LOG.log(level, "Ave hits per build = " + (cacheHits / cacheBuilds));
+            CACHE_LOG.log(level, "------------------- Database ValueCaching Stats");
         }
     }
 
@@ -196,7 +196,7 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
             }
         }
         catch (OutOfMemoryError oops) {
-            log.info("Out of memory achieved");
+            LOGGER.info("Out of memory achieved");
         }
     }
 
@@ -411,6 +411,9 @@ public class ValueCachingNarrowFrameStore implements NarrowFrameStore {
                 List oldValues = new ArrayList(getValues(result));
                 oldValues.remove(value);
                 cache.modifyCache(session, sft, oldValues);
+            }
+            else {
+                cache.modifyCache(session, sft);
             }
         }
         getDelegate().removeValue(frame, slot, facet, isTemplate, value);
