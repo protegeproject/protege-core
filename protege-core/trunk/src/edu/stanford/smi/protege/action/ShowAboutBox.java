@@ -29,7 +29,7 @@ public class ShowAboutBox extends ProjectAction {
         String title = LocalizedText.getText(ResourceKey.ABOUT_APPLICATION_DIALOG_TITLE, Text.getProgramName());
         URL url = Text.getAboutURL();
         
-        AboutBox aboutProtege = new AboutBox(url, new Dimension(575, 525));
+        AboutBox aboutProtege = new AboutBox(url, new Dimension(575, 475));
         ModalDialog.showDialog(pane, aboutProtege, title, ModalDialog.MODE_CLOSE);
     }
 }
