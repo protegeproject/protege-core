@@ -15,7 +15,6 @@ import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.exception.ProtegeError;
 import edu.stanford.smi.protege.exception.ProtegeIOException;
 import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.framestore.AbstractFrameStoreInvocationHandler;
 import edu.stanford.smi.protege.model.query.Query;
 import edu.stanford.smi.protege.model.query.QueryCallback;
@@ -37,7 +36,7 @@ public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHand
         }
     });
     private FrameCalculator frameCalculator;
-    
+
     public LastUsageInvocationHandler(ProjectInstance projectInstance, FrameCalculator frameCalculator) {
         this.frameCalculator = frameCalculator;
         metaproject = projectInstance.getMetaProject();
@@ -63,22 +62,22 @@ public class LastUsageInvocationHandler extends AbstractFrameStoreInvocationHand
     protected void executeQuery(Query q, final QueryCallback qc) {
         updateLastAccessTime();
         QueryCallback outerCallback = new QueryCallback() {
-            
+
             public void provideQueryResults(Collection<Frame> results) {
                 updateLastAccessTime();
                 qc.provideQueryResults(results);
             }
-            
+
             public void handleError(ProtegeError error) {
                 updateLastAccessTime();
                 qc.handleError(error);
             }
-            
+
             public void handleError(ProtegeIOException exception) {
                 updateLastAccessTime();
                 qc.handleError(exception);
             }
-            
+
             public void handleError(OntologyException exception) {
                 updateLastAccessTime();
                 qc.handleError(exception);
