@@ -1,0 +1,146 @@
+; Wed Apr 07 22:49:42 PDT 2010
+; 
+;+ (version "3.4.4")
+;+ (build "Build 579")
+
+([metaproject_Instance_0] of  Operation
+
+	(name "RestartServer"))
+
+([metaproject_Instance_1] of  User
+
+	(group
+		[metaproject_Instance_2]
+		[metaproject_Instance_10])
+	(name "Natasha Noy")
+	(password "f9acfdcc3cebeb9e4868c07a0cec68b1")
+	(salt "4d55536290723e81"))
+
+([metaproject_Instance_10] of  Group
+
+	(member [metaproject_Instance_1])
+	(name "Editor"))
+
+([metaproject_Instance_11] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_10])
+	(allowedOperation
+		[nci_metaproject_Instance_60009]
+		[nci_metaproject_Instance_60010]))
+
+([metaproject_Instance_12] of  Operation
+
+	(name "DestroyInstallationToProtectAgents"))
+
+([metaproject_Instance_13] of  Group
+
+	(member [metaproject_Instance_14])
+	(name "Secret Agent"))
+
+([metaproject_Instance_14] of  User
+
+	(group
+		[metaproject_Instance_13]
+		[metaproject_Instance_6]
+		[metaproject_Instance_4])
+	(name "Bond, James Bond")
+	(password "f510f4ff9ddfd93b02cdb5a977c05d16")
+	(salt "f79c58cdd8e60b1f"))
+
+([metaproject_Instance_15] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_13])
+	(allowedOperation
+		[metaproject_Instance_12]
+		[metaproject_Instance_16]))
+
+([metaproject_Instance_16] of  Operation
+
+	(name "LicensedKill"))
+
+([metaproject_Instance_2] of  Group
+
+	(member [metaproject_Instance_1])
+	(name "Developer"))
+
+([metaproject_Instance_3] of  User
+
+	(group [metaproject_Instance_4])
+	(name "Bob")
+	(password "1a316219a251f790c8c8f74c48c4e29c")
+	(salt "bf9a10bebb251ec8"))
+
+([metaproject_Instance_4] of  Group
+
+	(member
+		[metaproject_Instance_3]
+		[metaproject_Instance_14])
+	(name "Reviewer"))
+
+([metaproject_Instance_5] of  User
+
+	(group [metaproject_Instance_6])
+	(name "Paul")
+	(password "c9ae50e058a54bc9323c5fdde59b273e")
+	(salt "befd57ea00bd18d1"))
+
+([metaproject_Instance_6] of  Group
+
+	(member
+		[metaproject_Instance_5]
+		[metaproject_Instance_14])
+	(name "Admin"))
+
+([metaproject_Instance_7] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_6])
+	(allowedOperation
+		[metaproject_Instance_0]
+		[nci_metaproject_Instance_60009]))
+
+([metaproject_Instance_8] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_2])
+	(allowedOperation
+		[nci_metaproject_Instance_60008]
+		[metaproject_Instance_0]
+		[nci_metaproject_Instance_60013]
+		[nci_metaproject_Instance_60009]))
+
+([metaproject_Instance_9] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_4])
+	(allowedOperation [nci_metaproject_Instance_60009]))
+
+([nci_metaproject_Instance_60008] of  Operation
+
+	(name "EditMetaProject"))
+
+([nci_metaproject_Instance_60009] of  Operation
+
+	(description "An alternative form of read that doesn't\nprevent users from accessing a server\nontology.")
+	(name "AltRead"))
+
+([nci_metaproject_Instance_60010] of  Operation
+
+	(name "Write"))
+
+([nci_metaproject_Instance_60013] of  Operation
+
+	(name "Shutdown"))
+
+([projects_00020] of  Project
+
+	(allowedGroupOperation
+		[metaproject_Instance_7]
+		[metaproject_Instance_8]
+		[metaproject_Instance_9]
+		[metaproject_Instance_11]
+		[metaproject_Instance_15])
+	(location "examples/newspaper/newspaper.pprj")
+	(name "Newspaper"))
+
+([projects_00021] of  Project
+
+	(location "examples/wines/wines.pprj")
+	(name "Wines"))
