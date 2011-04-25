@@ -1,0 +1,78 @@
+; Wed Dec 09 14:33:13 PST 2009
+; 
+;+ (version "3.4.2")
+;+ (build "Build 557")
+
+([metaproject_Instance_0] of  Group
+
+	(member
+		[metaproject_Instance_10002]
+		[metaproject_Instance_10003]
+		[metaproject_Instance_10004]
+		[metaproject_Instance_10005]
+		[metaproject_Instance_10006]
+		[metaproject_Instance_10007])
+	(name "World"))
+
+([metaproject_Instance_10001] of  Project
+
+	(allowedGroupOperation [metaproject_Instance_10008])
+	(location "junit/pprj/scratch.pprj")
+	(name "scratch"))
+
+([metaproject_Instance_10002] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Guest")
+	(password "b44e21fd5b8a18686ab847b410a6b21a")
+	(salt "2e387be310c87fd8"))
+
+([metaproject_Instance_10003] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Jennifer Vendetti")
+	(password "c0a156838b3790f077876dfabf537342")
+	(salt "ddacfc1795192ab2"))
+
+([metaproject_Instance_10004] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Natasha Noy")
+	(password "5a617c1d83774c76eb5572cbb40b0f3e")
+	(salt "eb7bf7168c0b865e"))
+
+([metaproject_Instance_10005] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Ray Fergerson")
+	(password "6c2eb53f6c296cc3b4e87cb195d0ec7c")
+	(salt "32d41880aa90312c"))
+
+([metaproject_Instance_10006] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Tania Tudorache")
+	(password "3ba021bb456a198a87694aa1059b5833")
+	(salt "65ee09a5f0ec1b2c"))
+
+([metaproject_Instance_10007] of  User
+
+	(group [metaproject_Instance_0])
+	(name "Timothy Redmond")
+	(password "dddbd5fd364efd8597f2e74c8101311a")
+	(salt "3be4a31700525bba"))
+
+([metaproject_Instance_10008] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_0])
+	(allowedOperation
+		[nci_metaproject_Instance_60009]
+		[nci_metaproject_Instance_60010]))
+
+([nci_metaproject_Instance_60009] of  Operation
+
+	(name "Read"))
+
+([nci_metaproject_Instance_60010] of  Operation
+
+	(name "Write"))
