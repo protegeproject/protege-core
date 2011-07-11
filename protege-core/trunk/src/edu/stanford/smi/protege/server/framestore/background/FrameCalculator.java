@@ -601,7 +601,7 @@ public static class FrameCalculatorStatsImpl implements FrameCalculatorStats, Se
     }
 
     public long getPrecalculateTime() {
-      return totalWorkTime / workUnits;
+      return workUnits == 0 ? 0l : totalWorkTime / workUnits;
     }
 
   }
