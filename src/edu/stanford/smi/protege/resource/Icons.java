@@ -1,17 +1,25 @@
 package edu.stanford.smi.protege.resource;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.util.*;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
+import java.awt.image.ImageProducer;
+import java.awt.image.RGBImageFilter;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.GrayFilter;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 
-import edu.stanford.smi.protege.util.*;
+import edu.stanford.smi.protege.util.ComponentUtilities;
 
 class ReadonlyIconFilter extends RGBImageFilter {
     private static final int TRANSPARENT_COLOR = 0x00ffffff;
     private static final int LEVEL = 128;
 
+    @Override
     public int filterRGB(int x, int y, int rgb) {
         if (rgb != TRANSPARENT_COLOR) {
             int a = LEVEL * 0x01000000;
@@ -29,13 +37,13 @@ class HiddenIconFilter extends GrayFilter {
 
 /**
  * Utility class for accessing icons stored in the Protege jar.
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 
 public final class Icons {
     private static final Icon UGLY_ICON = new UglyIcon();
-    private static Map _icons = new HashMap();
+    private static Map<ResourceKey, Icon> _icons = new HashMap<ResourceKey, Icon>();
     private static final ImageFilter hiddenIconFilter = new HiddenIconFilter();
     private static final ImageFilter readonlyIconFilter = new ReadonlyIconFilter();
 
@@ -49,7 +57,7 @@ public final class Icons {
     }
 
     public static Icon lookupIcon(ResourceKey key) {
-        Icon icon = (Icon) _icons.get(key);
+        Icon icon = _icons.get(key);
         if (icon == null || icon.getIconWidth() == -1) {
             String fileName = key.toString() + ".gif";
             icon = ComponentUtilities.loadImageIcon(Icons.class, "image/" + fileName);
@@ -102,7 +110,7 @@ public final class Icons {
 
     private static Icon getFilteredIcon(String baseName, String extension, ImageFilter filter) {
         ResourceKey key = new ResourceKey(baseName + "." + extension);
-        Icon filteredIcon = (Icon) _icons.get(key);
+        Icon filteredIcon = _icons.get(key);
         if (filteredIcon == null) {
             ImageIcon baseIcon = (ImageIcon) getIcon(baseName);
             ImageProducer source = new FilteredImageSource(baseIcon.getImage().getSource(), filter);
