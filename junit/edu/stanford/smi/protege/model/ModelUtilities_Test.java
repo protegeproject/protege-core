@@ -2,6 +2,8 @@ package edu.stanford.smi.protege.model;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import edu.stanford.smi.protege.test.APITestCase;
 
@@ -56,7 +58,7 @@ public class ModelUtilities_Test extends APITestCase {
      *                 +- X    p: {o, h}
      * ------------------------------------------------------
      * Result should be: {tk=[y], h=[x, z], n=[y, r], ny=[y], o=[x], e=[c, a]}
-     * /
+     */
     public void testGetPropertyValuesOnAllSuperclasses() {
     	//create class hierarchy
         Cls r = createCls();
@@ -69,7 +71,7 @@ public class ModelUtilities_Test extends APITestCase {
         Cls y = createSubCls(a);
         y.addDirectSuperclass(r);
         Cls x = createSubCls(y);
-        
+
         //create property values
     	Slot p = createSlot();
 		r.addOwnSlotValue(p, "n");
@@ -83,49 +85,49 @@ public class ModelUtilities_Test extends APITestCase {
         y.addOwnSlotValue(p, "tk");
         x.addOwnSlotValue(p, "o");
         x.addOwnSlotValue(p, "h");
-        
+
         //test method
         Map<Object, List<Instance>> valuesMap = ModelUtilities.getPropertyValuesOnAllSuperclasses(x, p);
         //System.out.println(valuesMap);
-        
+
         Set<Object> values = valuesMap.keySet();
         //System.out.println(values);
-        
+
         String[] expectedValues = new String[] {"n", "h", "e", "ny", "tk", "o"};
         assertEquals(expectedValues.length, values.size());
         for (String expValue : expectedValues) {
 			assertTrue(values.contains(expValue));
 		}
-        
+
         List<Instance> occList;
         occList = valuesMap.get("n");
         assertEquals(2, occList.size());
         assertTrue(occList.contains(r));
         assertTrue(occList.contains(y));
-        
+
         occList = valuesMap.get("h");
         assertEquals(2, occList.size());
         assertTrue(occList.contains(z));
         assertTrue(occList.contains(x));
-        
+
         occList = valuesMap.get("e");
         assertEquals(2, occList.size());
         assertTrue(occList.contains(a));
         assertTrue(occList.contains(c));
-        
+
         occList = valuesMap.get("ny");
         assertEquals(1, occList.size());
         assertTrue(occList.contains(y));
-        
+
         occList = valuesMap.get("tk");
         assertEquals(1, occList.size());
         assertTrue(occList.contains(y));
-        
+
         occList = valuesMap.get("o");
         assertEquals(1, occList.size());
         assertTrue(occList.contains(x));
 
     }
-    /**/
+
 
 }
