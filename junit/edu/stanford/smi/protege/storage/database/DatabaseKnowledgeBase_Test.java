@@ -1,15 +1,22 @@
 package edu.stanford.smi.protege.storage.database;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.UUID;
 
 import edu.stanford.smi.protege.model.Cls;
+import edu.stanford.smi.protege.model.DefaultCls;
 import edu.stanford.smi.protege.model.DefaultKnowledgeBase_Test;
+import edu.stanford.smi.protege.model.Frame;
+import edu.stanford.smi.protege.model.FrameID;
 import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Model;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.model.Slot;
+import edu.stanford.smi.protege.model.SystemFrames;
 import edu.stanford.smi.protege.model.ValueType;
+import edu.stanford.smi.protege.model.framestore.SimpleFrameStore;
 import edu.stanford.smi.protege.test.APITestCase;
 
 public class DatabaseKnowledgeBase_Test extends APITestCase {
@@ -148,6 +155,113 @@ public class DatabaseKnowledgeBase_Test extends APITestCase {
       createInstance(cls);
       assertEquals("direct instance count after reload", 4, cls.getDirectInstanceCount());
     }
+  }
+  
+  public void testSwizzleCaseSensitivity() {
+      for (DBType dbt : DBType.values()) {
+          setDBType(dbt);
+          if (!dbConfigured()) {
+            continue;
+          }
+          setDatabaseProject();
+          KnowledgeBase kb = getDomainKB();
+          String prefix = "PrEFiX";
+          String suffix = UUID.randomUUID().toString();
+          SystemFrames sframes = kb.getSystemFrames();
+          Instance i = createInstance(sframes.getRootCls());
+          Slot s = createSlot();
+          
+          Cls c1 = createCls(prefix + suffix);
+          i.addOwnSlotValue(s, c1);
+          Cls c2 = createCls(prefix.toLowerCase()  + suffix);
+          i.addOwnSlotValue(s, c2);
+          
+          SimpleFrameStore sfs = kb.getFrameStoreManager().getFrameStoreFromClass(SimpleFrameStore.class);
+          assertTrue(sfs != null);
+          sfs.setDirectOwnSlotValues(c1, sframes.getDirectTypesSlot(), Collections.singleton(sframes.getStandardSlotMetaCls()));
+          kb.flushCache();
+          
+          assertTrue(kb.getFrame(prefix + suffix) instanceof Cls);
+          assertTrue(kb.getFrame(prefix.toLowerCase() + suffix) instanceof Cls);
+          int count = 0;
+          for (Object o : i.getOwnSlotValues(s)) {
+              assertTrue(o instanceof Cls);
+              count++;
+          }
+          assertTrue(count == 2);
+          
+          sfs.swizzleInstance(c1);
+          kb.flushCache();
+          
+          assertTrue(kb.getFrame(prefix + suffix) instanceof Slot);
+          assertTrue(kb.getFrame(prefix.toLowerCase() + suffix) instanceof Cls);
+          count = 0;
+          for (Object o : i.getOwnSlotValues(s)) {
+              if  (((Frame) o).getName().equals(prefix.toLowerCase() + suffix)) {
+                  assertTrue(o instanceof Cls);
+              }
+              else {
+                  assertTrue(o instanceof Slot);
+              }
+              count++;
+          }
+          assertTrue(count == 2);
+      }
+  }
+  
+  public void testRenameCaseSensitivity() {
+      for (DBType dbt : DBType.values()) {
+          setDBType(dbt);
+          if (!dbConfigured()) {
+            continue;
+          }
+          setDatabaseProject();
+          KnowledgeBase kb = getDomainKB();
+          String prefix = "PrEFiX";
+          String suffix = UUID.randomUUID().toString();
+          SystemFrames sframes = kb.getSystemFrames();
+          Instance i = createInstance(sframes.getRootCls());
+          Slot s = createSlot();
+          
+          Cls c1 = createCls(prefix + suffix);
+          i.addOwnSlotValue(s, c1);
+          Cls c2 = createCls(prefix.toLowerCase()  + suffix);
+          i.addOwnSlotValue(s, c2);
+          
+          SimpleFrameStore sfs = kb.getFrameStoreManager().getFrameStoreFromClass(SimpleFrameStore.class);
+          assertTrue(sfs != null);
+          sfs.setDirectOwnSlotValues(c1, sframes.getDirectTypesSlot(), Collections.singleton(sframes.getStandardSlotMetaCls()));
+          kb.flushCache();
+          
+          boolean foundC1 = false;
+          boolean foundC2 = false;
+          for (Object o : i.getOwnSlotValues(s)) {
+              if (((Frame) o).getName().equals(c1.getName()))  {
+                  foundC1 = true;
+              }
+              else if (((Frame) o).getName().equals(c2.getName())) {
+                  foundC2 = true;
+              }
+          }
+          assertTrue(foundC1);
+          assertTrue(foundC2);
+          
+          sfs.replaceFrame(c1, new DefaultCls(kb, new FrameID(suffix)));
+          kb.flushCache();
+          
+          foundC1 = false;
+          foundC2 = false;
+          for (Object o : i.getOwnSlotValues(s)) {
+              if (((Frame) o).getName().equals(suffix))  {
+                  foundC1 = true;
+              }
+              else if (((Frame) o).getName().equals(c2.getName())) {
+                  foundC2 = true;
+              }
+          }
+          assertTrue(foundC1);
+          assertTrue(foundC2);
+      }
   }
 
 }
