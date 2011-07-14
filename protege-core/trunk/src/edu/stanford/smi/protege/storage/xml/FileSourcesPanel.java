@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FileSourcesPanel extends KnowledgeBaseSourcesEditor {
+    private static final long serialVersionUID = 8651897057537306329L;
     private FileField _field;
 
     public FileSourcesPanel(String projectURIString, PropertyList sources) {

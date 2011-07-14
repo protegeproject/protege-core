@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class ChangeProjectStorageFormat extends LocalProjectAction {
 
+    private static final long serialVersionUID = 7877658094593003912L;
+
     public ChangeProjectStorageFormat() {
         super(ResourceKey.PROJECT_CONVERT);
     }

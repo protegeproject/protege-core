@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ChangeIncludedProjects extends LocalProjectAction {
 
+    private static final long serialVersionUID = -838478269348967777L;
+
     public ChangeIncludedProjects() {
         super(ResourceKey.PROJECT_CHANGE_INCLUDED);
     }

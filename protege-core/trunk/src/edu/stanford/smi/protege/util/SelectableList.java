@@ -13,6 +13,8 @@ import javax.swing.event.ListSelectionListener;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectableList extends JList implements Selectable {
+    private static final long serialVersionUID = -5479458103259963384L;
+
     private ListenerCollection _listeners = new ListenerList(new SelectionEventDispatcher());
 
     // This ugly flag allows us to work around the problem caused by dragging causing

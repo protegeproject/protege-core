@@ -34,6 +34,7 @@ import edu.stanford.smi.protege.util.Log;
  */
 public abstract class TextComponentWidget extends AbstractSlotWidget {
 	
+    private static final long serialVersionUID = 1963540984949148931L;
     private static final Color INVALID_COLOR = Color.red;
     private JTextComponent _textComponent;
     private Color _defaultColor;

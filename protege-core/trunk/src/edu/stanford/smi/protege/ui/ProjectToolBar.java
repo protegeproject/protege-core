@@ -12,6 +12,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ProjectToolBar extends JToolBar {
 
+    private static final long serialVersionUID = -252712597962765189L;
+
     public void updateUI() {
         super.updateUI();
         setOpaque(false);

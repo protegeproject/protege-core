@@ -9,6 +9,8 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InstanceEvent extends AbstractEvent {
+    private static final long serialVersionUID = -6242074730702808309L;
+
     private static final int BASE = 200;
 
     public static final int DIRECT_TYPE_ADDED = BASE + 2;

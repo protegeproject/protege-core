@@ -193,7 +193,9 @@ public class ExportConfigurationPanel {
 		LabeledComponent labeledComp = new LabeledComponent("Slots to export", new JScrollPane(slotsList), true );
 		
 		labeledComp.addHeaderButton(new AllowableAction("Add slots", Icons.getAddSlotIcon(), null) {
-			public void actionPerformed(ActionEvent e) {
+			private static final long serialVersionUID = -8082099266752807423L;
+
+            public void actionPerformed(ActionEvent e) {
 				HashSet<Slot> allSlots = new HashSet<Slot>();
 				Iterator j = kb.getSlots().iterator();
 				while (j.hasNext()) {
@@ -219,7 +221,9 @@ public class ExportConfigurationPanel {
 		});
 
 		labeledComp.addHeaderButton(new AllowableAction("Remove slot", Icons.getRemoveSlotIcon(), slotsList) {
-			public void actionPerformed(ActionEvent arg0) {
+			private static final long serialVersionUID = -1292919958871934527L;
+
+            public void actionPerformed(ActionEvent arg0) {
 				Collection selection = getSelection();
 
 				if (selection != null) {
@@ -241,7 +245,9 @@ public class ExportConfigurationPanel {
 		LabeledComponent labeledComp = new LabeledComponent("Classes to export", new JScrollPane(clsesList), true );
 		
 		labeledComp.addHeaderButton(new AllowableAction("Add classes", Icons.getAddClsIcon(), null) {
-			public void actionPerformed(ActionEvent e) {
+			private static final long serialVersionUID = -8306176540928522503L;
+
+            public void actionPerformed(ActionEvent e) {
 				HashSet<Cls> allClses = new HashSet<Cls>();
 				
 				List<Cls> allClsesList = new ArrayList<Cls>(allClses);
@@ -257,7 +263,9 @@ public class ExportConfigurationPanel {
 		});
 
 		labeledComp.addHeaderButton(new AllowableAction("Remove cls", Icons.getRemoveClsIcon(), clsesList) {
-			public void actionPerformed(ActionEvent arg0) {
+			private static final long serialVersionUID = 6906830668815822195L;
+
+            public void actionPerformed(ActionEvent arg0) {
 				Collection selection = getSelection();
 				if (selection != null) {
 					clses.removeAll(selection);

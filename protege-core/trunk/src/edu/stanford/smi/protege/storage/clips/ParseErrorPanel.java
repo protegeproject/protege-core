@@ -20,6 +20,9 @@ import edu.stanford.smi.protege.util.MessageError;
  */
 public class ParseErrorPanel extends JComponent {
 
+    private static final long serialVersionUID = -6138721273189019180L;
+
+
     public ParseErrorPanel(Collection errors) {
         setLayout(new BorderLayout());
         JTextArea area = new JTextArea();

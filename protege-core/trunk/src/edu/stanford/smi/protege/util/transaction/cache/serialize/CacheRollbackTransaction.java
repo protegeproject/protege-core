@@ -4,6 +4,8 @@ import edu.stanford.smi.protege.util.transaction.cache.Cache;
 
 public class CacheRollbackTransaction<S, V, R> extends SerializedCacheUpdate<S, V, R> {
     
+    private static final long serialVersionUID = -6969778991362847105L;
+
     public CacheRollbackTransaction(S session) {
         super(session);
     }

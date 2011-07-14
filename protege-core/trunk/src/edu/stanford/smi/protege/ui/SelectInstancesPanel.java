@@ -35,6 +35,7 @@ import edu.stanford.smi.protege.util.SimpleListModel;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectInstancesPanel extends JComponent {
+    private static final long serialVersionUID = 2899081089163151972L;
     //ESCA-JAVA0098 
     protected JTree _clsTree;
     protected JList _instanceList;

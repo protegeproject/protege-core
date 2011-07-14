@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ChangeProjectFormatWizardPage extends ExportWizardPage {
+    private static final long serialVersionUID = -3969285986800636849L;
     private Project project;
     private AbstractButton convertProjectButton;
     private BackendExportPlugin plugin;
@@ -35,6 +36,8 @@ public class ChangeProjectFormatWizardPage extends ExportWizardPage {
     
     private AbstractButton createButton(String text) {
         Action action = new AbstractAction(text) {
+            private static final long serialVersionUID = -3419514018833124894L;
+
             public void actionPerformed(ActionEvent event) {
                 updateNextPage();
             }

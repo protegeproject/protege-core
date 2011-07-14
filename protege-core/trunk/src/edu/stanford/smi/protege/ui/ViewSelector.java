@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.widget.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ViewSelector extends JComponent {
+    private static final long serialVersionUID = 296789933860074572L;
     private JComboBox combobox;
     private ProjectView projectView;
     private ItemListener itemListener = createChangeViewAction();
@@ -146,6 +147,8 @@ public class ViewSelector extends JComponent {
     private AbstractButton addButton(final TabWidget widget) {
         Icon icon = widget.getIcon();
         Action action = new AbstractAction(widget.getLabel(), icon) {
+            private static final long serialVersionUID = -6284395473725147927L;
+
             public void actionPerformed(ActionEvent event) {
                 projectView.setSelectedTab(widget);
             }
@@ -175,6 +178,7 @@ public class ViewSelector extends JComponent {
 }
 
 class TabRenderer extends DefaultRenderer {
+    private static final long serialVersionUID = 2875667491321456107L;
     private ProjectView projectView;
 
     TabRenderer(ProjectView view) {

@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class MinimumCardinalityWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = -28100150611436999L;
     private JCheckBox _isRequiredComponent;
     private IntegerField _atLeastComponent;
 

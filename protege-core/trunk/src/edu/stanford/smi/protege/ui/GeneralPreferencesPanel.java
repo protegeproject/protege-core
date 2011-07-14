@@ -38,6 +38,7 @@ import edu.stanford.smi.protege.util.Validatable;
  */
 public class GeneralPreferencesPanel extends Box implements Validatable{
 
+    private static final long serialVersionUID = 5026044507780193841L;
     private JTextField userNameField;
     private JRadioButton useLoginUserNameButton;
     private JRadioButton useSpecifiedUserNameButton;
@@ -79,6 +80,8 @@ public class GeneralPreferencesPanel extends Box implements Validatable{
         userNameField.setColumns(15);
                 
         Action action = new StandardAction("Use Specified Name: ") {
+            private static final long serialVersionUID = -3953329470167238831L;
+
             public void actionPerformed(ActionEvent event) {
                 if (useSpecifiedUserNameButton.isSelected()) {
                     userNameField.setEnabled(true);

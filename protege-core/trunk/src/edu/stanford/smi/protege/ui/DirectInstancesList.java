@@ -211,6 +211,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected Action createCreateAction() {
         _createAction = new CreateAction(ResourceKey.INSTANCE_CREATE) {
+            private static final long serialVersionUID = -7153511943330887472L;
+
             @Override
             public void onCreate() {
                 if (!_clses.isEmpty()) {
@@ -235,6 +237,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected Action createConfigureAction() {
         return new ConfigureAction() {
+            private static final long serialVersionUID = -201941911745358583L;
+
             @Override
             public void loadPopupMenu(JPopupMenu menu) {
                 menu.add(createSetDisplaySlotAction());
@@ -245,6 +249,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected JMenuItem createShowAllInstancesAction() {
         Action action = new AbstractAction("Show Subclass Instances") {
+            private static final long serialVersionUID = -5993246896156508981L;
+
             public void actionPerformed(ActionEvent event) {
                 setShowAllInstances(!_showSubclassInstances);
             }
@@ -306,6 +312,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected Action createSetDisplaySlotAction(final Slot slot) {
         return new AbstractAction(slot.getBrowserText(), slot.getIcon()) {
+            private static final long serialVersionUID = 8128282947095201947L;
+
             public void actionPerformed(ActionEvent event) {
                 getSoleAllowedCls().setDirectBrowserSlot(slot);
                 updateLabel();
@@ -316,6 +324,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected Action createSetDisplaySlotMultipleAction() {
         return new AbstractAction("Multiple Slots...") {
+            private static final long serialVersionUID = 7430434198286882076L;
+
             public void actionPerformed(ActionEvent event) {
                 Cls cls = getSoleAllowedCls();
                 BrowserSlotPattern currentPattern = getSoleAllowedCls().getBrowserSlotPattern();
@@ -341,6 +351,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected Action createCopyAction() {
         _copyAction = new MakeCopiesAction(ResourceKey.INSTANCE_COPY, this) {
+            private static final long serialVersionUID = -3162114702044458484L;
+
             @Override
             protected Instance copy(Instance instance, boolean isDeep) {
                 Instance copy = super.copy(instance, isDeep);
@@ -357,6 +369,8 @@ public class DirectInstancesList extends SelectableContainer implements Disposab
 
     protected Action createViewAction() {
         return new ViewAction(ResourceKey.INSTANCE_VIEW, this) {
+            private static final long serialVersionUID = -521270402099135685L;
+
             @Override
             public void onView(Object o) {
                 _project.show((Instance) o);

@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DirectTypesList extends SelectableContainer {
+    private static final long serialVersionUID = 3753480292661208200L;
     private SelectableList list;
     private Instance instance;
     private KnowledgeBase knowledgeBase;
@@ -52,6 +53,8 @@ public class DirectTypesList extends SelectableContainer {
     }
 
     private class FrameTransferHandler extends TransferHandler {
+        private static final long serialVersionUID = 4409217176875767828L;
+
         protected Transferable createTransferable(JComponent c) {
             Collection collection = getSelection();
             return collection.isEmpty() ? null : new TransferableCollection(collection);
@@ -112,6 +115,8 @@ public class DirectTypesList extends SelectableContainer {
 
     private Action createAddTypeAction() {
         addAction = new AddAction(ResourceKey.CLASS_ADD) {
+            private static final long serialVersionUID = -7607219183090478296L;
+
             public void onAdd() {
                 Collection clses = DisplayUtilities.pickClses(DirectTypesList.this, knowledgeBase);
                 Iterator i = clses.iterator();
@@ -128,6 +133,8 @@ public class DirectTypesList extends SelectableContainer {
 
     private Action createRemoteTypeAction() {
         return new RemoveAction(ResourceKey.CLASS_REMOVE, list) {
+            private static final long serialVersionUID = 4441015930033207570L;
+
             public void onRemove(Object o) {
                 Cls cls = (Cls) o;
                 instance.removeDirectType(cls);

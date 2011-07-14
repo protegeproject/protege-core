@@ -26,6 +26,7 @@ import javax.swing.tree.TreeModel;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectableTree extends JTree implements Selectable, Disposable, Autoscroll {
+    private static final long serialVersionUID = -97980195042663048L;
     private ListenerCollection _selectionListeners = new ListenerList(new SelectionEventDispatcher());
     // private static final Insets SCROLL_INSETS = new Insets(8, 8, 8, 8);
     private static final int SCROLL_BORDER = 8;

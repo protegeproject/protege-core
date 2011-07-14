@@ -14,6 +14,7 @@ import javax.swing.AbstractListModel;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SimpleListModel extends AbstractListModel {
+    private static final long serialVersionUID = 4610768415608528873L;
     private List _list;
 
     public SimpleListModel() {

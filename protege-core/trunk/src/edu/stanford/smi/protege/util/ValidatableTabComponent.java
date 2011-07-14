@@ -11,6 +11,7 @@ import javax.swing.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ValidatableTabComponent extends AbstractValidatableComponent {
+    private static final long serialVersionUID = -630654437547399826L;
     private JTabbedPane _tabbedPane;
 
     public ValidatableTabComponent() {

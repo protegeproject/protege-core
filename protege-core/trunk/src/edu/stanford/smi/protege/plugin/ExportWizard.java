@@ -11,6 +11,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ExportWizard extends Wizard {
+    private static final long serialVersionUID = -8695949089034649639L;
     private Project originalProject;
     private Project newProject;
     private ExportProjectPlugin plugin;

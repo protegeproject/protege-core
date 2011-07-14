@@ -9,7 +9,8 @@ import edu.stanford.smi.protege.util.LabeledComponent;
 
 public class ReadOnlyWidgetConfigurationPanel extends AbstractValidatableComponent{
 
-	private AbstractSlotWidget widget;
+	private static final long serialVersionUID = 8496065403491429614L;
+    private AbstractSlotWidget widget;
 	private JCheckBox readOnlyCheckBox;
 
 	public ReadOnlyWidgetConfigurationPanel(AbstractSlotWidget widget) {

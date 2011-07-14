@@ -12,7 +12,8 @@ import edu.stanford.smi.protege.util.Disposable;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
 public abstract class AbstractWrappedInstance implements Localizable, Serializable, Disposable {
-	private Instance wrappedProtegeInstance;
+	private static final long serialVersionUID = -5498034704463571567L;
+    private Instance wrappedProtegeInstance;
 
 	protected AbstractWrappedInstance(Instance instance) {
 		wrappedProtegeInstance = instance;

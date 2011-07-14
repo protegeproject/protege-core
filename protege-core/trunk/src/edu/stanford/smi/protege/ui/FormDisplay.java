@@ -20,6 +20,7 @@ import edu.stanford.smi.protege.widget.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FormDisplay extends JComponent implements Disposable {
+    private static final long serialVersionUID = -8236544923188409652L;
     private Project _project;
     private JComponent _mainPanel;
     private SetDisplaySlotPanel _setDisplaySlotPanel;

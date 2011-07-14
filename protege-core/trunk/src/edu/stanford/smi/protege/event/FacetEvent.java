@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FacetEvent extends AbstractEvent {
+    private static final long serialVersionUID = -4537516153578794206L;
     private static final int BASE = 500;
     public static final int FRAME_SLOT_REFERENCE_ADDED = BASE + 1;
     public static final int FRAME_SLOT_REFERENCE_REMOVED = BASE + 2;

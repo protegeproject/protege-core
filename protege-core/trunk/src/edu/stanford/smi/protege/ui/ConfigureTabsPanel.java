@@ -22,11 +22,14 @@ import edu.stanford.smi.protege.widget.*;
 
 class ConfigureTabsPanel extends AbstractValidatableComponent {
 
+    private static final long serialVersionUID = 230283792426972639L;
     private JTable _table;
     private Project _project;
     private boolean _dirty;
 
     private class MoveTabUp extends AbstractAction {
+        private static final long serialVersionUID = 5052392705264419616L;
+
         MoveTabUp() {
             super("Move selected tab up", Icons.getUpIcon());
         }
@@ -43,6 +46,8 @@ class ConfigureTabsPanel extends AbstractValidatableComponent {
     }
 
     private class MoveTabDown extends AbstractAction {
+        private static final long serialVersionUID = -7034589703352346373L;
+
         MoveTabDown() {
             super("Move selected tab down", Icons.getDownIcon());
         }
@@ -151,6 +156,8 @@ class ConfigureTabsPanel extends AbstractValidatableComponent {
 
     private Action getConfigureAction() {
         return new AbstractAction("Configure") {
+            private static final long serialVersionUID = 900646780807779030L;
+
             public void actionPerformed(ActionEvent event) {
                 int row = _table.getSelectedRow();
                 WidgetDescriptor d = getDescriptor(row);
@@ -235,10 +242,13 @@ class ConfigureTabsPanel extends AbstractValidatableComponent {
     }
 
     class WidgetDescriptorEnableRenderer extends CheckBoxRenderer {
+        private static final long serialVersionUID = 6693202760974205518L;
         private final Component EMPTY;
 
         {
             EMPTY = new JPanel() {
+                private static final long serialVersionUID = -2060692706529621224L;
+
                 public boolean isOpaque() {
                     return false;
                 }

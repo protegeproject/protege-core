@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class FrameTreeFinder extends Finder {
+    private static final long serialVersionUID = -1763536497711305991L;
     private JTree tree;
     private KnowledgeBase knowledgeBase;
 

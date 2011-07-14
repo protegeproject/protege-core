@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class WidgetDescriptorRenderer extends DefaultRenderer {
+    private static final long serialVersionUID = 3251699554890095247L;
     private Project project;
 
     public WidgetDescriptorRenderer(Project project) {

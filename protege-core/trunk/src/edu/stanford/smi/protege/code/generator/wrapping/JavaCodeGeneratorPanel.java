@@ -44,7 +44,8 @@ import edu.stanford.smi.protege.util.SelectableList;
 
 public class JavaCodeGeneratorPanel extends JPanel {
 
-	private static final Color DISABLED_COLOR = new Color(240,240,240);
+	private static final long serialVersionUID = 5748488164231723521L;
+    private static final Color DISABLED_COLOR = new Color(240,240,240);
 	private KnowledgeBase kb;
 	private Collection<Cls> clses = new HashSet<Cls>();
 
@@ -88,6 +89,8 @@ public class JavaCodeGeneratorPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         LabeledComponent lc = new LabeledComponent("Root output folder", rootFolderTextField);
         lc.addHeaderButton(new AbstractAction("Select folder...", Icons.getAddIcon()) {
+            private static final long serialVersionUID = -7074953592586843696L;
+
             public void actionPerformed(ActionEvent e) {
                 selectFolder();
             }
@@ -144,7 +147,9 @@ public class JavaCodeGeneratorPanel extends JPanel {
 
 		labeledComp.addHeaderButton(new AllowableAction("Add classes", Icons.getAddClsIcon(), null) {
 
-			public void actionPerformed(ActionEvent e) {
+			private static final long serialVersionUID = 1863680327673994283L;
+
+            public void actionPerformed(ActionEvent e) {
 				HashSet<Cls> allClses = new HashSet<Cls>();
 				Iterator j = kb.getClses().iterator();
 				while (j.hasNext()) {
@@ -179,7 +184,9 @@ public class JavaCodeGeneratorPanel extends JPanel {
 
 		labeledComp.addHeaderButton(new AllowableAction("Remove class", Icons.getRemoveClsIcon(), clsesList) {
 
-			public void actionPerformed(ActionEvent arg0) {
+			private static final long serialVersionUID = -4988386528512321334L;
+
+            public void actionPerformed(ActionEvent arg0) {
 				Collection selection = getSelection();
 
 				if (selection != null) {

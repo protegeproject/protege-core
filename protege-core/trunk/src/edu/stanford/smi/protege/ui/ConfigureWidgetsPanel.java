@@ -16,6 +16,8 @@ import edu.stanford.smi.protege.util.*;
  */
 class ConfigureWidgetsPanel extends AbstractValidatableComponent {
 
+    private static final long serialVersionUID = -2959046238583135281L;
+
     ConfigureWidgetsPanel(Project project) {
         setLayout(new BorderLayout());
         add(ComponentFactory.createLabel("Configure Widgets", SwingConstants.CENTER));

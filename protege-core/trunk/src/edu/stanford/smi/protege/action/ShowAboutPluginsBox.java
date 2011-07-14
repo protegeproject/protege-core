@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ShowAboutPluginsBox extends ProjectAction {
 
+    private static final long serialVersionUID = -3804891317944308373L;
+
     public ShowAboutPluginsBox() {
         super(ResourceKey.HELP_MENU_ABOUT_PLUGINS);
         setEnabled(true);

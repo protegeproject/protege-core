@@ -10,6 +10,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class FormWidgetConfigurationPanel extends ValidatableTabComponent {
 
+    private static final long serialVersionUID = 7694908346926041635L;
+
     public FormWidgetConfigurationPanel(FormWidget widget) {
         addTab("Widgets", new FormWidgetConfigurationWidgetsTab(widget));
         addTab("Layout", new FormWidgetConfigurationLayoutTab(widget));

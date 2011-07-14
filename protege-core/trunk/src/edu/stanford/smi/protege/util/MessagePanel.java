@@ -9,6 +9,8 @@ import javax.swing.*;
  */
 public class MessagePanel extends JPanel {
 
+    private static final long serialVersionUID = -1418928771375394463L;
+
     public MessagePanel(String text) {
         setLayout(new java.awt.BorderLayout());
         JTextArea area = new JTextArea(text);

@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ReferencersAction extends AllowableAction {
 
+    private static final long serialVersionUID = 3044159910986113793L;
+
     public ReferencersAction(Selectable s) {
         super(ResourceKey.VALUE_VIEW_REFERENCES, s);
     }

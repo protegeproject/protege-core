@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class UglySlotWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = -1320896168960476357L;
     private String widgetClassName;
 
     public UglySlotWidget() {

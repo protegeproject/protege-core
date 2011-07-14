@@ -30,6 +30,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Jennifer Vendetti
  */
 public class WelcomeDialog extends JDialog {
+    private static final long serialVersionUID = 3986911949227734433L;
     JButton cancelButton;
     JButton faqButton;
     JButton newButton;
@@ -47,6 +48,8 @@ public class WelcomeDialog extends JDialog {
     // Extended the JList class in order to have tool tips for each
     // individual list item.
     private class ProjectList extends JList {
+
+        private static final long serialVersionUID = 8193202451714386857L;
 
         ProjectList(DefaultListModel model) {
             this.setModel(model);

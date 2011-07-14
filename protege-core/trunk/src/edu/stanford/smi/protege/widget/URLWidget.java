@@ -40,6 +40,7 @@ import edu.stanford.smi.protege.util.ViewAction;
  */
 public class URLWidget extends TextComponentWidget {
   
+    private static final long serialVersionUID = -6468403747924085772L;
     private JEditorPane urlDisplay;
 
     public void initialize() {
@@ -68,6 +69,8 @@ public class URLWidget extends TextComponentWidget {
 
     protected Action createHomeAction() {
         return new AbstractAction("Home", Icons.getHomeIcon()) {
+            private static final long serialVersionUID = -3490306473291374592L;
+
             public void actionPerformed(ActionEvent events) {
                 updateURLDisplay();
             }
@@ -76,6 +79,8 @@ public class URLWidget extends TextComponentWidget {
 
     protected Action createViewAction() {
         return new ViewAction(ResourceKey.URL_VIEW_IN_BROWSER, null) {
+            private static final long serialVersionUID = 4535338964946498034L;
+
             public void onView() {
                 URL url = getCurrentURL();
                 if (url != null) {

@@ -14,6 +14,8 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ManageIncludedProjectsAction extends LocalProjectAction {
+    private static final long serialVersionUID = 7666063531709645920L;
+
     public ManageIncludedProjectsAction() {
         super(ResourceKey.PROJECT_MANAGE_INCLUDED);
     }

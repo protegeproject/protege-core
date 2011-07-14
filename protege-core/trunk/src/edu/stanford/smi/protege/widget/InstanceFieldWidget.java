@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InstanceFieldWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = 376700956825053322L;
     private JList _list;
     private Instance _instance;
     private AllowableAction _createAction;
@@ -64,6 +65,8 @@ public class InstanceFieldWidget extends AbstractSlotWidget {
 
     protected Action getCreateInstanceAction() {
         _createAction = new CreateAction(ResourceKey.INSTANCE_CREATE) {
+            private static final long serialVersionUID = 1867649088443463104L;
+
             public void onCreate() {
                 handleCreateAction();
             }
@@ -78,6 +81,8 @@ public class InstanceFieldWidget extends AbstractSlotWidget {
 
     protected Action getRemoveInstanceAction() {
         _removeAction = new RemoveAction(ResourceKey.INSTANCE_REMOVE, this) {
+            private static final long serialVersionUID = 2629621785174837136L;
+
             public void onRemove(Object o) {
                 handleRemoveAction();
             }
@@ -87,6 +92,8 @@ public class InstanceFieldWidget extends AbstractSlotWidget {
 
     protected Action getSelectInstanceAction() {
         _addAction = new AddAction(ResourceKey.INSTANCE_ADD) {
+            private static final long serialVersionUID = -5463810763929014137L;
+
             public void onAdd() {
                 handleAddAction();
             }
@@ -104,6 +111,8 @@ public class InstanceFieldWidget extends AbstractSlotWidget {
 
     protected Action getViewInstanceAction() {
         return new ViewAction(ResourceKey.INSTANCE_VIEW, this) {
+            private static final long serialVersionUID = 7309253827733187916L;
+
             public void onView(Object o) {
                 handleViewAction((Instance) o);
             }

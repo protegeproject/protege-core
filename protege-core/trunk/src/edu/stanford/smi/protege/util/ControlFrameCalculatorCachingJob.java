@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.server.ServerProject;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 
 public class ControlFrameCalculatorCachingJob extends ProtegeJob {
+    private static final long serialVersionUID = 670423590593538409L;
     private boolean enable;
     
     public ControlFrameCalculatorCachingJob(KnowledgeBase kb, boolean enable) {

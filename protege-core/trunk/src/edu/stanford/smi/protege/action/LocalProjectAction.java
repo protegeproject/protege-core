@@ -9,6 +9,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public abstract class LocalProjectAction extends ProjectAction {
 
+    private static final long serialVersionUID = -4106992321190276536L;
+
     protected LocalProjectAction(ResourceKey key) {
         this(key, false);
     }

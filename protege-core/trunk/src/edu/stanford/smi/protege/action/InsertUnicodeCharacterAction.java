@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Tania Tudorache <tudorache@stanford.edu>
  */
 public class InsertUnicodeCharacterAction extends TextAction {
+    private static final long serialVersionUID = 738458294463754734L;
     private UnicodeChooser chooser;
 
     public InsertUnicodeCharacterAction() {

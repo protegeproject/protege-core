@@ -11,6 +11,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class PlasticLookAndFeelAction extends LookAndFeelAction {
+    private static final long serialVersionUID = -871244397545901767L;
     private static final String className = "com.jgoodies.looks.plastic.PlasticLookAndFeel";
     private static final String name = "Protege Default";
 

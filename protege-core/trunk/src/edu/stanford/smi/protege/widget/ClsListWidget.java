@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ClsListWidget extends AbstractListWidget {
+    private static final long serialVersionUID = -1098698166996518862L;
     private AllowableAction _addAction;
     private AllowableAction _removeAction;
 
@@ -43,6 +44,8 @@ public class ClsListWidget extends AbstractListWidget {
 
     protected Action getAddClsesAction() {
         _addAction = new AddAction(ResourceKey.CLASS_ADD) {
+            private static final long serialVersionUID = 727636361504600489L;
+
             public void onAdd() {
                 handleAddAction();
             }
@@ -52,6 +55,8 @@ public class ClsListWidget extends AbstractListWidget {
 
     protected Action getRemoveClsesAction() {
         _removeAction = new RemoveAction(ResourceKey.CLASS_REMOVE, this) {
+            private static final long serialVersionUID = 7653766881574165449L;
+
             public void onRemove(Collection clses) {
                 handleRemoveAction(clses);
             }
@@ -61,6 +66,8 @@ public class ClsListWidget extends AbstractListWidget {
 
     protected Action getViewInstanceAction() {
         return new ViewAction(ResourceKey.CLASS_VIEW, this) {
+            private static final long serialVersionUID = 6962221637991750449L;
+
             public void onView(Object o) {
                 handleViewAction((Cls) o);
             }

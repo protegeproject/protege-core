@@ -14,6 +14,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public abstract class AddAction extends AllowableAction {
 
+    private static final long serialVersionUID = -5874325290788619542L;
+
     protected AddAction(ResourceKey key) {
         super(key);
     }

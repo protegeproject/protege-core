@@ -4,6 +4,8 @@ import edu.stanford.smi.protege.util.transaction.cache.Cache;
 
 public class CacheBeginTransaction<S, V, R> extends SerializedCacheUpdate<S, V, R> {
 
+    private static final long serialVersionUID = -7393471152354884717L;
+
     public CacheBeginTransaction(S session) {
         super(session);
     }

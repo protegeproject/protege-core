@@ -11,7 +11,9 @@ import java.util.*;
  *
  */
 public class TextAreaRenderer extends JTextArea implements TableCellRenderer {
-	private final DefaultTableCellRenderer adaptee = new DefaultTableCellRenderer();
+	private static final long serialVersionUID = -6254487290721281181L;
+
+    private final DefaultTableCellRenderer adaptee = new DefaultTableCellRenderer();
 
 	/** map from table to map of rows to map of column heights */
 	private final Map cellSizes = new HashMap();

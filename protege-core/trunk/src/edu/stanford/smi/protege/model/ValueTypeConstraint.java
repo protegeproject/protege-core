@@ -11,6 +11,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ValueTypeConstraint extends AbstractFacetConstraint {
+    private static final long serialVersionUID = 7393345703244105398L;
     private static final Collection values;
 
     static {

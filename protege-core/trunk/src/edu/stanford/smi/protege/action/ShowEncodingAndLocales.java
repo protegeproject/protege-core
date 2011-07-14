@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ShowEncodingAndLocales extends ProjectAction {
 
+    private static final long serialVersionUID = -5201414854613908962L;
+
     public ShowEncodingAndLocales() {
         super(ResourceKey.PROJECT_FILE_ENCODINGS);
         setEnabled(true);

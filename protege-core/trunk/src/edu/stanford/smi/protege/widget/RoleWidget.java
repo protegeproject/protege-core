@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class RoleWidget extends ComboBoxWidget {
 
+    private static final long serialVersionUID = -6134697762789716619L;
+
     public void comboBoxValueChanged() {
         Object newValue = getComboBoxSelection();
         if (RoleConstraint.isAbstract((String) newValue)) {

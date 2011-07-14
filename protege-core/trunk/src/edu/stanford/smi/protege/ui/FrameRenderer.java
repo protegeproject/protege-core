@@ -25,6 +25,8 @@ import edu.stanford.smi.protege.util.DefaultRenderer;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameRenderer extends DefaultRenderer implements Cloneable {
+    private static final long serialVersionUID = -4816350593456856600L;
+
     public enum InstanceCountType {
         NONE, DIRECT, ALL;
     }

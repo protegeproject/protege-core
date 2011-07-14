@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class DefaultCls extends DefaultInstance implements Cls {
 
+    private static final long serialVersionUID = 1971012286146560647L;
+
     public DefaultCls() {
 
     }

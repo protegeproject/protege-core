@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.ui.*;
  */
 public class CloseCurrentView extends ProjectAction {
 
+    private static final long serialVersionUID = 48257985564189923L;
+
     public CloseCurrentView() {
         super(ResourceKey.CLOSE_VIEW);
     }

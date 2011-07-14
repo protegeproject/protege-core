@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class DecreaseFontSize extends FontAction {
 
+    private static final long serialVersionUID = -2065723259084155404L;
+
     public DecreaseFontSize() {
         super(ResourceKey.DECREASE_FONT_SIZE);
     }

@@ -12,6 +12,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class DefaultSimpleInstance extends DefaultInstance implements SimpleInstance {
 
+    private static final long serialVersionUID = 1587466135163556928L;
+
     public DefaultSimpleInstance() {
 
     }

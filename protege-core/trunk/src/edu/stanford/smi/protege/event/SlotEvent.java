@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SlotEvent extends AbstractEvent {
+    private static final long serialVersionUID = -2516816810373373956L;
     private static final int BASE = 400;
     public static final int TEMPLATE_SLOT_CLS_ADDED = BASE + 1;
     public static final int TEMPLATE_SLOT_CLS_REMOVED = BASE + 2;

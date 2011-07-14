@@ -18,6 +18,7 @@ import edu.stanford.smi.protege.util.Log;
  */
 public class DefaultFacet extends DefaultInstance implements Facet {
 
+    private static final long serialVersionUID = 1557703868805025229L;
     private FacetConstraint _constraint;
 
     /* from Externalizable interface

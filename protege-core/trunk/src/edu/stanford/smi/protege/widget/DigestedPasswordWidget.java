@@ -53,7 +53,9 @@ public class DigestedPasswordWidget extends TextFieldWidget {
 
 	protected Action createEditPasswordAction() {
 		return new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
+			private static final long serialVersionUID = 7043445264872043240L;
+
+            public void actionPerformed(ActionEvent e) {
 				final PasswordPanel passwordPanel = new PasswordPanel();
 				int opt = ModalDialog.showDialog(ProjectManager.getProjectManager().getCurrentProjectView(), passwordPanel, 
 						   "Change password", ModalDialog.MODE_OK_CANCEL, 
@@ -104,7 +106,8 @@ public class DigestedPasswordWidget extends TextFieldWidget {
 	}
 
 	private class PasswordPanel extends JPanel {
-		private JTextField pass1; 
+		private static final long serialVersionUID = 3329310294772318595L;
+        private JTextField pass1; 
 		private JTextField pass2;
 
 		public PasswordPanel() {

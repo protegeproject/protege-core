@@ -18,6 +18,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class AbstractTabWidget extends AbstractWidget implements TabWidget {
+    private static final long serialVersionUID = 6679591990743134105L;
     private Icon _icon;
     private String _label;
     private String _shortDescription;

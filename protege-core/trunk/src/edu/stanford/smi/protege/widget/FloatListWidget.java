@@ -17,8 +17,12 @@ import edu.stanford.smi.protege.util.*;
  */
 public class FloatListWidget extends AbstractListWidget {
 
+    private static final long serialVersionUID = 3428837978085767231L;
+
     private Action getCreateAction() {
         return new CreateAction(ResourceKey.VALUE_ADD) {
+            private static final long serialVersionUID = -8103626732943969984L;
+
             public void onCreate() {
                 String s = DisplayUtilities.editString(FloatListWidget.this, "Create Float Value", null,
                         new FloatValidator());
@@ -31,6 +35,8 @@ public class FloatListWidget extends AbstractListWidget {
 
     private Action getDeleteAction() {
         return new RemoveAction(ResourceKey.VALUE_REMOVE, this) {
+            private static final long serialVersionUID = -5242502708398191556L;
+
             public void onRemove(Collection elements) {
                 removeItems(elements);
             }
@@ -39,6 +45,8 @@ public class FloatListWidget extends AbstractListWidget {
 
     private Action getEditAction() {
         return new ViewAction(ResourceKey.VALUE_VIEW, this) {
+            private static final long serialVersionUID = 1016994137862284684L;
+
             public void onView(Object o) {
                 String s = DisplayUtilities.editString(FloatListWidget.this, "Edit Float Value", o.toString(), null);
                 if (s != null) {

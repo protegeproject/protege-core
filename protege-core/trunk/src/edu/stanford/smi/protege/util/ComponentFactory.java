@@ -101,6 +101,8 @@ public class ComponentFactory {
     }
 
     private static class DisposableFrame extends JFrame implements Disposable {
+        private static final long serialVersionUID = 1208382900963856453L;
+
         DisposableFrame() {
             ComponentUtilities.registerWindow(this);
             enableEvents(AWTEvent.WINDOW_EVENT_MASK);
@@ -117,6 +119,8 @@ public class ComponentFactory {
 
     public static void addMenuItem(JMenu menu, final Action action) {
         JMenuItem item = new JMenuItem(action) {
+            private static final long serialVersionUID = 5987721943542141158L;
+
             @Override
 			public String getText() {
                 String text = null;
@@ -278,6 +282,8 @@ public class ComponentFactory {
 
     public static JCheckBox createCheckBox(String s) {
         JCheckBox checkBox = new JCheckBox(s) {
+            private static final long serialVersionUID = -4867160758865380345L;
+
             @Override
 			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
@@ -289,6 +295,8 @@ public class ComponentFactory {
 
     public static JComboBox createComboBox() {
         JComboBox comboBox = new JComboBox() {
+            private static final long serialVersionUID = 5278650003666881110L;
+
             @Override
 			public Dimension getPreferredSize() {
                 return fieldPreferredHeightSize(super.getPreferredSize());
@@ -310,6 +318,8 @@ public class ComponentFactory {
     public static JFileChooser createFileChooser(String title, String fileDescription, String fileExtension) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
         JFileChooser chooser = new JFileChooser(lastDirectory) {
+            private static final long serialVersionUID = -8638528742036901626L;
+
             @Override
 			public int showDialog(Component c, String s) {
                 int rval = super.showDialog(c, s);
@@ -332,6 +342,8 @@ public class ComponentFactory {
     public static JFileChooser createFileChooser(String title, ExtensionFilter extensionFilter) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
         JFileChooser chooser = new JFileChooser(lastDirectory) {
+            private static final long serialVersionUID = 3135157582164095101L;
+
             @Override
 			public int showDialog(Component c, String s) {
                 int rval = super.showDialog(c, s);
@@ -354,6 +366,8 @@ public class ComponentFactory {
     public static JFileChooser createSaveFileChooser(String title, String fileDescription, String fileExtension, final boolean overwrite) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
         JFileChooser chooser = new JFileChooser(lastDirectory) {
+            private static final long serialVersionUID = 2958086335982181478L;
+
             @Override
 			public int showDialog(Component c, String s) {
                 int rval = super.showDialog(c, s);
@@ -413,6 +427,8 @@ public class ComponentFactory {
 
     public static JLabel createLabel() {
         JLabel label = new JLabel() {
+            private static final long serialVersionUID = -7070554182697163025L;
+
             @Override
 			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
@@ -514,6 +530,8 @@ public class ComponentFactory {
 
     public static JMenuItem createMenuItem(String s) {
         JMenuItem item = new JMenuItem(s) {
+            private static final long serialVersionUID = 1486086160611316619L;
+
             @Override
 			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
@@ -554,6 +572,8 @@ public class ComponentFactory {
 
     public static JPasswordField createPasswordField() {
         JPasswordField passwordField = new JPasswordField() {
+            private static final long serialVersionUID = 8866087407475720099L;
+
             @Override
 			public Dimension getPreferredSize() {
                 return fieldPreferredHeightSize(super.getPreferredSize());
@@ -654,6 +674,8 @@ public class ComponentFactory {
 
     private static JSplitPane createSplitPane(int direction, final boolean autoResize, double resizeWeight) {
         JSplitPane pane = new JSplitPane(direction, autoResize) {
+            private static final long serialVersionUID = 6260228646159934377L;
+
             @Override
 			public void addImpl(Component component, Object constraint, int i) {
                 super.addImpl(component, constraint, i);
@@ -697,6 +719,8 @@ public class ComponentFactory {
 
     public static JTabbedPane createTabbedPane(final boolean addBorder) {
         JTabbedPane pane = new JTabbedPane() {
+            private static final long serialVersionUID = 2618479387074156744L;
+
             @Override
 			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
@@ -722,6 +746,8 @@ public class ComponentFactory {
 
     public static JTextArea createTextArea() {
         JTextArea area = new JTextArea() {
+            private static final long serialVersionUID = 2549315674090075218L;
+
             @Override
 			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
@@ -749,6 +775,8 @@ public class ComponentFactory {
 
     public static JTextField createTextField() {
         JTextField textField = new JTextField() {
+            private static final long serialVersionUID = 6399707890142979289L;
+
             @Override
 			public void paint(Graphics g) {
                 ComponentUtilities.enableTextAntialiasing(g);
@@ -786,6 +814,8 @@ public class ComponentFactory {
 
     public static JToggleButton createToggleButton(Action action) {
         JToggleButton button = new JToggleButton() {
+            private static final long serialVersionUID = 8473450251620423797L;
+
             @Override
 			public Dimension getPreferredSize() {
                 return buttonPreferredHeightSize(super.getPreferredSize());
@@ -797,6 +827,8 @@ public class ComponentFactory {
 
     public static JToolBar createToolBar() {
         JToolBar bar = new JToolBar() {
+            private static final long serialVersionUID = -4194085314294949784L;
+
             @Override
 			public Dimension getPreferredSize() {
                 Dimension d = super.getPreferredSize();
@@ -849,6 +881,8 @@ public class ComponentFactory {
         JComponent c = new JPanel();
         c.setLayout(new FlowLayout());
         JButton button = createButton(new AbstractAction("Close", Icons.getCloseIcon()) {
+            private static final long serialVersionUID = 7477504460910818473L;
+
             public void actionPerformed(ActionEvent event) {
                 ComponentUtilities.closeWindow(frame);
             }
@@ -943,6 +977,8 @@ public class ComponentFactory {
 
     public static JEditorPane createHTMLBrowser(URL url) {
         JEditorPane pane = new JEditorPane() {
+            private static final long serialVersionUID = -6684758167149030263L;
+
             @Override
 			public void paint(Graphics g) {
                 ComponentUtilities.enableAllAntialiasing(g);

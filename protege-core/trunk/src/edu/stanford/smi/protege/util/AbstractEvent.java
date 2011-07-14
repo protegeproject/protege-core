@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class AbstractEvent extends SessionEvent implements Localizable, Event {
+    private static final long serialVersionUID = -8345363395859512986L;
     private int _eventType;
     private Object _source;
     private Object _argument1;

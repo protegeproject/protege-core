@@ -14,6 +14,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class DefaultInstance extends DefaultFrame implements Instance {
 
+    private static final long serialVersionUID = -3715893121091083687L;
+
     //ESCA-JAVA0016 
     DefaultInstance(KnowledgeBase kb, FrameID id) {
         super(kb, id);

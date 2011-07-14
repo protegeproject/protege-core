@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InstanceField extends SelectableContainer {
+    private static final long serialVersionUID = -103319789201403123L;
     private LabeledComponent _labeledComponent;
     private SelectableList _listComponent;
     private AllowableAction _viewAction;
@@ -55,6 +56,8 @@ public class InstanceField extends SelectableContainer {
 
     public void createCreateInstanceAction() {
         _createAction = new CreateAction(ResourceKey.INSTANCE_CREATE) {
+            private static final long serialVersionUID = 8030442148042692501L;
+
             public void onCreate() {
                 Cls cls = DisplayUtilities.pickConcreteCls(InstanceField.this, getKnowledgeBase(), _allowedClses);
                 if (cls != null) {
@@ -74,6 +77,8 @@ public class InstanceField extends SelectableContainer {
 
     public void createRemoveInstanceAction() {
         _removeAction = new RemoveAction(ResourceKey.INSTANCE_REMOVE, this) {
+            private static final long serialVersionUID = -1657976558917409719L;
+
             public void onRemove(Object o) {
                 setInstance(null);
             }
@@ -83,6 +88,8 @@ public class InstanceField extends SelectableContainer {
 
     public void createSelectInstanceAction() {
         _addAction = new AddAction(ResourceKey.INSTANCE_ADD) {
+            private static final long serialVersionUID = 1655533054275289305L;
+
             public void onAdd() {
                 Instance instance = DisplayUtilities.pickInstance(InstanceField.this, _allowedClses);
                 if (instance != null) {
@@ -95,6 +102,8 @@ public class InstanceField extends SelectableContainer {
 
     public void createViewInstanceAction() {
         _viewAction = new ViewAction(ResourceKey.INSTANCE_VIEW, this) {
+            private static final long serialVersionUID = 9128249468794341888L;
+
             public void onView(Object o) {
                 _project.show((Instance) o);
             }

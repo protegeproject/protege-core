@@ -11,6 +11,7 @@ import javax.swing.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectableTable extends JTable implements Selectable {
+    private static final long serialVersionUID = -9096314274427842787L;
     private ListenerCollection _selectionListeners = new ListenerList(new SelectionEventDispatcher());
 
     public SelectableTable() {

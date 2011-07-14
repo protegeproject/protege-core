@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectInstancesFromCollectionPanel extends JComponent {
+    private static final long serialVersionUID = -1103710623651598237L;
     private JList _list;
 
     SelectInstancesFromCollectionPanel(Collection instances) {

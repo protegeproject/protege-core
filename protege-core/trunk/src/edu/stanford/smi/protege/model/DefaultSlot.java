@@ -16,6 +16,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class DefaultSlot extends DefaultInstance implements Slot {
 
+    private static final long serialVersionUID = -8171388940662733885L;
+
     public DefaultSlot(KnowledgeBase kb, FrameID id) {
         super(kb, id);
     }

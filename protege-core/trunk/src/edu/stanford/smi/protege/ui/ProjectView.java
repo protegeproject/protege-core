@@ -91,6 +91,7 @@ interface TabbedPaneInterface {
 }
 
 class MyCardPanel extends JPanel implements TabbedPaneInterface {
+    private static final long serialVersionUID = 3550023384666732594L;
     private CardLayout layout = new CardLayout();
     private ChangeListener changeListener;
 
@@ -161,10 +162,14 @@ class MyCardPanel extends JPanel implements TabbedPaneInterface {
 }
 
 class MyJTabbedPane extends JTabbedPane implements TabbedPaneInterface {
+
+    private static final long serialVersionUID = -7730701564292188644L;
 }
 
 
 public class ProjectView extends JComponent {
+    private static final long serialVersionUID = -9143509906295036183L;
+
     static private Logger log = Log.getLogger(ProjectView.class);
 
     private ListenerCollection projectViewListeners = new ListenerList(new ProjectViewDispatcher());

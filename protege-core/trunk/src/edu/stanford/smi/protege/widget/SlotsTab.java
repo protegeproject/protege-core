@@ -23,6 +23,7 @@ import edu.stanford.smi.protege.util.SelectionListener;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SlotsTab extends AbstractTabWidget {
+    private static final long serialVersionUID = 1274808722828634747L;
     private SubslotPane _slotsPanel;
     private SuperslotsPanel _superslotsPanel;
     private InstanceDisplay _slotDisplay;

@@ -8,6 +8,8 @@ import edu.stanford.smi.protege.util.*;
 
 class DisplaySlotRenderer extends DefaultRenderer {
 
+    private static final long serialVersionUID = -5128165997768412257L;
+
     DisplaySlotRenderer(Cls cls) {
     }
 

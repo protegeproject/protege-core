@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DisplayHtml extends StandardAction {
+    private static final long serialVersionUID = -2984843815869687450L;
     private String url;
 
     public DisplayHtml(String text, String url) {

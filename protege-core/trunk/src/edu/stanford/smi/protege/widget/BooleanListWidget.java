@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class BooleanListWidget extends AbstractListWidget {
+    private static final long serialVersionUID = -4884073729270631387L;
     private static final Collection ALLOWED_VALUES = new ArrayList();
 
     static {
@@ -25,6 +26,8 @@ public class BooleanListWidget extends AbstractListWidget {
 
     private Action getCreateAction() {
         return new CreateAction(ResourceKey.VALUE_CREATE) {
+            private static final long serialVersionUID = -4209277615930518731L;
+
             public void onCreate() {
                 handleCreateAction();
             }
@@ -33,6 +36,8 @@ public class BooleanListWidget extends AbstractListWidget {
 
     private Action getEditAction() {
         return new ViewAction(ResourceKey.VALUE_VIEW, this) {
+            private static final long serialVersionUID = 8093323243741620L;
+
             public void onView(Object o) {
                 handleViewAction((Boolean) o);
             }
@@ -41,6 +46,8 @@ public class BooleanListWidget extends AbstractListWidget {
 
     private Action getRemoveAction() {
         return new RemoveAction(ResourceKey.VALUE_REMOVE, this) {
+            private static final long serialVersionUID = 3228703105413852749L;
+
             public void onRemove(Collection values) {
                 handleRemoveAction(values);
             }

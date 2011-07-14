@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class PickSymbolPanel extends JComponent {
+    private static final long serialVersionUID = 7281692358888999652L;
     private JComboBox _comboBox;
 
     public PickSymbolPanel(String label, Object value, Collection allowedValues) {

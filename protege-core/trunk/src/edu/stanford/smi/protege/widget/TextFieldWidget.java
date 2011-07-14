@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public class TextFieldWidget extends TextComponentWidget {
 
+    private static final long serialVersionUID = -4998153320957607144L;
     public JComponent createCenterComponent(JTextComponent textComponent) {
         return textComponent;
     }

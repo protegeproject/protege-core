@@ -32,6 +32,7 @@ import edu.stanford.smi.protege.util.ModalDialog;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SetDisplaySlotPanel extends JComponent implements Disposable {
+    private static final long serialVersionUID = -5802235885558570599L;
     private static final String MULTISLOT = "Multiple Slots";
     private JComboBox _displaySlotComboBox;
     private Cls _cls;

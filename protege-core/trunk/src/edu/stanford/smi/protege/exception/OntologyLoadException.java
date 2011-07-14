@@ -3,6 +3,8 @@ package edu.stanford.smi.protege.exception;
 
 public class OntologyLoadException extends Exception {
 
+    private static final long serialVersionUID = 2464503050573445720L;
+
     private String message;
 
     private String suggestion;

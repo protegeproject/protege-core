@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class DefaultValuesWidget extends SlotValuesWidget {
 
+    private static final long serialVersionUID = -3830676259276684642L;
+
     public static boolean isSuitable(Cls cls, Slot slot, Facet facet) {
         return slot.getName().equals(Model.Slot.DEFAULTS);
     }

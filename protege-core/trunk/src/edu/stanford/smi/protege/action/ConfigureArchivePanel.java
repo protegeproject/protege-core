@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ConfigureArchivePanel extends JPanel {
+    private static final long serialVersionUID = 4467651841510373106L;
     private Project _currentProject;
 
     public ConfigureArchivePanel(Project project) {
@@ -53,6 +54,8 @@ public class ConfigureArchivePanel extends JPanel {
 
     private static Action createDeleteVersionButton() {
         return new AbstractAction("Delete Selected Version", Icons.getDeleteIcon()) {
+            private static final long serialVersionUID = 7721643833354014740L;
+
             public void actionPerformed(ActionEvent event) {
                 Log.getLogger().info("delete selected version");
             }

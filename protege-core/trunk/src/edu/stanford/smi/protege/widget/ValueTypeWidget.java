@@ -18,6 +18,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ValueTypeWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = 7319731533086348647L;
     private ValuesComponent _valuesComponent;
     private JComboBox _typeComboBox;
     private ValueType _oldValue;

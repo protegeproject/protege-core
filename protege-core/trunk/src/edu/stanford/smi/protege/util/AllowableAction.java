@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.resource.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class AllowableAction extends StandardAction {
+    private static final long serialVersionUID = -1716212683037736161L;
     private Selectable _selectable;
     private boolean _isAllowed = true;
 

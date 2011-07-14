@@ -17,6 +17,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public abstract class ViewAction extends AllowableAction {
 
+    private static final long serialVersionUID = 2185080283598996673L;
+
     protected ViewAction(ResourceKey key, Selectable selectable) {
         super(key, selectable);
     }

@@ -10,6 +10,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class NumericMinimumWidget extends FloatFieldWidget {
 
+    private static final long serialVersionUID = -2619432290791581529L;
+
     public static boolean isSuitable(Cls cls, Slot slot, Facet facet) {
         return slot.getName().equals(Model.Slot.NUMERIC_MINIMUM);
     }

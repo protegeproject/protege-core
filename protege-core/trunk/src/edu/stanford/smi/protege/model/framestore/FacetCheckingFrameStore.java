@@ -10,9 +10,13 @@ import edu.stanford.smi.protege.model.*;
  */
 public class FacetCheckingFrameStore extends FrameStoreAdapter {
     public static class AbstractClassException extends IllegalArgumentException {
+
+        private static final long serialVersionUID = 6154760101118221711L;
     }
 
     public static class FacetException extends IllegalArgumentException {
+
+        private static final long serialVersionUID = -2526457416740648312L;
     }
 
     private static void checkAbstract(Collection types) {

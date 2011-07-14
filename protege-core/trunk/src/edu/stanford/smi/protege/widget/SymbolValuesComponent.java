@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  */
 class SymbolValuesComponent extends AbstractValuesComponent implements Selectable {
 
+    private static final long serialVersionUID = 3508078941013882199L;
     private SelectableList _list;
     private AllowableAction _createAction;
     private AllowableAction _editAction;
@@ -39,6 +40,8 @@ class SymbolValuesComponent extends AbstractValuesComponent implements Selectabl
 
     private Action getCreateAction() {
         _createAction = new CreateAction(ResourceKey.VALUE_CREATE) {
+            private static final long serialVersionUID = -3411238108344825853L;
+
             public void onCreate() {
                 String s = DisplayUtilities.editString(_list, "Create Symbol", null, new SymbolValidator());
                 if (s != null && s.length() > 0) {
@@ -52,6 +55,8 @@ class SymbolValuesComponent extends AbstractValuesComponent implements Selectabl
 
     private Action getEditAction() {
         _editAction = new ViewAction(ResourceKey.VALUE_VIEW, this) {
+            private static final long serialVersionUID = -1379237486395269996L;
+
             public void onView(Object o) {
                 String s = DisplayUtilities.editString(_list, "Edit Symbol", o, new SymbolValidator());
                 if (s != null) {
@@ -65,6 +70,8 @@ class SymbolValuesComponent extends AbstractValuesComponent implements Selectabl
 
     private Action getRemoveAction() {
         _removeAction = new RemoveAction(ResourceKey.VALUE_REMOVE, this) {
+            private static final long serialVersionUID = 3520724966158279341L;
+
             public void onRemove(Collection values) {
                 ComponentUtilities.removeListValues(_list, values);
                 valueChanged();

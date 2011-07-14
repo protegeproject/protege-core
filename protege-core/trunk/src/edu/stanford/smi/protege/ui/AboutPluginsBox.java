@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class AboutPluginsBox extends JPanel {
+    private static final long serialVersionUID = -6678212119027124508L;
     private JList pluginsList;
     private JEditorPane aboutViewer;
 

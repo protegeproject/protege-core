@@ -22,6 +22,8 @@ import edu.stanford.smi.protege.util.SystemUtilities;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class DefaultFrame implements Frame, Localizable, Serializable {
+    private static final long serialVersionUID = -894053746814542694L;
+
     private static final char SPECIAL_NAME_CHAR = ':';
 
     private transient KnowledgeBase knowledgeBase;

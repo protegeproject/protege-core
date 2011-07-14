@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Holger Knublauch <holger@smi.stanford.edu>  (minor refactorings)
  */
 public class InstanceValuesComponent extends AbstractValuesComponent implements Selectable {
+    private static final long serialVersionUID = 4953040207043705676L;
     private Project _project;
     private SelectableList _list;
     private AllowableAction _addAction;
@@ -45,6 +46,8 @@ public class InstanceValuesComponent extends AbstractValuesComponent implements 
 
     private Action getAddClsesAction() {
         _addAction = new AddAction(ResourceKey.CLASS_ADD) {
+            private static final long serialVersionUID = -5345344713282197201L;
+
             public void onAdd() {
                 Collection clses = DisplayUtilities.pickClses(_list, getKnowledgeBase(), getBaseClses());
                 addUniqueListValues(clses);
@@ -83,6 +86,8 @@ public class InstanceValuesComponent extends AbstractValuesComponent implements 
 
     private Action getRemoveClsesAction() {
         _removeAction = new RemoveAction(ResourceKey.CLASS_REMOVE, this) {
+            private static final long serialVersionUID = 4200700343932259499L;
+
             public void onRemove(Collection clses) {
                 ComponentUtilities.removeListValues(_list, clses);
                 valueChanged();
@@ -102,6 +107,8 @@ public class InstanceValuesComponent extends AbstractValuesComponent implements 
 
     private Action getViewAction() {
         return new ViewAction(ResourceKey.CLASS_VIEW, this) {
+            private static final long serialVersionUID = -5159948547425769907L;
+
             public void onView(Object o) {
                 Cls cls = (Cls) o;
                 _project.show(cls);

@@ -16,6 +16,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ShowMetrics extends ProjectAction {
 
+    private static final long serialVersionUID = 3040315622772444408L;
+
     public ShowMetrics() {
         super(ResourceKey.PROJECT_METRICS);
     }

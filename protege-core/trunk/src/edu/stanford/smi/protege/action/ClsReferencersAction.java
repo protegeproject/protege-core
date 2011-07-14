@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  * TODO Class Comment
  */
 public class ClsReferencersAction extends ReferencersAction {
+    private static final long serialVersionUID = 6840978476653688771L;
+
     public ClsReferencersAction(Selectable selectable) {
         super(ResourceKey.CLASS_VIEW_REFERENCES, selectable);
     }

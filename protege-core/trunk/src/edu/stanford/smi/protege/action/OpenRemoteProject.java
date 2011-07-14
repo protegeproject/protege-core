@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class OpenRemoteProject extends ProjectAction {
 
+    private static final long serialVersionUID = -6134251339616787461L;
+
     public OpenRemoteProject() {
         super(ResourceKey.PROJECT_OPEN_REMOTE);
         setEnabled(true);

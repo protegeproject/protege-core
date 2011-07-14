@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class MakeCopiesAction extends AllowableAction {
 
+    private static final long serialVersionUID = -1874566858726067172L;
+
     public MakeCopiesAction(ResourceKey key, Selectable selectable) {
         super(key, selectable);
     }

@@ -11,6 +11,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ClipsFilePanel extends JComponent {
+    private static final long serialVersionUID = 45294829620851847L;
     private FileField clsesFileField;
     private FileField instancesFileField;
 

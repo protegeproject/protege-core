@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InstanceListWidget extends AbstractListWidget {
+    private static final long serialVersionUID = -3207320406959420859L;
     private AllowableAction _createInstanceAction;
     private AllowableAction _addInstancesAction;
     private AllowableAction _removeInstancesAction;
@@ -66,6 +67,8 @@ public class InstanceListWidget extends AbstractListWidget {
 
     protected Action getAddInstancesAction() {
         _addInstancesAction = new AddAction(ResourceKey.INSTANCE_ADD) {
+            private static final long serialVersionUID = -5397657826029556524L;
+
             public void onAdd() {
                 handleAddAction();
             }
@@ -75,6 +78,8 @@ public class InstanceListWidget extends AbstractListWidget {
 
     public Action getCreateInstanceAction() {
         _createInstanceAction = new CreateAction(ResourceKey.INSTANCE_CREATE) {
+            private static final long serialVersionUID = -511147408901936946L;
+
             public void onCreate() {
                 handleCreateAction();
             }
@@ -89,6 +94,8 @@ public class InstanceListWidget extends AbstractListWidget {
 
     protected Action getRemoveInstancesAction() {
         _removeInstancesAction = new RemoveAction(ResourceKey.INSTANCE_REMOVE, this) {
+            private static final long serialVersionUID = 2415308209387049694L;
+
             public void onRemove(Collection instances) {
                 handleRemoveAction(instances);
             }
@@ -98,6 +105,8 @@ public class InstanceListWidget extends AbstractListWidget {
 
     protected Action getViewInstanceAction() {
         _viewInstanceAction = new ViewAction(ResourceKey.INSTANCE_VIEW, this) {
+            private static final long serialVersionUID = 1848862060962178950L;
+
             public void onView(Object o) {
                 handleViewAction((Instance) o);
             }

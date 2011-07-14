@@ -4,7 +4,10 @@ import edu.stanford.smi.protege.ui.ProjectView;
 import edu.stanford.smi.protege.widget.Widget;
 
 public class ProjectViewEvent extends AbstractEvent {
-	public enum Type {
+	private static final long serialVersionUID = -7883249925606924610L;
+
+
+    public enum Type {
 		addTab, removeTab, save, close;
 		
 		static Type typeFromOrdinal(int ordinal) {

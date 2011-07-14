@@ -12,6 +12,8 @@ import edu.stanford.smi.protege.util.*;
  */
 class RoleRenderer extends DefaultRenderer {
 
+    private static final long serialVersionUID = 1044368024395724864L;
+
     public void load(Object o) {
         setMainText(o.toString());
         boolean isAbstract = o.equals(RoleConstraint.ABSTRACT);

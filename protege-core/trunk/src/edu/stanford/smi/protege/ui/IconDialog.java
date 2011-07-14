@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  */
 
 public class IconDialog extends JDialog {
+    private static final long serialVersionUID = -6319120373860753057L;
+
     // Initialize array of Protege-2000 icons to display in this dialog.
     Icon[] icons = { null, Icons.getAddIcon(), Icons.getRemoveIcon(), Icons.getCreateIcon(), Icons.getDeleteIcon(),
             Icons.getViewIcon(), Icons.getViewInstanceReferencersIcon(), Icons.getUpIcon(), Icons.getDownIcon(),

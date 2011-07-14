@@ -5,6 +5,8 @@ import java.util.UUID;
 
 
 public class Session implements RemoteSession, Serializable {
+    private static final long serialVersionUID = -7027997614420432217L;
+
     private static int nextPrettyId = 0;
     
     private int prettyId;

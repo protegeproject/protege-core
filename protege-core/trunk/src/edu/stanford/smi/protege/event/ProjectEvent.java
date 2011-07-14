@@ -11,6 +11,7 @@ import edu.stanford.smi.protege.widget.ClsWidget;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ProjectEvent extends AbstractEvent {
+    private static final long serialVersionUID = -8732325118619806882L;
     public static final int FORM_CHANGED = 1;
     public static final int PROJECT_SAVED = 2;
     public static final int PROJECT_CLOSED = 3;

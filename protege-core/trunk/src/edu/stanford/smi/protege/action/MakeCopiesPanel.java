@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.util.*;
  */
 
 class MakeCopiesPanel extends JComponent {
+    private static final long serialVersionUID = 8117747607093156822L;
     private static boolean _lastIsDeep = false;
     private static Integer _lastNumberOfCopies = new Integer(1);
     private JTextField _textField = new JTextField();

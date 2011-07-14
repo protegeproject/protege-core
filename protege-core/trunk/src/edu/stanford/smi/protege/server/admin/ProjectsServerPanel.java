@@ -220,7 +220,9 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 
 	private AllowableAction getStopProjectAction(final SelectableTable table) {
 		stopProjectAction = new AllowableAction("Stop project(s)", Icons.getCancelIcon(), table) {
-			public void actionPerformed(ActionEvent arg0) {
+			private static final long serialVersionUID = 4683660482257589346L;
+
+            public void actionPerformed(ActionEvent arg0) {
 				int[] rows = table.getSelectedRows();
 				Collection<String> projects = new ArrayList<String>();
 				for (int i = 0; i < rows.length; i++) {
@@ -271,7 +273,9 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 
 	private AllowableAction getStartProjectAction(final SelectableTable table) {
 		startProjectAction = new AllowableAction("Start project or cancel shut down", Icons.getOkIcon(), table) {
-			public void actionPerformed(ActionEvent arg0) {
+			private static final long serialVersionUID = 4714705761432268351L;
+
+            public void actionPerformed(ActionEvent arg0) {
 				int row = table.getSelectedRow();
 				String project = getProject(row);
 				ProjectStatus status = getProjectStatus(row);
@@ -350,7 +354,9 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 
 	private AllowableAction getViewAction(final SelectableTable table) {
 		return new ViewAction(table) {
-			@Override
+			private static final long serialVersionUID = 4851439229648071746L;
+
+            @Override
 			public void onView() {
 				int row = table.getSelectedRow();
 				ComponentFactory.showTableRowInDialog(table.getModel(), row, ProjectsServerPanel.this);
@@ -410,7 +416,8 @@ public class ProjectsServerPanel extends AbstractRefreshableServerPanel {
 
 
 	class ShutDownPanel extends JPanel {
-		private final JTextField minsTextField = new JTextField(5);
+		private static final long serialVersionUID = 5895752980483951552L;
+        private final JTextField minsTextField = new JTextField(5);
 
 		ShutDownPanel(Collection<String> projects){
 			 SpringLayout layout = new SpringLayout();

@@ -11,6 +11,7 @@ import java.util.*;
  * @deprecated Use ArrayList instead.
  */
 public class HashList extends AbstractSequentialList implements Cloneable, Serializable {
+    private static final long serialVersionUID = 8024066403796069628L;
     private transient Entry header = new Entry(null, null, null);
     private transient int size = 0;
     private Map _valueEntryMap = new HashMap();
@@ -115,6 +116,7 @@ public class HashList extends AbstractSequentialList implements Cloneable, Seria
     }
 
     private static class Entry implements Serializable {
+        private static final long serialVersionUID = -2080231082256914843L;
         Object element;
         Entry next;
         Entry previous;

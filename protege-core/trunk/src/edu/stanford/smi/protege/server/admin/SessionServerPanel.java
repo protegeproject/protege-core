@@ -117,7 +117,9 @@ public class SessionServerPanel extends AbstractRefreshableServerPanel {
 	private AllowableAction getKillSessionAction(final SelectableTable table) {
 		killSessionAction = new AllowableAction("Kill session(s)", Icons.getCancelIcon(), table) {
 
-			public void actionPerformed(ActionEvent arg0) {				
+			private static final long serialVersionUID = -845012769836420622L;
+
+            public void actionPerformed(ActionEvent arg0) {				
 				int kill =
 					JOptionPane.showConfirmDialog(SessionServerPanel.this, "Kill selected session(s)?" +
 							"\nUsers may lose work as a result of this action.",
@@ -164,7 +166,9 @@ public class SessionServerPanel extends AbstractRefreshableServerPanel {
 
 	private AllowableAction getViewAction(final SelectableTable table) {
 		return new ViewAction(table) {
-			@Override
+			private static final long serialVersionUID = -2389054693945285483L;
+
+            @Override
 			public void onView() {
 				int row = table.getSelectedRow();
 				ComponentFactory.showTableRowInDialog(table.getModel(), row, SessionServerPanel.this);

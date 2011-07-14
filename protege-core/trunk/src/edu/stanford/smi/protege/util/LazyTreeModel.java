@@ -10,6 +10,8 @@ import javax.swing.tree.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class LazyTreeModel extends DefaultTreeModel {
+    private static final long serialVersionUID = -1631559401681910463L;
+
     private static class EmptyRoot extends LazyTreeRoot {
         EmptyRoot() {
             super(Collections.EMPTY_LIST);

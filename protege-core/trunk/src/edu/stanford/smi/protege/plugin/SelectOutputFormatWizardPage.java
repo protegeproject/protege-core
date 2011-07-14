@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectOutputFormatWizardPage extends ExportWizardPage {
+    private static final long serialVersionUID = -5850115778441040873L;
     private static final String SELECTED_PLUGIN = "export_project.last_selected_plugin";
     private SelectableList list;
     private Project project;
@@ -93,6 +94,8 @@ public class SelectOutputFormatWizardPage extends ExportWizardPage {
 }
 
 class ExportPluginRenderer extends DefaultRenderer {
+    private static final long serialVersionUID = 4680341715985207495L;
+
     public void load(Object o) {
         ExportProjectPlugin plugin = (ExportProjectPlugin) o;
         setMainText(plugin.getName());

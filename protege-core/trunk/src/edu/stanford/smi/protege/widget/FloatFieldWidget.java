@@ -12,6 +12,8 @@ import edu.stanford.smi.protege.model.*;
 
 public class FloatFieldWidget extends NumberFieldWidget {
 
+    private static final long serialVersionUID = -2408555647675847253L;
+
     protected String getInvalidTextDescription(String text) {
         String result = null;
         try {

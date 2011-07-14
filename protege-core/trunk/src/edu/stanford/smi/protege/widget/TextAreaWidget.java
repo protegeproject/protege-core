@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public class TextAreaWidget extends TextComponentWidget {
 
+    private static final long serialVersionUID = 4891531863687177825L;
     public JComponent createCenterComponent(JTextComponent textComponent) {
         return ComponentFactory.createScrollPane(textComponent);
     }

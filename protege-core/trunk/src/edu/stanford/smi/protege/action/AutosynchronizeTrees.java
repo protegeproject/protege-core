@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.ui.*;
  */
 public class AutosynchronizeTrees extends ProjectAction {
 
+    private static final long serialVersionUID = -1371399799983255730L;
+
     public AutosynchronizeTrees() {
         super(ResourceKey.AUTOSYNCHRONIZE_CLASS_TREES);
     }

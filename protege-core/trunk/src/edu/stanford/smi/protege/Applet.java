@@ -16,6 +16,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class Applet extends JApplet {
 
+    private static final long serialVersionUID = 7286186605066367207L;
+
     private String getProjectName() {
         return getParameter("project_name");
     }

@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class AbstractTableWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = -5973931887065705739L;
     private JTable _table;
     private LabeledComponent _labeledComponent;
 

@@ -7,6 +7,8 @@ package edu.stanford.smi.protege.model;
  */
 public class NullFrameException extends IllegalArgumentException {
 
+    private static final long serialVersionUID = 7772171144117779051L;
+
     public NullFrameException(String s) {
         super(s);
     }

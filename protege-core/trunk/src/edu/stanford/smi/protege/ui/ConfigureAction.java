@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class ConfigureAction extends StandardAction {
 
+    private static final long serialVersionUID = 5652284823215641602L;
+
     protected ConfigureAction() {
         super(ResourceKey.COMPONENT_MENU);
     }

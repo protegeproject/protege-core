@@ -10,6 +10,7 @@ import javax.swing.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class LookAndFeelAction extends ProjectAction {
+    private static final long serialVersionUID = 5133274859688696709L;
     private String lookAndFeelClassName;
     
     public LookAndFeelAction(String lookAndFeelName, String lookAndFeelClassName) {

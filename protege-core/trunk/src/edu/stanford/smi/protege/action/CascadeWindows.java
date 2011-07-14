@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class CascadeWindows extends ProjectAction {
 
+    private static final long serialVersionUID = 6854368222246681508L;
+
     public CascadeWindows(boolean large) {
         super(ResourceKey.CASCADE_WINDOWS, large);
     }

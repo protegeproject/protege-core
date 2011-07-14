@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.resource.*;
  * @author    Stanley Knutson 4-sep-03
  */
 public class FileField extends JComponent {
+    private static final long serialVersionUID = -1937723313054574468L;
     private JTextField _textField;
     private String _description;
     private String _extension;
@@ -54,6 +55,8 @@ public class FileField extends JComponent {
         setLayout(new BorderLayout());
         LabeledComponent c = new LabeledComponent(label, createComponent(path));
         c.addHeaderButton(new AbstractAction("Browse for File", Icons.getAddIcon()) {
+            private static final long serialVersionUID = -784971900386531813L;
+
             public void actionPerformed(ActionEvent event) {
                 browse();
             }

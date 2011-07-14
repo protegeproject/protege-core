@@ -26,6 +26,7 @@ import edu.stanford.smi.protege.util.SelectionListener;
  * @author    Holger Knublauch <holger@smi.stanford.edu>  (minor refactorings)
  */
 public class ClsesTab extends AbstractTabWidget {
+    private static final long serialVersionUID = -6113219973912500947L;
     private ClsesPanel _clsesPanel;
     private ClsInverseRelationshipPanel _inverseRelationshipPanel;
     private InstanceDisplay _instanceDisplay;

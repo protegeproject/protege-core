@@ -17,6 +17,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class IncludeProject extends LocalProjectAction {
 
+    private static final long serialVersionUID = -6587569406820125552L;
+
     public IncludeProject() {
         super(ResourceKey.PROJECT_INCLUDE);
     }

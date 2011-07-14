@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class SlotsTreeFinder extends FrameTreeFinder {
 
+    private static final long serialVersionUID = -7353189621803272208L;
+
     public SlotsTreeFinder(KnowledgeBase kb, JTree tree) {
         super(kb, tree, ResourceKey.SLOT_SEARCH_FOR);
     }

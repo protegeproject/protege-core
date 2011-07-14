@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class OpenProject extends ProjectAction {
 
+    private static final long serialVersionUID = 1185072441322574491L;
+
     public OpenProject(boolean large) {
         super(ResourceKey.PROJECT_OPEN, large);
         setEnabled(true);

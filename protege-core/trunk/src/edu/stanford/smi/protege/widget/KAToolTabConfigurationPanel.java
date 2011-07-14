@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class KAToolTabConfigurationPanel extends AbstractValidatableComponent {
+    private static final long serialVersionUID = 100685654822212554L;
     private InstanceField _topLevelInstanceField;
     private JTextField _labelField;
     private KAToolTab _tab;

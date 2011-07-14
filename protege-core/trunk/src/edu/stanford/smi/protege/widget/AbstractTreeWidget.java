@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class AbstractTreeWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = -1864634171376661448L;
     private JTree _tree;
     private LabeledComponent _labeledComponent;
 

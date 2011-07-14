@@ -41,7 +41,8 @@ import edu.stanford.smi.protege.util.SelectableTable;
  *
  */
 public class ProtegePropertiesComponent extends JPanel {
-	private SelectableTable _propertiesTable;
+	private static final long serialVersionUID = -5051686359840804602L;
+    private SelectableTable _propertiesTable;
 	private PropertiesTableModel _propertiesTableModel;
 	
 	private LabeledComponent _labeledComponent;
@@ -74,7 +75,9 @@ public class ProtegePropertiesComponent extends JPanel {
 		setLayout(new BorderLayout());
 				
 		_propertiesTable = new SelectableTable() {
-			public void editingStopped(javax.swing.event.ChangeEvent e) {				
+			private static final long serialVersionUID = -7335109538274237998L;
+
+            public void editingStopped(javax.swing.event.ChangeEvent e) {				
 				int editingColumn = getEditingColumn();
 				String cellValue = (String) getCellEditor().getCellEditorValue();
 					
@@ -128,7 +131,9 @@ public class ProtegePropertiesComponent extends JPanel {
 	private AllowableAction createViewAction(){
 		return new AllowableAction(ResourceKey.VALUE_VIEW, _propertiesTable) {
 
-			public void actionPerformed(ActionEvent e) {
+			private static final long serialVersionUID = -782664778236281392L;
+
+            public void actionPerformed(ActionEvent e) {
 				int selectedRow = _propertiesTable.getSelectedRow();
 				
 				String propName = (String)_propertiesTable.getValueAt(selectedRow, PropertiesTableModel.getPropertyColumnIndex());
@@ -153,7 +158,9 @@ public class ProtegePropertiesComponent extends JPanel {
 	private AllowableAction createAddAction(){
 		return new AllowableAction(ResourceKey.VALUE_ADD) {
 
-			public void actionPerformed(ActionEvent arg0) {
+			private static final long serialVersionUID = 4094647618090854671L;
+
+            public void actionPerformed(ActionEvent arg0) {
 				((PropertiesTableModel)_propertiesTable.getModel()).addRow("","");
 				
 				_propertiesTable.clearSelection();
@@ -168,7 +175,9 @@ public class ProtegePropertiesComponent extends JPanel {
 	private AllowableAction createDeleteAction(){
 		return new AllowableAction(ResourceKey.VALUE_DELETE, _propertiesTable) {
 
-			public void actionPerformed(ActionEvent arg0) {
+			private static final long serialVersionUID = 5139197510485952863L;
+
+            public void actionPerformed(ActionEvent arg0) {
 				if (_propertiesTable.getCellEditor() != null)
 					_propertiesTable.getCellEditor().stopCellEditing();
 				
@@ -185,7 +194,9 @@ public class ProtegePropertiesComponent extends JPanel {
 	private AllowableAction createSaveAction(){		
 		return new AllowableAction(ResourceKey.PROJECT_SAVE) {
 
-			public void actionPerformed(ActionEvent arg0) {
+			private static final long serialVersionUID = 6607784184953248192L;
+
+            public void actionPerformed(ActionEvent arg0) {
 				savePropertyFile();
 			}					
 		};	
@@ -232,7 +243,9 @@ public class ProtegePropertiesComponent extends JPanel {
 	private AllowableAction createLoadAction(){
 		return new AllowableAction(ResourceKey.PROJECT_OPEN) {
 
-			public void actionPerformed(ActionEvent arg0) {
+			private static final long serialVersionUID = 4999564289768724565L;
+
+            public void actionPerformed(ActionEvent arg0) {
 				
 				if (isChangedContent()) {
 					int rval = ModalDialog.showMessageDialog(ProtegePropertiesComponent.this, "Save current properties?", "Save", ModalDialog.MODE_YES_NO);
@@ -295,6 +308,8 @@ public class ProtegePropertiesComponent extends JPanel {
     private JFileChooser createFileChooser(String title, String fileDescription, String fileExtension, final boolean overwriteWithoutConfirm) {
     	    	
         JFileChooser chooser = new JFileChooser(lastDirectory) {
+            private static final long serialVersionUID = -3429961883209448355L;
+
             public int showDialog(Component c, String s) {
                 int rval = super.showDialog(c, s);
                 if (rval == APPROVE_OPTION) {

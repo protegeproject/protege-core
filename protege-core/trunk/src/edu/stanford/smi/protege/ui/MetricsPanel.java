@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class MetricsPanel extends JComponent {
+    private static final long serialVersionUID = 2991659380230833251L;
     private FrameCounts _frameCounts;
     private DefaultTableModel _summaryModel;
 

@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ComboBoxWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = -1649506562178607049L;
     protected final static String NONE = "";
     private JComboBox _comboBox;
     private boolean _displayNullEntry = true;

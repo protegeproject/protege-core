@@ -55,6 +55,7 @@ import edu.stanford.smi.protege.util.ViewAction;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class TemplateSlotsWidget extends AbstractTableWidget {
+    private static final long serialVersionUID = 2572403293207051303L;
     private AllowableAction _viewAction;
     private AllowableAction _viewAtClsAction;
     protected AllowableAction _createAction;
@@ -169,6 +170,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     private Action createMoveDownAction() {
         return new AbstractAction("Move down", Icons.getDownIcon()) {
+            private static final long serialVersionUID = -2706470541341140481L;
+
             {
                 putValue(Action.SHORT_DESCRIPTION, "Move selected slot down");
             }
@@ -181,6 +184,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     private Action createMoveUpAction() {
         return new AbstractAction("Move up", Icons.getUpIcon()) {
+            private static final long serialVersionUID = -5564065775845561448L;
+
             {
                 putValue(Action.SHORT_DESCRIPTION, "Move selected slot up");
             }
@@ -220,6 +225,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     public Action getAddSlotsAction() {
         _addAction = new AddAction(ResourceKey.SLOT_ADD) {
+            private static final long serialVersionUID = 1413481816474864898L;
+
             public void onAdd() {
                 Cls slotMetaCls = getBaseAllowedSlotMetaCls();
                 List slots = new ArrayList(getKnowledgeBase().getInstances(slotMetaCls));
@@ -255,6 +262,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     protected Action getCreateSlotAction() {
         _createAction = new CreateAction(ResourceKey.SLOT_CREATE) {
+            private static final long serialVersionUID = 2685200630532658984L;
+
             public void onCreate() {
                 Cls cls = getBoundCls();
                 if (cls.isEditable()) {
@@ -278,6 +287,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     public Action getDoubleClickAction() {
         return new AbstractAction() {
+            private static final long serialVersionUID = 940934952598817850L;
+
             public void actionPerformed(ActionEvent event) {
                 FrameSlotCombination c = (FrameSlotCombination) CollectionUtilities.getFirstItem(getSelection());
                 if (c != null) {
@@ -316,6 +327,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     public Action getRemoveOverrideAction() {
         _removeOverrideAction = new AllowableAction(ResourceKey.SLOT_REMOVE_FACET_OVERRIDES, this) {
+            private static final long serialVersionUID = -4145394593794210979L;
+
             public void actionPerformed(ActionEvent event) {
                 Iterator i = this.getSelection().iterator();
                 while (i.hasNext()) {
@@ -329,6 +342,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     public Action getRemoveSlotsAction() {
         _removeAction = new RemoveAction(ResourceKey.SLOT_REMOVE, this) {
+            private static final long serialVersionUID = -5482243741134967499L;
+
             public void onRemove(Collection combinations) {
                 handleRemoveCombinations(combinations);
             }
@@ -390,6 +405,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     private Action getViewSlotAction() {
         _viewAction = new ViewAction(ResourceKey.SLOT_VIEW_TOP_LEVEL, this) {
+            private static final long serialVersionUID = 7903942567777207326L;
+
             public void onView(Object o) {
                 FrameSlotCombination combination = (FrameSlotCombination) o;
                 showInstance(combination.getSlot());
@@ -400,6 +417,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
 
     private Action getViewSlotAtClassAction() {
         _viewAtClsAction = new ViewAction(ResourceKey.SLOT_VIEW_FACET_OVERRIDES, this) {
+            private static final long serialVersionUID = -309920053960064704L;
+
             public void onView(Object o) {
                 FrameSlotCombination combination = (FrameSlotCombination) o;
                 show((Cls) combination.getFrame(), combination.getSlot());
@@ -451,6 +470,8 @@ public class TemplateSlotsWidget extends AbstractTableWidget {
     }
 
     private class MyTransferHandler extends TransferHandler {
+        private static final long serialVersionUID = -3916638445633449129L;
+
         private Collection getTransferableCombinations() {
             Collection transferableCombinations = new ArrayList(getSelection());
             Iterator i = transferableCombinations.iterator();

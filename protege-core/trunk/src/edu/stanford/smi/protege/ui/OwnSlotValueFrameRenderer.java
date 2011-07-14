@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.model.Frame;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class OwnSlotValueFrameRenderer extends FrameRenderer {
+    private static final long serialVersionUID = 7172693591093061328L;
     private static final Color INVALID_ITEM_COLOR = Color.red;
     private final Frame _frame;
     private final Slot _slot;

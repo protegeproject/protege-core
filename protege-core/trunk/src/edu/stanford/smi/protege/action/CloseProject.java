@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class CloseProject extends ProjectAction {
 
+    private static final long serialVersionUID = -4856771943973832605L;
+
     public CloseProject() {
         super(ResourceKey.PROJECT_CLOSE);
     }

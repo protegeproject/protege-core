@@ -11,6 +11,7 @@ import javax.swing.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class Wizard extends JDialog {
+    private static final long serialVersionUID = -8629186483763293509L;
     public static final int RESULT_FINISH = 1;
     public static final int RESULT_CANCEL = 2;
 
@@ -67,6 +68,8 @@ public abstract class Wizard extends JDialog {
 
     private JButton createFinishButton() {
         StandardAction action = new StandardAction("Finish") {
+            private static final long serialVersionUID = -5324226196646849927L;
+
             public void actionPerformed(ActionEvent event) {
                 result = RESULT_FINISH;
                 onFinish();
@@ -93,6 +96,8 @@ public abstract class Wizard extends JDialog {
 
     private JButton createNextButton() {
         StandardAction action = new StandardAction("Next >") {
+            private static final long serialVersionUID = 2762045259315677129L;
+
             public void actionPerformed(ActionEvent event) {
                 showNextPage();
             }
@@ -103,6 +108,8 @@ public abstract class Wizard extends JDialog {
 
     private JButton createBackButton() {
         StandardAction action = new StandardAction("< Back") {
+            private static final long serialVersionUID = 8561663556453396878L;
+
             public void actionPerformed(ActionEvent event) {
                 showPreviousPage();
             }
@@ -113,6 +120,8 @@ public abstract class Wizard extends JDialog {
 
     private JButton createCancelButton() {
         Action action = new AbstractAction("Cancel") {
+            private static final long serialVersionUID = -1294899151946474858L;
+
             public void actionPerformed(ActionEvent event) {
                 result = RESULT_CANCEL;
                 onCancel();

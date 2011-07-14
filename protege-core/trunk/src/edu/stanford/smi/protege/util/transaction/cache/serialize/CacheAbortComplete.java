@@ -3,6 +3,8 @@ package edu.stanford.smi.protege.util.transaction.cache.serialize;
 import edu.stanford.smi.protege.util.transaction.cache.Cache;
 
 public class CacheAbortComplete<S,V,R> extends SerializedCacheUpdate<S,V,R> {
+    private static final long serialVersionUID = -3081897187225022558L;
+
     public CacheAbortComplete() {
         super(null);
     }

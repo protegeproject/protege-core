@@ -58,6 +58,8 @@ import edu.stanford.smi.protege.ui.ProjectManager;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ProjectChooser extends JFileChooser {
+    private static final long serialVersionUID = 33858734669640699L;
+
     private static Logger log = Log.getLogger(ProjectChooser.class);
   
     private JPanel pane;
@@ -180,6 +182,8 @@ public class ProjectChooser extends JFileChooser {
 
     private AbstractButton createSelectionButton(final String name) {
         Action action = new AbstractAction(name) {
+            private static final long serialVersionUID = 2317162047521094349L;
+
             public void actionPerformed(ActionEvent event) {
                 layout.show(pane, name);
             }
@@ -205,6 +209,8 @@ public class ProjectChooser extends JFileChooser {
 
     private JButton createButton(final int result, ResourceKey key) {
         Action action = new StandardAction(key) {
+            private static final long serialVersionUID = -3338082593317941941L;
+
             public void actionPerformed(ActionEvent event) {
                 attemptClose(result);
             }
@@ -402,6 +408,7 @@ public class ProjectChooser extends JFileChooser {
 }
 
 class URLPanel extends JPanel implements Validatable {
+    private static final long serialVersionUID = -3336694646619661586L;
     private JTextField field;
 
     URLPanel() {

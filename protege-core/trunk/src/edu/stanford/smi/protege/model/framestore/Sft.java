@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.SystemUtilities;
  */
 
 public class Sft implements Localizable, Serializable {
+    private static final long serialVersionUID = 1248658503922717736L;
     private Slot _slot;
     private Facet _facet;
     private boolean _isTemplate;

@@ -10,6 +10,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class KnowledgeBaseEvent extends AbstractEvent {
+    private static final long serialVersionUID = 6834115948515875922L;
     private static final int BASE = 600;
     public static final int CLS_CREATED = BASE + 1;
     public static final int CLS_DELETED = BASE + 2;

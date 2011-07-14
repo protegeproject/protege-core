@@ -11,6 +11,7 @@ import javax.swing.table.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class RowTableModel extends AbstractTableModel {
+    private static final long serialVersionUID = 4015658826028434227L;
     private JTable table;
     private List rows = new ArrayList();
     

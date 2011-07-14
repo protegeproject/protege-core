@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 class RevertProjectPanel extends JPanel {
+    private static final long serialVersionUID = 8202074349453422106L;
     private static boolean _lastArchiveCurrentValue;
     private Project _currentProject;
     private JCheckBox _archiveCurrentCheckBox;

@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.Validatable;
 
 public class RegisterUserServerPanel extends JPanel implements Validatable {
  
+    private static final long serialVersionUID = -325336435948601667L;
     private JTextField _usernameField;
     private JTextField _password1Field;
     private JTextField _password2Field; 

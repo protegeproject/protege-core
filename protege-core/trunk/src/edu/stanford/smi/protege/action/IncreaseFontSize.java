@@ -11,7 +11,9 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class IncreaseFontSize extends FontAction {
 
-	public IncreaseFontSize() {
+	private static final long serialVersionUID = -7714875071007897094L;
+
+    public IncreaseFontSize() {
 		super(ResourceKey.INCREASE_FONT_SIZE);
 	}
 

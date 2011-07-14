@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class MinimumCardinalityConstraint extends AbstractFacetConstraint {
 
+    private static final long serialVersionUID = 4399402013983647812L;
+
     public String getInvalidValuesText(Frame frame, Slot slot, Collection slotValues, Collection facetValues) {
         String result = null;
         Integer i = (Integer) CollectionUtilities.getFirstItem(facetValues);

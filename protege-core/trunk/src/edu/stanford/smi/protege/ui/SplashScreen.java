@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SplashScreen extends JWindow {
+    private static final long serialVersionUID = 4752946291493511390L;
     private WaitCursor _waitCursor;
 
     public SplashScreen() {

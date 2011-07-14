@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class MaximumCardinalityWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = 1980239748634279491L;
     private JCheckBox _isMultipleComponent;
     private IntegerField _atMostComponent;
 

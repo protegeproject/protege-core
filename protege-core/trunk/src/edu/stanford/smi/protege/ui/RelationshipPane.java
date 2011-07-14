@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
 
 public class RelationshipPane extends SelectableContainer {
 
+    private static final long serialVersionUID = -6177511814335102076L;
     private Frame _frame;
     private Slot _slot;
 

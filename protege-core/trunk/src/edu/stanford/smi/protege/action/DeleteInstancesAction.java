@@ -21,6 +21,8 @@ import edu.stanford.smi.protege.util.Selectable;
  */
 public class DeleteInstancesAction extends DeleteAction {
 
+    private static final long serialVersionUID = 8355065882937698045L;
+
     public DeleteInstancesAction(Selectable selectable) {
         this(ResourceKey.INSTANCE_DELETE, selectable);
     }

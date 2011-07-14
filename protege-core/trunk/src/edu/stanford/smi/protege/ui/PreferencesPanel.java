@@ -4,7 +4,8 @@ import edu.stanford.smi.protege.util.ValidatableTabComponent;
 
 
 public class PreferencesPanel extends ValidatableTabComponent {
-	private GeneralPreferencesPanel generalPreferencesPanel;
+	private static final long serialVersionUID = 102285543910901051L;
+    private GeneralPreferencesPanel generalPreferencesPanel;
 	private ConfigureProtegePropertiesPanel configureProtegePropertiesPanel;
 	
 	public PreferencesPanel() {

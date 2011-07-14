@@ -18,6 +18,8 @@ package edu.stanford.smi.protege.model;
  */
 public class DeletedFrameException extends IllegalArgumentException {
 
+    private static final long serialVersionUID = -1201162153303219322L;
+
     public DeletedFrameException(String s) {
         super(s);
     }

@@ -10,6 +10,7 @@ import javax.swing.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 class SlotViewPanel extends JComponent {
+    private static final long serialVersionUID = -2376860357479232073L;
     private static boolean _viewTopLevelSlotValue = true;
     private JRadioButton _topLevelRadioButton;
     private JRadioButton _slotAtClassRadioButton;

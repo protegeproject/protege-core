@@ -66,7 +66,9 @@ public class ControlServerPanel extends AbstractRefreshableServerPanel {
 
 	private Action getShutdownAction() {
 		return new AbstractAction() {
-			public void actionPerformed(ActionEvent arg0) {
+			private static final long serialVersionUID = 1616026038020695181L;
+
+            public void actionPerformed(ActionEvent arg0) {
 				int ret = ModalDialog.showMessageDialog(ControlServerPanel.this,
 						"The Protege server will shut down immediately.\n" +
 						"All server projects will be saved.\n" +
@@ -101,7 +103,9 @@ public class ControlServerPanel extends AbstractRefreshableServerPanel {
 
 	private Action getSaveMetaprojectAction()  {
 	    return new AbstractAction() {
-	        public void actionPerformed(ActionEvent ev) {
+	        private static final long serialVersionUID = -3866525559837315333L;
+
+            public void actionPerformed(ActionEvent ev) {
 	            boolean success = false;
 	            try {
 	                success = getServer().saveMetaProject(getSession());
