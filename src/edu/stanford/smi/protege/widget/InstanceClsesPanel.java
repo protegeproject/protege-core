@@ -18,6 +18,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InstanceClsesPanel extends SelectableContainer {
+    private static final long serialVersionUID = -4517364068090464763L;
     private Project _project;
     private SelectableTree _clsTree;
     private LabeledComponent _labeledComponent;
@@ -67,6 +68,8 @@ public class InstanceClsesPanel extends SelectableContainer {
 
     private Action getViewClsAction() {
         return new ViewAction(ResourceKey.CLASS_VIEW, this) {
+            private static final long serialVersionUID = -94602127828349008L;
+
             public void onView(Object o) {
                 Cls cls = (Cls) o;
                 _project.show(cls);

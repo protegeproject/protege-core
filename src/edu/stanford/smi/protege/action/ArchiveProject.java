@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ArchiveProject extends LocalProjectAction {
 
+    private static final long serialVersionUID = -1898205631973577152L;
+
     public ArchiveProject(boolean large) {
         super(ResourceKey.PROJECT_ARCHIVE, large);
     }

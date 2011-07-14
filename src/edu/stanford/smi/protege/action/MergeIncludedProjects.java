@@ -12,6 +12,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class MergeIncludedProjects extends LocalProjectAction {
 
+    private static final long serialVersionUID = 7160764923461936150L;
+
     public MergeIncludedProjects() {
         super(ResourceKey.PROJECT_MERGE_INCLUDED);
     }

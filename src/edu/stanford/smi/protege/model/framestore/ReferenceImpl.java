@@ -6,6 +6,7 @@ import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.util.*;
 
 public class ReferenceImpl implements Reference, Serializable, Localizable {
+    private static final long serialVersionUID = 8659902573681918672L;
     private Frame _frame;
     private Slot _slot;
     private Facet _facet;

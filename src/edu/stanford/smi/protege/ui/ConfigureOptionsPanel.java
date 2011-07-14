@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.util.ComponentFactory;
  */
 class ConfigureOptionsPanel extends AbstractValidatableComponent {
 
+    private static final long serialVersionUID = -4668195683507580909L;
     private Project _project;
     private JCheckBox _hiddenFramesComponent;
     private JCheckBox _confirmOnRemoveComponent;

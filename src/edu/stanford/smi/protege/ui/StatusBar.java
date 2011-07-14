@@ -9,6 +9,8 @@ import javax.swing.border.*;
  */
 public class StatusBar extends JTextField {
 
+    private static final long serialVersionUID = 1907671672358848444L;
+
     public StatusBar() {
         setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         setBackground(null);

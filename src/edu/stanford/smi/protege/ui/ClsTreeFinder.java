@@ -14,6 +14,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class ClsTreeFinder extends FrameTreeFinder {
 
+    private static final long serialVersionUID = 4059780789067261580L;
+
     public ClsTreeFinder(KnowledgeBase kb, JTree tree) {
         this(kb, tree, ResourceKey.CLASS_SEARCH_FOR);
     }

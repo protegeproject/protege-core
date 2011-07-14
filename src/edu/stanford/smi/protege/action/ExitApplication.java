@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class ExitApplication extends ProjectAction {
 
+    private static final long serialVersionUID = -6593695038344336228L;
+
     public ExitApplication() {
         super(ResourceKey.APPLICATION_EXIT);
         substituteIntoName(Text.getProgramName());

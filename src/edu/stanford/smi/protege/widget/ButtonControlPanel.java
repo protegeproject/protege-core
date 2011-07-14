@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  */
 class ButtonControlPanel extends JComponent {
 
+    private static final long serialVersionUID = 5881175135211139875L;
     private String _name;
     private PropertyList _propertyList;
     private JCheckBox _enabledComponent;

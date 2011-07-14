@@ -29,6 +29,7 @@ import edu.stanford.smi.protege.util.PropertyList;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FormWidgetConfigurationWidgetsTab extends AbstractValidatableComponent {
+    private static final long serialVersionUID = -6726240065845038813L;
     private FormWidget _formWidget;
     private JTable _table;
 

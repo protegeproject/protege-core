@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.resource.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ModalDialog extends JDialog implements Disposable {
+    private static final long serialVersionUID = 7759975948915176435L;
     public static final int OPTION_OK = 1;
     public static final int OPTION_YES = 2;
     public static final int OPTION_NO = 3;
@@ -99,6 +100,8 @@ public class ModalDialog extends JDialog implements Disposable {
 
     private JButton createButton(final int result, ResourceKey key) {
         Action action = new StandardAction(key) {
+            private static final long serialVersionUID = 1079564194674970833L;
+
             public void actionPerformed(ActionEvent event) {
                 attemptClose(result);
             }
@@ -261,6 +264,8 @@ public class ModalDialog extends JDialog implements Disposable {
 
     public static Action getCloseAction(final Component c) {
         return new AbstractAction() {
+            private static final long serialVersionUID = -3726864269823423931L;
+
             public void actionPerformed(ActionEvent event) {
                 Component root = SwingUtilities.getRoot(c);
                 if (root instanceof ModalDialog) {

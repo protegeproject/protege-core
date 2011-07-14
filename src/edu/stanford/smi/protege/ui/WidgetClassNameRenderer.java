@@ -10,6 +10,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class WidgetClassNameRenderer extends DefaultRenderer {
+    private static final long serialVersionUID = 7526658612448514937L;
     public static final String NONE = LocalizedText.getText(ResourceKey.FORM_EDITOR_SELECT_NO_WIDGET);
 
     public void load(Object o) {

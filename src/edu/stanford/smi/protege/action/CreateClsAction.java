@@ -16,6 +16,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class CreateClsAction extends CreateAction {
 
+    private static final long serialVersionUID = 3430794066285629201L;
+
     protected CreateClsAction() {
         super(ResourceKey.CLASS_CREATE);
     }

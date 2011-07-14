@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ValueTypeRenderer extends DefaultRenderer {
+    private static final long serialVersionUID = -6016440571992119716L;
     private static final Map valueTypeToKeyMap = new HashMap();
     
     static {

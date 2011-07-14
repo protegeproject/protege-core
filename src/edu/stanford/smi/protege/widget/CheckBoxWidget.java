@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class CheckBoxWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = -2605391749596657296L;
     private JCheckBox _checkBox;
 
     public JCheckBox createCheckBox() {

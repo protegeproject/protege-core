@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectProjectTypeWizardPage extends WizardPage {
+    private static final long serialVersionUID = -8843058597898410690L;
     private static final String SELECTED_FACTORY = "select_project_type.last_factory";
     private JCheckBox doBuildBox;
     private SelectableList list;
@@ -65,6 +66,8 @@ public class SelectProjectTypeWizardPage extends WizardPage {
 
     private void configureCheckBox() {
         StandardAction action = new StandardAction("Create from Existing Sources") {
+            private static final long serialVersionUID = 3873947894902634872L;
+
             public void actionPerformed(ActionEvent event) {
                 updateNextPage();
             }

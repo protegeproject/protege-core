@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class SaveProjectAs extends LocalProjectAction {
 
+    private static final long serialVersionUID = -5273205867017864675L;
+
     public SaveProjectAs() {
         super(ResourceKey.PROJECT_SAVE_AS);
     }

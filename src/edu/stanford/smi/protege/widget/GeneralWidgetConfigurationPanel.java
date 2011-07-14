@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class GeneralWidgetConfigurationPanel extends AbstractValidatableComponent {
+    private static final long serialVersionUID = -3148523589303750172L;
     private JTextField _labelField;
     private JTextField _tooltipField;
     private SlotWidget _widget;

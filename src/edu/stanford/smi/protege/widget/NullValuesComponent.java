@@ -9,6 +9,8 @@ import java.util.*;
  */
 class NullValuesComponent extends AbstractValuesComponent {
 
+    private static final long serialVersionUID = -6644014809869230896L;
+
     public void clearSelection() {
         // do nothing
     }

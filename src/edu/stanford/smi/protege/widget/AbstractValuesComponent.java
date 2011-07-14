@@ -16,6 +16,8 @@ import edu.stanford.smi.protege.util.*;
  */
 abstract class AbstractValuesComponent extends AbstractSelectableComponent implements ValuesComponent, Disposable {
 
+    private static final long serialVersionUID = -4480165504667698341L;
+
     public AbstractValuesComponent() {
         setLayout(new BorderLayout());
     }

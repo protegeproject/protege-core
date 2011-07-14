@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ClipsFilesWizardPage extends WizardPage {
+    private static final long serialVersionUID = -3081726266101640734L;
     private FileField clsesFileField;
     private FileField instancesFileField;
     private ClipsFilesPlugin plugin;

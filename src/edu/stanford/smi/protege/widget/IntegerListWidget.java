@@ -17,8 +17,12 @@ import edu.stanford.smi.protege.util.*;
  */
 public class IntegerListWidget extends AbstractListWidget {
 
+    private static final long serialVersionUID = 2981954085470364325L;
+
     private Action getCreateAction() {
         return new CreateAction(ResourceKey.VALUE_ADD) {
+            private static final long serialVersionUID = 7897593852333790200L;
+
             public void onCreate() {
                 handleCreateAction();
             }
@@ -27,6 +31,8 @@ public class IntegerListWidget extends AbstractListWidget {
 
     private Action getDeleteAction() {
         return new RemoveAction(ResourceKey.VALUE_REMOVE, this) {
+            private static final long serialVersionUID = -8788770985599278160L;
+
             public void onRemove(Collection integers) {
                 handleRemoveAction(integers);
             }
@@ -35,6 +41,8 @@ public class IntegerListWidget extends AbstractListWidget {
 
     private Action getEditAction() {
         return new ViewAction(ResourceKey.VALUE_VIEW, this) {
+            private static final long serialVersionUID = 1756407039881297844L;
+
             public void onView(Object o) {
                 handleViewAction((Integer) o);
             }

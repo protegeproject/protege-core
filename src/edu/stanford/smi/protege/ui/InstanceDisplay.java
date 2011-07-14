@@ -88,6 +88,7 @@ import edu.stanford.smi.protege.widget.FormWidget;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InstanceDisplay extends JDesktopPane implements Disposable {
+    private static final long serialVersionUID = 4777948146986438293L;
     private Project _project;
     private JScrollPane _scrollPane;
     private Collection<ClsWidget> _currentWidgets = new ArrayList<ClsWidget>();
@@ -365,6 +366,8 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
 
     private AbstractAction createCreateYellowStickiesAction() {
         return new StandardAction(ResourceKey.INSTANCE_NOTE_CREATE) {
+            private static final long serialVersionUID = -693378347365867392L;
+
             public void actionPerformed(ActionEvent event) {
                 createYellowSticky();
             }
@@ -373,6 +376,8 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
 
     private AbstractAction createDeleteYellowStickiesAction() {
         return new StandardAction(ResourceKey.INSTANCE_NOTE_DELETE) {
+            private static final long serialVersionUID = 4056875859826717485L;
+
             public void actionPerformed(ActionEvent event) {
                 deleteYellowSticky();
             }
@@ -381,6 +386,8 @@ public class InstanceDisplay extends JDesktopPane implements Disposable {
 
     private AbstractAction createHideYellowStickiesAction() {
         return new StandardAction(ResourceKey.INSTANCE_NOTE_HIDE) {
+            private static final long serialVersionUID = 4169231408766745704L;
+
             public void actionPerformed(ActionEvent event) {
                 updateYellowStickiesView();
             }

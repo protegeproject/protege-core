@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ClsEvent extends AbstractEvent {
+    private static final long serialVersionUID = -6942618784435546270L;
     private static final int BASE = 300;
     public static final int DIRECT_SUPERCLASS_ADDED = BASE + 1;
     public static final int DIRECT_SUPERCLASS_REMOVED = BASE + 2;

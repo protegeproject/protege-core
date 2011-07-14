@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public class UglyClsWidget extends AbstractClsWidget {
 
+    private static final long serialVersionUID = -5154218132120842156L;
     public String getLabel() {
         return "Ugly Cls Widget (tm)";
     }

@@ -22,6 +22,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Holger Knublauch <holger@smi.stanford.edu>(minor refactorings)
  */
 public class ClsInverseRelationshipPanel extends SelectableContainer {
+    private static final long serialVersionUID = -2313695350432734056L;
     private AllowableAction _addAction;
     private AllowableAction _removeAction;
     private Project _project;
@@ -83,6 +84,8 @@ public class ClsInverseRelationshipPanel extends SelectableContainer {
 
     private Action getAddParentAction() {
         _addAction = new AddAction(ResourceKey.CLASS_ADD_SUPERCLASS) {
+            private static final long serialVersionUID = -3168791335270944513L;
+
             public void onAdd() {
                 if (_viewedCls != null) {
                     addSuperclass();
@@ -116,6 +119,8 @@ public class ClsInverseRelationshipPanel extends SelectableContainer {
 
     private Action getRemoveParentAction() {
         _removeAction = new RemoveAction(ResourceKey.CLASS_REMOVE_SUPERCLASS, this) {
+            private static final long serialVersionUID = -1774220070697400829L;
+
             public void onRemove(Collection values) {
                 if (_viewedCls != null) {
                     removeSuperclasses(values);

@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class ProjectAction extends StandardAction {
 
+    private static final long serialVersionUID = 6438135888112682135L;
+
     {
         setEnabled(getProjectManager().getCurrentProject() != null);
     }

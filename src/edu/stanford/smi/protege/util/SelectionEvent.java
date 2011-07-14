@@ -6,6 +6,7 @@ package edu.stanford.smi.protege.util;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectionEvent extends AbstractEvent {
+    private static final long serialVersionUID = -7049994205945637563L;
     public static final int SELECTION_CHANGED = 1;
 
     public SelectionEvent(Selectable selectable, int type) {

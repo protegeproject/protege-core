@@ -10,6 +10,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class WidgetConfigurationPanel extends ValidatableTabComponent {
 
+    private static final long serialVersionUID = 6251741594097939583L;
+
     public WidgetConfigurationPanel(SlotWidget widget) {
         addGeneralTab(widget);
     }

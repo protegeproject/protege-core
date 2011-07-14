@@ -12,6 +12,7 @@ import javax.swing.JComponent;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectableContainer extends JComponent implements Selectable, Disposable {
+    private static final long serialVersionUID = -3442680055824459200L;
     private ListenerCollection _listeners = new ListenerList(new SelectionEventDispatcher());
     private Selectable _selectable;
 

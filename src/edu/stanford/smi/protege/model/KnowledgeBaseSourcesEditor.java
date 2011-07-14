@@ -21,6 +21,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class KnowledgeBaseSourcesEditor extends JComponent implements Validatable {
+    private static final long serialVersionUID = 3820797792113838686L;
     private PropertyList _sources;
     private FileField _projectPathField;
     private URIList _includedProjectsList;

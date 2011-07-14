@@ -1733,24 +1733,32 @@ public class DefaultKnowledgeBase_Test extends APITestCase {
     }
 
     public static class TestCls extends DefaultCls implements TestInterface {
+        private static final long serialVersionUID = -1423984723632122772L;
+
         public TestCls(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }
     }
 
     public static class TestSlot extends DefaultSlot implements TestInterface {
+        private static final long serialVersionUID = -1815103988108933212L;
+
         public TestSlot(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }
     }
 
     public static class TestFacet extends DefaultFacet implements TestInterface {
+        private static final long serialVersionUID = -1492240588930520569L;
+
         public TestFacet(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }
     }
 
     public static class TestSimpleInstance extends DefaultSimpleInstance implements TestInterface {
+        private static final long serialVersionUID = 1300758264519841291L;
+
         public TestSimpleInstance(KnowledgeBase kb, FrameID id) {
             super(kb, id);
         }

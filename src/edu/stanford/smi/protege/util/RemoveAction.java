@@ -17,6 +17,8 @@ import edu.stanford.smi.protege.ui.*;
  */
 public abstract class RemoveAction extends AllowableAction {
 
+    private static final long serialVersionUID = -5762542587316652756L;
+
     protected RemoveAction(ResourceKey key, Selectable selectable) {
         super(key, selectable);
     }

@@ -18,6 +18,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FormWidget extends AbstractClsWidget {
+    private static final long serialVersionUID = 3570021442107936448L;
     public static final String STRETCH_ALL = "<<all>>";
     public static final String STRETCH_NONE = "<<none>>";
 

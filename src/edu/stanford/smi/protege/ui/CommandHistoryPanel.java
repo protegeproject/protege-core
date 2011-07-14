@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class CommandHistoryPanel extends JPanel implements Disposable {
+    private static final long serialVersionUID = -5242899916645126654L;
     private static final String LINE = "------------------------------";
     private static final String INSERT_POINT = LINE + " Current Command Position " + LINE;
 
@@ -91,6 +92,8 @@ public class CommandHistoryPanel extends JPanel implements Disposable {
     }
 
     private static class CommandRenderer extends DefaultRenderer {
+        private static final long serialVersionUID = -8428061618792898673L;
+
         public void load(Object o) {
             if (o instanceof Command) {
                 setMainText(((Command) o).getDescription());

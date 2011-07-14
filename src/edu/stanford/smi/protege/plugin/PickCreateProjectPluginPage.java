@@ -8,6 +8,7 @@ import edu.stanford.smi.protege.model.*;
 import edu.stanford.smi.protege.util.*;
 
 class PickCreateProjectPluginPage extends WizardPage {
+    private static final long serialVersionUID = 7411364041871092526L;
     private SelectableList list;
     private KnowledgeBaseFactory factory;
     

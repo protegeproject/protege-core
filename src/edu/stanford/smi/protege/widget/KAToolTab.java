@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  * @author  Ray Fergerson   <fergerson@smi.stanford.edu>
  */
 public class KAToolTab extends AbstractTabWidget {
+    private static final long serialVersionUID = -9019526061083858552L;
     private static final String TOP_LEVEL_INSTANCE_PROPERTY = "KATool.TOP_LEVEL_INSTANCE";
 
     public boolean configure() {
@@ -35,6 +36,8 @@ public class KAToolTab extends AbstractTabWidget {
 
     private Action createSelectClsAction() {
         return new AbstractAction("Press to select top-level instance") {
+            private static final long serialVersionUID = -6735287155779212076L;
+
             public void actionPerformed(ActionEvent event) {
                 Instance instance = DisplayUtilities.pickInstance(KAToolTab.this, getKnowledgeBase());
                 if (instance != null) {

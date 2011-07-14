@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class DocumentationWidget extends TextAreaWidget {
 
+    private static final long serialVersionUID = 6168430319953436846L;
+
     public static boolean isSuitable(Cls cls, Slot slot, Facet facet) {
         return slot.getName().equals(Model.Slot.DOCUMENTATION);
     }

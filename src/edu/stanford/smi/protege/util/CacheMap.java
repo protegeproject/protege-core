@@ -11,6 +11,7 @@ import java.util.Iterator;
  */
 @Deprecated
 public class CacheMap<X,Y>  extends HashMap<X,Y> {
+    private static final long serialVersionUID = 1104711979831307296L;
     public static final String DEFAULT_CACHE_MAP_SIZE_PROPERTY="default.cache.map.size";
     public static final int DEFAULT_CACHE_MAP_SIZE=ApplicationProperties.getIntegerProperty(DEFAULT_CACHE_MAP_SIZE_PROPERTY, 50000);
     

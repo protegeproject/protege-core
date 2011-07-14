@@ -10,6 +10,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class CardinalityFacetRenderer extends DefaultRenderer {
+    private static final long serialVersionUID = 1215855408571379495L;
     private Facet _minCardinalityFacet;
     private Facet _maxCardinalityFacet;
 

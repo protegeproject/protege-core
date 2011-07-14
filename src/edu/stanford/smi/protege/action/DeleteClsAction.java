@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  * TODO Class Comment
  */
 public class DeleteClsAction extends DeleteInstancesAction {
+    private static final long serialVersionUID = 2546522958448811596L;
+
     public DeleteClsAction(Selectable selectable) {
     	super(ResourceKey.CLASS_DELETE, selectable);
     }

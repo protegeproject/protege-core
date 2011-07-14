@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.ui.*;
  */
 public class DetachCurrentView extends ProjectAction {
 
+    private static final long serialVersionUID = -7883949818350799286L;
+
     public DetachCurrentView() {
         super(ResourceKey.DETACH_VIEW);
     }

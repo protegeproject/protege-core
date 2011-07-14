@@ -10,6 +10,7 @@ import javax.swing.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class WizardPage extends JComponent {
+    private static final long serialVersionUID = 7009741655044631780L;
     private Wizard wizard;
     private boolean pageComplete = true;
 

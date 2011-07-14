@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ShowIncludedProjects extends ProjectAction {
 
+    private static final long serialVersionUID = -7442984759538902965L;
+
     public ShowIncludedProjects() {
         super(ResourceKey.PROJECT_SHOW_INCLUDED);
     }

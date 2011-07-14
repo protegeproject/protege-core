@@ -4,7 +4,9 @@ import edu.stanford.smi.protege.util.transaction.cache.Cache;
 import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
 
 public class CacheModify<S, V, R> extends SerializedCacheUpdate<S, V, R> {
-	private V var;
+	private static final long serialVersionUID = -4073876220493559307L;
+
+    private V var;
 	
 	private CacheResult<R> newValue;
 	

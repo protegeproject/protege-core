@@ -10,7 +10,9 @@ public class TokenMgrError extends Error
     * Ordinals for various reasons why an Error of this type can be thrown.
     */
 
-   /**
+   private static final long serialVersionUID = 7840040276045005304L;
+
+/**
     * Lexical error occurred.
     */
    static final int LEXICAL_ERROR = 0;

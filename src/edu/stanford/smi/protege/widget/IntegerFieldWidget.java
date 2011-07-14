@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.model.*;
  */
 public class IntegerFieldWidget extends NumberFieldWidget {
 
+    private static final long serialVersionUID = 6750189081136351439L;
+
     protected String getInvalidTextDescription(String text) {
         String result = null;
         try {

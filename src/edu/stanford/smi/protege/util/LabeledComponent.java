@@ -33,6 +33,7 @@ import javax.swing.JToolBar;
  * @author Tania Tudorache <tudorache@stanford.edu> (minor extensions)
  */
 public class LabeledComponent extends JComponent {
+    private static final long serialVersionUID = 5999709474215501024L;
     private List<Action> actions = new ArrayList<Action>();
     private JComponent _header;
     private JToolBar _toolBar;
@@ -105,6 +106,8 @@ public class LabeledComponent extends JComponent {
        
     private JComponent createHeader() {
         _header = new JPanel() {
+            private static final long serialVersionUID = 7429097535969923450L;
+
             public Dimension getPreferredSize() {
                 Dimension d = super.getPreferredSize();
                 d.height = Math.max(d.height, ComponentFactory.STANDARD_BUTTON_HEIGHT);

@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ClipsExportToNewFormatWizardPage extends WizardPage {
+    private static final long serialVersionUID = -5274698158929238115L;
     private FileField projectFileField;
     private JTextField clsesFileField;
     private JTextField instancesFileField;

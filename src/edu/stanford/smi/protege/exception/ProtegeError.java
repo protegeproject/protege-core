@@ -11,7 +11,9 @@ package edu.stanford.smi.protege.exception;
  */
 public class ProtegeError extends RuntimeException {
   
-  public ProtegeError() {
+  private static final long serialVersionUID = -7756694680618468454L;
+
+public ProtegeError() {
     super();
   }
 

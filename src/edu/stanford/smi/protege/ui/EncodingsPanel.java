@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class EncodingsPanel extends JPanel {
+    private static final long serialVersionUID = -8201624349440500301L;
     private JComboBox readEncodingComboBox;
     // private JComboBox writeEncodingComboBox;
 
@@ -78,6 +79,8 @@ public class EncodingsPanel extends JPanel {
 }
 
 class CharsetRenderer extends DefaultRenderer {
+    private static final long serialVersionUID = -1093425151360866124L;
+
     public void load(Object o) {
         if (o instanceof String) {
             String charsetName = (String) o;

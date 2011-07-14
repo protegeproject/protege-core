@@ -16,6 +16,8 @@ import edu.stanford.smi.protege.ui.*;
 
 public class ShowIconDialog extends ProjectAction {
 
+    private static final long serialVersionUID = 5053098556181884123L;
+
     public ShowIconDialog() {
         super(ResourceKey.HELP_MENU_ICONS);
         setEnabled(true);

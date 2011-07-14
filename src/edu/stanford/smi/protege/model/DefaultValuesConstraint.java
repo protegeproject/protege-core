@@ -8,6 +8,8 @@ import java.util.*;
  */
 public class DefaultValuesConstraint extends AbstractFacetConstraint {
 
+    private static final long serialVersionUID = 383314056579242398L;
+
     public String getInvalidValuesText(Frame frame, Slot slot, Collection slotValues, Collection facetValues) {
         return null;
     }

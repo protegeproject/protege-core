@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ArchivePanel extends JPanel {
+    private static final long serialVersionUID = -3503256676413359906L;
     private static boolean _displayPanel = true;
     private JCheckBox _displayPanelCheckBox;
     private JTextArea _comment;

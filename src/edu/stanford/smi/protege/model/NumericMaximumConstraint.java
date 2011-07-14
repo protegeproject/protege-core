@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class NumericMaximumConstraint extends AbstractFacetConstraint {
 
+    private static final long serialVersionUID = 8433560444246377129L;
+
     public String getInvalidValuesText(Frame frame, Slot slot, Collection slotValues, Collection facetValues) {
         String result = null;
         Number n = (Number) CollectionUtilities.getFirstItem(facetValues);

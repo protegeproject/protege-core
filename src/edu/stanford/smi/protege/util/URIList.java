@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.resource.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class URIList extends AbstractSelectableComponent {
+    private static final long serialVersionUID = 1611646775722808214L;
     private JList _uriList;
     private String _description;
     private String _extension;
@@ -77,6 +78,8 @@ public class URIList extends AbstractSelectableComponent {
 
     private Action newAddAction() {
         return new AddAction(ResourceKey.VALUE_ADD) {
+            private static final long serialVersionUID = -6469490466832990499L;
+
             public void onAdd() {
                 browse();
             }
@@ -85,6 +88,8 @@ public class URIList extends AbstractSelectableComponent {
 
     private Action newRemoveAction() {
         return new RemoveAction(ResourceKey.VALUE_REMOVE, this) {
+            private static final long serialVersionUID = 5235237616336460573L;
+
             public void onRemove(Collection values) {
                 ComponentUtilities.removeListValues(_uriList, values);
             }

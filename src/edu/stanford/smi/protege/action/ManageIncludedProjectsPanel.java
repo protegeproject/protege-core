@@ -20,6 +20,7 @@ import edu.stanford.smi.protege.util.*;
  */
 
 class ManageIncludedProjectsPanel extends SelectableContainer implements Validatable {
+    private static final long serialVersionUID = -3853967523137933454L;
     private SelectableTree tree;
     private StandardAction addProjectAction;
     private StandardAction removeProjectAction;
@@ -57,6 +58,8 @@ class ManageIncludedProjectsPanel extends SelectableContainer implements Validat
 
     private Action createAddIncludedProjectAction() {
         addProjectAction = new AddAction(ResourceKey.PROJECT_ADD) {
+            private static final long serialVersionUID = 281085250312768171L;
+
             public void onAdd() {
                 String type = Text.getProgramName() + " Project Files";
                 JFileChooser chooser = ComponentFactory.createFileChooser("Select Project", type, "pprj");
@@ -83,6 +86,8 @@ class ManageIncludedProjectsPanel extends SelectableContainer implements Validat
 
     private Action createRemoveIncludedProjectAction() {
         removeProjectAction = new RemoveAction(ResourceKey.PROJECT_REMOVE, null) {
+            private static final long serialVersionUID = -3548026495703249060L;
+
             public void onRemove(Collection values) {
                 Iterator i = tree.getSelection().iterator();
                 while (i.hasNext()) {
@@ -97,6 +102,8 @@ class ManageIncludedProjectsPanel extends SelectableContainer implements Validat
 
     private Action createActivateIncludedProjectAction() {
         activateProjectAction = new StandardAction("Activate Selected Project", Icons.getSelectProjectIcon()) {
+            private static final long serialVersionUID = 7554544212783921618L;
+
             public void actionPerformed(ActionEvent event) {
                 URI uri = (URI) CollectionUtilities.getFirstItem(getSelection());
                 if (uri != null) {
@@ -183,6 +190,8 @@ class ManageIncludedProjectsPanel extends SelectableContainer implements Validat
     }
 
     class ProjectRenderer extends DefaultRenderer {
+
+        private static final long serialVersionUID = 6327407152261236880L;
 
         public void load(Object o) {
             URI projectURI = (URI) o;

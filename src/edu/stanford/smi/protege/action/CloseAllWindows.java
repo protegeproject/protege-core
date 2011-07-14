@@ -12,6 +12,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class CloseAllWindows extends ProjectAction {
 
+    private static final long serialVersionUID = -8224924500659516000L;
+
     public CloseAllWindows(boolean large) {
         super(ResourceKey.CLOSE_ALL_WINDOWS, large);
     }

@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectInstanceFromCollectionPanel extends JComponent {
+    private static final long serialVersionUID = 1189735912135124770L;
     private JList _list;
 
     public SelectInstanceFromCollectionPanel(Collection c, int initialSelection) {
@@ -51,6 +52,8 @@ public class SelectInstanceFromCollectionPanel extends JComponent {
         if (isMultiUserClient()) {
             // a really strange performance hack
             renderer = new FrameRenderer() {
+                private static final long serialVersionUID = -4327868983862509964L;
+
                 protected Icon getIcon(Cls cls) {
                     Icon icon;
                     if (_clsIcon == null) {

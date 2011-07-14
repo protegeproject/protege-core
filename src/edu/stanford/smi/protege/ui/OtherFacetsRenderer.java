@@ -14,6 +14,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class OtherFacetsRenderer extends DefaultRenderer {
 
+    private static final long serialVersionUID = 2666897368349118508L;
+
     private static void addAllowedValuesText(StringBuffer s, Cls cls, Slot slot) {
         if (equals(cls.getTemplateSlotValueType(slot), ValueType.SYMBOL)) {
             Collection values = cls.getTemplateSlotAllowedValues(slot);

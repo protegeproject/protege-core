@@ -6,7 +6,8 @@ package edu.stanford.smi.protege.widget;
  *
  */
 public class ProtegePropertiesTab extends AbstractTabWidget {
-	private ProtegePropertiesComponent propComp;
+	private static final long serialVersionUID = -5163568976587088087L;
+    private ProtegePropertiesComponent propComp;
 	
 	public void initialize() {
 		setLabel("ProtegePropertiesTab");

@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SelectClsesPanel extends JComponent implements Validatable {
+    private static final long serialVersionUID = 4752775085919596616L;
     private JTree _tree;
     private boolean _allowsMultiple;
 

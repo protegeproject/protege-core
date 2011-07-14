@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class FontAction extends StandardAction {
 
+    private static final long serialVersionUID = -1975048690489932340L;
+
     protected FontAction(ResourceKey text) {
         super(text);
     }

@@ -10,6 +10,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class SubclassWidget extends ClsListWidget {
 
+    private static final long serialVersionUID = 5048613688794087001L;
+
     public static boolean isSuitable(Cls cls, Slot slot, Facet facet) {
         return ClsListWidget.isSuitable(cls, slot, facet);
     }

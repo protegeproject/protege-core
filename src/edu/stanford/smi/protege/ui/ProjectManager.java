@@ -90,6 +90,7 @@ public class ProjectManager {
     private JComponent _toolBarHolder;
 
     private static class FactoryPanel extends JPanel {
+        private static final long serialVersionUID = 4971171312817011752L;
         private JList _list;
 
         FactoryPanel() {

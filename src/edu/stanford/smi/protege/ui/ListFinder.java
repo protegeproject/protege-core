@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ListFinder extends Finder {
+    private static final long serialVersionUID = 220635605280533214L;
     protected JList _list;
 
     public ListFinder(JList list, ResourceKey key) {

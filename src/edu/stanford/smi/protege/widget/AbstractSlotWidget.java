@@ -43,7 +43,9 @@ import edu.stanford.smi.protege.util.StringUtilities;
  */
 
 public abstract class AbstractSlotWidget extends AbstractWidget implements SlotWidget {
-	public static final String READ_ONLY_WIDGET_PROPERTY = "readOnly_configured";
+	private static final long serialVersionUID = 1790525704709652862L;
+
+    public static final String READ_ONLY_WIDGET_PROPERTY = "readOnly_configured";
 	
     private Collection _buttonInfo;
     private Cls _cls;
@@ -113,6 +115,8 @@ public abstract class AbstractSlotWidget extends AbstractWidget implements SlotW
 
     protected Action getDoubleClickAction() {
         return new AbstractAction() {
+            private static final long serialVersionUID = -1888883411836752455L;
+
             public void actionPerformed(java.awt.event.ActionEvent event) {
                 handleDoubleClick();
             }

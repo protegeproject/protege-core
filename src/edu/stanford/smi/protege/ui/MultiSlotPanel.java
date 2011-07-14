@@ -22,6 +22,7 @@ import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.ComponentFactory;
 
 public class MultiSlotPanel extends JPanel {
+    private static final long serialVersionUID = -2423974591715847895L;
     private Cls cls;
     private BrowserSlotPattern pattern;
     private List panels = new ArrayList();

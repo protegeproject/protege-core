@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.widget.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FormsPanel extends SelectableContainer {
+    private static final long serialVersionUID = 3289763661862548509L;
     private Project _project;
     private SelectableTree _tree;
     private LabeledComponent _labeledComponent;
@@ -71,6 +72,8 @@ public class FormsPanel extends SelectableContainer {
 
     private Action createLayoutLikeOtherFormAction() {
         Action action = new StandardAction(ResourceKey.FORM_LAYOUT_LIKE) {
+            private static final long serialVersionUID = -1636987064557133407L;
+
             public void actionPerformed(ActionEvent event) {
                 Collection selection = getSelection();
                 if (!selection.isEmpty()) {
@@ -96,6 +99,8 @@ public class FormsPanel extends SelectableContainer {
 
     private Action createRelayoutAction() {
         return new StandardAction(ResourceKey.FORM_RELAYOUT) {
+            private static final long serialVersionUID = -4676741003358911004L;
+
             public void actionPerformed(ActionEvent event) {
                 Iterator i = getSelection().iterator();
                 while (i.hasNext()) {
@@ -109,6 +114,8 @@ public class FormsPanel extends SelectableContainer {
 
     private Action createRemoveCustomizationsAction() {
         return new StandardAction(ResourceKey.FORM_REMOVE_CUSTOMIZATIONS) {
+            private static final long serialVersionUID = -7310842310285324524L;
+
             public void actionPerformed(ActionEvent event) {
                 Iterator i = getSelection().iterator();
                 while (i.hasNext()) {
@@ -122,6 +129,8 @@ public class FormsPanel extends SelectableContainer {
 
     private Action createCustomizationsAction() {
         return new StandardAction(ResourceKey.FORM_VIEW_CUSTOMIZATIONS) {
+            private static final long serialVersionUID = 6407544740933698341L;
+
             public void actionPerformed(ActionEvent event) {
                 Iterator i = getSelection().iterator();
                 while (i.hasNext()) {
@@ -181,6 +190,8 @@ public class FormsPanel extends SelectableContainer {
 
     private Action getRemoveDecendentCustomizations() {
         return new AbstractAction("Remove subclass customizations") {
+            private static final long serialVersionUID = -7718205365558054806L;
+
             public void actionPerformed(ActionEvent event) {
                 WaitCursor cursor = new WaitCursor(FormsPanel.this);
                 try {

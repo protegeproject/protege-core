@@ -5,6 +5,7 @@ import java.util.*;
 import edu.stanford.smi.protege.util.*;
 
 public class IncludedProjectsWizardPage extends WizardPage {
+    private static final long serialVersionUID = 4798019210939892032L;
     private URIList includedProjectsList;
     private ClipsFilesCreateProjectPlugin plugin;
 

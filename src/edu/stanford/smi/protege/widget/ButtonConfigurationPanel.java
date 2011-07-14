@@ -11,6 +11,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ButtonConfigurationPanel extends AbstractValidatableComponent {
+    private static final long serialVersionUID = 3763344736567335495L;
     private PropertyList _propertyList;
 
     public ButtonConfigurationPanel(PropertyList propertyList) {

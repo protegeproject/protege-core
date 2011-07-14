@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Holger Knublauch  <holger@smi.stanford.edu>  (support for hidden classes)
  */
 public class SlotClsesPanel extends JComponent {
+    private static final long serialVersionUID = 3204543839780790235L;
     private JList _list;
 
     public SlotClsesPanel(Project project) {

@@ -15,11 +15,14 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class StringListWidget extends AbstractListWidget {
+    private static final long serialVersionUID = 5874778974979833802L;
     private AllowableAction _createAction;
     private AllowableAction _removeAction;
 
     private Action getCreateAction() {
         _createAction = new CreateAction(ResourceKey.VALUE_ADD) {
+            private static final long serialVersionUID = 4889608712670405498L;
+
             public void onCreate() {
                 handleCreateAction();
             }
@@ -29,6 +32,8 @@ public class StringListWidget extends AbstractListWidget {
 
     private Action getEditAction() {
         return new ViewAction(ResourceKey.VALUE_VIEW, this) {
+            private static final long serialVersionUID = -1543226916049064459L;
+
             public void onView(Object o) {
                 handleViewAction((String) o);
             }
@@ -37,6 +42,8 @@ public class StringListWidget extends AbstractListWidget {
 
     private Action getRemoveAction() {
         _removeAction = new RemoveAction(ResourceKey.VALUE_REMOVE, this) {
+            private static final long serialVersionUID = -7407688724548195021L;
+
             public void onRemove(Collection strings) {
                 handleRemoveAction(strings);
             }

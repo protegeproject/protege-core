@@ -14,6 +14,8 @@ import edu.stanford.smi.protege.resource.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class Paste extends ProjectAction {
+    private static final long serialVersionUID = -3347712919637144417L;
+
     public Paste(boolean large) {
         super(ResourceKey.PASTE_ACTION, large);
     }

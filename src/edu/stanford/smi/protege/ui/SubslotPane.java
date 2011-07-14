@@ -52,6 +52,7 @@ import edu.stanford.smi.protege.util.WaitCursor;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SubslotPane extends SelectableContainer {
+    private static final long serialVersionUID = 7779648620738685152L;
     private Project _project;
     private KnowledgeBase _knowledgeBase;
     private Action _createSlotAction;
@@ -124,6 +125,8 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action createCollapseAllAction() {
         return new AbstractAction("Collapse") {
+            private static final long serialVersionUID = 1348386770476732031L;
+
             public void actionPerformed(ActionEvent event) {
                 ComponentUtilities.fullSelectionCollapse(getTree());
             }
@@ -132,6 +135,8 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action createExpandAllAction() {
         return new AbstractAction("Expand") {
+            private static final long serialVersionUID = -4254186270874090400L;
+
             public void actionPerformed(ActionEvent event) {
                 ComponentUtilities.fullSelectionExpand(getTree(), MAX_EXPANSIONS);
             }
@@ -148,6 +153,8 @@ public class SubslotPane extends SelectableContainer {
         boolean hasMultipleMetaclasses = DisplayUtilities.hasMultipleConcreteClses(_knowledgeBase, c);
 
         Action action = new AbstractAction("Change slot metaclass...") {
+            private static final long serialVersionUID = 1869916325108349252L;
+
             public void actionPerformed(ActionEvent event) {
                 Cls metaclass = pickConcreteCls(c, "Select Slot Metaclass");
                 if (metaclass != null && !metaclass.equals(slot.getDirectType())) {
@@ -169,6 +176,8 @@ public class SubslotPane extends SelectableContainer {
         boolean hasMultipleMetaclasses = DisplayUtilities.hasMultipleConcreteClses(_knowledgeBase, c);
 
         Action action = new AbstractAction("Change slot metaclass of subslots") {
+            private static final long serialVersionUID = -5279771465147048253L;
+
             public void actionPerformed(ActionEvent event) {
                 Cls metaCls = slot.getDirectType();
                 String text = "Change slot metaclass of all subslots of ";
@@ -192,6 +201,8 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action getCreateAction() {
         return new CreateAction(ResourceKey.SLOT_CREATE) {
+            private static final long serialVersionUID = -1623934054467544637L;
+
             @Override
 			public void onCreate() {
                 Transaction<Slot> t = new Transaction<Slot>(_knowledgeBase, "Create Slot (random name)") {
@@ -216,6 +227,8 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action getCreateSlotWithSlotMetaclassAction() {
         AbstractAction action = new AbstractAction("Create subslot using slot metaclass...") {
+            private static final long serialVersionUID = 3598104978460935980L;
+
             public void actionPerformed(ActionEvent event) {
                 Cls rootMetaCls = _knowledgeBase.getRootSlotMetaCls();
                 Collection roots = CollectionUtilities.createCollection(rootMetaCls);
@@ -234,6 +247,8 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action getCreateSubslotAction() {
         return new CreateAction(ResourceKey.SLOT_CREATE_SUBSLOT) {
+            private static final long serialVersionUID = -2902180791403135103L;
+
             @Override
 			public void onCreate() {
                 // SystemUtilities.debugBreak();
@@ -278,6 +293,8 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action getDeleteAction() {
         return new DeleteAction(ResourceKey.SLOT_DELETE, this) {
+            private static final long serialVersionUID = 4967576578770750208L;
+
             @Override
 			public void onDelete(Collection slots) {
                 handleDelete(slots);
@@ -362,6 +379,8 @@ public class SubslotPane extends SelectableContainer {
 
     protected Action getViewAction() {
         return new ViewAction(ResourceKey.SLOT_VIEW, this) {
+            private static final long serialVersionUID = -8304507739111498105L;
+
             @Override
 			public void onView(Object o) {
                 _project.show((Slot) o);

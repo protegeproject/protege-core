@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class CreateProjectWizard extends Wizard {
+    private static final long serialVersionUID = -645454167907225242L;
     private CreateProjectPlugin plugin;
     private Project project;
     

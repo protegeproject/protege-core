@@ -18,6 +18,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ReferencersPanel extends SelectableContainer {
+    private static final long serialVersionUID = -3053088272109571777L;
     private SelectableTable _table;
 
     // private Project _project;
@@ -44,6 +45,8 @@ public class ReferencersPanel extends SelectableContainer {
         addColumn(250, FrameRenderer.createInstance());
 
         DefaultRenderer facetsRenderer = new DefaultRenderer() {
+            private static final long serialVersionUID = -5008610693872505393L;
+
             public void load(Object o) {
                 Reference ref = (Reference) o;
                 Facet facet = ref.getFacet();
@@ -80,6 +83,8 @@ public class ReferencersPanel extends SelectableContainer {
 
     private static TableModel createTableModel(Instance instance) {
         DefaultTableModel model = new DefaultTableModel() {
+            private static final long serialVersionUID = -1289987049965852246L;
+
             public boolean isCellEditable(int row, int col) {
                 return false;
             }
@@ -101,6 +106,8 @@ public class ReferencersPanel extends SelectableContainer {
 
     private Action createViewAction() {
         return new AbstractAction("View Reference", Icons.getViewIcon()) {
+            private static final long serialVersionUID = -9110036539380008551L;
+
             public void actionPerformed(ActionEvent event) {
                 Iterator i = getSelectedReferences().iterator();
                 while (i.hasNext()) {

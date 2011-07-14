@@ -10,6 +10,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class NumericMaximumWidget extends FloatFieldWidget {
 
+    private static final long serialVersionUID = 8011573789074682964L;
+
     public static boolean isSuitable(Cls cls, Slot slot, Facet facet) {
         return slot.getName().equals(Model.Slot.NUMERIC_MAXIMUM);
     }

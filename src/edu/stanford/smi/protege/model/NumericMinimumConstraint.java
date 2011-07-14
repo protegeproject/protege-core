@@ -11,6 +11,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class NumericMinimumConstraint extends AbstractFacetConstraint {
 
+    private static final long serialVersionUID = -7642501607185450946L;
+
     public String getInvalidValuesText(Frame frame, Slot slot, Collection slotValues, Collection facetValues) {
         String result = null;
         Number n = (Number) CollectionUtilities.getFirstItem(facetValues);

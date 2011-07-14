@@ -9,6 +9,7 @@ import javax.swing.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class AbstractSelectableComponent extends JComponent implements Selectable {
+    private static final long serialVersionUID = -6600231746695440045L;
     private ListenerCollection _listeners = new ListenerList(new SelectionEventDispatcher());
 
     public void addSelectionListener(SelectionListener listener) {

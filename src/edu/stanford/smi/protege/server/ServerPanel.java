@@ -260,7 +260,9 @@ public class ServerPanel extends JPanel implements Validatable {
 	private AllowableAction createRegisterUserAction() {
 		AllowableAction action = new AllowableAction(new ResourceKey("Create new user")) {
 
-			public void actionPerformed(ActionEvent e) {
+			private static final long serialVersionUID = -5124239014343816470L;
+
+            public void actionPerformed(ActionEvent e) {
 				final String hostName = _hostNameField.getText();
 
 				if (_hostNameField == null || hostName.length() == 0) {

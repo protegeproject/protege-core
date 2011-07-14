@@ -14,7 +14,8 @@ import edu.stanford.smi.protege.util.ApplicationProperties;
  *
  */
 public class PropertiesTableModel extends AbstractTableModel {
-	private static String COL_PROP = "Property";
+	private static final long serialVersionUID = -1781140859643294527L;
+    private static String COL_PROP = "Property";
 	private static String COL_VAL = "Value";
 	private final static int COL_PROP_COLNO = 0;
 	private final static int COL_VAL_COLNO = 1;

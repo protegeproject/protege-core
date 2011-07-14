@@ -14,7 +14,9 @@ import edu.stanford.smi.protege.util.ModalDialog;
 
 public class JavaCodeGeneratorAction extends AbstractAction {
 
-	public static final String JAVA_CODE_GEN_ACTION_NAME = "Generate Java Code...";
+	private static final long serialVersionUID = -916379802587626908L;
+
+    public static final String JAVA_CODE_GEN_ACTION_NAME = "Generate Java Code...";
 
 	private KnowledgeBase kb;
 

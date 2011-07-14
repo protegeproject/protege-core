@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ClsesAndInstancesTab extends AbstractTabWidget {
+    private static final long serialVersionUID = -918873507158261898L;
     private InstanceDisplay _instanceDisplay;
     private ClsesPanel _clsesPanel;
     private DirectInstancesList _directInstancesList;

@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.ui.*;
 import edu.stanford.smi.protege.util.*;
 
 public class SuperslotsPanel extends SelectableContainer {
+    private static final long serialVersionUID = -8861214720299721320L;
     private Project project;
     private Slot slot;
     private SelectableList list;
@@ -48,6 +49,8 @@ public class SuperslotsPanel extends SelectableContainer {
 
     private AbstractAction createAddAction() {
         return new AddAction(ResourceKey.SLOT_ADD_SUPERSLOT) {
+            private static final long serialVersionUID = -1324800378677177673L;
+
             public void onAdd() {
                 if (slot != null) {
                     addSlots();
@@ -76,6 +79,8 @@ public class SuperslotsPanel extends SelectableContainer {
 
     private AbstractAction createRemoveAction() {
         return new RemoveAction(ResourceKey.SLOT_REMOVE_SUPERSLOT, list) {
+            private static final long serialVersionUID = 3522248994702422099L;
+
             public void onRemove(Collection superslots) {
                 removeSlots(superslots);
             }

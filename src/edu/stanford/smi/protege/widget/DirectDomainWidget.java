@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.ui.*;
  */
 public class DirectDomainWidget extends ClsListWidget {
     
+    private static final long serialVersionUID = 3076537248100213883L;
+
     public void initialize() {
         super.initialize();
     }

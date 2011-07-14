@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class SetPreferences extends StandardAction {
 
+    private static final long serialVersionUID = 1269609122020605397L;
+
     public SetPreferences() {
         super(ResourceKey.APPLICATION_PREFERENCES);
     }

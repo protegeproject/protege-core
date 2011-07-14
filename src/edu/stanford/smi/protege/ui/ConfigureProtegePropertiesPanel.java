@@ -21,7 +21,9 @@ import edu.stanford.smi.protege.widget.ProtegePropertiesComponent;
  */
 public class ConfigureProtegePropertiesPanel extends AbstractValidatableComponent {
 	
-	private final String PROTEGE_LAX_FILE = "Protege.lax";
+	private static final long serialVersionUID = 1829006876667647966L;
+
+    private final String PROTEGE_LAX_FILE = "Protege.lax";
 	
 	private Project _project;
 	private ProtegePropertiesComponent _protegeProp;

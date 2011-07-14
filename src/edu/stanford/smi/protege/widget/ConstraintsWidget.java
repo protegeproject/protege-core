@@ -10,6 +10,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class ConstraintsWidget extends InstanceListWidget {
 
+    private static final long serialVersionUID = 8250523663174086212L;
+
     public static boolean isSuitable(Cls cls, Slot slot, Facet facet) {
         boolean isSuitable = InstanceListWidget.isSuitable(cls, slot, facet);
         if (isSuitable) {

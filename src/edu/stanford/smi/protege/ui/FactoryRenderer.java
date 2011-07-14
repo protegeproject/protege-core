@@ -9,6 +9,8 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FactoryRenderer extends DefaultRenderer {
+    private static final long serialVersionUID = 6960422841371553844L;
+
     public void load(Object o) {
         KnowledgeBaseFactory f = (KnowledgeBaseFactory) o;
         setMainText(f.getDescription());

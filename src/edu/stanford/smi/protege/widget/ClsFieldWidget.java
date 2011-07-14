@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ClsFieldWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = -2832081267119267599L;
     private JList _list;
     private Instance _instance;
     private AllowableAction _addAction;
@@ -61,6 +62,8 @@ public class ClsFieldWidget extends AbstractSlotWidget {
 
     protected Action getRemoveClsAction() {
         _removeAction = new RemoveAction(ResourceKey.CLASS_REMOVE, this) {
+            private static final long serialVersionUID = 1835515889359535963L;
+
             public void onRemove(Object o) {
                 handleRemoveAction();
             }
@@ -70,6 +73,8 @@ public class ClsFieldWidget extends AbstractSlotWidget {
 
     protected Action getSelectClsAction() {
         _addAction = new AddAction(ResourceKey.CLASS_ADD) {
+            private static final long serialVersionUID = 6865317283085544137L;
+
             public void onAdd() {
                 handleAddAction();
             }
@@ -87,6 +92,8 @@ public class ClsFieldWidget extends AbstractSlotWidget {
 
     protected Action getViewClsAction() {
         return new ViewAction(ResourceKey.CLASS_VIEW, this) {
+            private static final long serialVersionUID = 5462508960435720753L;
+
             public void onView(Object o) {
                 handleViewAction((Instance) o);
             }

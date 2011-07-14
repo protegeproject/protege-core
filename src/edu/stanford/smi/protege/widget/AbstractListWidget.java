@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class AbstractListWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = 4810580360788052158L;
     private JList _list;
     private LabeledComponent _labeledComponent;
     private SwitchableListSelectionListener _listListener = new ListSelectionListenerAdapter(this);

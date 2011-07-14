@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * TODO Class Comment
  */
 public class HeaderComponent extends JPanel {
+    private static final long serialVersionUID = 6410242403360276543L;
     private JComponent component;
     private JLabel titleLabel;
     private JPanel titlePanel;

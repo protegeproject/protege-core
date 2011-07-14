@@ -10,6 +10,7 @@ import edu.stanford.smi.protege.plugin.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ExportPluginAction extends ProjectAction {
+    private static final long serialVersionUID = -1901281745434640608L;
     private ExportPlugin plugin;
 
     public ExportPluginAction(ExportPlugin plugin) {

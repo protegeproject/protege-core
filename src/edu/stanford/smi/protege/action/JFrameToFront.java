@@ -10,6 +10,7 @@ import javax.swing.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class JFrameToFront extends AbstractAction {
+    private static final long serialVersionUID = -8458643859431204852L;
     private static final int MAX_LENGTH = 25;
     private JFrame frame;
 

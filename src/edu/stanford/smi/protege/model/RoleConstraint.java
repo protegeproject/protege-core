@@ -8,6 +8,7 @@ import java.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class RoleConstraint extends AbstractFacetConstraint {
+    private static final long serialVersionUID = -8969445861845694716L;
     public static final String ABSTRACT = "Abstract";
     public static final String CONCRETE = "Concrete";
     private static final Collection values;

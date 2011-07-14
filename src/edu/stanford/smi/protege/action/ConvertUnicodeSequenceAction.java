@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ConvertUnicodeSequenceAction extends TextAction {
 
+    private static final long serialVersionUID = -7504061449538436768L;
+
     public ConvertUnicodeSequenceAction() {
         super(LocalizedText.getText(ResourceKey.CONVERT_UNICODE_SEQUENCE_ACTION));
     }

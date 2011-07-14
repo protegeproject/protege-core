@@ -11,6 +11,8 @@ import javax.swing.*;
  */
 public abstract class AbstractValidatableComponent extends JComponent implements Validatable {
 
+    private static final long serialVersionUID = 666034875206228219L;
+
     public Component getComponent() {
         return this;
     }

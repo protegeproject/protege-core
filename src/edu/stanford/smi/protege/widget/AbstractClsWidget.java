@@ -11,6 +11,7 @@ import edu.stanford.smi.protege.util.*;
  */
 
 public abstract class AbstractClsWidget extends AbstractWidget implements ClsWidget {
+    private static final long serialVersionUID = -3827881889241261768L;
     private Cls _cls;
     private Cls _associatedCls;
     private Instance _instance;

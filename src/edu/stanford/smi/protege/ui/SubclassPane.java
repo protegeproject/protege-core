@@ -44,6 +44,7 @@ import edu.stanford.smi.protege.util.WaitCursor;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SubclassPane extends SelectableContainer {
+    private static final long serialVersionUID = 5266489572482981600L;
     private KnowledgeBase _knowledgeBase;
     private Action _createClsAction;
     private Action _deleteClsAction;
@@ -80,6 +81,8 @@ public class SubclassPane extends SelectableContainer {
 
     private Action createCollapseAllAction() {
         return new StandardAction(ResourceKey.CLASS_BROWSER_COLLAPSE_TREE_MENU_ITEM) {
+            private static final long serialVersionUID = -5294993636227782853L;
+
             public void actionPerformed(ActionEvent event) {
                 ComponentUtilities.fullSelectionCollapse(getTree());
             }
@@ -88,6 +91,8 @@ public class SubclassPane extends SelectableContainer {
 
     private Action createExpandAllAction() {
         return new StandardAction(ResourceKey.CLASS_BROWSER_EXPAND_TREE_MENU_ITEM) {
+            private static final long serialVersionUID = -3462333994306988331L;
+
             public void actionPerformed(ActionEvent event) {
                 ComponentUtilities.fullSelectionExpand(getTree(), MAX_EXPANSIONS);
             }
@@ -132,6 +137,8 @@ public class SubclassPane extends SelectableContainer {
     private Action createSetClsMetaClsAction() {
         final Cls cls = (Cls) getSoleSelection();
         AbstractAction action = new StandardAction(ResourceKey.CLASS_BROWSER_SET_AS_DEFAULT_METACLASS_MENU_ITEM) {
+            private static final long serialVersionUID = -2802257939885292526L;
+
             public void actionPerformed(ActionEvent event) {
                 _knowledgeBase.setDefaultClsMetaCls(cls);
                 repaint();
@@ -148,6 +155,8 @@ public class SubclassPane extends SelectableContainer {
         ResourceKey key = isDefault ? ResourceKey.CLASS_BROWSER_UNSET_AS_DEFAULT_METASLOT_MENU_ITEM
                 : ResourceKey.CLASS_BROWSER_SET_AS_DEFAULT_METASLOT_MENU_ITEM;
         AbstractAction action = new StandardAction(key) {
+            private static final long serialVersionUID = 7802992328694807093L;
+
             public void actionPerformed(ActionEvent event) {
                 _knowledgeBase.setDefaultSlotMetaCls(isDefault ? null : cls);
                 repaint();
@@ -164,6 +173,8 @@ public class SubclassPane extends SelectableContainer {
 
     private Action getChangeMetaclassAction() {
         Action action = new StandardAction(ResourceKey.CLASS_BROWSER_CHANGE_METACLASS_MENU_ITEM) {
+            private static final long serialVersionUID = 1762699423996754665L;
+
             public void actionPerformed(ActionEvent event) {
                 Collection clsMetaClses = CollectionUtilities.createCollection(_knowledgeBase.getRootClsMetaCls());
                 Cls metaclass = pickConcreteCls(clsMetaClses, "Select Concrete Metaclass");
@@ -211,6 +222,8 @@ public class SubclassPane extends SelectableContainer {
 
         final Cls cls = (Cls) getSoleSelection();
         Action action = new StandardAction(ResourceKey.CLASS_BROWSER_CHANGE_METACLASS_OF_SUBCLASSES_MENU_ITEM) {
+            private static final long serialVersionUID = -1533419814130384712L;
+
             public void actionPerformed(ActionEvent event) {
                 Cls metaCls = cls.getDirectType();
                 String text = "Change metaclass of all subclasses of ";
@@ -234,6 +247,8 @@ public class SubclassPane extends SelectableContainer {
 
     private Action getCreateClsWithMetaClsAction() {
         AbstractAction action = new StandardAction(ResourceKey.CLASS_BROWSER_CREATE_SUBCLASS_USING_METACLASS_MENU_ITEM) {
+            private static final long serialVersionUID = 1596972416401713147L;
+
             public void actionPerformed(ActionEvent event) {
                 Cls rootMetaCls = _knowledgeBase.getRootClsMetaCls();
                 Collection roots = CollectionUtilities.createCollection(rootMetaCls);
@@ -267,6 +282,8 @@ public class SubclassPane extends SelectableContainer {
         ResourceKey key = hide ? ResourceKey.CLASS_BROWSER_HIDE_CLASS_MENU_ITEM
                 : ResourceKey.CLASS_BROWSER_UNHIDE_CLASS_MENU_ITEM;
         return new StandardAction(key) {
+            private static final long serialVersionUID = -8865114599879876460L;
+
             public void actionPerformed(ActionEvent event) {
                 cls.setVisible(!hide);
                 repaint();

@@ -15,6 +15,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FormsTab extends AbstractTabWidget {
+    private static final long serialVersionUID = -6911540492963136661L;
     private FormsPanel _formsPanel;
     private FormDisplay _formDisplay;
 

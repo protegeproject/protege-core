@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class TypeFacetRenderer extends DefaultRenderer {
+    private static final long serialVersionUID = -7154991031361614206L;
+
     public void load(Object o) {
         FrameSlotCombination combination = (FrameSlotCombination) o;
         Cls cls = (Cls) combination.getFrame();

@@ -22,7 +22,8 @@ import edu.stanford.smi.protege.util.LocalizeUtils;
  */
 public class OntologyUpdate implements Serializable, Localizable {
 
-  private List<ValueUpdate> updates;
+  private static final long serialVersionUID = 5997164031043543620L;
+private List<ValueUpdate> updates;
   
   /**
    * 

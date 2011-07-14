@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.ui.*;
  */
 public class ShowCommandHistoryAction extends ProjectAction {
 
+    private static final long serialVersionUID = 807631758311720753L;
+
     public ShowCommandHistoryAction() {
         super(ResourceKey.COMMAND_HISTORY_ACTION);
     }

@@ -23,6 +23,7 @@ import edu.stanford.smi.protege.util.ResizingLayout;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FormWidgetConfigurationLayoutTab extends AbstractValidatableComponent {
+    private static final long serialVersionUID = -722901270560732259L;
     private static final String ALL = FormWidget.STRETCH_ALL;
     private static final String NONE = FormWidget.STRETCH_NONE;
     private FormWidget _formWidget;

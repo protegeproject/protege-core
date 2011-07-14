@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class YellowStickyWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = 1775374880544905639L;
     private static final Color YELLOW_STICKY_COLOR = new Color(255, 255, 204);
     private JTextArea _textArea;
 

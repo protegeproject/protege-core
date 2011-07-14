@@ -21,6 +21,8 @@ import edu.stanford.smi.protege.util.SystemUtilities;
  */
 public class AboutBox extends JPanel {
 
+    private static final long serialVersionUID = 644756887038597032L;
+
     public AboutBox(URL url, Dimension preferredSize) {
         setLayout(new BorderLayout());
         JEditorPane pane = ComponentFactory.createHTMLBrowser(url);

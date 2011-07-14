@@ -9,6 +9,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class ExportWizardPage extends WizardPage {
     
+    private static final long serialVersionUID = 8585145286015032917L;
     protected ExportWizardPage(String name, ExportWizard wizard) {
         super(name, wizard);
     }

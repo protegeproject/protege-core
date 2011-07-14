@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.resource.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class Cut extends ProjectAction {
+    private static final long serialVersionUID = 834891921480510150L;
+
     public Cut(boolean large) {
         super(ResourceKey.CUT_ACTION, large);
     }

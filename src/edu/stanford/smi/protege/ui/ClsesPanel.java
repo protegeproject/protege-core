@@ -48,6 +48,7 @@ public class ClsesPanel extends SelectableContainer {
     // protected final static String SUBCLASS_RELATIONSHIP = "Class Hierarchy";
     // protected final static String REFERENCED_RELATIONSHIP = "Class Relations";
 
+    private static final long serialVersionUID = -9219618830969730349L;
     protected Project _project;
     protected LabeledComponent _labeledComponent;
     // protected JComboBox _relationshipView;
@@ -143,6 +144,8 @@ public class ClsesPanel extends SelectableContainer {
 
     protected AllowableAction getCreateClsAction() {
         return new CreateClsAction() {
+            private static final long serialVersionUID = 3277804637350225009L;
+
             public void onCreate() {
                 final Collection parents = _subclassPane.getSelection();
                 if (!parents.isEmpty()) {
@@ -169,6 +172,8 @@ public class ClsesPanel extends SelectableContainer {
 
     protected AllowableAction getDeleteClsAction() {
         AllowableAction action = new DeleteClsAction(this) {
+            private static final long serialVersionUID = 6453003201923978685L;
+
             public void onAboutToDelete(Object o) {
                 _subclassPane.removeSelection();
             }
@@ -183,6 +188,8 @@ public class ClsesPanel extends SelectableContainer {
 
     protected Action createConfigureAction() {
         return new ConfigureAction() {
+            private static final long serialVersionUID = -6652137114510244586L;
+
             public void loadPopupMenu(JPopupMenu menu) {
                 menu.add(createShowSubclassesAction());
                 menu.add(createShowAllRelationsAction());
@@ -225,6 +232,8 @@ public class ClsesPanel extends SelectableContainer {
 
     protected Action createShowSubclassesAction() {
         return new StandardAction(ResourceKey.CLASS_BROWSER_SHOW_CLASS_HIERARCHY_MENU_ITEM) {
+            private static final long serialVersionUID = -6053068054586464749L;
+
             public void actionPerformed(ActionEvent event) {
                 _subclassPane.setSelectedClses(getSelection());
                 loadComponent(_subclassPane, ResourceKey.CLASS_BROWSER_HIERARCHY_LABEL);
@@ -235,6 +244,8 @@ public class ClsesPanel extends SelectableContainer {
 
     protected Action createShowAllRelationsAction() {
         return new StandardAction(ResourceKey.CLASS_BROWSER_SHOW_ALL_RELATIONS_MENU_ITEM) {
+            private static final long serialVersionUID = 8492644458387428370L;
+
             public void actionPerformed(ActionEvent event) {
                 _relationshipPane.load((Frame) getSoleSelection(), null);
                 loadComponent(_relationshipPane, ResourceKey.CLASS_BROWSER_ALL_RELATIONS_LABEL);
@@ -247,6 +258,8 @@ public class ClsesPanel extends SelectableContainer {
         String showLabel = LocalizedText.getText(ResourceKey.CLASS_BROWSER_SHOW_RELATION_MENU_ITEM, slot
                 .getBrowserText());
         return new StandardAction(showLabel) {
+            private static final long serialVersionUID = 4732276505377236086L;
+
             public void actionPerformed(ActionEvent event) {
                 _relationshipPane.load((Frame) getSoleSelection(), slot);
                 loadComponent(_relationshipPane, slot.getBrowserText());
@@ -297,6 +310,8 @@ public class ClsesPanel extends SelectableContainer {
 
     protected Action getViewClsAction() {
         return new ViewClsAction(this) {
+            private static final long serialVersionUID = -3017599880497954770L;
+
             public void onView(Object o) {
                 showInstance((Cls) o);
             }

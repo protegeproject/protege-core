@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.util.*;
  * TODO Class Comment
  */
 public class ViewClsAction extends ViewAction {
+    private static final long serialVersionUID = -1072580620411707414L;
+
     public ViewClsAction(Selectable selectable) {
         super(ResourceKey.CLASS_VIEW, selectable);
     }

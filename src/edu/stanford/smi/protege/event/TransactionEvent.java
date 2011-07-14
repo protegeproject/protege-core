@@ -4,6 +4,7 @@ import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.util.AbstractEvent;
 
 public class TransactionEvent extends AbstractEvent {
+    private static final long serialVersionUID = -8971470385776143936L;
     private static final int BASE = 700;
     public static final int TRANSACTION_BEGIN = BASE + 1;
     public static final int TRANSACTION_END = BASE + 2;

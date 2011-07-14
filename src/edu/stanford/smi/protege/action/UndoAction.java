@@ -18,6 +18,8 @@ import edu.stanford.smi.protege.resource.ResourceKey;
  */
 public class UndoAction extends ProjectAction {
 
+    private static final long serialVersionUID = 2910477435427456525L;
+
     public UndoAction(boolean large) {
         super(ResourceKey.UNDO_ACTION, large);
         CommandManager manager = getCommandManager();        

@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.resource.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class Copy extends ProjectAction {
+    private static final long serialVersionUID = 1981340859217182360L;
+
     public Copy(boolean large) {
         super(ResourceKey.COPY_ACTION, large);
     }

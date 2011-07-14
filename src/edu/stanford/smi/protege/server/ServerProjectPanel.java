@@ -19,6 +19,7 @@ import edu.stanford.smi.protege.util.Log;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ServerProjectPanel extends JPanel {
+    private static final long serialVersionUID = 1275501290404489474L;
     private RemoteServer _server;
     private RemoteSession _session;
     private JTable _projectTable;

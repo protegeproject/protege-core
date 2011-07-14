@@ -10,6 +10,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class RevertProject extends LocalProjectAction {
 
+    private static final long serialVersionUID = -6653736460672035227L;
+
     public RevertProject(boolean large) {
         super(ResourceKey.PROJECT_REVERT, large);
     }

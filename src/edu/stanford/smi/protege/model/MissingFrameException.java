@@ -9,6 +9,8 @@ package edu.stanford.smi.protege.model;
  */
 public class MissingFrameException extends IllegalArgumentException {
 
+    private static final long serialVersionUID = 3298554587414692662L;
+
     /**
      * DeletedFrameException constructor comment.
      * @param s java.lang.String

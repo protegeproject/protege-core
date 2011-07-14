@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.resource.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class StandardAction extends AbstractAction {
+    private static final long serialVersionUID = 3832046476795272130L;
     public static final String DISABLED_ICON = "DisabledSmallIcon";
 
     protected StandardAction(String name) {

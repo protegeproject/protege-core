@@ -12,6 +12,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class UglyTabWidget extends AbstractTabWidget {
 
+    private static final long serialVersionUID = -175426276108203092L;
+
     public void initialize() {
         setIcon(Icons.getUglyIcon());
     }

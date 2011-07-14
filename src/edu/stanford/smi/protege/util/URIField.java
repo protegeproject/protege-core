@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.resource.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class URIField extends JComponent {
+    private static final long serialVersionUID = -4728998781503944838L;
     private JTextField _textField;
     private String _description;
     private String _extension;
@@ -27,6 +28,8 @@ public class URIField extends JComponent {
         setLayout(new BorderLayout());
         LabeledComponent c = new LabeledComponent(label, createComponent(uri));
         c.addHeaderButton(new AbstractAction("Browse for File", Icons.getAddIcon()) {
+            private static final long serialVersionUID = 1162670958348183368L;
+
             public void actionPerformed(ActionEvent event) {
                 browse();
             }

@@ -18,6 +18,8 @@ import edu.stanford.smi.protege.util.ModalDialog;
  */
 public class ShowAboutBox extends ProjectAction {
 
+    private static final long serialVersionUID = 1963320962882327869L;
+
     public ShowAboutBox() {
         super(ResourceKey.HELP_MENU_ABOUT);
         substituteIntoName(Text.getProgramName());

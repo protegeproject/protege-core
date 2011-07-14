@@ -11,6 +11,7 @@ import javax.swing.event.*;
  */
 
 public class IntegerField extends JComponent {
+    private static final long serialVersionUID = 6434174131636406043L;
     private ActionListener itsActionListener;
     private JTextField _textField;
     private JLabel _label;

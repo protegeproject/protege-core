@@ -37,6 +37,7 @@ import javax.swing.tree.TreeCellRenderer;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DefaultRenderer extends JComponent implements TreeCellRenderer, ListCellRenderer, TableCellRenderer {
+    private static final long serialVersionUID = -5077332037549517658L;
     public static final Object DROP_TARGET = new Object();
     public static final Object DROP_TARGET_AREA = new Object();
     public static final Object DROP_TARGET_AREA_ON = new Object();

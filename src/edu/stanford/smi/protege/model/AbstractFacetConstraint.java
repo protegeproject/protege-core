@@ -14,6 +14,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public abstract class AbstractFacetConstraint implements FacetConstraint, Serializable {
 
+    private static final long serialVersionUID = 3517596380804103055L;
+
     public boolean areValidValues(Frame frame, Slot slot, Collection slotValues, Collection facetValues) {
         return getInvalidValuesText(frame, slot, slotValues, facetValues) == null;
     }

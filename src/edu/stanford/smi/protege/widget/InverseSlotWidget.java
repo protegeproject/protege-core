@@ -16,6 +16,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class InverseSlotWidget extends AbstractSlotWidget {
+    private static final long serialVersionUID = 2385835722545274787L;
     private JList _list;
     private AllowableAction _viewAction;
     private AllowableAction _createAction;
@@ -84,6 +85,8 @@ public class InverseSlotWidget extends AbstractSlotWidget {
     private Action getAddAction() {
         if (_addAction == null) {
             _addAction = new AddAction(ResourceKey.SLOT_ADD) {
+                private static final long serialVersionUID = -1866653350636802271L;
+
                 public void onAdd() {
                     selectSlotToAdd();
                 }
@@ -95,6 +98,8 @@ public class InverseSlotWidget extends AbstractSlotWidget {
     private Action getCreateAction() {
         if (_createAction == null) {
             _createAction = new CreateAction(ResourceKey.SLOT_CREATE) {
+                private static final long serialVersionUID = 8559254382775291576L;
+
                 public void onCreate() {
                     Slot slot = createInverseSlot();
                     getProject().show(slot);
@@ -121,6 +126,8 @@ public class InverseSlotWidget extends AbstractSlotWidget {
     private Action getRemoveAction() {
         if (_removeAction == null) {
             _removeAction = new RemoveAction(ResourceKey.SLOT_REMOVE, this) {
+                private static final long serialVersionUID = -4572085279905671010L;
+
                 public void onRemove(Object o) {
                     setInverseSlot(null);
                 }
@@ -140,6 +147,8 @@ public class InverseSlotWidget extends AbstractSlotWidget {
     private Action getViewAction() {
         if (_viewAction == null) {
             _viewAction = new ViewAction(ResourceKey.SLOT_VIEW, this) {
+                private static final long serialVersionUID = 1522315576409668965L;
+
                 public void onView(Object o) {
                     Slot slot = (Slot) o;
                     getProject().show(slot);

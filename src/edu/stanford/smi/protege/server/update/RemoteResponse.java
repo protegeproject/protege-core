@@ -7,7 +7,8 @@ import edu.stanford.smi.protege.model.Localizable;
 import edu.stanford.smi.protege.util.LocalizeUtils;
 
 public class RemoteResponse<X> extends OntologyUpdate implements Localizable {
-  private X response;
+  private static final long serialVersionUID = 8300863164211405883L;
+private X response;
   
   /**
    * 

@@ -13,6 +13,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class ImageWidget extends TextComponentWidget {
+    private static final long serialVersionUID = -6002846064117335408L;
     private JLabel imageDisplay;
 
     public void initialize() {

@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SlotValuesWidget extends AbstractListWidget {
+    private static final long serialVersionUID = 103665542520867791L;
     private Action _viewAction;
     private AllowableAction _createAction;
     private AllowableAction _addAction;
@@ -120,6 +121,8 @@ public class SlotValuesWidget extends AbstractListWidget {
     private Action getAddAction() {
         _addAction = new AddAction(ResourceKey.VALUE_ADD) {
 
+            private static final long serialVersionUID = -8390731086548880897L;
+
             public void onAdd() {
                 Collection c = addItems();
                 if (c != null) {
@@ -171,6 +174,8 @@ public class SlotValuesWidget extends AbstractListWidget {
     private Action getCreateAction() {
         _createAction = new CreateAction(ResourceKey.VALUE_CREATE) {
 
+            private static final long serialVersionUID = -4397623316890492860L;
+
             public void onCreate() {
                 Object o = editItem(null);
                 if (o != null) {
@@ -197,6 +202,8 @@ public class SlotValuesWidget extends AbstractListWidget {
 
     private Action getEditAction() {
         _viewAction = new ViewAction(this) {
+            private static final long serialVersionUID = -7273113512035501651L;
+
             public void onView(Object o) {
                 Object editedItem = editItem(o);
                 if (!o.equals(editedItem)) {
@@ -209,6 +216,8 @@ public class SlotValuesWidget extends AbstractListWidget {
 
     private Action getRemoveAction() {
         _removeAction = new RemoveAction(ResourceKey.VALUE_REMOVE, this) {
+            private static final long serialVersionUID = -2334952871995157304L;
+
             public void onRemove(Collection values) {
                 removeItems(values);
             }

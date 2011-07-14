@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  */
 
 class IncludedProjectsPanel extends JComponent implements Validatable {
+    private static final long serialVersionUID = 2360132257647339889L;
     private JList list;
 
     protected IncludedProjectsPanel(Project project) {

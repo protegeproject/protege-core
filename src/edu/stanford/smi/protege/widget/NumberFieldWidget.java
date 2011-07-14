@@ -9,6 +9,8 @@ import javax.swing.*;
  */
 public abstract class NumberFieldWidget extends TextFieldWidget {
 
+    private static final long serialVersionUID = 3752553940362792588L;
+
     public void initialize() {
         super.initialize();
         getTextField().setHorizontalAlignment(SwingConstants.RIGHT);

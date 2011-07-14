@@ -16,6 +16,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class SymbolListWidget extends AbstractListWidget {
 
+    private static final long serialVersionUID = -5238094337376212437L;
+
     private String edit(String label, Object initialValue) {
         Collection allowedValues = getCls().getTemplateSlotAllowedValues(getSlot());
         return (String) DisplayUtilities.pickSymbol(this, label, initialValue, allowedValues);
@@ -23,6 +25,8 @@ public class SymbolListWidget extends AbstractListWidget {
 
     private Action getCreateAction() {
         return new CreateAction(ResourceKey.VALUE_ADD) {
+            private static final long serialVersionUID = -5937947639182802969L;
+
             public void onCreate() {
                 handleCreateAction();
             }
@@ -31,6 +35,8 @@ public class SymbolListWidget extends AbstractListWidget {
 
     private Action getEditAction() {
         return new ViewAction(ResourceKey.VALUE_VIEW, this) {
+            private static final long serialVersionUID = -6781849184410952271L;
+
             public void onView(Object o) {
                 handleViewAction((String) o);
             }
@@ -39,6 +45,8 @@ public class SymbolListWidget extends AbstractListWidget {
 
     private Action getRemoveAction() {
         return new RemoveAction(ResourceKey.VALUE_REMOVE, this) {
+            private static final long serialVersionUID = -6176315941870004648L;
+
             public void onRemove(Collection values) {
                 handleRemoveAction(values);
             }

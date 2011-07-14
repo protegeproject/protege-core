@@ -10,6 +10,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class MaximumCardinalityConstraint extends AbstractFacetConstraint {
+    private static final long serialVersionUID = 1151034475072958857L;
     private static final Integer CARDINALITY_SINGLE = new Integer(1);
 
     public String getInvalidValuesText(Frame frame, Slot slot, Collection slotValues, Collection facetValues) {

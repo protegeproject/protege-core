@@ -23,6 +23,7 @@ import edu.stanford.smi.protege.widget.WidgetUtilities;
  */
 public class ProjectMenuBar extends JMenuBar {
 
+    private static final long serialVersionUID = 4169911089158397522L;
     private ButtonGroup _group = new ButtonGroup();
     private Map uris = new HashMap();
     private static final int MAX_LENGTH = 50;

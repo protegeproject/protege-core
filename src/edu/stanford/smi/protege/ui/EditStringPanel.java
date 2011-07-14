@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class EditStringPanel extends JComponent {
+    private static final long serialVersionUID = -9221546178390989869L;
     private JTextField _textField;
 
     public EditStringPanel(Object o, String label) {

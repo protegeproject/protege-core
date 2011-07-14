@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class SlotPairRenderer extends DefaultRenderer implements Cloneable {
+    private static final long serialVersionUID = -4381654272891062203L;
     private static SlotPairRenderer _prototypeInstance = new SlotPairRenderer();
 
     public static SlotPairRenderer createInstance() {

@@ -12,6 +12,7 @@ import edu.stanford.smi.protege.util.*;
  */
 public class ConfigureArchive extends LocalProjectAction {
 
+    private static final long serialVersionUID = -9040274094107500244L;
     public ConfigureArchive() {
         super(ResourceKey.PROJECT_CONFIGURE_ARCHIVE);
     }

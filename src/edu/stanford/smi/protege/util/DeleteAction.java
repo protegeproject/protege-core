@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public abstract class DeleteAction extends AllowableAction {
 
+    private static final long serialVersionUID = -5040421731435729618L;
+
     protected DeleteAction(String text, Selectable selectable, Icon icon) {
         super(text, text, icon, selectable);
     }

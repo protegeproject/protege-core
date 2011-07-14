@@ -12,6 +12,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class DefaultValueRenderer extends DefaultRenderer {
 
+    private static final long serialVersionUID = -8985236643271264486L;
+
     public void load(Object value) {
         FrameSlotCombination combination = (FrameSlotCombination) value;
         Cls cls = (Cls) combination.getFrame();

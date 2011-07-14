@@ -14,6 +14,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class AbstractWidget extends JPanel {
+    private static final long serialVersionUID = -1105419878466335322L;
     private WidgetDescriptor _descriptor;
     private boolean _isDesignTime;
     private Project _project;

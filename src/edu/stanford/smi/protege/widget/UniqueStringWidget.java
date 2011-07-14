@@ -12,6 +12,8 @@ import edu.stanford.smi.protege.util.*;
  */
 public class UniqueStringWidget extends TextFieldWidget {
 
+    private static final long serialVersionUID = 2383411272010532217L;
+
     protected String getInvalidTextDescription(String text) {
         String invalidText = null;
         if (text == null || !isUnique(text)) {

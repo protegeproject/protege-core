@@ -11,6 +11,7 @@ import edu.stanford.smi.protege.util.*;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class FrameEvent extends AbstractEvent {
+    private static final long serialVersionUID = 5250534765271586389L;
     private static final int BASE = 100;
     /*
      * @deprecated Use FrameEvent.REPLACE_FRAME instead

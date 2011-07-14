@@ -17,6 +17,7 @@ import edu.stanford.smi.protege.util.*;
  */
 class WidgetDescriptorEditor extends DefaultCellEditor {
 
+    private static final long serialVersionUID = -7611162969958514326L;
     private FormWidget _widget;
 
     public WidgetDescriptorEditor(FormWidget widget) {

@@ -13,6 +13,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public abstract class CreateAction extends AllowableAction {
 
+    private static final long serialVersionUID = -4451021338422592927L;
+
     protected CreateAction(ResourceKey key) {
         super(key);
     }

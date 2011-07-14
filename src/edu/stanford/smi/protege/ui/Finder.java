@@ -38,6 +38,7 @@ import edu.stanford.smi.protege.util.WaitCursor;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public abstract class Finder extends JComponent {
+    private static final long serialVersionUID = 5434797981046601159L;
     private static List searchedForStrings = new ArrayList();
     private JComboBox _comboBox;
     private Action _findButtonAction;
@@ -56,6 +57,8 @@ public abstract class Finder extends JComponent {
 
     protected Finder(String description, Icon icon) {
         _findButtonAction = new StandardAction(description, icon) {
+            private static final long serialVersionUID = 8031258886171785419L;
+
             public void actionPerformed(ActionEvent e) {
                 doFind();
             }
@@ -65,6 +68,8 @@ public abstract class Finder extends JComponent {
 
     protected Finder(ResourceKey key) {
         _findButtonAction = new StandardAction(key) {
+            private static final long serialVersionUID = 3573450038349614433L;
+
             public void actionPerformed(ActionEvent e) {
                 doFind();
             }

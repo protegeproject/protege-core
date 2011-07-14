@@ -11,6 +11,7 @@ import java.util.*;
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class StandardDateFormat extends SimpleDateFormat {
+    private static final long serialVersionUID = -3688220389358730348L;
     private static final String FORMAT_PATTERN = "yyyy.MM.dd HH:mm:ss.SSS zzz";
     private static final String OLD_FORMAT_PATTERN = "yyyy.MM.dd HH:mm:ss.SSS";
 

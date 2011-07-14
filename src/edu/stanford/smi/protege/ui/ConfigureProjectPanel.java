@@ -20,7 +20,8 @@ import edu.stanford.smi.protege.util.*;
  */
 
 public class ConfigureProjectPanel extends ValidatableTabComponent {
-	private static ArrayList userDefinedConfigTabs = new ArrayList();
+	private static final long serialVersionUID = 7204453275303618585L;
+    private static ArrayList userDefinedConfigTabs = new ArrayList();
 	private Project _project;
 	
     public ConfigureProjectPanel(Project project) {

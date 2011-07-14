@@ -15,6 +15,8 @@ import edu.stanford.smi.protege.resource.*;
  */
 public class RedoAction extends ProjectAction {
 
+    private static final long serialVersionUID = -3530704885116941344L;
+
     public RedoAction(boolean large) {
         super(ResourceKey.REDO_ACTION, large);
         CommandManager manager = getCommandManager();
