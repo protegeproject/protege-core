@@ -101,5 +101,5 @@ public interface RemoteServerNarrowFrameStore extends Remote {
 
    void replaceFrame(Frame original, Frame replacement, RemoteSession session) throws RemoteException;
 
-   boolean setCaching(RemoteSession session, boolean doCache) throws RemoteException;
+   boolean setCaching(RemoteSession session, boolean doCache, RemoteSession invokingSession) throws RemoteException;
 }

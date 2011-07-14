@@ -316,8 +316,8 @@ public class ServerNarrowFrameStore
     fixedDelegate.replaceFrame(original, replacement);
   }
 
-  public boolean setCaching(RemoteSession session, boolean doCache) {
+  public boolean setCaching(RemoteSession sessionToChangeCaching, boolean doCache, RemoteSession session) {
       ServerFrameStore.recordCallNoCheck(session);
-      return fixedDelegate.setCaching(session, doCache);
+      return fixedDelegate.setCaching(sessionToChangeCaching, doCache);
     }
 }
