@@ -446,8 +446,10 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         recordCall(session);
         try {
             synchronized(_kbLock) {
+                Collection<Reference> references = getDelegate().getReferences(original);
                 getDelegate().replaceFrame(original, replacement);
                 markDirty();
+                wipeReferencingFrames(original, references, session);
                 return new OntologyUpdate(getValueUpdates(session));
             }
         }
@@ -1286,15 +1288,9 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         if (frame instanceof Slot || frame instanceof Facet) {
             addWriteUpdate(session, null, new CacheDelete<RemoteSession, Sft, List>(session));
         }
-        else {
-            Set<Frame> framesToWipe = new HashSet<Frame>();
-            framesToWipe.add(frame);
-            for (Reference ref : getDelegate().getReferences(frame)) {
-                framesToWipe.add(ref.getFrame());
-            }
-            for (Frame f : framesToWipe) {
-                addWriteUpdate(session, f, new CacheDelete<RemoteSession, Sft, List>(session));
-            }
+        else { // I think that this doesn't work here but I am being cautious - the references are empty!
+               // I have moved this logic to the actual call of the replaceFrame.
+            wipeReferencingFrames(frame, getDelegate().getReferences(frame), session);
         }
         return;
     }
@@ -1316,6 +1312,17 @@ public class ServerFrameStore extends UnicastRemoteObject implements RemoteServe
         sft = new Sft(slot, null, false);        
         addWriteUpdate(session, frame, 
 	                    new CacheModify<RemoteSession, Sft, List>(session, sft, result));
+      }
+  }
+  
+  private void wipeReferencingFrames(Frame frame, Collection<Reference> references, RemoteSession session) {
+      Set<Frame> framesToWipe = new HashSet<Frame>();
+      framesToWipe.add(frame);
+      for (Reference ref : references) {
+          framesToWipe.add(ref.getFrame());
+      }
+      for (Frame f : framesToWipe) {
+          addWriteUpdate(session, f, new CacheDelete<RemoteSession, Sft, List>(session));
       }
   }
   
