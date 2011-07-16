@@ -1,0 +1,29 @@
+; Tue Dec 08 14:28:31 PST 2009
+; 
+;+ (version "3.4.2")
+;+ (build "Build 557")
+
+([metaproject_Instance_0] of  Group
+
+	(name "World"))
+
+([metaproject_Instance_10001] of  Project
+
+	(allowedGroupOperation [metaproject_Instance_10008])
+	(location "junit/pprj/scratch.pprj")
+	(name "scratch"))
+
+([metaproject_Instance_10008] of  GroupOperation
+
+	(allowedGroup [metaproject_Instance_0])
+	(allowedOperation
+		[nci_metaproject_Instance_60009]
+		[nci_metaproject_Instance_60010]))
+
+([nci_metaproject_Instance_60009] of  Operation
+
+	(name "Read"))
+
+([nci_metaproject_Instance_60010] of  Operation
+
+	(name "Write"))
