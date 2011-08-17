@@ -29,12 +29,12 @@ import edu.stanford.smi.protege.util.WizardPage;
 
 /**
  * TODO Class Comment
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DatabaseWizardPage extends WizardPage {
     private static final long serialVersionUID = -6619215858750011057L;
-    
+
     private Map<DatabaseProperty, JTextField> fields = new EnumMap<DatabaseProperty, JTextField>(DatabaseProperty.class);
     private JTextArea errorArea;
     private DatabasePlugin plugin;
@@ -55,7 +55,7 @@ public class DatabaseWizardPage extends WizardPage {
                 fields.put(property, createTextField(property));
             }
         }
-        
+
         errorArea = ComponentFactory.createTextArea();
         errorArea.setEditable(false);
     }
@@ -73,7 +73,7 @@ public class DatabaseWizardPage extends WizardPage {
         });
         return field;
     }
-    
+
     private JTextField createPasswordTextField() {
         final JTextField field = ComponentFactory.createPasswordField();
         field.addFocusListener(new FocusAdapter() {
@@ -89,7 +89,7 @@ public class DatabaseWizardPage extends WizardPage {
         setErrorText(null);
         setPageComplete(isComplete());
     }
-    
+
     protected boolean isComplete() {
         return hasValidDriver() && hasValidUrl() && hasValidTable();
     }
@@ -132,27 +132,11 @@ public class DatabaseWizardPage extends WizardPage {
         return isValid;
     }
 
-    private static int MAX_TABLE_NAME_LENGTH = 20;
-
     private boolean hasValidTable() {
         boolean isValid = false;
         String text = getFieldText(TABLENAME_PROPERTY);
         if (text.length() == 0) {
             setErrorText("Table name is required.");
-        } else if (text.length() > MAX_TABLE_NAME_LENGTH) {
-            setErrorText("Table name is too long.");
-        } else {
-            isValid = true;
-            for (int i = 0; i < text.length(); ++i) {
-                char c = text.charAt(i);
-                if (!Character.isJavaIdentifierPart(c)) {
-                    isValid = false;
-                    break;
-                }
-            }
-            if (!isValid) {
-                setErrorText("Invalid table name");
-            }
         }
         return isValid;
     }
@@ -166,7 +150,7 @@ public class DatabaseWizardPage extends WizardPage {
         Box panel = Box.createVerticalBox();
         layoutComponents(panel);
     }
-    
+
     protected void layoutComponents(Box panel) {
         for (DatabaseProperty property : DatabaseProperty.values()) {
             addField(panel, property);
@@ -192,7 +176,7 @@ public class DatabaseWizardPage extends WizardPage {
         plugin.setPassword(getFieldText(PASSWORD_PROPERTY));
         plugin.setURL(getFieldText(URL_PROPERTY));
     }
-    
+
     protected String getFieldText(DatabaseProperty property)  {
         return fields.get(property).getText();
     }
