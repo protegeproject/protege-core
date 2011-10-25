@@ -4,7 +4,7 @@ rem Note that a space character in the following path must be replaced with '%%2
 rem a batch file.  If you are typing directly on the command line, a space must be
 rem replaced with '%20'.
 
-set CODEBASE_URL=file:/c:/program%%20files/protege_3.4.7/protege.jar
+set CODEBASE_URL=file:/c:/program%%20files/protege_3.4.8/protege.jar
 
 start /D%JDKBIN% /min rmiregistry.exe
 
