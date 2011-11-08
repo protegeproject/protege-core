@@ -78,6 +78,7 @@
 				</fileset>
 			</classpath>
 		</javac>
+        <rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.SimpleStream"/>    
 		<rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.Server"/>    
 		<rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.ServerProject"/>    
 		<rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>  
