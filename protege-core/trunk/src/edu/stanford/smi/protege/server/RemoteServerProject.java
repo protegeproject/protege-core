@@ -14,9 +14,7 @@ public interface RemoteServerProject extends Remote {
     
     String getDomainKbFactoryClassName() throws RemoteException;
 
-    RemoteServerFrameStore getProjectKbFrameStore(RemoteSession session) throws RemoteException;
-    
-    String getProjectKbFactoryClassName() throws RemoteException;
+    RemoteSimpleStream uploadProjectKb() throws RemoteException;
 
     Collection getCurrentSessions(RemoteSession session) throws RemoteException;
 

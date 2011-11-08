@@ -1,5 +1,8 @@
 package edu.stanford.smi.protege.server;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -52,11 +55,7 @@ public class RemoteClientProject extends Project {
                                                      serverProject.getDomainKbFrameStore(session), 
                                                      serverProject.getDomainKbFactoryClassName(), 
                                                      session, false);
-        KnowledgeBase projectKb = createKnowledgeBase(server,
-                                                      serverProject.getProjectKbFrameStore(session),
-                                                      serverProject.getProjectKbFactoryClassName(), 
-                                                      session, true);
-        projectKb = copyKb(projectKb, domainKb);
+        KnowledgeBase projectKb = copyKb(serverProject);
         setKnowledgeBases(domainKb, projectKb);
         if (pollForEvents) {
             domainKb.setPollForEvents(true);
@@ -64,18 +63,55 @@ public class RemoteClientProject extends Project {
         installShutdownHook();
     }
 
-    private static KnowledgeBase copyKb(KnowledgeBase remoteKb, KnowledgeBase domainKb) {
-        Collection errors = new ArrayList();
-        KnowledgeBase localKb = loadProjectKB(null, null, errors);
-        Log.handleErrors(log, Level.WARNING, errors);
-        localKb.deleteInstance(getProjectInstance(localKb));
-        Instance projectInstance = getProjectInstance(remoteKb);
-        projectInstance.deepCopy(localKb, null);
-        
-        // to support included forms - esp. location of nodes in GraphWidget
-        copyClientInformation(remoteKb, localKb, domainKb, false);
-        
-        return localKb;
+    private static KnowledgeBase copyKb(RemoteServerProject serverProject) throws RemoteException {
+        RemoteSimpleStream rss = null;
+        FileOutputStream tempFileStream = null;
+        try {
+            long startTime = System.currentTimeMillis();
+            File tmpFile = File.createTempFile("RemoteProject", ".pprj");
+            tempFileStream = new FileOutputStream(tmpFile);
+            rss = serverProject.uploadProjectKb();
+            byte[] input;
+            do {
+                input = rss.read();
+                if (input == null) {
+                    break;
+                }
+                tempFileStream.write(input);
+            } while (true);
+            tempFileStream.flush();
+            tempFileStream.close();
+            tempFileStream = null;
+            log.info("Uploaded pprj file in " + (System.currentTimeMillis() - startTime) + " milliseconds.");
+            
+            startTime = System.currentTimeMillis();
+            Collection errors = new ArrayList();
+            KnowledgeBase localKb = loadProjectKB(tmpFile.toURI(), null, errors);
+            log.info("Loaded pprj file into knowledge base in " + (System.currentTimeMillis() - startTime) + " milliseconds.");
+            Log.handleErrors(log, Level.WARNING, errors);
+            return localKb;
+        }
+        catch (IOException ioe) {
+            if (ioe instanceof RemoteException) {
+                throw (RemoteException) ioe;
+            }
+            else {
+                throw new RemoteException("Exception caught uploading project knowledge base from the server", ioe);
+            }
+        }
+        finally {
+            if (rss != null) {
+                rss.close();
+            }
+            if (tempFileStream != null) {
+                try {
+                    tempFileStream.close();
+                }
+                catch (IOException ioe) {
+                    throw new RemoteException("Exception caught closing temp file", ioe);
+                }
+            }
+        }
     }
     
      
