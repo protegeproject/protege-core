@@ -1,6 +1,9 @@
 package edu.stanford.smi.protege.server;
 
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
@@ -65,18 +68,24 @@ public class ServerProject extends UnicastRemoteObject implements RemoteServerPr
         return _project.getKnowledgeBase().getKnowledgeBaseFactory().getClass().getName();
     }
 
-    public String getProjectKbFactoryClassName() {
-        return _project.getInternalProjectKnowledgeBase().getKnowledgeBaseFactory().getClass().getName();
-    }
-
 
     public RemoteServerFrameStore getDomainKbFrameStore(RemoteSession session) {
         return _domainKbFrameStore;
     }
     
-
-    public RemoteServerFrameStore getProjectKbFrameStore(RemoteSession session) {
-        return _projectKbFrameStore;
+    public RemoteSimpleStream uploadProjectKb() throws RemoteException {
+        URI uri = _project.getProjectURI();
+        if (uri != null) {
+            try {
+                return new SimpleStream(uri.toURL());
+            }
+            catch (MalformedURLException malformed) {
+                throw new RemoteException("Unexpected exception: project url is malformed " + uri, malformed);
+            }
+        }
+        else {
+            return null;
+        }
     }
 
     public void register(RemoteSession session) throws ServerSessionLost {
