@@ -169,6 +169,8 @@
         </javac>    
         <!-- add sourcebase = "${src}" to see the source for the stub -->
         <rmic base = "${classes}" stubversion = "1.2" 
+              classname = "edu.stanford.smi.protege.server.SimpleStream"/>    
+        <rmic base = "${classes}" stubversion = "1.2" 
               classname = "edu.stanford.smi.protege.server.Server"/>    
         <rmic base = "${classes}" stubversion = "1.2" 
               classname = "edu.stanford.smi.protege.server.ServerProject"/>    
