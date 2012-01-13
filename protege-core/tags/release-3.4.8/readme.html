@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Prot&eacute;g&eacute; Build Instructions</title>
+<style type="text/css">
+<!--
+.bodyText {font-family:arial,geneva,verdana,helvetica,sans-serif;}
+.sectionHeaders {font-size:larger; color:#336699; font-weight:bold;}
+-->
+</style>
+</head>
+
+<body class="bodyText">
+
+<div align="center">
+<span style="font-weight:bold; font-size:24px;">Prot&eacute;g&eacute; Build Instructions</span>
+</div><br><br>
+
+This documentation is targeted toward users who would like to compile the Prot&eacute;g&eacute; source code using an Ant build file.  
+You can retrieve our source code in one of two ways:
+
+<ul>
+	<li style="padding-bottom: 3px;">A stable version of the source code is made available in ZIP file format on the 
+	<a href="http://protege.stanford.edu/download/download.html" target="_blank">Downloads</a> page 
+	of our Web site each time we do a build.  After unzipping the source code, you will find the 
+	Ant build file &quot;build.xml&quot; in the root directory.</li>
+	<li>Bleeding-edge versions of our source code can be downloaded from our 
+	<a href="http://smi-protege.stanford.edu/svn/" target="_blank">Subversion repository</a>.  If you're new 
+	to Subversion, we offer detailed documentation on downloading from our repository 
+	<a href="http://protege.stanford.edu/doc/svn/contribute.html" target="_blank">elsewhere</a>.  To get the source code 
+	from Subversion and successfully use the Ant build file, you must issue the following command:<br><br>
+	
+	<code>
+	svn checkout http://smi-protege.stanford.edu/repos/protege/protege-core/trunk &lt;your-destination-dir&gt;
+	</code><br><br>
+	
+	After checkout, the Ant build file &quot;build.xml&quot; will be located in the root directory.  Issuing the above 
+	command ensures that the proper directory structure will be created for running the Ant build file.</li>
+</ul>
+
+<span class="sectionHeaders">System Requirements</span><br><br>
+<div style="margin-left:2%; margin-right:4%">
+Before building Prot&eacute;g&eacute;, you must have the following software installed on your system:
+
+<ul>
+	<li style="padding-bottom: 3px;">The Java Development Kit (version 1.4 or higher).  Make sure to set the JAVA_HOME environment 
+	variable to the installation directory of your JDK.</li>
+	<li style="padding-bottom: 3px;">The Apache Ant Java-based build tool.  See Apache's Web site 
+	to <a href="http://ant.apache.org/bindownload.cgi" target="_blank">download</a> Ant.  The download 
+	includes installation instructions for all platforms.  The Ant build script we distribute was developed 
+	with Ant version 1.5.1.  It should work on higher versions of Ant but has not been tested on previous 
+	versions.</li>
+	<li style="padding-bottom: 3px;">The Java Compiler Compiler (a.k.a &quot;JavaCC&quot; or &quot;The Java Parser Generator&quot;).  
+	JavaCC is available for <a href="https://javacc.dev.java.net/" target="_blank">download</a> through java.net.
+	</li>
+</ul>
+</div><br>
+
+<span class="sectionHeaders">Source Package Structure</span><br><br>
+<div style="margin-left:2%">
+Pertinent files in Prot&eacute;g&eacute;'s source package:<br><br>
+
+<table width="90%" border="0" cellpadding="2" cellspacing="2">
+	<tr>
+		<td bgcolor="#a0ddf0">build.xml</td>
+		<td bgcolor="#a0ddf0">Ant build file</td>
+	</tr>
+	<tr>
+		<td bgcolor="#a0ddf0">local.properties.template</td>
+		<td bgcolor="#a0ddf0">Properties file contaning variables used by the Ant build file</td>
+	</tr>
+	<tr>
+		<td bgcolor="#a0ddf0">readme.html</td>
+		<td bgcolor="#a0ddf0">Build instructions</td>
+	</tr>
+	<!-- <tr>
+		<td bgcolor="#a0ddf0">/docs</td>
+		<td bgcolor="#a0ddf0">Directory containing documentation</td>
+	</tr> -->
+	<tr>
+		<td bgcolor="#a0ddf0">/bin/Parser.jj</td>
+		<td bgcolor="#a0ddf0">Grammar file used by JavaCC during the compile process</td>
+	</tr>
+	<tr>
+		<td bgcolor="#a0ddf0">/lib</td>
+		<td bgcolor="#a0ddf0">Directory containing third party libraries needed to compile the Prot&eacute;g&eacute; source code</td>
+	</tr>
+	<tr>
+		<td bgcolor="#a0ddf0">/src</td>
+		<td bgcolor="#a0ddf0">Directory containing the Prot&eacute;g&eacute; source code</td>
+	</tr>
+</table>
+</div><br><br>
+
+<span class="sectionHeaders">Initiating a Build</span><br><br>
+<div style="margin-left:2%; margin-right:4%">
+Steps for initiating a build:
+
+<ol>
+	<li>From the command line, change into the installation directory (where the Prot&eacute;g&eacute; source code was unzipped).</li>
+	<li>Rename local.properties.template to local.properties.  We added the &quot;.template&quot; extension so that 
+	each time the source code is downloaded, the local.properties file is not overwritten which causes user defined 
+	settings to be lost.</li>
+	<li>Open local.properties and set the javacc.home variable to the location of your JavaCC installation directory.</li>
+	<li>To start the build process, type &quot;ant all&quot;.</li>
+</ol>
+
+When the build is finished, there are several resulting items:<br><br>
+
+<table width="90%" border="0" cellpadding="2" cellspacing="2">
+	<tr>
+		<td bgcolor="#a0ddf0">/classes</td>
+		<td bgcolor="#a0ddf0">Directory containing compiled Prot&eacute;g&eacute; source files</td>
+	</tr>
+	<tr>
+		<td bgcolor="#a0ddf0">/dist</td>
+		<td bgcolor="#a0ddf0">Directory containing the newly generated Prot&eacute;g&eacute; JAR file as well as source and binary 
+		distributions of Prot&eacute;g&eacute; packaged in ZIP format</td>
+	</tr>
+	<tr>
+		<td bgcolor="#a0ddf0">/docs/apidocs</td>
+		<td bgcolor="#a0ddf0">Directory containing the newly generated Prot&eacute;g&eacute; API documentation (javadoc)</td>
+	</tr>
+</table><br>
+
+It's also possible to run various parts of the build separately.  For a list of available targets, type &quot;ant&quot; on the 
+command line.<br><br>
+</div><br><br>
+
+</body>
+</html>
