@@ -146,7 +146,7 @@
 	<!-- Zips up all source code, resources, and api documentation. -->
 	<!-- =================================================================== -->
 	<target name = "dist" depends = "init">
-		<zip zipfile = "${dist.dir}/protege-src-${version}.zip" update = "no">
+		<zip zipfile = "${dist.dir}/protege-src-${version}-${status}.zip" update = "no">
 			<zipfileset dir = "${build.src}" prefix = "${Name}/src"/>
 			<zipfileset dir = "${build.junit}" prefix = "${Name}/junit"/>
 			<zipfileset dir = "${build.javadoc}" prefix = "${Name}/docs/apidocs"/>
@@ -154,7 +154,7 @@
 			<zipfileset dir = "${build.scripts}" includes = "Parser.jj" prefix = "${Name}/etc"/>
 			<zipfileset dir = "${lib.dir}" includes = "*.jar" prefix = "${Name}/lib"/>
 		</zip>
-		<zip zipfile = "${dist.dir}/protege-bin-${version}.zip" update = "no">
+		<zip zipfile = "${dist.dir}/protege-bin-${version}-${status}.zip" update = "no">
 			<zipfileset dir = "${dist.dir}" includes = "protege.jar"/>
 			<zipfileset dir = "${lib.dir}" includes = "*.jar" excludes = "junit.jar"/>
 		</zip>
