@@ -2,12 +2,15 @@ package edu.stanford.smi.protege.server.metaproject.impl;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 import edu.stanford.smi.protege.exception.OntologyException;
 import edu.stanford.smi.protege.model.Instance;
+import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.server.metaproject.GroupOperation;
 import edu.stanford.smi.protege.server.metaproject.PolicyControlledObject;
+import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 
 public class PolicyControlledObjectImpl extends WrappedProtegeInstanceWithPropsImpl implements PolicyControlledObject,
         Serializable {
@@ -51,7 +54,27 @@ public class PolicyControlledObjectImpl extends WrappedProtegeInstanceWithPropsI
     }
 
     public void setAllowedGroupOperations(Collection<GroupOperation> groupOperations) {
+        Collection<GroupOperation> oldGroupOperations = getAllowedGroupOperations();
+
         setSlotValuesAsProtegeInstances(MetaProjectImpl.SlotEnum.allowedGroupOperation, groupOperations);
+
+        for (GroupOperation oldGroupOperation : oldGroupOperations) {
+            Instance groupOperationInst = ((WrappedProtegeInstanceImpl)oldGroupOperation).getProtegeInstance();
+            if (canDelete(groupOperationInst)) {
+                groupOperationInst.delete();
+            }
+        }
+    }
+
+    private boolean canDelete(Instance groupOperation) {
+        Collection<Reference> references = groupOperation.getReferences();
+        for (Iterator<Reference> iterator = references.iterator(); iterator.hasNext();) {
+            Reference ref = iterator.next();
+            if (ref.getSlot().equals(getMetaProject().getSlot(SlotEnum.allowedGroupOperation))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void addAllowedGroupOperations(GroupOperation groupOperation) {
