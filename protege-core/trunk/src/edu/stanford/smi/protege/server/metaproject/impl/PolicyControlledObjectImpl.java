@@ -10,11 +10,13 @@ import edu.stanford.smi.protege.model.Instance;
 import edu.stanford.smi.protege.model.Reference;
 import edu.stanford.smi.protege.server.metaproject.GroupOperation;
 import edu.stanford.smi.protege.server.metaproject.PolicyControlledObject;
+import edu.stanford.smi.protege.server.metaproject.PolicyControlledObjectCollection;
 import edu.stanford.smi.protege.server.metaproject.impl.MetaProjectImpl.SlotEnum;
 
 public class PolicyControlledObjectImpl extends WrappedProtegeInstanceWithPropsImpl implements PolicyControlledObject,
         Serializable {
-    private static final long serialVersionUID = -6929685166227007784L;
+
+    private static final long serialVersionUID = 881458997973667317L;
 
     private String name;
 
@@ -53,6 +55,15 @@ public class PolicyControlledObjectImpl extends WrappedProtegeInstanceWithPropsI
         setSlotValue(MetaProjectImpl.SlotEnum.description, description);
     }
 
+    public boolean isPolicyModifiableByClient() {
+        return (Boolean) getSlotValue(MetaProjectImpl.SlotEnum.policyModifiableByClient, null);
+    }
+
+    public void setPolicyModifiableByClient(boolean modifiable) {
+        setSlotValue(MetaProjectImpl.SlotEnum.policyModifiableByClient, modifiable);
+    }
+
+
     public void setAllowedGroupOperations(Collection<GroupOperation> groupOperations) {
         Collection<GroupOperation> oldGroupOperations = getAllowedGroupOperations();
 
@@ -86,6 +97,32 @@ public class PolicyControlledObjectImpl extends WrappedProtegeInstanceWithPropsI
         return getSlotValues(MetaProjectImpl.SlotEnum.allowedGroupOperation, MetaProjectImpl.ClsEnum.GroupOperation);
     }
 
+
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<PolicyControlledObjectCollection> getInCollection() {
+        return getSlotValues(MetaProjectImpl.SlotEnum.inCollection, MetaProjectImpl.ClsEnum.PolicyControlledObjectCollection);
+    }
+
+    public void addInCollection(PolicyControlledObjectCollection collection) {
+        addSlotValue(MetaProjectImpl.SlotEnum.inCollection, collection);
+    }
+
+    public void removeInCollection(PolicyControlledObjectCollection collection) {
+        removeSlotValue(MetaProjectImpl.SlotEnum.inCollection, collection);
+    }
+
+    public void setInCollection(Set<PolicyControlledObjectCollection> collections) {
+        setSlotValue(MetaProjectImpl.SlotEnum.inCollection, collections);
+    }
+
+
+
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof PolicyControlledObject)) {
@@ -100,9 +137,5 @@ public class PolicyControlledObjectImpl extends WrappedProtegeInstanceWithPropsI
         return name == null ? 41 : name.hashCode();
     }
 
-    @Override
-    public String toString() {
-        return name;
-    }
 
 }
