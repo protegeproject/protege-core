@@ -9,21 +9,36 @@ public interface PolicyControlledObject {
 
     String getName();
 
+    void setName(String name);
+
+
     String getDescription();
 
-    Set<GroupOperation> getAllowedGroupOperations();
+    void setDescription(String description);
+
+
+    boolean isPolicyModifiableByClient();
+
+    void setPolicyModifiableByClient(boolean modifiable);
+
 
     Instance getProtegeInstance();
 
     MetaProject getMetaProject();
 
-    void setDescription(String description);
+    /*
+     * Allowed group operation methods
+     */
 
-    void setName(String name);
+    Set<GroupOperation> getAllowedGroupOperations();
 
     void setAllowedGroupOperations(Collection<GroupOperation> groupOperations);
 
     void addAllowedGroupOperations(GroupOperation groupOperation);
+
+    /*
+     * Name - value property methods
+     */
 
     Collection<PropertyValue> getPropertyValues();
 
@@ -40,5 +55,17 @@ public interface PolicyControlledObject {
     void removePropertyValue(PropertyValue propertyValue);
 
     void removePropertyValue(String prop, String value);
+
+    /*
+     * inCollection methods
+     */
+
+    Set<PolicyControlledObjectCollection> getInCollection();
+
+    void addInCollection(PolicyControlledObjectCollection collection);
+
+    void removeInCollection(PolicyControlledObjectCollection collection);
+
+    void setInCollection(Set<PolicyControlledObjectCollection> collections);
 
 }

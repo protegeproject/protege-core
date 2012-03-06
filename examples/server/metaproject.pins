@@ -1,7 +1,7 @@
-; Tue Dec 15 10:55:35 PST 2009
+; Tue Mar 06 14:28:54 PST 2012
 ; 
-;+ (version "3.4.2")
-;+ (build "Build 557")
+;+ (version "3.4.8")
+;+ (build "Build 629")
 
 ([metaproject_Class0] of  User
 
@@ -150,7 +150,8 @@
 	(description "Frames project")
 	(location "examples/newspaper/newspaper.pprj")
 	(name "Newspaper")
-	(owner [metaproject_Instance_10005]))
+	(owner [metaproject_Instance_10005])
+	(policyModifiableByClient TRUE))
 
 ([metaproject_Instance_10002] of  User
 
@@ -208,7 +209,8 @@
 		[metaproject_Class3])
 	(description "OWL project")
 	(location "examples/pizza/pizza.owl.pprj")
-	(name "Pizza"))
+	(name "Pizza")
+	(policyModifiableByClient TRUE))
 
 ([metaproject_Instance_20002] of  Project
 
@@ -218,7 +220,8 @@
 	(description "Frames project")
 	(location "examples/wines/wines.pprj")
 	(name "Wines")
-	(owner [metaproject_Instance_10004]))
+	(owner [metaproject_Instance_10004])
+	(policyModifiableByClient TRUE))
 
 ([metaproject_Instance_30000] of  Project
 
@@ -229,7 +232,8 @@
 	(description "The OWL pizza project with collaborative toppings :)")
 	(location "examples/collaborativePizza/collaborativePizza.owl.pprj")
 	(name "Collaborative Pizza")
-	(owner [metaproject_Instance_10006]))
+	(owner [metaproject_Instance_10006])
+	(policyModifiableByClient TRUE))
 
 ([metaproject_Instance_30001] of  Project
 
@@ -237,7 +241,8 @@
 	(description "Annotation project for the \"Collaborative Newspaper\" project as an RDFS ontology.")
 	(location "examples/collaborativeNewspaper/annotation_collaborativeNewspaper.pprj")
 	(name "Collaborative Newspaper Annotations")
-	(owner [metaproject_Instance_10006]))
+	(owner [metaproject_Instance_10006])
+	(policyModifiableByClient TRUE))
 
 ([metaproject_Instance_40000] of  Project
 
@@ -248,7 +253,8 @@
 	(description "Example on how to configure a collaborative project.")
 	(location "examples/collaborativeNewspaper/collaborativeNewspaper.pprj")
 	(name "Collaborative Newspaper")
-	(owner [metaproject_Instance_10006]))
+	(owner [metaproject_Instance_10006])
+	(policyModifiableByClient TRUE))
 
 ([metaproject_Instance_40001] of  Project
 
@@ -256,7 +262,8 @@
 	(description "The annotation project for Collaborative Pizza")
 	(location "examples/collaborativePizza/annotation_collaborativePizza.owl.pprj")
 	(name "Collaborative Pizza Annotations")
-	(owner [metaproject_Instance_10006]))
+	(owner [metaproject_Instance_10006])
+	(policyModifiableByClient TRUE))
 
 ([nci_metaproject_Instance_60009] of  ProjectAppliedOperation
 
@@ -267,3 +274,7 @@
 
 	(description "The operation of writing to an ontology project.\n\n(Enforcement not implemented yet)")
 	(name "Write"))
+
+([Trash] of  ProjectCollection
+
+	(name "Trash"))

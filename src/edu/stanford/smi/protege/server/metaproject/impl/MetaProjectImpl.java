@@ -21,6 +21,7 @@ import edu.stanford.smi.protege.server.metaproject.GroupOperation;
 import edu.stanford.smi.protege.server.metaproject.MetaProject;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
+import edu.stanford.smi.protege.server.metaproject.PolicyControlledObjectCollection;
 import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.PropertyValue;
 import edu.stanford.smi.protege.server.metaproject.ServerInstance;
@@ -29,21 +30,25 @@ import edu.stanford.smi.protege.util.Log;
 
 public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 
-    public static enum ClsEnum {
-    	Project, User, Group, Operation, GroupOperation, PolicyControlledObject, Server, PropertyValue;
-    }
+    private static final long serialVersionUID = -1014746777241732515L;
 
+    public static enum ClsEnum {
+    	Project, User, Group,
+    	Operation, GroupOperation, PolicyControlledObject,
+    	Server, PropertyValue, PolicyControlledObjectCollection;
+    }
 
     public static enum SlotEnum {
         name, password, salt, location, email,
         lastLogin, lastAccess,
-        group, member, allowedGroup, allowedOperation,
+        group, member, allowedGroup, allowedOperation, policyModifiableByClient, inCollection,
         allowedGroupOperation, owner, description, annotationProject, hostName,
         properties, propertyName, propertyValue, server;
     }
 
-
-    private static final long serialVersionUID = -7866511885264147967L;
+    public static enum InstanceEnum {
+        Trash;
+    }
 
     private transient KnowledgeBase kb;
 	private transient Policy policy;
@@ -52,7 +57,9 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 	    this(metaProjectURI, false);
 	}
 
-	public MetaProjectImpl(URI metaprojectURI, boolean isMultiUserServer) {
+
+    @SuppressWarnings("rawtypes")
+    public MetaProjectImpl(URI metaprojectURI, boolean isMultiUserServer) {
 		Collection errors = new ArrayList();
 		Project project = Project.loadProjectFromURI(metaprojectURI, errors, isMultiUserServer);
 		if (!errors.isEmpty()) {
@@ -103,6 +110,8 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 			return new PolicyControlledObjectImpl(this, i);
 		case PropertyValue:
 		    return new PropertyValueImpl(this, i);
+		case PolicyControlledObjectCollection:
+		    return new PolicyControlledObjectCollectionImpl(this, i);
 		default:
 			throw new UnsupportedOperationException("Unexpected cls " + cls);
 		}
@@ -291,6 +300,12 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
         return pv;
     }
 
+
+    public PolicyControlledObjectCollection createCollection(String name) {
+        Instance collInst = kb.createInstance(null, getCls(MetaProjectImpl.ClsEnum.PolicyControlledObjectCollection));
+        edu.stanford.smi.protege.server.metaproject.PolicyControlledObjectCollection collection = new PolicyControlledObjectCollectionImpl(this, collInst);
+        return collection;
+    }
 
     public Collection<PropertyValue> getPropertyValues(String propertyName, String propertyValue) {
         @SuppressWarnings("unchecked")

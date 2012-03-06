@@ -1,21 +1,21 @@
-; Tue Dec 15 10:55:35 PST 2009
+; Tue Mar 06 14:28:54 PST 2012
 ; 
-;+ (version "3.4.2")
-;+ (build "Build 557")
+;+ (version "3.4.8")
+;+ (build "Build 629")
 
 ([BROWSER_SLOT_NAMES] of  Property_List
 
 	(properties
-		[metaproject_ProjectKB_Class51026]
-		[metaproject_ProjectKB_Class51027]
-		[metaproject_ProjectKB_Class51028]
-		[metaproject_ProjectKB_Class51029]
-		[metaproject_ProjectKB_Class51030]
-		[metaproject_ProjectKB_Class51031]
-		[metaproject_ProjectKB_Class51032]
-		[metaproject_ProjectKB_Class51033]
-		[metaproject_ProjectKB_Class51034]
-		[metaproject_ProjectKB_Class51035]))
+		[metaproject_ProjectKB_Class40155]
+		[metaproject_ProjectKB_Class40156]
+		[metaproject_ProjectKB_Class40157]
+		[metaproject_ProjectKB_Class40158]
+		[metaproject_ProjectKB_Class40159]
+		[metaproject_ProjectKB_Class40160]
+		[metaproject_ProjectKB_Class40161]
+		[metaproject_ProjectKB_Class40162]
+		[metaproject_ProjectKB_Class40163]
+		[metaproject_ProjectKB_Class40164]))
 
 ([CLSES_TAB] of  Widget
 
@@ -427,7 +427,7 @@
 	(x 0)
 	(y 120))
 
-([KB_909174_Class3] of  Map
+([KB_899877_Class3] of  Map
 )
 
 ([metaproject_ProjectKB_Class1] of  Widget
@@ -479,7 +479,9 @@
 		[metaproject_ProjectKB_Class10054]
 		[metaproject_ProjectKB_Class10056]
 		[metaproject_ProjectKB_Class10057]
-		[metaproject_ProjectKB_Class50097]))
+		[metaproject_ProjectKB_Class50097]
+		[metaproject_ProjectKB_Class40071]
+		[metaproject_ProjectKB_Class40075]))
 
 ([metaproject_ProjectKB_Class10040] of  Widget
 
@@ -797,6 +799,66 @@
 	(property_list [metaproject_ProjectKB_Class4])
 	(widget_class_name "edu.stanford.smi.protege.widget.ProtegePropertiesTab"))
 
+([metaproject_ProjectKB_Class30004] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class30005])
+	(widget_class_name "se.liu.ida.JessTab.JessTab"))
+
+([metaproject_ProjectKB_Class30005] of  Property_List
+)
+
+([metaproject_ProjectKB_Class30006] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class30007])
+	(widget_class_name "uk.ac.man.cs.mig.coode.debugger.test.DebuggerTestTab"))
+
+([metaproject_ProjectKB_Class30007] of  Property_List
+)
+
+([metaproject_ProjectKB_Class30008] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class30009])
+	(widget_class_name "ca.uvic.csr.shrimp.jambalaya.JambalayaTab"))
+
+([metaproject_ProjectKB_Class30009] of  Property_List
+)
+
+([metaproject_ProjectKB_Class30010] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class30011])
+	(widget_class_name "ezpal.EZPalTab"))
+
+([metaproject_ProjectKB_Class30011] of  Property_List
+)
+
+([metaproject_ProjectKB_Class30012] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class30013])
+	(widget_class_name "edu.stanford.smi.protegex.widget.pal.PalConstraintsTab"))
+
+([metaproject_ProjectKB_Class30013] of  Property_List
+)
+
+([metaproject_ProjectKB_Class30014] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class30015])
+	(widget_class_name "edu.stanford.smi.protege.widget.instance_tree.InstanceTreeTab"))
+
+([metaproject_ProjectKB_Class30015] of  Property_List
+)
+
+([metaproject_ProjectKB_Class30016] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40017])
+	(widget_class_name "edu.stanford.smi.RemoteKBTab.WordNetTab"))
+
 ([metaproject_ProjectKB_Class30081] of  Widget
 
 	(height 60)
@@ -841,6 +903,521 @@
 
 ([metaproject_ProjectKB_Class40007] of  Property_List
 )
+
+([metaproject_ProjectKB_Class40017] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40018] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40019])
+	(widget_class_name "uk.ac.man.ac.mig.coode.individuals.ui.OWLDLIndividualsTab"))
+
+([metaproject_ProjectKB_Class40019] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40020] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40021])
+	(widget_class_name "org.protege.owl.mm.protege3.MappingMasterTab"))
+
+([metaproject_ProjectKB_Class40021] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40022] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40023])
+	(widget_class_name "edu.stanford.smi.protegex.evaluation.MetaAnalysis"))
+
+([metaproject_ProjectKB_Class40023] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40024] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40025])
+	(widget_class_name "uk.ac.man.cs.mig.coode.owlviz.ui.OWLVizTab"))
+
+([metaproject_ProjectKB_Class40025] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40026] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40027])
+	(widget_class_name "edu.stanford.smi.protege.query.LuceneQueryPlugin"))
+
+([metaproject_ProjectKB_Class40027] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40028] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40029])
+	(widget_class_name "edu.stanford.smi.RemoteKBTab.UMLSTab"))
+
+([metaproject_ProjectKB_Class40029] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40030] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40031])
+	(widget_class_name "edu.stanford.smi.protegex.changeanalysis.ChangeAnalysisTab"))
+
+([metaproject_ProjectKB_Class40031] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40032] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40033])
+	(widget_class_name "TGViztab.TGVizTab"))
+
+([metaproject_ProjectKB_Class40033] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40034] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40035])
+	(widget_class_name "org.algernon.kb.okbc.protege.plugins.AlgernonTab"))
+
+([metaproject_ProjectKB_Class40035] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40036] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40037])
+	(widget_class_name "edu.stanford.smi.protegex.xml.tab.XMLTab"))
+
+([metaproject_ProjectKB_Class40037] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40038] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40039])
+	(widget_class_name "edu.stanford.smi.protegex.widget.pal.PalQueriesTab"))
+
+([metaproject_ProjectKB_Class40039] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40040] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40041])
+	(widget_class_name "org.protege.owl.axiome.ui.AxiomeTab"))
+
+([metaproject_ProjectKB_Class40041] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40042] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40043])
+	(widget_class_name "edu.stanford.smi.protege.keywordsearch.StringSearch"))
+
+([metaproject_ProjectKB_Class40043] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40044] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40045])
+	(widget_class_name "script.ProtegeScriptTab"))
+
+([metaproject_ProjectKB_Class40045] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40046] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40047])
+	(widget_class_name "edu.stanford.smi.protegex.fctab.FacetConstraintsTab"))
+
+([metaproject_ProjectKB_Class40047] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40048] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40049])
+	(widget_class_name "edu.stanford.smi.protege.widget.instance_tree.KnowledgeTreeTab"))
+
+([metaproject_ProjectKB_Class40049] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40050] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40051])
+	(widget_class_name "edu.stanford.smi.protegex.datamaster.DataMasterTab"))
+
+([metaproject_ProjectKB_Class40051] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40052] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40053])
+	(widget_class_name "dfki.protege.ontoviz_tab.OntovizTab"))
+
+([metaproject_ProjectKB_Class40053] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40054] of  Widget
+
+	(is_hidden TRUE)
+	(property_list [metaproject_ProjectKB_Class40055])
+	(widget_class_name "edu.stanford.smi.protegex.prompt.PromptTab"))
+
+([metaproject_ProjectKB_Class40055] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40061] of  Widget
+
+	(height 100)
+	(is_hidden FALSE)
+	(name "owner")
+	(property_list [metaproject_ProjectKB_Class40062])
+	(widget_class_name "edu.stanford.smi.protege.widget.InstanceListWidget")
+	(width 220)
+	(x 290)
+	(y 0))
+
+([metaproject_ProjectKB_Class40062] of  Property_List
+
+	(properties
+		[metaproject_ProjectKB_Class40063]
+		[metaproject_ProjectKB_Class40064]))
+
+([metaproject_ProjectKB_Class40063] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-View References to Value"))
+
+([metaproject_ProjectKB_Class40064] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-Delete Instance"))
+
+([metaproject_ProjectKB_Class40065] of  Widget
+
+	(height 120)
+	(is_hidden FALSE)
+	(label "In Collection")
+	(name "inCollection")
+	(property_list [metaproject_ProjectKB_Class40066])
+	(widget_class_name "edu.stanford.smi.protege.widget.InstanceListWidget")
+	(width 230)
+	(x 290)
+	(y 100))
+
+([metaproject_ProjectKB_Class40066] of  Property_List
+
+	(properties
+		[metaproject_ProjectKB_Class40067]
+		[metaproject_ProjectKB_Class40068]
+		[metaproject_ProjectKB_Class40102]
+		[metaproject_ProjectKB_Class40103]
+		[metaproject_ProjectKB_Class40104]
+		[metaproject_ProjectKB_Class40105]
+		[metaproject_ProjectKB_Class40106]
+		[metaproject_ProjectKB_Class40107]
+		[metaproject_ProjectKB_Class40108]
+		[metaproject_ProjectKB_Class40109]
+		[metaproject_ProjectKB_Class40110]
+		[metaproject_ProjectKB_Class40111]
+		[metaproject_ProjectKB_Class40112]
+		[metaproject_ProjectKB_Class40113]))
+
+([metaproject_ProjectKB_Class40067] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-View References to Value"))
+
+([metaproject_ProjectKB_Class40068] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-Delete Instance"))
+
+([metaproject_ProjectKB_Class40069] of  Widget
+
+	(height 60)
+	(is_hidden FALSE)
+	(label "Policy modifiable by client")
+	(name "policyModifiableByClient")
+	(property_list [metaproject_ProjectKB_Class40070])
+	(widget_class_name "edu.stanford.smi.protege.widget.CheckBoxWidget")
+	(width 200)
+	(x 0)
+	(y 410))
+
+([metaproject_ProjectKB_Class40070] of  Property_List
+
+	(properties
+		[metaproject_ProjectKB_Class40114]
+		[metaproject_ProjectKB_Class40115]))
+
+([metaproject_ProjectKB_Class40071] of  Widget
+
+	(height 120)
+	(is_hidden FALSE)
+	(name "inCollection")
+	(property_list [metaproject_ProjectKB_Class40072])
+	(widget_class_name "edu.stanford.smi.protege.widget.InstanceListWidget")
+	(width 200)
+	(x 0)
+	(y 570))
+
+([metaproject_ProjectKB_Class40072] of  Property_List
+
+	(properties
+		[metaproject_ProjectKB_Class40073]
+		[metaproject_ProjectKB_Class40074]))
+
+([metaproject_ProjectKB_Class40073] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-View References to Value"))
+
+([metaproject_ProjectKB_Class40074] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-Delete Instance"))
+
+([metaproject_ProjectKB_Class40075] of  Widget
+
+	(height 60)
+	(is_hidden FALSE)
+	(name "policyModifiableByClient")
+	(property_list [metaproject_ProjectKB_Class40076])
+	(widget_class_name "edu.stanford.smi.protege.widget.CheckBoxWidget")
+	(width 200)
+	(x 0)
+	(y 510))
+
+([metaproject_ProjectKB_Class40076] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40077] of  Widget
+
+	(height 120)
+	(is_hidden FALSE)
+	(name "inCollection")
+	(property_list [metaproject_ProjectKB_Class40078])
+	(widget_class_name "edu.stanford.smi.protege.widget.InstanceListWidget")
+	(width 200)
+	(x 0)
+	(y 570))
+
+([metaproject_ProjectKB_Class40078] of  Property_List
+
+	(properties
+		[metaproject_ProjectKB_Class40079]
+		[metaproject_ProjectKB_Class40080]))
+
+([metaproject_ProjectKB_Class40079] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-View References to Value"))
+
+([metaproject_ProjectKB_Class40080] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-Delete Instance"))
+
+([metaproject_ProjectKB_Class40081] of  Widget
+
+	(height 60)
+	(is_hidden FALSE)
+	(name "policyModifiableByClient")
+	(property_list [metaproject_ProjectKB_Class40082])
+	(widget_class_name "edu.stanford.smi.protege.widget.CheckBoxWidget")
+	(width 200)
+	(x 0)
+	(y 510))
+
+([metaproject_ProjectKB_Class40082] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40096] of  Widget
+
+	(height 120)
+	(is_hidden FALSE)
+	(name "inCollection")
+	(property_list [metaproject_ProjectKB_Class40097])
+	(widget_class_name "edu.stanford.smi.protege.widget.InstanceListWidget")
+	(width 200)
+	(x 0)
+	(y 630))
+
+([metaproject_ProjectKB_Class40097] of  Property_List
+
+	(properties
+		[metaproject_ProjectKB_Class40098]
+		[metaproject_ProjectKB_Class40099]))
+
+([metaproject_ProjectKB_Class40098] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-View References to Value"))
+
+([metaproject_ProjectKB_Class40099] of  Boolean
+
+	(boolean_value FALSE)
+	(name "ButtonDisplayed-Delete Instance"))
+
+([metaproject_ProjectKB_Class40100] of  Widget
+
+	(height 60)
+	(is_hidden FALSE)
+	(name "policyModifiableByClient")
+	(property_list [metaproject_ProjectKB_Class40101])
+	(widget_class_name "edu.stanford.smi.protege.widget.CheckBoxWidget")
+	(width 200)
+	(x 0)
+	(y 570))
+
+([metaproject_ProjectKB_Class40101] of  Property_List
+)
+
+([metaproject_ProjectKB_Class40102] of  String
+
+	(name "tooltip_text"))
+
+([metaproject_ProjectKB_Class40103] of  Boolean
+
+	(boolean_value TRUE)
+	(name "ButtonDisplayed-View Instance"))
+
+([metaproject_ProjectKB_Class40104] of  String
+
+	(name "ButtonDescription-View Instance"))
+
+([metaproject_ProjectKB_Class40105] of  Boolean
+
+	(boolean_value TRUE)
+	(name "ButtonDisplayed-Create Instance"))
+
+([metaproject_ProjectKB_Class40106] of  String
+
+	(name "ButtonDescription-Create Instance"))
+
+([metaproject_ProjectKB_Class40107] of  String
+
+	(name "ButtonDescription-View References to Value"))
+
+([metaproject_ProjectKB_Class40108] of  Boolean
+
+	(boolean_value TRUE)
+	(name "ButtonDisplayed-Add Instance"))
+
+([metaproject_ProjectKB_Class40109] of  String
+
+	(name "ButtonDescription-Add Instance"))
+
+([metaproject_ProjectKB_Class40110] of  Boolean
+
+	(boolean_value TRUE)
+	(name "ButtonDisplayed-Remove Instance"))
+
+([metaproject_ProjectKB_Class40111] of  String
+
+	(name "ButtonDescription-Remove Instance"))
+
+([metaproject_ProjectKB_Class40112] of  String
+
+	(name "ButtonDescription-Delete Instance"))
+
+([metaproject_ProjectKB_Class40113] of  Boolean
+
+	(boolean_value FALSE)
+	(name "readOnly_configured"))
+
+([metaproject_ProjectKB_Class40114] of  String
+
+	(name "tooltip_text"))
+
+([metaproject_ProjectKB_Class40115] of  Boolean
+
+	(boolean_value FALSE)
+	(name "readOnly_configured"))
+
+([metaproject_ProjectKB_Class40155] of  String
+
+	(name ":INSTANCE-ANNOTATION")
+	(string_value "%3AANNOTATION-TEXT"))
+
+([metaproject_ProjectKB_Class40156] of  String
+
+	(name "Group")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class40157] of  String
+
+	(name "GroupOperation")
+	(string_value "allowedGroup{+can+}allowedOperation"))
+
+([metaproject_ProjectKB_Class40158] of  String
+
+	(name "Operation")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class40159] of  String
+
+	(name ":META-CLASS")
+	(string_value "%3ANAME"))
+
+([metaproject_ProjectKB_Class40160] of  String
+
+	(name ":PAL-CONSTRAINT")
+	(string_value "%3APAL-NAME"))
+
+([metaproject_ProjectKB_Class40161] of  String
+
+	(name "User")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class40162] of  String
+
+	(name "PropertyValue")
+	(string_value "propertyName{+%3D+}propertyValue"))
+
+([metaproject_ProjectKB_Class40163] of  String
+
+	(name "Project")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class40164] of  String
+
+	(name "Server")
+	(string_value "name"))
+
+([metaproject_ProjectKB_Class40165] of  Map_Entry
+
+	(key "add_name_on_instance_form")
+	(key_class "java.lang.String")
+	(value "false")
+	(value_class "java.lang.String"))
+
+([metaproject_ProjectKB_Class40166] of  Map_Entry
+
+	(key "change_tracking_active")
+	(key_class "java.lang.String")
+	(value "false")
+	(value_class "java.lang.String"))
+
+([metaproject_ProjectKB_Class40167] of  Map_Entry
+
+	(key "suppress_instance_counting")
+	(key_class "java.lang.String")
+	(value "false")
+	(value_class "java.lang.String"))
 
 ([metaproject_ProjectKB_Class5] of  Widget
 
@@ -956,13 +1533,6 @@
 
 	(name "tooltip_text"))
 
-([metaproject_ProjectKB_Class50025] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50029]
-		[metaproject_ProjectKB_Class50033]))
-
 ([metaproject_ProjectKB_Class50026] of  String
 
 	(name ":COLUMN:NAME:DESCRIPTORpropertyName")
@@ -977,11 +1547,6 @@
 
 	(integer_value 187)
 	(name ":PREFERRED:SIZE:DESCRIPTORpropertyName"))
-
-([metaproject_ProjectKB_Class50029] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
 
 ([metaproject_ProjectKB_Class50030] of  String
 
@@ -998,25 +1563,10 @@
 	(integer_value 187)
 	(name ":PREFERRED:SIZE:DESCRIPTORpropertyValue"))
 
-([metaproject_ProjectKB_Class50033] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50034] of  Integer
 
 	(integer_value 2)
 	(name ":Number:Of:Visible:Slots"))
-
-([metaproject_ProjectKB_Class50035] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50036] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
 
 ([metaproject_ProjectKB_Class50037] of  Boolean
 
@@ -1143,195 +1693,6 @@
 	(name ":Add:Instance:Dialog:Title")
 	(string_value "Select an already existing instance"))
 
-([metaproject_ProjectKB_Class50062] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50063]
-		[metaproject_ProjectKB_Class50064]))
-
-([metaproject_ProjectKB_Class50063] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50064] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50065] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50066] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50067] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50068]
-		[metaproject_ProjectKB_Class50069]))
-
-([metaproject_ProjectKB_Class50068] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50069] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50070] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50071] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50072] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50073]
-		[metaproject_ProjectKB_Class50074]))
-
-([metaproject_ProjectKB_Class50073] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50074] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50075] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50076] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50077] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50078]
-		[metaproject_ProjectKB_Class50079]))
-
-([metaproject_ProjectKB_Class50078] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50079] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50080] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50081] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50082] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50083]
-		[metaproject_ProjectKB_Class50084]))
-
-([metaproject_ProjectKB_Class50083] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50084] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50085] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50086] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50087] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50088]
-		[metaproject_ProjectKB_Class50089]))
-
-([metaproject_ProjectKB_Class50088] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50089] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50090] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50091] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50092] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50093]
-		[metaproject_ProjectKB_Class50094]))
-
-([metaproject_ProjectKB_Class50093] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50094] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50095] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50096] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50097] of  Widget
 
 	(height 120)
@@ -1434,13 +1795,6 @@
 
 	(name "tooltip_text"))
 
-([metaproject_ProjectKB_Class50109] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50113]
-		[metaproject_ProjectKB_Class50117]))
-
 ([metaproject_ProjectKB_Class50110] of  String
 
 	(name ":COLUMN:NAME:DESCRIPTORpropertyName")
@@ -1455,11 +1809,6 @@
 
 	(integer_value 186)
 	(name ":PREFERRED:SIZE:DESCRIPTORpropertyName"))
-
-([metaproject_ProjectKB_Class50113] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
 
 ([metaproject_ProjectKB_Class50114] of  String
 
@@ -1476,25 +1825,10 @@
 	(integer_value 185)
 	(name ":PREFERRED:SIZE:DESCRIPTORpropertyValue"))
 
-([metaproject_ProjectKB_Class50117] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50118] of  Integer
 
 	(integer_value 2)
 	(name ":Number:Of:Visible:Slots"))
-
-([metaproject_ProjectKB_Class50119] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50120] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
 
 ([metaproject_ProjectKB_Class50121] of  Boolean
 
@@ -1621,313 +1955,9 @@
 	(name ":Add:Instance:Dialog:Title")
 	(string_value "Select an already existing instance"))
 
-([metaproject_ProjectKB_Class50146] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50147]
-		[metaproject_ProjectKB_Class50148]))
-
-([metaproject_ProjectKB_Class50147] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50148] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50149] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50150] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50151] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50152]
-		[metaproject_ProjectKB_Class50153]))
-
-([metaproject_ProjectKB_Class50152] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50153] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50154] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50155] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50156] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50157]
-		[metaproject_ProjectKB_Class50158]))
-
-([metaproject_ProjectKB_Class50157] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50158] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50159] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50160] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50174] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50175]
-		[metaproject_ProjectKB_Class50176]))
-
-([metaproject_ProjectKB_Class50175] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50176] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50177] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50178] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50179] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50180]
-		[metaproject_ProjectKB_Class50181]))
-
-([metaproject_ProjectKB_Class50180] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50181] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50182] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50183] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50184] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50185]
-		[metaproject_ProjectKB_Class50186]))
-
-([metaproject_ProjectKB_Class50185] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50186] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50187] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50188] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50189] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50190]
-		[metaproject_ProjectKB_Class50191]))
-
-([metaproject_ProjectKB_Class50190] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50191] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50192] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50193] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50194] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50195]
-		[metaproject_ProjectKB_Class50196]))
-
-([metaproject_ProjectKB_Class50195] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50196] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50197] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50198] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50199] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50200]
-		[metaproject_ProjectKB_Class50201]))
-
-([metaproject_ProjectKB_Class50200] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50201] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50202] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50203] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50204] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50205]
-		[metaproject_ProjectKB_Class50206]))
-
-([metaproject_ProjectKB_Class50205] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50206] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50207] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50208] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50209] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50210]
-		[metaproject_ProjectKB_Class50211]))
-
-([metaproject_ProjectKB_Class50210] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50211] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50212] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50213] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50214] of  String
 
 	(name "tooltip_text"))
-
-([metaproject_ProjectKB_Class50215] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50219]
-		[metaproject_ProjectKB_Class50223]))
 
 ([metaproject_ProjectKB_Class50216] of  String
 
@@ -1944,11 +1974,6 @@
 	(integer_value 182)
 	(name ":PREFERRED:SIZE:DESCRIPTORpropertyName"))
 
-([metaproject_ProjectKB_Class50219] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
 ([metaproject_ProjectKB_Class50220] of  String
 
 	(name ":COLUMN:NAME:DESCRIPTORpropertyValue")
@@ -1964,25 +1989,10 @@
 	(integer_value 181)
 	(name ":PREFERRED:SIZE:DESCRIPTORpropertyValue"))
 
-([metaproject_ProjectKB_Class50223] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50224] of  Integer
 
 	(integer_value 2)
 	(name ":Number:Of:Visible:Slots"))
-
-([metaproject_ProjectKB_Class50225] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50226] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
 
 ([metaproject_ProjectKB_Class50227] of  Boolean
 
@@ -2109,195 +2119,6 @@
 	(name ":Add:Instance:Dialog:Title")
 	(string_value "Select an already existing instance"))
 
-([metaproject_ProjectKB_Class50252] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50253]
-		[metaproject_ProjectKB_Class50254]))
-
-([metaproject_ProjectKB_Class50253] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50254] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50255] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50256] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50257] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50258]
-		[metaproject_ProjectKB_Class50259]))
-
-([metaproject_ProjectKB_Class50258] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50259] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50260] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50261] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50262] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50263]
-		[metaproject_ProjectKB_Class50264]))
-
-([metaproject_ProjectKB_Class50263] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50264] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50265] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50266] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50267] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50268]
-		[metaproject_ProjectKB_Class50269]))
-
-([metaproject_ProjectKB_Class50268] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50269] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50270] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50271] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50272] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50273]
-		[metaproject_ProjectKB_Class50274]))
-
-([metaproject_ProjectKB_Class50273] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50274] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50275] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50276] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50277] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50278]
-		[metaproject_ProjectKB_Class50279]))
-
-([metaproject_ProjectKB_Class50278] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50279] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50280] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50281] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50282] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50283]
-		[metaproject_ProjectKB_Class50284]))
-
-([metaproject_ProjectKB_Class50283] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50284] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50285] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50286] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50308] of  Property_List
 
 	(properties
@@ -2306,7 +2127,9 @@
 		[metaproject_ProjectKB_Class50313]
 		[metaproject_ProjectKB_Class50314]
 		[metaproject_ProjectKB_Class50354]
-		[metaproject_ProjectKB_Class50394]))
+		[metaproject_ProjectKB_Class50394]
+		[metaproject_ProjectKB_Class40077]
+		[metaproject_ProjectKB_Class40081]))
 
 ([metaproject_ProjectKB_Class50309] of  Widget
 
@@ -2799,33 +2622,6 @@
 	(name ":Add:Instance:Dialog:Title")
 	(string_value "Select an already existing instance"))
 
-([metaproject_ProjectKB_Class50389] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50390]
-		[metaproject_ProjectKB_Class50391]))
-
-([metaproject_ProjectKB_Class50390] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50391] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50392] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50393] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50394] of  Widget
 
 	(height 210)
@@ -2861,9 +2657,11 @@
 		[metaproject_ProjectKB_Class50426]
 		[metaproject_ProjectKB_Class50427]
 		[metaproject_ProjectKB_Class50467]
-		[metaproject_ProjectKB_Class50507]
 		[metaproject_ProjectKB_Class50511]
-		[metaproject_ProjectKB_Class50515]))
+		[metaproject_ProjectKB_Class50515]
+		[metaproject_ProjectKB_Class40061]
+		[metaproject_ProjectKB_Class40065]
+		[metaproject_ProjectKB_Class40069]))
 
 ([metaproject_ProjectKB_Class50422] of  Widget
 
@@ -2886,9 +2684,9 @@
 	(name "description")
 	(property_list [metaproject_ProjectKB_Class50425])
 	(widget_class_name "edu.stanford.smi.protege.widget.TextAreaWidget")
-	(width 510)
+	(width 280)
 	(x 0)
-	(y 60))
+	(y 100))
 
 ([metaproject_ProjectKB_Class50425] of  Property_List
 )
@@ -2899,7 +2697,7 @@
 
 ([metaproject_ProjectKB_Class50427] of  Widget
 
-	(height 210)
+	(height 130)
 	(is_hidden FALSE)
 	(label "Allowed Group Operations (Policies)")
 	(name "allowedGroupOperation")
@@ -2907,7 +2705,7 @@
 	(widget_class_name "edu.stanford.smi.protegex.widget.instancetable.InstanceTableWidget")
 	(width 510)
 	(x 0)
-	(y 250))
+	(y 280))
 
 ([metaproject_ProjectKB_Class50428] of  Property_List
 
@@ -3356,33 +3154,6 @@
 	(name ":Add:Instance:Dialog:Title")
 	(string_value "Select an already existing instance"))
 
-([metaproject_ProjectKB_Class50502] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50503]
-		[metaproject_ProjectKB_Class50504]))
-
-([metaproject_ProjectKB_Class50503] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50504] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50505] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50506] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50507] of  Widget
 
 	(height 60)
@@ -3446,7 +3217,7 @@
 	(widget_class_name "edu.stanford.smi.protege.widget.TextFieldWidget")
 	(width 510)
 	(x 0)
-	(y 190))
+	(y 220))
 
 ([metaproject_ProjectKB_Class50516] of  Property_List
 )
@@ -3459,7 +3230,9 @@
 		[metaproject_ProjectKB_Class50526]
 		[metaproject_ProjectKB_Class50527]
 		[metaproject_ProjectKB_Class50567]
-		[metaproject_ProjectKB_Class50607]))
+		[metaproject_ProjectKB_Class50607]
+		[metaproject_ProjectKB_Class40096]
+		[metaproject_ProjectKB_Class40100]))
 
 ([metaproject_ProjectKB_Class50522] of  Widget
 
@@ -3952,33 +3725,6 @@
 	(name ":Add:Instance:Dialog:Title")
 	(string_value "Select an already existing instance"))
 
-([metaproject_ProjectKB_Class50602] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50603]
-		[metaproject_ProjectKB_Class50604]))
-
-([metaproject_ProjectKB_Class50603] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50604] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50605] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50606] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50607] of  Widget
 
 	(height 60)
@@ -3992,411 +3738,6 @@
 
 ([metaproject_ProjectKB_Class50608] of  Property_List
 )
-
-([metaproject_ProjectKB_Class50648] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50649]
-		[metaproject_ProjectKB_Class50650]))
-
-([metaproject_ProjectKB_Class50649] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50650] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50651] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50652] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50653] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50654]
-		[metaproject_ProjectKB_Class50655]))
-
-([metaproject_ProjectKB_Class50654] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50655] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50656] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50657] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50658] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50659]
-		[metaproject_ProjectKB_Class50660]))
-
-([metaproject_ProjectKB_Class50659] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50660] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50661] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50662] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50663] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50664]
-		[metaproject_ProjectKB_Class50665]))
-
-([metaproject_ProjectKB_Class50664] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50665] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50666] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50667] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50668] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50669]
-		[metaproject_ProjectKB_Class50670]))
-
-([metaproject_ProjectKB_Class50669] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50670] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50671] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50672] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50673] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50674]
-		[metaproject_ProjectKB_Class50675]))
-
-([metaproject_ProjectKB_Class50674] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50675] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50676] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50677] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50678] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50679]
-		[metaproject_ProjectKB_Class50680]))
-
-([metaproject_ProjectKB_Class50679] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50680] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50681] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50682] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50683] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50684]
-		[metaproject_ProjectKB_Class50685]))
-
-([metaproject_ProjectKB_Class50684] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50685] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50686] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50687] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50701] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50702]
-		[metaproject_ProjectKB_Class50703]))
-
-([metaproject_ProjectKB_Class50702] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50703] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50704] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50705] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50706] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50707]
-		[metaproject_ProjectKB_Class50708]))
-
-([metaproject_ProjectKB_Class50707] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50708] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50709] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50710] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50711] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50712]
-		[metaproject_ProjectKB_Class50713]))
-
-([metaproject_ProjectKB_Class50712] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50713] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50714] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50715] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50716] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50717]
-		[metaproject_ProjectKB_Class50718]))
-
-([metaproject_ProjectKB_Class50717] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50718] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50719] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50720] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50721] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50722]
-		[metaproject_ProjectKB_Class50723]))
-
-([metaproject_ProjectKB_Class50722] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50723] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50724] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50725] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50726] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50727]
-		[metaproject_ProjectKB_Class50728]))
-
-([metaproject_ProjectKB_Class50727] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50728] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50729] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50730] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50731] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50732]
-		[metaproject_ProjectKB_Class50733]))
-
-([metaproject_ProjectKB_Class50732] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50733] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50734] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50735] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
 
 ([metaproject_ProjectKB_Class50736] of  Property_List
 
@@ -4421,87 +3762,6 @@
 	(string_value "propertyName"))
 
 ([metaproject_ProjectKB_Class50740] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50741] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50742]
-		[metaproject_ProjectKB_Class50743]))
-
-([metaproject_ProjectKB_Class50742] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50743] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50744] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50745] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50746] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50747]
-		[metaproject_ProjectKB_Class50748]))
-
-([metaproject_ProjectKB_Class50747] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50748] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50749] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50750] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50751] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50752]
-		[metaproject_ProjectKB_Class50753]))
-
-([metaproject_ProjectKB_Class50752] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50753] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50754] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50755] of  String
 
 	(name ":Visible:Slot:Index1")
 	(string_value "propertyValue"))
@@ -4533,87 +3793,6 @@
 	(name ":Visible:Slot:Index1")
 	(string_value "propertyValue"))
 
-([metaproject_ProjectKB_Class50761] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50762]
-		[metaproject_ProjectKB_Class50763]))
-
-([metaproject_ProjectKB_Class50762] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50763] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50764] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50765] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50766] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50767]
-		[metaproject_ProjectKB_Class50768]))
-
-([metaproject_ProjectKB_Class50767] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50768] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50769] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50770] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50771] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50772]
-		[metaproject_ProjectKB_Class50773]))
-
-([metaproject_ProjectKB_Class50772] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50773] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50774] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50775] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50776] of  Property_List
 
 	(name ":Visible:Slot:List")
@@ -4637,87 +3816,6 @@
 	(string_value "propertyName"))
 
 ([metaproject_ProjectKB_Class50780] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50794] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50795]
-		[metaproject_ProjectKB_Class50796]))
-
-([metaproject_ProjectKB_Class50795] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50796] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50797] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50798] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50799] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50800]
-		[metaproject_ProjectKB_Class50801]))
-
-([metaproject_ProjectKB_Class50800] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50801] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50802] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50803] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50804] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50805]
-		[metaproject_ProjectKB_Class50806]))
-
-([metaproject_ProjectKB_Class50805] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50806] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50807] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50808] of  String
 
 	(name ":Visible:Slot:Index1")
 	(string_value "propertyValue"))
@@ -4749,87 +3847,6 @@
 	(name ":Visible:Slot:Index1")
 	(string_value "propertyValue"))
 
-([metaproject_ProjectKB_Class50814] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50815]
-		[metaproject_ProjectKB_Class50816]))
-
-([metaproject_ProjectKB_Class50815] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50816] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50817] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50818] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50819] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50820]
-		[metaproject_ProjectKB_Class50821]))
-
-([metaproject_ProjectKB_Class50820] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50821] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50822] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50823] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50824] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50825]
-		[metaproject_ProjectKB_Class50826]))
-
-([metaproject_ProjectKB_Class50825] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50826] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50827] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50828] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50829] of  Property_List
 
 	(name ":Visible:Slot:List")
@@ -4853,87 +3870,6 @@
 	(string_value "propertyName"))
 
 ([metaproject_ProjectKB_Class50833] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50834] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50835]
-		[metaproject_ProjectKB_Class50836]))
-
-([metaproject_ProjectKB_Class50835] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50836] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50837] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50838] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50839] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50840]
-		[metaproject_ProjectKB_Class50841]))
-
-([metaproject_ProjectKB_Class50840] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50841] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50842] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50843] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50844] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50845]
-		[metaproject_ProjectKB_Class50846]))
-
-([metaproject_ProjectKB_Class50845] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50846] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50847] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50848] of  String
 
 	(name ":Visible:Slot:Index1")
 	(string_value "propertyValue"))
@@ -5021,13 +3957,6 @@
 
 	(name "tooltip_text"))
 
-([metaproject_ProjectKB_Class50921] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50925]
-		[metaproject_ProjectKB_Class50929]))
-
 ([metaproject_ProjectKB_Class50922] of  String
 
 	(name ":COLUMN:NAME:DESCRIPTORpropertyName")
@@ -5042,11 +3971,6 @@
 
 	(integer_value 182)
 	(name ":PREFERRED:SIZE:DESCRIPTORpropertyName"))
-
-([metaproject_ProjectKB_Class50925] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
 
 ([metaproject_ProjectKB_Class50926] of  String
 
@@ -5063,25 +3987,10 @@
 	(integer_value 181)
 	(name ":PREFERRED:SIZE:DESCRIPTORpropertyValue"))
 
-([metaproject_ProjectKB_Class50929] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class50930] of  Integer
 
 	(integer_value 2)
 	(name ":Number:Of:Visible:Slots"))
-
-([metaproject_ProjectKB_Class50931] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50932] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
 
 ([metaproject_ProjectKB_Class50933] of  Boolean
 
@@ -5208,276 +4117,6 @@
 	(name ":Add:Instance:Dialog:Title")
 	(string_value "Select an already existing instance"))
 
-([metaproject_ProjectKB_Class50958] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50959]
-		[metaproject_ProjectKB_Class50960]))
-
-([metaproject_ProjectKB_Class50959] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50960] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50961] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50962] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50963] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50964]
-		[metaproject_ProjectKB_Class50965]))
-
-([metaproject_ProjectKB_Class50964] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50965] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50966] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50967] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50968] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50969]
-		[metaproject_ProjectKB_Class50970]))
-
-([metaproject_ProjectKB_Class50969] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50970] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50971] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50972] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50973] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50974]
-		[metaproject_ProjectKB_Class50975]))
-
-([metaproject_ProjectKB_Class50974] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50975] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50976] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50977] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50978] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50979]
-		[metaproject_ProjectKB_Class50980]))
-
-([metaproject_ProjectKB_Class50979] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50980] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50981] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50982] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50983] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50984]
-		[metaproject_ProjectKB_Class50985]))
-
-([metaproject_ProjectKB_Class50984] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50985] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50986] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50987] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50988] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50989]
-		[metaproject_ProjectKB_Class50990]))
-
-([metaproject_ProjectKB_Class50989] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50990] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50991] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50992] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50993] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50994]
-		[metaproject_ProjectKB_Class50995]))
-
-([metaproject_ProjectKB_Class50994] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50995] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50996] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class50997] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class50998] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class50999]
-		[metaproject_ProjectKB_Class51000]))
-
-([metaproject_ProjectKB_Class50999] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class51000] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class51001] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class51002] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class51003] of  Property_List
-
-	(name ":Visible:Slot:List")
-	(properties
-		[metaproject_ProjectKB_Class51004]
-		[metaproject_ProjectKB_Class51005]))
-
-([metaproject_ProjectKB_Class51004] of  String
-
-	(name "propertyName")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class51005] of  String
-
-	(name "propertyValue")
-	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class51006] of  String
-
-	(name ":Visible:Slot:Index0")
-	(string_value "propertyName"))
-
-([metaproject_ProjectKB_Class51007] of  String
-
-	(name ":Visible:Slot:Index1")
-	(string_value "propertyValue"))
-
 ([metaproject_ProjectKB_Class51008] of  Property_List
 
 	(name ":Visible:Slot:List")
@@ -5504,77 +4143,6 @@
 
 	(name ":Visible:Slot:Index1")
 	(string_value "propertyValue"))
-
-([metaproject_ProjectKB_Class51026] of  String
-
-	(name ":INSTANCE-ANNOTATION")
-	(string_value "%3AANNOTATION-TEXT"))
-
-([metaproject_ProjectKB_Class51027] of  String
-
-	(name "Group")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class51028] of  String
-
-	(name "GroupOperation")
-	(string_value "allowedGroup{+can+}allowedOperation"))
-
-([metaproject_ProjectKB_Class51029] of  String
-
-	(name "Operation")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class51030] of  String
-
-	(name ":META-CLASS")
-	(string_value "%3ANAME"))
-
-([metaproject_ProjectKB_Class51031] of  String
-
-	(name ":PAL-CONSTRAINT")
-	(string_value "%3APAL-NAME"))
-
-([metaproject_ProjectKB_Class51032] of  String
-
-	(name "User")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class51033] of  String
-
-	(name "PropertyValue")
-	(string_value "propertyName{+%3D+}propertyValue"))
-
-([metaproject_ProjectKB_Class51034] of  String
-
-	(name "Project")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class51035] of  String
-
-	(name "Server")
-	(string_value "name"))
-
-([metaproject_ProjectKB_Class51036] of  Map_Entry
-
-	(key "add_name_on_instance_form")
-	(key_class "java.lang.String")
-	(value "false")
-	(value_class "java.lang.String"))
-
-([metaproject_ProjectKB_Class51037] of  Map_Entry
-
-	(key "change_tracking_active")
-	(key_class "java.lang.String")
-	(value "false")
-	(value_class "java.lang.String"))
-
-([metaproject_ProjectKB_Class51038] of  Map_Entry
-
-	(key "suppress_instance_counting")
-	(key_class "java.lang.String")
-	(value "false")
-	(value_class "java.lang.String"))
 
 ([metaproject_ProjectKB_Class6] of  Property_List
 )
@@ -6126,25 +4694,50 @@
 	(sources [SOURCES])
 	(tabs
 		[INSTANCES_TAB]
-		[CLSES_TAB]
-		[SLOTS_TAB]
 		[FORMS_TAB]
+		[SLOTS_TAB]
+		[metaproject_ProjectKB_Class40034]
+		[metaproject_ProjectKB_Class40030]
 		[nci_metaproject_ProjectKB_Instance_20]
 		[ProjectKB_0036_00003]
-		[metaproject_ProjectKB_Class10004]
+		[CLSES_TAB]
+		[metaproject_ProjectKB_Class40050]
+		[metaproject_ProjectKB_Class30006]
+		[metaproject_ProjectKB_Class40046]
+		[metaproject_ProjectKB_Class30014]
+		[metaproject_ProjectKB_Class30008]
+		[metaproject_ProjectKB_Class30004]
 		[ProjectKB_0036_00001]
+		[metaproject_ProjectKB_Class40048]
+		[metaproject_ProjectKB_Class40026]
+		[metaproject_ProjectKB_Class40022]
+		[metaproject_ProjectKB_Class40052]
+		[metaproject_ProjectKB_Class40018]
 		[nci_metaproject_ProjectKB_Instance_24]
+		[metaproject_ProjectKB_Class30012]
+		[metaproject_ProjectKB_Class40054]
 		[metaproject_ProjectKB_Class3]
+		[metaproject_ProjectKB_Class40044]
 		[nci_metaproject_ProjectKB_Instance_22]
+		[metaproject_ProjectKB_Class40042]
+		[metaproject_ProjectKB_Class40032]
+		[metaproject_ProjectKB_Class40028]
+		[metaproject_ProjectKB_Class40036]
+		[metaproject_ProjectKB_Class40040]
 		[metaproject_ProjectKB_Class1]
 		[metaproject_ProjectKB_Class5]
 		[metaproject_ProjectKB_Class11]
+		[metaproject_ProjectKB_Class30010]
+		[metaproject_ProjectKB_Class40020]
 		[nci_metaproject_ProjectKB_Instance_10052]
 		[nci_metaproject_ProjectKB_Instance_48]
 		[metaproject_ProjectKB_Instance_20049]
 		[metaproject_ProjectKB_Instance_20047]
+		[metaproject_ProjectKB_Class40024]
+		[metaproject_ProjectKB_Class40038]
 		[nci_metaproject_ProjectKB_Instance_28]
-		[metaproject_ProjectKB_Class13]))
+		[metaproject_ProjectKB_Class13]
+		[metaproject_ProjectKB_Class30016]))
 
 ([ProjectKB_0036_00000] of  String
 
@@ -6250,9 +4843,9 @@
 ([projects_ProjectKB_00052] of  Map
 
 	(entries
-		[metaproject_ProjectKB_Class51036]
-		[metaproject_ProjectKB_Class51037]
-		[metaproject_ProjectKB_Class51038]))
+		[metaproject_ProjectKB_Class40165]
+		[metaproject_ProjectKB_Class40166]
+		[metaproject_ProjectKB_Class40167]))
 
 ([projects_ProjectKB_00053] of  Widget
 
