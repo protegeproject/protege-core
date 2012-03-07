@@ -114,13 +114,15 @@ public class ApplicationProperties {
             }
             
             if (PluginUtilities.isOWLAvailable()) {
-                exampleProjectName = getApplicationDirectory().getPath() +
-                    sep + "examples" + sep + "pizza" + sep + "pizza.owl.pprj";
+            	exampleProjectName = getApplicationDirectory().getPath() + sep + "examples" + sep + "pizza" + sep + "pizza.owl.pprj";
                 uri = URIUtilities.createURI(exampleProjectName);
                 addProjectToMRUList(uri);
                 
-                exampleProjectName = getApplicationDirectory().getPath() + 
-                	sep + "examples" + sep + "sqwrl" + sep + "SQWRLExamples.pprj";
+                exampleProjectName = getApplicationDirectory().getPath() + sep + "examples" + sep + "sqwrl" + sep + "SQWRLCollectionExamples.pprj";
+                uri = URIUtilities.createURI(exampleProjectName);
+                addProjectToMRUList(uri);
+
+                exampleProjectName = getApplicationDirectory().getPath() + sep + "examples" + sep + "sqwrl" + sep + "SQWRLCoreExamples.pprj";
                 uri = URIUtilities.createURI(exampleProjectName);
                 addProjectToMRUList(uri);
             }
