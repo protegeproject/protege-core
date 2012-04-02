@@ -131,7 +131,7 @@
 					</small>]]>
 			</bottom>
 			<link href = "${jdk.javadoc}"/>
-			<link href = "http://www.junit.org/junit/javadoc/3.8/"/>
+			<link href = "http://kentbeck.github.com/junit/javadoc/latest/"/>
 			<classpath>
 				<pathelement location = "${lib.dir}/junit.jar"/>
 				<pathelement location = "${looks.jar}"/>
