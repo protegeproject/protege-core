@@ -34,22 +34,22 @@
 
 		<!-- get source code from subversion repository -->
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/src ../${project.name}/build/src"/>
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/src ../${project.name}/build/src"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/junit ../${project.name}/build/junit"/>
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/junit ../${project.name}/build/junit"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/lib ../${project.name}/lib"/>
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/lib ../${project.name}/lib"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/etc ../${project.name}/etc"/>
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/etc ../${project.name}/etc"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk/examples ../${project.name}/examples"/>
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/examples ../${project.name}/examples"/>
 		</exec>
 		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
-			<arg line = "/c checkout ${svn.core.url}/${project.name}/trunk ../${project.name} --non-recursive"/>
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk ../${project.name} --non-recursive"/>
 		</exec>
 
 		<!-- add license text to top of source files -->
