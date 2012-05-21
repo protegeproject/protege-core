@@ -280,7 +280,7 @@ public class Server extends UnicastRemoteObject implements RemoteServer {
         this._saveIntervalMsec = saveIntervalMsec;
     }
 
-    private static Registry getRegistry() throws RemoteException {
+    public static Registry getRegistry() throws RemoteException {
         int port = Integer.getInteger(RmiSocketFactory.REGISTRY_PORT, Registry.REGISTRY_PORT).intValue();
         return LocateRegistry.getRegistry(null, port);
     }
