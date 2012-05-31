@@ -137,6 +137,8 @@ public class DatabaseWizardPage extends WizardPage {
         String text = getFieldText(TABLENAME_PROPERTY);
         if (text.length() == 0) {
             setErrorText("Table name is required.");
+        } else {
+            isValid = true;
         }
         return isValid;
     }
