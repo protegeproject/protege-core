@@ -87,7 +87,8 @@ public class Log {
       //this call avoids premature initialization of ApplicationProperties and SystemUtilities which caused other initializatino problems (look and feel)
       //TODO: find a better way to do the initialization
       try {
-        String rootDir = getApplicationDirectory().getAbsolutePath();
+        File applicationDirectory = getApplicationDirectory();
+        String rootDir = applicationDirectory == null ? null  :  applicationDirectory.getAbsolutePath();
         if (System.getProperty(logProperty) != null) {
           if (debug) {
             System.out.println("Logger already configured...");
