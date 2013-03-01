@@ -1,0 +1,211 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<!-- *** CHANGE ME: change the project name -->
+<project name = "Query Plugin" default = "dist" basedir = ".">    
+   <property environment="env"/>
+   <property name="protege.home" value="${env.PROTEGE_HOME}"/>
+   <property file="local.properties"/>
+
+   <property name = "src"             location = "./src"/>  
+   <property name = "build"           location = "./build"/>
+   <property name = "classes"         location = "${build}/classes"/>
+   <property name = "plugins"         location = "${build}/plugins"/>
+   <property name = "lib"             location = "./lib"/>
+
+   <!-- *** CHANGE ME: change the plugin dist and plugin name name -->
+   <property name = "plugin_dist"     value = "uk.ac.man.cs.mig.coode.owlviz"/>
+   <property name = "pluginName"      value = "OWLViz"/>
+
+   <property name = "owl.path"        value = "edu.stanford.smi.protegex.owl"/>
+
+   <property name="protege.lib"       location = "${protege.home}/protege.jar"/>
+   <property name="protege.owl.lib"   location = "${protege.home}/plugins/${owl.path}/protege-owl.jar"/>
+
+
+   <!-- 
+     #  ********** Finding Protege Libraries. *************
+     -->
+
+    <!-- *** CHANGE ME: do you have some other libraries to include? -->
+    <target name = "checkProtegeLibs">
+      <echo message="Using Protege Home = ${protege.home} to find protege jars"/>
+      <condition property="libs.found">
+        <and>
+          <available file="${protege.lib}" type = "file"/>
+          <available file="${protege.owl.lib}" type = "file"/>
+        </and>
+      </condition>
+      <path id = "project.classpath">    
+        <pathelement location = "${protege.lib}"/>
+        <pathelement location = "${protege.owl.lib}"/>
+        <!-- *** CHANGE ME: do you have a lib directory? -->
+        <fileset dir="${lib}"/>
+      </path>
+
+    </target>
+
+    <target name="checkProtegeLibsAndReport" depends="checkProtegeLibs"
+            unless="libs.found">
+      <echo message="Missing protege libraries.  You need to set "/>
+      <echo message="the PROTEGE_HOME environment variable to a"/>
+      <echo message="protege installation directory where the"/>
+      <echo message="appropriate plugins have been installed."/>
+      <echo message="Alternatively set the jar libs in local.properties (protege.lib=...)"/>
+      <echo message="Use the -v option to ant to see what jars are missing."/>
+      <fail message = "missing protege libraries"/>
+    </target>
+      
+   <!-- 
+     #  ********** Finding Protege Libraries Done. *************
+     -->
+
+	
+   <target name = "init">
+     <tstamp>
+       <format property="build.time" pattern="MM/dd/yyyy hh:mm aa"/>
+     </tstamp>
+     <mkdir dir = "${build}"/>
+     <mkdir dir = "${classes}"/>
+     <mkdir dir = "${plugins}"/>
+     <mkdir dir = "${plugins}/${plugin_dist}"/>
+	 <echo message="******************************************" />
+     <echo message="Using Java version to compile: ${ant.java.version}" />
+	 <echo message="******************************************" />
+   </target>  
+
+   <target name = "compile" depends = "init, checkProtegeLibsAndReport">
+     <javac srcdir = "${src}"
+            destdir = "${classes}" 
+            debug="on"
+            includeAntRuntime="false">
+       <classpath refid = "project.classpath"/>  
+     </javac>
+     <copy todir="${classes}">
+       <fileset dir="${src}">
+         <include name="**/*"/>
+         <exclude name="**/*.java"/>
+         <exclude name="**/MANIFEST.MF"/>
+         <exclude name="**/manifest.mf"/>
+       </fileset>
+     </copy>
+   </target>
+
+   <target name = "jar" depends = "compile">
+     <!-- *** CHANGE ME ***
+          Is your manifest really in etc/meta-inf/manifest.mf? 
+          A sample manifest looks like this:
+
+              Manifest-Version: 1.0
+              Created-By: 1.4.2_01 (Sun Microsystems Inc.)
+
+              Name: edu/stanford/bmir/job/ProjectPlugin.class
+              Project-Plugin: True
+
+          More information can be  found at
+             http://protegewiki.stanford.edu/wiki/PluginManifestsAndJars
+       -->
+     <copy tofile="${build}/manifest.mf" 
+           file="etc/meta-inf/manifest.mf" overwrite="true"/>
+     <manifest file="${build}/manifest.mf" 
+               mode = "update">
+        <attribute name="Built-By" value = "${user.name}"/>
+        <attribute name="Build-Date" value = "${build.time}"/>
+     </manifest>
+     <jar jarfile = "${plugins}/${plugin_dist}/${pluginName}.jar" 
+          basedir = "${classes}" 
+          manifest = "${build}/manifest.mf"/>
+     <!-- *** CHANGE ME: are there other resources to copy? -->
+     <copy todir="${plugins}/${plugin_dist}">
+       <!-- *** CHANGE ME: do you have a lib directory? -->
+       <fileset dir="${lib}" excludes="junit*.jar"/>
+     </copy>
+     <!-- *** CHANGE ME ***
+          Is this the right location for your plugin.properties file?
+          A sample plugin.properties file looks like this:
+
+             plugin.component.count=1
+             plugin.component.name.0=ExampleJobPlugin
+             plugin.dependency.count=1
+             plugin.dependency.0=edu.stanford.smi.protegex.owl
+       -->
+     <copy  todir="${plugins}/${plugin_dist}" file="./etc/plugin.properties"/>
+   </target>
+
+   <target name = "dist" depends = "jar">
+     <zip basedir = "${plugins}"
+          includes = "${plugin_dist}/**"
+          destfile = "${build}/${pluginName}.zip"/>
+   </target>
+
+   <target name = "update" depends = "jar">
+      <fail message = "set the protege.home variable to do an install">
+         <condition>
+            <not>
+              <isset property="protege.home"/>
+            </not>
+         </condition>
+      </fail>
+      <copy file="${plugins}/${plugin_dist}/${pluginName}.jar"
+            todir="${protege.home}/plugins/${plugin_dist}"/>
+   </target>
+
+   <target name = "install" depends = "dist">
+      <fail message = "set the protege.home variable to do an install">
+         <condition>
+            <not>
+              <isset property="protege.home"/>
+            </not>
+         </condition>
+      </fail>
+      <unzip src="${build}/${pluginName}.zip" 
+             dest = "${protege.home}/plugins"
+             overwrite = "true"/>
+   </target>
+	
+    <!-- Run targets -->
+
+    <target name="debug" depends="install">
+        <java fork="true" dir="${protege.home}" 
+              classname="edu.stanford.smi.protege.Application">
+            <jvmarg value = "-Xdebug"/>
+            <jvmarg value = "-Xrunjdwp:transport=dt_socket,address=8100,server=y,suspend=y"/> 
+            <classpath>
+                <pathelement path="${protege.home}/protege.jar"/>
+                <pathelement path="${protege.home}/looks.jar"/>
+                <pathelement path="${protege.home}/unicode_panel.jar"/>
+                <pathelement path="${protege.home}/driver.jar"/>
+                <pathelement path="${protege.home}/driver1.jar"/>
+            </classpath>
+        </java>
+    </target>
+	
+    <target name="run" depends="install">
+        <java fork="true" dir="${protege.home}" 
+              classname="edu.stanford.smi.protege.Application">
+            <classpath>
+                <pathelement path="${protege.home}/protege.jar"/>
+                <pathelement path="${protege.home}/looks.jar"/>
+                <pathelement path="${protege.home}/unicode_panel.jar"/>
+                <pathelement path="${protege.home}/driver.jar"/>
+                <pathelement path="${protege.home}/driver1.jar"/>
+            </classpath>
+        </java>
+    </target>
+
+
+   <target name = "clean">
+     <delete dir = "${build}"/>
+   </target>
+
+   <target name = "usage">
+      <echo message="remember to set the PROTEGE_HOME environment variable"/>
+      <echo message="jar     - make the ${pluginName} jar file"/>
+      <echo message="dist    - build the plugin and make a zip file for distribution"/>
+      <echo message="update  - build the plugin and refresh the plugin jar file"/>
+      <echo message="          in the Protege distribution"/>
+      <echo message="install - build the plugin and install it to Protege"/>
+      <echo message="debug   - install the plugin and start Protege in debug mode"/>
+      <echo message="run     - install the plugin and start Protege"/>
+      <echo message="clean   - remove all built files"/>
+   </target>
+
+</project>
