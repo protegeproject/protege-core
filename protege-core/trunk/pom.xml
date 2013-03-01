@@ -3,7 +3,7 @@
 	
     <groupId>edu.stanford.protege</groupId>
     <artifactId>protege</artifactId>
-    <version>3.5.0-beta-651</version>
+    <version>3.5.0-beta-652-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Core Protege</name>
@@ -36,9 +36,9 @@
 	</developers>
 	
 	<scm>
-		<connection>scm:svn:http://smi-protege.stanford.edu/repos/protege/protege-core/tags/protege-3.5.0-beta-651</connection>
-		<developerConnection>scm:svn:https://smi-protege.stanford.edu/repos/protege/protege-core/tags/protege-3.5.0-beta-651</developerConnection>
-		<url>http://smi-protege.stanford.edu/svn/protege-core/tags/protege-3.5.0-beta-651</url>
+		<connection>scm:svn:http://smi-protege.stanford.edu/repos/protege/protege-core/trunk/</connection>
+		<developerConnection>scm:svn:https://smi-protege.stanford.edu/repos/protege/protege-core/trunk/</developerConnection>
+		<url>http://smi-protege.stanford.edu/svn/protege-core/</url>
 	</scm>
 	
     <properties>
