@@ -1,0 +1,171 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+    <groupId>edu.stanford.protege</groupId>
+    <artifactId>protege</artifactId>
+    <version>3.5.0-beta-651-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Core Protege</name>
+    <description>Core code for the Protege ontology editor.  Serves as the basis for the Protege-Frames and Protege-OWL editors.</description>
+    <url>http://protege.stanford.edu</url>
+	<licenses>
+		<license>
+			<name>Mozilla Public License</name>
+			<url>http://www.mozilla.org/MPL/</url>
+		</license>
+	</licenses>
+	
+	<developers>
+		<developer>
+			<name>Timothy Redmond</name>
+			<email>tredmond@stanford.edu</email>
+		</developer>
+		<developer>
+			<name>Jennifer Vendetti</name>
+			<email>vendetti@stanford.edu</email>
+		</developer>
+		<developer>
+			<name>Tania Tudorache</name>
+			<email>tudorache@stanford.edu</email>
+		</developer>
+		<developer>
+			<name>Csongor Nyulas</name>
+			<email>csongor.nyulas@stanford.edu</email>
+		</developer>
+	</developers>
+	
+	<scm>
+		<connection>scm:svn:http://smi-protege.stanford.edu/repos/protege/protege-core/trunk/</connection>
+		<developerConnection>scm:svn:https://smi-protege.stanford.edu/repos/protege/protege-core/trunk/</developerConnection>
+		<url>http://smi-protege.stanford.edu/svn/protege-core/</url>
+	</scm>
+	
+    <properties>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    
+    <dependencies>
+		<dependency>
+			<groupId>com.jgoodies</groupId>
+			<artifactId>jgoodies-looks</artifactId>
+			<version>2.5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.catalysoft</groupId>
+			<artifactId>unicode_panel</artifactId>
+			<version>1.0.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/unicode_panel.jar</systemPath>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		
+		<!-- Tests won't run without some work.  -->
+		<!-- <testSourceDirectory>junit</testSourceDirectory>  -->
+
+		<resources>
+			<resource>
+				<directory>src/edu/stanford/smi/protege/resource/files</directory>
+				<targetPath>${project.build.outputDirectory}/edu/stanford/smi/protege/resource/files</targetPath>
+			</resource>
+			<resource>
+				<directory>src/edu/stanford/smi/protege/resource/image</directory>
+				<targetPath>${project.build.outputDirectory}/edu/stanford/smi/protege/resource/image</targetPath>
+			</resource>
+		</resources>
+
+        <plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.0</version>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+			
+			<!-- Helpful instructions for getting this plug-in to work: http://jira.codehaus.org/browse/MANTRUN-23 -->
+			<!-- Another option to consider might be this one: http://mojo.codehaus.org/rmic-maven-plugin/index.html -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<dependencies>
+					<dependency>
+						<groupId>sun</groupId>
+						<artifactId>tools</artifactId>
+						<version>1.0</version>
+						<scope>system</scope>
+						<systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<phase>process-classes</phase>
+						<configuration>
+							<target>
+								<rmic base = "${project.build.outputDirectory}" stubversion = "1.2" classpathref="maven.compile.classpath" classname = "edu.stanford.smi.protege.server.SimpleStream"/>    
+								<rmic base = "${project.build.outputDirectory}" stubversion = "1.2" classpathref="maven.compile.classpath" classname = "edu.stanford.smi.protege.server.Server"/>    
+								<rmic base = "${project.build.outputDirectory}" stubversion = "1.2" classpathref="maven.compile.classpath" classname = "edu.stanford.smi.protege.server.ServerProject"/>    
+								<rmic base = "${project.build.outputDirectory}" stubversion = "1.2" classpathref="maven.compile.classpath" classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>  
+								<rmic base = "${project.build.outputDirectory}" stubversion = "1.2" classpathref="maven.compile.classpath" classname = "edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore"/>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
