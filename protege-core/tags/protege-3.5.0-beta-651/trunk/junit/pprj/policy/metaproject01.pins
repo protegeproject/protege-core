@@ -1,0 +1,138 @@
+; Fri Mar 26 14:22:39 PDT 2010
+; 
+;+ (version "3.4.4")
+;+ (build "Build 577")
+
+([metaproject01_Class0] of  GroupOperation
+
+	(allowedGroup [metaproject_Class10003])
+	(allowedOperation [nci_metaproject_Instance_60009]))
+
+([metaproject01_Class1] of  GroupOperation
+
+	(allowedGroup [metaproject_Class10001])
+	(allowedOperation [metaproject_Class10005]))
+
+([metaproject01_Class10000] of  GroupOperation
+
+	(allowedGroup [metaproject_Class10001])
+	(allowedOperation [nci_metaproject_Instance_60009]))
+
+([metaproject_Class0] of  Project
+
+	(allowedGroupOperation
+		[metaproject_Class10006]
+		[metaproject01_Class1])
+	(location "examples/wines/wines.pprj")
+	(name "Wines"))
+
+([metaproject_Class1] of  Project
+
+	(allowedGroupOperation
+		[metaproject_Class10004]
+		[metaproject01_Class10000])
+	(description "OWL project")
+	(location "examples/newspaper/newspaper.pprj")
+	(name "Newspaper"))
+
+([metaproject_Class10001] of  Group
+
+	(member
+		[metaproject_Instance_10005]
+		[metaproject_Instance_10002]
+		[metaproject_Instance_10003]
+		[metaproject_Instance_10004]
+		[metaproject_Instance_10005]
+		[metaproject_Instance_10006]
+		[metaproject_Instance_10007])
+	(name "ProtegeDevelopers"))
+
+([metaproject_Class10002] of  Group
+
+	(member
+		[metaproject_Instance_10006]
+		[metaproject_Instance_10007]
+		[metaproject_Instance_10003])
+	(name "Protege3"))
+
+([metaproject_Class10003] of  Group
+
+	(member [metaproject_Instance_10007])
+	(name "Timothy"))
+
+([metaproject_Class10004] of  GroupOperation
+
+	(allowedGroup [metaproject_Class10002])
+	(allowedOperation [metaproject_Class10005]))
+
+([metaproject_Class10005] of  Operation
+
+	(name "DisplayInProjectList"))
+
+([metaproject_Class10006] of  GroupOperation
+
+	(allowedGroup [metaproject_Class10002])
+	(allowedOperation [nci_metaproject_Instance_60009]))
+
+([metaproject_Instance_10002] of  User
+
+	(group [metaproject_Class10001])
+	(name "Guest")
+	(password "f6cbe0e8b51b334c28816a9f01ace210")
+	(salt "a396afcff7a7efae"))
+
+([metaproject_Instance_10003] of  User
+
+	(group
+		[metaproject_Class10001]
+		[metaproject_Class10002])
+	(name "Jennifer Vendetti")
+	(password "c9afeaad90e160f79d0b4946969514ac")
+	(salt "99c94adf831f4b85"))
+
+([metaproject_Instance_10004] of  User
+
+	(group [metaproject_Class10001])
+	(name "Natasha Noy")
+	(password "a754fd0308924014d6819ad82fed1d0e")
+	(salt "0ba934b7d93304ed"))
+
+([metaproject_Instance_10005] of  User
+
+	(group [metaproject_Class10001])
+	(name "Ray Fergerson")
+	(password "9f570cb0985379ce8fc4dadd2f81a212")
+	(salt "5ade7a615dc0cc23"))
+
+([metaproject_Instance_10006] of  User
+
+	(group
+		[metaproject_Class10001]
+		[metaproject_Class10002])
+	(name "Tania Tudorache")
+	(password "5042a7a814b025f4eab5069e744fe1fe")
+	(salt "cc2ef2cee0686521"))
+
+([metaproject_Instance_10007] of  User
+
+	(group
+		[metaproject_Class10003]
+		[metaproject_Class10001]
+		[metaproject_Class10002])
+	(name "Timothy Redmond")
+	(password "e34da28df85c5fb0b99043064c93e5f2")
+	(salt "991f1efb4cb19286"))
+
+([metaproject_Instance_20000] of  Project
+
+	(allowedGroupOperation [metaproject01_Class0])
+	(location "examples/server/metaproject.pprj")
+	(name "Metaproject"))
+
+([nci_metaproject_Instance_60009] of  Operation
+
+	(name "Read"))
+
+([nci_metaproject_Instance_60010] of  Operation
+
+	(name "Write"))
