@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
 	<parent>
@@ -9,7 +10,7 @@
 
     <groupId>edu.stanford.protege</groupId>
     <artifactId>protege</artifactId>
-    <version>3.5.0-beta-652-SNAPSHOT</version>
+    <version>3.5.0-beta-651-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Core Protege</name>
@@ -114,11 +115,11 @@
 						<phase>process-classes</phase>
 						<configuration>
 							<target>
-								<rmic base="${project.build.outputDirectory}" stubversion="1.2" classpathref="maven.compile.classpath" classname="edu.stanford.smi.protege.server.SimpleStream" />    
-								<rmic base="${project.build.outputDirectory}" stubversion="1.2" classpathref="maven.compile.classpath" classname="edu.stanford.smi.protege.server.Server" />    
-								<rmic base="${project.build.outputDirectory}" stubversion="1.2" classpathref="maven.compile.classpath" classname="edu.stanford.smi.protege.server.ServerProject" />    
-								<rmic base="${project.build.outputDirectory}" stubversion="1.2" classpathref="maven.compile.classpath" classname="edu.stanford.smi.protege.server.framestore.ServerFrameStore" />  
-								<rmic base="${project.build.outputDirectory}" stubversion="1.2" classpathref="maven.compile.classpath" classname="edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore" />
+								<rmic base = "${project.build.outputDirectory}" stubversion = "1.2" classpathref="maven.compile.classpath" classname = "edu.stanford.smi.protege.server.SimpleStream"/>    
+								<rmic base = "${project.build.outputDirectory}" stubversion = "1.2" classpathref="maven.compile.classpath" classname = "edu.stanford.smi.protege.server.Server"/>    
+								<rmic base = "${project.build.outputDirectory}" stubversion = "1.2" classpathref="maven.compile.classpath" classname = "edu.stanford.smi.protege.server.ServerProject"/>    
+								<rmic base = "${project.build.outputDirectory}" stubversion = "1.2" classpathref="maven.compile.classpath" classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>  
+								<rmic base = "${project.build.outputDirectory}" stubversion = "1.2" classpathref="maven.compile.classpath" classname = "edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore"/>
 							</target>
 						</configuration>
 						<goals>
