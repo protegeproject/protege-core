@@ -1,0 +1,130 @@
+#
+# The purpose of this file is to make it possible to run junit tests that 
+# require per site configuration.  At the moment this only includes the 
+# database tests.  Database tests will need to be run differently for a 
+# developer at Stanford or University of Manchester, a developer in a system 
+# that is offline or a developer at some other site.
+
+
+#
+# These are general controls for how all the junits run.
+#
+#     My experience is that "ant junit" provides almost no debugging
+#     information when things go wrong.  (This was not true in my
+#     previous job and I don't know the difference. log4j??)  When there is a
+#     problem I generally use my development environment to debug
+#     faulting junit.  For scripting problems with the junits the options
+#
+#        filtertrace="false" 
+#        showoutput="true"
+#
+#     give a little more information.  Also when you know that some
+#     junits are failing, removing the option 
+#
+#        haltonfailure = "on" 
+#
+#     is helpful for showing all the failures.  But in the committed
+#     version I think that this option is very important because it
+#     means that the developer will never mistakenly believe that
+#     junits have succeeded.
+#
+
+junit.filtertrace=true
+junit.showoutput=false
+junit.haltonerror=on
+junit.haltonfailure=on
+junit.includes=**/*Test.java
+junit.memory=700M
+
+
+#
+# By default everything here should be marked as not configured so that a 
+# random user can run tests.
+#
+
+
+#--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==
+# The server test depends on the rmi_registry to be running.
+
+#--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==
+# Configuration settings for the database server-client tests.  We need to configure 
+# the database project and the meta-project that uses the database.  A useful technique 
+# for creating the database project is to configure the settings below and then run 
+# DBServer_Test as a java application (not a junit test).  The metaproject is preconfigured
+# to look for the database project in junit/pprj/scratch.pprj.  This project can be automatically
+# created from the settings below by calling the main method of DBServer_Test.
+
+# These tests also depend on the server jar file property and the rmiregistry.
+# 
+# This setting points to one of the configured database projects defined below in
+# the database configuration section.  Currently valid options are
+# Oracle, MySQL, MsAccess, PostGres and SQLServer.  If this setting is
+# set then we will assume that the database server-client test is configured.
+# MySQL, at least for mysql 5, is not recommended here as it does not seem to
+# set the transaction isolation level reliably.  This leads to intermittant 
+# failures of the DBServer_Test.
+#
+
+#junit.server.db.dbtype=PostGres
+#junit.server.db.file.dbproject=junit/pprj/scratch.pprj
+#junit.server.db.file.metaproject=junit/pprj/metaproject.pprj
+#junit.server.db.client_project=scratch
+
+#--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==
+#  Configuration of file locations.  Should eventually include web locations 
+#  for ontologies.
+#
+
+#junit.project.file.newspaper=file://Users/tredmond/dev/workspace/protege-head/examples/newspaper/newspaper.pprj
+#junit.project.file.jar.newspaper=jar:file://Users/tredmond/dev/workspace/protege-head/examples/newspaper/newspaper.jar!/newspaper.pprj
+#junit.project.file.including=something
+#junit.project.file.including=something
+
+
+#--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==
+# Configuration file for database.  Makes it easier to run the junit tests 
+# automatically.  The defaults in the svn tree should be nothing configured 
+# so that we can run the junit tests automatically. Developers can set this to 
+# any databases that they have set up.
+#
+# See APITestCase.java.
+#
+
+junit.db.Oracle.configured=false
+junit.db.Oracle.driver=oracle.jdbc.driver.OracleDriver
+junit.db.Oracle.table=scratch
+junit.db.Oracle.user=protege
+junit.db.Oracle.password=foo
+junit.db.Oracle.url=jdbc:oracle:thin:@irt-dev-db.stanford.edu:1521:dev
+
+
+junit.db.MySQL.configured=false
+junit.db.MySQL.driver=com.mysql.jdbc.Driver
+junit.db.MySQL.table=scratch
+junit.db.MySQL.user=protege
+junit.db.MySQL.password=xks
+junit.db.MySQL.url=jdbc:mysql://localhost/protege
+
+
+junit.db.MsAccess.configured=false
+junit.db.MsAccess.driver=sun.jdbc.odbc.JdbcOdbcDriver
+junit.db.MsAccess.table=scratch
+junit.db.MsAccess.user=protege
+junit.db.MsAccess.password=foo
+junit.db.MsAccess.url=jdbc:odbc:protege
+
+
+junit.db.PostGres.configured=false
+junit.db.PostGres.driver=org.postgresql.Driver
+junit.db.PostGres.table=scratch
+junit.db.PostGres.user=protege
+junit.db.PostGres.password=foo
+junit.db.PostGres.url=jdbc:postgresql://localhost/protege
+
+
+junit.db.SQLServer.configured=false
+junit.db.SQLServer.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
+junit.db.SQLServer.table=scratch
+junit.db.SQLServer.user=sa
+junit.db.SQLServer.password=foo
+junit.db.SQLServer.url=jdbc:microsoft:sqlserver://oconnor-smi:1433;DatabaseName=protege;SelectMethod=cursor
