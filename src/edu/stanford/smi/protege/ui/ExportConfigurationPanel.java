@@ -51,14 +51,15 @@ public class ExportConfigurationPanel {
 	private JCheckBox exportBrowserTextCheckBox;
 	private JCheckBox exportMetadataCheckBox;
 	private JCheckBox exportSuperclassesCheckBox;
+	private JCheckBox showSystemSlots;
 	private FileField fileField;
 	private JTextField slotDelimiterTextField;
 	private JTextField slotValuesDelimiterTextField;
 
 	private Collection<Slot> slots = new LinkedHashSet<Slot>();
 	private Collection<Slot> possibleSlots = new LinkedHashSet<Slot>();
-	private Collection<Cls> clses = new LinkedHashSet<Cls>();	
-	
+	private Collection<Cls> clses = new LinkedHashSet<Cls>();
+
 	private String metadataString = "";
 	private boolean showExportSuperclasses = false;
 	private boolean showExportClasses = false;
@@ -90,11 +91,17 @@ public class ExportConfigurationPanel {
 			LabeledComponent clsesListComp = getClsesListComponent();
 			configPanel.add(clsesListComp);
 		}
-		
+
 		LabeledComponent slotsListComp = getSlotsListComponent();
 		configPanel.add(slotsListComp);
-	
+
 		configPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+		JPanel p0 = new JPanel(new GridLayout(1,1));
+		showSystemSlots = ComponentFactory.createCheckBox("Show system slots");
+		showSystemSlots.setAlignmentX(Component.LEFT_ALIGNMENT);
+		p0.add(showSystemSlots);
+		configPanel.add(p0);
 
 		JPanel p1 = new JPanel(new GridLayout(2,2));
 		p1.add(new JLabel("Slot delimiter"));
@@ -131,10 +138,10 @@ public class ExportConfigurationPanel {
 			exportSuperclassesCheckBox.setSelected(ExportToCsvUtil.isExportSuperclass());
 			p2.add(exportSuperclassesCheckBox);
 		}
-		
+
 		p2.add(getExportMetadataComponent());
-		configPanel.add(p2);	
-		
+		configPanel.add(p2);
+
 		return configPanel;
 	}
 
@@ -191,16 +198,17 @@ public class ExportConfigurationPanel {
 		slotsList.setCellRenderer(FrameRenderer.createInstance());
 		ComponentUtilities.addListValues(slotsList, slots);
 		LabeledComponent labeledComp = new LabeledComponent("Slots to export", new JScrollPane(slotsList), true );
-		
+
 		labeledComp.addHeaderButton(new AllowableAction("Add slots", Icons.getAddSlotIcon(), null) {
 			private static final long serialVersionUID = -8082099266752807423L;
 
+            @SuppressWarnings("unchecked")
             public void actionPerformed(ActionEvent e) {
 				HashSet<Slot> allSlots = new HashSet<Slot>();
-				Iterator j = kb.getSlots().iterator();
+				Iterator<Slot> j = kb.getSlots().iterator();
 				while (j.hasNext()) {
-					Slot s = (Slot) j.next();
-					if (!s.isSystem()) {
+					Slot s = j.next();
+					if (showSystemSlots.isSelected() || !s.isSystem()) {
 						allSlots.add(s);
 					}
 				}
@@ -213,7 +221,7 @@ public class ExportConfigurationPanel {
 
 				// Show util window for multiple slot selection
 				Collection<Slot> newSlots = DisplayUtilities.pickSlots(configPanel, allSlotsList, "Select slots to export (multiple selection)");
-				slots.addAll(newSlots);			
+				slots.addAll(newSlots);
 
 				ComponentUtilities.clearListValues(slotsList);
 				ComponentUtilities.addListValues(slotsList, slots);
@@ -237,26 +245,26 @@ public class ExportConfigurationPanel {
 
 		return labeledComp;
 	}
-	
+
 	private LabeledComponent getClsesListComponent() {
 		final SelectableList clsesList = ComponentFactory.createSelectableList(null);
 		clsesList.setCellRenderer(FrameRenderer.createInstance());
 		ComponentUtilities.setListValues(clsesList, clses);
 		LabeledComponent labeledComp = new LabeledComponent("Classes to export", new JScrollPane(clsesList), true );
-		
+
 		labeledComp.addHeaderButton(new AllowableAction("Add classes", Icons.getAddClsIcon(), null) {
 			private static final long serialVersionUID = -8306176540928522503L;
 
             public void actionPerformed(ActionEvent e) {
 				HashSet<Cls> allClses = new HashSet<Cls>();
-				
+
 				List<Cls> allClsesList = new ArrayList<Cls>(allClses);
 				Collections.sort(allClsesList, new FrameComparator<Cls>());
 
 				// Show util window for multiple slot selection
 				Collection<Cls> newClses = DisplayUtilities.pickClses(configPanel, kb, kb.getRootClses());
 				clses.addAll(newClses);
-				
+
 				ComponentUtilities.clearListValues(clsesList);
 				ComponentUtilities.addListValues(clsesList, clses);
 			}
@@ -315,7 +323,7 @@ public class ExportConfigurationPanel {
 	public boolean isExportBrowserTextEnabled(){
 		return exportBrowserTextCheckBox.isSelected();
 	}
-	
+
 	public boolean isExportSuperclassEnabled(){
 		return exportSuperclassesCheckBox != null && exportSuperclassesCheckBox.isSelected();
 	}
@@ -356,24 +364,24 @@ public class ExportConfigurationPanel {
 	 * @param possibleSlots
 	 */
 	public void setPossibleSlots(Collection<Slot> possibleSlots) {
-		this.possibleSlots = possibleSlots;		
+		this.possibleSlots = possibleSlots;
 	}
 
 	/**
-	 * Give a chance to other parts of the code to set the intial classes 
+	 * Give a chance to other parts of the code to set the intial classes
 	 * that will show up in the exported classes list
 	 * @param possibleSlots
 	 */
 	public void setInitialExportClasses(Collection<Cls> initialExportClses) {
 		//we clear previous selection - if this is not desired, just remove the line
-		clses.clear();		
-		clses.addAll(initialExportClses);	
+		clses.clear();
+		clses.addAll(initialExportClses);
 	}
-	
+
 	public Collection<Cls> getExportedClassesInPanel() {
 		return clses;
 	}
-	
+
 	public String getExportMetadataText() {
 		return metadataString;
 	}
@@ -381,11 +389,11 @@ public class ExportConfigurationPanel {
 	public void setExportMetadata(String text) {
 		metadataString = text;
 	}
-	
+
 	public void setShowExportSuperclasses(boolean showExportSuperclasses) {
 		this.showExportSuperclasses = showExportSuperclasses;
 	}
-	
+
 	public void setShowExportedClasses(boolean showExportClasses) {
 		this.showExportClasses = showExportClasses;
 	}
