@@ -47,6 +47,7 @@ import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import edu.stanford.smi.protege.Application;
 import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.Slot;
 
@@ -147,6 +148,15 @@ public class ComponentUtilities {
         int xPos = (screenSize.width - componentSize.width) / 2;
         xPos = Math.max(xPos, 0);
         int yPos = (screenSize.height - componentSize.height) / 2;
+        yPos = Math.max(yPos, 0);
+        c.setLocation(new Point(xPos, yPos));
+    }
+
+    public static void centerInMainWindow(Component c) {
+        Component mainWindow = Application.getMainWindow();
+        int xPos = mainWindow.getX()  + (mainWindow.getWidth() - c.getWidth()) / 2;
+        xPos = Math.max(xPos, 0);
+        int yPos = mainWindow.getY() + (mainWindow.getHeight() - c.getHeight()) / 2;
         yPos = Math.max(yPos, 0);
         c.setLocation(new Point(xPos, yPos));
     }
@@ -685,10 +695,10 @@ public class ComponentUtilities {
     }
 
     /*
-     * JLV: wrapped calls to tree.updateUI in SwingUtilities.invokeLater to prevent 
-     * null pointer exception when users click on sub slots on Slots tab. Workaround 
+     * JLV: wrapped calls to tree.updateUI in SwingUtilities.invokeLater to prevent
+     * null pointer exception when users click on sub slots on Slots tab. Workaround
      * to prevent exception is documented on Sun's site, bug ID 5089562.
-     * 
+     *
      * Refer to URL for full bug report: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5089562
      */
     public static void setSelectedNode(final JTree tree, TreeNode node) {
@@ -696,14 +706,14 @@ public class ComponentUtilities {
         if (path != null) {
         	tree.scrollPathToVisible(path);
         	tree.setSelectionPath(path);
-        	
+
             SwingUtilities.invokeLater(new Runnable() {
             	public void run() {
             		tree.updateUI();
             	}
             });
         }
-        
+
         SwingUtilities.invokeLater(new Runnable() {
         	public void run() {
         		tree.updateUI();
@@ -872,9 +882,9 @@ public class ComponentUtilities {
 				return tmpMenu;
 			}
 		}
-				
+
 		if (create) {
-			JMenu menu = new JMenu(menuText);		
+			JMenu menu = new JMenu(menuText);
 			menuBar.add(menu, menuIndex);
 			menuBar.revalidate();
 			menuBar.repaint();
@@ -891,22 +901,22 @@ public class ComponentUtilities {
 			}
 		}
 	}
-	
+
 	public static void setSelectedNode(final KnowledgeBase kb, JTree tree, FrameWithBrowserText value) {
 		TreeSelectionHelper<FrameWithBrowserText> selectionHelper = new TreeSelectionHelper<FrameWithBrowserText>(tree) {
-			private Slot superclsesSlot = kb.getSystemFrames().getDirectSuperclassesSlot();  
+			private Slot superclsesSlot = kb.getSystemFrames().getDirectSuperclassesSlot();
 			@Override
-			protected Collection<FrameWithBrowserText> getParents(FrameWithBrowserText child) {				 
+			protected Collection<FrameWithBrowserText> getParents(FrameWithBrowserText child) {
 				edu.stanford.smi.protege.model.Frame frame = child.getFrame();
-				return FrameWithBrowserText.getFramesWithBrowserText(frame.getOwnSlotValues(superclsesSlot));				
+				return FrameWithBrowserText.getFramesWithBrowserText(frame.getOwnSlotValues(superclsesSlot));
 			}
-			
+
 			@Override
 			protected boolean isVisible(FrameWithBrowserText element) {
-				edu.stanford.smi.protege.model.Frame frame = element.getFrame(); 
+				edu.stanford.smi.protege.model.Frame frame = element.getFrame();
 				return frame.isVisible();
-			}			
+			}
 		};
-		selectionHelper.setSelectedNode(value);		
+		selectionHelper.setSelectedNode(value);
 	}
 }

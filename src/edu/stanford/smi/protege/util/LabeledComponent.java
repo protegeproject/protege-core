@@ -27,7 +27,7 @@ import javax.swing.JToolBar;
  * and then a "center component" that takes up the rest of the space. There can
  * optionally be a footer component at the bottom (usually used for a "find"
  * box).
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  * @author Holger Knublauch <holger@smi.stanford.edu>(minor extensions)
  * @author Tania Tudorache <tudorache@stanford.edu> (minor extensions)
@@ -45,23 +45,23 @@ public class LabeledComponent extends JComponent {
     private boolean _isSwapedHeader;
 
     public LabeledComponent(String label, Component c) {
-        this(label, c, c instanceof JScrollPane);        
+        this(label, c, c instanceof JScrollPane);
     }
 
     public LabeledComponent(String label, Component c, boolean verticallyStretchable) {
-    	this(label, c, verticallyStretchable, false); 
-    	//todo 
+    	this(label, c, verticallyStretchable, false);
+    	//todo
     }
-   
+
     public LabeledComponent(String label, Component c, boolean verticallyStretchable, boolean swapedHeader) {
     	_isSwapedHeader = swapedHeader;
     	_isVerticallyStretchable = verticallyStretchable || (c instanceof JScrollPane);
-    	
+
     	setLayout(new BorderLayout());
         add(createHeader(), BorderLayout.NORTH);
         add(createCenterComponentHolder(), BorderLayout.CENTER);
         add(createFooterComponentHolder(), BorderLayout.SOUTH);
-                
+
         setHeaderLabel(label);
         setCenterComponent(c);
     }
@@ -103,11 +103,12 @@ public class LabeledComponent extends JComponent {
         _footerComponentHolder.setLayout(new BorderLayout());
         return _footerComponentHolder;
     }
-       
+
     private JComponent createHeader() {
         _header = new JPanel() {
             private static final long serialVersionUID = 7429097535969923450L;
 
+            @Override
             public Dimension getPreferredSize() {
                 Dimension d = super.getPreferredSize();
                 d.height = Math.max(d.height, ComponentFactory.STANDARD_BUTTON_HEIGHT);
@@ -116,7 +117,7 @@ public class LabeledComponent extends JComponent {
         };
         _header.setLayout(new BorderLayout());
         JPanel panel = new JPanel(new BorderLayout());
-        
+
         panel.add(createHeaderLabel(),(_isSwapedHeader ? BorderLayout.EAST : BorderLayout.WEST));
         panel.add(createHeaderComponentHolder(), BorderLayout.CENTER);
         _header.add(panel, BorderLayout.CENTER);
@@ -210,7 +211,7 @@ public class LabeledComponent extends JComponent {
 	public boolean isSwapedHeader() {
 		return _isSwapedHeader;
 	}
-    
+
     public void removeHeaderButton(int index) {
         int buttonIndex = -1;
         for (int i = 0; i < _toolBar.getComponentCount(); ++i) {
@@ -262,14 +263,15 @@ public class LabeledComponent extends JComponent {
 
     /**
      * Sets an Icon that will appear beside the label text.
-     * 
+     *
      * @param icon
      *            the Icon to add
      */
     public void setHeaderIcon(Icon icon) {
         _label.setIcon(icon);
     }
-    
+
+    @Override
     public void doLayout() {
         super.doLayout();
         adjustToolTipText();
@@ -299,5 +301,9 @@ public class LabeledComponent extends JComponent {
             _isVerticallyStretchable = b;
             setCenterComponent(getCenterComponent());
         }
+    }
+
+    public JToolBar getHeaderToolBar() {
+        return _toolBar;
     }
 }

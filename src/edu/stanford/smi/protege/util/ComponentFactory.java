@@ -79,7 +79,7 @@ import edu.stanford.smi.protege.resource.ResourceKey;
 /**
  * Factory class for making swing components, and their variants. The use of this class is not required for Protege
  * widgets. It is encouraged though. This allows for a single place to address swing bugs and look and feel issues.
- * 
+ *
  * @author Ray Fergerson <fergerson@smi.stanford.edu>
  * @author Monica Crubezy <crubezy@smi.stanford.edu>
  */
@@ -338,7 +338,7 @@ public class ComponentFactory {
         }
         return chooser;
     }
-    
+
     public static JFileChooser createFileChooser(String title, ExtensionFilter extensionFilter) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
         JFileChooser chooser = new JFileChooser(lastDirectory) {
@@ -356,13 +356,13 @@ public class ComponentFactory {
         chooser.setDialogTitle(title);
         if (extensionFilter == null) {
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        } else {            
+        } else {
             chooser.setFileFilter(extensionFilter);
         }
         return chooser;
     }
-    
-    
+
+
     public static JFileChooser createSaveFileChooser(String title, String fileDescription, String fileExtension, final boolean overwrite) {
         File lastDirectory = ApplicationProperties.getLastFileDirectory();
         JFileChooser chooser = new JFileChooser(lastDirectory) {
@@ -376,36 +376,37 @@ public class ComponentFactory {
                 }
                 return rval;
             }
-            
+
             @Override
 			public void approveSelection() {
-            	if (!overwrite)
-            		return;
-            	
+            	if (!overwrite) {
+                    return;
+                }
+
             	File f = getSelectedFile();
-            	
+
             	if ( f.exists() ) {
-            		String msg = "The file '"+ f.getName() + "' already exists!\nDo you want to replace it?";            		
+            		String msg = "The file '"+ f.getName() + "' already exists!\nDo you want to replace it?";
             		String title = getDialogTitle();
             		int option = JOptionPane.showConfirmDialog( this, msg, title, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE );
             		if ( option == JOptionPane.NO_OPTION ) {
             			return;
             		}
-            	}            	
-            	super.approveSelection();            	
+            	}
+            	super.approveSelection();
             }
-            
+
         };
-        
+
         chooser.setDialogType(JFileChooser.SAVE_DIALOG);
         chooser.setDialogTitle(title);
-        if (fileExtension != null) {        
+        if (fileExtension != null) {
             String text = fileDescription;
             chooser.setFileFilter(new ExtensionFilter(fileExtension, text));
         }
         return chooser;
     }
-    
+
 
     public static JFrame createMainFrame() {
         JFrame frame = new JFrame();
@@ -916,22 +917,24 @@ public class ComponentFactory {
 
     public static JFrame showInFrame(Component panel, String title) {
         JFrame frame = createFrame();
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);        
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.getContentPane().setLayout(new BorderLayout());
         frame.getContentPane().add(panel, BorderLayout.CENTER);
         frame.setTitle(title);
-        frame.pack();        
-        ComponentUtilities.center(frame);
+        frame.pack();
+        //ComponentUtilities.center(frame);
+        ComponentUtilities.centerInMainWindow(frame);
         adjustPosition(frame);
-        frame.setVisible(true);        
+
+        frame.setVisible(true);
         return frame;
     }
 
-    
+
     public static JFrame showMessageInFrame(String message, String title) {
         JFrame frame = createFrame();
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        Container c = frame.getContentPane();        
+        Container c = frame.getContentPane();
         c.setLayout(new BorderLayout());
         JPanel innerPane = new JPanel(new BorderLayout());
         innerPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -940,13 +943,13 @@ public class ComponentFactory {
         c.add(innerPane, BorderLayout.CENTER);
         frame.pack();
         frame.setTitle(title);
-        ComponentUtilities.center(frame);
+        ComponentUtilities.centerInMainWindow(frame);
         adjustPosition(frame);
         frame.setVisible(true);
         return frame;
     }
 
-    
+
 	public static void showTableRowInDialog(TableModel tableModel, int row, Component parentComp) {
 		if (row < 0 || row > tableModel.getRowCount()) {
 			return;
@@ -959,18 +962,18 @@ public class ComponentFactory {
 			}
 			colNameToValue.put(colName, tableModel.getValueAt(row, col).toString());
 		}
-				
+
 		JPanel panel = new JPanel(new GridLayout(tableModel.getColumnCount(), 1, 5, 5));
-		
+
 		for (String colName : colNameToValue.keySet()) {
-			panel.add(new JLabel("<html>" + colName + ": <b>" + colNameToValue.get(colName) + "</b></html>"));	
+			panel.add(new JLabel("<html>" + colName + ": <b>" + colNameToValue.get(colName) + "</b></html>"));
 		}
-		
+
 		ModalDialog.showDialog(parentComp, panel, "Table row details", ModalDialog.MODE_CLOSE);
-		
+
 	}
-    
-    
+
+
     public static JEditorPane createEditorPane() {
         return new JEditorPane();
     }

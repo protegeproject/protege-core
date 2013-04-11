@@ -1,11 +1,29 @@
 package edu.stanford.smi.protege.util;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
-import edu.stanford.smi.protege.resource.*;
+import edu.stanford.smi.protege.resource.LocalizedText;
+import edu.stanford.smi.protege.resource.ResourceKey;
 
 /**
  * A class to handle all modal dialog processing.  This class just wraps the JDialog modal dialog implementation but adds
@@ -41,6 +59,7 @@ public class ModalDialog extends JDialog implements Disposable {
     }
 
     private class WindowCloseListener extends WindowAdapter {
+        @Override
         public void windowClosing(WindowEvent event) {
             int option = OPTION_CANCEL;
             if (!_enableCloseButton) {
@@ -108,6 +127,7 @@ public class ModalDialog extends JDialog implements Disposable {
         };
         JButton button = ComponentFactory.createButton(action);
         button.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent event) {
                 switch (event.getKeyCode()) {
                     case KeyEvent.VK_ENTER:
@@ -199,7 +219,8 @@ public class ModalDialog extends JDialog implements Disposable {
         layoutWidgets();
 
         pack();
-        ComponentUtilities.center(this);
+        //ComponentUtilities.center(this);
+        ComponentUtilities.centerInMainWindow(this);
         getFocus();
         setVisible(true);
     }
