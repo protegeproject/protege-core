@@ -1,7 +1,7 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <project name = "protege" default = "init" basedir = ".">
 
-	<property file = "../global.properties"/>
+	<property file = "../_ant_files/global.properties"/>
 
 	<property name = "project.name" value = "protege-core"/>
 	<property name = "build.dir" value = "./build"/>
@@ -17,7 +17,7 @@
 	<property name = "deprecation" value = "on"/>    
 	<property name = "optimize" value = "on"/>
 	<property name = "packages" value = "edu.*"/>
-	<property name = "source" value = "1.5"/>
+	<property name = "source" value = "1.6"/>
 
 	<target name = "init">
 		<tstamp/>
@@ -33,27 +33,27 @@
 		<mkdir dir = "${build.javadoc}"/>
 
 		<!-- get source code from subversion repository -->
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
 			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/src ../${project.name}/build/src"/>
 		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
 			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/junit ../${project.name}/build/junit"/>
 		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
 			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/lib ../${project.name}/lib"/>
 		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
 			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/etc ../${project.name}/etc"/>
 		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
 			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/examples ../${project.name}/examples"/>
 		</exec>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
 			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk ../${project.name} --non-recursive"/>
 		</exec>
 
 		<!-- add license text to top of source files -->
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
 			<arg line = "/c merge_license_with_source ../${project.name}/build/src"/>
 		</exec>
 
@@ -62,7 +62,7 @@
 			<entry key = "build.number" default = "01" type = "int" operation = "+" pattern = "000"/>
 			<entry key = "build.number.previous" default = "00" type = "int" operation = "+" pattern = "000"/>
 		</propertyfile>
-		<exec executable = "cmd.exe" dir = "${batch.files}" os = "${os}">
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
 			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/resource/files/build.properties"/>
 		</exec>
 	</target>
@@ -70,6 +70,7 @@
 	<!-- =================================================================== -->
 	<!-- COMPILE -->
 	<!-- =================================================================== -->
+	<!-- <target name = "compile" depends = "prepare-src"> -->
 	<target name = "compile" depends = "prepare-src">
 		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "true" debuglevel = "lines" optimize = "${optimize}" includeAntRuntime = "no" source = "${source}">
 			<classpath>
@@ -121,7 +122,7 @@
 		              footer = "${Name} ${build.status}" 
 		              windowtitle = "${Name} ${build.status}" 
 		              author = "true" 
-		              source = "1.5"
+		              source = "1.6"
 		              maxmemory = "256M">
 			<bottom><![CDATA[
 					<small>
