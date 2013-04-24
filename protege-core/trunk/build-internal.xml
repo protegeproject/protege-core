@@ -117,10 +117,10 @@
 		<javadoc packagenames = "${packages}" 
 		              sourcepath = "${build.src}" 
 		              destdir = "${build.javadoc}" 
-		              doctitle = "${Name} ${build.status}" 
-		              header = "${Name} ${build.status}" 
-		              footer = "${Name} ${build.status}" 
-		              windowtitle = "${Name} ${build.status}" 
+		              doctitle = "Protege ${build.version} ${build.status}" 
+		              header = "Protege ${build.version} ${build.status}" 
+		              footer = "Protege ${build.version} ${build.status}" 
+		              windowtitle = "Protege ${build.version} ${build.status}" 
 		              author = "true" 
 		              source = "1.6"
 		              maxmemory = "256M">
@@ -132,7 +132,7 @@
 					</small>]]>
 			</bottom>
 			<link href = "${jdk.javadoc}"/>
-			<link href = "http://kentbeck.github.com/junit/javadoc/latest/"/>
+			<link href = "http://api.dpml.net/junit/3.8.1/index.html"/>
 			<classpath>
 				<pathelement location = "${lib.dir}/junit.jar"/>
 				<pathelement location = "${looks.jar}"/>
