@@ -51,6 +51,13 @@
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     
+	<repositories>
+		<repository>
+			<id>github</id>
+			<url>https://github.com/protegeproject/mvn-repo/raw/master/releases</url>
+		</repository>
+	</repositories>    
+	
     <dependencies>
 		<dependency>
 			<groupId>com.jgoodies</groupId>
@@ -61,8 +68,6 @@
 			<groupId>com.catalysoft</groupId>
 			<artifactId>unicode_panel</artifactId>
 			<version>1.0.0</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/unicode_panel.jar</systemPath>
 		</dependency>
 	</dependencies>
 	
