@@ -154,6 +154,10 @@ public class ComponentUtilities {
 
     public static void centerInMainWindow(Component c) {
         Component mainWindow = Application.getMainWindow();
+        if (mainWindow == null) {
+            center(c);
+            return;
+        }
         int xPos = mainWindow.getX()  + (mainWindow.getWidth() - c.getWidth()) / 2;
         xPos = Math.max(xPos, 0);
         int yPos = mainWindow.getY() + (mainWindow.getHeight() - c.getHeight()) / 2;
