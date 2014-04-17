@@ -23,6 +23,9 @@ public class UserImpl extends WrappedProtegeInstanceWithPropsImpl implements Use
     protected UserImpl(MetaProjectImpl mp, Instance ui) {
         super(mp, ui, MetaProjectImpl.ClsEnum.User);
         name = (String) ui.getOwnSlotValue(mp.getSlot(MetaProjectImpl.SlotEnum.name));
+        if (name == null) {
+            log.warning("User with null name created in the metaproject. Instance: " + ui.getName());
+        }
     }
 
     public String getDescription() {
@@ -121,7 +124,20 @@ public class UserImpl extends WrappedProtegeInstanceWithPropsImpl implements Use
             return false;
         }
         User other = (User) o;
-        return name.equals(other.getName());
+        String otherName = other.getName();
+
+        if (name != null && name.equals(otherName)) {
+            return true;
+        }
+
+        String email = getEmail();
+        String otherEmail = other.getEmail();
+
+        if (email != null && email.equals(otherEmail)) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
