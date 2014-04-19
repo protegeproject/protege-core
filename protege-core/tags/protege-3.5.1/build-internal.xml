@@ -1,0 +1,181 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<project name = "protege" default = "init" basedir = ".">
+
+	<property file = "../_ant_files/global.properties"/>
+
+	<property name = "project.name" value = "protege-core"/>
+	<property name = "build.dir" value = "./build"/>
+	<property name = "build.dest" value = "${build.dir}/classes"/>
+	<property name = "build.src" value = "${build.dir}/src"/>
+	<property name = "build.junit" value = "${build.dir}/junit"/>
+	<property name = "docs.dir" value = "./docs"/>
+	<property name = "build.javadoc" value = "${docs.dir}/apidocs"/>
+	<property name = "build.scripts" value = "./etc"/>
+	<property name = "dist.dir" value = "./dist"/>
+	<property name = "lib.dir" value = "./lib"/>
+	<property name = "examples.dir" value = "./examples"/>
+	<property name = "deprecation" value = "on"/>    
+	<property name = "optimize" value = "on"/>
+	<property name = "packages" value = "edu.*"/>
+	<property name = "source" value = "1.6"/>
+
+	<target name = "init">
+		<tstamp/>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- PREPARE-SRC -->
+	<!-- =================================================================== -->
+	<target name = "prepare-src" depends = "init">
+		<mkdir dir = "${build.src}"/>
+		<mkdir dir = "${build.dest}"/>
+		<mkdir dir = "${dist.dir}"/>
+		<mkdir dir = "${build.javadoc}"/>
+
+		<!-- get source code from subversion repository -->
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/src ../${project.name}/build/src"/>
+		</exec>
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/junit ../${project.name}/build/junit"/>
+		</exec>
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/lib ../${project.name}/lib"/>
+		</exec>
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/etc ../${project.name}/etc"/>
+		</exec>
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk/examples ../${project.name}/examples"/>
+		</exec>
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
+			<arg line = "/c checkout ${svn.core.url.secure}/${project.name}/trunk ../${project.name} --non-recursive"/>
+		</exec>
+
+		<!-- add license text to top of source files -->
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
+			<arg line = "/c merge_license_with_source ../${project.name}/build/src"/>
+		</exec>
+
+		<!-- increment the build number -->
+		<propertyfile file = "./build/src/edu/stanford/smi/protege/resource/files/build.properties">
+			<entry key = "build.number" default = "01" type = "int" operation = "+" pattern = "000"/>
+			<entry key = "build.number.previous" default = "00" type = "int" operation = "+" pattern = "000"/>
+		</propertyfile>
+		<exec executable = "cmd.exe" dir = "${batch.files}" osfamily = "windows">
+			<arg line = "/c commit modified-by-automatic-build ../${project.name}/build/src/edu/stanford/smi/protege/resource/files/build.properties"/>
+		</exec>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- COMPILE -->
+	<!-- =================================================================== -->
+	<!-- <target name = "compile" depends = "prepare-src"> -->
+	<target name = "compile" depends = "prepare-src">
+		<javac srcdir = "${build.src}" destdir = "${build.dest}" deprecation = "${deprecation}" debug = "true" debuglevel = "lines" optimize = "${optimize}" includeAntRuntime = "no" source = "${source}">
+			<classpath>
+				<fileset dir = "${lib.dir}">
+					<include name = "**/*.jar"/>
+				</fileset>
+			</classpath>
+		</javac>
+        <rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.SimpleStream"/>    
+		<rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.Server"/>    
+		<rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.ServerProject"/>    
+		<rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.framestore.ServerFrameStore"/>  
+		<rmic base = "${build.dest}" stubversion = "1.2" classname = "edu.stanford.smi.protege.server.narrowframestore.ServerNarrowFrameStore"/>  
+	</target>
+	<target name = "compile-junit" depends = "init">    
+		<javac srcdir = "${build.junit}" destdir = "${build.dest}" deprecation = "{deprecation}" debug = "${debug}" optimize = "${optimize}" includeAntRuntime = "${includeAntRuntime}" source = "${source}">    
+			<classpath>
+				<pathelement location = "${lib.dir}/junit.jar"/>
+				<pathelement path = "${build.dest}"/>
+			</classpath>
+		</javac>    
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- JAR -->
+	<!-- =================================================================== -->
+	<target name = "jar" depends = "compile, compile-junit">
+		<copy todir = "${build.dest}/edu/stanford/smi/protege/resource/files">
+			<fileset dir = "${build.src}/edu/stanford/smi/protege/resource/files"/>
+		</copy>
+		<copy todir = "${build.dest}/edu/stanford/smi/protege/resource/image">
+			<fileset dir = "${build.src}/edu/stanford/smi/protege/resource/image"/>
+		</copy>
+		<jar jarfile = "${dist.dir}/protege.jar" basedir = "${build.dest}" manifest = "${build.src}/meta-inf/manifest.mf"/>
+	</target>
+	
+	<!-- =================================================================== -->
+	<!-- JAVADOC -->
+	<!-- =================================================================== -->
+	<target name = "javadoc" depends = "init" unless = "testbuild">
+
+		<property file = "${build.dir}/src/edu/stanford/smi/protege/resource/files/build.properties"/>
+		
+		<javadoc packagenames = "${packages}" 
+		              sourcepath = "${build.src}" 
+		              destdir = "${build.javadoc}" 
+		              doctitle = "Protege ${build.version} ${build.status}" 
+		              header = "Protege ${build.version} ${build.status}" 
+		              footer = "Protege ${build.version} ${build.status}" 
+		              windowtitle = "Protege ${build.version} ${build.status}" 
+		              author = "true" 
+		              source = "1.6"
+		              maxmemory = "256M">
+			<bottom><![CDATA[
+					<small>
+					<a href=mailto:protege-discussion@lists.stanford.edu>Submit a bug report or feature request</a><br>
+					${trademark}<br>
+					${copyright}
+					</small>]]>
+			</bottom>
+			<link href = "${jdk.javadoc}"/>
+			<link href = "http://api.dpml.net/junit/3.8.1/index.html"/>
+			<classpath>
+				<pathelement location = "${lib.dir}/junit.jar"/>
+				<pathelement location = "${looks.jar}"/>
+				<pathelement location = "${lib.dir}/unicode_panel.jar"/>
+			</classpath>
+		</javadoc>
+		
+	</target>
+	
+	<!-- =================================================================== -->
+	<!-- DIST -->
+	<!-- Zips up all source code, resources, and api documentation. -->
+	<!-- =================================================================== -->
+	<target name = "dist" depends = "init">
+		<zip zipfile = "${dist.dir}/protege-src-${version}-${status}.zip" update = "no">
+			<zipfileset dir = "${build.src}" prefix = "${Name}/src"/>
+			<zipfileset dir = "${build.junit}" prefix = "${Name}/junit"/>
+			<zipfileset dir = "${build.javadoc}" prefix = "${Name}/docs/apidocs"/>
+			<zipfileset dir = "." includes = "build.xml,local.properties.template,readme.html,junit-logging.properties,junit.properties.template,logging.properties" prefix = "${Name}"/>
+			<zipfileset dir = "${build.scripts}" includes = "Parser.jj" prefix = "${Name}/etc"/>
+			<zipfileset dir = "${lib.dir}" includes = "*.jar" prefix = "${Name}/lib"/>
+		</zip>
+		<zip zipfile = "${dist.dir}/protege-bin-${version}-${status}.zip" update = "no">
+			<zipfileset dir = "${dist.dir}" includes = "protege.jar"/>
+			<zipfileset dir = "${lib.dir}" includes = "*.jar" excludes = "junit.jar"/>
+		</zip>
+	</target>
+	
+	<!-- =================================================================== -->
+	<!-- CLEAN -->
+	<!-- =================================================================== -->
+	<target name = "clean" depends = "init">
+		<delete dir = "${build.dir}"/>
+		<delete dir = "${docs.dir}"/>
+		<delete dir = "${dist.dir}"/>
+		<delete dir = "${examples.dir}"/>
+		<delete dir = "${lib.dir}"/>
+		<delete dir = "${build.scripts}"/>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- ALL -->
+	<!-- Create the jar file, javadoc api documentaion, and the zip file. -->
+	<!-- =================================================================== -->
+	<target name = "all" depends = "jar,javadoc,dist"/>
+</project>
