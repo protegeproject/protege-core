@@ -3,6 +3,7 @@ package edu.stanford.smi.protege.server.metaproject.impl;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.exception.OntologyException;
@@ -23,8 +24,8 @@ public class UserImpl extends WrappedProtegeInstanceWithPropsImpl implements Use
     protected UserImpl(MetaProjectImpl mp, Instance ui) {
         super(mp, ui, MetaProjectImpl.ClsEnum.User);
         name = (String) ui.getOwnSlotValue(mp.getSlot(MetaProjectImpl.SlotEnum.name));
-        if (name == null) {
-            log.warning("User with null name created in the metaproject. Instance: " + ui.getName());
+        if (name == null && log.isLoggable(Level.FINE)) {
+            log.fine("User with null name was either created or existed already in the metaproject. Instance: " + ui.getName());
         }
     }
 
