@@ -119,6 +119,14 @@ public class UserImpl extends WrappedProtegeInstanceWithPropsImpl implements Use
         setSlotValue(SlotEnum.salt, salt);
     }
 
+    public String getApiKey() {
+        return (String) getSlotValue(SlotEnum.apiKey, null);
+    }
+    
+    public void setApiKey(String key) {
+    	setSlotValue(MetaProjectImpl.SlotEnum.apiKey, key);
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof User)) {
