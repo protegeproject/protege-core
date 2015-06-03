@@ -3,6 +3,9 @@ package edu.stanford.smi.protege.server.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import edu.stanford.smi.protege.model.Cls;
@@ -48,6 +51,7 @@ public class ServerUtil {
             changed = addPropertyValues(mp) || changed;
             changed = addPolicyStuff(mp) || changed;
             changed = addCollections(mp) || changed;
+            changed = addApiKey(mp) || changed;
 
             /* attempt to use getDesignTimeClsWidget at svn revision 15083 */
             if (changed) {
@@ -73,7 +77,8 @@ public class ServerUtil {
     }
 
 
-    @SuppressWarnings("unchecked")
+
+	@SuppressWarnings("unchecked")
     private static boolean addPropertyValues(MetaProjectImpl mp) {
         boolean changed = false;
         KnowledgeBase kb = mp.getKnowledgeBase();
@@ -106,8 +111,29 @@ public class ServerUtil {
         return changed;
     }
 
+	
+    private static boolean addApiKey(MetaProjectImpl mp) {
+        boolean changed = false;
+        KnowledgeBase kb = mp.getKnowledgeBase();
+        Slot apiKeySlot = kb.getSlot(SlotEnum.apiKey.name());
+        if (apiKeySlot == null) {
+            apiKeySlot = kb.createSlot(SlotEnum.apiKey.name());
+            Cls userCls = mp.getCls(ClsEnum.User);
+            userCls.addDirectTemplateSlot(apiKeySlot);
+            fillApiKeys(mp);
+            changed = true;
+        }        
+        return changed;
+	}
 
-    private static boolean addEmail(MetaProjectImpl mp) {
+    private static void fillApiKeys(MetaProjectImpl mp) {
+		Set<User> users = mp.getUsers();
+		for (User user : users) {
+			user.setApiKey(UUID.randomUUID().toString());
+		}
+	}
+
+	private static boolean addEmail(MetaProjectImpl mp) {
         boolean changed = false;
         KnowledgeBase kb = mp.getKnowledgeBase();
         Slot emailSlot = kb.getSlot(SlotEnum.email.name());
@@ -272,8 +298,7 @@ public class ServerUtil {
 
         return changed;
     }
-
-
+    
     private static boolean addTemplateSlot(KnowledgeBase kb, Cls cls, MetaProjectImpl.SlotEnum slotEnum) {
         String slotName = slotEnum.toString();
         Slot slot;

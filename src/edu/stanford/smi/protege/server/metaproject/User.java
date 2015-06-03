@@ -25,6 +25,8 @@ public interface User {
 	void setLastAccess(Date time);
 
 	void setLastLogin(Date time);
+	
+	void setApiKey(String key);
 
 	boolean verifyPassword(String password);
 
@@ -35,6 +37,8 @@ public interface User {
 	String getSalt();
 
 	String getDigestedPassword();
+	
+	String getApiKey();
 
 	void setDigestedPassword(String hashedPassword, String salt);
 
