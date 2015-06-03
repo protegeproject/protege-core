@@ -160,7 +160,19 @@ public class MetaProjectImpl implements MetaProject, Localizable, Serializable {
 		}
 		return new UserImpl(this, (Instance) frame);
 	}
-
+	
+	public User getUserByApiKey(String apikey) {
+		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.apiKey), null, false, apikey);
+		if (frames == null || frames.isEmpty()) {
+			return null;
+		}
+		Frame frame = (Frame) frames.iterator().next();
+		if (!(frame instanceof Frame)) {
+			return null;
+		}
+		return new UserImpl(this, (Instance) frame);
+	}
+	
 	public Operation getOperation(String name) {
 		Collection frames = kb.getFramesWithValue(getSlot(MetaProjectImpl.SlotEnum.name), null, false, name);
 		if (frames == null || frames.isEmpty()) {
