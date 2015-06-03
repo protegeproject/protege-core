@@ -15,6 +15,8 @@ public interface MetaProject {
     Set<User> getUsers();
 
     User getUser(String name);
+    
+    User getUserByApiKey (String apiKey);
 
     User createUser(String name, String password);
 
