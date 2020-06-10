@@ -30,7 +30,7 @@ import edu.stanford.smi.protege.util.SystemUtilities;
  * @author    Ray Fergerson <fergerson@smi.stanford.edu>
  */
 public class DefaultWidgetMapper implements WidgetMapper {
-    private Logger log = Log.getLogger(DefaultWidgetMapper.class);
+    private static Logger log = Log.getLogger(DefaultWidgetMapper.class);
     private final static String METHOD_NAME = "isSuitable";
     private final static Class[] METHOD_ARG_CLASSES = new Class[] { Cls.class, Slot.class, Facet.class };
 

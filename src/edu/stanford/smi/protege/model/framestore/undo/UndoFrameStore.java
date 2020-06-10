@@ -27,7 +27,7 @@ import edu.stanford.smi.protege.util.transaction.TransactionIsolationLevel;
 import edu.stanford.smi.protege.util.transaction.TransactionMonitor;
 
 public class UndoFrameStore extends ModificationFrameStore implements CommandManager {
-    Logger log = Log.getLogger(UndoFrameStore.class);
+    private static Logger log = Log.getLogger(UndoFrameStore.class);
     
     private static final int NO_COMMAND = -1;
 
