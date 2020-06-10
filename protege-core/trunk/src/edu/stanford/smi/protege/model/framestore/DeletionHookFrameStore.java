@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 import edu.stanford.smi.protege.model.Cls;
 import edu.stanford.smi.protege.model.Facet;
 import edu.stanford.smi.protege.model.Frame;
-import edu.stanford.smi.protege.model.KnowledgeBase;
 import edu.stanford.smi.protege.model.SimpleInstance;
 import edu.stanford.smi.protege.model.Slot;
 import edu.stanford.smi.protege.util.DeletionHook;
@@ -17,7 +16,7 @@ import edu.stanford.smi.protege.util.Log;
 
 
 public class DeletionHookFrameStore extends FrameStoreAdapter {
-    private Logger log = Log.getLogger(DeletionHookFrameStore.class);
+    private static Logger log = Log.getLogger(DeletionHookFrameStore.class);
     
     private Set<DeletionHook> hooks = new HashSet<DeletionHook>();
     

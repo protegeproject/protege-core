@@ -22,7 +22,7 @@ import edu.stanford.smi.protege.util.transaction.cache.CacheResult;
  * @param <R>
  */
 public class InvalidatableCache<S, V, R> implements Cache<S, V, R> {
-    private Logger logger = Log.getLogger(InvalidatableCache.class);
+    private static Logger logger = Log.getLogger(InvalidatableCache.class);
     
     private boolean ignoreTransactions;
     private Set<S> sessionsWithCacheDeleted = new HashSet<S>();

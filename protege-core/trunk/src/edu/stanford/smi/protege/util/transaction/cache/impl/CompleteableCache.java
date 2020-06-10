@@ -26,7 +26,7 @@ public class CompleteableCache<S, V, R> implements Cache<S, V, R> {
         NORMAL, GETTING_COMPLETE_CACHE, CACHE_COMPLETE;
     };
     
-    private Logger logger = Log.getLogger(CompleteableCache.class);
+    private static Logger logger = Log.getLogger(CompleteableCache.class);
     
     private CompletionStatus status = CompletionStatus.NORMAL;
     private Set<V> invalidReads = new HashSet<V>();

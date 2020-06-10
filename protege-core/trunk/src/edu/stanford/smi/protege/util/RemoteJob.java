@@ -1,12 +1,9 @@
 package edu.stanford.smi.protege.util;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.stanford.smi.protege.exception.ProtegeException;
-import edu.stanford.smi.protege.server.RemoteSession;
 import edu.stanford.smi.protege.server.Server;
-import edu.stanford.smi.protege.server.ServerProject;
 import edu.stanford.smi.protege.server.framestore.ServerFrameStore;
 import edu.stanford.smi.protege.server.metaproject.Operation;
 import edu.stanford.smi.protege.server.metaproject.Policy;
@@ -14,7 +11,7 @@ import edu.stanford.smi.protege.server.metaproject.ProjectInstance;
 import edu.stanford.smi.protege.server.metaproject.User;
 
 public abstract class RemoteJob {
-    private Logger log = Log.getLogger(RemoteJob.class);
+    private static transient Logger log = Log.getLogger(RemoteJob.class);
     
     /**
      * This class is overridden by the sub class and defines 

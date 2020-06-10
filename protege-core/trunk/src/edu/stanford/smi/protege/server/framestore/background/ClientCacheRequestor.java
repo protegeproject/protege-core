@@ -11,7 +11,7 @@ import edu.stanford.smi.protege.server.framestore.RemoteServerFrameStore;
 import edu.stanford.smi.protege.util.Log;
 
 public class ClientCacheRequestor {
-  Logger log = Log.getLogger(ClientCacheRequestor.class);
+  private static Logger log = Log.getLogger(ClientCacheRequestor.class);
   
   public enum ThreadStatus {
     IDLE, RUNNING, SHUTDOWN
