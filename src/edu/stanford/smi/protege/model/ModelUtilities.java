@@ -284,6 +284,37 @@ public class ModelUtilities {
             }
         }
     }
+    
+    
+    public static List<Cls> getPathToSupercls(Cls cls, Cls supercls) {
+        return getPathToSupercls(cls, supercls, new ArrayList<Cls>());
+    }
+
+    private static List<Cls> getPathToSupercls(Cls cls, Cls supercls, List<Cls> path) {
+    	path.add(0, cls);
+    	
+    	Collection<Cls> dirSuperclses = cls.getDirectSuperclasses();
+    	
+    	for (Cls dirSupercls : dirSuperclses) {
+			if (path.contains(dirSupercls)) {
+				continue;
+			}
+			
+			List<Cls> copy = new ArrayList<Cls>(path);
+            getPathToSupercls(dirSupercls, supercls, path);
+            
+            if (path.get(0).equals(supercls)) {
+                break;
+            }
+            
+            // Backtracking
+            path.clear();
+            path.addAll(copy);
+		}
+    	
+    	return path;
+    }
+    
 
     private static Slot getSlot(Frame frame, String slotName) {
         Assert.assertNotNull("frame", frame);
@@ -359,4 +390,6 @@ public class ModelUtilities {
     public static void setTemplateFacetValues(Cls cls, Slot slot, String facetName, Collection values) {
         cls.setTemplateFacetValues(slot, getFacet(cls, facetName), values);
     }
+    
+
 }
